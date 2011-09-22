@@ -413,6 +413,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 //content
                 html.setContent(content);
+                html.setStyle("overflow: scroll");
 
                 //for the 'reset window' button
                 ((ExternalContentComposer) externalContentWindow).src = "";
@@ -447,8 +448,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             ((Caption) externalContentWindow.getFellow("caption")).setLabel(
                     label);
             externalContentWindow.setPosition("center");
-            externalContentWindow.setHeight("50%");
-            externalContentWindow.setWidth("50%");
+            externalContentWindow.setHeight("60%");
+            externalContentWindow.setWidth("50%");            
             //externalContentWindow.doOverlapped();
             try {
                 externalContentWindow.doModal();

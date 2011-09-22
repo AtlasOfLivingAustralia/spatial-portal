@@ -770,12 +770,14 @@ public class SolrQuery implements Query, Serializable {
 //                + "<br>data providers=" + getDataProviders();
 
         TreeMap<String,String> classification = (TreeMap<String, String>) getSpeciesClassification(lsids);
+        String spname = getName();
 
-        String html = "Species information\n";
-        html += "<table>";
-        html += "<tr><td>Number of species: </td><td>"+getSpeciesCount()+"</td></tr>";
-        html += "<tr><td>Number of occurrences: </td><td>"+getOccurrenceCount()+"</td></tr>";
-        html += "<tr><td>Classification: </td><td>";
+        String html = "Species information for " + spname + "\n";
+        //html += "<h2 class='md_heading'>Species information for " + spname + "</h2>";
+        html += "<table class='md_table'>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>"+getSpeciesCount()+"</td></tr>";
+        html += "<tr><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>"+getOccurrenceCount()+"</td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Classification: </td><td class='md_spacer'/><td class='md_value'>";
 
         Iterator<String> it = classification.descendingKeySet().iterator();
         while (it.hasNext()) {
@@ -786,10 +788,9 @@ public class SolrQuery implements Query, Serializable {
         }
 
         html += "</td></tr>";
-        html += "<tr><td>Data providers: </td><td>"+getDataProviders()+"</td></tr>";
-
+        html += "<tr><td class='md_th'>Data providers: </td><td class='md_spacer'/><td class='md_value'>"+getDataProviders()+"</td></tr>";
         if(lsids != null && lsids.length() > 0) {
-            html += "<tr><td>More information for <a href='" + CommonData.bieServer + BIE_SPECIES + lsids + "' target='_blank'>"+ getName() +"</a></td></tr>";
+            html += "<tr class='md_grey-bg'><td class='md_value' colspan='3'>More information for <a href='" + CommonData.bieServer + BIE_SPECIES + lsids + "' target='_blank'>"+ spname +"</a></td></tr>";
         }
         html += "</table>";
 

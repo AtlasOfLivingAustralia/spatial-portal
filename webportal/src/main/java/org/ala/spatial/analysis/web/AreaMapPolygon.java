@@ -137,8 +137,17 @@ public class AreaMapPolygon extends AreaToolComposer {
         String searchPoint = (String) event.getData();
         String lon = searchPoint.split(",")[0];
         String lat = searchPoint.split(",")[1];
+
+
+        System.out.println("*************************************");
+        System.out.println("CommonData.getLayerList");
+        //System.out.println(CommonData.getLayerList());
+        System.out.println("*************************************");
+
+
         Object llist = CommonData.getLayerListJSONArray();
         JSONArray layerlist = JSONArray.fromObject(llist);
+        //JSONArray layerlist = JSONArray.fromObject(CommonData.getLayerList());
         MapComposer mc = getThisMapComposer();
 
         List<MapLayer> activeLayers = getPortalSession().getActiveLayers();
@@ -167,7 +176,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                         System.out.println(ml.getName());
                         String featureURI = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, CommonData.geoServer);
                         System.out.println(featureURI);
-                        if (featureURI == null) {
+                        if (featureURI.equalsIgnoreCase("none")) { // featureURI == null
                             continue;
                         }
                         //if it is a filtered layer, expect the filter as part of the new uri.

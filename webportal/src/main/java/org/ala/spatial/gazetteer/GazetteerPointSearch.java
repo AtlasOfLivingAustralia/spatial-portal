@@ -43,12 +43,21 @@ public class GazetteerPointSearch {
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
+            System.out.println("*************************************");
+            System.out.println("GazetteerPointSearch.PointSearch");
+            System.out.println("URI: " + uri);
+            System.out.println("result: " + result);
+            System.out.println("slist: " + slist);
+            System.out.println("*************************************");
+
+
+
             JSONArray ja = JSONArray.fromObject(slist);
 
             if (ja != null && ja.size() > 0) {
                 JSONObject jo = ja.getJSONObject(0);
 
-                featureURL = CommonData.layersServer + "/layers=index/shape/geojson/" + jo.getString("pid");
+                featureURL = CommonData.layersServer + "/shape/geojson/" + jo.getString("pid");
             }
         } catch (Exception e1) {
             //FIXME: log something
