@@ -644,7 +644,7 @@ public class SolrQuery implements Query, Serializable {
             fields.add(new QueryField("phylum", "Phylum", QueryField.FieldType.STRING));
             fields.add(new QueryField("kingdom", "Kingdom", QueryField.FieldType.STRING));
 
-            fields.add(new QueryField("coordinate_uncertainty", "Uncertainty", QueryField.FieldType.INT));
+            //fields.add(new QueryField("coordinate_uncertainty", "Uncertainty", QueryField.FieldType.INT));
             fields.add(new QueryField("data_provider", "Data Provider", QueryField.FieldType.STRING));
             fields.add(new QueryField("institution_name", "Institution", QueryField.FieldType.STRING));
             fields.add(new QueryField("year", "Year", QueryField.FieldType.INT));
