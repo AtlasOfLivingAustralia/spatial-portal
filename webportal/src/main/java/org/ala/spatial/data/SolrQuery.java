@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -800,7 +801,7 @@ public class SolrQuery implements Query, Serializable {
     private Map<String,String> getSpeciesClassification(String lsid) {
 
         String[] classificationList = {"kingdom", "phylum", "class", "order", "family", "genus", "species", "subspecies"};
-        TreeMap<String,String> classification = new TreeMap();
+        Map<String,String> classification = new LinkedHashMap<String, String>();
 
         String snUrl = CommonData.bieServer + BIE_SPECIES + lsid + ".json";
         System.out.println(snUrl);
@@ -830,7 +831,7 @@ public class SolrQuery implements Query, Serializable {
             e.printStackTrace(System.out);
         }
 
-        return classification.descendingMap();
+        return classification;
     }
 
     @Override
