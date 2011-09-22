@@ -46,7 +46,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public LayerInfo getLayerById(String id) {
-        List<LayerInfo> layers = hibernateTemplate.find("from LayerInfo where uid = ? ", id);
+        List<LayerInfo> layers = hibernateTemplate.find("from LayerInfo where uid = ? AND  enabled=true ", id);
         if (layers.size() > 0) {
             return layers.get(0);
         } else {
@@ -62,7 +62,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByName(String name) {
-        return hibernateTemplate.find("from LayerInfo where lower(name) = ? order by  classification1, classification2, displayname ", name.toLowerCase());
+        return hibernateTemplate.find("from LayerInfo where lower(name) = ? AND  enabled=true order by  classification1, classification2, displayname ", name.toLowerCase());
     }
 
     /**
@@ -73,7 +73,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByDisplayName(String name) {
-        return hibernateTemplate.find("from LayerInfo where lower(displayname) like ? order by  classification1, classification2, displayname ", ("%" + name.toLowerCase() + "%"));
+        return hibernateTemplate.find("from LayerInfo where lower(displayname) like ? AND  enabled=true order by  classification1, classification2, displayname ", ("%" + name.toLowerCase() + "%"));
     }
 
     /**
@@ -84,7 +84,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByType(String type) {
-        return hibernateTemplate.find("from LayerInfo where lower(type) = ? order by  classification1, classification2, displayname ", type.toLowerCase());
+        return hibernateTemplate.find("from LayerInfo where lower(type) = ? AND  enabled=true order by  classification1, classification2, displayname ", type.toLowerCase());
     }
 
     /**
@@ -95,7 +95,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersBySource(String source) {
-        return hibernateTemplate.find("from LayerInfo where lower(source) = ? order by  classification1, classification2, displayname ", source.toLowerCase());
+        return hibernateTemplate.find("from LayerInfo where lower(source) = ? AND  enabled=true order by  classification1, classification2, displayname ", source.toLowerCase());
     }
 
     /**
@@ -117,7 +117,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByEnabled(boolean enabled) {
-        return hibernateTemplate.find("from LayerInfo where enabled = ? order by  classification1, classification2, displayname ", enabled);
+        return hibernateTemplate.find("from LayerInfo where enabled = ? AND  enabled=true order by  classification1, classification2, displayname ", enabled);
     }
 
     /**
@@ -128,7 +128,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByNotes(String notes) {
-        return hibernateTemplate.find("from LayerInfo where lower(notes) like ? order by  classification1, classification2, displayname ", ("%" + notes.toLowerCase() + "%"));
+        return hibernateTemplate.find("from LayerInfo where lower(notes) like ? AND  enabled=true order by  classification1, classification2, displayname ", ("%" + notes.toLowerCase() + "%"));
         // AND enabled=true 
     }
 
@@ -141,12 +141,12 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
     public List<LayerInfo> getLayersByCriteria(String keywords) {
         String sql = "";
         sql += "from LayerInfo where ";
+        sql += " enabled=true AND ( ";
         sql += "lower(keywords) like ? ";
         sql += " or lower(displayname) like ? ";
         //sql += " or lower(type) like ? ";
         sql += " or lower(name) like ? ";
-        sql += "  AND enabled=true ";
-        sql += " order by displayname ";
+        sql += ") order by displayname ";
 
         keywords = "%" + keywords.toLowerCase() + "%";
 
