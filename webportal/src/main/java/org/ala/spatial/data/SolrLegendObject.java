@@ -80,7 +80,7 @@ public class SolrLegendObject extends LegendObject {
                 sb.append("\n");
 
                 colour = c[1] + "," + c[2] + "," + c[3];
-                line = c[0] + "," + colour + "," + c[4];
+                line = "\"" + c[0] + "\"," + colour + "," + c[4];
                 sb.append(line);
             }
         }
