@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class IntersectService {
 
-    private final String WS_INTERSECT_SINGLE = "/intersect/{ids}/{lat}/{lng}";
+    private final String WS_INTERSECT_SINGLE = "/intersect/{ids}/{lat}/{lng:.+}";
     private final String WS_INTERSECT_BATCH = "/intersect/batch";
     final static String ALASPATIAL_OUTPUT_PATH = "/data/ala/runtime/output";
     final static String DATA_FILES_PATH = "/data/ala/data/envlayers/WorldClimCurrent/10minutes/";
