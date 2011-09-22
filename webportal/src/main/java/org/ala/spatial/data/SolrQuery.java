@@ -769,7 +769,7 @@ public class SolrQuery implements Query, Serializable {
 //                + "<br>classification=" + lsids
 //                + "<br>data providers=" + getDataProviders();
 
-        TreeMap<String,String> classification = (TreeMap<String, String>) getSpeciesClassification(lsids);
+        Map<String,String> classification = getSpeciesClassification(lsids);
         String spname = getName();
 
         String html = "Species information for " + spname + "\n";
@@ -779,7 +779,7 @@ public class SolrQuery implements Query, Serializable {
         html += "<tr><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>"+getOccurrenceCount()+"</td></tr>";
         html += "<tr class='md_grey-bg'><td class='md_th'>Classification: </td><td class='md_spacer'/><td class='md_value'>";
 
-        Iterator<String> it = classification.descendingKeySet().iterator();
+        Iterator<String> it = classification.keySet().iterator();
         while (it.hasNext()) {
             String key = it.next();
             String value = classification.get(key);
@@ -800,7 +800,7 @@ public class SolrQuery implements Query, Serializable {
     private Map<String,String> getSpeciesClassification(String lsid) {
 
         String[] classificationList = {"kingdom", "phylum", "class", "order", "family", "genus", "species", "subspecies"};
-        Map<String,String> classification = new TreeMap();
+        TreeMap<String,String> classification = new TreeMap();
 
         String snUrl = CommonData.bieServer + BIE_SPECIES + lsid + ".json";
         System.out.println(snUrl);
@@ -830,7 +830,7 @@ public class SolrQuery implements Query, Serializable {
             e.printStackTrace(System.out);
         }
 
-        return classification;
+        return classification.descendingMap();
     }
 
     @Override
