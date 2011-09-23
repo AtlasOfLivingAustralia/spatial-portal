@@ -479,6 +479,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         //console.log("downloadUrl = " + downloadUrl);
         //alert("downloadUrl = " + downloadUrl);
         window.location.href = downloadUrl;
+        zk.Widget.$(jq('$externalContentWindow')).detach(); 
         return false; 
     }
 

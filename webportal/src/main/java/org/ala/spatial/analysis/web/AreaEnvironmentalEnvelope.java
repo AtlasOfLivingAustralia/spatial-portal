@@ -31,6 +31,7 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Doublebox;
@@ -85,6 +86,9 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     private String activeAreaSize = null;
     Textbox txtLayerName;
 
+    int speciescount = 0;
+    boolean isDirtyCount = true;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -126,12 +130,14 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     public void onChange$popup_minimum(Event event) {
+        isDirtyCount = true;
         System.out.println("popup_minimum=" + popup_minimum.getValue() + " " + event.getData());
         serverFilter(false);
 
     }
 
     public void onChange$popup_maximum(Event event) {
+        isDirtyCount = true; 
         serverFilter(false);
     }
 
@@ -410,16 +416,16 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         } else if (layername.equalsIgnoreCase("Active Area")) {
             showActiveArea();
         }
-        if (p <= 0) {
-            detach();
-        }
+//        if (p <= 0) {
+//            detach();
+//        }
     }
 
     public void listFix() {
         int i;
-        List list = lbSelLayers.getItems();
+        List<Listitem> list = lbSelLayers.getItems();
         for (i = 0; list != null && i < list.size() - 1; i++) {
-            Listitem li = (Listitem) list.get(i);
+            Listitem li = list.get(i);
             li.setDisabled(true);
         }
         if (list != null && list.size() > 0) {
@@ -562,15 +568,15 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     private void doApplyFilter(String pid, String layerdisplayname, String layername, String type, String val1, String val2, boolean commit) {
         try {
 
-            ArrayList<Facet> facets = new ArrayList<Facet>();
-            Iterator<String> it = selectedSPLFilterLayers.keySet().iterator();
-            for (int i=0; i<selectedSPLFilterLayers.size(); i++) {
-                String lyrname = it.next();
-                SPLFilter splf = selectedSPLFilterLayers.get(lyrname);
-                Facet f = new Facet(CommonData.getLayerFacetName(splf.layername), splf.minimum_value, splf.maximum_value, true);
-                facets.add(f);
-            }
-            Query q = new SolrQuery(null, null, null, facets);
+//            ArrayList<Facet> facets = new ArrayList<Facet>();
+//            Iterator<String> it = selectedSPLFilterLayers.keySet().iterator();
+//            for (int i=0; i<selectedSPLFilterLayers.size(); i++) {
+//                String lyrname = it.next();
+//                SPLFilter splf = selectedSPLFilterLayers.get(lyrname);
+//                Facet f = new Facet(CommonData.getLayerFacetName(splf.layername), splf.minimum_value, splf.maximum_value, true);
+//                facets.add(f);
+//            }
+//            Query q = new SolrQuery(null, null, null, facets);
 
             String urlPart = "";
             if (commit) {
@@ -587,10 +593,10 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
             String imagefilepath = getInfo(urlPart);
             MapLayer ml = loadMap(imagefilepath, layerdisplayname);
-            ml.setData("environmentEnvelope", facets);
-            
-            popup_filter.setCount(q.getSpeciesCount());
-            ((Listcell) popup_item.getChildren().get(2)).setLabel(q.getSpeciesCount()+"");
+//            ml.setData("environmentEnvelope", facets);
+
+//            popup_filter.setCount(q.getSpeciesCount());
+//            ((Listcell) popup_item.getChildren().get(2)).setLabel(q.getSpeciesCount()+"");
 
             selectedLayersUrl.set(lbSelLayers.getItemCount() - 1, imagefilepath);
 
@@ -616,14 +622,14 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             activeAreaSize = imagefilepath[2];
 
             int p = activeAreaSize.indexOf('.');
-            if(p>0) {
-                activeAreaSize = activeAreaSize.substring(0,p);
+            if (p > 0) {
+                activeAreaSize = activeAreaSize.substring(0, p);
             }
 
             //make the metadata?
             StringBuilder sb = new StringBuilder();
             sb.append("Environmental Envelope<br>");
-            for(int i=0;i<selectedLayers.size();i++) {
+            for (int i = 0; i < selectedLayers.size(); i++) {
                 String layername = (String) selectedLayers.get(i);
                 SPLFilter f = getSPLFilter(layername);
                 sb.append(f.layername).append(": ").append(f.getFilterString()).append("<br>");
@@ -670,10 +676,12 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
     public void onClick$apply_continous(Event event) {
         applyFilter();
+        isDirtyCount = false;
     }
 
     public void onClick$remove_continous(Event event) {
         deleteSelectedFilters(null);
+        isDirtyCount = false; 
     }
 
     public void onClick$preview_continous(Event event) {
@@ -692,16 +700,37 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         }
     }
 
+    private int getSpeciesCount() {
+        ArrayList<Facet> facets = new ArrayList<Facet>();
+        Iterator<String> it = selectedSPLFilterLayers.keySet().iterator();
+        for (int i = 0; i < selectedSPLFilterLayers.size(); i++) {
+            String lyrname = it.next();
+            SPLFilter splf = selectedSPLFilterLayers.get(lyrname);
+            Facet f = new Facet(CommonData.getLayerFacetName(splf.layername), splf.minimum_value, splf.maximum_value, true);
+            facets.add(f);
+        }
+        Query q = new SolrQuery(null, null, null, facets);
+
+        return q.getSpeciesCount();
+    }
+
     public void onLater(Event event) throws Exception {
         applyFilterEvented();
         //Clients.showBusy("", false);
         updateActiveArea(false);
+
+        //int spcount = q.getSpeciesCount();
+        speciescount = getSpeciesCount();
+        popup_filter.setCount(speciescount);
+        ((Listcell) popup_item.getChildren().get(2)).setLabel(speciescount + "");
+
+        Clients.clearBusy();
     }
 
     public void onLateron(Event event) throws Exception {
         applyFilterEvented();
         doAdd("");
-        //Clients.showBusy("", false);
+        //Clients.clearBusy();
     }
 
     public void applyFilter() {
@@ -711,6 +740,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         }
 
         //Clients.showBusy("Applying filter...", true);
+        Clients.showBusy("Updating count...");
         Events.echoEvent("onLater", this, null);
     }
 
@@ -725,7 +755,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         }
 
         if (doAdd) {
-            //Clients.showBusy("Applying filter...", true);
+            //Clients.showBusy("Applying filter...");
             Events.echoEvent("onLateron", this, null);
         } else {
             applyFilter();
@@ -740,8 +770,25 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
         serverFilter(true);
 
-        String strCount = postInfo("/filtering/apply/pid/" + pid + "/species/count?area=none");
+        //String strCount = postInfo("/filtering/apply/pid/" + pid + "/species/count?area=none");
+        String strCount = speciescount + "";
+        if (isDirtyCount) {
+            System.out.println("******************* is dirty count");
+            Clients.showBusy("Updating special count....");
+            strCount = getSpeciesCount() + "";
+            Clients.clearBusy(); 
+            //applyFilter();
+            System.out.println("**********************************");
+            System.out.println("**********************************");
+            System.out.println("strCount: " + strCount);
+            System.out.println("**********************************");
+            System.out.println("**********************************");
 
+        } else {
+            System.out.println("******************* is not dirty count");
+        }
+        //strCount = speciescount + "";
+        
         //TODO: handle invalid counts/errors
         try {
             popup_filter.count = Integer.parseInt(strCount.split("\n")[0]);

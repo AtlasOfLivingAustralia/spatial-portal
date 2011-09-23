@@ -1,7 +1,7 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
-    <window id="externalContentWindow" visible="false" width="80%"
-                height="80%" border="normal" sizable="true"
+    <window id="externalContentWindow" visible="false" width="50%"
+                height="60%" border="normal" sizable="true" contentStyle="overflow:auto;"
                 use="au.org.emii.portal.composer.ExternalContentComposer"
                  xmlns:n="http://www.zkoss.org/2005/zk/native">
         <caption id="caption">

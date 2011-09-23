@@ -770,7 +770,6 @@ public class SolrQuery implements Query, Serializable {
 //                + "<br>classification=" + lsids
 //                + "<br>data providers=" + getDataProviders();
 
-        Map<String,String> classification = getSpeciesClassification(lsids);
         String spname = getName();
 
         String html = "Species information for " + spname + "\n";
@@ -780,19 +779,28 @@ public class SolrQuery implements Query, Serializable {
         html += "<tr><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>"+getOccurrenceCount()+"</td></tr>";
         html += "<tr class='md_grey-bg'><td class='md_th'>Classification: </td><td class='md_spacer'/><td class='md_value'>";
 
-        Iterator<String> it = classification.keySet().iterator();
-        while (it.hasNext()) {
-            String key = it.next();
-            String value = classification.get(key);
-            html += "<a href='" + CommonData.bieServer + BIE_SPECIES + value + "'>" + key + "</a> ";
-            if (it.hasNext()) html += " > "; 
+        for (String s : lsids.split(",")) {
+            Map<String, String> classification = getSpeciesClassification(s);
+            Iterator<String> it = classification.keySet().iterator();
+            while (it.hasNext()) {
+                String key = it.next();
+                String value = classification.get(key);
+                html += "<a href='" + CommonData.bieServer + BIE_SPECIES + value + "'>" + key + "</a> ";
+                if (it.hasNext()) {
+                    html += " > ";
+                }
+            }
+
+            html += "<br />";
+            html += "More information for <a href='" + CommonData.bieServer + BIE_SPECIES + s + "' target='_blank'>"+ getScientificNameRank(s).split(",")[0] +"</a>";
+            html += "<br />";
         }
 
         html += "</td></tr>";
         html += "<tr><td class='md_th'>Data providers: </td><td class='md_spacer'/><td class='md_value'>"+getDataProviders()+"</td></tr>";
-        if(lsids != null && lsids.length() > 0) {
-            html += "<tr class='md_grey-bg'><td class='md_value' colspan='3'>More information for <a href='" + CommonData.bieServer + BIE_SPECIES + lsids + "' target='_blank'>"+ spname +"</a></td></tr>";
-        }
+//        if(lsids != null && lsids.length() > 0) {
+//            html += "<tr class='md_grey-bg'><td class='md_value' colspan='3'>More information for <a href='" + CommonData.bieServer + BIE_SPECIES + lsids + "' target='_blank'>"+ spname +"</a></td></tr>";
+//        }
         html += "</table>";
 
         return html;
