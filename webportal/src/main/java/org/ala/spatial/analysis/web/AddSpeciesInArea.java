@@ -159,7 +159,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 //species in area
                 q = new SolrQuery(null, wkt, null, null, true);
             } else {
-                q = query;
+                q = query.newWkt(wkt, true);
             }
             if(q instanceof UploadQuery) {
                  //do default sampling now
