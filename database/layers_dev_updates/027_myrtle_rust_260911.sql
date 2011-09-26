@@ -1,0 +1,78 @@
+\set ON_ERROR_STOP 1
+begin;
+
+-- lith_geologicalunitpolygons1m
+INSERT INTO layers
+(
+  id,
+  "name",
+  description,
+  "type",
+  source,
+  path,
+  extents,
+  minlatitude,
+  minlongitude,
+  maxlatitude,
+  maxlongitude,
+  notes,
+  enabled,
+  displayname,
+  displaypath,
+  scale,
+  environmentalvaluemin,
+  environmentalvaluemax,
+  environmentalvalueunits,
+  lookuptablepath,
+  metadatapath,
+  classification1,
+  classification2,
+  uid,
+  mddatest,
+  citation_date,
+  datalang,
+  mdhrlv,
+  respparty_role,
+  licence_level,
+  licence_link,
+  licence_notes,
+  source_link
+)
+VALUES (
+934,
+'myrtle_rust', 
+'Myrtle rust reports', 
+'Contextual', 
+'GA', 
+'/data/ala/data/shapefiles/myrtle_rust', 
+NULL, 
+-35.3, 
+148.6, 
+-28.2, 
+153.6, 
+E'',
+true,
+'Myrtle Rust Observations', 
+'http://spatial-dev.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:myrtle_rust&format=image/png&styles=',
+'', 
+'', 
+'', 
+'', 
+'', 
+'fixme: metadata_path', 
+'Vegetation',
+'', 
+'934', 
+'2011-09-26', 
+'2011-09-26', 
+'eng', 
+NULL, 
+NULL, 
+2,
+'fixme: license_link',
+'fixme: license_notes',
+'fixme: source_url'
+);
+
+commit;
+
