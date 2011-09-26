@@ -115,7 +115,7 @@ public class TabulationService {
             sb.append(t.getName1()).append("</td><td>");
             sb.append(t.getName2()).append("</td><td>");
             sb.append("<a href='../tabulation/").append(t.getFid1());
-            sb.append("/").append(t.getFid2()).append("/html'>table</a>");
+            sb.append("/").append(t.getFid2()).append("/html.html'>table</a>");
             sb.append("</td></tr>");
         }
         sb.append("</table>");
@@ -219,9 +219,9 @@ public class TabulationService {
         for (String s : objects2.keySet()) {
             order2.put(s, pos++);
             if(s.equals(objects2.get(s))){
-                grid[pos][0] = objects2.get(s);
+                grid[0][pos] = objects2.get(s);
             } else {
-                grid[pos][0] = objects2.get(s) + " (" + s + ") ";
+                grid[0][pos] = objects2.get(s) + " (" + s + ") ";
             }
         }
 

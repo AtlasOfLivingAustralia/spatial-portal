@@ -30,10 +30,10 @@
         <p><a href="/layers-index/distribution/37031044">/layers-index/distribution/37031044</a></p>
         <p><a href="/layers-index/tabulation/cl22/cl23">/layers-index/tabulation/cl22/cl23</a></p>
         <p><a href="/layers-index/tabulation/cl22/cl23/csv">/layers-index/tabulation/cl22/cl23/csv</a></p>        
-        <p><a href="/layers-index/tabulation/cl22/cl23/html">/layers-index/tabulation/cl22/cl23/html</a></p>
-        <p><a href="/layers-index/tabulation/cl22/cl23/html?wkt=POLYGON((130%20-24,138%20-24,138%20-20,130%20-20,130%20-24))">/layers-index/tabulation/cl22/cl23/html?wkt=POLYGON((130 -24,138 -24,138 -20,130 -20,130 -24))</a></p>
+        <p><a href="/layers-index/tabulation/cl22/cl23/html.html">/layers-index/tabulation/cl22/cl23/html.html</a></p>
+        <p><a href="/layers-index/tabulation/cl22/cl23/html.html?wkt=POLYGON((130%20-24,138%20-24,138%20-20,130%20-20,130%20-24))">/layers-index/tabulation/cl22/cl23/html.html?wkt=POLYGON((130 -24,138 -24,138 -20,130 -20,130 -24))</a></p>
         <p><a href="/layers-index/tabulations">/layers-index/tabulations</a></p>        
-        <p><a href="/layers-index/tabulations/html">/layers-index/tabulations/html</a></p>
-        <p><a href="/layers-index/tabulation/cl22/html?wkt=POLYGON((130%20-24,138%20-24,138%20-20,130%20-20,130%20-24))">/layers-index/tabulation/cl22/html?wkt=POLYGON((130 -24,138 -24,138 -20,130 -20,130 -24))</a></p>
+        <p><a href="/layers-index/tabulations/html.html">/layers-index/tabulations/html.html</a></p>
+        <p><a href="/layers-index/tabulation/cl22/html.html?wkt=POLYGON((130%20-24,138%20-24,138%20-20,130%20-20,130%20-24))">/layers-index/tabulation/cl22/html.html?wkt=POLYGON((130 -24,138 -24,138 -20,130 -20,130 -24))</a></p>
     </body>
 </html>
