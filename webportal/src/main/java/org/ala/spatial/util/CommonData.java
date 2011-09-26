@@ -71,11 +71,8 @@ public class CommonData {
     static String copy_layerlist = null;
     static JSONArray copy_layerlistJSON = null;
     static HashMap<JSONObject, List> copy_contextualClasses = null;
-
     static String defaultFieldString = null;
-
     public static SimpleShapeFileCache ssfCache;
-
     //(4) species with distribution layres
     /**
      * key = LSID
@@ -83,6 +80,8 @@ public class CommonData {
      */
     static HashMap<String, String[]> species_wms_layers = null;
     static HashMap<String, String[]> copy_species_wms_layers = null;
+    static HashMap<String, String[]> species_metadata_layers = null;
+    static HashMap<String, String[]> copy_species_metadata_layers = null;
     //Common
     static public String satServer;
     static public String geoServer;
@@ -131,7 +130,7 @@ public class CommonData {
 
         //(7) lsid counts
         LsidCounts lc = new LsidCounts();
-        if(lc.getSize() > 0) {
+        if (lc.getSize() > 0) {
             lsidCounts = lc;
         }
 
@@ -177,6 +176,9 @@ public class CommonData {
         //(4) for species wms distributions
         if (copy_species_wms_layers != null) {
             species_wms_layers = copy_species_wms_layers;
+        }
+        if (copy_species_metadata_layers != null) {
+            species_metadata_layers = copy_species_metadata_layers;
         }
     }
 
@@ -502,7 +504,7 @@ public class CommonData {
         String classesURL = layersServer + "/layer/classes/cl" + joLayer.getString("id");
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(classesURL);
-        
+
         List<String> classList = new ArrayList();
         List classNodes = new ArrayList();
 //        try {
@@ -549,28 +551,60 @@ public class CommonData {
 
     private static void initSpeciesWMSLayers() {
         try {
-            String layersListURL = satServer + "/ws/intersect/list";
+            String layersListURL = layersServer + "/distributions";
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(layersListURL);
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
             copy_species_wms_layers = new HashMap<String, String[]>();
+            copy_species_metadata_layers = new HashMap<String, String[]>();
 
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
+            JSONArray ja = JSONArray.fromObject(slist);
+
             System.out.println("****** species wms distributions ******");
             System.out.println(slist);
 
-            if (slist != null && slist.length() > 0) {
-                String[] lines = slist.split("\n");
-                for (int i = 0; i < lines.length; i++) {
-                    String[] words = lines[i].split(",");
-                    copy_species_wms_layers.put(words[0], words[1].split("\t"));
+            for (int i = 0; i < ja.size(); i++) {
+                JSONObject jo = ja.getJSONObject(i);
+                if (jo.containsKey("lsid") && jo.containsKey("wmsurl")) {
+                    //manage lsids with multiple wmsurls
+                    String lsid = jo.getString("lsid");
+
+                    //wms
+                    String[] urls = copy_species_wms_layers.get(lsid);
+                    if (urls != null) {
+                        String[] newUrls = new String[urls.length + 1];
+                        System.arraycopy(urls, 0, newUrls, 0, urls.length);
+                        newUrls[newUrls.length - 1] = jo.getString("wmsurl");
+                        urls = newUrls;
+                    } else {
+                        urls = new String[]{jo.getString("wmsurl")};
+                    }
+                    copy_species_wms_layers.put(lsid, urls);
+
+                    //metadata
+                    String m = "";
+                    if (jo.containsKey("metadata_u")) {
+                        m = jo.getString("metadata_u");
+                    }
+                    String[] md = copy_species_metadata_layers.get(lsid);
+                    if (md != null) {
+                        String[] newMd = new String[md.length + 1];
+                        System.arraycopy(md, 0, newMd, 0, md.length);
+                        newMd[newMd.length - 1] = m;
+                        md = newMd;
+                    } else {
+                        md = new String[]{m};
+                    }
+                    copy_species_metadata_layers.put(lsid, md);
                 }
             }
         } catch (Exception e) {
             copy_species_wms_layers = null;
+            copy_species_metadata_layers = null;
             e.printStackTrace();
         }
     }
@@ -578,50 +612,96 @@ public class CommonData {
     /**
      * returns array of WMS species requests
      */
-    static public String[] getSpeciesDistributionWMS(String lsid) {
-        return species_wms_layers.get(lsid);
+    static public String[] getSpeciesDistributionWMS(String lsids) {
+        String[] lsid = lsids.split(",");
+        ArrayList<String[]> wmsurls = new ArrayList<String[]>();
+        int count = 0;
+        for (String s : lsid) {
+            String[] urls = species_wms_layers.get(s);
+            if (urls != null) {
+                count += urls.length;
+                wmsurls.add(urls);
+            }
+        }
+        String[] wms = null;
+        if (count > 0) {
+            wms = new String[count];
+            int pos = 0;
+            for (String[] s : wmsurls) {
+                System.arraycopy(s, 0, wms, pos, s.length);
+            }
+        }
+        return wms;
     }
 
-    static HashMap<String,String> layerToFacet;
-    static HashMap<String,String> facetToLayer;
-    static HashMap<String,String> facetShapeNameField;
-    static HashMap<String,String> facetToLayerDisplayName;
+    /**
+     * returns array of WMS species requests
+     */
+    static public String[] getSpeciesDistributionMetadata(String lsids) {
+        String[] lsid = lsids.split(",");
+        ArrayList<String[]> wmsurls = new ArrayList<String[]>();
+        int count = 0;
+        for (String s : lsid) {
+            String[] urls = species_metadata_layers.get(s);
+            if (urls != null) {
+                count += urls.length;
+                wmsurls.add(urls);
+            }
+        }
+        String[] wms = null;
+        if (count > 0) {
+            wms = new String[count];
+            int pos = 0;
+            for (String[] s : wmsurls) {
+                System.arraycopy(s, 0, wms, pos, s.length);
+            }
+        }
+        return wms;
+    }
+    static HashMap<String, String> layerToFacet;
+    static HashMap<String, String> facetToLayer;
+    static HashMap<String, String> facetShapeNameField;
+    static HashMap<String, String> facetToLayerDisplayName;
+
     public static String getLayerFacetName(String layer) {
         return layerToFacet.get(layer.toLowerCase());
     }
+
     public static String getFacetLayerName(String facet) {
         return facetToLayer.get(facet);
     }
+
     public static String getFacetShapeNameField(String facet) {
         return facetShapeNameField.get(facet);
     }
+
     public static String getFacetLayerDisplayName(String facet) {
         return facetToLayerDisplayName.get(facet);
     }
 
     private static void readLayerInfo() {
         try {
-            HashMap<String,String> ftl = new HashMap<String,String>();
-            HashMap<String,String> ltf = new HashMap<String,String>();
-            HashMap<String,String> fsnf = new HashMap<String,String>();
-            HashMap<String,String> ftldn = new HashMap<String, String>();
+            HashMap<String, String> ftl = new HashMap<String, String>();
+            HashMap<String, String> ltf = new HashMap<String, String>();
+            HashMap<String, String> fsnf = new HashMap<String, String>();
+            HashMap<String, String> ftldn = new HashMap<String, String>();
 
             String filename = CommonData.class.getResource("/layers.txt").getFile();
             BufferedReader br = new BufferedReader(new FileReader(filename));
             String line;
-            while((line = br.readLine()) != null) {
-                String [] record = line.split(",");
+            while ((line = br.readLine()) != null) {
+                String[] record = line.split(",");
 
                 String layer = record[1];
-                String facet = (record[2].equals("Contextual")?"cl":"el") + record[0];
+                String facet = (record[2].equals("Contextual") ? "cl" : "el") + record[0];
 
-                ltf.put(layer.toLowerCase(),facet);
-                ftl.put(facet,layer);
+                ltf.put(layer.toLowerCase(), facet);
+                ftl.put(facet, layer);
 
                 ftldn.put(facet, record[3]);
 
-                if(record.length > 4) {
-                     fsnf.put(facet, record[4]);
+                if (record.length > 4) {
+                    fsnf.put(facet, record[4]);
                 }
             }
             br.close();
@@ -635,57 +715,57 @@ public class CommonData {
         }
     }
 
-     static public ArrayList<QueryField> getDefaultUploadSamplingFields() {
-         String [] fl = defaultFieldString.split(",");
-         ArrayList<QueryField> fields = new ArrayList<QueryField>();
-         for(int i=0;i<fl.length;i++) {
-             fields.add(new QueryField(fl[i], getFacetLayerDisplayName(fl[i]), QueryField.FieldType.AUTO));
-         }
+    static public ArrayList<QueryField> getDefaultUploadSamplingFields() {
+        String[] fl = defaultFieldString.split(",");
+        ArrayList<QueryField> fields = new ArrayList<QueryField>();
+        for (int i = 0; i < fl.length; i++) {
+            fields.add(new QueryField(fl[i], getFacetLayerDisplayName(fl[i]), QueryField.FieldType.AUTO));
+        }
 
-         return fields;
-     }
+        return fields;
+    }
+    static Properties i18nProperites = null;
 
-     static Properties i18nProperites = null;
-     static void initI18nProperies() {
-         
-         try {
-             Properties p = new Properties();
-             p.load(CommonData.class.getResourceAsStream("/messages.properties"));
+    static void initI18nProperies() {
 
-             i18nProperites = p;
-         } catch (Exception e) {
-             e.printStackTrace();
-         }
-     }
+        try {
+            Properties p = new Properties();
+            p.load(CommonData.class.getResourceAsStream("/messages.properties"));
 
-     static public String getI18nProperty(String key) {
-         return i18nProperites.getProperty(key);
-     }
+            i18nProperites = p;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-     static public ArrayList<String> getI18nPropertiesList(String key) {
-         ArrayList<String> list = new ArrayList<String>();
-         String startsWith = key + ".";
-         for(String k : i18nProperites.stringPropertyNames()) {
-             if(k.startsWith(startsWith)) {
-                 list.add(k);
-             }
-         }
-         return list;
-     }
+    static public String getI18nProperty(String key) {
+        return i18nProperites.getProperty(key);
+    }
 
-     static public void initSimpleShapeFileCache(String [] fields) {
-         //requres readLayerInfo() first
-         String [] layers = new String[fields.length];
-         String [] columns = new String[fields.length];
-         for(int i=0;i<fields.length;i++) {
-             layers[i] = getFacetLayerName(fields[i]);
-             columns[i] = getFacetShapeNameField(fields[i]);
-         }
-         
-         if(ssfCache == null) {
+    static public ArrayList<String> getI18nPropertiesList(String key) {
+        ArrayList<String> list = new ArrayList<String>();
+        String startsWith = key + ".";
+        for (String k : i18nProperites.stringPropertyNames()) {
+            if (k.startsWith(startsWith)) {
+                list.add(k);
+            }
+        }
+        return list;
+    }
+
+    static public void initSimpleShapeFileCache(String[] fields) {
+        //requres readLayerInfo() first
+        String[] layers = new String[fields.length];
+        String[] columns = new String[fields.length];
+        for (int i = 0; i < fields.length; i++) {
+            layers[i] = getFacetLayerName(fields[i]);
+            columns[i] = getFacetShapeNameField(fields[i]);
+        }
+
+        if (ssfCache == null) {
             ssfCache = new SimpleShapeFileCache(layers, columns);
-         } else {
+        } else {
             ssfCache.update(layers, columns);
-         }
-     }
+        }
+    }
 }

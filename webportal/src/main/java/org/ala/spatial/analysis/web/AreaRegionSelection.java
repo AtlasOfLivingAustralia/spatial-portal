@@ -7,9 +7,7 @@ package org.ala.spatial.analysis.web;
 import org.zkoss.zk.ui.event.Event;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.util.GeoJSONUtilities;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
@@ -26,14 +24,9 @@ import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.Util;
 import org.geotools.factory.Hints;
-import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
-import org.geotools.referencing.CRS;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
@@ -73,22 +66,17 @@ public class AreaRegionSelection extends AreaToolComposer {
 
         //add feature to the map as a new layer
         MapLayer mapLayer = getMapComposer().addGeoJSON(label, CommonData.layersServer + link);
-        this.layerName= mapLayer.getName();
+        this.layerName = mapLayer.getName();
 
         //Parsing json taking too long for large polygons
         //JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
 
         //if the layer is a point create a radius
-        String typeStart = "\"type\":\"";
-        String typeEnd = "\"";
-        int start = mapLayer.getGeoJSON().indexOf(typeStart) + typeStart.length();
-        int end = mapLayer.getGeoJSON().indexOf('\"', start);
-        String type = mapLayer.getGeoJSON().substring(start, end);
-        String geoJSON = mapLayer.getGeoJSON(); //if it type=point this will no longer exist
-        //if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point")) {
+        String type = getStringValue(null, "type", mapLayer.getGeoJSON());
+        String geoJSON = mapLayer.getGeoJSON();
         if ("point".equals(type.toLowerCase())) {
             JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
-            String coords = jo.getJSONArray("geometries").getJSONObject(0).getString("coordinates").replace("[","").replace("]","");
+            String coords = jo.getString("coordinates").replace("[", "").replace("]", "");
 
             double radius = 1000;
             if (cbRadius.getSelectedItem() == ci1km) {
@@ -104,28 +92,21 @@ public class AreaRegionSelection extends AreaToolComposer {
                 radius = 20000;
             }
 
-            //String wkt = createCircle(Double.parseDouble(coords.split(",")[0]),Double.parseDouble(coords.split(",")[1]),radius);
-            String wkt = Util.createCircleJs(Double.parseDouble(coords.split(",")[0]),Double.parseDouble(coords.split(",")[1]),radius);
+            String wkt = Util.createCircleJs(Double.parseDouble(coords.split(",")[0]), Double.parseDouble(coords.split(",")[1]), radius);
             getMapComposer().removeLayer(label);
             mapLayer = getMapComposer().addWKTLayer(wkt, label, label);
 
             //return;
         }
-       
-        if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
 
-            //String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
-            typeStart = "\"Layer_Metadata\":\"";
-            typeEnd = "\"";
-            start = geoJSON.indexOf(typeStart) + typeStart.length();
-            end = geoJSON.indexOf('\"', start);
-            String metadatalink = geoJSON.substring(start, end);
+        if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
+            String fid = getStringValue(null, "fid", readGeoJSON(CommonData.layersServer + "/object/" + link.substring(link.lastIndexOf('/') + 1)));
+            String spid = getStringValue("\"id\":\"" + fid + "\"", "spid", readGeoJSON(CommonData.layersServer + "/fields"));
 
             mapLayer.setMapLayerMetadata(new MapLayerMetadata());
-            mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink);
+            mapLayer.getMapLayerMetadata().setMoreInfo(CommonData.satServer + "/layers/" + spid);
 
             getMapComposer().updateUserLogMapLayer("gaz", label + "|" + CommonData.geoServer + link);
-
         }
 
         ok = true;
@@ -133,11 +114,20 @@ public class AreaRegionSelection extends AreaToolComposer {
         this.detach();
     }
 
+    String getStringValue(String startAt, String tag, String json) {
+        String typeStart = "\"" + tag + "\":\"";
+        String typeEnd = "\"";
+        int beginning = startAt == null ? 0 : json.indexOf(startAt) + startAt.length();
+        int start = json.indexOf(typeStart, beginning) + typeStart.length();
+        int end = json.indexOf('\"', start);
+        return json.substring(start, end);
+    }
+
     public void onClick$btnCancel(Event event) {
         this.detach();
     }
 
-     /**
+    /**
      * Adds the currently selected gazetteer feature to the map
      */
     public void onChange$gazetteerAuto() {
@@ -157,19 +147,28 @@ public class AreaRegionSelection extends AreaToolComposer {
             }
         }
 
-        if(ci == null) {
+        if (ci == null) {
             btnOk.setDisabled(true);
         } else {
             btnOk.setDisabled(false);
-            //String json = readGeoJSON(CommonData.geoServer + ci.getValue().toString());
-            //JSONObject jo = JSONObject.fromObject(json);
-            //if the layer is a point create a radius
-            //if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point"))
-            //if(json.contains("\"type\":\"Point\""))
-            if(ci.getDescription() != null && ci.getDescription().contains(" Point)"))
+
+            //specifically for the gazetteer layer point detection
+            boolean point = false;
+            if (ci.getDescription() != null && ci.getDescription().contains("Gazetteer")) {
+                String[] s = ci.getDescription().split(",");
+                try {
+                    double lat = Double.parseDouble(s[2].trim());
+                    double lng = Double.parseDouble(s[2].trim());
+                    point = true;
+                } catch (Exception e) {
+                }
+            }
+
+            if (point) {
                 hbRadius.setVisible(true);
-            else
+            } else {
                 hbRadius.setVisible(false);
+            }
 //            try {
 //                Messagebox.show(ci.getValue().toString());
 //            }
@@ -185,16 +184,16 @@ public class AreaRegionSelection extends AreaToolComposer {
     private String createCircle(double x, double y, final double RADIUS, int sides) {
 
         try {
-            Hints hints = new Hints( Hints.CRS, DefaultGeographicCRS.WGS84 );
+            Hints hints = new Hints(Hints.CRS, DefaultGeographicCRS.WGS84);
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(hints);
-           
+
             Point point = geometryFactory.createPoint(new Coordinate(x, y));
 
-            Polygon polygon = bufferInKm(point, RADIUS/1000);
+            Polygon polygon = bufferInKm(point, RADIUS / 1000);
 
             WKTWriter writer = new WKTWriter();
             String wkt = writer.write(polygon);
-            
+
             return wkt.replaceAll("POLYGON ", "POLYGON").replaceAll(", ", ",");
 
         } catch (Exception e) {
@@ -204,33 +203,33 @@ public class AreaRegionSelection extends AreaToolComposer {
         }
     }
 
-    public Polygon bufferInKm(Point p,Double radiusKm)
-    {
-        Hints hints = new Hints( Hints.CRS, DefaultGeographicCRS.WGS84 );
-            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(hints);
-    GeodeticCalculator c = new GeodeticCalculator();
-    c.setStartingGeographicPoint(p.getX(), p.getY());
-    Unit u = c.getEllipsoid().getAxisUnit();
-    Unit km = Unit.valueOf("km");
+    public Polygon bufferInKm(Point p, Double radiusKm) {
+        Hints hints = new Hints(Hints.CRS, DefaultGeographicCRS.WGS84);
+        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(hints);
+        GeodeticCalculator c = new GeodeticCalculator();
+        c.setStartingGeographicPoint(p.getX(), p.getY());
+        Unit u = c.getEllipsoid().getAxisUnit();
+        Unit km = Unit.valueOf("km");
 
-    Coordinate coords[] = new Coordinate[361];
-        for (int i=0;i<360;i++) {
-        UnitConverter converter = km.getConverterTo(u);
-        double converted = converter.convert(radiusKm);
+        Coordinate coords[] = new Coordinate[361];
+        for (int i = 0; i < 360; i++) {
+            UnitConverter converter = km.getConverterTo(u);
+            double converted = converter.convert(radiusKm);
 
-        c.setDirection(i-180, converted);
+            c.setDirection(i - 180, converted);
 
-        java.awt.geom.Point2D boundaryPoint = c.getDestinationGeographicPoint();
+            java.awt.geom.Point2D boundaryPoint = c.getDestinationGeographicPoint();
 
-        coords[i] = new Coordinate(boundaryPoint.getX(), boundaryPoint.getY());
+            coords[i] = new Coordinate(boundaryPoint.getX(), boundaryPoint.getY());
+        }
+        coords[360] = coords[0];
+        LinearRing ring = geometryFactory.createLinearRing(coords);
+        Polygon polygon = geometryFactory.createPolygon(ring, null);
+        return polygon;
+
     }
-      coords[360] = coords[0];
-      LinearRing ring = geometryFactory.createLinearRing(coords);
-      Polygon polygon = geometryFactory.createPolygon(ring, null);
-      return polygon;
 
-    }
-     private String readGeoJSON(String feature) {
+    private String readGeoJSON(String feature) {
         StringBuffer content = new StringBuffer();
 
         try {
@@ -253,5 +252,3 @@ public class AreaRegionSelection extends AreaToolComposer {
         return content.toString();
     }
 }
-
-

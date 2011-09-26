@@ -11,14 +11,12 @@ import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Vbox;
-import org.zkoss.zul.Window;
 
 /**
  *
@@ -209,6 +207,6 @@ public class AddSpeciesController extends UtilityComposer {
             rank = "taxon";
         }
 
-        query = QueryUtil.get((String)searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer());
+        query = QueryUtil.get((String)searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), true);
     }
 }

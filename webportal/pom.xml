@@ -477,23 +477,7 @@
 
         </plugins>
     </build>
-    <repositories>
-         <repository>
-           <id>ala-repository</id>
-           <name>ala-repository</name>
-           <url>http://maven.ala.org.au/repository</url>
-         </repository>
-
-        <repository>
-            <releases>
-                <updatePolicy>never</updatePolicy>
-                <checksumPolicy>warn</checksumPolicy>
-                <enabled>true</enabled>
-            </releases>
-            <id>geogoogle</id>
-            <name>geogoogle repo</name>
-            <url>http://www.cs.drexel.edu/~zl25/maven2/repo</url>
-        </repository>
+    <repositories>         
         <repository>
             <url>http://download.java.net/maven/2</url>
             <id>hibernate-support</id>
@@ -517,6 +501,24 @@
             <url>http://repository.jboss.org/maven2/</url>
         </repository>
         -->
+
+        <repository>
+           <id>ala-repository</id>
+           <name>ala-repository</name>
+           <url>http://maven.ala.org.au/repository</url>
+         </repository>
+
+        <repository>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+                <enabled>true</enabled>
+            </releases>
+            <id>geogoogle</id>
+            <name>geogoogle repo</name>
+            <url>http://www.cs.drexel.edu/~zl25/maven2/repo</url>
+        </repository>
+        
         <repository>
             <id>unknown-jars-temp-repo</id>
             <name>A temporary repository created by NetBeans for libraries and jars it could not identify. Please replace the dependencies in this repository with correct ones and delete this repository.</name>
@@ -558,7 +560,7 @@
     <properties>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
         <springVersion>3.0.1.RELEASE</springVersion>
-        <zkVersion>5.0.6</zkVersion>
+        <zkVersion>5.0.8</zkVersion>
         <jerseyVersion>1.1.4.1</jerseyVersion>
         <aspectJVersion>1.6.8</aspectJVersion>
         <geotools.version>2.7-SNAPSHOT</geotools.version>

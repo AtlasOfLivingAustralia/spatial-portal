@@ -911,7 +911,7 @@ public class AddToolComposer extends UtilityComposer {
                 System.out.println("getSelectedSpecies: " + species);
                 if (species.equals("allspecies")) {
                     species = "none";
-                    q = new SolrQuery(null, null, null, null);
+                    q = new SolrQuery(null, null, null, null, false);
                 } else if (species.equals("allmapped")) {
 
     //                species = "";
@@ -931,7 +931,7 @@ public class AddToolComposer extends UtilityComposer {
                 } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                     if (searchSpeciesAuto.getSelectedItem() != null) {
                         species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                        q = new SolrQuery(species,null,null,null);
+                        q = new SolrQuery(species,null,null,null, false);
                     }
                 }
             } catch (Exception e) {
@@ -978,7 +978,7 @@ public class AddToolComposer extends UtilityComposer {
                     }
                     if (bgSearchSpeciesAuto.getSelectedItem() != null) {
                         species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                        q = new SolrQuery(species, null, null, null);
+                        q = new SolrQuery(species, null, null, null, false);
                     }
                 }
             } catch (Exception e) {

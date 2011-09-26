@@ -416,9 +416,9 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         } else if (layername.equalsIgnoreCase("Active Area")) {
             showActiveArea();
         }
-//        if (p <= 0) {
-//            detach();
-//        }
+        if (p <= 0) {
+            detach();
+        }
     }
 
     public void listFix() {
@@ -709,7 +709,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             Facet f = new Facet(CommonData.getLayerFacetName(splf.layername), splf.minimum_value, splf.maximum_value, true);
             facets.add(f);
         }
-        Query q = new SolrQuery(null, null, null, facets);
+        Query q = new SolrQuery(null, null, null, facets, false);
 
         return q.getSpeciesCount();
     }

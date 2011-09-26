@@ -283,7 +283,7 @@ public class SimpleShapeFile extends Object implements Serializable {
      * @return set of values in the column as String [] sorted
      */
     public String[] getColumnLookup(int column) {
-        if(singleLookup != null) {
+        if (singleLookup != null) {
             return singleLookup;
         }
         return dbf.getColumnLookup(column);
@@ -297,7 +297,7 @@ public class SimpleShapeFile extends Object implements Serializable {
      * @return -1 if not found, otherwise column index number, zero base
      */
     public int getColumnIdx(String column_name) {
-        if(singleColumn != null) {
+        if (singleColumn != null) {
             return 0;
         }
         return dbf.getColumnIdx(column_name);
@@ -426,150 +426,85 @@ public class SimpleShapeFile extends Object implements Serializable {
             return null;
         }
 
-        //GEOMETRYCOLLECTION
-        ArrayList<String> stringsList = new ArrayList<String>();
+        ArrayList<ArrayList<SimpleRegion>> regions = new ArrayList<ArrayList<SimpleRegion>>();
+
         if (pointsString.startsWith("GEOMETRYCOLLECTION")) {
-            //split out polygons and multipolygons
-            pointsString = pointsString.replace("GEOMETRYCOLLECTION", "");
+            regions.addAll(parseGeometryCollection(pointsString.substring("GEOMETRYCOLLECTION(((".length(), pointsString.length() - 1)));
+        } else if (pointsString.startsWith("MULTIPOLYGON")) {
+            regions.addAll(parseMultipolygon(pointsString.substring("MULTIPOLYGON(((".length(), pointsString.length() - 3)));
+        } else if (pointsString.startsWith("POLYGON")) {
+            regions.add(parsePolygon(pointsString.substring("POLYGON((".length(), pointsString.length() - 2)));
+        }
 
-            int posStart, posEnd, p1, p2;;
-            p1 = pointsString.indexOf("POLYGON", 0);
-            p2 = pointsString.indexOf("MULTIPOLYGON", 0);
-            if (p1 < 0) {
-                posStart = p2;
-            } else if (p2 < 0) {
-                posStart = p1;
-            } else {
-                posStart = Math.min(p1, p2);
-            }
-            
-            p1 = pointsString.indexOf("POLYGON", posStart + 10);
-            p2 = pointsString.indexOf("MULTIPOLYGON", posStart + 10);
-            while (p1 > 0 || p2 > 0) {
-                if (p1 < 0) {
-                    posEnd = p2;
-                } else if (p2 < 0) {
-                    posEnd = p1;
-                } else {
-                    posEnd = Math.min(p1, p2);
-                }
-
-                stringsList.add(pointsString.substring(posStart, posEnd-1));
-                posStart = posEnd;
-                p1 = pointsString.indexOf("POLYGON", posStart + 10);
-                p2 = pointsString.indexOf("MULTIPOLYGON", posStart + 10);
-            }
-            stringsList.add(pointsString.substring(posStart, pointsString.length()));
+        if (regions.size() == 0) {
+            return null;
+        } else if (regions.size() == 1 && regions.get(0).size() == 1) {
+            return regions.get(0).get(0);
         } else {
-            stringsList.add(pointsString);
+            ComplexRegion cr = new ComplexRegion();
+            for (int i = 0; i < regions.size(); i++) {
+                cr.addSet(regions.get(i));
+            }
+            cr.useMask(-1, -1, -1);
+            return cr;
+        }
+    }
+
+    static ArrayList<ArrayList<SimpleRegion>> parseGeometryCollection(String pointsString) {
+        ArrayList<String> stringsList = new ArrayList<String>();
+
+        int posStart = minPos(pointsString, "POLYGON", "MULTIPOLYGON", 0);
+        int posEnd = minPos(pointsString, "POLYGON", "MULTIPOLYGON", posStart + 10);
+        while (posEnd > 0) {
+            stringsList.add(pointsString.substring(posStart, posEnd - 1));
+            posStart = posEnd;
+            posEnd = minPos(pointsString, "POLYGON", "MULTIPOLYGON", posStart + 10);
+        }
+        stringsList.add(pointsString.substring(posStart, pointsString.length()));
+
+        ArrayList<ArrayList<SimpleRegion>> regions = new ArrayList<ArrayList<SimpleRegion>>();
+        for (int i = 0; i < stringsList.size(); i++) {
+            if (stringsList.get(i).startsWith("MULTIPOLYGON")) {
+                //remove trailing ")))"
+                regions.addAll(parseMultipolygon(stringsList.get(i).substring("MULTIPOLYGON(((".length(), stringsList.get(i).length() - 3)));
+            } else if (stringsList.get(i).startsWith("POLYGON")) {
+                //remove trailing "))"
+                regions.add(parsePolygon(stringsList.get(i).substring("POLYGON((".length(), stringsList.get(i).length() - 2)));
+            }
         }
 
+        return regions;
+    }
+
+    static ArrayList<ArrayList<SimpleRegion>> parseMultipolygon(String multipolygon) {
+        ArrayList<ArrayList<SimpleRegion>> regions = new ArrayList<ArrayList<SimpleRegion>>();
+        String[] splitMultipolygon = multipolygon.split("\\)\\),\\(\\(");
+        for (int j = 0; j < splitMultipolygon.length; j++) {
+            regions.add(parsePolygon(splitMultipolygon[j]));
+        }
+        return regions;
+    }
+
+    static ArrayList<SimpleRegion> parsePolygon(String polygon) {
         ArrayList<SimpleRegion> regions = new ArrayList<SimpleRegion>();
-        for (String ps : stringsList) {
-            ps = convertGeoToPoints(ps);
-
-            String[] polygons = ps.split("S");
-
-            //String[] fixedPolygons = fixStringPolygons(polygons);
-
-            //System.out.println("$" + pointsString);
-
-            if (stringsList.size() == 1) {
-                if (polygons.length == 1) {
-                    return SimpleRegion.parseSimpleRegion(polygons[0]);
-                } else {
-                    return ComplexRegion.parseComplexRegion(polygons);
-                }
-            } else {
-                if (polygons.length == 1) {
-                    regions.add(SimpleRegion.parseSimpleRegion(polygons[0]));
-                } else {
-                    regions.add(ComplexRegion.parseComplexRegion(polygons));
-                }
-            }
+        for (String p : polygon.split("\\),\\(")) {
+            regions.add(SimpleRegion.parseSimpleRegion(p));
         }
-
-        OrRegion orRegion = new OrRegion();
-        orRegion.setSimpleRegions(regions);
-        return orRegion;
+        return regions;
     }
 
-    private static ArrayList<double[]> fixStringPolygons(String[] polygons) {
-        ArrayList<double[]> fixedPolygons = new ArrayList<double[]>();
-
-        for (int p = 0; p < polygons.length; p++) {
-            String[] pairs = polygons[p].split(",");
-
-            //track polygon longtiude extents
-            double min = 0;
-            double max = 0;
-
-            double[][] points = new double[pairs.length][2];
-            for (int i = 0; i < pairs.length; i++) {
-                String[] longlat = pairs[i].split(":");
-                if (longlat.length == 2) {
-                    try {
-                        points[i][0] = Double.parseDouble(longlat[0]);
-                        points[i][1] = Double.parseDouble(longlat[1]);
-
-                        while (points[i][0] > 360) {
-                            points[i][0] -= 360;
-                        }
-                        while (points[i][0] <= -360) {
-                            points[i][0] += 360;
-                        }
-
-                        if (i == 0) {
-                            min = points[i][0];
-                            max = min;
-                        } else {
-                            if (min < points[i][0]) {
-                                min = points[i][0];
-                            }
-                            if (max < points[i][0]) {
-                                max = points[i][0];
-                            }
-                        }
-                    } catch (Exception e) {
-                        //TODO: alert failure
-                    }
-                } else {
-                    //TODO: alert failure
-                }
-            }
-
-            //does it need to be split?
-            double xplus = 0;
-            if (min <= -180) {
-                xplus = 360;
-            }
-            if (max + xplus > 180) {
-                //TODO: split into polygons
-            }
+    static int minPos(String lookIn, String lookFor1, String lookFor2, int startPos) {
+        int pos, p1, p2;
+        p1 = lookIn.indexOf(lookFor1, startPos);
+        p2 = lookIn.indexOf(lookFor2, startPos);
+        if (p1 < 0) {
+            pos = p2;
+        } else if (p2 < 0) {
+            pos = p1;
+        } else {
+            pos = Math.min(p1, p2);
         }
-
-        return fixedPolygons;
-    }
-
-    static String convertGeoToPoints(String geometry) {
-        if (geometry == null) {
-            return "";
-        }
-        geometry = geometry.replace(" ", ":");
-        geometry = geometry.replace("MULTIPOLYGON(((", "");
-        geometry = geometry.replace("POLYGON((", "");
-        while (geometry.contains(")")) {
-            geometry = geometry.replace(")", "");
-        }
-
-        //for case of more than one polygon
-        while (geometry.contains(",((")) {
-            geometry = geometry.replace(",((", "S");
-        }
-        while (geometry.contains(",(")) {
-            geometry = geometry.replace(",(", "S");
-        }
-        return geometry;
+        return pos;
     }
 }
 
@@ -780,34 +715,19 @@ class ShapeRecords extends Object implements Serializable {
             for (int i = 0; i < records.size(); i++) {
                 ShapeRecord shr = records.get(i);
                 ComplexRegion sr = new ComplexRegion();
+                ArrayList<SimpleRegion> regions = new ArrayList();
 
                 /* add each polygon (list of points) belonging to
                  * this shape record to the new ComplexRegion
                  */
-                int points_count = 0;
                 for (int j = 0; j < shr.getNumberOfParts(); j++) {
                     SimpleRegion s = new SimpleRegion();
                     s.setPolygon(shr.getPoints(j));
-                    sr.addPolygon(s);
-                    points_count += shr.getPoints(j).length;
+                    //sr.addPolygon(s);
+                    regions.add(s);
                 }
 
-                /* speed up for polygons with lots of points */
-                if (points_count > 20) {
-                    double[][] bb = sr.getBoundingBox();
-                    int width = (int) ((bb[1][0] - bb[0][0]) * 3);
-                    int height = (int) ((bb[1][1] - bb[0][1]) * 3);
-                    if (width > 200) {
-                        width = 200;
-                    }
-                    if (height > 200) {
-                        height = 200;
-                    }
-                    if (width > 3 && height > 3) {
-                        sr.useMask(width, height, Integer.MAX_VALUE);
-                    }
-                    //sr.useMask(100, 50);
-                }
+                sr.addSet(regions);
 
                 sra.add(sr);
             }
@@ -871,12 +791,11 @@ class ShapeRecord extends Object implements Serializable {
      * gets the list of points for a shape part
      *
      * @param part index of shape part
-     * @return points as double[][2]
+     * @return points as double[]
      * where
-     * 	[][0] is longitude
-     *  [][1] is latitude
+     * 	[] is longitude,latitude
      */
-    public double[][] getPoints(int part) {
+    public double[] getPoints(int part) {
         return shape.getPoints(part);
     }
 
@@ -914,12 +833,11 @@ class Shape extends Object implements Serializable {
      *
      * @param part index of part to return
      *
-     * @return double[][2] containing longitude and latitude
+     * @return double[] containing longitude and latitude
      * pairs where
-     * 	[][0] is longitude
-     *  [][1] is latitude
+     * 	[] is longitude,latitude
      */
-    public double[][] getPoints(int part) {
+    public double[] getPoints(int part) {
         return null;
     }
 
@@ -1028,14 +946,13 @@ class Polygon extends Shape {
      *
      * @param part index of part to return
      *
-     * @return double[][2] containing longitude and latitude
+     * @return double[] containing longitude and latitude
      * pairs where
-     * 	[][0] is longitude
-     *  [][1] is latitude
+     * 	[] is longitude, latitude
      */
     @Override
-    public double[][] getPoints(int part) {
-        double[][] output;				//data to return
+    public double[] getPoints(int part) {
+        double[] output;				//data to return
         int start = parts[part];		//first index of this part
 
         /* last index of this part */
@@ -1045,10 +962,11 @@ class Polygon extends Shape {
         }
 
         /* fill output */
-        output = new double[end - start][2];
-        for (int i = start; i < end; i++) {
-            output[i - start][0] = points[i * 2];
-            output[i - start][1] = points[i * 2 + 1];
+        output = new double[(end - start) * 2];
+        int end2 = end * 2;
+        int start2 = start * 2;
+        for (int i = start2; i < end2; i++) {
+            output[i - start2] = points[i];
         }
         return output;
     }
@@ -1095,9 +1013,14 @@ class DBF extends Object implements Serializable {
 
         /* get file header */
         dbfheader = new DBFHeader(filename);
-        
+
         /* get records */
-        dbfrecords = new DBFRecords(filename, dbfheader, dbfheader.getColumnIdx(column));
+        String[] columns = column.split(",");
+        int[] idx = new int[columns.length];
+        for (int i = 0; i < idx.length; i++) {
+            idx[i] = dbfheader.getColumnIdx(columns[i]);
+        }
+        dbfrecords = new DBFRecords(filename, dbfheader, idx);
     }
 
     /**
@@ -1127,7 +1050,7 @@ class DBF extends Object implements Serializable {
      * @return value as String
      */
     public String getValue(int row, int column) {
-        if(singleColumn) {
+        if (singleColumn) {
             return dbfrecords.getValue(row, 0);
         }
         return dbfrecords.getValue(row, column);
@@ -1522,7 +1445,7 @@ class DBFRecords extends Object implements Serializable {
         }
     }
 
-    DBFRecords(String filename, DBFHeader header, int columnIdx) {
+    DBFRecords(String filename, DBFHeader header, int[] columnIdx) {
         /* init */
         records = new ArrayList();
         isvalid = false;
@@ -1634,7 +1557,7 @@ class DBFRecord extends Object implements Serializable {
         }
     }
 
-    DBFRecord(ByteBuffer buffer, ArrayList<DBFField> fields, int columnIdx) {
+    DBFRecord(ByteBuffer buffer, ArrayList<DBFField> fields, int[] columnIdx) {
         deletionflag = (0xFF & buffer.get());
         record = new String[1];
 
@@ -1643,17 +1566,24 @@ class DBFRecord extends Object implements Serializable {
             DBFField f = fields.get(i);
             byte[] data = f.getDataBlock();		//get pre-built byte[]
             buffer.get(data);
-            if(i == columnIdx) {
-                try {
-                    switch (f.getType()) {
-                        case 'C':			//string
-                            record[0] = (new String(data, "US-ASCII")).trim();
-                            break;
-                        case 'N':			//number as string
-                            record[0] = (new String(data, "US-ASCII")).trim();
-                            break;
+            for (int j = 0; j < columnIdx.length; j++) {
+                if (i == columnIdx[j]) {
+                    if (record[0] == null) {
+                        record[0] = "";
+                    } else if (record[0].length() > 0) {
+                        record[0] += ", ";
                     }
-                } catch (Exception e) {
+                    try {
+                        switch (f.getType()) {
+                            case 'C':			//string
+                                record[0] += (new String(data, "US-ASCII")).trim();
+                                break;
+                            case 'N':			//number as string
+                                record[0] += (new String(data, "US-ASCII")).trim();
+                                break;
+                        }
+                    } catch (Exception e) {
+                    }
                 }
             }
         }
@@ -1763,9 +1693,6 @@ class ShapesReference extends Object implements Serializable {
             }
             first_time = false;
         }
-
-        System.out.println("boundingbox:" + boundingbox_all[0][0] + " " + boundingbox_all[0][1]
-                + " " + boundingbox_all[1][0] + " " + boundingbox_all[1][1]);
 
         /* get intersecting cells and add */
         ArrayList<ComplexRegion> sra = sr.getRegions();

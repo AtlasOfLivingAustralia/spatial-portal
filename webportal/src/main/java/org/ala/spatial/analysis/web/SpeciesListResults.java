@@ -58,7 +58,7 @@ public class SpeciesListResults extends UtilityComposer {
         updateParameters();
 
         try {
-            SolrQuery sq = new SolrQuery(null, wkt, null, null);
+            SolrQuery sq = new SolrQuery(null, wkt, null, null, false);
 
             if (sq.getSpeciesCount() <= 0) {
                 getMapComposer().showMessage("No species records in the active area.");

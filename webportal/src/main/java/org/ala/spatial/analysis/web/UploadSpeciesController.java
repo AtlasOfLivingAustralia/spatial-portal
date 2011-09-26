@@ -1,6 +1,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
+import java.io.IOException;
 import org.zkoss.zul.Textbox;
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.menu.MapLayer;
@@ -10,7 +11,6 @@ import au.org.emii.portal.util.LayerUtilities;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -18,14 +18,11 @@ import java.util.List;
 import java.util.Map;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.UserData;
 import org.ala.spatial.wms.RecordsLookup;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -221,7 +218,10 @@ public class UploadSpeciesController extends UtilityComposer {
                     loaded = true;
                     System.out.println("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
-                    //e.printStackTrace();
+                    //last one, report error
+                    getMapComposer().showMessage("Unable to load your file. Please try again.");
+                    System.out.println("unable to load user points: ");
+                    e.printStackTrace();
                 }
             }
 
@@ -235,12 +235,11 @@ public class UploadSpeciesController extends UtilityComposer {
         }
     }
 
-    public void loadUserPoints(String name, Reader data) {
+    public void loadUserPoints(String name, Reader data) throws Exception {
         loadUserPoints(new UserData(name), data);
     }
 
-    public void loadUserPoints(UserData ud, Reader data) {
-        try {
+    public void loadUserPoints(UserData ud, Reader data) throws Exception {
             // Read a line in to check if it's a valid file
             // if it throw's an error, then it's not a valid csv file
             CSVReader reader = new CSVReader(data);
@@ -248,6 +247,9 @@ public class UploadSpeciesController extends UtilityComposer {
             List userPoints = reader.readAll();
 
             //if only one column treat it as a list of LSID's
+            if(userPoints.size() == 0) {
+                throw(new RuntimeException("no data in csv"));
+            }
             if (((String[]) userPoints.get(0)).length == 1) {
                 continueLoadUserLSIDs(ud, data, reader, userPoints);
                 return;
@@ -326,7 +328,7 @@ public class UploadSpeciesController extends UtilityComposer {
 
             String pid = String.valueOf(System.currentTimeMillis());
 
-            ud.setFeatureCount(userPoints.size());
+            ud.setFeatureCount(userPoints.size() - hSize);
 
             String metadata = "";
             metadata += "User uploaded points \n";
@@ -393,16 +395,9 @@ public class UploadSpeciesController extends UtilityComposer {
             reader.close();
             data.close();
 
-            //TODO:
             Clients.evalJavaScript("appendUploadSpeciesMetadata('" + pid + "','" + metadata.replaceAll("\n", "_n_") + "');");
 
-        } catch (Exception e) {
-
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
-
-            System.out.println("unable to load user points: ");
-            e.printStackTrace(System.out);
-        }
+     
     }
 
     public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
@@ -443,7 +438,7 @@ public class UploadSpeciesController extends UtilityComposer {
             ud.setSubType(LayerUtilities.SPECIES);
             ud.setLsid(pid);
 
-            Query q = new SolrQuery(lsids, null, null, null);
+            Query q = new SolrQuery(lsids, null, null, null, true);
             ud.setQuery(q);
 
             // add it to the user session

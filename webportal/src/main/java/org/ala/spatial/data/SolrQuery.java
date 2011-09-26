@@ -15,14 +15,11 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
@@ -80,12 +77,14 @@ public class SolrQuery implements Query, Serializable {
     String wkt;
     String extraParams;
     String paramId;
+    boolean forMapping;
 
-    public SolrQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets) {
+    public SolrQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping) {
         this.lsids = lsids;
         this.facets = facets;
         this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : wkt;
         this.extraParams = extraParams;
+        this.forMapping = forMapping;
 
         makeParamId();
     }
@@ -97,14 +96,14 @@ public class SolrQuery implements Query, Serializable {
      * @param values
      */
     @Override
-    public SolrQuery newFacet(Facet facet) {
+    public SolrQuery newFacet(Facet facet, boolean forMapping) {
         ArrayList<Facet> newFacets = new ArrayList<Facet>();
         if (facets != null) {
             newFacets.addAll(facets);
         }
         newFacets.add(facet);
 
-        return new SolrQuery(lsids, wkt, extraParams, newFacets);
+        return new SolrQuery(lsids, wkt, extraParams, newFacets, forMapping);
     }
 
     /**
@@ -116,9 +115,13 @@ public class SolrQuery implements Query, Serializable {
      * @return new SolrQuery with the additional wkt area applied.
      */
     @Override
-    public SolrQuery newWkt(String wkt) {
+    public SolrQuery newWkt(String wkt, boolean forMapping) {
         if (wkt == null || wkt.equals(CommonData.WORLD_WKT) || wkt.equals(this.wkt)) {
-            return this;
+            if(this.forMapping != forMapping) {
+                return new SolrQuery(lsids, wkt, extraParams, facets, forMapping);
+            } else {
+                return this;
+            }
         }
 
         SolrQuery sq = null;
@@ -131,7 +134,7 @@ public class SolrQuery implements Query, Serializable {
                 newWkt = (new WKTWriter()).write(intersectionGeom).replace(" (", "(").replace(", ", ",").replace(") ", ")");
             }
 
-            sq = new SolrQuery(lsids, newWkt, extraParams, facets);
+            sq = new SolrQuery(lsids, newWkt, extraParams, facets, forMapping);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -489,7 +492,7 @@ public class SolrQuery implements Query, Serializable {
                     post.addParameter(q.substring(0, p), q.substring(p + 1));
                     System.out.println("param: " + q.substring(0, p) + " : " + q.substring(p + 1));
                 }
-
+                post.addParameter("bbox",forMapping?"true":"false");
             }
             int result = client.executeMethod(post);
             String response = post.getResponseBodyAsString();
@@ -707,14 +710,14 @@ public class SolrQuery implements Query, Serializable {
     }
 
     @Override
-    public Query newFacets(List<Facet> facets) {
+    public Query newFacets(List<Facet> facets, boolean forMapping) {
         ArrayList<Facet> newFacets = new ArrayList<Facet>();
         if (this.facets != null) {
             newFacets.addAll(this.facets);
         }
         newFacets.addAll(facets);
 
-        return new SolrQuery(lsids, wkt, extraParams, newFacets);
+        return new SolrQuery(lsids, wkt, extraParams, newFacets, forMapping);
     }
 
     @Override
@@ -775,8 +778,8 @@ public class SolrQuery implements Query, Serializable {
         String html = "Species information for " + spname + "\n";
         //html += "<h2 class='md_heading'>Species information for " + spname + "</h2>";
         html += "<table class='md_table'>";
-        html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>"+getSpeciesCount()+"</td></tr>";
-        html += "<tr><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>"+getOccurrenceCount()+"</td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>" + getSpeciesCount() + "</td></tr>";
+        html += "<tr><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCount() + "</td></tr>";
         html += "<tr class='md_grey-bg'><td class='md_th'>Classification: </td><td class='md_spacer'/><td class='md_value'>";
 
         for (String s : lsids.split(",")) {
@@ -806,10 +809,10 @@ public class SolrQuery implements Query, Serializable {
         return html;
     }
 
-    private Map<String,String> getSpeciesClassification(String lsid) {
+    private Map<String, String> getSpeciesClassification(String lsid) {
 
         String[] classificationList = {"kingdom", "phylum", "class", "order", "family", "genus", "species", "subspecies"};
-        Map<String,String> classification = new LinkedHashMap<String, String>();
+        Map<String, String> classification = new LinkedHashMap<String, String>();
 
         String snUrl = CommonData.bieServer + BIE_SPECIES + lsid + ".json";
         System.out.println(snUrl);
@@ -831,7 +834,7 @@ public class SolrQuery implements Query, Serializable {
                 if (c.equals(rank)) {
                     break;
                 }
-                classification.put(joOcc.getString(c.replace("ss", "zz")), joOcc.getString(c.replace("ss", "zz")+"Guid"));
+                classification.put(joOcc.getString(c.replace("ss", "zz")), joOcc.getString(c.replace("ss", "zz") + "Guid"));
             }
 
         } catch (Exception e) {
@@ -893,18 +896,22 @@ public class SolrQuery implements Query, Serializable {
                 String html = "";
 
                 JSONArray ja = JSONArray.fromObject(response);
-                for (int i=0; i<ja.size(); i++) {
+                for (int i = 0; i < ja.size(); i++) {
                     JSONObject jo = ja.getJSONObject(i);
                     html += "<a href='http://collections.ala.org.au/public/showDataProvider/" + jo.getString("id") + "'>" + jo.getString("name") + "</a>: " + jo.getString("count") + " records <br />";
                 }
                 //return response;
 
-                return html; 
+                return html;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return null;
+    }
+
+    public String getLsids() {
+        return lsids;
     }
 }

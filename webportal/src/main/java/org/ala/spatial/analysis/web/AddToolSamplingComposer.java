@@ -58,7 +58,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
     public void download(Event event) {
 
         try {
-            Query query = getSelectedSpecies().newWkt(getSelectedArea());
+            Query query = getSelectedSpecies().newWkt(getSelectedArea(), false);
 
             //test size        
             if(query.getOccurrenceCount() <= 0) {

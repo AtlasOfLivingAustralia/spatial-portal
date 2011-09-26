@@ -86,7 +86,7 @@ public interface Query {
      * @param wkt
      * @return
      */
-    Query newWkt(String wkt);
+    Query newWkt(String wkt, boolean forMapping);
 
     /**
      * Create new Query after adding facet.
@@ -94,7 +94,7 @@ public interface Query {
      * @param facet
      * @return
      */
-    Query newFacet(Facet facet);
+    Query newFacet(Facet facet, boolean forMapping);
 
     /**
      * Create new Query after adding facets.
@@ -102,7 +102,7 @@ public interface Query {
      * @param facet
      * @return
      */
-    Query newFacets(List<Facet> facet);
+    Query newFacets(List<Facet> facet, boolean forMapping);
 
     /**
      * Get WMS server path.

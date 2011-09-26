@@ -218,7 +218,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
         data.setBackgroundQuery(
                 QueryUtil.get((String) sacBackground.getSelectedItem().getAnnotatedProperties().get(0),
-                getMapComposer()).newWkt(data.getFilterWkt()));
+                getMapComposer(), false).newWkt(data.getFilterWkt(), false));
 
         //only add it to the map if this was signaled from an event
         //clearSelection();
@@ -557,7 +557,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(getFacetIn());
                 
-                Query q = data.getQuery().newFacets(facets);
+                Query q = data.getQuery().newFacets(facets, false);
                 
                 updateCount(String.valueOf(q.getOccurrenceCount()));
             }
@@ -676,11 +676,11 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     public void onClick$addSelectedRecords(Event event) {
-        addUserLayer(data.getQuery().newFacet(getFacetIn()), "IN " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
+        addUserLayer(data.getQuery().newFacet(getFacetIn(), true), "IN " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
     }
 
     public void onClick$addUnSelectedRecords(Event event) {
-        addUserLayer(data.getQuery().newFacet(getFacetOut()), "OUT " + data.getSpeciesName(), "from scatterplot out group", results.split("\n").length - selectionCount - 1);   //-1 for header
+        addUserLayer(data.getQuery().newFacet(getFacetOut(), true), "OUT " + data.getSpeciesName(), "from scatterplot out group", results.split("\n").length - selectionCount - 1);   //-1 for header
     }
 
     void addUserLayer(Query query, String layername, String description, int numRecords) {

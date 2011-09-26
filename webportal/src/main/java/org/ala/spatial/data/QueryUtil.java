@@ -21,7 +21,7 @@ public class QueryUtil {
      * @param mc
      * @return
      */
-    public static Query get(String id, MapComposer mc) {
+    public static Query get(String id, MapComposer mc, boolean forMapping) {
         Query q = null;
 
         //search within uploaded records
@@ -38,7 +38,7 @@ public class QueryUtil {
 
         //treat as lsid
         if (q == null) {
-            q = new SolrQuery(id, null, null, null);
+            q = new SolrQuery(id, null, null, null, forMapping);
         }
 
         return q;

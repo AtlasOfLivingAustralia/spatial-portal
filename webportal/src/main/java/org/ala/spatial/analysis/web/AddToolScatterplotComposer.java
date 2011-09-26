@@ -76,7 +76,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         if (bgSearchSpeciesAuto.getSelectedItem() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() > 0) {
-            backgroundLsid = QueryUtil.get((String)bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer());
+            backgroundLsid = QueryUtil.get((String)bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), false);
         }
 
         String filterWkt = getSelectedArea();
@@ -84,9 +84,9 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
         boolean envGrid = chkShowEnvIntersection.isChecked();
 
-        ScatterplotData data = new ScatterplotData(lsid.newWkt(filterWkt), name, lyr1value,
+        ScatterplotData data = new ScatterplotData(lsid.newWkt(filterWkt, true), name, lyr1value,
                 lyr1name, lyr2value, lyr2name, pid, selection, enabled,
-                (backgroundLsid != null) ?backgroundLsid.newWkt(filterWkt): null,
+                (backgroundLsid != null) ?backgroundLsid.newWkt(filterWkt, false): null,
                 filterWkt, highlightWkt, envGrid);
 
         getMapComposer().loadScatterplot(data, tToolName.getValue());

@@ -4,48 +4,19 @@
  */
 package org.ala.spatial.analysis.web;
 
-import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.util.LayerUtilities;
-import java.util.List;
-import java.util.Map;
 import org.zkoss.zk.ui.Component;
-import org.zkoss.zk.ui.Executions;
-import org.zkoss.zul.Button;
-import org.zkoss.zul.Textbox;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.data.UploadQuery;
-import org.ala.spatial.util.Util;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.SuspendNotAllowedException;
-import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zul.Button;
-import org.zkoss.zul.Comboitem;
-import org.zkoss.zul.Div;
-import org.zkoss.zul.Messagebox;
-import org.zkoss.zul.Radio;
-import org.zkoss.zul.Radiogroup;
-import org.zkoss.zul.Textbox;
-import org.zkoss.zul.Window;
 
 /**
  *
@@ -53,13 +24,6 @@ import org.zkoss.zul.Window;
  */
 public class AreaToolComposer extends UtilityComposer {
 
-//    public String boxGeom;
-//    public Textbox displayGeom;
-//    String layerName;
-//    Textbox txtLayerName;
-//    Button btnNext;
-//    Button btnOk;
-//    Button btnClear;
     String layerName;
     SettingsSupplementary settingsSupplementary;
     boolean isAnalysisChild = false;
@@ -103,7 +67,7 @@ public class AreaToolComposer extends UtilityComposer {
 
                 Query q = null;
                 if(winProps.get("query") != null) {
-                    q = ((Query) winProps.get("query")).newWkt(wkt);
+                    q = ((Query) winProps.get("query")).newWkt(wkt, true);
                     if(q instanceof UploadQuery) {
                          //do default sampling now
                         if(CommonData.getDefaultUploadSamplingFields().size() > 0) {
@@ -181,7 +145,7 @@ public class AreaToolComposer extends UtilityComposer {
         try {
             String wkt = layers.get(0).getWKT();
 
-            SolrQuery sq = new SolrQuery(null, wkt, null,  null);
+            SolrQuery sq = new SolrQuery(null, wkt, null,  null, true);
             int results_count_occurrences = sq.getOccurrenceCount();
 
             //test limit

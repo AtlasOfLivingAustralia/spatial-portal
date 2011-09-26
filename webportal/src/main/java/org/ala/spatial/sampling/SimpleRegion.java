@@ -3,7 +3,7 @@ package org.ala.spatial.sampling;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 
 /**
@@ -63,7 +63,7 @@ public class SimpleRegion extends Object implements Serializable {
      * CIRCLE = double [1][2]
      * POLYGON, n points (start = end) = double[n][2]
      */
-    float[] points;
+    double[] points;
     /**
      * bounding box for types BOUNDING_BOX and POLYGON
      *
@@ -80,10 +80,6 @@ public class SimpleRegion extends Object implements Serializable {
      *
      */
     double radius;
-    /**
-     * misc attributes
-     */
-    HashMap<String, Object> attributes;
 
     /**
      * Constructor for a SimpleRegion with no shape
@@ -100,7 +96,7 @@ public class SimpleRegion extends Object implements Serializable {
      * @return number of points as int
      */
     public int getNumberOfPoints() {
-        return points.length/2;
+        return points.length / 2;
     }
 
     /**
@@ -124,13 +120,13 @@ public class SimpleRegion extends Object implements Serializable {
      */
     public void setBox(double longitude1, double latitude1, double longitude2, double latitude2) {
         type = BOUNDING_BOX;
-        points = new float[4];
-        points[0] = (float) Math.min(longitude1, longitude2);
-        points[1] = (float) Math.min(latitude1, latitude2);
-        points[2] = (float) Math.max(longitude1, longitude2);
-        points[3] = (float) Math.max(latitude1, latitude2);
+        points = new double[4];
+        points[0] =  Math.min(longitude1, longitude2);
+        points[1] =  Math.min(latitude1, latitude2);
+        points[2] =  Math.max(longitude1, longitude2);
+        points[3] =  Math.max(latitude1, latitude2);
 
-        for (int i = 0; i < points.length; i+= 2) {
+        for (int i = 0; i < points.length; i += 2) {
             //fix at -180 and 180
             if (points[i] < -180) {
                 points[i] = -180;
@@ -138,11 +134,11 @@ public class SimpleRegion extends Object implements Serializable {
             if (points[i] > 180) {
                 points[i] = 180;
             }
-            while (points[i+1] < -180) {
-                points[i+1] = -180;
+            while (points[i + 1] < -90) {
+                points[i + 1] = -90;
             }
-            while (points[i+1] > 180) {
-                points[i+1] = 180;
+            while (points[i + 1] > 90) {
+                points[i + 1] = 90;
             }
         }
 
@@ -169,9 +165,9 @@ public class SimpleRegion extends Object implements Serializable {
      */
     public void setCircle(double longitude, double latitude, double radius_) {
         type = CIRCLE;
-        points = new float[2];
-        points[0] = (float) longitude;
-        points[1] = (float) latitude;
+        points = new double[2];
+        points[0] = longitude;
+        points[1] =  latitude;
         radius = radius_;
     }
 
@@ -181,42 +177,40 @@ public class SimpleRegion extends Object implements Serializable {
      * @param points_ array of points as longitude and latiude
      * in double [n][2] where n is the number of points
      */
-    public void setPolygon(double[][] points_) {
+    public void setPolygon(double[] points_) {
         if (points_ != null && points_.length > 1) {
             type = POLYGON;
             int i;
 
-            for (i = 0; i < points_.length; i++) {
+            for (i = 0; i < points_.length; i+=2) {
                 //fix at -180 and 180
-                if (points_[i][0] < -180) {
-                    points_[i][0] = -180;
+                if (points_[i] < -180) {
+                    points_[i] = -180;
                 }
-                if (points_[i][0] > 180) {
-                    points_[i][0] = 180;
+                if (points_[i] > 180) {
+                    points_[i] = 180;
                 }
-                while (points_[i][1] < -180) {
-                    points_[i][1] = -180;
+                while (points_[i+1] < -90) {
+                    points_[i+1] = -90;
                 }
-                while (points_[i][1] > 180) {
-                    points_[i][1] = 180;
+                while (points_[i+1] > 90) {
+                    points_[i+1] = 90;
                 }
             }
 
             /* copy and ensure last point == first point */
-            int len = points_.length - 1;
-            if (points_[0][0] != points_[len][0] || points_[0][1] != points_[len][1]) {
-                points = new float[(points_.length + 1) * 2];
+            int len = points_.length - 2;
+            if (points_[0] != points_[len] || points_[1] != points_[len+1]) {
+                points = new double[points_.length + 2];
                 for (i = 0; i < points_.length; i++) {
-                    points[i*2] = (float) points_[i][0];
-                    points[i*2+1] = (float) points_[i][1];
+                    points[i] = points_[i];
                 }
-                points[points_.length*2] = (float) points_[0][0];
-                points[points_.length*2+1] = (float) points_[0][1];
+                points[points_.length] =  points_[0];
+                points[points_.length + 1] =  points_[1];
             } else {
-                points = new float[points_.length*2];
+                points = new double[points_.length];
                 for (i = 0; i < points_.length; i++) {
-                    points[i*2] = (float) points_[i][0];
-                    points[i*2 + 1] = (float) points_[i][1];
+                    points[i] =  points_[i];
                 }
             }
 
@@ -226,100 +220,22 @@ public class SimpleRegion extends Object implements Serializable {
             bounding_box[0][1] = points[1];
             bounding_box[1][0] = points[0];
             bounding_box[1][1] = points[1];
-            for (i = 2; i < points.length; i+=2) {
+            for (i = 2; i < points.length; i += 2) {
                 if (bounding_box[0][0] > points[i]) {
                     bounding_box[0][0] = points[i];
                 }
                 if (bounding_box[1][0] < points[i]) {
                     bounding_box[1][0] = points[i];
                 }
-                if (bounding_box[0][1] > points[i+1]) {
-                    bounding_box[0][1] = points[i+1];
+                if (bounding_box[0][1] > points[i + 1]) {
+                    bounding_box[0][1] = points[i + 1];
                 }
-                if (bounding_box[1][1] < points[i+1]) {
-                    bounding_box[1][1] = points[i+1];
-                }
-            }
-        }
-    }
-
-    /**
-     * defines the SimpleRegion as type POLYGON
-     *
-     * @param points_ array of points as longitude and latiude
-     * in double [n][2] where n is the number of points
-     */
-    public void setPolygon(float[][] points_) {
-        if (points_ != null && points_.length > 1) {
-            type = POLYGON;
-            int i;
-
-            for (i = 0; i < points_.length; i++) {
-                //fix at -180 and 180
-                if (points_[i][0] < -180) {
-                    points_[i][0] = -180;
-                }
-                if (points_[i][0] > 180) {
-                    points_[i][0] = 180;
-                }
-                while (points_[i][1] < -180) {
-                    points_[i][1] = -180;
-                }
-                while (points_[i][1] > 180) {
-                    points_[i][1] = 180;
-                }
-            }
-
-            /* copy and ensure last point == first point */
-            int len = points_.length - 1;
-            if (points_[0][0] != points_[len][0] || points_[0][1] != points_[len][1]) {
-                points = new float[(points_.length + 1)*2];
-                for (i = 0; i < points_.length; i++) {
-                    points[i*2] = (float) points_[i][0];
-                    points[i*2+1] = (float) points_[i][1];
-                }
-                points[points_.length*2] = (float) points_[0][0];
-                points[points_.length*2+1] = (float) points_[0][1];
-            } else {
-                points = new float[points_.length*2];
-                for (i = 0; i < points_.length; i++) {
-                    points[i*2] = (float) points_[i][0];
-                    points[i*2+1] = (float) points_[i][1];
-                }
-            }
-
-            /* bounding box setup */
-            bounding_box = new double[2][2];
-            bounding_box[0][0] = points[0];
-            bounding_box[0][1] = points[1];
-            bounding_box[1][0] = points[0];
-            bounding_box[1][1] = points[1];
-            for (i = 2; i < points.length; i+=2) {
-                if (bounding_box[0][0] > points[i]) {
-                    bounding_box[0][0] = points[i];
-                }
-                if (bounding_box[1][0] < points[i]) {
-                    bounding_box[1][0] = points[i];
-                }
-                if (bounding_box[0][1] > points[i+1]) {
-                    bounding_box[0][1] = points[i+1];
-                }
-                if (bounding_box[1][1] < points[i+1]) {
-                    bounding_box[1][1] = points[i+1];
+                if (bounding_box[1][1] < points[i + 1]) {
+                    bounding_box[1][1] = points[i + 1];
                 }
             }
         }
     }
-
-    /**
-     * gets points of a polygon only
-     *
-     * @return points of this object if it is a polygon as double[][]
-     * otherwise returns null.
-     */
-//    public float[][] getPoints() {
-//        return points;
-//    }
 
     /**
      * returns true when the point provided is within the SimpleRegion
@@ -399,7 +315,7 @@ public class SimpleRegion extends Object implements Serializable {
                 || latitude > bounding_box[1][1] || latitude < bounding_box[0][1]) {
             return false;
         }
-                
+
         //initial segment
         boolean segment = points[0] > longitude;
 
@@ -411,7 +327,7 @@ public class SimpleRegion extends Object implements Serializable {
             // is it in a new segment?
             if ((points[i] > longitude) != segment) {
                 //lat value at line crossing > target point
-                y = (longitude - points[i]) * (points[i + 1] - points[i - 1]) / (points[i] - points[i - 2]) + points[i + 1];
+                y = (longitude - points[i]) * ((points[i + 1] - points[i - 1]) / (points[i] - points[i - 2])) + points[i + 1];
                 if (y > latitude) {
                     score++;
                 } else if (y == latitude) {
@@ -443,14 +359,14 @@ public class SimpleRegion extends Object implements Serializable {
             int len = points.length;
             int score = 0;
 
-            for (i = 2; i < len; i+=2) {
+            for (i = 2; i < len; i += 2) {
                 // is it in a new segment?
                 if ((convertLngToPixel(points[i]) > longitudePx) != segment) {
                     //lat value at line crossing > target point
-                    y = (int)((longitudePx - convertLngToPixel(points[i]))
-                            * ((convertLatToPixel(points[i+1]) - convertLatToPixel(points[i - 1]))
+                    y = (int) ((longitudePx - convertLngToPixel(points[i]))
+                            * ((convertLatToPixel(points[i + 1]) - convertLatToPixel(points[i - 1]))
                             / (double) (convertLngToPixel(points[i]) - convertLngToPixel(points[i - 2])))
-                            + convertLatToPixel(points[i+1]));
+                            + convertLatToPixel(points[i + 1]));
                     if (y > convertLatToPixel(latitude)) {
                         score++;
                     } else if (y == convertLatToPixel(latitude)) {
@@ -459,7 +375,7 @@ public class SimpleRegion extends Object implements Serializable {
                     }
 
                     segment = !segment;
-                } else if (points[i] == longitude && points[i+1] == latitude) {
+                } else if (points[i] == longitude && points[i + 1] == latitude) {
                     //point on point
                     return true;
                 }
@@ -508,7 +424,7 @@ public class SimpleRegion extends Object implements Serializable {
 
     /**
      * stacks PARTIALLY_PRESENT shape outline onto three_state_map
-     * 
+     *
      * @param longitude1
      * @param latitude1
      * @param longitude2
@@ -666,65 +582,80 @@ public class SimpleRegion extends Object implements Serializable {
             return null;
         }
         SimpleRegion simpleregion = new SimpleRegion();
-        String[] pairs = pointsString.split(",");
 
-        double[][] points = new double[pairs.length][2];
-        for (int i = 0; i < pairs.length; i++) {
-            String[] longlat = pairs[i].split(":");
-            if (longlat.length == 2) {
-                try {
-                    points[i][0] = Double.parseDouble(longlat[0]);
-                    points[i][1] = Double.parseDouble(longlat[1]);
-                } catch (Exception e) {
-                    //TODO: alert failure
-                }
-            } else {
-                //TODO: alert failure
+        ArrayList<Double> points = new ArrayList<Double>();
+
+        int pos;
+        int lastpos = 0;
+        while((pos = Math.min(pointsString.indexOf(',', lastpos), pointsString.indexOf(' ', lastpos))) > 0) {
+            try {
+                points.add(Double.parseDouble(pointsString.substring(lastpos, pos)));
+            } catch (Exception e) {
+                points.add(0.0);
             }
+            lastpos = pos + 1;
+        }
+        //one coordinate pair left
+        pos = pointsString.indexOf(',', lastpos);
+        try {
+            points.add(Double.parseDouble(pointsString.substring(lastpos, pos)));
+            lastpos = pos + 1;
+        } catch (Exception e) {
+            points.add(0.0);
+        }
+        try {
+            points.add(Double.parseDouble(pointsString.substring(lastpos, pointsString.length())));
+        } catch (Exception e) {
+            points.add(0.0);
         }
 
         //test for box
         //  get min/max long/lat
         //  each point has only one identical lat or long to previous point
         //  4 or 5 points (start and end points may be identical)
-        if (((points.length == 4 && (points[0][0] != points[3][0] || points[0][1] != points[3][1]))
-                || (points.length == 5 && points[0][0] == points[4][0]
-                && points[0][1] == points[4][1]))) {
+        if (((points.size() == 8 && (points.get(0) != points.get(6) || points.get(1) != points.get(7)))
+                || (points.size() == 5 && points.get(0) == points.get(8)
+                && points.get(1) == points.get(9)))) {
 
             //get min/max long/lat
             double minlong = 0, minlat = 0, maxlong = 0, maxlat = 0;
-            for (int i = 0; i < points.length; i++) {
-                if (i == 0 || minlong > points[i][0]) {
-                    minlong = points[i][0];
+            for (int i = 0; i < points.size(); i+=2) {
+                if (i == 0 || minlong > points.get(i)) {
+                    minlong = points.get(i);
                 }
-                if (i == 0 || maxlong < points[i][0]) {
-                    maxlong = points[i][0];
+                if (i == 0 || maxlong < points.get(i)) {
+                    maxlong = points.get(i);
                 }
-                if (i == 0 || minlat > points[i][1]) {
-                    minlat = points[i][1];
+                if (i == 0 || minlat > points.get(i+1)) {
+                    minlat = points.get(i+1);
                 }
-                if (i == 0 || maxlat < points[i][1]) {
-                    maxlat = points[i][1];
+                if (i == 0 || maxlat < points.get(i+1)) {
+                    maxlat = points.get(i+1);
                 }
             }
 
             //  each point has only one identical lat or long to previous point
-            int prev_idx = 3;
+            int prev_idx = 6;
             int i = 0;
-            for (i = 0; i < 4; i++) {
-                if ((points[i][0] == points[prev_idx][0])
-                        == (points[i][1] == points[prev_idx][1])) {
+            for (i = 0; i < 8; i+=2) {
+                if ((points.get(i) == points.get(prev_idx))
+                        == (points.get(i+1) == points.get(prev_idx+1))) {
                     break;
                 }
                 prev_idx = i;
             }
             //it is a box if no 'break' occurred
-            if (i == 4) {
+            if (i == 8) {
                 simpleregion.setBox(minlong, minlat, maxlong, maxlat);
                 return simpleregion;
             }
         }
-        simpleregion.setPolygon(points);
+
+        double [] pointsArray = new double[points.size()];
+        for(int i=0;i<points.size();i++) {
+            pointsArray[i] = points.get(i);
+        }
+        simpleregion.setPolygon(pointsArray);
         return simpleregion;
     }
 
@@ -738,20 +669,6 @@ public class SimpleRegion extends Object implements Serializable {
 
     public int getType() {
         return type;
-    }
-
-    public void setAttribute(String name, Object value) {
-        if (attributes == null) {
-            attributes = new HashMap<String, Object>();
-        }
-        attributes.put(name, value);
-    }
-
-    public Object getAttribute(String name) {
-        if (attributes != null) {
-            return attributes.get(name);
-        }
-        return null;
     }
 
     public void saveGridAsImage(byte[][] three_state_map) {
@@ -771,8 +688,6 @@ public class SimpleRegion extends Object implements Serializable {
             }
 
             ImageIO.write(bi, "png", File.createTempFile("grd", ".png", new File("d:\\")));
-            System.out.println("save grid in " + (System.currentTimeMillis() - t1) + "ms");
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -814,15 +729,15 @@ public class SimpleRegion extends Object implements Serializable {
         //to cells
         int x, y, xend, yend, xDirection, icross;
         double xcross, endlat, dx1, dx2, dy1, dy2, slope, intercept;
-        for (j = 2; j < points.length; j+=2) {
-            if (points[j+1] < points[j - 1]) {
+        for (j = 2; j < points.length; j += 2) {
+            if (points[j + 1] < points[j - 1]) {
                 dx1 = points[j];
-                dy1 = points[j+1];
+                dy1 = points[j + 1];
                 dx2 = points[j - 2];
                 dy2 = points[j - 1];
             } else {
                 dx2 = points[j];
-                dy2 = points[j+1];
+                dy2 = points[j + 1];
                 dx1 = points[j - 2];
                 dy1 = points[j - 1];
             }
@@ -936,15 +851,15 @@ public class SimpleRegion extends Object implements Serializable {
         //to cells
         int x, y, xend, yend, xDirection, icross;
         double xcross, endlat, dx1, dx2, dy1, dy2, slope, intercept;
-        for (j = 2; j < points.length; j+=2) {
-            if (points[j+1] < points[j - 1]) {
+        for (j = 2; j < points.length; j += 2) {
+            if (points[j + 1] < points[j - 1]) {
                 dx1 = points[j];
-                dy1 = points[j+1];
+                dy1 = points[j + 1];
                 dx2 = points[j - 2];
                 dy2 = points[j - 1];
             } else {
                 dx2 = points[j];
-                dy2 = points[j+1];
+                dy2 = points[j + 1];
                 dx1 = points[j - 2];
                 dy1 = points[j - 1];
             }
@@ -1181,15 +1096,15 @@ public class SimpleRegion extends Object implements Serializable {
         int x, y, xend, yend, xDirection, icross;
         double slope, intercept;
         int xcross, endlat, dx1, dx2, dy1, dy2;
-        for (j = 2; j < points.length; j+=2) {
-            if (points[j+1] > points[j - 1]) {
+        for (j = 2; j < points.length; j += 2) {
+            if (points[j + 1] > points[j - 1]) {
                 dx1 = convertLngToPixel(points[j]);
-                dy1 = convertLatToPixel(points[j+1]);
+                dy1 = convertLatToPixel(points[j + 1]);
                 dx2 = convertLngToPixel(points[j - 2]);
                 dy2 = convertLatToPixel(points[j - 1]);
             } else {
                 dx2 = convertLngToPixel(points[j]);
-                dy2 = convertLatToPixel(points[j+1]);
+                dy2 = convertLatToPixel(points[j + 1]);
                 dx1 = convertLngToPixel(points[j - 2]);
                 dy1 = convertLatToPixel(points[j - 1]);
             }
@@ -1403,15 +1318,15 @@ public class SimpleRegion extends Object implements Serializable {
         int x, y, xend, yend, xDirection, icross;
         double slope, intercept;
         int xcross, endlat, dx1, dx2, dy1, dy2;
-        for (j = 2; j < points.length; j+=2) {
-            if (points[j+1] > points[j - 1]) {
+        for (j = 2; j < points.length; j += 2) {
+            if (points[j + 1] > points[j - 1]) {
                 dx1 = convertLngToPixel(points[j]);
-                dy1 = convertLatToPixel(points[j+1]);
+                dy1 = convertLatToPixel(points[j + 1]);
                 dx2 = convertLngToPixel(points[j - 2]);
                 dy2 = convertLatToPixel(points[j - 1]);
             } else {
                 dx2 = convertLngToPixel(points[j]);
-                dy2 = convertLatToPixel(points[j+1]);
+                dy2 = convertLatToPixel(points[j + 1]);
                 dx1 = convertLngToPixel(points[j - 2]);
                 dy1 = convertLatToPixel(points[j - 1]);
             }
@@ -1611,7 +1526,6 @@ public class SimpleRegion extends Object implements Serializable {
         }
         return data;
     }
-
     private int map_offset = 268435456; // half the Earth's circumference at zoom level 21
     private double map_radius = map_offset / Math.PI;
 

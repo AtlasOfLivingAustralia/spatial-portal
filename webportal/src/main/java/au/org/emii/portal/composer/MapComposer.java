@@ -23,11 +23,9 @@ import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
 import org.geotools.kml.KML;
 import org.geotools.kml.KMLConfiguration;
-import org.geotools.xml.Parser;
 import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -41,11 +39,14 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.ContextualMenu;
 import org.ala.spatial.analysis.web.HasMapLayer;
@@ -56,13 +57,13 @@ import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.util.UserData;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.MDC;
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.xml.Encoder;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -298,7 +299,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
 
-        mapSpecies(QueryUtil.get(lsid, this).newWkt(wkt), taxon, rank, 0, LayerUtilities.SPECIES, wkt, -1);
+        mapSpecies(QueryUtil.get(lsid, this, false).newWkt(wkt, true), taxon, rank, 0, LayerUtilities.SPECIES, wkt, -1);
 
         System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
     }
@@ -1078,10 +1079,29 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (loaded) {
             //openLayersJavascript.execute("window.mapFrame.loadBaseMap();");
-            openLayersJavascript.setAdditionalScript("window.mapFrame.loadBaseMap();");
+            openLayersJavascript.setAdditionalScript("window.mapFrame.loadBaseMap();");            
+
+            //put uploaded info back into the browser
+            StringBuilder additional = new StringBuilder();
+            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
+            if (htUserSpecies != null) {
+                for(Entry<String, UserData> entry : htUserSpecies.entrySet()) {
+                    additional.append("appendUploadSpeciesMetadata('")
+                            .append(entry.getKey())
+                            .append("','")
+                            .append(entry.getValue().getMetadata().replaceAll("\n", "_n_"))
+                            .append("');");
+                }
+            }
+
+            openLayersJavascript.setAdditionalScript(additional.toString());
+
             System.out.println("map is now loaded. let's try mapping.");
             MapLayer ml = loadUrlParameters();
-            openLayersJavascript.setAdditionalScript("");
+
+            if(ml == null) {
+                openLayersJavascript.useAdditionalScript();
+            }
         }
     }
 
@@ -1172,7 +1192,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void echoMapSpeciesByLSID(Event event) {
         String lsid = (String) event.getData();
         try {
-            mapSpecies(QueryUtil.get(lsid, this), lsid, "species", -1, LayerUtilities.SPECIES, null, -1);
+            mapSpecies(QueryUtil.get(lsid, this, true), lsid, "species", -1, LayerUtilities.SPECIES, null, -1);
         } catch (Exception e) {
             //try again
             Events.echoEvent("echoMapSpeciesByLSID", this, lsid);
@@ -1190,9 +1210,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             if (userParams != null && userParams.get("p") == null) {
 
                 if (userParams.containsKey("species_lsid")) {
-                    //TODO: get species name as layer name
                     Events.echoEvent("echoMapSpeciesByLSID", this, userParams.get("species_lsid"));
-                    //ml = mapSpeciesByLsid(userParams.get("species_lsid"), userParams.get("species_lsid"));
                     showLayerTab = true;
                 } else if (userParams.containsKey("layer")) {
                     // TODO: eventually add env/ctx layer loading code here
@@ -1211,7 +1229,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
                     System.out.println("filter: " + filter);
                     try {
-                        Query q = new SolrQuery(null, null, filter, null);
+                        Query q = new SolrQuery(null, null, filter, null, true);
                         ml = mapSpecies(q, q.getName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, -1);
                     } catch (Exception e) {
                     }
@@ -1678,26 +1696,43 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         md.setBbox(bb);
     }
 
-    private void loadDistributionMap(String lsid, String taxon, String wkt) {
+    private void loadDistributionMap(String lsids, String taxon, String wkt) {
         //test for a valid lsid match
-        String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
-        if (wmsNames != null && wmsNames.length > 0) {
+        String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsids);
+        String[] metadata = CommonData.getSpeciesDistributionMetadata(lsids);
+        if (wmsNames != null && wmsNames.length > 0 && (wkt == null || wkt.equals(CommonData.WORLD_WKT))) {
+            //add all
+            if (wmsNames.length > 1) {
+                for (int i = 0; i < wmsNames.length; i++) {
+                    addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.35f, metadata[i], null, LayerUtilities.SPECIES, null, null);
+                }
+            } else if (wmsNames.length == 1) {
+                addWMSLayer(taxon + " map", wmsNames[0], 0.35f, metadata[0], null, LayerUtilities.SPECIES, null, null);
+            }
+        } else if (wmsNames != null && wmsNames.length > 0 && wkt != null && !wkt.equals(CommonData.WORLD_WKT)) {
             try {
                 HttpClient client = new HttpClient();
-                PostMethod post = new PostMethod(CommonData.satServer + "/ws/intersect/shape"); // testurl
-                post.addParameter("area", wkt);
+                PostMethod post = new PostMethod(CommonData.layersServer + "/distributions"); // testurl
+                post.addParameter("wkt", wkt);
+                post.addParameter("lsids", lsids);
                 post.addRequestHeader("Accept", "application/json, text/javascript, */*");
                 int result = client.executeMethod(post);
                 if (result == 200) {
                     String txt = post.getResponseBodyAsString();
-                    if (txt.contains(lsid)) {
-                        if (wmsNames.length > 1) {
-                            for (int i = 0; i < wmsNames.length; i++) {
-                                addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.35f, "", null, LayerUtilities.SPECIES, null, null);
-                            }
-                        } else {
-                            addWMSLayer(taxon + " map", wmsNames[0], 0.35f, "", null, LayerUtilities.SPECIES, null, null);
+                    JSONArray ja = JSONArray.fromObject(txt);
+                    ArrayList<String> found = new ArrayList();
+                    for (int i = 0; i < ja.size(); i++) {
+                        JSONObject jo = ja.getJSONObject((i));
+                        if (jo.containsKey("wmsurl")) {
+                            found.add(jo.getString("wmsurl"));
                         }
+                    }
+                    if (found.size() > 1) {
+                        for (int i = 0; i < wmsNames.length; i++) {
+                            addWMSLayer(taxon + " map " + (i + 1), found.get(i), 0.35f, "", null, LayerUtilities.SPECIES, null, null);
+                        }
+                    } else if (found.size() == 1) {
+                        addWMSLayer(taxon + " map", found.get(0), 0.35f, "", null, LayerUtilities.SPECIES, null, null);
                     }
                 }
             } catch (Exception e) {
@@ -1708,7 +1743,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     MapLayer mapSpeciesFilter(Query q, String species, String rank, int count, int subType, String wkt, boolean grid) {
         String filter = q.getQ();
 
-        loadDistributionMap(q.getQ().replace("lsid:", ""), species, wkt);
+        if (q instanceof SolrQuery) {
+            String lsids = ((SolrQuery) q).getLsids();
+            if (lsids != null && lsids.length() > 0) {
+                loadDistributionMap(lsids, species, wkt);
+            }
+        }
 
         MapLayer ml = mapSpeciesWMSByFilter(getNextAreaLayerName(species), filter, subType, q, grid);
 

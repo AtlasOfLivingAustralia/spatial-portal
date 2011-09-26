@@ -209,8 +209,8 @@ public class UploadQuery implements Query, Serializable {
     }
 
     @Override
-    public Query newWkt(String wkt) {
-        if (wkt.equals(CommonData.WORLD_WKT)) {
+    public Query newWkt(String wkt, boolean forMapping) {
+        if (wkt == null || wkt.equals(CommonData.WORLD_WKT)) {
             return this;
         }
 
@@ -273,10 +273,10 @@ public class UploadQuery implements Query, Serializable {
     }
 
     @Override
-    public Query newFacet(Facet facet) {
+    public Query newFacet(Facet facet, boolean forMapping) {
         ArrayList<Facet> facets = new ArrayList<Facet>();
         facets.add(facet);
-        return newFacets(facets);
+        return newFacets(facets, forMapping);
     }
 
     @Override
@@ -387,7 +387,7 @@ public class UploadQuery implements Query, Serializable {
         return null;
     }
 
-    public Query newFacets(List<Facet> facet) {
+    public Query newFacets(List<Facet> facet, boolean forMapping) {
         //copy all the data through the list of facets (AND)
 
         //setup

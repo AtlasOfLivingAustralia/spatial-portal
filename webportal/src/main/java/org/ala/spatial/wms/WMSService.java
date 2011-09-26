@@ -9,7 +9,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -100,7 +99,7 @@ public class WMSService {
 //            } else if (pair[0].equals("uncertainty")) {
 //                uncertainty = true;
             } else if (pair[0].equals("sel")) {
-                highlight = s.replace("sel:","");//pair[1];
+                highlight = s.replace("sel:", "");//pair[1];
             } else if (pair[0].equals("colormode")) {
                 colourMode = pair[1];
             }
@@ -147,10 +146,7 @@ public class WMSService {
             xoffset += pixelWidth;
             yoffset += pixelHeight;
 
-            SimpleRegion region = new SimpleRegion();
-            region.setBox(Utils.convertMetersToLng(bbox[0] - xoffset), Utils.convertMetersToLat(bbox[1] - yoffset), Utils.convertMetersToLng(bbox[2] + xoffset), Utils.convertMetersToLat(bbox[3] + yoffset));
-
-            double[][] bb = region.getBoundingBox();
+            double[][] bb = {{Utils.convertMetersToLng(bbox[0] - xoffset), Utils.convertMetersToLat(bbox[1] - yoffset)}, {Utils.convertMetersToLng(bbox[2] + xoffset), Utils.convertMetersToLat(bbox[3] + yoffset)}};
 
             double[] pbbox = new double[4]; //pixel bounding box
             pbbox[0] = Utils.convertLngToPixel(Utils.convertMetersToLng(bbox[0]));
@@ -176,8 +172,8 @@ public class WMSService {
             QueryField colours = null;
             double[] pointsBB = null;
             Facet facet = null;
-            String [] facetFields = null;
-            if(highlight != null) {
+            String[] facetFields = null;
+            if (highlight != null) {
                 facet = Facet.parseFacet(highlight);
                 facetFields = facet.getFields();
                 listHighlight = new ArrayList<QueryField>();
@@ -196,10 +192,10 @@ public class WMSService {
 
                 ArrayList<QueryField> fields = (ArrayList<QueryField>) data[1];
 
-                for (int j = 0; j < fields.size(); j++) {                    
+                for (int j = 0; j < fields.size(); j++) {
                     if (facet != null) {
-                        for(int k=0;k<facetFields.length;k++) {
-                            if(facetFields[k].equals(fields.get(j).getName())) {
+                        for (int k = 0; k < facetFields.length; k++) {
+                            if (facetFields[k].equals(fields.get(j).getName())) {
                                 listHighlight.add(fields.get(j));
                             }
                         }
@@ -290,7 +286,7 @@ public class WMSService {
                     for (i = 0; i < points.length; i += 2) {
                         if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
                                 && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
-                            if (facet.isValid(listHighlight, i/2)) {
+                            if (facet.isValid(listHighlight, i / 2)) {
                                 x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
                                 y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
                                 g.drawOval(x - sz, y - sz, w, w);
@@ -310,7 +306,7 @@ public class WMSService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -349,14 +345,14 @@ public class WMSService {
     }
 
     @RequestMapping(value = "/occurrences", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     String getOccurrencesUploaded(HttpServletRequest request) {
         String q = request.getParameter("q");
         String box = request.getParameter("box");
         int start = Integer.parseInt(request.getParameter("start"));
 
-        String [] bb = box.split(",");
+        String[] bb = box.split(",");
 
         double long1 = Double.parseDouble(bb[0]);
         double lat1 = Double.parseDouble(bb[1]);
@@ -367,29 +363,29 @@ public class WMSService {
 
         int count = 0;
         String record = null;
-        if(data != null) {
-            double [] points = (double[]) data[0];
+        if (data != null) {
+            double[] points = (double[]) data[0];
             ArrayList<QueryField> fields = (ArrayList<QueryField>) data[1];
-            double [] pointsBB = (double[]) data[2];
+            double[] pointsBB = (double[]) data[2];
 
             if (points == null || points.length == 0
                     || pointsBB[0] > long2 || pointsBB[2] < long1
                     || pointsBB[1] > lat2 || pointsBB[3] < lat1) {
                 return null;
             } else {
-                for(int i=0;i<points.length;i+=2) {
-                    if(points[i] >= long1 && points[i] <= long2
-                            && points[i+1] >= lat1 && points[i+1] <= lat2){
-                        if(count == start) {
+                for (int i = 0; i < points.length; i += 2) {
+                    if (points[i] >= long1 && points[i] <= long2
+                            && points[i + 1] >= lat1 && points[i + 1] <= lat2) {
+                        if (count == start) {
                             StringBuilder sb = new StringBuilder();
-                            for(QueryField qf : fields) {
-                                if(sb.length() == 0) {
+                            for (QueryField qf : fields) {
+                                if (sb.length() == 0) {
                                     sb.append("{\"totalRecords\":<totalCount>,\"occurrences\":[{");
                                 } else {
                                     sb.append(",");
                                 }
                                 sb.append("\"").append(qf.getDisplayName()).append("\":\"");
-                                sb.append(qf.getAsString(i/2).replace("\"","\\\"")).append("\"");
+                                sb.append(qf.getAsString(i / 2).replace("\"", "\\\"")).append("\"");
                             }
                             sb.append("}]}");
                             record = sb.toString();
@@ -400,7 +396,7 @@ public class WMSService {
             }
         }
 
-        if(record != null) {
+        if (record != null) {
             record = record.replace("<totalCount>", String.valueOf(count));
         }
 
@@ -419,5 +415,4 @@ public class WMSService {
 
         return html.toString();
     }
-
 }

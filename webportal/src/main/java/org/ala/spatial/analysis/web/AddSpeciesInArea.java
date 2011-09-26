@@ -5,23 +5,15 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ala.spatial.data.Query;
-import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.data.UploadQuery;
-import org.ala.spatial.util.Util;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
@@ -161,7 +153,7 @@ public class AddSpeciesInArea extends UtilityComposer {
 
             MapLayer ml = null;
 
-            Query q = query.newWkt(wkt);
+            Query q = query.newWkt(wkt, true);
             if(q instanceof UploadQuery) {
                  //do default sampling now
                 if(CommonData.getDefaultUploadSamplingFields().size() > 0) {

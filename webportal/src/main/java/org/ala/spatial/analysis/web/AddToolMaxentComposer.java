@@ -85,7 +85,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
     public void runmaxent() {
         try {
-            Query query = getSelectedSpecies().newWkt(getSelectedArea());
+            Query query = getSelectedSpecies().newWkt(getSelectedArea(), false);
             String sbenvsel = getSelectedLayers();
             //String area = getSelectedArea();
             //String taxonlsid = taxon;
@@ -298,7 +298,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
             //identify sensitive species records
             List<String[]> sensitiveSpecies = null;
             try {
-                String sensitiveSpeciesRaw = new SolrQuery(null, null, "sensitive:[* TO *]", null).speciesList();
+                String sensitiveSpeciesRaw = new SolrQuery(null, null, "sensitive:[* TO *]", null, false).speciesList();
                 CSVReader csv = new CSVReader(new StringReader(sensitiveSpeciesRaw));
                 sensitiveSpecies = csv.readAll();
                 csv.close();
@@ -330,7 +330,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
             }
 
             //remove sensitive records that will not be LSID matched
-            Query maxentQuery = query.newFacet(new Facet("sensitive","[* TO *]",false));
+            Query maxentQuery = query.newFacet(new Facet("sensitive","[* TO *]",false), false);
             ArrayList<QueryField> fields = new ArrayList<QueryField>();
             String lsidFieldName = maxentQuery.getSpeciesIdFieldName();
             QueryField qf = null;

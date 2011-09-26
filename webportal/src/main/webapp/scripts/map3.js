@@ -352,6 +352,8 @@ function iterateSpeciesInfoQuery(curr) {
         if (query_[pos].indexOf("qid:") < 0) {
             var ulyr = query_[pos];
             var ulyr_occ_id = data.occurrences[0].id;
+            var ulyr_occ_lng = data.occurrences[0].longitude;
+            var ulyr_occ_lat = data.occurrences[0].latitude;
             for (var i=0;i<uploadSpeciesMetadata.length;i++) {
                 if (uploadSpeciesMetadata[i][0]==ulyr) {
                     var data = (uploadSpeciesMetadata[i][1]).replace(/_n_/g,"<br />");
@@ -363,13 +365,14 @@ function iterateSpeciesInfoQuery(curr) {
 
                     var infohtml = "<div id='sppopup'> " +
                     heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
+                    " Longitude: "+ulyr_occ_lng + " , Latitude: " + ulyr_occ_lat + " (<a href='javascript:goToLocation("+ulyr_occ_lng+", "+ulyr_occ_lat+", 15)'>zoom to</a>) <br/>" +
                     "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
                     setTimeout(function(){
                         if (document.getElementById("sppopup") != null) {
                             document.getElementById("sppopup").innerHTML = infohtml;
                         }
-                    }, 2000);
+                    }, 50);
                 }
             }
         } else {
@@ -874,6 +877,7 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncert
 
     //apply uncertainty to features
     vector_layer.events.register("featureadded", vector_layer, featureadd);
+    vector_layer.addFeatures(features);
     
     vector_layer.events.register("featureselected", vector_layer, selected);
 
@@ -882,6 +886,76 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncert
     }, 2000);
         
     return vector_layer;
+}
+
+function selected (evt) {
+
+    var feature = (evt.feature==null)?evt:evt.feature;
+    var attrs = feature.attributes;
+    currFeature = feature;
+
+    if (areaSelectOn) {
+        currFeature = null;
+        featureSelected(feature);
+        return;
+    }
+    else {
+        //test to see if its occurrence data
+        if (attrs["oi"] != null) {
+            popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+                feature.geometry.getBounds().getCenterLonLat(),
+                new OpenLayers.Size(100,150),
+                "<div id='sppopup' style='width: 350px; height: 220px;'>Retrieving data... </div>"
+                ,
+                null, true, onPopupClose);
+
+            //parent.showInfoOne();
+            parent.setSpeciesSearchPoint(feature.geometry.getBounds().getCenterLonLat());
+
+        } else if (attrs["count"] != null) {
+            setupPopup(attrs["count"], feature.geometry.getBounds().getCenterLonLat());
+            showClusterInfo(0);
+
+
+
+        } else {
+            var html = "<h2>Feature Details</h2>";
+
+            if (attrs.Feature_Name) {
+                html += "Feature name: " + attrs.Feature_Name + "<br />";
+                html += "Feature ID: " + attrs.Feature_ID + "<br />";
+                html += "GID: " + attrs.gid + "<br /><br />";
+
+                if (attrs.Bounding_Box) {
+                    html += "Bounding box: " + attrs.Bounding_Box + "<br />";
+                    html += "Feature type: Polygon <br /><br />";
+                }
+
+                if (attrs.Point) {
+                    html += "Point: " + attrs.Point + "<br />";
+                    html += "Feature type: Point <br /><br />";
+                }
+
+                html += "Metadata: <a href='" + attrs.Layer_Metadata + "' target='_blank'>" + attrs.Layer_Metadata + "</a> <br />";
+            } else {
+                for (key in attrs) {
+                    html += "<br>" +  key + " : "  + attrs[key];
+                }
+            }
+
+            popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+                feature.geometry.getBounds().getCenterLonLat(),
+                new OpenLayers.Size(100,150),
+                html
+                ,
+                null, true, onPopupClose);
+
+        }
+        feature.popup = popup;
+        popup.feature = feature;
+        map.addPopup(popup, true);
+    }
+
 }
 
 function featureadd(evt) {
