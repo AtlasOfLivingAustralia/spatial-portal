@@ -11,6 +11,8 @@ import org.ala.layers.dao.FieldDAO;
 import org.ala.layers.dao.TabulationDAO;
 import org.ala.layers.dto.Tabulation;
 import org.apache.log4j.Logger;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -103,26 +105,31 @@ public class TabulationService {
     }
 
     @RequestMapping(value = WS_TABULATION_LIST_HTML, method = RequestMethod.GET)
-    public void listAvailableTabulationsHtml(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public ModelAndView listAvailableTabulationsHtml(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         List<Tabulation> tabulations = tabulationDao.listTabulations();
 
-        //write to string
-        StringBuilder sb = new StringBuilder();
-        sb.append("<table border=1<tr><td><b>Field 1</b></td><td><b>Field 2</b></td><td><b>link</b></tr>");
-        for (Tabulation t : tabulations) {
-            sb.append("<tr><td>");
-            sb.append(t.getName1()).append("</td><td>");
-            sb.append(t.getName2()).append("</td><td>");
-            sb.append("<a href='../tabulation/").append(t.getFid1());
-            sb.append("/").append(t.getFid2()).append("/html.html'>table</a>");
-            sb.append("</td></tr>");
-        }
-        sb.append("</table>");
+//        //write to string
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("<table border=1<tr><td><b>Field 1</b></td><td><b>Field 2</b></td><td><b>link</b></tr>");
+//        for (Tabulation t : tabulations) {
+//            sb.append("<tr><td>");
+//            sb.append(t.getName1()).append("</td><td>");
+//            sb.append(t.getName2()).append("</td><td>");
+//            sb.append("<a href='../tabulation/").append(t.getFid1());
+//            sb.append("/").append(t.getFid2()).append("/html.html'>table</a>");
+//            sb.append("</td></tr>");
+//        }
+//        sb.append("</table>");
+//
+//        OutputStream os = resp.getOutputStream();
+//        os.write(sb.toString().getBytes("UTF-8"));
+//        os.close();
 
-        OutputStream os = resp.getOutputStream();
-        os.write(sb.toString().getBytes("UTF-8"));
-        os.close();
+        ModelMap m = new ModelMap();
+        m.addAttribute("tabulations",tabulations);
+        return new ModelAndView("tabulations/list", m);
+        
     }
 
     @RequestMapping(value = WS_TABULATION_LIST, method = RequestMethod.GET)
