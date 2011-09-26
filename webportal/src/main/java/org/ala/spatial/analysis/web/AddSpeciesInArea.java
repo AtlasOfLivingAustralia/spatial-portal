@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ala.spatial.data.Query;
+import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.UploadQuery;
 import org.zkoss.zk.ui.Executions;
@@ -153,7 +154,13 @@ public class AddSpeciesInArea extends UtilityComposer {
 
             MapLayer ml = null;
 
-            Query q = query.newWkt(wkt, true);
+            Query q = null;
+            if(query == null) {
+                //species in area
+                q = new SolrQuery(null, wkt, null, null, true);
+            } else {
+                q = query;
+            }
             if(q instanceof UploadQuery) {
                  //do default sampling now
                 if(CommonData.getDefaultUploadSamplingFields().size() > 0) {
@@ -167,7 +174,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, wkt, -1);
             } else if(filterGrid) {
                 ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, wkt, -1);
-            } else if (rank != null && taxon != null && query != null) {
+            } else if (rank != null && taxon != null && q != null) {
                 //String sptaxon = taxon+";"+lsid;
                 ml = getMapComposer().mapSpecies(q, taxon, rank, -1, LayerUtilities.SPECIES, wkt, -1);
                 setupMetadata = false;
