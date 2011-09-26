@@ -19,7 +19,6 @@ import java.sql.SQLException;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.dao.ObjectDAO;
-import org.ala.layers.util.DBConnection;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -42,91 +41,6 @@ public class ShapesService {
     
     @Resource(name="objectDao")
     private ObjectDAO objectDao;
-
-    /*
-     * return a shape as wkt
-     */
-    @RequestMapping(value = "/shape/wkt/{id}/adam", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String wkt(@PathVariable("id") String id, HttpServletRequest req) {
-        //validate object id
-        id = cleanObjectId(id);
-
-        String query = "SELECT ST_AsText(the_geom) FROM objects WHERE pid='" + id + "';";
-
-        ResultSet r = DBConnection.query(query);
-
-        String s = null;
-        try {
-            if (r != null && r.next()) {
-                s = r.getString(1);
-            }
-        } catch (SQLException ex) {
-            logger.error("An error has occurred retrieving wkt for object id " + id);
-            logger.error(ExceptionUtils.getFullStackTrace(ex));
-        }
-
-        return s;
-
-
-
-    }
-
-    /*
-     * return a shape as geojson
-     */
-    @RequestMapping(value = "/shape/geojson/{id}/adam", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String geojson(@PathVariable("id") String id, HttpServletRequest req) {
-        //validate object id
-        id = cleanObjectId(id);
-
-        String query = "SELECT ST_AsGeoJSON(the_geom) FROM objects WHERE pid='" + id + "';";
-
-        ResultSet r = DBConnection.query(query);
-
-        String s = null;
-        try {
-            if (r != null && r.next()) {
-                s = r.getString(1);
-            }
-        } catch (SQLException ex) {
-            logger.error("An error has occurred retrieving geojson for object id " + id);
-            logger.error(ExceptionUtils.getFullStackTrace(ex));
-        }
-
-        return s;
-    }
-
-    /*
-     * return a shape as kml
-     */
-    @RequestMapping(value = "/shape/kml/{id}/adam", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String kml(@PathVariable("id") String id, HttpServletRequest req) {
-        //validate object id
-        id = cleanObjectId(id);
-
-        String query = "SELECT ST_AsKml(the_geom) FROM objects WHERE pid='" + id + "';";
-
-        ResultSet r = DBConnection.query(query);
-
-        String s = null;
-        try {
-            if (r != null && r.next()) {
-                s = r.getString(1);
-            }
-        } catch (SQLException ex) {
-            logger.error("An error has occurred retrieving kml for object id " + id);
-            logger.error(ExceptionUtils.getFullStackTrace(ex));
-
-        }
-
-        return s;
-    }
 
     /*
      * return a shape as kml

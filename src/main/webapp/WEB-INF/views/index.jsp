@@ -25,6 +25,15 @@
         <p><a href="/layers-index/shape/wkt/3742602">/layers-index/shape/wkt/3742602</a></p>
         <p><a href="/layers-index/shape/geojson/3742602">/layers-index/shape/geojson/3742602</a></p>
         <p><a href="/layers-index/search?q=canberra">/layers-index/search?q=canberra</a></p>
-        <p><a href="/layers-index/intersect/cl22/-29.911/132.769.json">/layers-index/intersect/cl22/-29.911/132.769.json</a></p>
+        <p><a href="/layers-index/intersect/cl22/-29.911/132.769">/layers-index/intersect/cl22/-29.911/132.769</a></p>
+        <p><a href="/layers-index/distributions">/layers-index/distributions</a></p>
+        <p><a href="/layers-index/distribution/37031044">/layers-index/distribution/37031044</a></p>
+        <p><a href="/layers-index/tabulation/cl22/cl23">/layers-index/tabulation/cl22/cl23</a></p>
+        <p><a href="/layers-index/tabulation/cl22/cl23/csv">/layers-index/tabulation/cl22/cl23/csv</a></p>        
+        <p><a href="/layers-index/tabulation/cl22/cl23/html">/layers-index/tabulation/cl22/cl23/html</a></p>
+        <p><a href="/layers-index/tabulation/cl22/cl23/html?wkt=POLYGON((130%20-24,138%20-24,138%20-20,130%20-20,130%20-24))">/layers-index/tabulation/cl22/cl23/html?wkt=POLYGON((130 -24,138 -24,138 -20,130 -20,130 -24))</a></p>
+        <p><a href="/layers-index/tabulations">/layers-index/tabulations</a></p>        
+        <p><a href="/layers-index/tabulations/html">/layers-index/tabulations/html</a></p>
+        <p><a href="/layers-index/tabulation/cl22/html?wkt=POLYGON((130%20-24,138%20-24,138%20-20,130%20-20,130%20-24))">/layers-index/tabulation/cl22/html?wkt=POLYGON((130 -24,138 -24,138 -20,130 -20,130 -24))</a></p>
     </body>
 </html>

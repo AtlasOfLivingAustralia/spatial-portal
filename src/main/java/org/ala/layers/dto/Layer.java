@@ -15,7 +15,6 @@
 
 package org.ala.layers.dto;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.util.List;
 import java.util.Vector;
 import javax.persistence.Column;
@@ -25,7 +24,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
@@ -45,7 +43,7 @@ public class Layer {
     @GeneratedValue ( strategy = GenerationType.SEQUENCE, generator="layers_id_seq")
     @SequenceGenerator(name = "layers_id_seq", sequenceName = "layers_id_seq")
     @Column(name = "id", insertable = false, updatable = false)
-    private long id;
+    private Long id;
 
     @Column(name="uid")
     private String uid;
@@ -78,22 +76,22 @@ public class Layer {
     private String extent;
 
     @Column(name="minlatitude")
-    private double minlatitude;
+    private Double minlatitude;
 
     @Column(name="minlongitude")
-    private double minlongitude;
+    private Double minlongitude;
 
     @Column(name="maxlatitude")
-    private double maxlatitude;
+    private Double maxlatitude;
 
     @Column(name="maxlongitude")
-    private double maxlongitude;
+    private Double maxlongitude;
 
     @Column(name="notes")
     private String notes;
 
     @Column(name="enabled")
-    private boolean enabled;
+    private Boolean enabled;
 
     @Column(name="environmentalvaluemin")
     private String environmentalvaluemin;
@@ -186,11 +184,11 @@ public class Layer {
         this.uid = uid;
     }
 
-    public boolean isEnabled() {
+    public Boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled) {
+    public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
     }
 
@@ -202,15 +200,15 @@ public class Layer {
         this.extent = extent;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public double getMaxlatitude() {
+    public Double getMaxlatitude() {
         return maxlatitude;
     }
 
@@ -220,7 +218,7 @@ public class Layer {
         }
     }
 
-    public double getMaxlongitude() {
+    public Double getMaxlongitude() {
         return maxlongitude;
     }
 
@@ -230,7 +228,7 @@ public class Layer {
         }
     }
 
-    public double getMinlatitude() {
+    public Double getMinlatitude() {
         return minlatitude;
     }
 
@@ -240,7 +238,7 @@ public class Layer {
         }
     }
 
-    public double getMinlongitude() {
+    public Double getMinlongitude() {
         return minlongitude;
     }
 
@@ -434,15 +432,15 @@ public class Layer {
         return respparty_role;
     }
 
-    public void setResppartyrole(String resppartyrole) {
+    public void setRespparty_role(String resppartyrole) {
         this.respparty_role = resppartyrole;
     }
 
-    public String getSourcelink() {
+    public String getSource_link() {
         return source_link;
     }
 
-    public void setSourcelink(String sourcelink) {
+    public void setSource_link(String sourcelink) {
         this.source_link = sourcelink;
     }
 
@@ -466,7 +464,7 @@ public class Layer {
         return path_250m;
     }
 
-    public void setPath_250m(String path250m) {
+    public void setPath250m(String path250m) {
         this.path_250m = path250m;
     }
 

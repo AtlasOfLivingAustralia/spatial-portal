@@ -21,8 +21,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.dao.LayerDAO;
 import org.ala.layers.dto.Layer;
-import org.ala.layers.util.DBConnection;
-import org.ala.layers.util.Utils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

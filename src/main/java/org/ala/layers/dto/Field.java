@@ -60,26 +60,26 @@ public class Field {
     private String sourceId;
 
     @Column(name = "sname")
-    private String sourceName;
+    private String sname;
 
     @Column(name = "sdesc")
     private String sourceDescription;
 
     @Column(name = "indb")
-    private boolean indb;
+    private Boolean indb;
 
     @Column(name = "enabled")
-    private boolean enabled;
+    private Boolean enabled;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "last_update")
     private Date lastUpdated;
 
     @Column(name = "namesearch")
-    private boolean namesearch;
+    private Boolean namesearch;
 
     @Column(name = "defaultlayer")
-    private boolean defaultlayer;
+    private Boolean defaultlayer;
 
     private List<Objects> objects;
 
@@ -99,11 +99,11 @@ public class Field {
         this.id = id;
     }
 
-    public boolean isDefaultlayer() {
+    public Boolean isDefaultlayer() {
         return defaultlayer;
     }
 
-    public void setDefaultlayer(boolean defaultLayer) {
+    public void setDefaultlayer(Boolean defaultLayer) {
         this.defaultlayer = defaultLayer;
     }
 
@@ -115,19 +115,19 @@ public class Field {
         this.description = description;
     }
 
-    public boolean isEnabled() {
+    public Boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled) {
+    public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
     }
 
-    public boolean isIndb() {
+    public Boolean isIndb() {
         return indb;
     }
 
-    public void setIndb(boolean indb) {
+    public void setIndb(Boolean indb) {
         this.indb = indb;
     }
 
@@ -147,11 +147,11 @@ public class Field {
         this.name = name;
     }
 
-    public boolean isNamesearch() {
+    public Boolean isNamesearch() {
         return namesearch;
     }
 
-    public void setNamesearch(boolean nameSearch) {
+    public void setNamesearch(Boolean nameSearch) {
         this.namesearch = nameSearch;
     }
 
@@ -171,12 +171,12 @@ public class Field {
         this.sourceId = sourceId;
     }
 
-    public String getSourceName() {
-        return sourceName;
+    public String getSname() {
+        return sname;
     }
 
-    public void setSourceName(String sourceName) {
-        this.sourceName = sourceName;
+    public void setSname(String sourceName) {
+        this.sname = sourceName;
     }
 
     public String getSpid() {

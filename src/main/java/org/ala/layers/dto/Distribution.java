@@ -15,8 +15,6 @@
 
 package org.ala.layers.dto;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
@@ -29,41 +27,146 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 //@XStreamAlias("distribution")
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class Distribution {
-    private String id;
-    private double depthMinimum;
-    private double depthMaximum;
-    private String path;
+    Long gid;
+    Long spcode;
+    String scientific;
+    String authority_;
+    String common_nam;
+    String family;
+    String genus_name;
+    String specific_n;
+    Double min_depth;
+    Double max_depth;
+    Double pelagic_fl;
+    String metadata_u;
+    String geometry;
+    String wmsurl;
+    String lsid;
 
-    public String getId() {
-        return id;
+    public void setGid(Long gid) {
+        this.gid = gid;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public Long getGid() {
+        return gid;
     }
 
-    public double getDepthMaximum() {
-        return depthMaximum;
+    public void setSpcode(Long spcode) {
+        this.spcode = spcode;
+    }
+    
+    public void setSpcode(Double spcode) {
+        if(spcode != null) {
+            this.spcode = (long)(double)spcode;
+        }
     }
 
-    public void setDepthMaximum(double depthMaximum) {
-        this.depthMaximum = depthMaximum;
+    public Long getSpcode() {
+        return spcode;
     }
 
-    public double getDepthMinimum() {
-        return depthMinimum;
+    public void setScientific(String scientific) {
+        this.scientific = scientific;
     }
 
-    public void setDepthMinimum(double depthMinimum) {
-        this.depthMinimum = depthMinimum;
+    public String getScientific() {
+        return scientific;
     }
 
-    public String getPath() {
-        return path;
+
+    public void setAuthority_(String authority) {
+        this.authority_ = authority;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public String getAuthority_() {
+        return authority_;
     }
 
+    public void setCommon_nam(String common_nam) {
+        this.common_nam = common_nam;
+    }
+
+    public String getCommon_nam() {
+        return common_nam;
+    }
+
+    public void setFamily(String family) {
+        this.family = family;
+    }
+
+    public String getFamily() {
+        return family;
+    }
+
+    public void setGenus_name(String genus_name) {
+        this.genus_name = genus_name;
+    }
+
+    public String getGenus_name() {
+        return genus_name;
+    }
+
+    public void setSpecific_n(String specific_n) {
+        this.specific_n = specific_n;
+    }
+
+    public String getSpecific_n() {
+        return specific_n;
+    }
+
+    public void setMin_depth(Double min_depth) {
+        this.min_depth = min_depth;
+    }
+
+    public Double getMin_depth() {
+        return min_depth;
+    }
+
+    public void setMax_depth(Double max_depth) {
+        this.max_depth = max_depth;
+    }
+
+    public Double getMax_depth() {
+        return max_depth;
+    }
+
+    public void setPelagic_fl(Double pelagic_fl) {
+        this.pelagic_fl = pelagic_fl;
+    }
+
+    public Double getPelagic_fl() {
+        return pelagic_fl;
+    }
+
+    public void setMetadata_u(String metadata_u) {
+        this.metadata_u = metadata_u;
+    }
+
+    public String getMetadata_u() {
+        return metadata_u;
+    }
+
+    public void setGeometry(String geometry) {
+        this.geometry = geometry;
+    }
+
+    public String getGeometry() {
+        return geometry;
+    }
+
+    public void setWmsurl(String wmsurl) {
+        this.wmsurl = wmsurl;
+    }
+
+    public String getWmsurl() {
+        return wmsurl;
+    }
+
+    public void setLsid(String lsid) {
+        this.lsid = lsid;
+    }
+
+    public String getLsid() {
+        return lsid;
+    }
 }
