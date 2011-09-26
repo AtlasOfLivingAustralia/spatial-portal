@@ -17,8 +17,8 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @author Adam
  */
 public class TabulationGenerator {
-    static int CONCURRENT_THREADS = 3;
-    static String db_url = "jdbc:postgresql://ala-devmaps-db.vm.csiro.au:5432/layersdb";
+    static int CONCURRENT_THREADS = 6;
+    static String db_url = "jdbc:postgresql://localhost:5432/layersdb";
     static String db_usr = "postgres";
     static String db_pwd = "postgres";
 
@@ -40,10 +40,12 @@ public class TabulationGenerator {
 
     static public void main(String[] args) {
         System.out.println("args[0] = threadcount, args[1] = db connection string, args[2] = db username, args[3] = password");
-        CONCURRENT_THREADS = Integer.parseInt(args[0]);
-        db_url = args[1];
-        db_usr = args[2];
-        db_pwd = args[3];
+        if(args.length >= 4) {
+            CONCURRENT_THREADS = Integer.parseInt(args[0]);
+            db_url = args[1];
+            db_usr = args[2];
+            db_pwd = args[3];
+        }
 
         updatePairObjects();
 
