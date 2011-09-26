@@ -78,8 +78,8 @@ check_errs $? "echo ERROR running SQL"
 $PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/017_bath_top_gbr_cat_100811.sql
 check_errs $? "echo ERROR running SQL"
 
-#$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/018_world_150811.sql
-#check_errs $? "echo ERROR running SQL"
+$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/018_world_150811.sql
+check_errs $? "echo ERROR running SQL"
 
 $PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/019_update_keywords_190811.sql
 check_errs $? "echo ERROR running SQL"
@@ -96,8 +96,11 @@ check_errs $? "echo ERROR running SQL"
 #$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/023_enable_layers_010911.sql 
 #check_errs $? "echo ERROR running SQL"
 
-$PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/024_bio08_display_150911.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/024_bio08_display_150911.sql
 check_errs $? "echo ERROR running SQL"
 
-$PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/025_landcover_keyword_160911.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/025_landcover_keyword_160911.sql
+check_errs $? "echo ERROR running SQL"
+
+$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/026_world_update_260911.sql
 check_errs $? "echo ERROR running SQL"
