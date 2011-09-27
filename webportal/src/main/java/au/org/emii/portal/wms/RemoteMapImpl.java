@@ -72,11 +72,11 @@ public class RemoteMapImpl implements RemoteMap {
 
     }
 
-    public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type) {
-        return createGeoJSONLayer(label, uri, points_type,null);
+    public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type, int colour) {
+        return createGeoJSONLayer(label, uri, points_type,null, colour);
     }
 
-    public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type, Hashtable properties) {
+    public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type, Hashtable properties, int colour) {
         MapLayer geoJSON = new MapLayer();
         geoJSON.setPolygonLayer(true);
 
@@ -102,7 +102,8 @@ public class RemoteMapImpl implements RemoteMap {
         logger.debug(uri);
         //get colour as label hash
         //TODO: when SPECIES use hash of ID instead of name
-        int hash = Math.abs(label.hashCode());
+        //int hash = Math.abs(label.hashCode());
+        int hash = colour;
         int r = (hash >> 16) % 255;
         int g = (hash >> 8) % 255;
         int b = (hash) % 255;

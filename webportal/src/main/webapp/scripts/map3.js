@@ -1112,16 +1112,12 @@ function redrawWKTFeatures(featureWKT, name,hexColour,opacity) {
     }
 }
 
-function redrawFeatures(feature, name, hexColour, opacity, radius, szUncertain) {
+function redrawFeatures(name, hexColour, opacity, radius, szUncertain) {
     var in_options = {
         'internalProjection': map.baseLayer.projection,
         'externalProjection': new OpenLayers.Projection("EPSG:4326")
     };
     var gjLayers = map.getLayersByName(name);
-    var geojson_format = new OpenLayers.Format.GeoJSON(in_options);
-    features = geojson_format.read(feature);
-
-    fixAttributes(features, feature);
 
     var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = hexColour;
@@ -1132,17 +1128,11 @@ function redrawFeatures(feature, name, hexColour, opacity, radius, szUncertain) 
     layer_style.fontWeight = "bold";
     
     for (key in gjLayers) {
-
         if (gjLayers[key] != undefined) {
-
-            var layer = map.getLayer(gjLayers[key].id);
-
+            var layer = gjLayers[key];
             if (layer.name == name) {
-
-                layer.destroyFeatures();
-                layer.style = layer_style;
-                layer.addFeatures(features,szUncertain);
-                updateClusterStyles(layer);
+                layer.style = layer_style;                
+                layer.redraw(true);
             }
         }
     }

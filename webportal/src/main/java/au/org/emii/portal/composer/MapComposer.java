@@ -50,6 +50,7 @@ import net.sf.json.JSONObject;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.ContextualMenu;
 import org.ala.spatial.analysis.web.HasMapLayer;
+import org.ala.spatial.data.LegendObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
@@ -1385,7 +1386,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     openLayersJavascript.setAdditionalScript(
                             openLayersJavascript.removeMapLayer(gjLayer));
                 } //else {
-                mapLayer = remoteMap.createGeoJSONLayer(label, uri, points_type);
+                mapLayer = remoteMap.createGeoJSONLayer(label, uri, points_type, nextColour());
                 if (mapLayer == null) {
                     // fail
                     //hide error, might be clustering zoom in; showMessage("No mappable features available");
@@ -1418,7 +1419,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
 
                 if (okToAdd) {
-                    mapLayer = remoteMap.createGeoJSONLayer(label, uri, points_type, activeLayerMapProperties);
+                    mapLayer = remoteMap.createGeoJSONLayer(label, uri, points_type, activeLayerMapProperties, nextColour());
                     if (mapLayer == null) {
                         // fail
                         //hide error, might be clustering zoom in; showMessage("No mappable features available");
@@ -1787,7 +1788,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String layerName = "ALA:occurrences";
         String sld = "species_point";
 
-        int hash = Math.abs(label.hashCode());
+        //int hash = Math.abs(label.hashCode());
+        int hash = nextColour();
         int r = (hash >> 16) % 255;
         int g = (hash >> 8) % 255;
         int b = (hash) % 255;
@@ -2850,5 +2852,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void importAnalysis(Event event) {
         openModal("WEB-INF/zul/ImportAnalysis.zul", null);
+    }
+    
+    static int currentColourIdx = 0;
+
+    public int nextColour() {
+        int colour = LegendObject.colours[currentColourIdx % LegendObject.colours.length];
+
+        currentColourIdx++;
+
+        return colour;
     }
 }

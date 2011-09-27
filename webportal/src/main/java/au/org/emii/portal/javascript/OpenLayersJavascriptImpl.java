@@ -556,10 +556,8 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public void redrawFeatures(MapLayer selectedLayer) {
-        String script = "window.mapFrame.redrawUrlFeatures('" + selectedLayer.getUri() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + ")";
+        String script = "window.mapFrame.redrawFeatures('" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + "," + selectedLayer.getSizeUncertain() + ")";
         execute(script);
-
-
     }
 
     @Override
