@@ -249,7 +249,8 @@
                         <c:when test="${fn:length(layerList) > 0}">
                             <ul>
                                 <li>Click on layer name to link to the metadata summary and links to full metadata record.</li>
-                                <li>Download as <a href="/layers.csv${searchquery}">CSV</a> | <a href="/layers.json${searchquery}">JSON</a> | <a href="/layers.xml${searchquery}">XML</a></li>
+                                <li>Download as <a href="/layers.csv${searchquery}">CSV</a> | <a href="/layers.json${searchquery}">JSON</a></li>
+                                <!--  | <a href="/layers.xml${searchquery}">XML</a> -->
                                 <!--<li><a href="/layers.csv">Download as CSV</a></li>-->
                             </ul>
                             <table border="1">
@@ -295,7 +296,8 @@
                                     </tr>
                                 </c:forEach>
                             </table>
-                            Download as <a href="/layers.csv${searchquery}">CSV</a> | <a href="/layers.json${searchquery}">JSON</a> | <a href="/layers.xml${searchquery}">XML</a>
+                            Download as <a href="/layers.csv${searchquery}">CSV</a> | <a href="/layers.json${searchquery}">JSON</a>
+                            <!--  | <a href="/layers.xml${searchquery}">XML</a> -->
                         </c:when>
                         <c:otherwise>
                             <ul><li>No layers available</li></ul>
