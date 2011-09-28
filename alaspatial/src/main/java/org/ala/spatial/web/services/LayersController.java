@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -51,13 +52,11 @@ public class LayersController {
     }
 
     @RequestMapping(value = {LAYERS_BASE, LAYERS_BASE + "/"}, method = RequestMethod.GET)
-    public Map<String, Object> showPublicIndexPage(@RequestParam(value = "q", required = false) String q) {
-//        ModelMap modelMap = new ModelMap();
-//        //modelMap.addAttribute("message", "Displaying all layers");
-//        modelMap.addAttribute("layerList", layersDao.getLayers());
-//        return new ModelAndView("layers/public_list", modelMap);
-        ModelMap modelMap = new ModelMap();
-
+    public ModelAndView showPublicIndexPage(@RequestParam(value = "q", required = false) String q, HttpServletRequest req) {
+        //        ModelMap modelMap = new ModelMap();
+        //        //modelMap.addAttribute("message", "Displaying all layers");
+        //        modelMap.addAttribute("layerList", layersDao.getLayers());
+        //        return new ModelAndView("layers/public_list", modelMap);
         List l = null;
         String msg = "";
 
@@ -84,15 +83,12 @@ public class LayersController {
             }
         }
 
-        //modelMap.addAttribute("message", msg);
-        modelMap.addAttribute("GetCapabilities", "http://spatial.ala.org.au/geoserver/wms?request=getCapabilities");
-        modelMap.addAttribute("layerList", l);
-        //return new ModelAndView("layers/public_list", modelMap);
-        Map<String, Object> m = new HashMap<String, Object>();
-        m.put("layerList", l);
-        m.put("GetCapabilities", "http://spatial.ala.org.au/geoserver/wms?request=getCapabilities");
-        return m;
-
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("layers/public_list");
+        mav.addObject("GetCapabilities", "http://spatial.ala.org.au/geoserver/wms?request=getCapabilities");
+        mav.addObject("layerList", l);
+        
+        return mav;
     }
 
     @RequestMapping(value = LAYERS_BASE + ".csv", method = RequestMethod.GET)
