@@ -3,6 +3,7 @@ package org.ala.spatial.util;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import javax.imageio.ImageIO;
 import org.ala.spatial.analysis.cluster.SpatialCluster3;
@@ -697,65 +698,80 @@ public class SimpleRegion extends Object implements Serializable {
             return null;
         }
         SimpleRegion simpleregion = new SimpleRegion();
-        String[] pairs = pointsString.split(",");
+        ArrayList<Double> points = new ArrayList<Double>();
 
-        double[][] points = new double[pairs.length][2];
-        for (int i = 0; i < pairs.length; i++) {
-            String[] longlat = pairs[i].split(":");
-            if (longlat.length == 2) {
-                try {
-                    points[i][0] = Double.parseDouble(longlat[0]);
-                    points[i][1] = Double.parseDouble(longlat[1]);
-                } catch (Exception e) {
-                    //TODO: alert failure
-                }
-            } else {
-                //TODO: alert failure
+        int pos;
+        int lastpos = 0;
+        while((pos = Math.min(pointsString.indexOf(',', lastpos), pointsString.indexOf(' ', lastpos))) > 0) {
+            try {
+                points.add(Double.parseDouble(pointsString.substring(lastpos, pos)));
+            } catch (Exception e) {
+                points.add(0.0);
             }
+            lastpos = pos + 1;
+        }
+        //one coordinate pair left
+        pos = pointsString.indexOf(' ', lastpos);
+        try {
+            points.add(Double.parseDouble(pointsString.substring(lastpos, pos)));
+            lastpos = pos + 1;
+        } catch (Exception e) {
+            points.add(0.0);
+        }
+        try {
+            points.add(Double.parseDouble(pointsString.substring(lastpos, pointsString.length())));
+        } catch (Exception e) {
+            points.add(0.0);
         }
 
         //test for box
         //  get min/max long/lat
         //  each point has only one identical lat or long to previous point
         //  4 or 5 points (start and end points may be identical)
-        if (((points.length == 4 && (points[0][0] != points[3][0] || points[0][1] != points[3][1]))
-                || (points.length == 5 && points[0][0] == points[4][0]
-                && points[0][1] == points[4][1]))) {
+       if (((points.size() == 8 && (points.get(0) != points.get(6) || points.get(1) != points.get(7)))
+                || (points.size() == 5 && points.get(0) == points.get(8)
+                && points.get(1) == points.get(9)))) {
 
             //get min/max long/lat
             double minlong = 0, minlat = 0, maxlong = 0, maxlat = 0;
-            for (int i = 0; i < points.length; i++) {
-                if (i == 0 || minlong > points[i][0]) {
-                    minlong = points[i][0];
+            for (int i = 0; i < points.size(); i+=2) {
+                if (i == 0 || minlong > points.get(i)) {
+                    minlong = points.get(i);
                 }
-                if (i == 0 || maxlong < points[i][0]) {
-                    maxlong = points[i][0];
+                if (i == 0 || maxlong < points.get(i)) {
+                    maxlong = points.get(i);
                 }
-                if (i == 0 || minlat > points[i][1]) {
-                    minlat = points[i][1];
+                if (i == 0 || minlat > points.get(i+1)) {
+                    minlat = points.get(i+1);
                 }
-                if (i == 0 || maxlat < points[i][1]) {
-                    maxlat = points[i][1];
+                if (i == 0 || maxlat < points.get(i+1)) {
+                    maxlat = points.get(i+1);
                 }
             }
 
             //  each point has only one identical lat or long to previous point
-            int prev_idx = 3;
+            int prev_idx = 6;
             int i = 0;
-            for (i = 0; i < 4; i++) {
-                if ((points[i][0] == points[prev_idx][0])
-                        == (points[i][1] == points[prev_idx][1])) {
+            for (i = 0; i < 8; i+=2) {
+                if ((points.get(i) == points.get(prev_idx))
+                        == (points.get(i+1) == points.get(prev_idx+1))) {
                     break;
                 }
                 prev_idx = i;
             }
             //it is a box if no 'break' occurred
-            if (i == 4) {
+            if (i == 8) {
                 simpleregion.setBox(minlong, minlat, maxlong, maxlat);
                 return simpleregion;
             }
         }
-        simpleregion.setPolygon(points);
+
+        double [][] pointsArray = new double[points.size()/2][2];
+        for(int i=0;i<points.size();i+=2) {
+            pointsArray[i/2][0] = points.get(i);
+            pointsArray[i/2][1] = points.get(i+1);
+        }
+        simpleregion.setPolygon(pointsArray);
         return simpleregion;
     }
 
@@ -1187,7 +1203,7 @@ public class SimpleRegion extends Object implements Serializable {
         return getOverlapGridCells_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map, false);
     }
 
-    public int[][] getOverlapGridCells_Polygon_EPSG900913(double olongitude1, double olatitude1, double olongitude2, double olatitude2, int owidth, int oheight, byte[][] three_state_map, boolean noCellsReturned) {
+    public int[][] getOverlapGridCells_Polygon_EPSG900913(double olongitude1, double olatitude1, double olongitude2, double olatitude2, int owidth, int oheight, byte[][] three_state_map, boolean noCellsReturned) {      
         int i, j;
         if (three_state_map == null) {
             three_state_map = new byte[oheight][owidth];
@@ -1236,7 +1252,7 @@ public class SimpleRegion extends Object implements Serializable {
                 ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
                 if (oy >= oheight) {
                     oy = oheight - 1;
-                }
+            }
                 if (ox >= owidth) {
                     ox = owidth - 1;
                 }
@@ -1267,10 +1283,10 @@ public class SimpleRegion extends Object implements Serializable {
                         ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
                         if (oy >= oheight) {
                             oy = oheight - 1;
-                        }
+                    }
                         if (ox >= owidth) {
                             ox = owidth - 1;
-                        }
+                }
                         if (oy < 0) {
                             oy = 0;
                         }
@@ -1289,10 +1305,10 @@ public class SimpleRegion extends Object implements Serializable {
                         ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
                         if (oy >= oheight) {
                             oy = oheight - 1;
-                        }
+                    }
                         if (ox >= owidth) {
                             ox = owidth - 1;
-                        }
+                }
                         if (oy < 0) {
                             oy = 0;
                         }
@@ -1316,10 +1332,10 @@ public class SimpleRegion extends Object implements Serializable {
                             ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
                             if (oy >= oheight) {
                                 oy = oheight - 1;
-                            }
+                        }
                             if (ox >= owidth) {
                                 ox = owidth - 1;
-                            }
+                    }
                             if (oy < 0) {
                                 oy = 0;
                             }
@@ -1337,13 +1353,13 @@ public class SimpleRegion extends Object implements Serializable {
                             ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
                             if (oy >= oheight) {
                                 oy = oheight - 1;
-                            }
+                        }
                             if (ox >= owidth) {
                                 ox = owidth - 1;
-                            }
+                    }
                             if (oy < 0) {
                                 oy = 0;
-                            }
+                }
                             if (ox < 0) {
                                 ox = 0;
                             }
@@ -1360,16 +1376,16 @@ public class SimpleRegion extends Object implements Serializable {
                         ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
                         if (oy >= oheight) {
                             oy = oheight - 1;
-                        }
+                    }
                         if (ox >= owidth) {
                             ox = owidth - 1;
-                        }
+                }
                         if (oy < 0) {
                             oy = 0;
-                        }
+            }
                         if (ox < 0) {
                             ox = 0;
-                        }
+        }
                         three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
                     }
                 }
@@ -1395,10 +1411,10 @@ public class SimpleRegion extends Object implements Serializable {
                         three_state_map[i][j] = GI_FULLY_PRESENT;
                     } //else absent
                 } else {
-                    //if the previous was fully present, repeat
-                    //if the previous was absent, repeat
-                    three_state_map[i][j] = three_state_map[i][j - 1];
-                }
+                        //if the previous was fully present, repeat
+                        //if the previous was absent, repeat
+                        three_state_map[i][j] = three_state_map[i][j - 1];
+                    }
 
                 //apply to cells;
                 if (cellsReturned && three_state_map[i][j] != GI_UNDEFINED) {   //undefined == absence
