@@ -1,6 +1,12 @@
 package org.ala.spatial.web.services;
 
 import au.com.bytecode.opencsv.CSVReader;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.WKTWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URLDecoder;
@@ -17,11 +23,13 @@ import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.index.FilteringIndex;
 import org.ala.spatial.util.CitationService;
+import org.ala.spatial.util.GridCutter;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.Zipper;
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -548,6 +556,62 @@ public class FilteringWSController {
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
+        return "";
+    }
+
+    @RequestMapping(value = "/wkt/{bbox}/{pid}", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String wkt(@PathVariable String bbox,
+            @PathVariable String pid,
+            HttpServletRequest req) {
+
+        try {
+            // apply the filters by iterating thru' the layers from client, make spl, should be one layer
+            LayerFilter[] lf = FilteringService.getFilters(pid);
+
+            String [] bs = bbox.split(",");
+            double [] bb = {Double.parseDouble(bs[0]),
+                    Double.parseDouble(bs[1]),
+                    Double.parseDouble(bs[2]),
+                    Double.parseDouble(bs[3])};
+            int [][] cells = GridCutter.getOverlapGridCells(lf,bb[0],bb[1],bb[2],bb[3]);
+
+            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
+            
+            double width = bb[2] - bb[0];
+            double height = bb[3] - bb[1];
+            int xrange = (int) Math.ceil((width) / TabulationSettings.grd_xdiv);
+            int yrange = (int) Math.ceil((height) / TabulationSettings.grd_ydiv);
+            Polygon[] polygons = new Polygon[cells.length];
+            for(int i=0;i<cells.length;i++) {
+                double x1 = bb[0] + (cells[i][0] / (double)xrange) * width;
+                double x2 = bb[0] + ((cells[i][0] + 1) / (double)xrange) * width;
+                double y1 = bb[1] + (cells[i][1] / (double)yrange) * height;
+                double y2 = bb[1] + ((cells[i][1] + 1) / (double)yrange) * height;
+
+                Coordinate[] coords  = new Coordinate[] {
+                    new Coordinate(x1, y1), new Coordinate(x1, y2),
+                     new Coordinate(x2, y2), new Coordinate(x2, y1), new Coordinate(x1, y1) };
+
+                LinearRing ring = geometryFactory.createLinearRing( coords );
+                polygons[i] = geometryFactory.createPolygon(ring, null );
+            }
+
+            Geometry g = geometryFactory.createMultiPolygon(polygons);
+            g = g.union();
+
+            WKTWriter w = new WKTWriter();
+
+            String wkt = w.write(g).replace(" (","(").replace(", ",",").trim();
+
+            System.out.println(wkt);           
+
+            return wkt;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return "";
     }
 }
