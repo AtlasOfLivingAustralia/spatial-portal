@@ -368,31 +368,80 @@ public class ComplexRegion extends SimpleRegion {
      */
     @Override
     public int[][] getOverlapGridCells(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map, boolean noCellsReturned) {
-        int i, j;
-
-        int[][] output = null;
-
-        byte[][] mask = three_state_map;
-
+        int i,j;
         // if no threestate map exists, create one
         if (mask == null) {
             mask = new byte[height][width];
-            //set initial values
-            for (i = 0; i < height; i++) {
-                for (j = 0; j < width; j++) {
-                    mask[i][j] = SimpleRegion.GI_UNDEFINED;
-                }
-            }
             three_state_map = mask;
         }
 
-        for (SimpleRegion sr : simpleregions) {
-            sr.getOverlapGridCells_Acc(longitude1, latitude1, longitude2, latitude2, width, height, mask);
+        byte[][] tmpMask = new byte[height][width];
+
+        int k = 0;
+        while(k < simpleregions.size()) {
+            int p = k;
+            for (; k < simpleregions.size()
+                    && (p == k || polygons.get(k - 1).equals(polygons.get(k))); k++) {
+
+                SimpleRegion sr = simpleregions.get(k);
+                sr.getOverlapGridCells_Acc(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask);
+            }
+
+            fillAccMask(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask, true);
+
+            //tmpMask into mask
+            for (i = 0; i < height; i++) {
+                for (j = 0; j < width; j++) {
+                    if(tmpMask[i][j] == 2 || mask[i][j] == 2) {
+                        mask[i][j] = 2;
+                    } else if(tmpMask[i][j] == 1) {
+                        mask[i][j] = 1;
+                    }
+
+                    /* reset shapemask for next part */
+                    tmpMask[i][j] = 0;
+                }
+            }
         }
 
-        int[][] cells = fillAccMask(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map, noCellsReturned);
+        boolean cellsReturned = !noCellsReturned;
+        if (cellsReturned) {
+            int [][] data = new int[width * height][2];
+            int p = 0;
+            for(i=0;i<height;i++) {
+                for(j=0;j<width;j++) {
+                    if (mask[i][j] != GI_UNDEFINED) {   //undefined == absence
+                        data[p][0] = j;
+                        data[p][1] = i;
+                        p++;
+                    }
+                }
+            }
+            data = java.util.Arrays.copyOf(data, p);
+        }
 
-        return cells;
+
+        return null;
+    }
+
+    @Override
+    public boolean isWithin_EPSG900913(double longitude, double latitude) {
+        short[] countsIn = new short[polygons.get(polygons.size()-1) + 1];
+         /* check for all SimpleRegions */
+        for (int i = 0; i < simpleregions.size(); i++) {
+            if (simpleregions.get(i).isWithin_EPSG900913(longitude, latitude)) {
+                countsIn[polygons.get(i)]++;
+            }
+        }
+
+        /* true iif within an odd number of regions for any polygon*/
+        for (int i = 0; i < countsIn.length; i++) {
+            if (countsIn[i] % 2 == 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -400,28 +449,61 @@ public class ComplexRegion extends SimpleRegion {
         int i, j;
 
         int[][] output = null;
-
         byte[][] mask = three_state_map;
 
         // if no threestate map exists, create one
         if (mask == null) {
             mask = new byte[height][width];
-            //set initial values
-            for (i = 0; i < height; i++) {
-                for (j = 0; j < width; j++) {
-                    mask[i][j] = SimpleRegion.GI_UNDEFINED;
-                }
-            }
             three_state_map = mask;
         }
 
-        for (SimpleRegion sr : simpleregions) {
-            sr.getOverlapGridCells_Acc_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, mask);
+        byte[][] tmpMask = new byte[height][width];
+
+        int k = 0;
+        while(k < simpleregions.size()) {
+            int p = k;
+            for (; k < simpleregions.size()
+                    && (p == k || polygons.get(k - 1).equals(polygons.get(k))); k++) {
+
+                SimpleRegion sr = simpleregions.get(k);
+                sr.getOverlapGridCells_Acc_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask);
+            }
+
+            fillAccMask_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask, true);
+
+            //tmpMask into mask
+            for (i = 0; i < height; i++) {
+                for (j = 0; j < width; j++) {
+                    if(tmpMask[i][j] == 2 || mask[i][j] == 2) {
+                        mask[i][j] = 2;
+                    } else if(tmpMask[i][j] == 1) {
+                        mask[i][j] = 1;
+                    }
+
+                    /* reset shapemask for next part */
+                    tmpMask[i][j] = 0;
+                }
+            }
         }
 
-        int[][] cells = fillAccMask_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map, noCellsReturned);
+        boolean cellsReturned = !noCellsReturned;
+        if (cellsReturned) {
+            int [][] data = new int[width * height][2];
+            int p = 0;
+            for(i=0;i<height;i++) {
+                for(j=0;j<width;j++) {
+                    if (mask[i][j] != GI_UNDEFINED) {   //undefined == absence
+                        data[p][0] = j;
+                        data[p][1] = i;
+                        p++;
+                    }
+                }
+            }
+            data = java.util.Arrays.copyOf(data, p);
+            return data;
+        }
 
-        return cells;
+        return null;
     }
 
     void addSet(ArrayList<SimpleRegion> simpleRegions) {
