@@ -1080,18 +1080,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (loaded) {
             //openLayersJavascript.execute("window.mapFrame.loadBaseMap();");
-            openLayersJavascript.setAdditionalScript("window.mapFrame.loadBaseMap();");            
+            openLayersJavascript.setAdditionalScript("window.mapFrame.loadBaseMap();");
 
             //put uploaded info back into the browser
             StringBuilder additional = new StringBuilder();
             Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
             if (htUserSpecies != null) {
-                for(Entry<String, UserData> entry : htUserSpecies.entrySet()) {
-                    additional.append("appendUploadSpeciesMetadata('")
-                            .append(entry.getKey())
-                            .append("','")
-                            .append(entry.getValue().getMetadata().replaceAll("\n", "_n_"))
-                            .append("');");
+                for (Entry<String, UserData> entry : htUserSpecies.entrySet()) {
+                    additional.append("appendUploadSpeciesMetadata('").append(entry.getKey()).append("','").append(entry.getValue().getMetadata().replaceAll("\n", "_n_")).append("');");
                 }
             }
 
@@ -1100,7 +1096,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             System.out.println("map is now loaded. let's try mapping.");
             MapLayer ml = loadUrlParameters();
 
-            if(ml == null) {
+            if (ml == null) {
                 openLayersJavascript.useAdditionalScript();
             }
         }
@@ -1790,9 +1786,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         //int hash = Math.abs(label.hashCode());
         int hash = nextColour();
-        int r = (hash >> 16) % 255;
-        int g = (hash >> 8) % 255;
-        int b = (hash) % 255;
+        int r = (hash >> 16) & 0x000000ff;
+        int g = (hash >> 8) & 0x000000ff;
+        int b = (hash) & 0x000000ff;
 
         int uncertaintyCheck = 0; //0 == false default
 
@@ -2853,7 +2849,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void importAnalysis(Event event) {
         openModal("WEB-INF/zul/ImportAnalysis.zul", null);
     }
-    
     static int currentColourIdx = 0;
 
     public int nextColour() {
