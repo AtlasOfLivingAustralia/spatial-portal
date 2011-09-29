@@ -441,7 +441,7 @@ function removePointSearch() {
 }
 
 var query_count_total;
-function pointSpeciesSearch(e) { 
+function pointSpeciesSearch(e) {
     var lonlat = map.getLonLatFromViewPortPx(e.xy);
     lonlat.transform(map.projection, map.displayProjection);
 
@@ -515,7 +515,7 @@ function pointSpeciesSearch(e) {
 }
 
 function registerSpeciesClick() {
-    
+
     OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
         defaultHandlerOptions: {
             'single': true,
@@ -1471,12 +1471,13 @@ function getLayerValue(layer, lat, lon) {
     var ret = "";
     $.ajax({
         url: proxy_script + URLEncode(url),
+        dataType: "json",
         success: function(data){
             ret = data;
         },
         async: false
     });
-    return parent.jq.parseJSON(ret);
+    return ret; 
 }
 
 function getOccurrence(query, lat, lon, start, pos, dotradius) {
@@ -1494,8 +1495,9 @@ function getOccurrence(query, lat, lon, start, pos, dotradius) {
     var ret = null;
     $.ajax({
         url: proxy_script + URLEncode(url + "&start=" + start),
+        dataType: "json",
         success: function(data){
-            ret = parent.jq.parseJSON(data);
+            ret = data; 
         },
         async: false
     });
@@ -1523,8 +1525,9 @@ function getOccurrenceUploaded(query, lat, lon, start, pos, dotradius) {
     var ret = null;
     $.ajax({
         url: proxy_script + URLEncode(url + "&start=" + start),
+        dataType: "json",
         success: function(data){
-            ret = parent.jq.parseJSON(data);
+            ret = data; 
         },
         async: false
     });
