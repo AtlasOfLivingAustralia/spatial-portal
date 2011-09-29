@@ -39,7 +39,9 @@ public class SearchService {
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     public @ResponseBody List<SearchObject> search(HttpServletRequest req) {
         String q = req.getParameter("q");
+        String limit = req.getParameter("limit");
         String types = req.getParameter("types");
+        int lim = 20;
 
         if(q == null) {
             return null;
@@ -48,7 +50,9 @@ public class SearchService {
             q = URLDecoder.decode(q, "UTF-8");
             q = q.trim().toLowerCase();
             //TODO: check q
-
+            if(limit != null) {
+                lim = Integer.parseInt(limit);
+            }
         } catch (UnsupportedEncodingException ex) {
             logger.error("An error has occurred constructing search term.");
             logger.error(ExceptionUtils.getFullStackTrace(ex));
@@ -71,6 +75,6 @@ public class SearchService {
 //        sb.append(Utils.resultSetToJSON(rs));
 //        return sb.toString();
 
-        return searchDao.findByCriteria(q);
+        return searchDao.findByCriteria(q, lim);
     }
 }

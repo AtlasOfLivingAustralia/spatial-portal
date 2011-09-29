@@ -23,5 +23,5 @@ import org.ala.layers.dto.SearchObject;
  * @author ajay
  */
 public interface SearchDAO {
-    public List<SearchObject> findByCriteria(String criteria);
+    public List<SearchObject> findByCriteria(String criteria, int limit);
 }

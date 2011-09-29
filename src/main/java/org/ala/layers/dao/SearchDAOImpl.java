@@ -50,7 +50,7 @@ public class SearchDAOImpl implements SearchDAO {
     }
 
     @Override
-    public List<SearchObject> findByCriteria(final String criteria) {
+    public List<SearchObject> findByCriteria(final String criteria, int limit) {
         //return hibernateTemplate.find("from SearchObject where ", this)
 
 //        int limit = 20;
@@ -64,8 +64,8 @@ public class SearchDAOImpl implements SearchDAO {
 //        return (List<SearchObject>) m.get("searchobjectstype");
 
         logger.info("Getting search results for query: " + criteria);
-        String sql = "select pid, id, name, \"desc\" as description, fid, fieldname from searchobjects(?,20)";
-        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(SearchObject.class), "%"+criteria+"%");
+        String sql = "select pid, id, name, \"desc\" as description, fid, fieldname from searchobjects(?,?)";
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(SearchObject.class), "%"+criteria+"%",limit);
 
     }
 }
