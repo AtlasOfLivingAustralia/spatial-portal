@@ -8,7 +8,6 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -17,15 +16,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.ala.spatial.data.Facet;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.QueryField;
+import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -85,7 +83,9 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
     public void runmaxent() {
         try {
-            Query query = getSelectedSpecies().newWkt(getSelectedArea(), false);
+            SelectedArea sa = getSelectedArea();
+            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
+
             String sbenvsel = getSelectedLayers();
             //String area = getSelectedArea();
             //String taxonlsid = taxon;
@@ -125,13 +125,21 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
-            
-            if(getSelectedArea() != null) get.addParameter("area", getSelectedArea());
+
+            String area = null;
+            if (sa.getMapLayer() != null && sa.getMapLayer().getData("envelope") != null) {
+                area = "ENVELOPE(" + (String) sa.getMapLayer().getData("envelope") + ")";
+            } else {
+                area = sa.getWkt();
+            }
+            if (getSelectedArea() != null) {
+                get.addParameter("area", area);
+            }
 
             String[] speciesData = getSpeciesData(query);
             //check for no data
-            if(speciesData[0] == null) {
-                if(speciesData[1] == null) {
+            if (speciesData[0] == null) {
+                if (speciesData[1] == null) {
                     getMapComposer().showMessage("No records available for Prediction");
                 } else {
                     getMapComposer().showMessage("All species and records selected are marked as sensitive");
@@ -139,8 +147,10 @@ public class AddToolMaxentComposer extends AddToolComposer {
                 return;
             }
             get.addParameter("species", speciesData[0]);
-            if(speciesData[1] != null) get.addParameter("removedspecies", speciesData[1]);
-            
+            if (speciesData[1] != null) {
+                get.addParameter("removedspecies", speciesData[1]);
+            }
+
             get.addRequestHeader("Accept", "text/plain");
 
             int result = client.executeMethod(get);
@@ -215,7 +225,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
         String layername = tToolName.getValue();
         getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
         MapLayer ml = getMapComposer().getMapLayer(layername);
-        String infoUrl = CommonData.satServer  + "/output/maxent/" + pid + "/species.html";
+        String infoUrl = CommonData.satServer + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();
         if (md == null) {
             md = new MapLayerMetadata();
@@ -269,12 +279,12 @@ public class AddToolMaxentComposer extends AddToolComposer {
      * @return
      */
     private String[] getSpeciesData(Query query) {
-        if(query instanceof UploadQuery) {
+        if (query instanceof UploadQuery) {
             //no sensitive records in upload
             ArrayList<QueryField> fields = new ArrayList<QueryField>();
             String lsidFieldName = query.getSpeciesIdFieldName();
             QueryField qf = null;
-            if(lsidFieldName != null) {
+            if (lsidFieldName != null) {
                 qf = new QueryField(query.getSpeciesIdFieldName());
                 qf.setStored(true);
                 fields.add(qf);
@@ -313,10 +323,10 @@ public class AddToolMaxentComposer extends AddToolComposer {
                 CSVReader csv = new CSVReader(new StringReader(query.speciesList()));
                 List<String[]> fullSpeciesList = csv.readAll();
                 csv.close();
-                for(int i = 0;i<fullSpeciesList.size();i++) {
-                    String [] sa = fullSpeciesList.get(i);
-                    for(String [] ss : sensitiveSpecies) {
-                        if(sa != null && sa.length > 4
+                for (int i = 0; i < fullSpeciesList.size(); i++) {
+                    String[] sa = fullSpeciesList.get(i);
+                    for (String[] ss : sensitiveSpecies) {
+                        if (sa != null && sa.length > 4
                                 && ss != null && ss.length > 4
                                 && sa[4].equals(ss[4])) {
                             sensitiveSpeciesFound.add(ss[4] + "," + ss[1] + "," + ss[3]);
@@ -330,11 +340,11 @@ public class AddToolMaxentComposer extends AddToolComposer {
             }
 
             //remove sensitive records that will not be LSID matched
-            Query maxentQuery = query.newFacet(new Facet("sensitive","[* TO *]",false), false);
+            Query maxentQuery = query.newFacet(new Facet("sensitive", "[* TO *]", false), false);
             ArrayList<QueryField> fields = new ArrayList<QueryField>();
             String lsidFieldName = maxentQuery.getSpeciesIdFieldName();
             QueryField qf = null;
-            if(lsidFieldName != null) {
+            if (lsidFieldName != null) {
                 qf = new QueryField(maxentQuery.getSpeciesIdFieldName());
                 qf.setStored(true);
                 fields.add(qf);
@@ -345,7 +355,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
                 sb = new StringBuilder();
                 for (int i = 0; i < points.length; i += 2) {
                     boolean isSensitive = false;
-                    if(qf != null) {
+                    if (qf != null) {
                         String lsid = qf.getAsString(i / 2);
                         isSensitive = sensitiveLsids.contains(lsid);
                     }

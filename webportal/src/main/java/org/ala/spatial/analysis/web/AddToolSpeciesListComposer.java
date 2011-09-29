@@ -2,17 +2,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ala.spatial.analysis.web;
 
-import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import org.ala.spatial.util.CommonData;
-import org.zkoss.zul.Filedownload;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.ala.spatial.util.SelectedArea;
 import org.zkoss.zk.ui.Executions;
 
 /**
@@ -23,10 +16,9 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
 
     String selectedLayers = "";
     int generation_count = 1;
-    String layerLabel = ""; 
+    String layerLabel = "";
     String legendPath = "";
     private String[] results;
-
     String pid = "none";
 
     @Override
@@ -47,39 +39,24 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
 
     @Override
     public void onFinish() {
-        String area = getSelectedArea();
-
         try {
-//            StringBuffer sbProcessUrl = new StringBuffer();
-//            sbProcessUrl.append("/filtering/apply");
-//            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-//            sbProcessUrl.append("/species/list");
-//
-//            String out = postInfo(sbProcessUrl.toString());
-//            if (out.length() > 0 && out.charAt(out.length() - 1) == ',') {
-//                out = out.substring(0, out.length() - 1);
-//            }
-//            results = out.split("\\|");
-//            java.util.Arrays.sort(results);
-
             onClick$btnDownload();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public void onClick$btnDownload() {
-        String wkt = getSelectedArea();
+        SelectedArea sa = getSelectedArea();
         HashMap<String, Object> hm = new HashMap<String, Object>();
-        hm.put("wkt",wkt);
+        hm.put("selectedarea", sa);
         SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", getMapComposer(), hm);
         try {
             window.doModal();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
 //        StringBuffer sb = new StringBuffer();
 //        sb.append("Family Name,Scientific Name,Common name/s,Taxon rank,Scientific Name LSID,Number of Occurrences\r\n");
 //        for (String s : results) {

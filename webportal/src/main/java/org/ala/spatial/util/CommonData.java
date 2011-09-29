@@ -564,8 +564,7 @@ public class CommonData {
 
             JSONArray ja = JSONArray.fromObject(slist);
 
-            System.out.println("****** species wms distributions ******");
-            System.out.println(slist);
+            System.out.println(ja.size() + " species wms distributions");
 
             for (int i = 0; i < ja.size(); i++) {
                 JSONObject jo = ja.getJSONObject(i);
@@ -662,7 +661,7 @@ public class CommonData {
     static HashMap<String, String> facetToLayer;
     static HashMap<String, String> facetShapeNameField;
     static HashMap<String, String> facetToLayerDisplayName;
-
+    
     public static String getLayerFacetName(String layer) {
         return layerToFacet.get(layer.toLowerCase());
     }

@@ -2,16 +2,15 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ala.spatial.analysis.web;
 
-import java.io.ByteArrayInputStream;
 import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.SelectedArea;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
-import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Messagebox;
 
 /**
@@ -20,7 +19,7 @@ import org.zkoss.zul.Messagebox;
  */
 public class AddToolSamplingComposer extends AddToolComposer {
 
-    int generation_count = 1; 
+    int generation_count = 1;
 
     @Override
     public void afterCompose() {
@@ -31,9 +30,9 @@ public class AddToolSamplingComposer extends AddToolComposer {
 
         this.loadAreaLayers();
         this.loadSpeciesLayers();
-        this.loadGridLayers(false,true);
+        this.loadGridLayers(false, true);
         this.updateWindowTitle();
-        
+
     }
 
     @Override
@@ -58,33 +57,33 @@ public class AddToolSamplingComposer extends AddToolComposer {
     public void download(Event event) {
 
         try {
-            Query query = getSelectedSpecies().newWkt(getSelectedArea(), false);
-
+            SelectedArea sa = getSelectedArea();
+            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
             //test size        
-            if(query.getOccurrenceCount() <= 0) {
+            if (query.getOccurrenceCount() <= 0) {
                 Messagebox.show("No occurrences selected. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
                 return;
             }
-            
+
             //translate layer names
-            String [] layers = null;
+            String[] layers = null;
             String envlayers = getSelectedLayers();
-            if(envlayers.length() > 0) {
+            if (envlayers.length() > 0) {
                 layers = envlayers.split(":");
-                for(int i=0;i<layers.length;i++) {
+                for (int i = 0; i < layers.length; i++) {
                     layers[i] = CommonData.getLayerFacetName(layers[i]);
                 }
             }
 
             //test for URL download
             String url = query.getDownloadUrl(layers);
-            if(url != null) {
+            if (url != null) {
                 System.out.println("Sending file to user: " + url);
 
                 //TODO: find some way to do this nicely.
                 //Events.echoEvent("openHTML", getMapComposer(), "Download\n<a href='" + url + "' >click to start download</a>");
                 Events.echoEvent("openHTML", getMapComposer(), "Download\n" + url);
-                
+
                 //Would clients still treat this as a popup if it were on prod?
                 //getMapComposer().openHTML(event)Clients.evalJavaScript("window.open('" + url + "','download','')");
 
@@ -117,6 +116,4 @@ public class AddToolSamplingComposer extends AddToolComposer {
             e.printStackTrace(System.out);
         }
     }
-
-
 }

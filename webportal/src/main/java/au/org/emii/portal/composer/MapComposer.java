@@ -58,6 +58,7 @@ import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.UserData;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
@@ -273,7 +274,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac, String wkt) {
+    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac, SelectedArea sa) {
         // check if the species name is not valid
         // this might happen as we are automatically mapping
         // species without the user pressing a button
@@ -300,7 +301,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
 
-        mapSpecies(QueryUtil.get(lsid, this, false).newWkt(wkt, true), taxon, rank, 0, LayerUtilities.SPECIES, wkt, -1);
+        Query query = QueryUtil.get(lsid, this, false);
+        Query q = QueryUtil.queryFromSelectedArea(query, sa, false);
+
+        mapSpecies(q, taxon, rank, 0, LayerUtilities.SPECIES, sa.getWkt(), -1);
 
         System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
     }
@@ -847,11 +851,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @param filter filter
      * @param legend URI for map layer legend
      */
-    public boolean addWMSLayer(String label, String uri, float opacity, String metadata, String legendUri, int subType, String cqlfilter, String envParams) {
-        boolean addedOk = false;
+    public MapLayer addWMSLayer(String label, String uri, float opacity, String metadata, String legendUri, int subType, String cqlfilter, String envParams) {
+        MapLayer mapLayer = null;
         if (safeToPerformMapAction()) {
             if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
-                MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
+                mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
                 if (mapLayer == null) {
                     // fail
                     //errorMessageBrokenWMSLayer(imageTester);
@@ -868,7 +872,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                         }
                         mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + label);
-                        addedOk = true;
                     }
                     if (legendUri != null) {
                         WMSStyle style = new WMSStyle();
@@ -883,7 +886,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
 
                     addUserDefinedLayerToMenu(mapLayer, true);
-                    addedOk = true;
                 }
             } else {
                 // fail
@@ -893,7 +895,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         + " because it already exists in the menu");
             }
         }
-        return addedOk;
+        return mapLayer;
     }
 
     public MapLayer getMapLayer(String label) {
@@ -1841,9 +1843,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 MapLayer mapLayer = null;
                 if (getMapLayer(label) == null) {
-                    boolean addedOk = addWMSLayer(label, uri + filter, (float) 0.8, null, null, subType, "", envString);
-                    if (addedOk) {
-                        MapLayer ml = getMapLayer(label);
+                    MapLayer ml = addWMSLayer(label, uri + filter, (float) 0.8, null, null, subType, "", envString);
+                    if (ml != null) {
                         ml.setDynamicStyle(true);
                         ml.setEnvParams(envString);
                         ml.setGeometryType(GeoJSONUtilities.POINT); // for the sizechooser
@@ -2535,15 +2536,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             case LayerUtilities.SCATTERPLOT:
                 page = "WEB-INF/zul/Scatterplot.zul";
                 break;
-//            case LayerUtilities.MAXENT:
-//                page = "WEB-INF/zul/AnalysisMaxent.zul";
-//                break;
-//            case LayerUtilities.ALOC:
-//                page = "WEB-INF/zul/AnalysisALOC.zul";
-//                break;
-//            case LayerUtilities.GDM:
-//                page = "WEB-INF/zul/AnalysisGDM.zul";
-//                break;
             case LayerUtilities.TABULATION:
                 page = "WEB-INF/zul/AnalysisTabulation.zul";
                 break;
@@ -2731,17 +2723,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/ExportLayer.zul", null);
     }
 
-    public void exportAreaAs(String type) {
-        MapLayer ml = llc2MapLayer;
-        if (ml.isPolygonLayer() && ml.getSubType() != LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
-            exportAreaAs(type, "", "");
-        } else {
-            //Messagebox.show("The selected layer is not an area. Please select an appropriate layer to export", "Export layer", Messagebox.OK, Messagebox.EXCLAMATION);
-        }
-
-    }
-
-    public void exportAreaAs(String type, String name, String wkt) {
+//    public void exportAreaAs(String type) {
+//        MapLayer ml = llc2MapLayer;
+//        if (ml.isPolygonLayer() && ml.getSubType() != LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
+//            exportAreaAs(type, "", null);
+//        } else {
+//            //Messagebox.show("The selected layer is not an area. Please select an appropriate layer to export", "Export layer", Messagebox.OK, Messagebox.EXCLAMATION);
+//        }
+//
+//    }
+    public void exportAreaAs(String type, String name, SelectedArea sa) {
         String EXPORT_BASE_DIR = "/data/ala/runtime/output/export/";
         try {
             String id = String.valueOf(System.currentTimeMillis());
@@ -2754,7 +2745,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String outfile = name.replaceAll(" ", "_");
             if ("shp".equals(type)) {
                 File shpfile = new File(EXPORT_BASE_DIR + id + File.separator + outfile + "_Shapefile.shp");
-                ShapefileUtils.saveShapefile(shpfile, wkt);
+                ShapefileUtils.saveShapefile(shpfile, sa.getWkt());
                 //contentType = LayersUtil.LAYER_TYPE_ZIP;
                 outfile += "_Shapefile.zip";
             } else if ("kml".equals(type)) {
@@ -2782,7 +2773,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 sbKml.append("    <styleUrl>#style1</styleUrl>").append("\r");
 
                 //Remove first line of kmlGeometry, <?xml...>
-                Geometry geom = new WKTReader().read(wkt);
+                Geometry geom = new WKTReader().read(sa.getWkt());
                 Encoder encoder = new Encoder(new KMLConfiguration());
                 encoder.setIndenting(true);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -2803,7 +2794,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } else if ("wkt".equals(type)) {
                 File shpfile = new File(EXPORT_BASE_DIR + id + File.separator + outfile + "_WKT.txt");
                 BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
-                wout.write(wkt);
+                wout.write(sa.getWkt());
                 wout.close();
                 //contentType = LayersUtil.LAYER_TYPE_PLAIN;
                 outfile += "_WKT.zip";

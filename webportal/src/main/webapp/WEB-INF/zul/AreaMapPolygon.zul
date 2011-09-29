@@ -47,6 +47,8 @@
                 </div>
             </vbox>
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
+            <separator />
+            <checkbox id="displayAsWms" label="display as WMS layer" />
             <div sclass="embedWindowsButtons">
                 <hbox>
                     <button sclass="goButton" label="Clear" id="btnClear"/>                    

@@ -1,11 +1,9 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.composer.UtilityComposer;
 import org.ala.spatial.util.LayersUtil;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -85,7 +83,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     String activeAreaMetadata = null;
     private String activeAreaSize = null;
     Textbox txtLayerName;
-
     int speciescount = 0;
     boolean isDirtyCount = true;
 
@@ -137,7 +134,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     public void onChange$popup_maximum(Event event) {
-        isDirtyCount = true; 
+        isDirtyCount = true;
         serverFilter(false);
     }
 
@@ -216,7 +213,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         SPLFilter splf = null;
 
         // First check if already present
-        splf = selectedSPLFilterLayers.get(layername);
+        splf = selectedSPLFilterLayers.get(layername.toLowerCase());
 
         // if splf is still null, then it must be new
         // so grab the details from the server
@@ -247,11 +244,11 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
                 }
             }
 
-            selectedSPLFilterLayers.put(layername, splf);
+            selectedSPLFilterLayers.put(layername.toLowerCase(), splf);
         }
 
-        if (layername != splf.layer.name) {
-            splf = getSPLFilter(splf.layer.name);
+        if (!layername.equals(splf.layer.name)) {
+            splf = getSPLFilter(splf.layer.name.toLowerCase());
         }
 
         return splf;
@@ -681,7 +678,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
     public void onClick$remove_continous(Event event) {
         deleteSelectedFilters(null);
-        isDirtyCount = false; 
+        isDirtyCount = false;
     }
 
     public void onClick$preview_continous(Event event) {
@@ -701,15 +698,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     private int getSpeciesCount() {
-        ArrayList<Facet> facets = new ArrayList<Facet>();
-        Iterator<String> it = selectedSPLFilterLayers.keySet().iterator();
-        for (int i = 0; i < selectedSPLFilterLayers.size(); i++) {
-            String lyrname = it.next();
-            SPLFilter splf = selectedSPLFilterLayers.get(lyrname);
-            Facet f = new Facet(CommonData.getLayerFacetName(splf.layername), splf.minimum_value, splf.maximum_value, true);
-            facets.add(f);
-        }
-        Query q = new SolrQuery(null, null, null, facets, false);
+        Query q = new SolrQuery(null, null, null, getFacets(), false);
 
         return q.getSpeciesCount();
     }
@@ -776,7 +765,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             System.out.println("******************* is dirty count");
             Clients.showBusy("Updating special count....");
             strCount = getSpeciesCount() + "";
-            Clients.clearBusy(); 
+            Clients.clearBusy();
             //applyFilter();
             System.out.println("**********************************");
             System.out.println("**********************************");
@@ -788,7 +777,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             System.out.println("******************* is not dirty count");
         }
         //strCount = speciescount + "";
-        
+
         //TODO: handle invalid counts/errors
         try {
             popup_filter.count = Integer.parseInt(strCount.split("\n")[0]);
@@ -839,11 +828,23 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         //bbox.add(-1006021.0627551343);
 
         MapLayer ml = mc.addImageLayer(pid, LAYER_PREFIX + layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
-        ml.setWKT("ENVELOPE(" + pid + ")");
+        ml.setWKT(getWkt(pid));
+        ml.setData("envelope", pid);
         ml.setData("area", activeAreaSize);
+        ml.setData("facets", getFacets());
 
         return ml;
 
+    }
+
+    ArrayList<Facet> getFacets() {
+        ArrayList<Facet> facets = new ArrayList<Facet>();
+        for (int i = 0; i < selectedLayers.size(); i++) {
+            SPLFilter splf = selectedSPLFilterLayers.get(selectedLayers.get(i));
+            Facet f = new Facet(CommonData.getLayerFacetName(splf.layername), splf.minimum_value, splf.maximum_value, true);
+            facets.add(f);
+        }
+        return facets;
     }
 
     /**
@@ -953,5 +954,9 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
     public void onClick$btnCancel(Event event) {
         removeAllSelectedLayers(false);
+    }
+
+    private String getWkt(String pid) {
+        return getInfo("/filtering/wkt/" + activeAreaExtent + "/" + pid);
     }
 }

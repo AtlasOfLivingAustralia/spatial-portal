@@ -36,8 +36,6 @@ import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import org.ala.spatial.data.Facet;
 import org.ala.spatial.data.LegendObject;
@@ -50,8 +48,6 @@ import org.ala.spatial.sampling.SimpleRegion;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
-import org.ala.spatial.util.UserData;
-import org.ala.spatial.wms.RecordsLookup;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jfree.chart.annotations.XYBoxAnnotation;
 import org.jfree.chart.axis.NumberAxis;
@@ -107,13 +103,13 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     DefaultXYZDataset aaDataset;
     int selectionCount;
     String imagePath;
-    String results;    
+    String results;
     Checkbox chkSelectMissingRecords;
     double[] prevSelection = null;
     Checkbox chkRestrictOccurrencesToActiveArea;
     Checkbox chkHighlightActiveAreaOccurrences;
     Checkbox chkShowEnvIntersection;
-    double zmin, zmax;    
+    double zmin, zmax;
     private DefaultXYZDataset backgroundXyzDataset;
     //String backgroundLSID;
     //private String backgroundName;
@@ -216,9 +212,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         }
         System.out.println("mapping rank and species: " + rank + " - " + taxon);
 
-        data.setBackgroundQuery(
-                QueryUtil.get((String) sacBackground.getSelectedItem().getAnnotatedProperties().get(0),
-                getMapComposer(), false).newWkt(data.getFilterWkt(), false));
+        Query query = QueryUtil.get((String) sacBackground.getSelectedItem().getAnnotatedProperties().get(0),
+                getMapComposer(), false);
+
+        Query q = QueryUtil.queryFromSelectedArea(query, data.getFilterSa(), false);
+
+        data.setBackgroundQuery(query);
 
         //only add it to the map if this was signaled from an event
         //clearSelection();
@@ -344,7 +343,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
             //refresh mapLayer
             refreshMapLayer();
-            
+
             mapLayer.setHighlight(getFacetIn().toString());
 
             getMapComposer().applyChange(mapLayer);
@@ -412,7 +411,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                         scatterplotDownloads.setVisible(true);
                     } else {
                         //active area must be drawn first
-                        if (data.getHighlightWkt() != null && aaDataset != null) {
+                        if (data.getHighlightSa() != null && aaDataset != null) {
                             jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), aaDataset, PlotOrientation.HORIZONTAL, false, false, false);
                         } else {
                             jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyzDataset, PlotOrientation.HORIZONTAL, false, false, false);
@@ -436,19 +435,21 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                         jChart.getTitle().setFont(titlefont);
 
                         //colours
-                        String [] seriesNames = { data.getQuery().getName() };
-                        if(data.getLegend() != null && data.getLegend().getCategories() != null) seriesNames = data.getLegend().getCategories();
-                        int [] seriesColours = new int[seriesNames.length];
+                        String[] seriesNames = {data.getQuery().getName()};
+                        if (data.getLegend() != null && data.getLegend().getCategories() != null) {
+                            seriesNames = data.getLegend().getCategories();
+                        }
+                        int[] seriesColours = new int[seriesNames.length];
                         LegendObject legend = data.getLegend();
-                        for(int i=0;i<seriesNames.length;i++) {
-                            if(legend == null || data.getLegend().getCategories() == null) {
+                        for (int i = 0; i < seriesNames.length; i++) {
+                            if (legend == null || data.getLegend().getCategories() == null) {
                                 seriesColours[i] = data.red << 16 | data.green << 8 | data.blue | 0xff000000;
                             } else {
                                 seriesColours[i] = legend.getColour(seriesNames[i]);
                             }
                         }
                         //active area must be drawn first
-                        if (data.getHighlightWkt() != null && aaDataset != null) {
+                        if (data.getHighlightSa() != null && aaDataset != null) {
                             plot.setRenderer(getActiveAreaRenderer());
 
                             int datasetCount = plot.getDatasetCount();
@@ -552,13 +553,13 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             }
 
             if (/*data.getLsid() != null && data.getLsid().length() > 0
-                    && */ data.getLayer1() != null && data.getLayer1().length() > 0
+                    && */data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(getFacetIn());
-                
+
                 Query q = data.getQuery().newFacets(facets, false);
-                
+
                 updateCount(String.valueOf(q.getOccurrenceCount()));
             }
         } catch (Exception e) {
@@ -715,27 +716,23 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         //make output csv; id, series, layer1, layer2, highlight
         StringBuilder sb = new StringBuilder();
         sb.append("id,series," + data.getLayer1Name() + "," + data.getLayer2Name());
-        String [] series = data.getSeries();
-        String [] ids = data.getIds();
+        String[] series = data.getSeries();
+        String[] ids = data.getIds();
         //double [][] points = data.getPoints();
-        double [][] d = data.getData();
+        double[][] d = data.getData();
 //        SimpleRegion r = null;
 //        if(data.getHighlightWkt() != null) {
 //            sb.append(",area highlight");
 //            r = SimpleShapeFile.parseWKT(data.getHighlightWkt());
 //        }
-        for(int i=0;i<series.length;i++) {
-            sb.append("\n\"")
-                    .append(ids[i].replace("\"","\"\"")).append("\",\"")
-                    .append(series[i].replace("\"","\"\"")).append("\",")
-                    .append(String.valueOf(d[i][0])).append(",")
-                    .append(String.valueOf(d[i][1]));
+        for (int i = 0; i < series.length; i++) {
+            sb.append("\n\"").append(ids[i].replace("\"", "\"\"")).append("\",\"").append(series[i].replace("\"", "\"\"")).append("\",").append(String.valueOf(d[i][0])).append(",").append(String.valueOf(d[i][1]));
 //            if(r != null) {
 //                String highlight = r.isWithin(points[i][0],points[i][1])?"true":"false";
 //                sb.append(",").append(highlight).append(",")
 //            }
         }
-        
+
         Filedownload.save(sb.toString(), "text/plain", "scatterplot.csv");
     }
 
@@ -924,32 +921,32 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     private void createDataset() {
-        xyzDataset = new DefaultXYZDataset();       
+        xyzDataset = new DefaultXYZDataset();
 
-        String [] seriesNames = { data.getQuery().getName() };
-        if(data.getLegend() != null && data.getLegend().getCategories() != null) {
+        String[] seriesNames = {data.getQuery().getName()};
+        if (data.getLegend() != null && data.getLegend().getCategories() != null) {
             seriesNames = data.getLegend().getCategories();
         }
 
         int missingCount = 0;
-        for(int i=0;i<seriesNames.length;i++) {
-            ArrayList<double []> records = new ArrayList<double []>(data.getPoints().length);
-            double [][] d = data.getData();
-            String [] series = data.getSeries();
-            for(int j=0;j<d.length;j++) {
-                if(seriesNames.length == 1 || series[j].equals(seriesNames[i])) {
-                    if(!Double.isNaN(d[j][0]) && !Double.isNaN(d[j][1])) {
-                        double [] r = {d[j][0], d[j][1], i};
+        for (int i = 0; i < seriesNames.length; i++) {
+            ArrayList<double[]> records = new ArrayList<double[]>(data.getPoints().length);
+            double[][] d = data.getData();
+            String[] series = data.getSeries();
+            for (int j = 0; j < d.length; j++) {
+                if (seriesNames.length == 1 || series[j].equals(seriesNames[i])) {
+                    if (!Double.isNaN(d[j][0]) && !Double.isNaN(d[j][1])) {
+                        double[] r = {d[j][0], d[j][1], i};
                         records.add(r);
                     } else {
                         missingCount++;
                     }
                 }
             }
-            if(records.size() > 0) {
+            if (records.size() > 0) {
                 //flip data into an array
-                double [][] sd = new double[3][records.size()];
-                for(int j=0;j<records.size();j++) {
+                double[][] sd = new double[3][records.size()];
+                for (int j = 0; j < records.size(); j++) {
                     sd[0][j] = records.get(j)[0];
                     sd[1][j] = records.get(j)[1];
                     sd[2][j] = records.get(j)[2];
@@ -958,34 +955,34 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             }
         }
 
-        missing_data = missingCount == data.getPoints().length/2;
+        missing_data = missingCount == data.getPoints().length / 2;
         data.setMissingCount(missingCount);
     }
 
     private void createAADataset() {
-        if(data.getHighlightWkt() == null) {
+        if (data.getHighlightSa() == null) {
             aaDataset = null;
             return;
         }
 
         aaDataset = new DefaultXYZDataset();
-        
-        SimpleRegion region = SimpleShapeFile.parseWKT(data.getHighlightWkt());
 
-        ArrayList<double []> records = new ArrayList<double []>(data.getPoints().length);
-        double [][] d = data.getData();
-        double [] points = data.getPoints();
-        for(int j=0;j<d.length;j++) {
-            if(!Double.isNaN(d[j][0]) && !Double.isNaN(d[j][1])
-                    && region.isWithin(points[j*2], points[j*2+1]) ) {
-                double [] r = {d[j][0], d[j][1], 0};
+        SimpleRegion region = SimpleShapeFile.parseWKT(data.getHighlightSa().getWkt());
+
+        ArrayList<double[]> records = new ArrayList<double[]>(data.getPoints().length);
+        double[][] d = data.getData();
+        double[] points = data.getPoints();
+        for (int j = 0; j < d.length; j++) {
+            if (!Double.isNaN(d[j][0]) && !Double.isNaN(d[j][1])
+                    && region.isWithin(points[j * 2], points[j * 2 + 1])) {
+                double[] r = {d[j][0], d[j][1], 0};
                 records.add(r);
             }
         }
-        if(records.size() > 0) {
+        if (records.size() > 0) {
             //flip data into an array
-            double [][] sd = new double[3][records.size()];
-            for(int j=0;j<records.size();j++) {
+            double[][] sd = new double[3][records.size()];
+            for (int j = 0; j < records.size(); j++) {
                 sd[0][j] = records.get(j)[0];
                 sd[1][j] = records.get(j)[1];
                 sd[2][j] = records.get(j)[2];
@@ -997,24 +994,24 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     private void createBackgroundDataset() {
         backgroundXyzDataset = new DefaultXYZDataset();
 
-        String [] seriesNames = { data.getBackgroundQuery().getName() };
+        String[] seriesNames = {data.getBackgroundQuery().getName()};
 
-        for(int i=0;i<seriesNames.length;i++) {
-            ArrayList<double []> records = new ArrayList<double []>(data.getBackgroundPoints().length);
-            double [][] d = data.getBackgroundData();
-            String [] series = data.getBackgroundSeries();
-            for(int j=0;j<d.length;j++) {
-                if(series[j].equals(seriesNames[i])) {
-                    if(!Double.isNaN(d[j][0]) && !Double.isNaN(d[j][1])) {
-                        double [] r = {d[j][0], d[j][1], i};
+        for (int i = 0; i < seriesNames.length; i++) {
+            ArrayList<double[]> records = new ArrayList<double[]>(data.getBackgroundPoints().length);
+            double[][] d = data.getBackgroundData();
+            String[] series = data.getBackgroundSeries();
+            for (int j = 0; j < d.length; j++) {
+                if (series[j].equals(seriesNames[i])) {
+                    if (!Double.isNaN(d[j][0]) && !Double.isNaN(d[j][1])) {
+                        double[] r = {d[j][0], d[j][1], i};
                         records.add(r);
                     }
                 }
             }
-            if(records.size() > 0) {
+            if (records.size() > 0) {
                 //flip data into an array
-                double [][] sd = new double[3][records.size()];
-                for(int j=0;j<records.size();j++) {
+                double[][] sd = new double[3][records.size()];
+                for (int j = 0; j < records.size(); j++) {
                     sd[0][j] = records.get(j)[0];
                     sd[1][j] = records.get(j)[1];
                     sd[2][j] = records.get(j)[2];
@@ -1024,13 +1021,13 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         }
     }
 
-    private XYShapeRenderer getRenderer(LegendObject legend, int[] datasetColours, String[] seriesNames, double [] seriesValues) {
+    private XYShapeRenderer getRenderer(LegendObject legend, int[] datasetColours, String[] seriesNames, double[] seriesValues) {
         class MyXYShapeRenderer extends XYShapeRenderer {
 
             public int alpha = 255;
             public Paint[] datasetColours;
             public int shapeSize = 8;
-            public double [] seriesValues;
+            public double[] seriesValues;
             public LegendObject legend;
             Shape shape = null;
 
@@ -1053,7 +1050,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     //colour series
                     return datasetColours[series];
                 }
-        
+
                 return super.getPaint(dataset, series, item);
             }
         }
@@ -1084,8 +1081,10 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         renderer.legend = legend;
 
         class LegendFieldPaintScale implements PaintScale, Serializable {
+
             LegendObject legend;
             Color defaultColour;
+
             public LegendFieldPaintScale(LegendObject legend, Color defaultColour) {
                 this.legend = legend;
                 this.defaultColour = defaultColour;
@@ -1093,21 +1092,25 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
             @Override
             public double getLowerBound() {
-                if(legend == null) return 0;
-                double [] d = legend.getMinMax();
-                return d==null?0:d[0];
+                if (legend == null) {
+                    return 0;
+                }
+                double[] d = legend.getMinMax();
+                return d == null ? 0 : d[0];
             }
 
             @Override
             public double getUpperBound() {
-                if(legend == null) return 1;
-                double [] d = legend.getMinMax();
-                return d==null?0:d[1];
+                if (legend == null) {
+                    return 1;
+                }
+                double[] d = legend.getMinMax();
+                return d == null ? 0 : d[1];
             }
 
             @Override
             public Paint getPaint(double d) {
-                if(legend == null) {
+                if (legend == null) {
                     return defaultColour;
                 }
                 return new Color(legend.getColour(d));
@@ -1121,12 +1124,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     LayerLegendComposer layerWindow = null;
 
     public void onClick$btnEditAppearance1(Event event) {
-        if(layerWindow != null) {
+        if (layerWindow != null) {
             boolean closing = layerWindow.getParent() != null;
             layerWindow.detach();
             layerWindow = null;
 
-            if(closing) {
+            if (closing) {
                 return;
             }
         }
@@ -1163,7 +1166,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 layerWindow.getSize(),
                 layerWindow.getColourMode());
 
-        if(mapLayer != null) {
+        if (mapLayer != null) {
             mapLayer.setColourMode(layerWindow.getColourMode());
             mapLayer.setRedVal(layerWindow.getRed());
             mapLayer.setGreenVal(layerWindow.getGreen());
@@ -1186,7 +1189,6 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         imagePath = null;
         redraw();
     }
-
     String prevResampleData = null;
     String prevResampleLayers = null;
     String prevResampleHighlight = null;
@@ -1197,11 +1199,11 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     && data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
 
-                String thisResampleData = data.getQuery().getQ() + "*" + data.colourMode                        
-                        + "*" + ((data.getFilterWkt() != null) ? "Y" : "N");
+                String thisResampleData = data.getQuery().getQ() + "*" + data.colourMode
+                        + "*" + ((data.getFilterSa() != null) ? "Y" : "N");
 
                 String thisResampleLayers = data.getLayer1() + "*" + data.getLayer2();
-                String thisResampleHighlight = ((data.getHighlightWkt() != null) ? "Y" : "N");
+                String thisResampleHighlight = ((data.getHighlightSa() != null) ? "Y" : "N");
 
                 if (prevResampleData == null || !prevResampleData.equals(thisResampleData)) {
                     prevResampleData = thisResampleData;
@@ -1213,7 +1215,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     fields.add(new QueryField("longitude"));
                     fields.add(new QueryField("latitude"));
 
-                    if(!data.colourMode.equals("-1")){
+                    if (!data.colourMode.equals("-1")) {
                         fields.add(new QueryField(data.colourMode));
 
                         data.setLegend(data.getQuery().getLegend(data.colourMode));
@@ -1223,7 +1225,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
                     results = data.getQuery().sample(fields);
 
-                    if(results == null) {
+                    if (results == null) {
                         //TODO: fail nicely
                     }
 
@@ -1236,28 +1238,29 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     int idColumn = findInArray(data.getQuery().getRecordIdFieldName(), csv.get(0));
                     int seriesColumn = findInArray(data.colourMode, csv.get(0));
 
-                    double [] points = new double[(csv.size()-1) * 2];
-                    String [] series = new String[csv.size() - 1];
-                    double [] seriesValues = new double[points.length];
-                    String [] ids = new String[csv.size() - 1];
+                    double[] points = new double[(csv.size() - 1) * 2];
+                    String[] series = new String[csv.size() - 1];
+                    double[] seriesValues = new double[points.length];
+                    String[] ids = new String[csv.size() - 1];
                     int pos = 0;
-                    for(int i=1;i<csv.size();i++) {
+                    for (int i = 1; i < csv.size(); i++) {
                         try {
                             points[pos] = Double.parseDouble(csv.get(i)[longitudeColumn]);
-                            points[pos+1] = Double.parseDouble(csv.get(i)[latitudeColumn]);                            
+                            points[pos + 1] = Double.parseDouble(csv.get(i)[latitudeColumn]);
                         } catch (Exception e) {
                             points[pos] = Double.NaN;
                             points[pos + 1] = Double.NaN;
                         }
-                        if(seriesColumn < 0) {
-                            series[pos/2] = data.getQuery().getName();
+                        if (seriesColumn < 0) {
+                            series[pos / 2] = data.getQuery().getName();
                         } else {
-                            series[pos/2] = csv.get(i)[seriesColumn];
+                            series[pos / 2] = csv.get(i)[seriesColumn];
                         }
                         try {
-                            seriesValues[pos/2] = Double.parseDouble(csv.get(i)[seriesColumn]);
-                        } catch (Exception e){}
-                        ids[pos/2] = csv.get(i)[idColumn];
+                            seriesValues[pos / 2] = Double.parseDouble(csv.get(i)[seriesColumn]);
+                        } catch (Exception e) {
+                        }
+                        ids[pos / 2] = csv.get(i)[idColumn];
                         pos += 2;
                     }
 
@@ -1271,21 +1274,21 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     prevResampleLayers = thisResampleLayers;
 
                     //TODO: put this somewhere where it makes more sense, Recordslookup
-                    if(data.getQuery() instanceof UploadQuery) {
+                    if (data.getQuery() instanceof UploadQuery) {
                         ArrayList<QueryField> fields = new ArrayList<QueryField>();
                         fields.add(new QueryField(CommonData.getLayerFacetName(data.getLayer1())));
-                        fields.add(new QueryField(CommonData.getLayerFacetName(data.getLayer2())));                        
+                        fields.add(new QueryField(CommonData.getLayerFacetName(data.getLayer2())));
                         data.getQuery().sample(fields);
                     }
 
-                    sample();                    
-                    
+                    sample();
+
                     createDataset();
                 }
 
-                if(prevResampleHighlight == null || !prevResampleHighlight.equals(thisResampleHighlight)) {
+                if (prevResampleHighlight == null || !prevResampleHighlight.equals(thisResampleHighlight)) {
                     prevResampleHighlight = thisResampleHighlight;
-                    if(data.getHighlightWkt() == null) {
+                    if (data.getHighlightSa() == null) {
                         aaDataset = null;
                     } else {
                         createAADataset();
@@ -1296,7 +1299,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 aaDataset = null;
                 xyzDataset = null;
                 annotation = null;
-                if(data != null) data.setMissingCount(0);
+                if (data != null) {
+                    data.setMissingCount(0);
+                }
             }
 
         } catch (Exception e) {
@@ -1325,7 +1330,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
                     String backgroundResults = data.getBackgroundQuery().sample(fields);
 
-                    if(backgroundResults == null) {
+                    if (backgroundResults == null) {
                         //TODO: fail nicely
                     }
 
@@ -1337,20 +1342,20 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     int latitudeColumn = findInArray("latitude", csv.get(0));
                     int idColumn = findInArray(data.getBackgroundQuery().getRecordIdFieldName(), csv.get(0));
 
-                    double [] points = new double[(csv.size()-1) * 2];
-                    String [] series = new String[csv.size() - 1];
-                    String [] ids = new String[csv.size() - 1];
+                    double[] points = new double[(csv.size() - 1) * 2];
+                    String[] series = new String[csv.size() - 1];
+                    String[] ids = new String[csv.size() - 1];
                     int pos = 0;
-                    for(int i=1;i<csv.size();i++) {
+                    for (int i = 1; i < csv.size(); i++) {
                         try {
                             points[pos] = Double.parseDouble(csv.get(i)[longitudeColumn]);
-                            points[pos+1] = Double.parseDouble(csv.get(i)[latitudeColumn]);
+                            points[pos + 1] = Double.parseDouble(csv.get(i)[latitudeColumn]);
                         } catch (Exception e) {
                             points[pos] = Double.NaN;
                             points[pos + 1] = Double.NaN;
                         }
-                        series[pos/2] = data.getBackgroundQuery().getName();
-                        ids[pos/2] = csv.get(i)[idColumn];
+                        series[pos / 2] = data.getBackgroundQuery().getName();
+                        ids[pos / 2] = csv.get(i)[idColumn];
                         pos += 2;
                     }
 
@@ -1546,13 +1551,13 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         Facet f1 = new Facet(e1, y1, y2, true);
         Facet f2 = new Facet(e2, x1, x2, true);
         String fq = f1.toString() + "%20AND%20" + f2.toString();
-        if(chkSelectMissingRecords.isChecked()) {
+        if (chkSelectMissingRecords.isChecked()) {
             fq = "(" + fq + ")%20OR%20-" + e1 + ":[*%20TO%20*]%20OR%20-" + e2 + ":[*%20TO%20*]";
         }
 
         return Facet.parseFacet(fq);
     }
-    
+
     private Facet getFacetOut() {
         double x1 = prevSelection[0];
         double x2 = prevSelection[1];
@@ -1564,7 +1569,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         Facet f1 = new Facet(e1, y1, y2, true);
         Facet f2 = new Facet(e2, x1, x2, true);
         String fq = "-" + f1.toString() + "%20OR%20-" + f2.toString();
-        if(chkSelectMissingRecords.isChecked()) {
+        if (chkSelectMissingRecords.isChecked()) {
             fq = "(" + fq + ")%20AND%20" + e1 + ":[*%20TO%20*]%20AND%20" + e2 + ":[*%20TO%20*]";
         }
 
@@ -1572,8 +1577,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     private int findInArray(String lookFor, String[] array) {
-        for(int i=0;i<array.length;i++) {
-            if(array[i].equals(lookFor)) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].equals(lookFor)) {
                 return i;
             }
         }
@@ -1581,24 +1586,24 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     private void sample() {
-        double [] points = data.getPoints();
-        double [][] p = new double[points.length/2][2];
-        for(int i=0;i<points.length;i+=2) {
-            p[i/2][0] = points[i];
-            p[i/2][1] = points[i + 1];
+        double[] points = data.getPoints();
+        double[][] p = new double[points.length / 2][2];
+        for (int i = 0; i < points.length; i += 2) {
+            p[i / 2][0] = points[i];
+            p[i / 2][1] = points[i + 1];
         }
 
         ArrayList<String> layers = new ArrayList<String>();
         layers.add(CommonData.getLayerFacetName(data.getLayer1()));
         layers.add(CommonData.getLayerFacetName(data.getLayer2()));
-        List<String []> sample = Sampling.sampling(layers, p);
+        List<String[]> sample = Sampling.sampling(layers, p);
 
-        double [][] d = new double[p.length][2];
-        for(int j=0;j<p.length;j++) {
-            for(int i=0;i<sample.size();i++) {
+        double[][] d = new double[p.length][2];
+        for (int j = 0; j < p.length; j++) {
+            for (int i = 0; i < sample.size(); i++) {
                 try {
                     d[j][i] = Double.parseDouble(sample.get(i)[j]);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     d[j][i] = Double.NaN;
                 }
             }
@@ -1608,24 +1613,24 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     private void sampleBackground() {
-        double [] points = data.getBackgroundPoints();
-        double [][] p = new double[points.length/2][2];
-        for(int i=0;i<points.length;i+=2) {
-            p[i/2][0] = points[i];
-            p[i/2][1] = points[i + 1];
+        double[] points = data.getBackgroundPoints();
+        double[][] p = new double[points.length / 2][2];
+        for (int i = 0; i < points.length; i += 2) {
+            p[i / 2][0] = points[i];
+            p[i / 2][1] = points[i + 1];
         }
 
         ArrayList<String> layers = new ArrayList<String>();
         layers.add(CommonData.getLayerFacetName(data.getLayer1()));
         layers.add(CommonData.getLayerFacetName(data.getLayer2()));
-        List<String []> sample = Sampling.sampling(layers, p);
+        List<String[]> sample = Sampling.sampling(layers, p);
 
-        double [][] d = new double[p.length][2];
-        for(int j=0;j<p.length;j++) {
-            for(int i=0;i<sample.size();i++) {
+        double[][] d = new double[p.length][2];
+        for (int j = 0; j < p.length; j++) {
+            for (int i = 0; i < sample.size(); i++) {
                 try {
                     d[j][i] = Double.parseDouble(sample.get(i)[j]);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     d[j][i] = Double.NaN;
                 }
             }
@@ -1633,6 +1638,4 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
         data.setBackgroundData(d);
     }
-
-
 }

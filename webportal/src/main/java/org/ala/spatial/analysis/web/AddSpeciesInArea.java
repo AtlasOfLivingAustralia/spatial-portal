@@ -11,9 +11,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ala.spatial.data.Query;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.util.SelectedArea;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.util.Clients;
@@ -38,14 +39,12 @@ public class AddSpeciesInArea extends UtilityComposer {
     Textbox tToolName;
     boolean hasCustomArea = false;
     Query query;
-
     String rank;
     String taxon;
     private String name;
     private String s;
     private int type;
     private int featureCount;
-
     boolean filterGrid = false;
     boolean filter = false;
     boolean byLsid = false;
@@ -75,7 +74,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 rgArea.insertBefore(rAr, rAreaCurrent);
             }
 
-            if(!allSpecies) {
+            if (!allSpecies) {
                 //rgArea.setSelectedItem(rAreaWorld);
                 rAreaSelected = rAreaWorld; //set as default in the zul
             } else {
@@ -83,7 +82,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 rAreaAustralia.setVisible(false);
 
                 for (int i = 0; i < rgArea.getItemCount(); i++) {
-                    if (rgArea.getItemAtIndex(i).isVisible()) {                        
+                    if (rgArea.getItemAtIndex(i).isVisible()) {
                         rAreaSelected = rgArea.getItemAtIndex(i);
                         rgArea.setSelectedItem(rAreaSelected);
                         Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
@@ -104,9 +103,9 @@ public class AddSpeciesInArea extends UtilityComposer {
         }
         rAreaSelected = rgArea.getSelectedItem();
         try {
-	            rAreaSelected = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
-	        } catch (Exception e) {
-	        }
+            rAreaSelected = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+        } catch (Exception e) {
+        }
     }
 
     public void onClick$btnCancel(Event event) {
@@ -146,8 +145,8 @@ public class AddSpeciesInArea extends UtilityComposer {
     }
 
     public void onFinish() {
-        try {            
-            String wkt = getSelectedArea();
+        try {
+            SelectedArea sa = getSelectedArea();
 
             //String spname = name + ";" + lsid;
             boolean setupMetadata = true;
@@ -155,43 +154,33 @@ public class AddSpeciesInArea extends UtilityComposer {
             MapLayer ml = null;
 
             Query q = null;
-            if(query == null) {
-                //species in area
-                q = new SolrQuery(null, wkt, null, null, true);
-            } else {
-                q = query.newWkt(wkt, true);
-            }
-            if(q instanceof UploadQuery) {
-                 //do default sampling now
-                if(CommonData.getDefaultUploadSamplingFields().size() > 0) {
+            q = QueryUtil.queryFromSelectedArea(query, sa, true);
+            if (q instanceof UploadQuery) {
+                //do default sampling now
+                if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
                     q.sample(CommonData.getDefaultUploadSamplingFields());
-                    ((UploadQuery)q).resetOriginalFieldCount(-1);
+                    ((UploadQuery) q).resetOriginalFieldCount(-1);
                 }
             }
             if (byLsid) {
-                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, wkt, -1);
-            } else if(filter) {
-                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, wkt, -1);
-            } else if(filterGrid) {
-                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, wkt, -1);
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1);
+            } else if (filter) {
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1);
+            } else if (filterGrid) {
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1);
             } else if (rank != null && taxon != null && q != null) {
                 //String sptaxon = taxon+";"+lsid;
-                ml = getMapComposer().mapSpecies(q, taxon, rank, -1, LayerUtilities.SPECIES, wkt, -1);
+                ml = getMapComposer().mapSpecies(q, taxon, rank, -1, LayerUtilities.SPECIES, sa.getWkt(), -1);
                 setupMetadata = false;
-            } else {  
+            } else {
                 int results_count_occurrences = q.getOccurrenceCount();
 
                 //test limit
-                if (results_count_occurrences > 0 
+                if (results_count_occurrences > 0
                         && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
-                    
+
                     String activeAreaLayerName = getSelectedAreaDisplayName();
-                    ml = getMapComposer().mapSpecies(q
-                            , "Occurrences in " + activeAreaLayerName
-                            , "species"
-                            , results_count_occurrences
-                            , LayerUtilities.SPECIES
-                            , wkt, -1);
+                    ml = getMapComposer().mapSpecies(q, "Occurrences in " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, sa.getWkt(), -1);
 
                     //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/" + sbProcessUrl.toString(), pid, "map species in area");
                 } else {
@@ -219,24 +208,29 @@ public class AddSpeciesInArea extends UtilityComposer {
         }
     }
 
-    public String getSelectedArea() {
+    public SelectedArea getSelectedArea() {
         //String area = rgArea.getSelectedItem().getValue();
-        String area = rAreaSelected.getValue(); 
+        String area = rAreaSelected.getValue();
 
+        SelectedArea sa = null;
         try {
             if (area.equals("current")) {
-                area = getMapComposer().getViewArea();
+                sa = new SelectedArea(null, getMapComposer().getViewArea());
             } else if (area.equals("australia")) {
-                area = CommonData.AUSTRALIA_WKT;
+                sa = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
             } else if (area.equals("world")) {
-                area = CommonData.WORLD_WKT;
+                sa = new SelectedArea(null, CommonData.WORLD_WKT);
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {
-                    if (area.equals(ml.getDisplayName())) {
-                        area = ml.getWKT();
+                    if (area.equals(ml.getWKT())) {
+                        sa = new SelectedArea(ml, null);
                         break;
                     }
+                }
+                if (sa == null) {
+                    //for 'all areas'
+                    sa = new SelectedArea(null, area);
                 }
             }
         } catch (Exception e) {
@@ -244,7 +238,7 @@ public class AddSpeciesInArea extends UtilityComposer {
             e.printStackTrace(System.out);
         }
 
-        return area;
+        return sa;
     }
 
     public String getSelectedAreaName() {
@@ -282,6 +276,7 @@ public class AddSpeciesInArea extends UtilityComposer {
         this.metadata = metadata;
         this.rank = rank;
     }
+
     void setSpeciesFilterParams(Query q, String name, String s, int featureCount, int type, String metadata, String rank) {
         this.query = q;
         this.name = name;

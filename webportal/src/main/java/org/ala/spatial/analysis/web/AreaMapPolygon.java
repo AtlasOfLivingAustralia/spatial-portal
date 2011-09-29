@@ -4,24 +4,26 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import net.sf.json.JSONArray;
-import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import org.ala.spatial.data.Facet;
 import org.ala.spatial.gazetteer.GazetteerPointSearch;
+import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
-import org.ala.spatial.util.Util;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Textbox;
@@ -35,24 +37,21 @@ public class AreaMapPolygon extends AreaToolComposer {
 
     SettingsSupplementary settingsSupplementary;
     private Textbox displayGeom;
-    //String layerName;
     Textbox txtLayerName;
     Button btnOk;
     Button btnClear;
     Button btnAddLayer;
-//    ContextualLayersAutoComplete autoCompleteLayers;
-//    String treeName, treePath, treeMetadata;
-//    int treeSubType;
     Radio rAddLayer;
     Vbox vbxLayerList;
     Radiogroup rgPolygonLayers;
- //   List<Radio> radioItems;
+    Checkbox displayAsWms;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
         loadLayerSelection();
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
-         btnOk.setDisabled(true);
+        btnOk.setDisabled(true);
         btnClear.setDisabled(true);
         Clients.evalJavaScript("mapFrame.toggleClickHandler(false);");
     }
@@ -65,7 +64,7 @@ public class AreaMapPolygon extends AreaToolComposer {
 
     public void onClick$btnClear(Event event) {
         MapComposer mc = getThisMapComposer();
-        if(layerName != null && mc.getMapLayer(layerName) != null) {
+        if (layerName != null && mc.getMapLayer(layerName) != null) {
             mc.removeLayer(layerName);
         }
         String script = mc.getOpenLayersJavascript().addFeatureSelectionTool();
@@ -77,7 +76,7 @@ public class AreaMapPolygon extends AreaToolComposer {
 
     public void onClick$btnCancel(Event event) {
         MapComposer mc = getThisMapComposer();
-        if(layerName != null && mc.getMapLayer(layerName) != null) {
+        if (layerName != null && mc.getMapLayer(layerName) != null) {
             mc.removeLayer(layerName);
         }
         Clients.evalJavaScript("mapFrame.toggleClickHandler(true);");
@@ -85,28 +84,27 @@ public class AreaMapPolygon extends AreaToolComposer {
     }
 
     public void onCheck$rgPolygonLayers(Event event) {
-        
-          Radio selectedItem = rgPolygonLayers.getSelectedItem();
-         
-          //Add and remove layer to set as top layer
-          String layerName = selectedItem.getValue();
-          MapComposer mc = getThisMapComposer();
-          MapLayer ml = mc.getMapLayer(layerName);
-          mc.removeLayer(layerName);
-          mc.activateLayer(ml, true);
-          
+
+        Radio selectedItem = rgPolygonLayers.getSelectedItem();
+
+        //Add and remove layer to set as top layer
+        String layerName = selectedItem.getValue();
+        MapComposer mc = getThisMapComposer();
+        MapLayer ml = mc.getMapLayer(layerName);
+        mc.removeLayer(layerName);
+        mc.activateLayer(ml, true);
+
     }
 
-
-      public void loadLayerSelection() {
+    public void loadLayerSelection() {
         try {
 
             Radio rSelectedLayer = (Radio) getFellowIfAny("rSelectedLayer");
 
             List<MapLayer> layers = getMapComposer().getContextualLayers();
-            
+
             if (!layers.isEmpty()) {
-            
+
                 for (int i = 0; i < layers.size(); i++) {
 
                     MapLayer lyr = layers.get(i);
@@ -123,10 +121,8 @@ public class AreaMapPolygon extends AreaToolComposer {
                 rSelectedLayer.setSelected(true);
             }
         } catch (Exception e) {
-            
         }
     }
-
 
     /**
      * Searches the gazetter at a given point and then maps the polygon feature
@@ -156,8 +152,9 @@ public class AreaMapPolygon extends AreaToolComposer {
             MapLayer ml = activeLayers.get(i);
 
             String activeLayerName = "none";
-            if (ml.getUri() != null)
+            if (ml.getUri() != null) {
                 activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
+            }
             System.out.println("ACTIVE LAYER: " + activeLayerName);
             if (ml.isDisplayed()) {
                 for (int j = 0; j < layerlist.size(); j++) {
@@ -172,11 +169,10 @@ public class AreaMapPolygon extends AreaToolComposer {
                             && jo.getString("type").equalsIgnoreCase("contextual")
                             && jo.getString("name").equalsIgnoreCase(activeLayerName)) {
 
-                        
+
                         System.out.println(ml.getName());
-                        String featureURI = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, CommonData.geoServer);
-                        System.out.println(featureURI);
-                        if (featureURI.equalsIgnoreCase("none")) { // featureURI == null
+                        Map<String, String> feature = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, CommonData.geoServer);
+                        if (feature == null) { // featureURI == null
                             continue;
                         }
                         //if it is a filtered layer, expect the filter as part of the new uri.
@@ -195,26 +191,59 @@ public class AreaMapPolygon extends AreaToolComposer {
 
 
                         //add feature to the map as a new layer
-                        String feature_text = Util.wktFromJSON(readGeoJSON(featureURI));
-
-                        String json = readGeoJSON(featureURI);
-                        String wkt = Util.wktFromJSON(json);
+                        String wkt = readUrl(CommonData.layersServer + "/shape/wkt/" + feature.get("pid"));
                         if (wkt.contentEquals("none")) {
                             continue;
-                          //  break;
+                            //  break;
                         } else {
                             searchComplete = true;
-                            displayGeom.setValue(feature_text);
+                            displayGeom.setValue(wkt);
                             //mc.removeFromList(mc.getMapLayer("Active Area"));
-                            layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
-                            MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
+                            layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
+                            MapLayer mapLayer;
+                            if (displayAsWms.isChecked()) {
+                                String url = CommonData.geoServer
+                                        + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
+                                        + feature.get("pid");
+                                mapLayer = getMapComposer().addWMSLayer(txtLayerName.getValue(), url, 0.8f, /*metadata url*/ null,
+                                        null, LayerUtilities.WKT, null, null);
+                                mapLayer.setWKT(wkt);
+                                mapLayer.setPolygonLayer(true);
+                            } else {
+                                mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
+                            }
+                            Facet facet = getFacetForObject(feature.get("pid"), feature.get("value"));
+                            if (facet != null) {
+                                ArrayList<Facet> facets = new ArrayList<Facet>();
+                                facets.add(facet);
+                                mapLayer.setData("facets", facets);
+                            }
                             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
-                            if(md == null) {
+                            if (md == null) {
                                 md = new MapLayerMetadata();
                                 mapLayer.setMapLayerMetadata(md);
                             }
-                            md.setMoreInfo(LayersUtil.getMetadataForWKT("User selected map polygon", wkt));
-                       
+                            try {
+                                double [][] bb = SimpleShapeFile.parseWKT(wkt).getBoundingBox();
+                                ArrayList<Double> bbox = new ArrayList<Double>();
+                                bbox.add(bb[0][0]);
+                                bbox.add(bb[0][1]);
+                                bbox.add(bb[1][0]);
+                                bbox.add(bb[1][1]);
+                                md.setBbox(bbox);
+                            } catch (Exception e) {
+                                System.out.println("failed to parse: " + wkt);
+                                e.printStackTrace();
+                            }
+                            try {
+                                //md.setMoreInfo(LayersUtil.getMetadataForWKT("User selected map polygon", wkt));
+                                String fid = getStringValue(null, "fid", readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
+                                String spid = getStringValue("\"id\":\"" + fid + "\"", "spid", readUrl(CommonData.layersServer + "/fields"));
+                                md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
                             btnOk.setDisabled(false);
                             btnClear.setDisabled(false);
                             break;
@@ -224,6 +253,15 @@ public class AreaMapPolygon extends AreaToolComposer {
                 }
             }
         }
+    }
+
+    String getStringValue(String startAt, String tag, String json) {
+        String typeStart = "\"" + tag + "\":\"";
+        String typeEnd = "\"";
+        int beginning = startAt == null ? 0 : json.indexOf(startAt) + startAt.length();
+        int start = json.indexOf(typeStart, beginning) + typeStart.length();
+        int end = json.indexOf(typeEnd, start);
+        return json.substring(start, end);
     }
 
     /**
@@ -240,7 +278,7 @@ public class AreaMapPolygon extends AreaToolComposer {
         return mapComposer;
     }
 
-     private String readGeoJSON(String feature) {
+    private String readUrl(String feature) {
         StringBuffer content = new StringBuffer();
 
         try {
@@ -263,5 +301,26 @@ public class AreaMapPolygon extends AreaToolComposer {
         return content.toString();
     }
 
+    private Facet getFacetForObject(String pid, String name) {
+        //get field.id.
+        JSONObject jo = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + pid));
+        String fieldId = jo.getString("fid");
 
+        //get field objects.
+        String objects = readUrl(CommonData.layersServer + "/field/" + fieldId);
+        String lookFor = "\"name\":\"" + name + "\"";
+
+        //create facet if name is unique.
+        int p1 = objects.indexOf(lookFor);
+        if (p1 > 0) {
+            int p2 = objects.indexOf(lookFor, p1 + 1);
+            if (p2 < 0) {
+                /* TODO: use correct replacement in 'name' for " characters */
+                /* this function is also in AreaRegionSelection */
+                return new Facet(fieldId, "\"" + name + "\"", true);
+            }
+        }
+
+        return null;
+    }
 }

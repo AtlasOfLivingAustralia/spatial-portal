@@ -1,22 +1,12 @@
 package org.ala.spatial.gazetteer;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
+import java.util.HashMap;
+import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 
 /**
  *
@@ -31,9 +21,7 @@ public class GazetteerPointSearch {
      * @param layer geoserver layer to search
      * @return returns a link to a geojson feature in the gaz
      */
-    public static String PointSearch(String lon, String lat, String layer, String geoserver) {
-        String featureURL = "none";
-
+    public static Map<String, String> PointSearch(String lon, String lat, String layer, String geoserver) {
         try {
             String uri = CommonData.layersServer + "/intersect/" + layer + "/" + lat + "/" + lon;
 
@@ -50,19 +38,22 @@ public class GazetteerPointSearch {
             System.out.println("slist: " + slist);
             System.out.println("*************************************");
 
-
-
             JSONArray ja = JSONArray.fromObject(slist);
 
             if (ja != null && ja.size() > 0) {
                 JSONObject jo = ja.getJSONObject(0);
 
-                featureURL = CommonData.layersServer + "/shape/geojson/" + jo.getString("pid");
+                HashMap<String, String> map = new HashMap<String, String>();
+                for (Object k : jo.keySet()) {
+                    map.put((String) k, jo.getString((String) k));
+                }
+
+                return map;
             }
         } catch (Exception e1) {
             //FIXME: log something
             System.out.println(e1.getMessage());
         }
-        return featureURL;
+        return null;
     }
 }

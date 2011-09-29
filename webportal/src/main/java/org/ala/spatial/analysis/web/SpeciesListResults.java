@@ -2,18 +2,15 @@ package org.ala.spatial.analysis.web;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ala.spatial.util.CommonData;
-import org.ala.spatial.data.SolrQuery;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryUtil;
+import org.ala.spatial.util.SelectedArea;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zul.Button;
@@ -41,24 +38,25 @@ public class SpeciesListResults extends UtilityComposer {
     Row rowCounts;
     int results_count = 0;
     int results_count_occurrences = 0;
-
-    public String wkt;
+    SelectedArea selectedArea;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-        wkt = (String) Executions.getCurrent().getArg().get("wkt");
+        selectedArea = (SelectedArea) Executions.getCurrent().getArg().get("selectedarea");
 
         populateList();
     }
     boolean addedListener = false;
 
     public void populateList() {
-        updateParameters();
+        if (selectedArea == null) {
+            selectedArea = new SelectedArea(null, getMapComposer().getViewArea());
+        }
 
         try {
-            SolrQuery sq = new SolrQuery(null, wkt, null, null, false);
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false);
 
             if (sq.getSpeciesCount() <= 0) {
                 getMapComposer().showMessage("No species records in the active area.");
@@ -71,8 +69,8 @@ public class SpeciesListResults extends UtilityComposer {
 
             //remove header
             String speciesList = sq.speciesList();
-            results = speciesList.substring(speciesList.indexOf('\n')+1).split("\n");
-            
+            results = speciesList.substring(speciesList.indexOf('\n') + 1).split("\n");
+
             java.util.Arrays.sort(results);
 
             // results should already be sorted: Arrays.sort(results);
@@ -99,7 +97,7 @@ public class SpeciesListResults extends UtilityComposer {
                                 ss = new String[0];
                             }
 
-                            if(ss == null || ss.length == 0) {
+                            if (ss == null || ss.length == 0) {
                                 return;
                             }
 
@@ -160,33 +158,11 @@ public class SpeciesListResults extends UtilityComposer {
 
         Filedownload.save(sb.toString(), "text/plain", "Species_list_" + sdate + "_" + spid + ".csv");
 
-        if(wkt == null) {
-            wkt = getMapComposer().getViewArea();
+        if (selectedArea == null) {
+            selectedArea = new SelectedArea(null, getMapComposer().getViewArea());
         }
-        getMapComposer().updateUserLogAnalysis("species list", wkt/*getMapComposer().getSelectionArea()*/, "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
+        getMapComposer().updateUserLogAnalysis("species list", selectedArea.getWkt(), "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
 
         detach();
-    }
-
-    boolean updateParameters() {
-        //extract 'shape' and 'pid' from composer
-        String area = wkt;//getMapComposer().getSelectionArea();
-        if(area == null) {
-            wkt = getMapComposer().getViewArea();
-            area = wkt;
-        }
-        if (area.contains("ENVELOPE(")) {
-            shape = "none";
-            pid = area.substring(9, area.length() - 1);
-            return true;
-        } else {
-            pid = "none";
-            if (shape != area) {
-                shape = area;
-                return true;
-            } else {
-                return false;
-            }
-        }
     }
 }

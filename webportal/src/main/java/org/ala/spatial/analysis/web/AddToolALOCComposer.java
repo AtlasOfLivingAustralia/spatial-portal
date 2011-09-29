@@ -14,6 +14,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -102,12 +103,12 @@ public class AddToolALOCComposer extends AddToolComposer {
         } catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
         }
-        
+
         String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_" + pid + "&FORMAT=image%2Fpng";
         String legendurl = CommonData.geoServer
                 + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:aloc_" + pid;
-        System.out.println(legendurl);   
+        System.out.println(legendurl);
         getMapComposer().addWMSLayer(layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
 
         //getMapComposer().addImageLayer(pid, layerLabel, uri, opacity, bbox, LayerUtilities.ALOC);
@@ -215,7 +216,7 @@ public class AddToolALOCComposer extends AddToolComposer {
                 return;
             }
 
-            String area = getSelectedArea();//getMapComposer().getSelectionArea();
+            SelectedArea sa = getSelectedArea();//getMapComposer().getSelectionArea();
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/aloc/processgeoq?");
@@ -225,6 +226,12 @@ public class AddToolALOCComposer extends AddToolComposer {
             HttpClient client = new HttpClient();
             //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
             PostMethod get = new PostMethod(sbProcessUrl.toString());
+            String area;
+            if (sa.getMapLayer() != null && sa.getMapLayer().getData("envelope") != null) {
+                area = "ENVELOPE(" + (String) sa.getMapLayer().getData("envelope") + ")";
+            } else {
+                area = sa.getWkt();
+            }
             get.addParameter("area", area);
             get.addRequestHeader("Accept", "text/plain");
 

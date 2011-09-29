@@ -9,7 +9,7 @@ import net.sf.json.JSONObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.ScatterplotData;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.util.SelectedArea;
 import org.zkoss.zul.Checkbox;
 
 /**
@@ -76,18 +76,22 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         if (bgSearchSpeciesAuto.getSelectedItem() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() > 0) {
-            backgroundLsid = QueryUtil.get((String)bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), false);
+            backgroundLsid = QueryUtil.get((String) bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), false);
         }
 
-        String filterWkt = getSelectedArea();
-        String highlightWkt = getSelectedAreaHighlight();
+        SelectedArea filterSa = getSelectedArea();
+        SelectedArea highlightSa = getSelectedAreaHighlight();
 
         boolean envGrid = chkShowEnvIntersection.isChecked();
 
-        ScatterplotData data = new ScatterplotData(lsid.newWkt(filterWkt, true), name, lyr1value,
+        Query lsidQuery = QueryUtil.queryFromSelectedArea(lsid, filterSa, false);
+
+        Query backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false);
+
+        ScatterplotData data = new ScatterplotData(lsidQuery, name, lyr1value,
                 lyr1name, lyr2value, lyr2name, pid, selection, enabled,
-                (backgroundLsid != null) ?backgroundLsid.newWkt(filterWkt, false): null,
-                filterWkt, highlightWkt, envGrid);
+                (backgroundLsid != null) ? backgroundLsidQuery : null,
+                filterSa, highlightSa, envGrid);
 
         getMapComposer().loadScatterplot(data, tToolName.getValue());
 

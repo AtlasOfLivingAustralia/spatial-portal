@@ -17,6 +17,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import net.sf.json.JSONException;
+import org.ala.spatial.data.Facet;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.SolrQuery;
 import org.apache.commons.lang.StringUtils;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
@@ -280,6 +283,7 @@ public class Util {
                             //return 510000000;
                         } else {
                             isWorld = false;
+                            break;
                         }
                     }
                     //if (isWorld) return (510000000 * 1000 * 1000 * 1L);

@@ -5,7 +5,9 @@
 package org.ala.spatial.data;
 
 import au.org.emii.portal.composer.MapComposer;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.UserData;
 
 /**
@@ -41,6 +43,31 @@ public class QueryUtil {
             q = new SolrQuery(id, null, null, null, forMapping);
         }
 
+        return q;
+    }
+
+    public static Query queryFromSelectedArea(Query baseQuery, SelectedArea sa, boolean forMapping) {
+        if (sa == null) {
+            return baseQuery.newWkt(null, forMapping);
+        }
+        Query q = null;
+        if (sa.getMapLayer() != null) {
+            if (sa.getMapLayer().getData("facets") != null) {
+                ArrayList<Facet> facets = (ArrayList<Facet>) sa.getMapLayer().getData("facets");
+                if (baseQuery == null) {
+                    q = new SolrQuery(null, null, null, facets, forMapping);
+                } else {
+                    q = baseQuery.newFacets(facets, forMapping);
+                }
+            }
+        }
+        if (q == null) {
+            if (baseQuery == null) {
+                q = new SolrQuery(null, sa.getWkt(), null, null, false);
+            } else {
+                q = baseQuery.newWkt(sa.getWkt(), forMapping);
+            }
+        }
         return q;
     }
 }

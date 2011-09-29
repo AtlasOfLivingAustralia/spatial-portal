@@ -65,7 +65,7 @@ public class AutoComplete extends Combobox {
 
         try {            
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.layersServer + "/search?q=" + searchString);
+            GetMethod get = new GetMethod(CommonData.layersServer + "/search?limit=40&q=" + searchString);
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();

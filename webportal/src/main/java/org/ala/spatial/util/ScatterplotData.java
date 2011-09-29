@@ -6,7 +6,6 @@ package org.ala.spatial.util;
 
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
-import java.util.List;
 import org.ala.spatial.data.LegendObject;
 import org.ala.spatial.data.Query;
 
@@ -26,14 +25,11 @@ public class ScatterplotData implements Serializable {
     Query query;
     String name;
     Query backgroundQuery;
-
     //area info
-    String filterWkt;
-    String highlightWkt;
-
+    SelectedArea filterSa;
+    SelectedArea highlightSa;
     //grid
     boolean envGrid;
-
     //appearance
     public String colourMode = "-1";
     public int red = 0;
@@ -41,17 +37,16 @@ public class ScatterplotData implements Serializable {
     public int blue = 255;
     public int opacity = 100;
     public int size = 4;
-
     //data
-    double [] points;
-    String [] series;
-    String [] ids;
-    double [][] data;
-    double [] seriesValues;
-    double [] backgroundPoints;
-    String [] backgroundSeries;
-    String [] backgroundIds;
-    double [][] backgroundData;
+    double[] points;
+    String[] series;
+    String[] ids;
+    double[][] data;
+    double[] seriesValues;
+    double[] backgroundPoints;
+    String[] backgroundSeries;
+    String[] backgroundIds;
+    double[][] backgroundData;
     int missingCount;
     LegendObject legend;
 
@@ -59,8 +54,7 @@ public class ScatterplotData implements Serializable {
         enabled = false;
     }
 
-    public ScatterplotData(Query query, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled
-            ,Query backgroundQuery, String filterWkt, String highlightWkt, boolean envGrid) {
+    public ScatterplotData(Query query, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled, Query backgroundQuery, SelectedArea filterSa, SelectedArea highlightSa, boolean envGrid) {
         this.query = query;
         this.name = name;
         this.layer1 = layer1;
@@ -71,8 +65,8 @@ public class ScatterplotData implements Serializable {
         this.selection = selection;
         this.enabled = enabled;
         this.backgroundQuery = backgroundQuery;
-        this.filterWkt = filterWkt;
-        this.highlightWkt = highlightWkt;
+        this.filterSa = filterSa;
+        this.highlightSa = highlightSa;
         this.envGrid = envGrid;
     }
 
@@ -144,12 +138,12 @@ public class ScatterplotData implements Serializable {
         return backgroundQuery;
     }
 
-    public String getFilterWkt() {
-        return filterWkt;
+    public SelectedArea getFilterSa() {
+        return filterSa;
     }
 
-    public String getHighlightWkt() {
-        return highlightWkt;
+    public SelectedArea getHighlightSa() {
+        return highlightSa;
     }
 
     public boolean isEnvGrid() {
@@ -168,35 +162,35 @@ public class ScatterplotData implements Serializable {
         this.query = query;
     }
 
-    public void setPoints(double [] points) {
+    public void setPoints(double[] points) {
         this.points = points;
     }
 
-    public double [] getPoints() {
+    public double[] getPoints() {
         return points;
     }
 
-    public void setSeries(String [] series) {
+    public void setSeries(String[] series) {
         this.series = series;
     }
 
-    public String [] getSeries() {
+    public String[] getSeries() {
         return series;
     }
 
-    public void setIds(String [] ids) {
+    public void setIds(String[] ids) {
         this.ids = ids;
     }
 
-    public String [] getIds() {
+    public String[] getIds() {
         return ids;
     }
 
-    public void setData(double [][] data) {
+    public void setData(double[][] data) {
         this.data = data;
     }
 
-    public double [][] getData() {
+    public double[][] getData() {
         return data;
     }
 
@@ -216,41 +210,42 @@ public class ScatterplotData implements Serializable {
         return legend;
     }
 
-    public void setBackgroundPoints(double [] points) {
+    public void setBackgroundPoints(double[] points) {
         this.backgroundPoints = points;
     }
 
-    public double [] getBackgroundPoints() {
+    public double[] getBackgroundPoints() {
         return backgroundPoints;
     }
 
-    public void setBackgroundSeries(String [] series) {
+    public void setBackgroundSeries(String[] series) {
         this.backgroundSeries = series;
     }
 
-    public String [] getBackgroundSeries() {
+    public String[] getBackgroundSeries() {
         return backgroundSeries;
     }
 
-    public void setBackgroundIds(String [] ids) {
+    public void setBackgroundIds(String[] ids) {
         this.backgroundIds = ids;
     }
 
-    public String [] getBackgroundIds() {
+    public String[] getBackgroundIds() {
         return backgroundIds;
     }
 
-    public void setBackgroundData(double [][] data) {
+    public void setBackgroundData(double[][] data) {
         this.backgroundData = data;
     }
 
-    public double [][] getBackgroundData() {
+    public double[][] getBackgroundData() {
         return backgroundData;
     }
 
-    public void setSeriesValues(double [] seriesValues) {
+    public void setSeriesValues(double[] seriesValues) {
         this.seriesValues = seriesValues;
     }
+
     public double[] getSeriesValues() {
         return seriesValues;
     }

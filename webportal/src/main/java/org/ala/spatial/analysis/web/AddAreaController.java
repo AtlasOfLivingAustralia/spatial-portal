@@ -10,7 +10,6 @@ import java.util.Map;
 import org.ala.spatial.util.LayersUtil;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Window;
@@ -23,7 +22,7 @@ public class AddAreaController extends UtilityComposer {
 
     SettingsSupplementary settingsSupplementary;
     Radiogroup cbAreaSelection;
-    Radio ciWKT, ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView;
+    Radio ciWKT, ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView, ciRadiusManualSelection;
     private Map args;
 
     @Override
@@ -53,6 +52,9 @@ public class AddAreaController extends UtilityComposer {
         } else if (cbAreaSelection.getSelectedItem() == ciAddressRadiusSelection) {
             overlapped = false;
             windowName = "WEB-INF/zul/AreaAddressRadiusSelection.zul";
+        } else if (cbAreaSelection.getSelectedItem() == ciRadiusManualSelection) {
+            overlapped = false;
+            windowName = "WEB-INF/zul/AreaRadiusManualSelection.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciUploadShapefile) {
             windowName = "WEB-INF/zul/AreaUploadShapefile.zul";
             overlapped = false;
@@ -65,9 +67,7 @@ public class AddAreaController extends UtilityComposer {
                 //present layer selection window
                 windowName = "WEB-INF/zul/ContextualLayerSelection.zul";
                 overlapped = false;
-            }
-            else
-            {
+            } else {
                 windowName = "WEB-INF/zul/AreaMapPolygon.zul";
                 script = mc.getOpenLayersJavascript().addFeatureSelectionTool();
             }
@@ -122,7 +122,7 @@ public class AddAreaController extends UtilityComposer {
                 e.printStackTrace();
             }
         } else if (this.getParent().getId().equals("addtoolwindow")) {
-            AddToolComposer analysisParent = (AddToolComposer)this.getParent();
+            AddToolComposer analysisParent = (AddToolComposer) this.getParent();
             //analysisParent.hasCustomArea = true;
             analysisParent.resetWindow(getMapComposer().getNextAreaLayerName("My Area"));
         }
@@ -131,10 +131,10 @@ public class AddAreaController extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         if (this.getParent().getId().equals("addtoolwindow")) {
-            AddToolComposer analysisParent = (AddToolComposer)this.getParent();
+            AddToolComposer analysisParent = (AddToolComposer) this.getParent();
             analysisParent.resetWindow(null);
         }
-        
+
         this.detach();
     }
 }

@@ -31,6 +31,7 @@
                     <separator />
                     <label value="Searching" sclass="wSubLabel" />
                     <radio label="Radius centered on street address" id="ciAddressRadiusSelection"/>
+                    <radio label="Create radius from point" id="ciRadiusManualSelection"/>
                     <radio label="Gazetteer polygon" id="ciRegionSelection" />
 
                     <separator />

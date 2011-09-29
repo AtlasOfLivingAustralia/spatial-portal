@@ -79,6 +79,28 @@ public class SolrQuery implements Query, Serializable {
     String paramId;
     boolean forMapping;
 
+    static String [][] facetNameExceptions = { { "cl22", "state" }, { "cl23", "places" }, {"cl20", "ibra"} , {"cl21", "imcra"}};
+
+    static String translateFieldForSolr(String facetName) {
+        for(String [] s : facetNameExceptions) {
+            if(facetName.equals(s[0])) {
+                facetName = s[1];
+                break;
+            }
+        }
+        return facetName;
+    }
+
+    static String translateSolrForField(String facetName) {
+        for(String [] s : facetNameExceptions) {
+            if(facetName.equals(s[1])) {
+                facetName = s[0];
+                break;
+            }
+        }
+        return facetName;
+    }
+
     public SolrQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping) {
         this.lsids = lsids;
         this.facets = facets;
@@ -165,6 +187,14 @@ public class SolrQuery implements Query, Serializable {
         try {
             int result = client.executeMethod(get);
             sample = decompressGz(get.getResponseBodyAsStream());
+            
+            //in the first line do field name replacement
+            for(QueryField f : fields) {
+                String t = translateFieldForSolr(f.getName());
+                if(!f.getName().equals(t)) {
+                    sample = sample.replaceFirst(t, f.getName());
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -431,7 +461,16 @@ public class SolrQuery implements Query, Serializable {
                 if (queryTerms > 0) {
                     sb.append("%20AND%20");
                 }
-                sb.append(facets.get(i).toString());
+                String facet = facets.get(i).toString();
+                int p = facet.indexOf(':');
+                if(p > 0) {
+                    String f = facet.substring(0,p);
+                    String t = translateFieldForSolr(f);
+                    if(!f.equals(t)) {
+                        facet = t + facet.substring(p);
+                    }
+                }
+                sb.append(facet);
                 queryTerms++;
             }
         }
@@ -690,7 +729,7 @@ public class SolrQuery implements Query, Serializable {
                     + LEGEND_SERVICE_CSV
                     + DEFAULT_ROWS
                     + "&q=" + getQ()
-                    + "&cm=" + colourmode;
+                    + "&cm=" + translateFieldForSolr(colourmode);
             System.out.println(url);
             GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
 
@@ -698,8 +737,15 @@ public class SolrQuery implements Query, Serializable {
 
             try {
                 int result = client.executeMethod(get);
+                String s = get.getResponseBodyAsString();
 
-                lo = new SolrLegendObject(colourmode, get.getResponseBodyAsString());
+                //in the first line do field name replacement
+                String t = translateFieldForSolr(colourmode);
+                if(!colourmode.equals(t)) {
+                    s = s.replaceFirst(t, colourmode);
+                }
+
+                lo = new SolrLegendObject(colourmode, s);
                 legends.put(colourmode, lo);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -847,26 +893,19 @@ public class SolrQuery implements Query, Serializable {
 
     @Override
     public String getDownloadUrl(String[] extraFields) {
-        //Some cl fields are downloaded by default
-        //TODO: add the other cl fields downloaded by default
-        String[] fieldsToRemove = {"cl22"};
-
         StringBuilder sb = new StringBuilder();
         if (extraFields != null && extraFields.length > 0) {
             for (int i = 0; i < extraFields.length; i++) {
-                int j = 0;
-                for (j = 0; j < fieldsToRemove.length; j++) {
-                    if (fieldsToRemove[j].equals(extraFields[i])) {
-                        break;
-                    }
-                }
-                //append if field is not in 'removed' list
-                if (j == fieldsToRemove.length) {
-                    if (sb.length() == 0) {
-                        sb.append("&extra=").append(extraFields[i]);
-                    } else {
-                        sb.append(",").append(extraFields[i]);
-                    }
+                //Solr download has some default fields
+                // these include the 'translate' fields
+                // remove them from extraFields
+                if(!extraFields[i].equals(translateFieldForSolr(extraFields[i])))
+                    continue;
+
+                if (sb.length() == 0) {
+                    sb.append("&extra=").append(extraFields[i]);
+                } else {
+                    sb.append(",").append(extraFields[i]);
                 }
             }
         }
