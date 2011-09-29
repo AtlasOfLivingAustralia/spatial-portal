@@ -15,6 +15,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import net.sf.json.JSONObject;
 import org.ala.spatial.data.Facet;
+import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
@@ -211,7 +212,7 @@ public class AreaRegionSelection extends AreaToolComposer {
         return content.toString();
     }
 
-     private Facet getFacetForObject(String pid, String name) {
+    private Facet getFacetForObject(String pid, String name) {
         //get field.id.
         JSONObject jo = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + pid));
         String fieldId = jo.getString("fid");
@@ -226,8 +227,15 @@ public class AreaRegionSelection extends AreaToolComposer {
             int p2 = objects.indexOf(lookFor, p1 + 1);
             if (p2 < 0) {
                 /* TODO: use correct replacement in 'name' for " characters */
-                /* this function is also in AreaMapPolygon */
-                return new Facet(fieldId, "\"" + name + "\"", true);
+                /* this function is also in AreaRegionSelection */
+                Facet f = new Facet(fieldId, "\"" + name + "\"", true);
+
+                //test if this facet is in solr
+                ArrayList<Facet> facets = new ArrayList<Facet>();
+                facets.add(f);
+                if(new SolrQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
+                    return f;
+                }
             }
         }
 

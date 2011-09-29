@@ -15,6 +15,7 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.data.Facet;
+import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
@@ -317,7 +318,14 @@ public class AreaMapPolygon extends AreaToolComposer {
             if (p2 < 0) {
                 /* TODO: use correct replacement in 'name' for " characters */
                 /* this function is also in AreaRegionSelection */
-                return new Facet(fieldId, "\"" + name + "\"", true);
+                Facet f = new Facet(fieldId, "\"" + name + "\"", true);
+
+                //test if this facet is in solr
+                ArrayList<Facet> facets = new ArrayList<Facet>();
+                facets.add(f);
+                if(new SolrQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
+                    return f;
+                }
             }
         }
 
