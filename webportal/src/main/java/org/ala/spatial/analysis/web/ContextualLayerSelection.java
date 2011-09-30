@@ -44,7 +44,7 @@ public class ContextualLayerSelection extends AreaToolComposer  {
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
         }
       
-        Window window = (Window) Executions.createComponents("WEB-INF/zul/AreaMapPolygon.zul", this.getParent(), Executions.getCurrent().getArg());
+        Window window = (Window) Executions.createComponents("WEB-INF/zul/AreaMapPolygon.zul", this.getParent(), winProps);
         window.doOverlapped();
         String script = getMapComposer().getOpenLayersJavascript().addFeatureSelectionTool();
         getMapComposer().getOpenLayersJavascript().execute(getMapComposer().getOpenLayersJavascript().iFrameReferences + script);

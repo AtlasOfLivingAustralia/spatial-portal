@@ -1191,7 +1191,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void echoMapSpeciesByLSID(Event event) {
         String lsid = (String) event.getData();
         try {
-            mapSpecies(QueryUtil.get(lsid, this, true), lsid, "species", -1, LayerUtilities.SPECIES, null, -1);
+            mapSpecies(QueryUtil.get(lsid, this, true), null, "species", -1, LayerUtilities.SPECIES, null, -1);
         } catch (Exception e) {
             //try again
             Events.echoEvent("echoMapSpeciesByLSID", this, lsid);
