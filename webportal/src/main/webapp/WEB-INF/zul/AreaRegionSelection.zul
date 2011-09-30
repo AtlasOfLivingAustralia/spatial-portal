@@ -28,7 +28,7 @@
             <separator />
              <hbox id="hbRadius" visible="false" width="100%">
                 <separator />
-                    <label value="Enter radius (km)" sclass="wLabel" />
+                    <label value="Enter radius (m)" sclass="wLabel" />
                 <separator />
                 <doublebox id="dRadius" value="1000" constraint="no negative,no empty" />
             </hbox>

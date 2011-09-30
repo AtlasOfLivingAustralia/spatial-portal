@@ -37,7 +37,7 @@
             <separator />
             <hbox width="90%">
                 <div width="160px">
-                    <label value="Radius (km)" sclass="h3" />
+                    <label value="Radius (m)" sclass="h3" />
                 </div>
                 <doublebox id="dRadius" width="100px" constraint="no negative,no empty" value="1000"/>
             </hbox>

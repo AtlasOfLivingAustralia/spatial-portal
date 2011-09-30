@@ -840,7 +840,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     ArrayList<Facet> getFacets() {
         ArrayList<Facet> facets = new ArrayList<Facet>();
         for (int i = 0; i < selectedLayers.size(); i++) {
-            SPLFilter splf = selectedSPLFilterLayers.get(selectedLayers.get(i));
+            SPLFilter splf = selectedSPLFilterLayers.get(selectedLayers.get(i).toLowerCase());
             Facet f = new Facet(CommonData.getLayerFacetName(splf.layername), splf.minimum_value, splf.maximum_value, true);
             facets.add(f);
         }

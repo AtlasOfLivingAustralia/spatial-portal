@@ -85,7 +85,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
                     md = new MapLayerMetadata();
                     mapLayer.setMapLayerMetadata(md);
                 }
-                md.setMoreInfo(LayersUtil.getMetadata(dRadius.getText() + "km radius around " + addressLabel.getValue() + " (" + longitude + ", " + latitude + ")"));
+                md.setMoreInfo(LayersUtil.getMetadata(dRadius.getText() + "m radius around " + addressLabel.getValue() + " (" + longitude + ", " + latitude + ")"));
 
                 displayGeom.setText(wkt);
             } catch (Exception e) {

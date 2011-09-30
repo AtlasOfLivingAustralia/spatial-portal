@@ -62,7 +62,7 @@ public class AreaRadiusManual extends AreaToolComposer {
                     md = new MapLayerMetadata();
                     mapLayer.setMapLayerMetadata(md);
                 }
-                md.setMoreInfo(LayersUtil.getMetadata(dRadius.getText() + "km radius around longitude " + dLongitude.getText() + ", latitude " + dLatitude.getText()));
+                md.setMoreInfo(LayersUtil.getMetadata(dRadius.getText() + "m radius around longitude " + dLongitude.getText() + ", latitude " + dLatitude.getText()));
 
                 displayGeom.setText(wkt);
             } catch (Exception e) {
