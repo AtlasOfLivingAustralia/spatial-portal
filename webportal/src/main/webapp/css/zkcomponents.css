@@ -1322,6 +1322,7 @@ div.z-window-modal-header, div.z-window-overlapped-header {
 
  .underline {
      text-decoration: underline;
+     cursor: pointer; 
 }
 
 .z-west-header {
