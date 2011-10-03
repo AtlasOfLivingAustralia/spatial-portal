@@ -258,7 +258,7 @@ function buildMapReal() {
     });
     bLayer3 = new OpenLayers.Layer.OSM();
     
-    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/gwc/service/wms/reflect",{
+    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/gwc/service/wms/reflect",{
         layers:"ALA:world"},
 	{isBaseLayer: true,'wrapDateLine': true,
         projection: new OpenLayers.Projection("EPSG:900913"),
