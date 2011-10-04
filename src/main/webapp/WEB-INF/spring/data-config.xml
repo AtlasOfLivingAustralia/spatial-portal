@@ -15,7 +15,7 @@
     <!-- DataSourceAdapter connection pooling -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="driverClassName" value="org.postgresql.Driver" />
-        <property name="url" value="jdbc:postgresql://localhost/spatialdb:5432" />
+        <property name="url" value="jdbc:postgresql://localhost/layersdb:5432" />
         <property name="username" value="postgres" />
         <property name="password" value="postgres" />
         <property name="minIdle" value="1" />
