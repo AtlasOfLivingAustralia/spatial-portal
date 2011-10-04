@@ -1215,20 +1215,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     // TODO: eventually add env/ctx layer loading code here
                 } else {
                     Iterator<String> itParams = userParams.keySet().iterator();
-                    String label = "";
-                    String filter = "";
+                    StringBuilder sb = new StringBuilder();
                     while (itParams.hasNext()) {
                         String key = itParams.next();
-                        label += key;
-                        filter += key += " eq '" + userParams.get(key) + "'";
-                        if (itParams.hasNext()) {
-                            label += " - ";
-                            filter += " AND ";
+                        if(key.equals("q") || key.equals("fq")) {
+                            if(sb.length() > 0) {
+                                sb.append(" AND ");
+                            }
+                            sb.append("(").append(userParams.get(key)).append(")");
                         }
                     }
-                    System.out.println("filter: " + filter);
+                    System.out.println("query: " + sb.toString());
                     try {
-                        Query q = new SolrQuery(null, null, filter, null, true);
+                        Query q = new SolrQuery(null, null, sb.toString(), null, true);
                         ml = mapSpecies(q, q.getName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, -1);
                     } catch (Exception e) {
                     }

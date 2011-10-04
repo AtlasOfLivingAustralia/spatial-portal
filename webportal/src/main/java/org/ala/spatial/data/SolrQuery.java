@@ -828,21 +828,23 @@ public class SolrQuery implements Query, Serializable {
         html += "<tr><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCount() + "</td></tr>";
         html += "<tr class='md_grey-bg'><td class='md_th'>Classification: </td><td class='md_spacer'/><td class='md_value'>";
 
-        for (String s : lsids.split(",")) {
-            Map<String, String> classification = getSpeciesClassification(s);
-            Iterator<String> it = classification.keySet().iterator();
-            while (it.hasNext()) {
-                String key = it.next();
-                String value = classification.get(key);
-                html += "<a href='" + CommonData.bieServer + BIE_SPECIES + value + "'>" + key + "</a> ";
-                if (it.hasNext()) {
-                    html += " > ";
+        if(lsids != null) {
+            for (String s : lsids.split(",")) {
+                Map<String, String> classification = getSpeciesClassification(s);
+                Iterator<String> it = classification.keySet().iterator();
+                while (it.hasNext()) {
+                    String key = it.next();
+                    String value = classification.get(key);
+                    html += "<a href='" + CommonData.bieServer + BIE_SPECIES + value + "'>" + key + "</a> ";
+                    if (it.hasNext()) {
+                        html += " > ";
+                    }
                 }
-            }
 
-            html += "<br />";
-            html += "More information for <a href='" + CommonData.bieServer + BIE_SPECIES + s + "' target='_blank'>"+ getScientificNameRank(s).split(",")[0] +"</a>";
-            html += "<br />";
+                html += "<br />";
+                html += "More information for <a href='" + CommonData.bieServer + BIE_SPECIES + s + "' target='_blank'>"+ getScientificNameRank(s).split(",")[0] +"</a>";
+                html += "<br />";
+            }
         }
 
         html += "</td></tr>";
