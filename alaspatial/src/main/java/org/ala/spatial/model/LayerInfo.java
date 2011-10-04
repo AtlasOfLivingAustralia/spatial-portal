@@ -61,22 +61,22 @@ public class LayerInfo {
     private String extent;
 
     @Column(name="minlatitude")
-    private double minlatitude;
+    private Double minlatitude;
 
     @Column(name="minlongitude")
-    private double minlongitude;
+    private Double minlongitude;
 
     @Column(name="maxlatitude")
-    private double maxlatitude;
+    private Double maxlatitude;
 
     @Column(name="maxlongitude")
-    private double maxlongitude;
+    private Double maxlongitude;
 
     @Column(name="notes")
     private String notes;
 
     @Column(name="enabled")
-    private boolean enabled;
+    private Boolean enabled;
 
     @Column(name="environmentalvaluemin")
     private String environmentalvaluemin;
@@ -183,35 +183,35 @@ public class LayerInfo {
         this.id = id;
     }
 
-    public double getMaxlatitude() {
+    public Double getMaxlatitude() {
         return maxlatitude;
     }
 
-    public void setMaxlatitude(double maxlatitude) {
+    public void setMaxlatitude(Double maxlatitude) {
         this.maxlatitude = maxlatitude;
     }
 
-    public double getMaxlongitude() {
+    public Double getMaxlongitude() {
         return maxlongitude;
     }
 
-    public void setMaxlongitude(double maxlongitude) {
+    public void setMaxlongitude(Double maxlongitude) {
         this.maxlongitude = maxlongitude;
     }
 
-    public double getMinlatitude() {
+    public Double getMinlatitude() {
         return minlatitude;
     }
 
-    public void setMinlatitude(double minlatitude) {
+    public void setMinlatitude(Double minlatitude) {
         this.minlatitude = minlatitude;
     }
 
-    public double getMinlongitude() {
+    public Double getMinlongitude() {
         return minlongitude;
     }
 
-    public void setMinlongitude(double minlongitude) {
+    public void setMinlongitude(Double minlongitude) {
         this.minlongitude = minlongitude;
     }
 
