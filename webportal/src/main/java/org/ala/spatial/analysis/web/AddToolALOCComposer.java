@@ -67,6 +67,24 @@ public class AddToolALOCComposer extends AddToolComposer {
     }
 
     @Override
+    void fixFocus() {
+        switch (currentStep) {
+            case 1:
+                rgArea.setFocus(true);
+                break;
+            case 2:
+                lbListLayers.setFocus(true);
+                break;
+            case 3:
+                groupCount.setFocus(true);
+                break;
+            case 4:
+                tToolName.setFocus(true);
+                break;
+        }
+    }
+
+    @Override
     public void loadMap(Event event) {
         String uri = CommonData.satServer + "/output/layers/" + pid + "/img.png";
         float opacity = Float.parseFloat("0.75");

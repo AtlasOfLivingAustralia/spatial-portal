@@ -10,6 +10,7 @@ import java.util.Map;
 import org.ala.spatial.util.LayersUtil;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Button;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Window;
@@ -23,6 +24,7 @@ public class AddAreaController extends UtilityComposer {
     SettingsSupplementary settingsSupplementary;
     Radiogroup cbAreaSelection;
     Radio ciWKT, ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView, ciRadiusManualSelection;
+    Button btnOk;
     private Map args;
 
     @Override
@@ -32,6 +34,9 @@ public class AddAreaController extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
+        if(btnOk.isDisabled()) {
+            return;
+        }
         String windowName = "";
         MapComposer mc = getMapComposer();
 

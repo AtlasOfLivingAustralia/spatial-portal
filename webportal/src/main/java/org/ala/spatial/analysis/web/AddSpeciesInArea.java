@@ -113,6 +113,9 @@ public class AddSpeciesInArea extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
+        if(btnOk.isDisabled()) {
+            return;
+        }
 
         try {
             if (rAreaSelected == rAreaCustom) {

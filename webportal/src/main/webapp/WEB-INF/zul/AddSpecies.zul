@@ -1,5 +1,4 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
-<?component name="uploadSpecies" macro-uri="/WEB-INF/zul/UploadSpecies.zul"?>
 <zk>
     <window id="addspecieswindow" use="org.ala.spatial.analysis.web.AddSpeciesController"
     apply="org.ala.spatial.analysis.web.AddSpeciesController" width="400px" height="300px" xmlns:n="http://www.zkoss.org/2005/zk/native">
@@ -16,14 +15,15 @@
         <caption label="Add species" sclass="caption" />
         <separator/>
         <div style="margin-left:20px" >
-            <radiogroup id="rgAddSpecies">
+            <radiogroup id="rgAddSpecies" onOK="addspecieswindow.onClick$btnOk(null)" >
                 <vbox height="143px">
                     <radio id ="rAllSpecies" label="All species" />
                     <radio id="rSearch" label="Search for a species by scientific or common name" />
                     <vbox id="vboxSearch">
                         <hbox>
                             <separator orient="vertical" />
-                            <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="330px" >
+                            <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  
+                            width="330px" onOK="if(searchSpeciesAuto.getSelectedIndex()>=0)addspecieswindow.onClick$btnOk(null)" focus="true">
                                 <comboitem label=""/>
                             </combobox>
                         </hbox>

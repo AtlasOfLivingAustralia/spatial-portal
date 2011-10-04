@@ -49,6 +49,9 @@ public class AddSpeciesController extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
+        if(btnOk.isDisabled()) {
+            return;
+        }
         if(rAllSpecies.isSelected()) {
             AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
             window.setAllSpecies(true);
@@ -100,13 +103,7 @@ public class AddSpeciesController extends UtilityComposer {
     public void onClick$btnUpload(Event event) {
         try {
             UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", getMapComposer(), null);
-//            usc.setEventListener(new EventListener() {
-//
-//                    @Override
-//                    public void onEvent(Event event) throws Exception {
-//                        setLsid((String)event.getData());
-//                    }
-//                });
+
             if (rUploadCoordinates.isSelected()) {
                 usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
             } else if (rUploadLSIDs.isSelected()) {
@@ -154,18 +151,11 @@ public class AddSpeciesController extends UtilityComposer {
 
     public void onCheck$rgAddSpecies(Event event) {
         if(rSearch.isSelected()) {
-           vboxSearch.setVisible(true);           
+           vboxSearch.setVisible(true);
+//           searchSpeciesAuto.setFocus(true);
         } else {
             vboxSearch.setVisible(false);
         }
-//        if(rAllSpecies.isSelected()) {
-//            chkArea.setDisabled(true);
-//            prevAreaState = chkArea.isChecked();
-//            chkArea.setChecked(true);
-//        } else {
-//            chkArea.setDisabled(false);
-//            chkArea.setChecked(prevAreaState);
-//        }
 
         refreshBtnOkDisabled();
     }
@@ -177,8 +167,6 @@ public class AddSpeciesController extends UtilityComposer {
             btnOk.setDisabled(false);
         }
     }
-
-
 
     void getFromAutocomplete() {
         // check if the species name is not valid

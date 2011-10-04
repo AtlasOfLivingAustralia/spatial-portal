@@ -116,4 +116,23 @@ public class AddToolSamplingComposer extends AddToolComposer {
             e.printStackTrace(System.out);
         }
     }
+
+    @Override
+    void fixFocus() {
+        switch (currentStep) {
+            case 1:
+                rgArea.setFocus(true);
+                break;
+            case 2:
+                if(rSpeciesSearch.isChecked()) {
+                    searchSpeciesAuto.setFocus(true);
+                } else {
+                    rgSpecies.setFocus(true);
+                }
+                break;
+            case 3:
+                lbListLayers.setFocus(true);
+                break;
+        }
+    }
 }

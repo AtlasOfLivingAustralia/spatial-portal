@@ -208,78 +208,6 @@ public class SpeciesAutoComplete extends Combobox {
         return userPoints;
     }
 
-    //keep query geocounts as [0] count and [1] last requested
-    HashMap<String, long []> queryGeoCounts = new HashMap<String, long[]>();
-    long max_age = 60*60*1000; //max age is 1hr
-    private long getCount(String key) {
-        long [] data = queryGeoCounts.get(key);
-        if(data == null || System.currentTimeMillis() - data[1] > max_age) {
-            data = new long[2];
-            data[0] = queryCount(key);
-            //ok if >= 0
-            if(data[0] >= 0) {
-                data[1] = System.currentTimeMillis();
-                queryGeoCounts.put(key, data);
-            }
-            
-        }
-        if(data != null) {
-            return data[0];
-        } else {
-            return 0;
-        }
-    }
-
-    long queryCount(String key) {
-        int count = -1;
-
-        HttpClient client = new HttpClient();
-        String url = CommonData.biocacheServer
-                + "/webportal/occurrences?"
-                + "pageSize=0"
-                + "&q=" + key;
-        System.out.println("getting count for autocomplete > " + url);
-        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
-
-        try {
-            int result = client.executeMethod(get);
-            String response = get.getResponseBodyAsString();
-
-            String start = "\"totalRecords\":";
-            String end = ",";
-            int startPos = response.indexOf(start) + start.length();
-
-            count = Integer.parseInt(response.substring(startPos, response.indexOf(end, startPos)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return count;
-    }
-
-//    private String loadOccurrencesInActiveArea(String val) {
-//        String layerPrefix = "Occurrences in Active area ";
-//        String userPoints = "";
-//
-//        for(MapLayer ml : getThisMapComposer().getActiveAreaLayers()) {
-//            if(ml.getName().contains(layerPrefix) && ml.getDisplayName().toLowerCase().contains(val.toLowerCase())) {
-//                try {
-//                    userPoints = ml.getDisplayName()
-//                            + "/"
-//                            + ml.getMapLayerMetadata().getSpeciesLsid()
-//                            + " / Active Area / "
-//                            + ml.getMapLayerMetadata().getOccurrencesCount()
-//                            + "\n";
-//                } catch (Exception e) {
-//                    System.out.println("Unable to load Active Area points into Species Auto Complete");
-//                    e.printStackTrace(System.out);
-//                }
-//            }
-//        }
-//
-//        return userPoints;
-//    }
-
     String searchService(String val) throws Exception {
         String nsurl = CommonData.bieServer + "/search.json?pageSize=100&q=" + URLEncoder.encode(val, "UTF-8");
 
@@ -301,11 +229,7 @@ public class SpeciesAutoComplete extends Combobox {
 
             //count for guid
             try {
-//                String q = "lft:%5B" + o.getLong("left") + "%20TO%20" + o.getLong("right") + "%5D%20AND%20geospatial_kosher:true";
-//                long count = getCount(q);
                 long count = CommonData.lsidCounts.getCount(o.getLong("left"), o.getLong("right"));
-                //System.out.println("count=" + count + " for " +o.getString("name") + ":" + o.getString("guid") );
-
 
                 if(count > 0 && o.containsKey("name") && o.containsKey("guid") && o.containsKey("rank")) {
                     if(slist.length() > 0) {

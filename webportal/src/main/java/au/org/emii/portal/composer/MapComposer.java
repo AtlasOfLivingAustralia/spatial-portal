@@ -2442,20 +2442,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/AddSpecies.zul", null);
     }
 
-    public void onClick$btnAddPlace(Event event) {
-        openModal("WEB-INF/zul/AddPlace.zul", null);
-    }
-
     public void onClick$btnAddArea(Event event) {
         openModal("WEB-INF/zul/AddArea.zul", null);
     }
 
     public void onClick$btnAddLayer(Event event) {
         openModal("WEB-INF/zul/AddLayer.zul", null);
-    }
-
-    public void onClick$btnAddModel(Event event) {
-        openModal("WEB-INF/zul/AddModel.zul", null);
     }
 
     public void onClick$btnAddMaxent(Event event) {

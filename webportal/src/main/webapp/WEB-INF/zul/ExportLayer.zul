@@ -41,7 +41,7 @@
                     <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                     <label id="atstep1_label" value="" />
                     <separator />
-                    <radiogroup id="rgArea" orient="vertical">
+                    <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
                         <radio id="rAreaCurrent" label="Current extent" value="current" />
                         <radio id="rAreaAustralia" label="Australia" value="australia" />
                         <radio id="rAreaWorld" label="World" value="world" />
@@ -56,7 +56,7 @@
                     <label id="exportLayername" />
                     <label value="Select an export format for your selected layer:" />
                     <separator />
-                    <radiogroup id="exportFormat" orient="vertical">
+                    <radiogroup id="exportFormat" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
                         <radio id="exportShape" value="shp" label="Shapefile" />
                         <radio id="exportKml" value="kml" label="KML" />
                         <radio id="exportWkt" value="wkt" label="Well Known Text (WKT)" />

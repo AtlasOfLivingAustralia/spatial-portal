@@ -379,4 +379,29 @@ public class AddToolMaxentComposer extends AddToolComposer {
             return out;
         }
     }
+
+    @Override
+    void fixFocus() {
+        switch (currentStep) {
+            case 1:
+                rgArea.setFocus(true);
+                break;
+            case 2:
+                if(rSpeciesSearch.isChecked()) {
+                    searchSpeciesAuto.setFocus(true);
+                } else {
+                    rgSpecies.setFocus(true);
+                }
+                break;
+            case 3:
+                lbListLayers.setFocus(true);
+                break;
+            case 4:
+                chkJackknife.setFocus(true);
+                break;
+            case 5:
+                tToolName.setFocus(true);
+                break;
+        }
+    }
 }

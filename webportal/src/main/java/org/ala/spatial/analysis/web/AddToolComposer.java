@@ -84,6 +84,8 @@ public class AddToolComposer extends UtilityComposer {
 //                }
 //            });
 //        }
+
+        fixFocus();
     }
 
     private void setupDefaultParams() {
@@ -659,6 +661,7 @@ public class AddToolComposer extends UtilityComposer {
                 this.setTop(winTop);
                 this.setLeft(winLeft);
                 this.doModal();
+                fixFocus();
                 return;
             }
             if (type.compareTo("normal") == 0) {
@@ -671,6 +674,8 @@ public class AddToolComposer extends UtilityComposer {
             this.setLeft(winLeft);
             this.doModal();
             onClick$btnOk(null);
+
+            fixFocus();
         } catch (Exception e) {
             System.out.println("Exception when resetting analysis window");
             e.printStackTrace();
@@ -718,6 +723,8 @@ public class AddToolComposer extends UtilityComposer {
                 hasCustomArea = false;
                 //setCustomArea = false;
             }
+
+            fixFocus();
         } catch (InterruptedException ex) {
             System.out.println("InterruptedException when resetting analysis window");
             ex.printStackTrace(System.out);
@@ -728,7 +735,9 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
-
+        if(btnOk.isDisabled()) {
+            return;
+        }
         try {
             if (!hasCustomArea && (isAreaCustom() || isAreaHighlightCustom())) {
                 this.doOverlapped();
@@ -757,8 +766,6 @@ public class AddToolComposer extends UtilityComposer {
             Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
             Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
             Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep + 1))) : null;
-
-
 
             if (!currentDiv.getZclass().contains("last")) {
                 currentDiv.setVisible(false);
@@ -797,7 +804,6 @@ public class AddToolComposer extends UtilityComposer {
                 onFinish();
             }
 
-            //btnCancel.setLabel("< Back");
             btnBack.setDisabled(false);
             updateWindowTitle();
 
@@ -806,7 +812,13 @@ public class AddToolComposer extends UtilityComposer {
         }
 
         toggles();
+
+        fixFocus();
     }
+
+    void fixFocus(){
+        //set element of focus
+    };
 
     public void onLastPanel() {
     }

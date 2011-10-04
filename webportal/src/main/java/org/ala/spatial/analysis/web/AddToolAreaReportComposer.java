@@ -60,4 +60,9 @@ public class AddToolAreaReportComposer extends AddToolComposer {
                 (String) ((ml == null) ? null : ml.getData("area")), bbox);
         detach();
     }
+
+    @Override
+    void fixFocus() {
+        rgArea.setFocus(true);
+    }
 }

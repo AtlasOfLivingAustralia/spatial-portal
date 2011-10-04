@@ -57,7 +57,7 @@
                 <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                 <label id="atstep1_label" value="" />
                 <separator />
-                <radiogroup id="rgArea" orient="vertical">
+                <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
                     <radio id="rAreaCurrent" label="Current extent" value="current" />
                     <radio id="rAreaAustralia" label="Australia" value="australia" />
                     <radio id="rAreaWorld" label="World" value="world" />
@@ -69,7 +69,7 @@
                 <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
                 <label id="atstep2_label" value="" />
                 <separator />
-                <radiogroup id="rgSpecies" orient="vertical">
+                <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
                     <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false" />
                     <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false" />
                     <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" />
@@ -80,7 +80,9 @@
                                 <separator />
                                 <hbox>
                                     <separator orient="vertical" />
-                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="320px" >
+                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete"
+                                    autodrop="true"  width="320px"  
+                                    onOK="if(searchSpeciesAuto.getSelectedIndex()>=0)addtoolwindow.onClick$btnOk(null)">
                                         <comboitem label=""/>
                                     </combobox>
                                 </hbox>
@@ -99,7 +101,7 @@
                 <label id="atstep3_desc" value="Highlight occurrences on the scatterplot that are in an area" sclass="wSubLabel"/>
                 <label id="atstep3_label" value="" />
                 <separator />
-                <radiogroup id="rgAreaHighlight" orient="vertical">
+                <radiogroup id="rgAreaHighlight" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
                     <radio id="rAreaNoneHighlight" label="No highlight" value="none" checked="true"/>
                     <radio id="rAreaCurrentHighlight" label="Current extent" value="current"/>
                     <radio id="rAreaAustraliaHighlight" label="Australia" value="australia" />
@@ -131,7 +133,7 @@
                 <label id="atstep5_desc" value="Select background species" sclass="wSubLabel"/>
                 <label id="atstep5_label" value="" />
                 <separator />
-                <radiogroup id="rgSpeciesBk" orient="vertical">
+                <radiogroup id="rgSpeciesBk" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
                     <radio id="rSpeciesNoneBk" label="No background species" value="none" visible="true" checked="true"/>
                     <radio id="rSpeciesAllBk" label="All species" value="allspecies" visible="false"/>
                     <radio id="rSpeciesMappedBk" label="All species currently mapped" value="allmapped" visible="false"/>
@@ -143,7 +145,9 @@
                                 <separator />
                                 <hbox>
                                     <separator orient="vertical" />
-                                    <combobox id="bgSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="320px" >
+                                    <combobox id="bgSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" 
+                                    autodrop="true"  width="320px"  
+                                    onOK="if(bgSearchSpeciesAuto.getSelectedIndex()>=0)addtoolwindow.onClick$btnOk(null)">
                                         <comboitem label=""/>
                                     </combobox>
                                 </hbox>
@@ -163,7 +167,7 @@
                 <label id="atstep6_label" value="" />
                 <separator />
                 <hbox>
-                    <textbox id="tToolName" width="250px" />
+                    <textbox id="tToolName" width="250px" onOK="addtoolwindow.onClick$btnOk(null)"/>
                 </hbox>
                 <vbox>
                     <label value="Summary" style="font-weight: bold" visible="false" />

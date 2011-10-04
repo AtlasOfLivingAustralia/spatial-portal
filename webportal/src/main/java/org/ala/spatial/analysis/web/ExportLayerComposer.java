@@ -60,4 +60,16 @@ public class ExportLayerComposer extends AddToolComposer {
         getMapComposer().exportAreaAs(exportFormat.getSelectedItem().getValue(), rAreaSelected.getLabel(), getSelectedArea());
         detach();
     }
+
+     @Override
+    void fixFocus() {
+         switch(currentStep) {
+             case 1:
+                 rgArea.setFocus(true);
+                 break;
+             case 2:
+                 exportFormat.setFocus(true);
+                 break;
+         }
+    }
 }

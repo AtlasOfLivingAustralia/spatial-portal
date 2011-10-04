@@ -20,9 +20,6 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
     int generation_count = 1;
     ScatterplotData data;
-    EnvLayersCombobox cbLayer1;
-    EnvLayersCombobox cbLayer2;
-    SpeciesAutoComplete bgSearchSpeciesAuto;
     Checkbox chkShowEnvIntersection;
 
     @Override
@@ -96,5 +93,37 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         getMapComposer().loadScatterplot(data, tToolName.getValue());
 
         this.detach();
+    }
+
+    @Override
+    void fixFocus() {
+        switch (currentStep) {
+            case 1:
+                rgArea.setFocus(true);
+                break;
+            case 2:
+                if(rSpeciesSearch.isChecked()) {
+                    searchSpeciesAuto.setFocus(true);
+                } else {
+                    rgSpecies.setFocus(true);
+                }
+                break;
+            case 3:
+                rgAreaHighlight.setFocus(true);
+                break;
+           case 4:
+                cbLayer2.setFocus(true);
+                break;
+            case 5:
+                if(rSpeciesSearchBk.isChecked()) {
+                    bgSearchSpeciesAuto.setFocus(true);
+                } else {
+                    rgSpeciesBk.setFocus(true);
+                }
+                break;
+            case 6:
+                tToolName.setFocus(true);
+                break;
+        }
     }
 }

@@ -18,8 +18,6 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
     int generation_count = 1;
     String layerLabel = "";
     String legendPath = "";
-    private String[] results;
-    String pid = "none";
 
     @Override
     public void afterCompose() {
@@ -56,31 +54,12 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-//        StringBuffer sb = new StringBuffer();
-//        sb.append("Family Name,Scientific Name,Common name/s,Taxon rank,Scientific Name LSID,Number of Occurrences\r\n");
-//        for (String s : results) {
-//            sb.append("\"");
-//            sb.append(s.replaceAll("\\*", "\",\""));
-//            sb.append("\"");
-//            sb.append("\r\n");
-//        }
-//
-//        String spid = pid;
-//        if (spid == null || spid.equals("none")) {
-//            spid = String.valueOf(System.currentTimeMillis());
-//        }
-//
-//        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
-//        String sdate = date.format(new Date());
-//
-//        Filedownload.save(sb.toString(), "text/plain", "Species_list_" + sdate + "_" + spid + ".csv");
-
-//        if(wkt == null) {
-//            wkt = getMapComposer().getViewArea();
-//        }
-//        getMapComposer().updateUserLogAnalysis("species list", wkt, "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
-
+        
         detach();
+    }
+
+    @Override
+    void fixFocus() {
+        rgArea.setFocus(true);
     }
 }

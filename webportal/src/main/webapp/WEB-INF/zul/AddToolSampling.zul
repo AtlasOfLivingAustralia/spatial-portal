@@ -51,7 +51,7 @@
                 <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                 <label id="atstep1_label" value="" />
                 <separator />
-                <radiogroup id="rgArea" orient="vertical">
+                <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
                     <radio id="rAreaCurrent" label="Current extent" value="current" />
                     <radio id="rAreaAustralia" label="Australia" value="australia" />
                     <radio id="rAreaWorld" label="World" value="world" />
@@ -63,7 +63,7 @@
                 <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
                 <label id="atstep2_label" value="" />
                 <separator />
-                <radiogroup id="rgSpecies" orient="vertical">
+                <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
                     <radio id="rSpeciesAll" label="All species" value="allspecies" />
                     <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false" />
                     <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" />
@@ -74,7 +74,9 @@
                                 <separator />
                                 <hbox>
                                     <separator orient="vertical" />
-                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="320px" >
+                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" 
+                                    autodrop="true" width="320px" 
+                                    onOK="if(searchSpeciesAuto.getSelectedIndex()>=0)addtoolwindow.onClick$btnOk(null)" >
                                         <comboitem label=""/>
                                     </combobox>
                                 </hbox>
@@ -94,7 +96,9 @@
                 <label id="atstep3_label" value="" />
                 <separator />
                 <vbox>
-                    <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px" height="450px" multiple="true" checkmark="true">
+                    <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
+                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px" height="450px" multiple="true"
+                    checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
                         <listhead>
                             <listheader label="category"  />
                             <listheader label="name" />
