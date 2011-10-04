@@ -567,7 +567,23 @@ function addRadiusDrawingTool() {
     layer_style.strokeColor = "red";
 
     radiusLayer = new OpenLayers.Layer.Vector("Point Radius Layer Layer", {
-        style: layer_style
+        style: layer_style,
+        eventListeners: {
+            "sketchmodified": function(event) {
+                var verts = event.vertex.getVertices();
+                var gll = new Array();
+                if (verts.length > 0) {
+                    for (var v=0; v<verts.length; v++) {
+                        var pt = verts[v].transform(map.projection, map.displayProjection);
+                        gll.push(new google.maps.LatLng(pt.y, pt.x));
+                    }
+                }
+                var currarea = ((google.maps.geometry.spherical.computeArea(gll)/1000)/1000);
+                var currradius = Math.sqrt(currarea/Math.PI);
+                currradius = Math.round(currradius*Math.pow(10,2))/Math.pow(10,2);
+                $('#currradius').html(currradius);
+            }
+        }
     });
     radiusLayer.setVisibility(true);
     map.addLayer(radiusLayer);
@@ -583,6 +599,8 @@ function addRadiusDrawingTool() {
     });
     map.addControl(radiusControl);
     radiusControl.activate();
+    $('#currradius').html("0"); 
+    $('#radiusDisplay').slideDown('slow');
 }
 
 function addPolygonDrawingTool() {
@@ -625,6 +643,7 @@ function removeAreaSelection() {
         radiusLayer.destroy();
         radiusLayer = null;
         radiusControl.deactivate();
+        $('#radiusDisplay').slideUp('slow');
     }
 
     if(featureSelectLayer != null){
