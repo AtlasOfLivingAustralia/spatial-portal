@@ -58,6 +58,7 @@ import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.UserData;
 import org.ala.spatial.util.Util;
@@ -547,6 +548,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void deactiveLayer(MapLayer itemToRemove, boolean updateMapAndLayerControls, boolean recursive, boolean updateOnly) {
         if (itemToRemove != null) {
+            Query q = (Query) itemToRemove.getData("query");
+            if(q != null && q instanceof UploadQuery) {
+                String pid = ((UploadQuery)q).getQ();
+
+                Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
+                if (htUserSpecies != null) {
+                    htUserSpecies.remove(pid);
+                }
+            }
+
             boolean deListedInActiveLayers = false;
 
             // update the active layers list
@@ -1083,17 +1094,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (loaded) {
             //openLayersJavascript.execute("window.mapFrame.loadBaseMap();");
             openLayersJavascript.setAdditionalScript("window.mapFrame.loadBaseMap();");
-
-            //put uploaded info back into the browser
-            StringBuilder additional = new StringBuilder();
-            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
-            if (htUserSpecies != null) {
-                for (Entry<String, UserData> entry : htUserSpecies.entrySet()) {
-                    additional.append("appendUploadSpeciesMetadata('").append(entry.getKey()).append("','").append(entry.getValue().getMetadata().replaceAll("\n", "_n_")).append("');");
-                }
-            }
-
-            openLayersJavascript.setAdditionalScript(additional.toString());
 
             System.out.println("map is now loaded. let's try mapping.");
             MapLayer ml = loadUrlParameters();
@@ -2272,7 +2272,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Iterator it = attrs.keySet().iterator();
         while (it.hasNext()) {
             String key = (String) it.next();
-            MDC.put(key, attrs.get(key));
+            if(key != null && attrs != null && attrs.get(key) != null) {
+                MDC.put(key, attrs.get(key));
+            }
         }
         //MDC.put("userip", Executions.getCurrent().getRemoteAddr());
         String userip = Executions.getCurrent().getHeader("x-forwarded-for");

@@ -28,12 +28,12 @@
             <separator />
              <hbox id="hbRadius" visible="false" width="100%">
                 <separator />
-                    <label value="Enter radius (m)" sclass="wLabel" />
+                    <label value="Enter radius (km)" sclass="wLabel" />
                 <separator />
-                <doublebox id="dRadius" value="1000" constraint="no negative,no empty" />
+                <doublebox id="dRadius" value="1.0" constraint="no negative,no empty" />
             </hbox>
             <separator />
-            <checkbox id="displayAsWms" label="display as WMS layer" />
+            <checkbox id="displayAsWms" label="display as WMS layer" visible="false" checked="true" />
             <separator />
 
         </vbox>

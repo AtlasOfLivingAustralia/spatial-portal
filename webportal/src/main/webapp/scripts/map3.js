@@ -354,41 +354,29 @@ function iterateSpeciesInfoQuery(curr) {
             var ulyr_occ_id = data.occurrences[0].id;
             var ulyr_occ_lng = data.occurrences[0].longitude;
             var ulyr_occ_lat = data.occurrences[0].latitude;
-            for (var i=0;i<uploadSpeciesMetadata.length;i++) {
-                if (uploadSpeciesMetadata[i][0]==ulyr) {
-                    var data = (uploadSpeciesMetadata[i][1]).replace(/_n_/g,"<br />");
+            var ulyr_meta = data.metadata;
 
-                    var heading = "<h2>Occurrence information (" + (curr+1) + " of " + query_count_total + ")</h2>";
-                    if (query_count_total==1) {
-                        heading = "<h2>Occurrence information (1 occurrence)</h2>";
-                    }
+            var data = ulyr_meta.replace(/_n_/g,"<br />");
 
-                    var infohtml = "<div id='sppopup'> " +
-                    heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
-                    " Longitude: "+ulyr_occ_lng + " , Latitude: " + ulyr_occ_lat + " (<a href='javascript:goToLocation("+ulyr_occ_lng+", "+ulyr_occ_lat+", 15)'>zoom to</a>) <br/>" +
-                    "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
-
-                    setTimeout(function(){
-                        if (document.getElementById("sppopup") != null) {
-                            document.getElementById("sppopup").innerHTML = infohtml;
-                        }
-                    }, 50);
-                }
+            var heading = "<h2>Occurrence information (" + (curr+1) + " of " + query_count_total + ")</h2>";
+            if (query_count_total==1) {
+                heading = "<h2>Occurrence information (1 occurrence)</h2>";
             }
+
+            var infohtml = "<div id='sppopup'> " +
+            heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
+            " Longitude: "+ulyr_occ_lng + " , Latitude: " + ulyr_occ_lat + " (<a href='javascript:goToLocation("+ulyr_occ_lng+", "+ulyr_occ_lat+", 15)'>zoom to</a>) <br/>" +
+            "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+
+            setTimeout(function(){
+                if (document.getElementById("sppopup") != null) {
+                    document.getElementById("sppopup").innerHTML = infohtml;
+                }
+            }, 50);
         } else {
             displaySpeciesInfo(data.occurrences[0], prevBtn, nextBtn, curr, query_count_total);            
         }
     });
-}
-
-var uploadSpeciesMetadata = null;
-function appendUploadSpeciesMetadata(name,metadata) {
-    if (uploadSpeciesMetadata==null) {
-        uploadSpeciesMetadata = new Array(1);
-        uploadSpeciesMetadata[0] = new Array(name,metadata);
-    } else {
-        uploadSpeciesMetadata.push(new Array(name,metadata));
-    }
 }
 
 var defaultSelectFeatureStyle = null;

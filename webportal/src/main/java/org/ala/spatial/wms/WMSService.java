@@ -367,6 +367,7 @@ public class WMSService {
             double[] points = (double[]) data[0];
             ArrayList<QueryField> fields = (ArrayList<QueryField>) data[1];
             double[] pointsBB = (double[]) data[2];
+            String metadata = (String) data[3];
 
             if (points == null || points.length == 0
                     || pointsBB[0] > long2 || pointsBB[2] < long1
@@ -386,8 +387,12 @@ public class WMSService {
                                 }
                                 sb.append("\"").append(qf.getDisplayName()).append("\":\"");
                                 sb.append(qf.getAsString(i / 2).replace("\"", "\\\"")).append("\"");
-                            }
-                            sb.append("}]}");
+                            }                            
+                            sb.append("}]");
+                            sb.append(",\"metadata\":\"");
+                            sb.append(metadata);
+                            sb.append("\"");
+                            sb.append("}");
                             record = sb.toString();
                         }
                         count++;

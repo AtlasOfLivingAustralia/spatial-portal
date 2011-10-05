@@ -267,7 +267,7 @@ public class UploadQuery implements Query, Serializable {
 
         String uid = String.valueOf(System.currentTimeMillis());
 
-        RecordsLookup.putData(uid, facetPoints, facetData);
+        RecordsLookup.putData(uid, facetPoints, facetData, metadata);
 
         return new UploadQuery(uid, name, facetPoints, facetData, metadata);
     }
@@ -346,7 +346,7 @@ public class UploadQuery implements Query, Serializable {
         Object[] recordData = (Object[]) RecordsLookup.getData(getQ());
         if (recordData != null) {
             double[] points = (double[]) recordData[0];
-            RecordsLookup.putData(getQ(), points, data);
+            RecordsLookup.putData(getQ(), points, data, metadata);
         }
     }
 

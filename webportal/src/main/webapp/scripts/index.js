@@ -187,10 +187,6 @@ function showSpeciesInfo(occids, lon, lat) {
     window.mapFrame.showSpeciesInfo(occids, lon, lat);
 }
 
-function appendUploadSpeciesMetadata(name,metadata) {
-    window.mapFrame.appendUploadSpeciesMetadata(name,metadata);
-}
-
 function goToUserLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position){

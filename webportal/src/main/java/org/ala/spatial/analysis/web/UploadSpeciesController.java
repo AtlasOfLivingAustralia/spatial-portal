@@ -174,6 +174,8 @@ public class UploadSpeciesController extends UtilityComposer {
                 ud.setDescription(m.getName());
             }
 
+            ud.setUploadedTimeInMs(System.currentTimeMillis());
+
             System.out.println("Got file '" + ud.getName() + "' with type '" + m.getContentType() + "'");
 
             // check the content-type
@@ -343,7 +345,7 @@ public class UploadSpeciesController extends UtilityComposer {
 
             Query q = new UploadQuery(pid, ud.getName(), points, fields, metadata);
             ud.setQuery(q);
-            RecordsLookup.putData(pid, points, fields);
+            RecordsLookup.putData(pid, points, fields, metadata);
 
             // add it to the user session
             Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
@@ -394,10 +396,6 @@ public class UploadSpeciesController extends UtilityComposer {
             // close the reader and data streams
             reader.close();
             data.close();
-
-            Clients.evalJavaScript("appendUploadSpeciesMetadata('" + pid + "','" + metadata.replaceAll("\n", "_n_") + "');");
-
-     
     }
 
     public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {

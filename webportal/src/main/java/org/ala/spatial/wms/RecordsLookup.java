@@ -14,18 +14,16 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import org.ala.spatial.data.Facet;
 import org.ala.spatial.data.QueryField;
-import org.ala.spatial.data.SolrQuery;
 
 /**
  *
  * @author Adam
  */
 public class RecordsLookup {
+
     static final int MAX_SIZE = 500;
     final static String TEMP_FILE_PATH = System.getProperty("java.io.tmpdir");
-
     /**
      * store for ID and {last access time (Long) , cluster (Vector) }
      */
@@ -83,7 +81,7 @@ public class RecordsLookup {
 
     static void store(String key, Object[] o) {
         try {
-            File file = new File(TEMP_FILE_PATH + File.separator + "selection_" + key.replaceAll(":\\*\\\"<>","_") + ".dat");
+            File file = new File(TEMP_FILE_PATH + File.separator + "selection_" + key.replaceAll(":\\*\\\"<>", "_") + ".dat");
             FileOutputStream fos = new FileOutputStream(file);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -97,7 +95,7 @@ public class RecordsLookup {
 
     static Object[] retrieve(String key) {
         try {
-            File file = new File(TEMP_FILE_PATH + File.separator + "selection_" + key.replaceAll(":\\*\\\"<>","_") + ".dat");
+            File file = new File(TEMP_FILE_PATH + File.separator + "selection_" + key.replaceAll(":\\*\\\"<>", "_") + ".dat");
             if (file.exists()) {
                 FileInputStream fis = new FileInputStream(file);
                 BufferedInputStream bis = new BufferedInputStream(fis);
@@ -111,47 +109,34 @@ public class RecordsLookup {
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        Object [] v = (Object[]) queryData(key);
-//        putData(key, (double[])v[0], (ArrayList<QueryField>) v[1]);
-
         return selections.get(key);
     }
 
-//    static Object queryData(String key) {
-//        long start = System.currentTimeMillis();
-//
-//        SolrQuery sq = new SolrQuery(key);
-//        ArrayList<QueryField> fields = sq.getFacetFieldList();
-//        for(int i=0;i<fields.size();i++) {
-//            fields.get(i).setStored(true);
-//        }
-//
-//        double [] points = sq.getPoints(fields);
-//
-//        Object [] o = new Object[2];
-//        o[0] = points;
-//        o[1] = fields;
-//
-//        long end = System.currentTimeMillis();
-//        System.out.println("query:" + key + " time:" + (System.currentTimeMillis() - start) + "ms");
-//
-//        return o;
-//    }
-
-    static public void putData(String key, double [] points, ArrayList<QueryField> fields) {
+    static public void putData(String key, double[] points, ArrayList<QueryField> fields, String metadata) {
         //boundingbox
-        double [] bb = new double[4];
-        for(int i=0;i<points.length;i+=2) {
-            if(i == 0 || points[i] < bb[0]) bb[0] = points[i];
-            if(i == 0 || points[i] > bb[2]) bb[2] = points[i];
-            if(i == 0 || points[i+1] < bb[1]) bb[1] = points[i+1];
-            if(i == 0 || points[i+1] > bb[3]) bb[3] = points[i+1];
+        double[] bb = new double[4];
+        for (int i = 0; i < points.length; i += 2) {
+            if (i == 0 || points[i] < bb[0]) {
+                bb[0] = points[i];
+            }
+            if (i == 0 || points[i] > bb[2]) {
+                bb[2] = points[i];
+            }
+            if (i == 0 || points[i + 1] < bb[1]) {
+                bb[1] = points[i + 1];
+            }
+            if (i == 0 || points[i + 1] > bb[3]) {
+                bb[3] = points[i + 1];
+            }
         }
 
-        Object [] o = new Object[3];
+        Object[] o = new Object[4];
         o[0] = points;
         o[1] = fields;
         o[2] = bb;
+
+        //format metadata for map3.js and json
+        o[3] = metadata.replace("\n", "_n_").replace("\"","\\\"").replace("/","\\/").replace("\\","\\\\").replace("\t","\\t");
 
         addData(key, o);
     }

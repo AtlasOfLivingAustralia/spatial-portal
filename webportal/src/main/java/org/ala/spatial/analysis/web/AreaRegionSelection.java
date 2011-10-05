@@ -84,7 +84,7 @@ public class AreaRegionSelection extends AreaToolComposer {
             JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
             String coords = jo.getString("coordinates").replace("[", "").replace("]", "");
 
-            double radius = dRadius.getValue();
+            double radius = dRadius.getValue() * 1000.0;
 
             String wkt = Util.createCircleJs(Double.parseDouble(coords.split(",")[0]), Double.parseDouble(coords.split(",")[1]), radius);
             getMapComposer().removeLayer(label);

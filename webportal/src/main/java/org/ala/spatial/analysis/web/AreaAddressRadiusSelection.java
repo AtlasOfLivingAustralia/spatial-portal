@@ -85,7 +85,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
                     md = new MapLayerMetadata();
                     mapLayer.setMapLayerMetadata(md);
                 }
-                md.setMoreInfo(LayersUtil.getMetadata(dRadius.getText() + "m radius around " + addressLabel.getValue() + " (" + longitude + ", " + latitude + ")"));
+                md.setMoreInfo(LayersUtil.getMetadata(dRadius.getText() + "km radius around " + addressLabel.getValue() + " (" + longitude + ", " + latitude + ")"));
 
                 displayGeom.setText(wkt);
             } catch (Exception e) {
@@ -117,7 +117,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
 
             GeoCoordinate gco = addresses.get(0).getCoordinate();
 
-            double radius = dRadius.getValue();
+            double radius = dRadius.getValue() * 1000.0;
             longitude = gco.getLongitude();
             latitude = gco.getLatitude();
             //return createCircle(gco.getLongitude(), gco.getLatitude(), radius);
