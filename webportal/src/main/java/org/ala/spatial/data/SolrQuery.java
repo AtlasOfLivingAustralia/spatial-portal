@@ -835,7 +835,7 @@ public class SolrQuery implements Query, Serializable {
                 while (it.hasNext()) {
                     String key = it.next();
                     String value = classification.get(key);
-                    html += "<a href='" + CommonData.bieServer + BIE_SPECIES + value + "'>" + key + "</a> ";
+                    html += "<a href='" + CommonData.bieServer + BIE_SPECIES + value + "' target='_blank'>" + key + "</a> ";
                     if (it.hasNext()) {
                         html += " > ";
                     }
