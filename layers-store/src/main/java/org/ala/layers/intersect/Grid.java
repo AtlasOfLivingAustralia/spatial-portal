@@ -1,26 +1,13 @@
-/**************************************************************************
- *  Copyright (C) 2010 Atlas of Living Australia
- *  All Rights Reserved.
- *
- *  The contents of this file are subject to the Mozilla Public
- *  License Version 1.1 (the "License"); you may not use this file
- *  except in compliance with the License. You may obtain a copy of
- *  the License at http://www.mozilla.org/MPL/
- *
- *  Software distributed under the License is distributed on an "AS
- *  IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  rights and limitations under the License.
- ***************************************************************************/
-
 package org.ala.layers.intersect;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Comparator;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
@@ -40,7 +27,7 @@ public class Grid { //  implements Serializable
      * Log4j instance
      */
     protected Logger logger = Logger.getLogger(this.getClass());
-    final static int maxGridsLoaded = 1;
+    final static int maxGridsLoaded = 0;
     static ArrayList<Grid> all_grids = new ArrayList<Grid>();
     final double noDataValueDefault = -3.4E38;
     public Boolean byteorderLSB = true; // true if file is LSB (Intel)
@@ -960,6 +947,230 @@ public class Grid { //  implements Serializable
         return ret;
     }
 
+    /**
+     *
+     * @param points input array for longitude and latitude
+     *                  double[number_of_points][2] and sorted latitude then longitude
+     * @return array of .gri file values corresponding to the
+     *          points provided
+     */
+    public float[] getValues3(double[][] points, int bufferSize) {
+
+        //confirm inputs since they come from somewhere else
+        if (points == null || points.length == 0) {
+            return null;
+        }
+
+        //use preloaded grid data if available
+        Grid g = Grid.getLoadedGrid(filename);
+        if (g != null) {
+            return g.getValues2(points);
+        }
+
+        int length = points.length;
+        int size, i;
+        byte[] b;
+
+        RandomAccessFile afile;
+
+        File f2 = new File(filename + ".GRI");
+
+        try { //read of random access file can throw an exception
+            if (!f2.exists()) {
+                afile = new RandomAccessFile(filename + ".gri", "r");
+            } else {
+                afile = new RandomAccessFile(filename + ".GRI", "r");
+            }
+
+            if (afile.length() < 80 * 1024 * 1024) {
+                afile.close();
+                return getValues2(points);
+            }
+
+            byte[] buffer = new byte[bufferSize];    //must be multiple of 64
+            Long bufferOffset = afile.length();
+
+            float[] ret = new float[points.length];
+
+            //get cell numbers
+            int[][] cells = new int[points.length][2];
+            for (int j = 0; j < points.length; j++) {
+                cells[j][0] = getcellnumber(points[j][0], points[j][1]);
+                cells[j][1] = j;
+            }
+            java.util.Arrays.sort(cells, new Comparator<int[]>() {
+
+                @Override
+                public int compare(int[] o1, int[] o2) {
+                    if (o1[0] == o2[0]) {
+                        return o1[1] - o2[1];
+                    } else {
+                        return o1[0] - o2[0];
+                    }
+                }
+            });
+
+            if (datatype.equalsIgnoreCase("BYTE")) {
+                size = 1;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    if (i > 0 && cells[i - 1][0] == cells[i][0]) {
+                        ret[cells[i][1]] = ret[cells[i - 1][1]];
+                        continue;
+                    }
+                    if (cells[i][0] >= 0) {
+                        ret[cells[i][1]] = getByte(afile, buffer, bufferOffset, cells[i][0] * size);
+                    } else {
+                        ret[cells[i][1]] = Float.NaN;
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("UBYTE")) {
+                size = 1;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    if (i > 0 && cells[i - 1][0] == cells[i][0]) {
+                        ret[cells[i][1]] = ret[cells[i - 1][1]];
+                        continue;
+                    }
+                    if (cells[i][0] >= 0) {
+                        ret[cells[i][1]] = getByte(afile, buffer, bufferOffset, cells[i][0] * size);
+                        if (ret[cells[i][1]] < 0) {
+                            ret[cells[i][1]] += 256;
+                        }
+                    } else {
+                        ret[cells[i][1]] = Float.NaN;
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("SHORT")) {
+                size = 2;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    if (i > 0 && cells[i - 1][0] == cells[i][0]) {
+                        ret[cells[i][1]] = ret[cells[i - 1][1]];
+                        continue;
+                    }
+                    if (cells[i][0] >= 0) {
+                        getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        if (byteorderLSB) {
+                            ret[cells[i][1]] = (short) (((0xFF & b[1]) << 8) | (b[0] & 0xFF));
+                        } else {
+                            ret[cells[i][1]] = (short) (((0xFF & b[0]) << 8) | (b[1] & 0xFF));
+                        }
+                        //ret[cells[i][1]] = afile.readShort();
+                    } else {
+                        ret[cells[i][1]] = Float.NaN;
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("INT")) {
+                size = 4;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    if (i > 0 && cells[i - 1][0] == cells[i][0]) {
+                        ret[cells[i][1]] = ret[cells[i - 1][1]];
+                        continue;
+                    }
+                    if (cells[i][0] >= 0) {
+                        getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        if (byteorderLSB) {
+                            ret[cells[i][1]] = ((0xFF & b[3]) << 24) | ((0xFF & b[2]) << 16) + ((0xFF & b[1]) << 8) + (b[0] & 0xFF);
+                        } else {
+                            ret[cells[i][1]] = ((0xFF & b[0]) << 24) | ((0xFF & b[1]) << 16) + ((0xFF & b[2]) << 8) + ((0xFF & b[3]) & 0xFF);
+                        }
+                        //ret[cells[i][1]] = afile.readInt();
+                    } else {
+                        ret[cells[i][1]] = Float.NaN;
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("LONG")) {
+                size = 8;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    if (i > 0 && cells[i - 1][0] == cells[i][0]) {
+                        ret[cells[i][1]] = ret[cells[i - 1][1]];
+                        continue;
+                    }
+                    if (cells[i][0] >= 0) {
+                        getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        if (byteorderLSB) {
+                            ret[cells[i][1]] = ((long) (0xFF & b[7]) << 56) + ((long) (0xFF & b[6]) << 48)
+                                    + ((long) (0xFF & b[5]) << 40) + ((long) (0xFF & b[4]) << 32)
+                                    + ((long) (0xFF & b[3]) << 24) + ((long) (0xFF & b[2]) << 16)
+                                    + ((long) (0xFF & b[1]) << 8) + (0xFF & b[0]);
+                        } else {
+                            ret[cells[i][1]] = ((long) (0xFF & b[0]) << 56) + ((long) (0xFF & b[1]) << 48)
+                                    + ((long) (0xFF & b[2]) << 40) + ((long) (0xFF & b[3]) << 32)
+                                    + ((long) (0xFF & b[4]) << 24) + ((long) (0xFF & b[5]) << 16)
+                                    + ((long) (0xFF & b[6]) << 8) + (0xFF & b[7]);
+                        }
+                        //ret[cells[i][1]] = afile.readLong();
+                    } else {
+                        ret[cells[i][1]] = Float.NaN;
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("FLOAT")) {
+                size = 4;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    if (i > 0 && cells[i - 1][0] == cells[i][0]) {
+                        ret[cells[i][1]] = ret[cells[i - 1][1]];
+                        continue;
+                    }
+                    if (cells[i][0] >= 0) {
+                        getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        ByteBuffer bb = ByteBuffer.wrap(b);
+                        if (byteorderLSB) {
+                            bb.order(ByteOrder.LITTLE_ENDIAN);
+                        }
+                        ret[cells[i][1]] = bb.getFloat();
+                    } else {
+                        ret[cells[i][1]] = Float.NaN;
+                    }
+
+                }
+            } else if (datatype.equalsIgnoreCase("DOUBLE")) {
+                size = 8;
+                b = new byte[8];
+                for (i = 0; i < length; i++) {
+                    if (i > 0 && cells[i - 1][0] == cells[i][0]) {
+                        ret[cells[i][1]] = ret[cells[i - 1][1]];
+                        continue;
+                    }
+                    if (cells[i][0] >= 0) {
+                        getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        ByteBuffer bb = ByteBuffer.wrap(b);
+                        if (byteorderLSB) {
+                            bb.order(ByteOrder.LITTLE_ENDIAN);
+                        }
+                        ret[cells[i][1]] = (float) bb.getDouble();
+
+                        //ret[cells[i][1]] = afile.readFloat();
+                    } else {
+                        ret[cells[i][1]] = Float.NaN;
+                    }
+                }
+            } else {
+                logger.error("datatype not supported in Grid.getValues: " + datatype);
+                // / should not happen; catch anyway...
+                for (i = 0; i < length; i++) {
+                    ret[i] = Float.NaN;
+                }
+            }
+            //replace not a number
+            for (i = 0; i < length; i++) {
+                if ((float) ret[i] == (float) nodatavalue) {
+                    ret[i] = Float.NaN;
+                }
+            }
+
+            afile.close();
+
+            return ret;
+        } catch (Exception e) {
+            logger.error(ExceptionUtils.getFullStackTrace(e));
+        }
+        return null;
+    }
+
 
     /*
      * Cut a one grid against the missing values of another.
@@ -1063,6 +1274,77 @@ public class Grid { //  implements Serializable
             afile.close();
         } catch (Exception e) {
             logger.error(ExceptionUtils.getFullStackTrace(e));
+        }
+    }
+
+    /**
+     * buffering on top of RandomAccessFile
+     * 
+     * @param afile
+     * @param buffer
+     * @param fileOffset
+     * @param bufferPos
+     * @param seekTo
+     * @return
+     */
+    private byte getByte(RandomAccessFile raf, byte[] buffer, Long bufferOffset, long seekTo) throws IOException {
+        long relativePos = seekTo - bufferOffset;
+        if (relativePos < 0) {
+            raf.seek(seekTo);
+            bufferOffset = seekTo;
+            raf.read(buffer);
+            return buffer[0];
+        } else if (relativePos >= 0 && relativePos < buffer.length) {
+            return buffer[(int) relativePos];
+        } else if (relativePos - buffer.length < buffer.length) {
+            bufferOffset += buffer.length;
+            raf.read(buffer);
+            return buffer[(int) (relativePos - buffer.length)];
+        } else {
+            raf.seek(seekTo);
+            bufferOffset = seekTo;
+            raf.read(buffer);
+            return buffer[0];
+        }
+    }
+
+    /**
+     * buffering on top of RandomAccessFile
+     *
+     * @param afile
+     * @param buffer
+     * @param fileOffset
+     * @param bufferPos
+     * @param seekTo
+     * @return
+     */
+    private void getBytes(RandomAccessFile raf, byte[] buffer, Long bufferOffset, long seekTo, byte[] dest) throws IOException {
+        long relativePos = seekTo - bufferOffset;
+        if (relativePos < 0) {
+            raf.seek(seekTo);
+            bufferOffset = seekTo;
+            raf.read(buffer);
+            for (int i = 0; i < dest.length; i++) {
+                dest[i] = buffer[i];
+            }
+        } else if (relativePos >= 0 && relativePos < buffer.length) {
+            for (int i = 0; i < dest.length; i++) {
+                dest[i] = buffer[i + (int) relativePos];
+            }
+        } else if (relativePos - buffer.length < buffer.length) {
+            bufferOffset += buffer.length;
+            raf.read(buffer);
+            int offset = (int) (relativePos - buffer.length);
+            for (int i = 0; i < dest.length; i++) {
+                dest[i] = buffer[i + offset];
+            }
+        } else {
+            raf.seek(seekTo);
+            bufferOffset = seekTo;
+            raf.read(buffer);
+            for (int i = 0; i < dest.length; i++) {
+                dest[i] = buffer[i];
+            }
         }
     }
 }

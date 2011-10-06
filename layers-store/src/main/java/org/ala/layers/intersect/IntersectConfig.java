@@ -1,18 +1,7 @@
-/**************************************************************************
- *  Copyright (C) 2010 Atlas of Living Australia
- *  All Rights Reserved.
- *
- *  The contents of this file are subject to the Mozilla Public
- *  License Version 1.1 (the "License"); you may not use this file
- *  except in compliance with the License. You may obtain a copy of
- *  the License at http://www.mozilla.org/MPL/
- *
- *  Software distributed under the License is distributed on an "AS
- *  IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  rights and limitations under the License.
- ***************************************************************************/
-
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.ala.layers.intersect;
 
 import java.io.IOException;
@@ -44,6 +33,7 @@ public class IntersectConfig {
     static final String BATCH_THREAD_COUNT = "BATCH_THREAD_COUNT";
     static final String CONFIG_RELOAD_WAIT = "CONFIG_RELOAD_WAIT";
     static final String PRELOADED_SHAPE_FILES = "PRELOADED_SHAPE_FILES";
+    static final String GRID_BUFFER_SIZE = "GRID_BUFFER_SIZE";
     static final String LAYER_PROPERTIES = "layer.properties";
     private FieldDAO fieldDao;
     private LayerDAO layerDao;
@@ -54,6 +44,7 @@ public class IntersectConfig {
     long configReloadWait;
     long lastReload;
     String preloadedShapeFiles;
+    int gridBufferSize;
     SimpleShapeFileCache shapeFileCache;
     HashMap<String, IntersectionFile> intersectionFiles;
 
@@ -70,13 +61,6 @@ public class IntersectConfig {
         }
         lastReload = System.currentTimeMillis();
 
-        String lfp = System.getProperty(LAYER_FILES_PATH);
-        String aop = System.getProperty(ALASPATIAL_OUTPUT_PATH);
-        String liu = System.getProperty(LAYER_INDEX_URL);
-        String btc = System.getProperty(BATCH_THREAD_COUNT);
-        String crw = System.getProperty(CONFIG_RELOAD_WAIT);
-        String psf = System.getProperty(PRELOADED_SHAPE_FILES);
-
         Properties properties = new Properties();
         try {
             InputStream is = IntersectConfig.class.getResourceAsStream("/" + LAYER_PROPERTIES);
@@ -90,49 +74,13 @@ public class IntersectConfig {
             logger.error(null, ex);
         }
 
-        if (lfp == null) {
-            lfp = properties.getProperty(LAYER_FILES_PATH);
-        }
-        if (aop == null) {
-            aop = properties.getProperty(ALASPATIAL_OUTPUT_PATH);
-        }
-        if (liu == null) {
-            liu = properties.getProperty(LAYER_INDEX_URL);
-        }
-        if (btc == null) {
-            btc = properties.getProperty(BATCH_THREAD_COUNT);
-        }
-        if (crw == null) {
-            crw = properties.getProperty(CONFIG_RELOAD_WAIT);
-        }
-        if (psf == null) {
-            psf = properties.getProperty(PRELOADED_SHAPE_FILES);
-        }
-
-        layerFilesPath = lfp;
-        alaspatialOutputPath = aop;
-        layerIndexUrl = liu;
-        int ibtc = 1;
-        try {
-            ibtc = Integer.parseInt(btc);
-        } catch (NumberFormatException ex) {
-            logger.error("parsing BATCH_THREAD_COUNT: " + btc, ex);
-        }
-        if (ibtc <= 0) {
-            ibtc = 1;
-        }
-        batchThreadCount = ibtc;
-        long lcrw = 3600000;
-        try {
-            lcrw = Long.parseLong(crw);
-        } catch (NumberFormatException ex) {
-            logger.error("parsing CONFIG_RELOAD_WAIT: " + crw, ex);
-        }
-        if (lcrw <= 0) {
-            lcrw = 3600000;
-        }
-        configReloadWait = lcrw;
-        preloadedShapeFiles = psf;
+        layerFilesPath = getProperty(LAYER_FILES_PATH, properties);
+        alaspatialOutputPath = getProperty(ALASPATIAL_OUTPUT_PATH, properties);
+        layerIndexUrl = getProperty(LAYER_INDEX_URL, properties);
+        batchThreadCount = (int) getPositiveLongProperty(BATCH_THREAD_COUNT, properties, 1);
+        configReloadWait = getPositiveLongProperty(CONFIG_RELOAD_WAIT, properties, 3600000);
+        preloadedShapeFiles = getProperty(PRELOADED_SHAPE_FILES, properties);
+        gridBufferSize = (int) getPositiveLongProperty(GRID_BUFFER_SIZE, properties, 4096);
 
         try {
             updateIntersectionFiles();
@@ -142,13 +90,29 @@ public class IntersectConfig {
             logger.error("load failed, retry in 30s", e);
             configReloadWait = 30000;
         }
+    }
 
-        logger.info(LAYER_FILES_PATH + " > " + layerFilesPath);
-        logger.info(ALASPATIAL_OUTPUT_PATH + " > " + alaspatialOutputPath);
-        logger.info(LAYER_INDEX_URL + " > " + layerIndexUrl);
-        logger.info(BATCH_THREAD_COUNT + " > " + batchThreadCount);
-        logger.info(CONFIG_RELOAD_WAIT + " > " + configReloadWait);
-        logger.info(PRELOADED_SHAPE_FILES + " > " + preloadedShapeFiles);
+    String getProperty(String property, Properties properties) {
+        String p = System.getProperty(property);
+        if (p == null) {
+            p = properties.getProperty(property);
+        }
+        logger.info(property + " > " + p);
+        return p;
+    }
+
+    long getPositiveLongProperty(String property, Properties properties, long defaultValue) {
+        String p = getProperty(property, properties);
+        long l = defaultValue;
+        try {
+            l = Long.parseLong(p);
+            if (l < 0) {
+                l = defaultValue;
+            }
+        } catch (NumberFormatException ex) {
+            logger.error("parsing " + property + ": " + p + ", using default: " + defaultValue, ex);
+        }
+        return l;
     }
 
     public String getAlaspatialOutputPath() {
@@ -195,7 +159,7 @@ public class IntersectConfig {
             }
         } else {
             for (Field f : fieldDao.getFields()) {
-                if(f.isIndb()) {
+                if (f.isIndb()) {
                     intersectionFiles.put(f.getId(),
                             new IntersectionFile(f.getId(),
                             getLayerFilesPath() + layerDao.getLayerById(Integer.parseInt(f.getSpid())).getPath_orig(),
@@ -262,5 +226,9 @@ public class IntersectConfig {
 
     public SimpleShapeFileCache getShapeFileCache() {
         return shapeFileCache;
+    }
+
+    public int getGridBufferSize() {
+        return gridBufferSize;
     }
 }
