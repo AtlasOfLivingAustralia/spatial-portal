@@ -1,18 +1,3 @@
-/**************************************************************************
- *  Copyright (C) 2010 Atlas of Living Australia
- *  All Rights Reserved.
- *
- *  The contents of this file are subject to the Mozilla Public
- *  License Version 1.1 (the "License"); you may not use this file
- *  except in compliance with the License. You may obtain a copy of
- *  the License at http://www.mozilla.org/MPL/
- *
- *  Software distributed under the License is distributed on an "AS
- *  IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  rights and limitations under the License.
- ***************************************************************************/
-
 package org.ala.layers.intersect;
 
 import java.io.BufferedInputStream;
@@ -55,10 +40,6 @@ public class SimpleShapeFile extends Object implements Serializable {
      */
     ShapeRecords shaperecords;
     /**
-     * list of ComplexRegions, one per .shp record
-     */
-    ArrayList<ComplexRegion> regions;
-    /**
      * .dbf contents
      */
     DBF dbf;
@@ -88,147 +69,23 @@ public class SimpleShapeFile extends Object implements Serializable {
         } else {
             /* read dbf */
             dbf = new DBF(fileprefix + ".dbf", column);
+            singleLookup = getColumnLookup(0);
+            singleColumn = new short[dbf.dbfrecords.records.size()];
+            for (int i = 0; i < singleColumn.length; i++) {
+                singleColumn[i] = (short) java.util.Arrays.binarySearch(singleLookup, dbf.getValue(i, 0));
+            }
+            dbf = null;
 
             /* read shape header */
             shapeheader = new ShapeHeader(fileprefix);
 
             /* read shape records */
             shaperecords = new ShapeRecords(fileprefix, shapeheader.getShapeType());
-
-            /* get ComplexRegion list from shape records */
-            regions = shaperecords.getRegions();
+            shapeheader = null;
 
             /* create shapes reference for intersections */
             shapesreference = new ShapesReference(shaperecords);
-        }
-    }
-
-    /**
-     * Constructor for a SimpleShapeFile, requires .dbf and .shp files present
-     * on the fileprefix provided.
-     *
-     * @param fileprefix file path for valid files after appending .shp and .dbf
-     */
-    SimpleShapeFile(String fileprefix, boolean loadDbf) {
-        //If fileprefix exists as-is it is probably a saved SimpleShapeFile
-        if (loadRegion(fileprefix)) {
-            //previously saved region loaded
-        } else {
-            /* read dbf */
-            if (loadDbf) {
-                dbf = new DBF(fileprefix + ".dbf");
-            }
-
-            /* read shape header */
-            shapeheader = new ShapeHeader(fileprefix);
-
-            /* read shape records */
-            shaperecords = new ShapeRecords(fileprefix, shapeheader.getShapeType());
-
-            /* get ComplexRegion list from shape records */
-            regions = shaperecords.getRegions();
-
-            /* create shapes reference for intersections */
-            if (loadDbf) {
-                shapesreference = new ShapesReference(shaperecords);
-            }
-        }
-    }
-
-    public static SimpleRegion readRegions(String shapeFileName) {
-        SimpleShapeFile ssf = new SimpleShapeFile(shapeFileName, false);
-
-        if (ssf.regions.size() == 1) {
-            return ssf.regions.get(0);
-        } else {
-            ComplexRegion r = new ComplexRegion();
-            for (int i = 0; i < ssf.regions.size(); i++) {
-                for (int j = 0; j < ssf.regions.get(i).simpleregions.size(); j++) {
-                    r.addPolygon(ssf.regions.get(i).simpleregions.get(j));
-                }
-            }
-            return r;
-        }
-
-    }
-
-    /**
-     * save partial file (enough to reload and use intersect function)
-     *
-     * @param filename
-     */
-    public void saveRegion(String filename, int column) {
-        try {
-            FileOutputStream fos = new FileOutputStream(filename);
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            shapesreference.sr.records = null; //cleanup
-            oos.writeObject(shapesreference);
-
-            singleLookup = getColumnLookup(column);
-            oos.writeObject(singleLookup);
-
-            singleColumn = new short[regions.size()];
-            for (int i = 0; i < singleColumn.length; i++) {
-                singleColumn[i] = (short) java.util.Arrays.binarySearch(singleLookup, dbf.getValue(i, column));
-            }
-            oos.writeObject(singleColumn);
-
-            oos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void reduce(int column) {
-        shapesreference.sr.records = null;
-        singleLookup = getColumnLookup(column);
-        singleColumn = new short[regions.size()];
-        for (int i = 0; i < singleColumn.length; i++) {
-            singleColumn[i] = (short) java.util.Arrays.binarySearch(singleLookup, dbf.getValue(i, column));
-        }
-
-        dbf = null;
-        shapeheader = null;
-        shaperecords = null;
-        regions = null;
-    }
-
-    /**
-     * save partial file (enough to reload and use intersect function)
-     *
-     * for each unique value in the shape file
-     *
-     * Note: excludes regions that share the same column value as another.
-     *
-     * @param filename
-     */
-    public void saveEachRegion(String filename, int column) {
-        int m, i;
-        for (m = 0; m < singleLookup.length; m++) {
-            for (i = 0; i < regions.size(); i++) {
-                if (singleColumn[i] == (short) m) {
-                    //check that no other column has this 'm' value
-                    int j = 0;
-                    for (j = 0; j < singleColumn.length; j++) {
-                        if (i != j && singleColumn[i] == singleColumn[j]) {
-                            break;
-                        }
-                    }
-                    if (j == singleColumn.length) {
-                        try {
-                            FileOutputStream fos = new FileOutputStream(filename + "_" + m);
-                            BufferedOutputStream bos = new BufferedOutputStream(fos);
-                            ObjectOutputStream oos = new ObjectOutputStream(bos);
-                            ComplexRegion cr = shapesreference.sr.region.get(i);
-                            oos.writeObject(cr);
-                            oos.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
+            shaperecords = null;
         }
     }
 
@@ -664,10 +521,6 @@ class ShapeRecords extends Object implements Serializable {
 
     static final long serialVersionUID = -8141403235810528840L;
     /**
-     * list of ShapeRecord
-     */
-    ArrayList<ShapeRecord> records;
-    /**
      * true if constructor was successful
      */
     boolean isvalid;
@@ -694,10 +547,26 @@ class ShapeRecords extends Object implements Serializable {
             buffer.flip();
             buffer.order(ByteOrder.BIG_ENDIAN);
 
-            records = new ArrayList();
-
+            region = new ArrayList<ComplexRegion>();
             while (buffer.hasRemaining()) {
-                records.add(new ShapeRecord(buffer, shapetype));
+                ShapeRecord shr = new ShapeRecord(buffer, shapetype);
+
+                ComplexRegion sr = new ComplexRegion();
+                ArrayList<SimpleRegion> regions = new ArrayList();
+
+                /* add each polygon (list of points) belonging to
+                 * this shape record to the new ComplexRegion
+                 */
+                for (int j = 0; j < shr.getNumberOfParts(); j++) {
+                    SimpleRegion s = new SimpleRegion();
+                    s.setPolygon(shr.getPoints(j));
+                    //sr.addPolygon(s);
+                    regions.add(s);
+                }
+
+                sr.addSet(regions);
+
+                region.add(sr);
             }
 
             fis.close();
@@ -723,31 +592,6 @@ class ShapeRecords extends Object implements Serializable {
      * @return
      */
     public ArrayList<ComplexRegion> getRegions() {
-        if (region == null) {
-            /* object for output */
-            ArrayList<ComplexRegion> sra = new ArrayList();
-
-            for (int i = 0; i < records.size(); i++) {
-                ShapeRecord shr = records.get(i);
-                ComplexRegion sr = new ComplexRegion();
-                ArrayList<SimpleRegion> regions = new ArrayList();
-
-                /* add each polygon (list of points) belonging to
-                 * this shape record to the new ComplexRegion
-                 */
-                for (int j = 0; j < shr.getNumberOfParts(); j++) {
-                    SimpleRegion s = new SimpleRegion();
-                    s.setPolygon(shr.getPoints(j));
-                    //sr.addPolygon(s);
-                    regions.add(s);
-                }
-
-                sr.addSet(regions);
-
-                sra.add(sr);
-            }
-            region = sra;
-        }
         return region;
     }
 
@@ -757,7 +601,7 @@ class ShapeRecords extends Object implements Serializable {
      * @return
      */
     public int getNumberOfRecords() {
-        return records.size();
+        return region.size();
     }
 }
 

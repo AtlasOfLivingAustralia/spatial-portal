@@ -24,11 +24,42 @@ import org.ala.layers.intersect.IntersectConfig;
  */
 public interface LayerIntersectDAO {
 
-    public ArrayList<String[]> sampling(String fieldIds, String pointsString);
+    /**
+     * Sampling
+     *
+     * @param fieldIds fields to intersect as field table ids in comma separated String.  e.g. "cl22,cl23"
+     * @param pointsString latitude,longitude pairs, comma separated.  e.g. "-20,120,-23,145"
+     * @return one string for each fieldId, containing new line separated
+     * intersection values of the field and pointsString pairs.  As ArrayList<String>.
+     */
+    public ArrayList<String> sampling(String fieldIds, String pointsString);
 
-    public ArrayList<String[]> sampling(String[] fieldIds, double[][] points);
+    /**
+     * Sampling
+     *
+     * @param fieldIds fields to intersect as field table ids in String [].
+     * @param points longitude, latitude coordinates as double [][2].
+     * [][0] is longitude, [][1] is latitude.
+     * @return one string for each fieldId, containing new line separated
+     * intersection values of the field and pointsString pairs.  As ArrayList<String>.
+     */
+    public ArrayList<String> sampling(String[] fieldIds, double[][] points);
 
-    public ArrayList<String[]> sampling(IntersectionFile[] intersectionFiles, double[][] points);
+    /**
+     * Sampling
+     *
+     * @param fieldIds fields to intersect as IntersectionFile []
+     * @param points longitude, latitude coordinates as double [][2].
+     * [][0] is longitude, [][1] is latitude.
+     * @return one string for each fieldId, containing new line separated
+     * intersection values of the field and pointsString pairs.  As ArrayList<String>.
+     */
+    public ArrayList<String> sampling(IntersectionFile[] intersectionFiles, double[][] points);
 
+    /**
+     * Get initialised IntersectConfig.
+     *
+     * @return IntersectConfig
+     */
     public IntersectConfig getConfig();
 }
