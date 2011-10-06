@@ -15,12 +15,13 @@
 package org.ala.layers.web;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Vector;
-import java.util.zip.GZIPOutputStream;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +32,9 @@ import org.ala.layers.dao.ObjectDAO;
 import org.ala.layers.dto.Layer;
 import org.ala.layers.dto.Objects;
 import org.ala.layers.intersect.Grid;
+import org.ala.layers.util.BatchConsumer;
+import org.ala.layers.util.BatchProducer;
+import org.ala.layers.util.IntersectUtil;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,7 +51,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class IntersectService {
     private final String WS_INTERSECT_SINGLE = "/intersect/{ids}/{lat}/{lng:.+}";
     private final String WS_INTERSECT_BATCH = "/intersect/batch";
-    
+    private final String WS_INTERSECT_BATCH_STATUS = "/intersect/batch/{id}";
+    private final String WS_INTERSECT_BATCH_DOWNLOAD = "/intersect/batch/download/{id}";
+
+    private final String BATCH_PATH = "/data/batch_sampling/";
+
     /**
      * Log4j instance
      */
@@ -69,18 +77,16 @@ public class IntersectService {
     public
     @ResponseBody
     Object single(@PathVariable("ids") String ids, @PathVariable("lat") Double lat, @PathVariable("lng") Double lng, HttpServletRequest req) {
-//        return Intersect.Intersect(ids, lat, lng);
-
         Vector out = new Vector();
 
         for (String id : ids.split(",")) {
 
             Layer layer = null;
             int newid = cleanObjectId(id);
-            
+
             if (newid != -1) {
                 layer = layerDao.getLayerById(newid);
-            } 
+            }
             if(layer == null) {
                 layer = layerDao.getLayerByName(id);
             }
@@ -179,50 +185,12 @@ public class IntersectService {
             String [] pointsArray = pointsString.split(",");
             String [] fields = fids.split(",");
 
-            List<String []> sample = layerIntersectDao.sampling(fids, pointsString);
+            ArrayList<String> sample = layerIntersectDao.sampling(fids, pointsString);
 
             //setup output stream
             OutputStream os = response.getOutputStream();
 
-            String charSet = "UTF-8";
-            byte [] bComma = ",".getBytes(charSet);
-            byte [] bNewLine = "\n".getBytes(charSet);
-            byte [] bDblQuote = "\"".getBytes(charSet);
-
-            //header
-            os.write("longitude,latitude".getBytes(charSet));
-            for(int i=0;i<fields.length;i++) {
-                os.write(bComma);
-                os.write(fields[i].getBytes(charSet));
-            }
-            //rows
-            int rows = sample.get(0).length;
-            for(int i=0;i<rows;i++) {
-                os.write(bNewLine);
-                os.write(pointsArray[i*2].getBytes(charSet));
-                os.write(bComma);
-                os.write(pointsArray[i*2+1].getBytes(charSet));
-                for(int j=0;j<sample.size();j++) {
-                    os.write(bComma);
-                    String s = sample.get(j)[i];
-                    boolean useQuotes = false;
-                    if(s != null) {
-                        if(s.contains("\"")) {
-                            s = s.replace("\"", "\"\"");
-                            useQuotes = true;
-                        } else if(s.contains(",")) {
-                            useQuotes = true;
-                        }
-                        if(useQuotes) {
-                            os.write(bDblQuote);
-                            os.write(s.getBytes(charSet));
-                            os.write(bDblQuote);
-                        } else {
-                            os.write(s.getBytes(charSet));
-                        }
-                    }
-                }
-            }
+            IntersectUtil.writeSampleToStream(fields, pointsArray, sample, os);
 
             os.flush();
             os.close();
@@ -231,68 +199,115 @@ public class IntersectService {
         }
     }
 
+    static Properties userProperties;
+
     @RequestMapping(value = WS_INTERSECT_BATCH, method = RequestMethod.POST)
-    public void batch(
+    public Map batch(
             @RequestParam(value = "fids", required = false, defaultValue = "") String fids,
             @RequestParam(value = "points", required = false, defaultValue = "") String pointsString,
             HttpServletRequest request, HttpServletResponse response) {
-
+        Map map = new HashMap();
+        String batchId = null;
         try {
-            String [] pointsArray = pointsString.split(",");
-            String [] fields = fids.split(",");
 
-            List<String []> sample = layerIntersectDao.sampling(fids, pointsString);
+            //get limits
+            int pointsLimit, fieldsLimit;
 
-            //setup output stream
-            OutputStream os = response.getOutputStream();
-            GZIPOutputStream gzip = new GZIPOutputStream(os);
+            String [] passwords = userProperties.getProperty("batch_sampling_passwords").split(",");
+            pointsLimit = Integer.parseInt(userProperties.getProperty("batch_sampling_points_limit"));
+            fieldsLimit = Integer.parseInt(userProperties.getProperty("batch_sampling_fields_limit"));
 
-            String charSet = "UTF-8";
-            byte [] bComma = ",".getBytes(charSet);
-            byte [] bNewLine = "\n".getBytes(charSet);
-            byte [] bDblQuote = "\"".getBytes(charSet);
-
-            //header
-            gzip.write("longitude,latitude".getBytes(charSet));
-            for(int i=0;i<fields.length;i++) {
-                gzip.write(bComma);
-                gzip.write(fields[i].getBytes(charSet));
-            }
-            //rows
-            int rows = sample.get(0).length;
-            for(int i=0;i<rows;i++) {
-                gzip.write(bNewLine);
-                gzip.write(pointsArray[i*2].getBytes(charSet));
-                gzip.write(bComma);
-                gzip.write(pointsArray[i*2+1].getBytes(charSet));
-                for(int j=0;j<sample.size();j++) {
-                    gzip.write(bComma);
-                    String s = sample.get(j)[i];
-                    boolean useQuotes = false;
-                    if(s != null) {
-                        if(s.contains("\"")) {
-                            s = s.replace("\"", "\"\"");
-                            useQuotes = true;
-                        } else if(s.contains(",")) {
-                            useQuotes = true;
-                        }
-                        if(useQuotes) {
-                            gzip.write(bDblQuote);
-                            gzip.write(s.getBytes(charSet));
-                            gzip.write(bDblQuote);
-                        } else {
-                            gzip.write(s.getBytes(charSet));
-                        }
-                    }
+            String password = request.getParameter("pw");
+            for(int i=0;password != null && i<passwords.length;i++) {
+                if(passwords[i].equals(password)) {
+                    pointsLimit = Integer.MAX_VALUE;
+                    fieldsLimit = Integer.MAX_VALUE;
                 }
             }
 
-            gzip.flush();
-            gzip.close();
-            os.flush();
-            os.close();
+            //count fields
+            int countFields = 0;
+            int p = 0;
+            while((p = fids.indexOf(',', p+1)) > 0) countFields++;
+
+            //count points
+            int countPoints = 0;
+            p = 0;
+            while((p = pointsString.indexOf(',', p+1)) > 0) countPoints++;
+
+            if(countPoints/2 < pointsLimit && countFields < fieldsLimit) {
+                BatchConsumer.start(layerIntersectDao);
+                batchId = BatchProducer.produceBatch(BATCH_PATH,request.getRemoteAddr(),fids, pointsString);
+
+                map.put("batchId", batchId);
+                BatchProducer.addInfoToMap(BATCH_PATH, batchId, map);
+                map.put("statusUrl", WS_INTERSECT_BATCH_STATUS.replace("{id}", batchId));
+
+                return map;
+            } else {
+                map.put("error","too many fields or points");
+                return map;
+            }
+
+//            ArrayList<String> sample = layerIntersectDao.sampling(fids, pointsString);
+//
+//            //setup output stream
+//            OutputStream os = response.getOutputStream();
+//            GZIPOutputStream gzip = new GZIPOutputStream(os);
+//
+//            IntersectUtil.writeSampleToStream(fids.split(","), pointsString.split(","), sample, gzip);
+//
+//            gzip.flush();
+//            gzip.close();
+//            os.flush();
+//            os.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        map.put("error", "failed to create new batch");
+        return map;
+    }
+
+    @RequestMapping(value = WS_INTERSECT_BATCH_STATUS, method = RequestMethod.GET)
+    public Map batchStatus(
+            @PathVariable("id") String id,
+            HttpServletRequest request, HttpServletResponse response) {
+        Map map = new HashMap();
+        try {
+            BatchProducer.addInfoToMap(BATCH_PATH, id, map);
+            if(map.get("finished") != null) {
+                map.put("downloadUrl", WS_INTERSECT_BATCH_DOWNLOAD.replace("{id}", id));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return map;
+    }
+
+    @RequestMapping(value = WS_INTERSECT_BATCH_DOWNLOAD, method = RequestMethod.GET)
+    public void batchDownload(
+            @PathVariable("id") String id,
+            HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Map map = new HashMap();
+            BatchProducer.addInfoToMap(BATCH_PATH, id, map);
+            if(map.get("finished") != null) {
+                OutputStream os = response.getOutputStream();
+                FileInputStream fis = new FileInputStream(BATCH_PATH + File.separator + id + File.separator + "sample.csv.gz");
+                byte [] buffer = new byte[409600];
+                int size;
+                while((size = fis.read(buffer)) > 0) {
+                    os.write(buffer, 0, size);
+                }
+                fis.close();
+                os.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return;
     }
 }
