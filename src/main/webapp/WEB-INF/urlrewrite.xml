@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+    Document   : urlrewrite.xml
+    Created on : 12 February 2010, 8:52 PM
+    Author     : ajayr
+    Description:
+        url rewrite
+-->
+
+<!DOCTYPE urlrewrite PUBLIC "-//tuckey.org//DTD UrlRewrite 3.0//EN" "http://tuckey.org/res/dtds/urlrewrite3.0.dtd">
+<urlrewrite default-match-type="wildcard">
+	<rule>
+		<from>/**</from>
+		<to>/app/$1</to>
+	</rule>
+	<outbound-rule>
+		<from>/app/**</from>
+		<to>/$1</to>
+	</outbound-rule>
+</urlrewrite>
