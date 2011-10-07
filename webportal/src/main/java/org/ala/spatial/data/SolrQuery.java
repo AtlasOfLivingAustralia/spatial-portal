@@ -905,7 +905,7 @@ public class SolrQuery implements Query, Serializable {
                     continue;
 
                 if (sb.length() == 0) {
-                    sb.append("&extra=").append(extraFields[i]);
+                    sb.append("&extra=").append("coordinateUncertaintyInMeters,").append(extraFields[i]);
                 } else {
                     sb.append(",").append(extraFields[i]);
                 }

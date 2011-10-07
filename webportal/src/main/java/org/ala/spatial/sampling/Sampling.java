@@ -40,7 +40,7 @@ public class Sampling {
             
 //            if(points.length > 10000) { 
                 //load whole grid
-                values = grid.getValues2(points);
+                values = grid.getValues3(points, 40960);
 //            } else {
 //                values = grid.getValues(points);
 //            }
