@@ -939,7 +939,7 @@ public class SolrQuery implements Query, Serializable {
                 JSONArray ja = JSONArray.fromObject(response);
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject jo = ja.getJSONObject(i);
-                    html += "<a href='http://collections.ala.org.au/public/showDataProvider/" + jo.getString("id") + "'>" + jo.getString("name") + "</a>: " + jo.getString("count") + " records <br />";
+                    html += "<a href='http://collections.ala.org.au/public/showDataProvider/" + jo.getString("id") + "' target='_blank'>" + jo.getString("name") + "</a>: " + jo.getString("count") + " records <br />";
                 }
                 //return response;
 
