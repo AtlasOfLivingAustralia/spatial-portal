@@ -50,7 +50,7 @@ public class SimpleShapeFileCache {
         for(int i=0;i<layers.length;i++) {
             if(get(layers[i]) == null) {
                 try {
-                    SimpleShapeFile ssf = new SimpleShapeFile(CommonData.settings.get("sampling_files_path") + layers[i], columns[i]);
+                    SimpleShapeFile ssf = new SimpleShapeFile(CommonData.settings.get("sampling_files_path") + "shape/" + layers[i], columns[i]);
                     System.gc();
                     System.out.println(layers[i] + " loaded, Memory usage (total/used/free):" + (Runtime.getRuntime().totalMemory()/1024/1024) + "MB / " + (Runtime.getRuntime().totalMemory()/1024/1024 - Runtime.getRuntime().freeMemory()/1024/1024) + "MB / " + (Runtime.getRuntime().freeMemory()/1024/1024) + "MB");
 

@@ -25,9 +25,9 @@ public class Sampling {
         long start = System.currentTimeMillis();
         System.out.println("start sampling " + points.length + " points in " + facetName + ":" + layerName);
         if(shapeFieldName != null) {
-            intersectShape(CommonData.settings.get("sampling_files_path") + layerName, shapeFieldName, points, output);
+            intersectShape(CommonData.settings.get("sampling_files_path") + "shape/" + layerName, shapeFieldName, points, output);
         } else {
-            intersectGrid(CommonData.settings.get("sampling_files_path") + layerName, points, output);
+            intersectGrid(CommonData.settings.get("sampling_files_path") + "diva/" + layerName, points, output);
         }
         System.out.println("finished sampling " + points.length + " points in " + facetName + ":" + layerName + " in " + (System.currentTimeMillis() - start) + "ms");
     }
@@ -62,7 +62,7 @@ public class Sampling {
 
     static void intersectShape(String filename, String fieldName, double[][] points, String [] output) {
         try {
-            SimpleShapeFile ssf = CommonData.ssfCache.get(filename.replace(CommonData.settings.get("sampling_files_path"), ""));
+            SimpleShapeFile ssf = CommonData.ssfCache.get(filename.replace(CommonData.settings.get("sampling_files_path") + "shape/", ""));
             if(ssf == null) {
                 ssf = new SimpleShapeFile(filename, fieldName);
             }
