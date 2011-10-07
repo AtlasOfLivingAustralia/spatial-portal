@@ -365,7 +365,7 @@ function iterateSpeciesInfoQuery(curr) {
 
             var infohtml = "<div id='sppopup'> " +
             heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
-            " Longitude: "+ulyr_occ_lng + " , Latitude: " + ulyr_occ_lat + " (<a href='javascript:goToLocation("+ulyr_occ_lng+", "+ulyr_occ_lat+", 15)'>zoom to</a>) <br/>" +
+            " Longitude: "+ulyr_occ_lng + " , Latitude: " + ulyr_occ_lat + " (<a href='javascript:goToLocation("+ulyr_occ_lng+", "+ulyr_occ_lat+", 15);relocatePopup("+ulyr_occ_lng+", "+ulyr_occ_lat+");'>zoom to</a>) <br/>" +
             "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
             setTimeout(function(){
@@ -739,6 +739,24 @@ function setupPopup(count, centerlonlat) {
         null, true, onPopupClose);
 }
 
+function onPopupClose(evt) {
+    try {
+        map.removePopup(this.feature.popup);
+        this.feature.popup.destroy();
+        this.feature.popup = null;
+
+        selectControl.unselect(this.feature);
+    } catch(err) {
+    }
+}
+
+function relocatePopup(lon, lat) {
+    popup.lonlat = new OpenLayers.LonLat(lon, lat).transform(
+            new OpenLayers.Projection("EPSG:4326"),
+            map.getProjectionObject());
+    popup.updatePosition(); 
+}
+
 function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     var occinfo = data;
     var bie = parent.jq('$bie_url')[0].innerHTML;
@@ -786,7 +804,7 @@ function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     " Kingdom: " + kingdom + " <br />" +
     " Family: " + family + " <br />" +
     " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProviderName + "</a> <br />" +
-    " Longitude: "+occinfo.decimalLongitude + " , Latitude: " + occinfo.decimalLatitude + " (<a href='javascript:goToLocation("+occinfo.decimalLongitude+", "+occinfo.decimalLatitude+", 15)'>zoom to</a>) <br/>" +
+    " Longitude: "+occinfo.decimalLongitude + " , Latitude: " + occinfo.decimalLatitude + " (<a href='javascript:goToLocation("+occinfo.decimalLongitude+", "+occinfo.decimalLatitude+", 15);relocatePopup("+occinfo.decimalLongitude+", "+occinfo.decimalLatitude+");'>zoom to</a>) <br/>" +
     " Spatial uncertainty in metres: " + uncertaintyText + "<br />" +
     " Occurrence date: " + occurrencedate + " <br />" +
     "Species Occurence <a href='" + biocache + "/occurrences/" + occinfo.uuid + "' target='_blank'>View details</a> <br /> <br />" +
@@ -794,17 +812,6 @@ function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
 
     if (document.getElementById("sppopup") != null) {
         document.getElementById("sppopup").innerHTML = infohtml;
-    }
-}
-
-function onPopupClose(evt) {
-    try {
-        map.removePopup(this.feature.popup);
-        this.feature.popup.destroy();
-        this.feature.popup = null;
-    
-        selectControl.unselect(this.feature);
-    } catch(err) {
     }
 }
 
