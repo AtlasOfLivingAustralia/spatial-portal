@@ -361,6 +361,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void activateLink(String uri, String label, boolean isExternal, String downloadPid) {
+        //close any prevously opened externalcontentwindow
+        try {
+            Component c = getFellowIfAny("externalContentWindow");
+            if(c != null) {
+                System.out.println("found externalContentWindow, closing");
+                c.detach();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+
         Window externalContentWindow = (Window) Executions.createComponents("WEB-INF/zul/ExternalContent.zul", layerControls, null);
 
         if (isExternal) {
