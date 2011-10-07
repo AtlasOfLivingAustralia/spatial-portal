@@ -96,23 +96,40 @@ public class IntersectService {
             if (layer != null) {
                 if (layer.isShape()) {
                     Objects o = objectDao.getObjectByIdAndLocation("cl" + layer.getId(), lng, lat);
-                    Map m = new HashMap();
-                    m.put("value", o.getName());
-                    m.put("layername", o.getFieldname());   //close enough
-                    m.put("pid", o.getPid());
-                    m.put("description", o.getDescription());
-                    //m.put("fid", o.getFid());
+                    if(o != null) {
+                        Map m = new HashMap();
+                        m.put("value", o.getName());
+                        m.put("layername", o.getFieldname());   //close enough
+                        m.put("pid", o.getPid());
+                        m.put("description", o.getDescription());
+                        //m.put("fid", o.getFid());
 
-                    out.add(m);
+                        out.add(m);
+                    } else {
+                        Map m = new HashMap();
+                        m.put("value", "");
+                        m.put("layername", layer.getDisplayname());   //close enough
+
+                        out.add(m);
+                    }
                 } else if (layer.isGrid()) {
                     Grid g = new Grid(layerIntersectDao.getConfig().getLayerFilesPath() + layer.getPath_orig());
-                    float[] v = g.getValues(p);
-                    //s = "{\"value\":" + v[0] + ",\"layername\":\"" + layer.getDisplayname() + "\"}";
-                    Map m = new HashMap();
-                    m.put("value", v[0]);
-                    m.put("layername", layer.getDisplayname());
+                    if(g != null) {
+                        float[] v = g.getValues(p);
+                        //s = "{\"value\":" + v[0] + ",\"layername\":\"" + layer.getDisplayname() + "\"}";
+                        Map m = new HashMap();
+                        m.put("value", v[0]);
+                        m.put("layername", layer.getDisplayname());
 
-                    out.add(m);
+                        out.add(m);
+                    } else {
+                        logger.error("Cannot find grid file: " + layerIntersectDao.getConfig().getLayerFilesPath() + layer.getPath_orig());
+                        Map m = new HashMap();
+                        m.put("value", Float.NaN);
+                        m.put("layername", layer.getDisplayname());   //close enough
+
+                        out.add(m);
+                    }
                 }
             } else {
                 String gid = null;
