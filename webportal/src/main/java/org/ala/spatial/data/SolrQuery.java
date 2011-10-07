@@ -896,6 +896,7 @@ public class SolrQuery implements Query, Serializable {
     @Override
     public String getDownloadUrl(String[] extraFields) {
         StringBuilder sb = new StringBuilder();
+        sb.append("&extra=").append("coordinateUncertaintyInMeters");
         if (extraFields != null && extraFields.length > 0) {
             for (int i = 0; i < extraFields.length; i++) {
                 //Solr download has some default fields
@@ -905,7 +906,7 @@ public class SolrQuery implements Query, Serializable {
                     continue;
 
                 if (sb.length() == 0) {
-                    sb.append("&extra=").append("coordinateUncertaintyInMeters,").append(extraFields[i]);
+                    //sb.append("&extra=").append(extraFields[i]);
                 } else {
                     sb.append(",").append(extraFields[i]);
                 }
