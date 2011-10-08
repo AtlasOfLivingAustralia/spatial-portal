@@ -63,16 +63,39 @@ public class GridCutter {
         int[][] cells = null;
         if (envelopes == null) {
             cells = (int[][]) region.getAttribute("cells");
-            if(cells == null){
-                cells = region.getOverlapGridCells_EPSG900913(
-                        TabulationSettings.grd_xmin, TabulationSettings.grd_ymin,
-                        TabulationSettings.grd_xmax, TabulationSettings.grd_ymax,
-                        TabulationSettings.grd_ncols, TabulationSettings.grd_nrows,
-                        null);
+//            if(cells == null){
+//                cells = region.getOverlapGridCells_EPSG900913(
+//                        TabulationSettings.grd_xmin, TabulationSettings.grd_ymin,
+//                        TabulationSettings.grd_xmax, TabulationSettings.grd_ymax,
+//                        TabulationSettings.grd_ncols, TabulationSettings.grd_nrows,
+//                        null);
+//            }
+            int th = TabulationSettings.grd_nrows;
+            int tw = TabulationSettings.grd_ncols;
+            int tp = 0;
+            int[][] tcells = new int[tw * th][2];
+            double[][] bb = region.getBoundingBox();
+            int startj = (int) Math.max(0, (bb[0][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
+            int endj = (int) Math.min(tw, (bb[1][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
+            int starti = (int) Math.max(0, (bb[0][1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
+            int endi = (int) Math.min(tw, (bb[1][1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
+            for (i = starti; i < endi; i++) {
+                for (int j = startj; j < endj; j++) {
+                    double tx = (j + 0.5) * TabulationSettings.grd_xdiv + TabulationSettings.grd_xmin;
+                    double ty = (i + 0.5) * TabulationSettings.grd_ydiv + TabulationSettings.grd_ymin;
+                    if (region.isWithin_EPSG900913(tx, ty)) {
+                        tcells[tp][0] = j;
+                        tcells[tp][1] = i;
+                        tp++;
+                    }
+                }
             }
+            cells = new int[tp][2];
+            System.arraycopy(tcells, 0, cells, 0, tp);
+
         } else {
-            
-            cells = getOverlapGridCells(envelopes, 
+
+            cells = getOverlapGridCells(envelopes,
                     TabulationSettings.grd_xmin, TabulationSettings.grd_ymin,
                     TabulationSettings.grd_xmax, TabulationSettings.grd_ymax);
         }
@@ -135,10 +158,10 @@ public class GridCutter {
                     }
                 }
 
-                double minx = Math.rint(xmin + TabulationSettings.grd_xmin/TabulationSettings.grd_xdiv) * TabulationSettings.grd_xdiv;
-                double miny = Math.rint(ymin + TabulationSettings.grd_ymin/TabulationSettings.grd_ydiv) * TabulationSettings.grd_ydiv;
-                double maxx = Math.rint(width + minx/TabulationSettings.grd_xdiv) * TabulationSettings.grd_xdiv;
-                double maxy = Math.rint(height + miny/TabulationSettings.grd_ydiv) * TabulationSettings.grd_ydiv;
+                double minx = Math.rint(xmin + TabulationSettings.grd_xmin / TabulationSettings.grd_xdiv) * TabulationSettings.grd_xdiv;
+                double miny = Math.rint(ymin + TabulationSettings.grd_ymin / TabulationSettings.grd_ydiv) * TabulationSettings.grd_ydiv;
+                double maxx = Math.rint(width + minx / TabulationSettings.grd_xdiv) * TabulationSettings.grd_xdiv;
+                double maxy = Math.rint(height + miny / TabulationSettings.grd_ydiv) * TabulationSettings.grd_ydiv;
                 grid.writeGrid(newPath + l.name, dfiltered,
                         minx,
                         miny,
@@ -276,11 +299,11 @@ public class GridCutter {
 
         //output structure; false == passes filter, true == does not pass filter
         BitSet bs = new BitSet(xrange * yrange);
-        double [][] points = new double[xrange * yrange][2];
-        for(int i=0;i<xrange;i++){
-            for(int j=0;j<yrange;j++){
-                points[i + j*xrange][0] = (double)(xmin + i * TabulationSettings.grd_xdiv);
-                points[i + j*xrange][1] = (double)(ymin + j * TabulationSettings.grd_ydiv);
+        double[][] points = new double[xrange * yrange][2];
+        for (int i = 0; i < xrange; i++) {
+            for (int j = 0; j < yrange; j++) {
+                points[i + j * xrange][0] = (double) (xmin + i * TabulationSettings.grd_xdiv);
+                points[i + j * xrange][1] = (double) (ymin + j * TabulationSettings.grd_ydiv);
             }
         }
         for (int k = 0; k < envelope.length; k++) {
@@ -325,13 +348,15 @@ public class GridCutter {
     public static ArrayList<Object> cut(Layer[] layers, SimpleRegion region, int pieces, String extentsFilename, LayerFilter[] envelopes, AnalysisJob job) {
         ArrayList<Object> data = new ArrayList<Object>();
 
-        if(job != null) job.setProgress(0);
+        if (job != null) {
+            job.setProgress(0);
+        }
 
         //determine outer bounds of layers
         double xmin = Double.MAX_VALUE;
         double ymin = Double.MAX_VALUE;
-        double xmax = Double.MAX_VALUE*-1;
-        double ymax = Double.MAX_VALUE*-1;
+        double xmax = Double.MAX_VALUE * -1;
+        double ymax = Double.MAX_VALUE * -1;
         for (Layer l : layers) {
             Grid g = Grid.getGrid(TabulationSettings.getPath(l.name));
             if (xmin > g.xmin) {
@@ -349,7 +374,7 @@ public class GridCutter {
         }
 
         //restrict bounds by region
-        if(region != null){
+        if (region != null) {
             xmax = Math.min(xmax, region.getBoundingBox()[1][0]);
             ymax = Math.min(ymax, region.getBoundingBox()[1][1]);
             xmin = Math.max(xmin, region.getBoundingBox()[0][0]);
@@ -388,39 +413,65 @@ public class GridCutter {
             }
         }
 
-        if(job != null) job.setProgress(0.1,"exported extents");
+        if (job != null) {
+            job.setProgress(0.1, "exported extents");
+        }
 
         //make cells list for outer bounds
         int[][] cells;
-        if(envelopes == null){
+        if (envelopes == null) {
             cells = (int[][]) region.getAttribute("cells");
-            if(cells == null){
-                cells = region.getOverlapGridCells_EPSG900913(xmin, ymin, xmax, ymax,
-                    width, height, null);
+            if (cells == null) {
+//                cells = region.getOverlapGridCells_EPSG900913(xmin, ymin, xmax, ymax,
+//                    width, height, null);
+                int th = TabulationSettings.grd_nrows;
+                int tw = TabulationSettings.grd_ncols;
+                int tp = 0;
+                int[][] tcells = new int[tw * th][2];
+                double[][] bb = region.getBoundingBox();
+                int startj = (int) Math.max(0, (bb[0][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
+                int endj = (int) Math.min(tw, (bb[1][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
+                int starti = (int) Math.max(0, (bb[0][1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
+                int endi = (int) Math.min(tw, (bb[1][1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
+                for (int i = starti; i < endi; i++) {
+                    for (int j = startj; j < endj; j++) {
+                        double tx = (j + 0.5) * TabulationSettings.grd_xdiv + TabulationSettings.grd_xmin;
+                        double ty = (i + 0.5) * TabulationSettings.grd_ydiv + TabulationSettings.grd_ymin;
+                        if (region.isWithin_EPSG900913(tx, ty)) {
+                            tcells[tp][0] = j;
+                            tcells[tp][1] = i;
+                            tp++;
+                        }
+                    }
+                }
+                cells = new int[tp][2];
+                System.arraycopy(tcells, 0, cells, 0, tp);
             } else {
                 //translate to xmin, ymin ,xmax, ymax, width, height
                 int dx = (int) Math.round((TabulationSettings.grd_xmin - xmin) / TabulationSettings.grd_xdiv);
                 int dy = (int) Math.round((TabulationSettings.grd_ymin - ymin) / TabulationSettings.grd_ydiv);
                 int pos = 0;
-                int x,y;
-                for(int i=0;i<cells.length;i++){
+                int x, y;
+                for (int i = 0; i < cells.length; i++) {
                     x = cells[i][0] + dx;
                     y = cells[i][1] + dy;
                     //only use cells within extents
-                    if(x >= 0 && x < width && y >= 0 && y < height){
+                    if (x >= 0 && x < width && y >= 0 && y < height) {
                         cells[pos][0] = x;
                         cells[pos][1] = y;
                         pos++;
                     }
-                }             
+                }
                 cells = java.util.Arrays.copyOf(cells, pos);
             }
 
         } else {
-            cells = getOverlapGridCells(envelopes,xmin, ymin, xmax, ymax);
+            cells = getOverlapGridCells(envelopes, xmin, ymin, xmax, ymax);
         }
 
-        if(job != null) job.setProgress(0.2,"determined target cells");
+        if (job != null) {
+            job.setProgress(0.2, "determined target cells");
+        }
 
 //TODO: test for zero length cells
         System.out.println("Cut cells count: " + cells.length);
@@ -448,43 +499,51 @@ public class GridCutter {
         }
 
         //iterate for layers
-        double [] layerExtents = new double[layers.length*2];
+        double[] layerExtents = new double[layers.length * 2];
         for (int j = 0; j < layers.length; j++) {
             Grid g = Grid.getGrid(TabulationSettings.getPath(layers[j].name));
             float[] v = g.getValues2(points);
 
             //row range standardization
             float minv = Float.MAX_VALUE;
-            float maxv = Float.MAX_VALUE*-1;
-            for(int i=0;i<v.length;i++){
-                if(v[i] < minv) minv = v[i];
-                if(v[i] > maxv) maxv = v[i];
+            float maxv = Float.MAX_VALUE * -1;
+            for (int i = 0; i < v.length; i++) {
+                if (v[i] < minv) {
+                    minv = v[i];
+                }
+                if (v[i] > maxv) {
+                    maxv = v[i];
+                }
             }
             float range = maxv - minv;
-            if(range > 0){
-                for(int i=0;i<v.length;i++){
+            if (range > 0) {
+                for (int i = 0; i < v.length; i++) {
                     v[i] = (v[i] - minv) / range;
                 }
             } else {
-                for(int i=0;i<v.length;i++){
+                for (int i = 0; i < v.length; i++) {
                     v[i] = 0;
                 }
             }
-            layerExtents[j*2] = minv;
-            layerExtents[j*2+1] = maxv;
+            layerExtents[j * 2] = minv;
+            layerExtents[j * 2 + 1] = maxv;
 
             //iterate for pieces
             for (int i = 0; i < pieces; i++) {
-                float[] d = (float[]) data.get(i);                
+                float[] d = (float[]) data.get(i);
                 for (int k = j, n = i * step; k < d.length; k += layers.length, n++) {
                     d[k] = v[n];
                 }
             }
 
-            if(job != null) job.setProgress(0.2 + j/(double)layers.length*7/10.0, layers[j].name);
+            if (job != null) {
+                job.setProgress(0.2 + j / (double) layers.length * 7 / 10.0, layers[j].name);
+            }
         }
-        
-        if(job != null) job.log("loaded data");
+
+        if (job != null) {
+            job.log("loaded data");
+        }
 
         //remove null rows from data and cells
         int newCellPos = 0;
@@ -521,9 +580,9 @@ public class GridCutter {
         }
 
         //remove zero length data pieces
-        for (int i = pieces-1; i >= 0; i--) {
+        for (int i = pieces - 1; i >= 0; i--) {
             float[] d = (float[]) data.get(i);
-            if(d.length == 0){
+            if (d.length == 0) {
                 data.remove(i);
             }
         }
@@ -539,12 +598,14 @@ public class GridCutter {
         extents[3] = ymin;
         extents[4] = xmax;
         extents[5] = ymax;
-        for(int i=0;i<layerExtents.length;i++){
-            extents[6+i] = layerExtents[i];
+        for (int i = 0; i < layerExtents.length; i++) {
+            extents[6 + i] = layerExtents[i];
         }
         data.add(extents);
-        
-        if(job != null) job.setProgress(1,"cleaned data");
+
+        if (job != null) {
+            job.setProgress(1, "cleaned data");
+        }
 
         return data;
     }
@@ -555,9 +616,9 @@ public class GridCutter {
         //determine outer bounds of layers
         double xmin = Double.MAX_VALUE;
         double ymin = Double.MAX_VALUE;
-        double xmax = Double.MAX_VALUE*-1;
-        double ymax = Double.MAX_VALUE*-1;
-        if(envelopes != null){
+        double xmax = Double.MAX_VALUE * -1;
+        double ymax = Double.MAX_VALUE * -1;
+        if (envelopes != null) {
             for (LayerFilter lf : envelopes) {
                 Grid g = new Grid(TabulationSettings.getPath(lf.layer.name));
                 if (xmin > g.xmin) {
@@ -573,7 +634,7 @@ public class GridCutter {
                     ymax = g.ymax;
                 }
             }
-        } else if(region != null){
+        } else if (region != null) {
             //restrict bounds by region
             xmax = region.getBoundingBox()[1][0];
             ymax = region.getBoundingBox()[1][1];
@@ -597,13 +658,13 @@ public class GridCutter {
         int width = (int) Math.ceil(xrange / TabulationSettings.grd_xdiv);
         int height = (int) Math.ceil(yrange / TabulationSettings.grd_ydiv);
 
-        
+
         int[][] cells;
-        if(envelopes == null){
+        if (envelopes == null) {
             cells = region.getOverlapGridCells_EPSG900913(xmin, ymin, xmax, ymax,
-                width, height, null);
+                    width, height, null);
         } else {
-            cells = getOverlapGridCells(envelopes,xmin, ymin, xmax, ymax);
+            cells = getOverlapGridCells(envelopes, xmin, ymin, xmax, ymax);
         }
 
         long end = System.currentTimeMillis();
