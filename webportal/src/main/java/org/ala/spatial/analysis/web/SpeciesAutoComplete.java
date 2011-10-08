@@ -101,7 +101,7 @@ public class SpeciesAutoComplete extends Combobox {
             } else {
                 StringBuilder sb = new StringBuilder();
 
-                sb.append(searchService(val));
+                //sb.append(searchService(val));
                 sb.append(autoService(val));
                 //sb.append(loadUserPoints(val));
 
