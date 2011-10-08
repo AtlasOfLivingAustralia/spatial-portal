@@ -44,12 +44,12 @@ public class FieldsIntegrationTest {
     
     @Test
     public void testFieldsJson() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/fields.json", "{\"name\":\"Vegetation types - native\",\"id\":\"cl617\",\"type\":\"c\",\"enabled\":true,\"indb\":true,\"spid\":\"617\"}"));
+        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/fields.json", "\"name\":\"Vegetation types - native\",\"id\":\"cl617\",\"type\":\"c\",\"enabled\":true,\"indb\":true,\"spid\":\"617\",\"sname\":\"class\",\"defaultlayer\":false,\"namesearch\":false"));
     }
     
     @Test
     public void testFieldsDbJson() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/fieldsdb.json", "{\"name\":\"Vegetation types - native\",\"id\":\"cl617\",\"type\":\"c\",\"enabled\":true,\"indb\":true,\"spid\":\"617\"}"));
+        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/fieldsdb.json", "\"name\":\"Vegetation types - native\",\"id\":\"cl617\",\"type\":\"c\",\"enabled\":true,\"indb\":true,\"spid\":\"617\",\"sname\":\"class\",\"defaultlayer\":false,\"namesearch\":false"));
     }
     
 //    This is extremely slow to execute (lots of objects!)
@@ -60,6 +60,6 @@ public class FieldsIntegrationTest {
     
     @Test
     public void testFieldJson() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText( "http://localhost:8080/layers-index/field/cl907.json", "{\"name\":\"Hunter Areas Of Interest\",\"id\":\"cl907\",\"type\":\"c\",\"enabled\":true,\"objects\":[{\"name\":" ));
+        assertTrue(IntegrationTestUtil.loadURLAssertText( "http://localhost:8080/layers-index/field/cl907.json", "\"name\":\"Hunter Areas Of Interest\",\"id\":\"cl907\",\"type\":\"c\",\"enabled\":true,\"objects\"" ));
     }
 }

@@ -168,7 +168,7 @@
                         <exclude>**/*IntegrationTest.java</exclude>
                     </excludes>
                 </configuration>
-                <executions>
+                <!--<executions>
                     <execution>
                         <id>surefire-itest</id>
                         <phase>integration-test</phase>
@@ -184,7 +184,7 @@
                         </includes>
                         </configuration>
                     </execution>
-                </executions>
+                </executions>-->
             </plugin>
         </plugins>
         <finalName>layers-index</finalName>
