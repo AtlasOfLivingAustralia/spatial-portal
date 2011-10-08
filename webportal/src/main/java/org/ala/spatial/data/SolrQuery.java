@@ -79,6 +79,13 @@ public class SolrQuery implements Query, Serializable {
     String paramId;
     boolean forMapping;
 
+    //stored query responses.
+    String speciesList = null;
+    int speciesCount = -1;
+    int occurrenceCount = -1;
+    double [] points = null;
+
+
     static String [][] facetNameExceptions = { { "cl22", "state" }, { "cl23", "places" }, {"cl20", "ibra"} , {"cl21", "imcra"}};
 
     static String translateFieldForSolr(String facetName) {
@@ -210,6 +217,10 @@ public class SolrQuery implements Query, Serializable {
      */
     @Override
     public String speciesList() {
+        if(speciesList != null) {
+            return speciesList;
+        }
+
         HttpClient client = new HttpClient();
         String url = CommonData.biocacheServer
                 + SPECIES_LIST_SERVICE_CSV
@@ -217,8 +228,6 @@ public class SolrQuery implements Query, Serializable {
                 + "&q=" + getQ();
         System.out.println(url);
         GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
-
-        String speciesList = null;
 
         try {
             int result = client.executeMethod(get);
@@ -237,7 +246,9 @@ public class SolrQuery implements Query, Serializable {
      */
     @Override
     public int getOccurrenceCount() {
-        int occurrenceCount = -1;
+        if(occurrenceCount >= 0) {
+            return occurrenceCount;
+        }
 
         HttpClient client = new HttpClient();
         String url = CommonData.biocacheServer
@@ -270,32 +281,46 @@ public class SolrQuery implements Query, Serializable {
      */
     @Override
     public int getSpeciesCount() {
-        int speciesCount = -1;
+        if(speciesCount >= 0) {
+            return speciesCount;
+        }
 
-        HttpClient client = new HttpClient();
-        String url = CommonData.biocacheServer
-                + SPECIES_LIST_SERVICE
-                + DEFAULT_ROWS
-                + "&q=" + getQ();
-        System.out.println(url);
-        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
+        //fill 'speciesList'
+        speciesList();
 
-        try {
-            int result = client.executeMethod(get);
-            String response = get.getResponseBodyAsString();
-
-            if (result == 200) {
-                speciesCount = 0;
-                int pos = 0;
-                while ((pos = response.indexOf('{', pos + 1)) >= 0) {
-                    speciesCount++;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        speciesCount = 0; //first line is header, last line is not \n terminated
+        int p = 0;
+        while((p=speciesList.indexOf('\n',p+1)) > 0) {
+            speciesCount++;
         }
 
         return speciesCount;
+
+
+//        HttpClient client = new HttpClient();
+//        String url = CommonData.biocacheServer
+//                + SPECIES_LIST_SERVICE
+//                + DEFAULT_ROWS
+//                + "&q=" + getQ();
+//        System.out.println(url);
+//        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
+//
+//        try {
+//            int result = client.executeMethod(get);
+//            String response = get.getResponseBodyAsString();
+//
+//            if (result == 200) {
+//                speciesCount = 0;
+//                int pos = 0;
+//                while ((pos = response.indexOf('{', pos + 1)) >= 0) {
+//                    speciesCount++;
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        return speciesCount;
     }
 
     /**
@@ -307,6 +332,11 @@ public class SolrQuery implements Query, Serializable {
      */
     @Override
     public double[] getPoints(ArrayList<QueryField> fields) {
+        //if no additional fields requested, return points only
+        if(fields == null && points != null) {
+            return points;
+        }
+
         if (fields == null) {
             fields = new ArrayList<QueryField>();
         }
@@ -350,7 +380,7 @@ public class SolrQuery implements Query, Serializable {
         int latitudePos = fieldsToCsv[fieldsToCsv.length - 1];
 
         //process records
-        double[] points = new double[lineCount * 2];
+        points = new double[lineCount * 2];
         int errCount = 0;
         pos = 0;
         try {
