@@ -8,6 +8,7 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import net.sf.json.JSONArray;
@@ -282,8 +283,8 @@ public class SpeciesAutoComplete extends Combobox {
     }
 
     String autoService(String val) throws Exception {
-        //while there is inappropriate sorting use limit=400
-        String nsurl = CommonData.bieServer + "/search/auto.json?limit=400&q=" + URLEncoder.encode(val, "UTF-8");
+        //while there is inappropriate sorting use limit=50
+        String nsurl = CommonData.bieServer + "/search/auto.json?limit=50&q=" + URLEncoder.encode(val, "UTF-8");
 
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(nsurl);
@@ -297,6 +298,8 @@ public class SpeciesAutoComplete extends Combobox {
 
         StringBuilder slist = new StringBuilder();
         JSONArray ja = jo.getJSONArray("autoCompleteList");
+
+        HashSet<String> lsids = new HashSet<String>();
         for(int i=0;i<ja.size();i++){
             JSONObject o = ja.getJSONObject(i);
 
@@ -305,6 +308,10 @@ public class SpeciesAutoComplete extends Combobox {
                 long count = CommonData.lsidCounts.getCount(o.getLong("left"), o.getLong("right"));
 
                 if(count > 0 && o.containsKey("name") && o.containsKey("guid") && o.containsKey("rankString")) {
+                    if(lsids.contains(o.getString("guid"))) {
+                        continue;
+                    }
+                    lsids.add(o.getString("guid"));
                     if(slist.length() > 0) {
                         slist.append("\n");
                     }
