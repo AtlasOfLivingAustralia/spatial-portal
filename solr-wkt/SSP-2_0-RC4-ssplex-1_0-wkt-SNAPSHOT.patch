@@ -1,0 +1,1186 @@
+Index: src/main/java/nl/jteam/search/solrext/spatial/lucene/geometry/WktMultipolygon.java
+===================================================================
+--- src/main/java/nl/jteam/search/solrext/spatial/lucene/geometry/WktMultipolygon.java	(revision 0)
++++ src/main/java/nl/jteam/search/solrext/spatial/lucene/geometry/WktMultipolygon.java	(revision 0)
+@@ -0,0 +1,410 @@
++package nl.jteam.search.solrext.spatial.lucene.geometry;
++
++import java.util.ArrayList;
++import java.util.Arrays;
++
++/**
++ * Multipolygon
++ *
++ * @author Adam Collins
++ */
++public class WktMultipolygon extends WktPolygon {
++
++    /**
++     * list of WktPolygon members
++     */
++    ArrayList<WktPolygon> polygons;
++    /**
++     * bounding box for all, see WktPolygon boundingbox.
++     */
++    double[] boundingbox_all;
++    /**
++     * array for speeding up isWithin
++     */
++    byte[][] mask;
++    Object[][] maskDepth;
++    /**
++     * mask height
++     */
++    int mask_height;
++    /**
++     * mask width
++     */
++    int mask_width;
++    /**
++     * mask multiplier for longitude inputs
++     */
++    double mask_long_multiplier;
++    /**
++     * mask mulitplier for latitude inputs
++     */
++    double mask_lat_multiplier;
++    /**
++     * maintain mapping for wktpolygon belonging to the same polygon
++     */
++    ArrayList<Integer> polygonSets;
++
++    /**
++     * Constructor for empty ComplexRegion
++     */
++    public WktMultipolygon(ArrayList<WktPolygon> polygons) {
++        super(polygons.get(0).getPoints());
++
++        this.polygons = new ArrayList<WktPolygon>();
++        boundingbox_all = new double[4];
++        mask = null;
++        polygonSets = new ArrayList<Integer>();
++
++        addSet(polygons);
++    }
++
++    public void addSet(ArrayList<WktPolygon> polygons) {
++        int nextSetNumber = (polygonSets.size() > 0) ? polygonSets.get(polygonSets.size() - 1) + 1 : 0;
++
++        for (int i = 0; i < polygons.size(); i++) {
++            addPolygon(polygons.get(i));
++            polygonSets.add(nextSetNumber);
++        }
++    }
++
++    /**
++     * gets the bounding box for shapes in this ComplexRegion
++     *
++     * @return bounding box for ComplexRegion as double [][]
++     */
++    @Override
++    public double[] getBoundingBox() {
++        return boundingbox_all;
++    }
++
++    /**
++     * adds a new polygon
++     *
++     * note: if a mask is in use must call <code>useMask</code> again
++     * @param points_ points = double[n*2]
++     * where
++     * 	n is number of points
++     *  [even] is longitude
++     *  [odd] is latitude
++     */
++    public void addPolygon(WktPolygon polygon) {
++        polygons.add(polygon);
++
++        /* update boundingbox_all */
++        double[] bb = polygon.getBoundingBox();
++        if (polygons.size() == 1 || boundingbox_all[0] > bb[0]) {
++            boundingbox_all[0] = bb[0];
++        }
++        if (polygons.size() == 1 || boundingbox_all[2] < bb[2]) {
++            boundingbox_all[2] = bb[2];
++        }
++        if (polygons.size() == 1 || boundingbox_all[1] > bb[1]) {
++            boundingbox_all[1] = bb[1];
++        }
++        if (polygons.size() == 1 || boundingbox_all[3] < bb[3]) {
++            boundingbox_all[3] = bb[3];
++        }
++
++        bounding_box = boundingbox_all;
++    }
++
++    /**
++     * returns true when the point provided is within the ComplexRegion
++     *
++     * uses <code>mask</code> when available
++     *
++     * note: type UNDEFINED implies no boundary, always returns true.
++     *
++     * @param longitude
++     * @param latitude
++     * @return true iff point is within or on the edge of this ComplexRegion
++     */
++    @Override
++    public boolean contains(double longitude, double latitude) {
++        //bounding box test should not be required
++        if (boundingbox_all[0] > longitude || boundingbox_all[2] < longitude
++                || boundingbox_all[1] > latitude || boundingbox_all[3] < latitude) {
++            return false;
++        }
++
++        if (polygons.size() == 1) {
++            return polygons.get(0).contains(longitude, latitude);
++        }
++
++        short[] countsIn = new short[polygonSets.get(polygonSets.size() - 1) + 1];       //count of regions overlapping the point, per polygon
++        if (mask != null) {
++            /* use mask if exists */
++            int long1 = (int) Math.floor((longitude - boundingbox_all[0]) * mask_long_multiplier);
++            int lat1 = (int) Math.floor((latitude - boundingbox_all[1]) * mask_lat_multiplier);
++
++            if (long1 >= mask[0].length) {
++                long1--;
++            }
++            if (lat1 >= mask.length) {
++                lat1--;
++            }
++
++            if (mask[lat1][long1] == WktPolygon.GI_FULLY_PRESENT) {
++                return true;
++            } else if (mask[lat1][long1] == WktPolygon.GI_UNDEFINED) {
++                return false;
++            }
++            //partial, try maskDepth and sum overlaps
++            if (maskDepth != null && maskDepth[lat1][long1] != null) {
++                int[] d = (int[]) maskDepth[lat1][long1];
++                for (int i = 0; i < d.length; i++) {
++                    if (polygons.get(d[i]).contains(longitude, latitude)) {
++                        countsIn[polygonSets.get(d[i])]++;
++                    }
++                }
++                /* true iif within an odd number of regions for any polygon*/
++                for (int i = 0; i < countsIn.length; i++) {
++                    if (countsIn[i] % 2 == 1) {
++                        return true;
++                    }
++                }
++            }
++        }
++        /* check for all WktPolygons */
++        for (int i = 0; i < polygons.size(); i++) {
++            if (polygons.get(i).contains(longitude, latitude)) {
++                countsIn[polygonSets.get(i)]++;
++            }
++        }
++        /* true iif within an odd number of regions for any polygon*/
++        for (int i = 0; i < countsIn.length; i++) {
++            if (countsIn[i] % 2 == 1) {
++                return true;
++            }
++        }
++        return false;
++    }
++
++    /**
++     * builds a grid (mask) to speed up isWithin.
++     *
++     * TODO: split out shapes with large numbers of points in GI_PARTIALLY_PRESENT grid cells.
++     *
++     * TODO: automatic(best) height/width specification
++     *
++     * @param width
++     * @param height
++     */
++    public void useMask(int width, int height, int depthThreashold) {
++        //calculate defaults for -1 inputs
++        double[] bb = getBoundingBox();
++        int length = 0;
++        for (WktPolygon sr : polygons) {
++            length += sr.getPoints().length / 2;
++        }
++        int w = (int) ((bb[2] - bb[0]) * 3);
++        int h = (int) ((bb[3] - bb[1]) * 3);
++        if (length > 5000) {
++            w = 200;
++            h = 200;
++        }
++        if (w > 200) {
++            w = 200;
++        }
++        if (h > 200) {
++            h = 200;
++        }
++        if (width == -1) {
++            width = w;
++        }
++        if (height == -1) {
++            height = h;
++        }
++        if (depthThreashold == -1) {
++            depthThreashold = 100;
++        }
++        if(width < 3 || height < 3) {
++            return;
++        }
++
++        int i, j;
++
++        /* class variables assignment */
++        mask_width = width;
++        mask_height = height;
++        mask_long_multiplier =
++                mask_width / (double) (boundingbox_all[2] - boundingbox_all[0]);
++        mask_lat_multiplier =
++                mask_height / (double) (boundingbox_all[3] - boundingbox_all[1]);
++
++        /* end result mask */
++        mask = new byte[height][width];
++        ArrayList<Integer>[][] md = null;
++        if (polygons.size() > depthThreashold) {
++            //use mask depth as well
++            md = new ArrayList[height][width];
++        }
++
++        /* temp mask for current WktPolygon */
++        byte[][] shapemask = new byte[height][width];
++
++        /* temp mask for current SimpleRegion */
++        byte[][] shapemaskregion = new byte[height][width];
++
++        int k = 0;
++        while (k < polygons.size()) {
++            int p = k;
++            for (; k < polygons.size()
++                    && (p == k || polygonSets.get(k - 1).equals(polygonSets.get(k))); k++) {
++
++                WktPolygon sr = polygons.get(k);
++                sr.getOverlapGridCells(boundingbox_all[0], boundingbox_all[1], boundingbox_all[2], boundingbox_all[3], width, height, shapemaskregion);
++
++                //shapemaskregion into shapemask
++                for (i = 0; i < height; i++) {
++                    for (j = 0; j < width; j++) {
++                        if (shapemaskregion[i][j] == WktPolygon.GI_PARTIALLY_PRESENT
++                                || shapemask[i][j] ==  WktPolygon.GI_PARTIALLY_PRESENT) {
++                            shapemask[i][j] = WktPolygon.GI_PARTIALLY_PRESENT;	//partially inside
++                            if (md != null) {
++                                if (md[i][j] == null) {
++                                    md[i][j] = new ArrayList<Integer>();
++                                }
++                                md[i][j].add(k);
++                            }
++                        } else if (shapemaskregion[i][j] ==  WktPolygon.GI_FULLY_PRESENT) {
++                            if (shapemask[i][j] ==  WktPolygon.GI_FULLY_PRESENT) {
++                                shapemask[i][j] =  WktPolygon.GI_UNDEFINED;	//completely inside
++                            } else {
++                                shapemask[i][j] =  WktPolygon.GI_FULLY_PRESENT;	//completely outside (inside of a cutout region)
++                            }
++                            if (md != null) {
++                                if (md[i][j] == null) {
++                                    md[i][j] = new ArrayList<Integer>();
++                                }
++                                md[i][j].add(k);
++                            }
++                        }
++
++                        /* reset shapemaskregion for next part */
++                        shapemaskregion[i][j] = 0;
++                    }
++                }
++            }
++            //shapemask into mask
++            for (i = 0; i < height; i++) {
++                for (j = 0; j < width; j++) {
++                    if (shapemask[i][j] == WktPolygon.GI_FULLY_PRESENT
++                            || mask[i][j] == WktPolygon.GI_FULLY_PRESENT) {
++                        mask[i][j] = WktPolygon.GI_FULLY_PRESENT;	//partially inside
++                    } else if (shapemask[i][j] == WktPolygon.GI_PARTIALLY_PRESENT) {
++                        mask[i][j] = WktPolygon.GI_PARTIALLY_PRESENT;	//completely outside (inside of a cutout region)
++                    }
++
++                    /* reset shapemask for next part */
++                    shapemask[i][j] = 0;
++                }
++            }
++        }
++
++        //maskDepth to int[]
++        if (md != null) {
++            maskDepth = new Object[md.length][md[0].length];
++            for (i = 0; i < height; i++) {
++                for (j = 0; j < width; j++) {
++                    if (md[i][j] != null && mask[i][j] == WktPolygon.GI_PARTIALLY_PRESENT) {
++                        int[] d = new int[md[i][j].size()];
++                        for (k = 0; k < d.length; k++) {
++                            d[k] = md[i][j].get(k);
++                        }
++                        maskDepth[i][j] = d;
++                    }
++                }
++            }
++        }
++    }
++
++    /**
++     * determines overlap with a grid
++     *
++     * for type POLYGON
++     * when <code>three_state_map</code> is not null populate it with one of:
++     * 	GI_UNDEFINED
++     * 	GI_PARTIALLY_PRESENT
++     * 	GI_FULLY_PRESENT
++     * 	GI_ABSENCE
++     *
++     * @param longitude1
++     * @param latitude1
++     * @param longitude2
++     * @param latitude2
++     * @param xres number of longitude segements as int
++     * @param yres number of latitude segments as int
++     * @return (x,y) as double [][2] for each grid cell at least partially falling
++     * within the specified region of the specified resolution beginning at 0,0
++     * for minimum longitude and latitude through to xres,yres for maximums     *
++     */
++    @Override
++    public void getOverlapGridCells(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
++        int i, j;
++
++        byte[][] m = three_state_map;
++
++        // if no threestate map exists, create one
++        if (m == null) {
++            m = new byte[height][width];
++            //set initial values
++            for (i = 0; i < height; i++) {
++                for (j = 0; j < width; j++) {
++                    m[i][j] = WktPolygon.GI_UNDEFINED;
++                }
++            }
++        }
++
++        byte[][] tmpMask = new byte[height][width];
++
++        int k = 0;
++        while(k < polygons.size()) {
++            int p = k;
++            for (; k < polygons.size()
++                    && (p == k || polygonSets.get(k - 1).equals(polygonSets.get(k))); k++) {
++
++                WktPolygon sr = polygons.get(k);
++                sr.getOverlapGridCells_Acc(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask);
++            }
++
++            fillAccMask(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask);
++
++            //tmpMask into mask
++            for (i = 0; i < height; i++) {
++                for (j = 0; j < width; j++) {
++                    if(tmpMask[i][j] == WktPolygon.GI_FULLY_PRESENT
++                            || m[i][j] == WktPolygon.GI_FULLY_PRESENT) {
++                        m[i][j] = WktPolygon.GI_FULLY_PRESENT;
++                    } else if(tmpMask[i][j] == WktPolygon.GI_PARTIALLY_PRESENT) {
++                        m[i][j] = WktPolygon.GI_PARTIALLY_PRESENT;
++                    }
++
++                    /* reset tmpMask for next part */
++                    tmpMask[i][j] = WktPolygon.GI_UNDEFINED;
++                }
++            }
++        }
++    }
++
++    @Override
++    public boolean equals(Object obj) {
++        boolean eq = false;
++        if(obj instanceof WktMultipolygon) {
++            WktMultipolygon mp = (WktMultipolygon) obj;
++            if(mp.polygons.size() != polygons.size()) {
++                eq = false;
++            } else {
++                for(int i=0;i<polygons.size();i++) {
++                    if(!Arrays.equals(polygons.get(i).getPoints(), mp.polygons.get(i).getPoints())) {
++                        eq = false;
++                        break;
++                    }
++                }
++            }
++        } else {
++            eq = false;
++        }
++        return eq;
++    }
++}
+Index: src/main/java/nl/jteam/search/solrext/spatial/lucene/geometry/WktPolygon.java
+===================================================================
+--- src/main/java/nl/jteam/search/solrext/spatial/lucene/geometry/WktPolygon.java	(revision 0)
++++ src/main/java/nl/jteam/search/solrext/spatial/lucene/geometry/WktPolygon.java	(revision 0)
+@@ -0,0 +1,495 @@
++package nl.jteam.search.solrext.spatial.lucene.geometry;
++
++import java.util.ArrayList;
++import java.util.Arrays;
++
++/**
++ * Polygon
++ *
++ * @author Adam Collins
++ */
++public class WktPolygon extends SpatialArea {
++
++    /**
++     * UNDEFINED state for grid intersection output
++     *
++     * can be considered ABSENCE
++     */
++    public static final byte GI_UNDEFINED = 0;
++    /**
++     * PARTiALLy PRESENT state for grid intersection output
++     */
++    public static final byte GI_PARTIALLY_PRESENT = 1;
++    /**
++     * FULLY PRESENT state for grid intersection output
++     */
++    public static final byte GI_FULLY_PRESENT = 2;
++    /**
++     * points store for Polygon
++     * - n coordinates = double[2*n] as {longitude, latitude, longitude, latitude, ...}
++     * - first coordinate is the same as the last coordinate
++     */
++    double[] points;
++    /**  
++     * bounding_box = double [4]
++     * where
++     * 	[0] = minimum longitude
++     *  [1] = minimum latitude
++     *  [2] = maximum longitude
++     *  [3] = maximum latitude
++     */
++    double[] bounding_box;
++    /**
++     * grid mask storage, after an overlap
++     */
++    public byte[][] grid;
++
++    /**
++     * gets the bounding box for types POLYGON and BOUNDING_BOX
++     *
++     * @return bounding box as double[4]
++     * where
++     * 	[0] = minimum longitude
++     *  [1] = minimum latitude
++     *  [2] = maximum longitude
++     *  [3] = maximum latitude
++     */
++    public double[] getBoundingBox() {
++        return bounding_box;
++    }
++
++    /**
++     * return all polygon points
++     * - n coordinates = double[2*n] as {longitude, latitude, longitude, latitude, ...}
++     * - first coordinate is the same as the last coordinate
++     *
++     * @return double []
++     */
++    public double[] getPoints() {
++        return points;
++    }
++
++    /**
++     * construct the Polygon.
++     *
++     * expects
++     * longitude >=-180 and <180
++     * latitude >=-90 and <=90
++     *
++     * @param points_ array of points as longitude and latiude
++     * in double [n * 2] where n is the number of points
++     */
++    public WktPolygon(double[] points_) {
++        super(new Point(points_[1], points_[0]));
++
++        if (points_ != null && points_.length > 1) {
++            /* ensure last point == first point */
++            int len = points_.length - 2;
++            if (points_[0] != points_[len] || points_[1] != points_[len + 1]) {
++                points = new double[points_.length + 4];
++                System.arraycopy(points_, 0, points, 0, points_.length);
++                points[len + 2] = points_[0];
++                points[len + 3] = points_[1];
++            } else {
++                points = points_;
++            }
++
++            /* bounding box setup */
++            bounding_box = new double[4];
++            bounding_box[0] = points[0];
++            bounding_box[1] = points[1];
++            bounding_box[2] = points[0];
++            bounding_box[3] = points[1];
++            for (int i = 2; i < points.length; i += 2) {
++                if (bounding_box[0] > points[i]) {
++                    bounding_box[0] = points[i];
++                }
++                if (bounding_box[2] < points[i]) {
++                    bounding_box[2] = points[i];
++                }
++                if (bounding_box[1] > points[i + 1]) {
++                    bounding_box[1] = points[i + 1];
++                }
++                if (bounding_box[3] < points[i + 1]) {
++                    bounding_box[3] = points[i + 1];
++                }
++            }
++        }
++    }
++
++    /**
++     * returns true when point is within the polygon
++     *
++     * method:
++     * treat as segments with target long in the middle:
++     *
++     *
++     *	              __-1__|___1_
++     *			    |
++     *
++     *
++     * iterate through points and count number of latitude axis crossing where
++     * crossing is > latitude.
++     *
++     * point is inside of area when number of crossings is odd;
++     *
++     * point is on a polygon edge return true
++     *
++     * @param longitude
++     * @param latitude
++     * @return true iff longitude and latitude point is on edge or within polygon
++     */
++    public boolean contains(double longitude, double latitude) {
++//        // bounding box test not required
++//        if (longitude > bounding_box[2] || longitude < bounding_box[0]
++//                || latitude > bounding_box[3] || latitude < bounding_box[1]) {
++//            return false;
++//        }
++
++        //initial segment
++        boolean segment = points[0] > longitude;
++
++        double y;
++        int len = points.length;
++        int score = 0;
++
++        for (int i = 2; i < len; i += 2) {
++            // is it in a new segment?
++            if ((points[i] > longitude) != segment) {
++                //lat value at line crossing > target point
++                y = (longitude - points[i]) * ((points[i + 1] - points[i - 1]) / (points[i] - points[i - 2])) + points[i + 1];
++                if (y > latitude) {
++                    score++;
++                } else if (y == latitude) {
++                    //line crossing
++                    return true;
++                }
++
++                segment = !segment;
++            } else if (points[i] == longitude && points[i + 1] == latitude) {
++                //point on point
++                return true;
++            }
++        }
++
++        return (score % 2 != 0);
++    }
++
++    /**
++     * defines a region by a points string, POLYGON only
++     *
++     * TODO: define better format for parsing, including BOUNDING_BOX and CIRCLE
++     *
++     * @param pointsString points separated by ',' with longitude and latitude separated by ':'
++     * @return SimpleRegion object
++     */
++    public static WktPolygon parseWktPolygon(String pointsString) {
++        if (pointsString.equalsIgnoreCase("none")) {
++            return null;
++        }
++        ArrayList<Double> points = new ArrayList<Double>();
++        int pos;
++        int lastpos = 0;
++        while((pos = Math.min(pointsString.indexOf(',', lastpos), pointsString.indexOf(':', lastpos))) > 0) {
++            try {
++                points.add(Double.parseDouble(pointsString.substring(lastpos, pos)));
++            } catch (Exception e) {
++                points.add(0.0);
++            }
++            lastpos = pos + 1;
++        }
++        //one coordinate pair remaining
++        pos = pointsString.indexOf(':', lastpos);
++        try {
++            points.add(Double.parseDouble(pointsString.substring(lastpos, pos)));
++            lastpos = pos + 1;
++        } catch (Exception e) {
++            points.add(0.0);
++        }
++        try {
++            points.add(Double.parseDouble(pointsString.substring(lastpos, pointsString.length())));
++        } catch (Exception e) {
++            points.add(0.0);
++        }
++
++        double [] pointsArray = new double[points.size()];
++        for(int i=0;i<points.size();i++) {
++            pointsArray[i] = points.get(i);
++        }
++        return new WktPolygon(pointsArray);
++    }
++
++    /**
++     * determines overlap with a grid for POLYGON
++     *
++     * when <code>three_state_map</code> is not null populate it with one of:
++     * 	GI_UNDEFINED
++     * 	GI_PARTIALLY_PRESENT
++     * 	GI_FULLY_PRESENT
++     *
++     * 1. Get 3state mask and fill edge passes as 'partial'.
++     *  then
++     * 3. Fill in grid
++     * 4. Repeat from (3).
++     *
++     * @param longitude1
++     * @param latitude1
++     * @param longitude2
++     * @param latitude2
++     * @param xres number of longitude segements as int
++     * @param yres number of latitude segments as int
++     */
++    public void getOverlapGridCells(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
++        double divx = (longitude2 - longitude1) / width;
++        double divy = (latitude2 - latitude1) / height;
++
++        //to cells
++        int x, y, xend, yend, xDirection, icross;
++        double xcross, endlat, dx1, dx2, dy1, dy2, slope, intercept;
++        for (int j = 2; j < points.length; j+=2) {
++            if (points[j + 1] < points[j - 1]) {
++                dx1 = points[j];
++                dy1 = points[j + 1];
++                dx2 = points[j - 2];
++                dy2 = points[j - 1];
++            } else {
++                dx2 = points[j];
++                dy2 = points[j + 1];
++                dx1 = points[j - 2];
++                dy1 = points[j - 1];
++            }
++            x = (int) ((dx1 - longitude1) / divx);
++            y = (int) ((dy1 - latitude1) / divy);
++            xend = (int) ((dx2 - longitude1) / divx);
++            yend = (int) ((dy2 - latitude1) / divy);
++
++            if (y >= 0 && y < height && x >= 0 && x < width) {
++                three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++            }
++
++            if (x == xend && y == yend) {
++                continue;
++            }
++
++            xDirection = (x < xend) ? 1 : -1;
++
++            slope = (dy1 - dy2) / (dx1 - dx2);
++            intercept = dy1 - slope * dx1;
++
++            if (x == xend) {
++                //vertical line
++                while (y != yend) {
++                    y++;
++                    if (y >= 0 && y < height && x >= 0 && x < width) {
++                        three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++                    }
++                }
++            } else if (y == yend) {
++                //horizontal line
++                while (x != xend) {
++                    x += xDirection;
++                    if (y >= 0 && y < height && x >= 0 && x < width) {
++                        three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++                    }
++                }
++            } else { //sloped line
++                endlat = dy2;
++                for (double k = (y + 1) * divy + latitude1; k < endlat; k += divy) {
++                    //move in yDirection to get x
++                    xcross = (k - intercept) / slope;
++                    icross = (int) ((xcross - longitude1) / divx);
++
++                    while (x != icross && x != xend) {
++                        x += xDirection;
++                        if (y >= 0 && y < height && x >= 0 && x < width) {
++                            three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++                        }
++                    }
++
++                    if (y != yend) {
++                        y++;
++                        if (y >= 0 && y < height && x >= 0 && x < width) {
++                            three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++                        }
++                    }
++                }
++
++                //finish horizontal line
++                while (x != xend) {
++                    x += xDirection;
++                    if (y >= 0 && y < height && x >= 0 && x < width) {
++                        three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++                    }
++                }
++            }
++        }
++
++        //fill in grid
++        for (int j = 0; j < three_state_map[0].length; j++) {
++            for (int i = 0; i < three_state_map.length; i++) {
++                if (three_state_map[i][j] == GI_PARTIALLY_PRESENT) {
++                    //if it is partially present, do nothing
++                } else if ((j == 0 || three_state_map[i][j - 1] == GI_PARTIALLY_PRESENT)) {
++                    if (i > 0
++                            && (three_state_map[i - 1][j] == GI_FULLY_PRESENT
++                            || three_state_map[i - 1][j] == GI_UNDEFINED)) {
++                        //use same as LHS
++                        three_state_map[i][j] = three_state_map[i - 1][j];
++                    } else if (contains(j * divx + divx / 2 + longitude1, i * divy + divy / 2 + latitude1)) {
++                        //if the previous was partially present, test
++                        three_state_map[i][j] = GI_FULLY_PRESENT;
++                    } //else absent
++                } else {
++                    //if the previous was fully present, repeat
++                    //if the previous was absent, repeat
++                    three_state_map[i][j] = three_state_map[i][j - 1];
++                }
++            }
++        }
++    }
++
++    @Override
++    public boolean equals(Object obj) {
++        return WktPolygon.class.isInstance(obj) && Arrays.equals(points, ((WktPolygon) obj).getPoints());
++    }
++
++    @Override
++    public String toString() {
++        StringBuilder sb = new StringBuilder();
++        sb.append("{");
++        int len = points.length;
++        for (int i = 0; i < len; i += 2) {
++            sb.append(points[i]).append(",").append(points[i + 1]).append(" ");
++        }
++        sb.append("}");
++        return sb.toString();
++    }
++
++    public double distanceFactor(Point point) {
++        return contains(point.longitude, point.latitude) ? 1 : -1;
++    }
++
++    @Override
++    public double minimalDistanceFactor(BoundingBox boundingBox) {
++        return 0;
++    }
++
++    @Override
++    public BoundingBox createBoundingBox() {
++        double[] bb = bounding_box;
++        return new BoundingBox(new Point(bb[1], bb[0]), new Point(bb[3], bb[2]));
++    }
++
++    void getOverlapGridCells_Acc(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
++        double divx = (longitude2 - longitude1) / width;
++        double divy = (latitude2 - latitude1) / height;
++
++        //to cells
++        int x, y, xend, yend, xDirection, icross;
++        double xcross, endlat, dx1, dx2, dy1, dy2, slope, intercept;
++        for (int j = 2; j < points.length; j+=2) {
++            if (points[j+1] < points[j - 1]) {
++                dx1 = points[j];
++                dy1 = points[j+1];
++                dx2 = points[j - 2];
++                dy2 = points[j - 1];
++            } else {
++                dx2 = points[j];
++                dy2 = points[j+1];
++                dx1 = points[j - 2];
++                dy1 = points[j - 1];
++            }
++            x = (int) ((dx1 - longitude1) / divx);
++            y = (int) ((dy1 - latitude1) / divy);
++            xend = (int) ((dx2 - longitude1) / divx);
++            yend = (int) ((dy2 - latitude1) / divy);
++
++            if (x == xend && y == yend) {
++                continue;
++            }
++
++            xDirection = (x < xend) ? 1 : -1;
++
++            slope = (dy1 - dy2) / (dx1 - dx2);
++            intercept = dy1 - slope * dx1;
++
++            if (y >= 0 && y < height && x >= 0 && x < width) {
++                three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++            }
++
++            if (x == xend) {
++                //vertical line
++                while (y != yend) {
++                    y++;
++                    if (y >= 0 && y < height && x >= 0 && x < width) {
++                        three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++                    }
++                }
++            } else if (y == yend) {
++                //horizontal line
++                while (x != xend) {
++                    x += xDirection;
++                    if (y >= 0 && y < height && x >= 0 && x < width) {
++                        three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++                    }
++                }
++            } else { //sloped line
++                endlat = dy2;
++                for (double k = (y + 1) * divy + latitude1; k < endlat; k += divy) {
++                    //move in yDirection to get x
++                    xcross = (k - intercept) / slope;
++                    icross = (int) ((xcross - longitude1) / divx);
++
++                    while (x != icross && x != xend) {
++                        x += xDirection;
++                        if (y >= 0 && y < height && x >= 0 && x < width) {
++                            three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++                        }
++                    }
++
++                    if (y != yend) {
++                        y++;
++                        if (y >= 0 && y < height && x >= 0 && x < width) {
++                            three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++                        }
++                    }
++                }
++
++                //finish horizontal line
++                while (x != xend) {
++                    x += xDirection;
++                    if (y >= 0 && y < height && x >= 0 && x < width) {
++                        three_state_map[y][x] = GI_PARTIALLY_PRESENT;
++                    }
++                }
++            }
++        }
++    }
++
++    void fillAccMask(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
++        double divx = (longitude2 - longitude1) / width;
++        double divy = (latitude2 - latitude1) / height;
++
++        int i, j;
++        //do grid check
++        for (j = 0; j < three_state_map[0].length; j++) {
++            for (i = 0; i < three_state_map.length; i++) {
++                if (three_state_map[i][j] == GI_PARTIALLY_PRESENT) {
++                    //if it is partially present, do nothing
++                } else if (j == 0 || three_state_map[i][j - 1] == GI_PARTIALLY_PRESENT) {
++                    if (i > 0 && (three_state_map[i - 1][j] != GI_FULLY_PRESENT)) {
++                        //use same as LHS
++                        three_state_map[i][j] = three_state_map[i - 1][j];
++                    } else if (contains(j * divx + divx / 2 + longitude1, i * divy + divy / 2 + latitude1)) {
++                        //if the previous was partially present, test
++                        three_state_map[i][j] = GI_FULLY_PRESENT;
++                    } //else absent
++                } else {
++                    //if the previous was fully present, repeat
++                    //if the previous was absent, repeat
++                    three_state_map[i][j] = three_state_map[i][j - 1];
++                }
++            }
++        }
++    }
++}
+Index: src/main/java/nl/jteam/search/solrext/spatial/lucene/SpatialQuery.java
+===================================================================
+--- src/main/java/nl/jteam/search/solrext/spatial/lucene/SpatialQuery.java	(revision 2)
++++ src/main/java/nl/jteam/search/solrext/spatial/lucene/SpatialQuery.java	(working copy)
+@@ -194,11 +194,17 @@
+      * Scorer for {@link nl.jteam.search.solrext.spatial.lucene.SpatialQuery}
+      */
+     public class SpatialScorer extends Scorer {
+-
++        private final static int grid_width = 200;
++        private final static int grid_height = 200;
+         private final Scorer boundingQueryScorer;
+         private final LocationDataSet dataSet;
+         private final float queryWeight;
+-
++        private double [] bbox;
++        private double bboxWidth;
++        private double bboxHeight;
++        private byte[][] grid;
++        private WktPolygon shape;
++        
+         private double distance;
+         private int doc = -1;
+ 
+@@ -215,9 +221,37 @@
+             this.boundingQueryScorer = boundingQueryScorer;
+             this.dataSet = dataSet;
+             this.queryWeight = queryWeight;
++
++            initShape(searchArea);
+         }
+ 
+         /**
++         * prepare the region gridding
++         * @param region
++         */
++        void initShape(SpatialArea area) {
++            shape = null;
++
++            if(!WktPolygon.class.isInstance(area)) {
++                return;
++            }
++
++            shape = (WktPolygon) area;
++            if(shape != null) {
++                bbox = shape.getBoundingBox();
++                bboxWidth = bbox[2] - bbox[0];
++                bboxHeight = bbox[3] - bbox[1];
++                if(shape.grid == null) {
++                    grid = new byte[grid_width][grid_height];
++                    shape.getOverlapGridCells(bbox[0], bbox[1], bbox[2], bbox[3], grid_width, grid_height, grid);
++                    shape.grid = grid;
++                } else {
++                    grid = shape.grid;
++                }
++            }
++        }
++
++        /**
+          * {@inheritDoc}
+          */
+         @Override
+@@ -270,7 +304,31 @@
+          * @return Spherical distance factor the document with the given id
+          */
+         private double calculateDistance(int docId) {
+-            return searchArea.distanceFactor(dataSet.getPoint(docId));
++            if (shape != null) {
++                Point point = dataSet.getPoint(docId);
++
++                //grid test
++                int x = (int)((point.getLongitude() - bbox[0]) / bboxWidth * grid_width);
++                int y = (int)((point.getLatitude() - bbox[1]) / bboxHeight * grid_height);
++
++                //include top border crossings
++                if (x >= grid_width) {
++                    x = grid_width-1;
++                }if (y >= grid_height) {
++                    y = grid_height-1;
++                }
++                
++                switch (grid[y][x]) {
++                    case WktPolygon.GI_FULLY_PRESENT:                        
++                        return 1;
++                    case WktPolygon.GI_PARTIALLY_PRESENT:
++                        return shape.contains(point.getLongitude(), point.getLatitude())?1:-1;
++                    default:
++                        return -1;
++                }
++            } else {
++                return searchArea.distanceFactor(dataSet.getPoint(docId));
++            }
+         }
+     }
+ }
+Index: src/main/java/nl/jteam/search/solrext/spatial/lucene/util/WktUtils.java
+===================================================================
+--- src/main/java/nl/jteam/search/solrext/spatial/lucene/util/WktUtils.java	(revision 0)
++++ src/main/java/nl/jteam/search/solrext/spatial/lucene/util/WktUtils.java	(revision 0)
+@@ -0,0 +1,109 @@
++package nl.jteam.search.solrext.spatial.lucene.util;
++
++import java.util.ArrayList;
++import nl.jteam.search.solrext.spatial.lucene.geometry.WktMultipolygon;
++import nl.jteam.search.solrext.spatial.lucene.geometry.WktPolygon;
++
++/**
++ *
++ * @author Adam Collins
++ */
++public class WktUtils {
++
++    /**
++     * defines a region by a points string, POLYGON, MULTIPOLYGON or CO only
++     *
++     * @param pointsString points separated by ',' with longitude and latitude separated by ':'
++     * @return WktPolygon object
++     */
++    public static WktPolygon parseWKT(String pointsString) {
++        if (pointsString == null) {
++            return null;
++        }
++
++        ArrayList<ArrayList<WktPolygon>> regions = new ArrayList<ArrayList<WktPolygon>>();
++
++        if (pointsString.startsWith("GEOMETRYCOLLECTION")) {
++            regions.addAll(parseGeometryCollection(pointsString.substring("GEOMETRYCOLLECTION(".length(), pointsString.length() - 1)));
++        } else if (pointsString.startsWith("MULTIPOLYGON")) {
++            regions.addAll(parseMultipolygon(pointsString.substring("MULTIPOLYGON(((".length(), pointsString.length() - 3)));
++        } else if (pointsString.startsWith("POLYGON")) {
++            regions.add(parsePolygon(pointsString.substring("POLYGON((".length(), pointsString.length() - 2)));
++        }
++
++        if (regions.isEmpty()) {
++            return null;
++        } else if (regions.size() == 1 && regions.get(0).size() == 1) {
++            return regions.get(0).get(0);
++        } else {
++            WktMultipolygon cr = null;
++            for (int i = 0; i < regions.size(); i++) {
++                if (i == 0) {
++                    cr = new WktMultipolygon(regions.get(i));
++                } else {
++                    cr.addSet(regions.get(i));
++                }
++            }
++            if (cr != null) {
++                cr.useMask(-1, -1, -1);
++            }
++            return cr;
++        }
++    }
++
++    static ArrayList<ArrayList<WktPolygon>> parseGeometryCollection(String pointsString) {
++        ArrayList<String> stringsList = new ArrayList<String>();
++
++        int posStart = minPos(pointsString, "POLYGON", "MULTIPOLYGON", 0);
++        int posEnd = minPos(pointsString, "POLYGON", "MULTIPOLYGON", posStart + 10);
++        while (posEnd > 0) {
++            stringsList.add(pointsString.substring(posStart, posEnd - 1));
++            posStart = posEnd;
++            posEnd = minPos(pointsString, "POLYGON", "MULTIPOLYGON", posStart + 10);
++        }
++        stringsList.add(pointsString.substring(posStart, pointsString.length()));
++
++        ArrayList<ArrayList<WktPolygon>> regions = new ArrayList<ArrayList<WktPolygon>>();
++        for (int i = 0; i < stringsList.size(); i++) {
++            if (stringsList.get(i).startsWith("MULTIPOLYGON")) {
++                //remove trailing ")))"
++                regions.addAll(parseMultipolygon(stringsList.get(i).substring("MULTIPOLYGON(((".length(), stringsList.get(i).length() - 3)));
++            } else if (stringsList.get(i).startsWith("POLYGON")) {
++                //remove trailing "))"
++                regions.add(parsePolygon(stringsList.get(i).substring("POLYGON((".length(), stringsList.get(i).length() - 2)));
++            }
++        }
++
++        return regions;
++    }
++
++    static ArrayList<ArrayList<WktPolygon>> parseMultipolygon(String multipolygon) {
++        ArrayList<ArrayList<WktPolygon>> regions = new ArrayList<ArrayList<WktPolygon>>();
++        for (String p : multipolygon.split("\\)\\),\\(\\(")) {
++            regions.add(parsePolygon(p));
++        }
++        return regions;
++    }
++
++    static ArrayList<WktPolygon> parsePolygon(String polygon) {
++        ArrayList<WktPolygon> regions = new ArrayList<WktPolygon>();
++        for (String p : polygon.split("\\),\\(")) {
++            regions.add(WktPolygon.parseWktPolygon(p));
++        }
++        return regions;
++    }
++
++    static int minPos(String lookIn, String lookFor1, String lookFor2, int startPos) {
++        int pos, p1, p2;
++        p1 = lookIn.indexOf(lookFor1, startPos);
++        p2 = lookIn.indexOf(lookFor2, startPos);
++        if (p1 < 0) {
++            pos = p2;
++        } else if (p2 < 0) {
++            pos = p1;
++        } else {
++            pos = Math.min(p1, p2);
++        }
++        return pos;
++    }
++}
+Index: src/main/java/nl/jteam/search/solrext/spatial/SpatialParams.java
+===================================================================
+--- src/main/java/nl/jteam/search/solrext/spatial/SpatialParams.java	(revision 2)
++++ src/main/java/nl/jteam/search/solrext/spatial/SpatialParams.java	(working copy)
+@@ -15,6 +15,7 @@
+     String CIRCLES = "circles";
+     String POLYGONS = "polygons";
+     String POLYLINES = "polylines";
++    String WKT = "wkt";
+ 
+     String QPARSER_TYPE = "qtype";
+ 
+Index: src/main/java/nl/jteam/search/solrext/spatial/SpatialQParserPlugin.java
+===================================================================
+--- src/main/java/nl/jteam/search/solrext/spatial/SpatialQParserPlugin.java	(revision 2)
++++ src/main/java/nl/jteam/search/solrext/spatial/SpatialQParserPlugin.java	(working copy)
+@@ -1,5 +1,6 @@
+ package nl.jteam.search.solrext.spatial;
+ 
++import nl.jteam.search.solrext.spatial.lucene.util.WktUtils;
+ import nl.jteam.search.solrext.spatial.lucene.DistanceFieldComparatorSource;
+ import nl.jteam.search.solrext.spatial.lucene.LatLongLocationDataSetFactory;
+ import nl.jteam.search.solrext.spatial.lucene.SpatialQuery;
+@@ -130,11 +131,13 @@
+             String rawCircles = localParams.get(CIRCLES);
+             String rawPolygons = localParams.get(POLYGONS);
+             String rawPolylines = localParams.get(POLYLINES);
++            String rawWkt = localParams.get(WKT);
+ 
+             if ((rawCircles == null || rawCircles.length() == 0) &&
+                 (rawPolygons == null || rawPolygons.length() == 0) &&
+-                (rawPolylines == null || rawPolylines.length() == 0)) {
+-                throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Required geospatial parameters (Circles, Polygons or/and Polylines) are missing");
++                (rawPolylines == null || rawPolylines.length() == 0) &&
++                (rawWkt == null || rawWkt.length() == 0)) {
++                throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Required geospatial parameters (Circles, Polygons, Polylines or/and WKT) are missing");
+             }
+ 
+             // circles
+@@ -203,9 +206,22 @@
+             }
+           }
+ 
++            // polygons
++            List<WktPolygon> parsedWkt = new ArrayList<WktPolygon>();
++            if (rawWkt != null && rawWkt.length() > 0) {
++                WktPolygon region = WktUtils.parseWKT(rawWkt);
++                if (region != null) { // successful
++                    parsedWkt.add(region);
++                } else {
++                    throw new SolrException(SolrException.ErrorCode.BAD_REQUEST,
++                            "WKT " + rawWkt + "has is invalid WKT");
++                }
++            }
++
+           List<SpatialArea> finalList = new ArrayList<SpatialArea>();
+           finalList.addAll(parsedCircles);
+           finalList.addAll(parsedPolygons);
++          finalList.addAll(parsedWkt);
+ 
+           // polylines
+ 
