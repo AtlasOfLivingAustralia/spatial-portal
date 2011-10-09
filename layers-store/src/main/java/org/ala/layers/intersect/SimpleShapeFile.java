@@ -301,7 +301,7 @@ public class SimpleShapeFile extends Object implements Serializable {
         ArrayList<ArrayList<SimpleRegion>> regions = new ArrayList<ArrayList<SimpleRegion>>();
 
         if (pointsString.startsWith("GEOMETRYCOLLECTION")) {
-            regions.addAll(parseGeometryCollection(pointsString.substring("GEOMETRYCOLLECTION(((".length(), pointsString.length() - 1)));
+            regions.addAll(parseGeometryCollection(pointsString.substring("GEOMETRYCOLLECTION(".length(), pointsString.length() - 1)));
         } else if (pointsString.startsWith("MULTIPOLYGON")) {
             regions.addAll(parseMultipolygon(pointsString.substring("MULTIPOLYGON(((".length(), pointsString.length() - 3)));
         } else if (pointsString.startsWith("POLYGON")) {

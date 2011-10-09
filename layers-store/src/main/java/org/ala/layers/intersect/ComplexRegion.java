@@ -260,6 +260,9 @@ public class ComplexRegion extends SimpleRegion {
         if (depthThreashold == -1) {
             depthThreashold = 100;
         }
+        if(width < 3 || height < 3) {
+            return;
+        }
 
         int i, j;
 
@@ -297,19 +300,20 @@ public class ComplexRegion extends SimpleRegion {
                 //shapemaskregion into shapemask
                 for (i = 0; i < height; i++) {
                     for (j = 0; j < width; j++) {
-                        if (shapemaskregion[i][j] == 1 || shapemask[i][j] == 1) {
-                            shapemask[i][j] = 1;				//partially inside
+                        if (shapemaskregion[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT
+                                || shapemask[i][j] ==SimpleRegion.GI_PARTIALLY_PRESENT) {
+                            shapemask[i][j] = SimpleRegion.GI_PARTIALLY_PRESENT;				//partially inside
                             if (md != null) {
                                 if (md[i][j] == null) {
                                     md[i][j] = new ArrayList<Integer>();
                                 }
                                 md[i][j].add(k);
                             }
-                        } else if (shapemaskregion[i][j] == 2) {
-                            if (shapemask[i][j] == 2) {
-                                shapemask[i][j] = 3;			//completely inside
+                        } else if (shapemaskregion[i][j] == SimpleRegion.GI_FULLY_PRESENT ) {
+                            if (shapemask[i][j] == SimpleRegion.GI_FULLY_PRESENT ) {
+                                shapemask[i][j] = SimpleRegion.GI_ABSENCE;      //completely inside
                             } else {
-                                shapemask[i][j] = 2;			//completely outside (inside of a cutout region)
+                                shapemask[i][j] = SimpleRegion.GI_FULLY_PRESENT ;//completely outside (inside of a cutout region)
                             }
                             if (md != null) {
                                 if (md[i][j] == null) {
@@ -328,14 +332,11 @@ public class ComplexRegion extends SimpleRegion {
             //shapemask into mask
             for (i = 0; i < height; i++) {
                 for (j = 0; j < width; j++) {
-                    if (shapemask[i][j] == 1 || mask[i][j] == 1) {
-                        mask[i][j] = 1;				//partially inside
-                    } else if (shapemask[i][j] == 2) {
-                        if (mask[i][j] == 2) {
-                            mask[i][j] = 3;			//completely inside
-                        } else {
-                            mask[i][j] = 2;			//completely outside (inside of a cutout region)
-                        }
+                    if (shapemask[i][j] == SimpleRegion.GI_FULLY_PRESENT
+                            || mask[i][j] == SimpleRegion.GI_FULLY_PRESENT) {
+                        mask[i][j] = SimpleRegion.GI_FULLY_PRESENT;				//partially inside
+                    } else if (shapemask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT) {
+                        mask[i][j] = SimpleRegion.GI_PARTIALLY_PRESENT;
                     }
 
                     /* reset shapemask for next part */
@@ -349,7 +350,7 @@ public class ComplexRegion extends SimpleRegion {
             maskDepth = new Object[md.length][md[0].length];
             for (i = 0; i < height; i++) {
                 for (j = 0; j < width; j++) {
-                    if (md[i][j] != null) {
+                    if (md[i][j] != null && mask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT ) {
                         int[] d = new int[md[i][j].size()];
                         for (k = 0; k < d.length; k++) {
                             d[k] = md[i][j].get(k);
