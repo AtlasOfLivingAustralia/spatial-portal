@@ -8,9 +8,12 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.awt.Color;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryField;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.httpclient.HttpClient;
@@ -64,7 +67,7 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
     Comboitem ciColourUser; //User selected colour
     Label layerName;
     EventListener listener;
-    String lsid;
+    Query query;
 
     @Override
     public void afterCompose() {
@@ -174,29 +177,6 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    String registerPointsColourModeLegend(String speciesLsid, String colourmode) {
-        try {
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/species/colourlegend?lsid="
-                    + URLEncoder.encode(speciesLsid.replace(".", "__"), "UTF-8")
-                    + "&colourmode="
-                    + URLEncoder.encode(colourmode, "UTF-8")); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-
-            int result = client.executeMethod(get);
-
-            //TODO: test results
-            String slist = get.getResponseBodyAsString();
-
-            return slist;
-        } catch (Exception ex) {
-            ex.printStackTrace(System.out);
-        }
-
-        return null;
-    }
-
     void showPointsColourModeLegend() {
         //remove all
         while (legendHtml.getChildren().size() > 0) {
@@ -204,12 +184,12 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         }
 
         //1. register legend
-        String pid = registerPointsColourModeLegend(lsid, (String) cbColour.getSelectedItem().getValue());
+        //String pid = registerPointsColourModeLegend(lsid, (String) cbColour.getSelectedItem().getValue());
 
         //put any parameters into map
         Map map = new HashMap();
-        map.put("pid", pid);
-        map.put("lsid", lsid);
+        //map.put("pid", pid);
+        map.put("query", query);
         map.put("layer", "points layer");
         map.put("readonly", "true");
         map.put("colourmode", (String) cbColour.getSelectedItem().getValue());
@@ -222,8 +202,8 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void init(String lsid, int red, int green, int blue, int size, int opacity, String colourMode, EventListener listener) {
-        this.lsid = lsid;
+    public void init(Query query, int red, int green, int blue, int size, int opacity, String colourMode, EventListener listener) {
+        this.query = query;
 
         opacitySlider.setCurpos(opacity);
         onScroll$opacitySlider(null);
@@ -247,6 +227,9 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
             }
         }
         this.listener = listener;
+        
+        //fill cbColour
+        setupCBColour(query);
 
         updateUserColourDiv();
         updateLegendImage();
@@ -284,10 +267,35 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
                 e.printStackTrace();
             }
         }
-        this.detach();
+        //this.detach();
     }
 
     public void onClick$btnClose(Event event) {
         this.detach();
+    }
+
+    public void onClick$btnCancel(Event event) {
+        this.detach();
+    }
+
+    private void setupCBColour(Query q) {
+        for(int i=0;i<cbColour.getItemCount();i++) {
+            if(cbColour.getItemAtIndex(i) != ciColourUser) {
+                cbColour.removeItemAt(i);
+                i--;
+            }
+        }
+
+        //Query q = (Query) m.getData("query");
+//        Object [] o = (Object []) RecordsLookup.getData(q.getQ());
+//        ArrayList<QueryField> fields = (ArrayList<QueryField>) o[1];
+        if(q != null) {
+            ArrayList<QueryField> fields = q.getFacetFieldList();
+            for(int i=0;i<fields.size();i++) {
+                Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
+                ci.setValue(fields.get(i).getName());
+                ci.setParent(cbColour);
+            }
+        }
     }
 }

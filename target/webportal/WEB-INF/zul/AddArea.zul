@@ -1,0 +1,66 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="addareawindow" use="org.ala.spatial.analysis.web.AddAreaController"
+    apply="org.ala.spatial.analysis.web.AddAreaController" width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="addareawindow.onClick$btnCancel(null)" style="display: inline" />
+        <n:a class="fancybox-help" n:onClick="loadHelp('areas-add-to-map')" style="display: inline" />
+        
+        <caption label="Add Area" />
+
+        <vbox width="100%">
+            <separator />
+            <label sclass="wLabel" value="Select method to define area."/>
+            <div style="margin-left:20px" >
+                <radiogroup id="cbAreaSelection" orient="vertical" onCheck="btnOk.setDisabled(false)">
+                    <vbox>
+                    <separator />
+                    <label value="Interact with the map" sclass="wSubLabel"/>
+                    <radio label="Draw bounding box" id="ciBoundingBox" />
+                    <radio label="Draw polygon" id="ciPolygon" />
+                    <radio label="Draw point and radius" id="ciPointAndRadius" />
+                    <radio label="Select area from polygonal layer" id="ciMapPolygon" />
+
+                    <separator />
+                    <label value="Searching" sclass="wSubLabel" />
+                    <radio label="Radius centered on street address" id="ciAddressRadiusSelection"/>
+                    <radio label="Create radius from point" id="ciRadiusManualSelection"/>
+                    <radio label="Gazetteer polygon" id="ciRegionSelection" />
+
+                    <separator />
+                    <label value="Preset areas" sclass="wSubLabel" />
+                    <radio label="Box - Australia" id="ciBoxAustralia" />
+                    <radio label="Box - World" id="ciBoxWorld" />
+                    <radio label="Box - Current View" id="ciBoxCurrentView" />
+
+                    <separator />
+                    <label value="Upload"  sclass="wSubLabel"/>
+                    <radio label="Upload Shapefile" id="ciUploadShapefile" />
+                    <radio label="Upload KML" id="ciUploadKML" />
+
+                    <separator />
+                    <label value="Other" sclass="wSubLabel" />
+                    <radio label="Define environmental envelope" id="ciEnvironmentalEnvelope" />
+                    <radio label="Paste Well Known Text (WKT)" id="ciWKT" />
+                    </vbox>
+                </radiogroup>
+            </div>
+        </vbox>
+
+            <separator />
+            <div sclass="wButtons">
+                <hbox>                    
+                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <button sclass="goButton" label="Next" id="btnOk" disabled="true"/>
+                </hbox>
+            </div>
+            <separator />
+    </window>
+</zk>

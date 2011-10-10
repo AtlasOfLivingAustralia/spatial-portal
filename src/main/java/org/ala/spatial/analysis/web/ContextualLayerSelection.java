@@ -39,18 +39,12 @@ public class ContextualLayerSelection extends AreaToolComposer  {
          if(treeName != null) {
             getMapComposer().addWMSLayer(treeName,
                             treePath,
-                            (float) 0.75, treeMetadata, treeSubType);
+                            (float) 0.75, treeMetadata, null, treeSubType, null, null);
 
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
-
-
         }
-
-
       
-
-      
-        Window window = (Window) Executions.createComponents("WEB-INF/zul/AreaMapPolygon.zul", this.getParent(), Executions.getCurrent().getArg());
+        Window window = (Window) Executions.createComponents("WEB-INF/zul/AreaMapPolygon.zul", this.getParent(), winProps);
         window.doOverlapped();
         String script = getMapComposer().getOpenLayersJavascript().addFeatureSelectionTool();
         getMapComposer().getOpenLayersJavascript().execute(getMapComposer().getOpenLayersJavascript().iFrameReferences + script);
@@ -68,7 +62,7 @@ public class ContextualLayerSelection extends AreaToolComposer  {
             JSONObject jo = (JSONObject) autoCompleteLayers.getSelectedItem().getValue();
             String metadata = "";
 
-            metadata = CommonData.satServer + "/alaspatial/layers/" + jo.getString("uid");
+            metadata = CommonData.satServer + "/layers/" + jo.getString("uid");
 
             setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata,
                     jo.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
@@ -76,7 +70,7 @@ public class ContextualLayerSelection extends AreaToolComposer  {
             JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
             if (!joLayer.getString("type").contentEquals("class")) {
 
-                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
 
                 setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
                         joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
@@ -88,7 +82,7 @@ public class ContextualLayerSelection extends AreaToolComposer  {
                 //Filtered requests don't work on
                 displaypath = displaypath.replace("gwc/service/", "");
                 // Messagebox.show(displaypath);
-                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
 
                 setLayer(layer + " - " + classValue, displaypath, metadata,
                         joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);

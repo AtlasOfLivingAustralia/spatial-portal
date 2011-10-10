@@ -40,7 +40,7 @@ public class GazetteerSearchController extends UtilityComposer {
     }
 
     private String gazServer = null; 
-    private String gazSearchURL = "/geoserver/rest/gazetteer/result.xml?q=";
+//    private String gazSearchURL = "/rest/gazetteer/result.xml?q=";
 
     @Override
     public void afterCompose() {
@@ -51,15 +51,15 @@ public class GazetteerSearchController extends UtilityComposer {
         sSearchTerm = (String) sess.getAttribute("searchGazetteerTerm");
     }
 
-    private String getURI() {
-        String uri;
-
-
-        // add the search term to the uri and append the required json to it
-        uri = gazServer + gazSearchURL + forURL(sSearchTerm);
-
-        return uri;
-    }
+//    private String getURI() {
+//        String uri;
+//
+//
+//        // add the search term to the uri and append the required json to it
+//        uri = gazServer + gazSearchURL + forURL(sSearchTerm);
+//
+//        return uri;
+//    }
 
     /**
      * string checking code, for spaces and special characters

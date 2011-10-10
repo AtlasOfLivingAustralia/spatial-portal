@@ -85,11 +85,9 @@ public class AreaPolygon extends AreaToolComposer {
                 String v = selectionGeom.replace("LAYER(", "");
                 //FEATURE(table name if known, class name)
                 v = v.substring(0, v.length() - 1);
-                wkt = getLayerGeoJsonAsWkt(v, true);
+                
+                wkt = Util.wktFromJSON(getMapComposer().getMapLayer(v).getGeoJSON());
                 displayGeom.setValue(wkt);
-
-                //for display
-                wkt = getLayerGeoJsonAsWkt(v, false);
 
                 //calculate area is not populated
 //                if (storedSize == null) {
@@ -136,73 +134,5 @@ public class AreaPolygon extends AreaToolComposer {
         mapComposer = (MapComposer) page.getFellow("mapPortalPage");
 
         return mapComposer;
-    }
-
-    /**
-     * get Active Area as WKT string, from a layer name
-     *
-     * @param layer name of layer as String
-     * @param register_shape true to register the shape with alaspatial shape register
-     * @return
-     */
-    String getLayerGeoJsonAsWkt(String layer, boolean register_shape) {
-        String wkt = ""; //DEFAULT_AREA;
-
-        if (!register_shape) {
-            return Util.wktFromJSON(getMapComposer().getMapLayer(layer).getGeoJSON());
-        }
-
-        try {
-            //try to get table name from uri like gazetteer/aus1/Queensland.json
-            String uri = getMapComposer().getMapLayer(layer).getUri();
-            String gaz = "gazetteer/";
-            int i1 = uri.indexOf(gaz);
-            int i2 = uri.indexOf("/", i1 + gaz.length() + 1);
-            int i3 = uri.lastIndexOf(".json");
-            String table = uri.substring(i1 + gaz.length(), i2);
-            String value = uri.substring(i2 + 1, i3);
-            //test if available in alaspatial
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/lookup");
-            get.addParameter("table", table);
-            get.addParameter("value", value);
-            get.addRequestHeader("Accept", "text/plain");
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            System.out.println("register table and value with alaspatial: " + slist);
-
-            if (slist != null && result == 200) {
-                wkt = "LAYER(" + layer + "," + slist + ")";
-
-                return wkt;
-            }
-        } catch (Exception e) {
-            System.out.println("no alaspatial shape for layer: " + layer);
-            e.printStackTrace();
-        }
-        try {
-            //class_name is same as layer name
-            wkt = Util.wktFromJSON(getMapComposer().getMapLayer(layer).getGeoJSON());
-
-            if (!register_shape) {
-                return wkt;
-            }
-
-            //register wkt with alaspatial and use LAYER(layer name, id)
-            HttpClient client = new HttpClient();
-            //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/register");
-            get.addParameter("area", wkt);
-            get.addRequestHeader("Accept", "text/plain");
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            System.out.println("register wkt shape with alaspatial: " + slist);
-
-            wkt = "LAYER(" + layer + "," + slist + ")";
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("SelectionController.getLayerGeoJsonAsWkt(" + layer + "): " + wkt);
-        return wkt;
-    }
+    }    
 }

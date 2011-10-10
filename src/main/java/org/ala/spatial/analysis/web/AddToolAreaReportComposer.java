@@ -5,6 +5,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.menu.MapLayer;
+import org.ala.spatial.util.SelectedArea;
 import org.zkoss.zul.Window;
 
 /**
@@ -41,7 +42,7 @@ public class AddToolAreaReportComposer extends AddToolComposer {
         if (w != null) {
             w.detach();
         }
-        String area = getSelectedArea();
+        SelectedArea sa = getSelectedArea();
         String areaName = getSelectedAreaName();
         String areaDisplayName = getSelectedAreaDisplayName();
         MapLayer ml = getMapComposer().getMapLayer(areaName);
@@ -55,8 +56,13 @@ public class AddToolAreaReportComposer extends AddToolComposer {
             bbox[2] = ml.getMapLayerMetadata().getBbox().get(2);
             bbox[3] = ml.getMapLayerMetadata().getBbox().get(3);
         }
-        FilteringResultsWCController.open(area, areaName, areaDisplayName,
+        FilteringResultsWCController.open(sa, areaName, areaDisplayName,
                 (String) ((ml == null) ? null : ml.getData("area")), bbox);
         detach();
+    }
+
+    @Override
+    void fixFocus() {
+        rgArea.setFocus(true);
     }
 }

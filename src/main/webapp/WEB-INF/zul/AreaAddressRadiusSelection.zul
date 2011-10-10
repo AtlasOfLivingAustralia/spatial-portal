@@ -36,14 +36,9 @@
             <separator />
             <hbox width="100%">
                 <div width="80px">
-                    <label value="Select radius" sclass="h3" />
+                    <label value="Enter radius (km)" sclass="h3" />
                 </div>
-                <combobox id="cbRadius" >
-                    <comboitem label="1km radius" id="ci1km" />
-                    <comboitem label="5km radius" id="ci5km" />
-                    <comboitem label="10km radius" id="ci10km" />
-                    <comboitem label="20km radius" id="ci20km" />
-                </combobox>
+                <doublebox id="dRadius" value="1.0" constraint="no negative,no empty" />
             </hbox>
             <div style="float:right;margin-right:5px">
                 <hbox>                    

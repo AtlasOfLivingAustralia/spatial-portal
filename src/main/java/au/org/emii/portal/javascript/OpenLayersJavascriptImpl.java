@@ -480,13 +480,8 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 script.append(defineKMLMapLayer(mapLayer));
                 okToAddLayer = true;
                 break;
-            case LayerUtilitiesImpl.GEOJSON:
-                //script.append("window.mapFrame.addJsonFeatureToMap('" + mapLayer.getGeoJSON() + "', '" + mapLayer.getName() + "')");
-                if (alternativeScript && mapLayer.getMapLayerMetadata().getPartsCount() > 0) {
-                    script.append("window.mapFrame.drawFeaturesGeoJsonUrl('" + mapLayer.getUri() + "'," + mapLayer.getMapLayerMetadata().getPartsCount() + ", '" + mapLayer.getName() + "','" + mapLayer.getEnvColour() + "', " + mapLayer.getOpacity() + "," + mapLayer.getSizeVal() + "," + mapLayer.getSizeUncertain() + ")");
-                } else {
-                    script.append(defineGeoJSONMapLayer(mapLayer));
-                }
+            case LayerUtilitiesImpl.GEOJSON:                
+                script.append(defineGeoJSONMapLayer(mapLayer));
                 okToAddLayer = true;
                 break;
             case LayerUtilitiesImpl.WKT:
@@ -561,16 +556,8 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public void redrawFeatures(MapLayer selectedLayer) {
-        String script;
-        if (selectedLayer.getGeoJSON() == null || selectedLayer.getGeoJSON().length() == 0) {
-            script = "window.mapFrame.redrawFeaturesGeoJsonUrl('" + selectedLayer.getUri() + "'," + selectedLayer.getMapLayerMetadata().getPartsCount() + ", '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + "," + selectedLayer.getSizeUncertain() + ")";
-        } else {
-            script = "window.mapFrame.redrawFeatures('" + selectedLayer.getGeoJSON() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + "," + selectedLayer.getSizeUncertain() + ")";
-        }
-        //String script = "window.mapFrame.redrawUrlFeatures('" + selectedLayer.getUri() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + ")";
+        String script = "window.mapFrame.redrawFeatures('" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + "," + selectedLayer.getSizeUncertain() + ")";
         execute(script);
-
-
     }
 
     @Override

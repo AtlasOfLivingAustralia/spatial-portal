@@ -14,6 +14,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -66,8 +67,26 @@ public class AddToolALOCComposer extends AddToolComposer {
     }
 
     @Override
+    void fixFocus() {
+        switch (currentStep) {
+            case 1:
+                rgArea.setFocus(true);
+                break;
+            case 2:
+                lbListLayers.setFocus(true);
+                break;
+            case 3:
+                groupCount.setFocus(true);
+                break;
+            case 4:
+                tToolName.setFocus(true);
+                break;
+        }
+    }
+
+    @Override
     public void loadMap(Event event) {
-        String uri = CommonData.satServer + "/alaspatial/output/layers/" + pid + "/img.png";
+        String uri = CommonData.satServer + "/output/layers/" + pid + "/img.png";
         float opacity = Float.parseFloat("0.75");
 
         List<Double> bbox = new ArrayList<Double>();
@@ -102,13 +121,13 @@ public class AddToolALOCComposer extends AddToolComposer {
         } catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
         }
-        
-        String mapurl = CommonData.geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_" + pid + "&FORMAT=image%2Fpng";
+
+        String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_" + pid + "&FORMAT=image%2Fpng";
         String legendurl = CommonData.geoServer
-                + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
+                + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:aloc_" + pid;
-        System.out.println(legendurl);   
-        getMapComposer().addWMSLayer(layerLabel, mapurl, (float) 0.5, "", legendurl, LayerUtilities.ALOC);
+        System.out.println(legendurl);
+        getMapComposer().addWMSLayer(layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
 
         //getMapComposer().addImageLayer(pid, layerLabel, uri, opacity, bbox, LayerUtilities.ALOC);
         MapLayer mapLayer = getMapComposer().getMapLayer(layerLabel);
@@ -128,7 +147,7 @@ public class AddToolALOCComposer extends AddToolComposer {
                 md = new MapLayerMetadata();
             }
 
-            String infoUrl = CommonData.satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:" + pid;
+            String infoUrl = CommonData.satServer + "/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:" + pid;
             md.setMoreInfo(infoUrl);
             md.setId(Long.valueOf(pid));
 
@@ -136,7 +155,7 @@ public class AddToolALOCComposer extends AddToolComposer {
 
             try {
                 // set off the download as well
-                String fileUrl = CommonData.satServer + "/alaspatial/ws/download/" + pid;
+                String fileUrl = CommonData.satServer + "/ws/download/" + pid;
                 Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
             } catch (Exception ex) {
                 System.out.println("Error generating download for classification model:");
@@ -154,7 +173,7 @@ public class AddToolALOCComposer extends AddToolComposer {
         double[] d = new double[6];
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/alaspatial/output/aloc/" + pid + "/aloc.pngextents.txt");
+            sbProcessUrl.append(CommonData.satServer + "/output/aloc/" + pid + "/aloc.pngextents.txt");
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
@@ -178,7 +197,7 @@ public class AddToolALOCComposer extends AddToolComposer {
     String getJob(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/ws/jobs/").append(type).append("?pid=").append(pid);
 
             System.out.println(sbProcessUrl.toString());
             HttpClient client = new HttpClient();
@@ -215,16 +234,22 @@ public class AddToolALOCComposer extends AddToolComposer {
                 return;
             }
 
-            String area = getSelectedArea();//getMapComposer().getSelectionArea();
+            SelectedArea sa = getSelectedArea();//getMapComposer().getSelectionArea();
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/aloc/processgeoq?");
+            sbProcessUrl.append(CommonData.satServer + "/ws/aloc/processgeoq?");
             sbProcessUrl.append("gc=" + URLEncoder.encode(String.valueOf(groupCount.getValue()), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
 
             HttpClient client = new HttpClient();
             //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
             PostMethod get = new PostMethod(sbProcessUrl.toString());
+            String area;
+            if (sa.getMapLayer() != null && sa.getMapLayer().getData("envelope") != null) {
+                area = "ENVELOPE(" + (String) sa.getMapLayer().getData("envelope") + ")";
+            } else {
+                area = sa.getWkt();
+            }
             get.addParameter("area", area);
             get.addRequestHeader("Accept", "text/plain");
 

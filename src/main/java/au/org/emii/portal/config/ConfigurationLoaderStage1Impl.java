@@ -125,9 +125,8 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
         running = true;
         boolean firstRun = true;
         while (running) {
-            load();
-            try {
-
+            try {              
+                load();
                 /* if this is the first run, then set rereadInterval to a smallish
                  * value of the order of one minute or so and then do a re-read of
                  * the config file.
@@ -146,6 +145,7 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
                  */
 
                 if (firstRun) {
+                    loaders.add(Thread.currentThread());
                     rereadInterval = settings.getConfigRereadInitialInterval();
                     firstRun = false;
                 } else {

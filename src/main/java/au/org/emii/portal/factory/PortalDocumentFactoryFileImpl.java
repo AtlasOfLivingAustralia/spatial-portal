@@ -102,6 +102,8 @@ public class PortalDocumentFactoryFileImpl implements PortalDocumentFactory, Con
                         + "xmllint --schema on the command line to determine the problem!");
                 portalDocument = null;
             }
+
+            is.close();
         } catch (FileNotFoundException e) {
             portalDocument = null;
             logger.error("Could not load portal configuration file from: " + getConfigFilename());

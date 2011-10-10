@@ -4,6 +4,7 @@
  */
 package org.ala.spatial.analysis.web;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.composer.LayerLegendComposer;
 import java.awt.Shape;
 import org.apache.commons.lang.StringUtils;
@@ -20,9 +21,7 @@ import java.net.URLEncoder;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zul.Chart;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
@@ -34,19 +33,28 @@ import org.zkoss.zul.Textbox;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FilterWriter;
-import java.util.HashMap;
-import java.util.Hashtable;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
+import org.ala.spatial.data.Facet;
+import org.ala.spatial.data.LegendObject;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryField;
+import org.ala.spatial.data.QueryUtil;
+import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.sampling.Sampling;
+import org.ala.spatial.sampling.SimpleRegion;
+import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
-import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jfree.chart.annotations.XYBoxAnnotation;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.renderer.GrayPaintScale;
 import org.jfree.chart.renderer.LookupPaintScale;
+import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.chart.renderer.xy.XYShapeRenderer;
 import org.jfree.data.xy.DefaultXYZDataset;
@@ -96,15 +104,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     int selectionCount;
     String imagePath;
     String results;
-    int missingCount;
     Checkbox chkSelectMissingRecords;
     double[] prevSelection = null;
     Checkbox chkRestrictOccurrencesToActiveArea;
     Checkbox chkHighlightActiveAreaOccurrences;
     Checkbox chkShowEnvIntersection;
     double zmin, zmax;
-    int[] seriesColours;
-    String[] seriesNames;
     private DefaultXYZDataset backgroundXyzDataset;
     //String backgroundLSID;
     //private String backgroundName;
@@ -144,11 +149,11 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         getScatterplotData();
 
         //remove any previous layer highlighted now
-        if (data.getLsid() != null) {
-            getMapComposer().removeLayerHighlight(data, "species");
-        }
-
-        data.setLsid(null);
+//        if (data.getLsid() != null) {
+//            getMapComposer().removeLayerHighlight(data, "species");
+//        }
+//
+//        data.setLsid(null);
         data.setSpeciesName(null);
 
         if (sac.getSelectedItem() == null) {
@@ -172,7 +177,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         }
         System.out.println("mapping rank and species: " + rank + " - " + taxon);
 
-        data.setLsid((String) sac.getSelectedItem().getAnnotatedProperties().get(0));
+//        data.setLsid((String) sac.getSelectedItem().getAnnotatedProperties().get(0));
         data.setSpeciesName(taxon);
 
         //only add it to the map if this was signaled from an event
@@ -184,7 +189,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     public void onChange$sacBackground(Event event) {
-        data.setBackgroundLsid(null);
+        data.setBackgroundQuery(null);
 
         if (sacBackground.getSelectedItem() == null) {
             return;
@@ -207,7 +212,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         }
         System.out.println("mapping rank and species: " + rank + " - " + taxon);
 
-        data.setBackgroundLsid((String) sacBackground.getSelectedItem().getAnnotatedProperties().get(0));
+        Query query = QueryUtil.get((String) sacBackground.getSelectedItem().getAnnotatedProperties().get(0),
+                getMapComposer(), false);
+
+        Query q = QueryUtil.queryFromSelectedArea(query, data.getFilterSa(), false);
+
+        data.setBackgroundQuery(query);
 
         //only add it to the map if this was signaled from an event
         //clearSelection();
@@ -229,9 +239,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         getScatterplotData();
 
         //remove any previous layer highlighted now
-        if (data.getLsid() != null) {
-            getMapComposer().removeLayerHighlight(data, "species");
-        }
+//        if (data.getLsid() != null) {
+//            getMapComposer().removeLayerHighlight(data, "species");
+//        }
 
         if (cbLayer1.getItemCount() > 0 && cbLayer1.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) cbLayer1.getSelectedItem().getValue();
@@ -248,9 +258,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         getScatterplotData();
 
         //remove any previous layer highlighted now
-        if (data.getLsid() != null) {
-            getMapComposer().removeLayerHighlight(data, "species");
-        }
+//        if (data.getLsid() != null) {
+//            getMapComposer().removeLayerHighlight(data, "species");
+//        }
 
         if (cbLayer2.getItemCount() > 0 && cbLayer2.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) cbLayer2.getSelectedItem().getValue();
@@ -289,7 +299,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
     public void setSpecies(String lsid, String speciesName) {
         ScatterplotData d = getScatterplotData();
-        d.setLsid(lsid);
+//        d.setLsid(lsid);
         d.setSpeciesName(speciesName);
 
         cbLayer1.setText(d.getLayer1Name());
@@ -334,7 +344,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             //refresh mapLayer
             refreshMapLayer();
 
-            mapLayer.setHighlight(data.getPid());
+            mapLayer.setHighlight(getFacetIn().toString());
 
             getMapComposer().applyChange(mapLayer);
 
@@ -372,7 +382,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
         resample();
 
-        if (data != null && data.getLsid() != null && data.getLsid().length() > 0
+        if (data != null /*&& data.getLsid() != null && data.getLsid().length() > 0*/
                 && data.getLayer1() != null && data.getLayer1().length() > 0
                 && data.getLayer2() != null && data.getLayer2().length() > 0
                 && xyzDataset != null) {
@@ -401,7 +411,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                         scatterplotDownloads.setVisible(true);
                     } else {
                         //active area must be drawn first
-                        if (data.getHighlightWkt() != null && aaDataset != null) {
+                        if (data.getHighlightSa() != null && aaDataset != null) {
                             jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), aaDataset, PlotOrientation.HORIZONTAL, false, false, false);
                         } else {
                             jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyzDataset, PlotOrientation.HORIZONTAL, false, false, false);
@@ -424,19 +434,33 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
                         jChart.getTitle().setFont(titlefont);
 
+                        //colours
+                        String[] seriesNames = {data.getQuery().getName()};
+                        if (data.getLegend() != null && data.getLegend().getCategories() != null) {
+                            seriesNames = data.getLegend().getCategories();
+                        }
+                        int[] seriesColours = new int[seriesNames.length];
+                        LegendObject legend = data.getLegend();
+                        for (int i = 0; i < seriesNames.length; i++) {
+                            if (legend == null || data.getLegend().getCategories() == null) {
+                                seriesColours[i] = data.red << 16 | data.green << 8 | data.blue | 0xff000000;
+                            } else {
+                                seriesColours[i] = legend.getColour(seriesNames[i]);
+                            }
+                        }
                         //active area must be drawn first
-                        if (data.getHighlightWkt() != null && aaDataset != null) {
+                        if (data.getHighlightSa() != null && aaDataset != null) {
                             plot.setRenderer(getActiveAreaRenderer());
 
                             int datasetCount = plot.getDatasetCount();
                             plot.setDataset(datasetCount, xyzDataset);
-                            plot.setRenderer(datasetCount, getRenderer(zmin, zmax, seriesColours, seriesNames));
+                            plot.setRenderer(datasetCount, getRenderer(legend, seriesColours, seriesNames, data.getSeriesValues()));
                         } else {
-                            plot.setRenderer(getRenderer(zmin, zmax, seriesColours, seriesNames));
+                            plot.setRenderer(getRenderer(legend, seriesColours, seriesNames, data.getSeriesValues()));
                         }
 
                         //add points background
-                        if (data.getBackgroundLsid() != null) {
+                        if (data.getBackgroundQuery() != null) {
                             resampleBackground();
 
                             if (backgroundXyzDataset != null) {
@@ -495,8 +519,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                         //chartImg.setVisible(true);
                         scatterplotDownloads.setVisible(true);
 
-                        if (missingCount > 0) {
-                            tbxMissingCount.setValue("(" + missingCount + ")");
+                        if (data.getMissingCount() > 0) {
+                            tbxMissingCount.setValue("(" + data.getMissingCount() + ")");
                             chkSelectMissingRecords.setVisible(true);
                         } else {
                             tbxMissingCount.setValue("");
@@ -528,42 +552,15 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 annotation = null;
             }
 
-            if (data.getLsid() != null && data.getLsid().length() > 0
-                    && data.getLayer1() != null && data.getLayer1().length() > 0
+            if (/*data.getLsid() != null && data.getLsid().length() > 0
+                    && */data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
-                StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(CommonData.satServer).append("/alaspatial/ws/sampling/scatterplot/register?");
-                sbProcessUrl.append("lsid=").append(URLEncoder.encode(data.getLsid().replace(".", "__"), "UTF-8"));
+                ArrayList<Facet> facets = new ArrayList<Facet>();
+                facets.add(getFacetIn());
 
-                int pos = 0;
-                if (prevSelection != null) {
-                    sbProcessUrl.append("&param").append(pos).append("=and,double,").append(URLEncoder.encode(data.getLayer1(), "UTF-8")).append(",").append(y1).append(",").append(y2);
-                    pos++;
-                    sbProcessUrl.append("&param").append(pos).append("=and,double,").append(URLEncoder.encode(data.getLayer2(), "UTF-8")).append(",").append(x1).append(",").append(x2);
-                    pos++;
-                }
+                Query q = data.getQuery().newFacets(facets, false);
 
-                if (chkSelectMissingRecords.isChecked()) {
-                    sbProcessUrl.append("&param").append(pos).append("=or,double,").append(URLEncoder.encode(data.getLayer1(), "UTF-8")).append(",").append("NaN").append(",").append("NaN");
-                    pos++;
-                    sbProcessUrl.append("&param").append(pos).append("=or,double,").append(URLEncoder.encode(data.getLayer2(), "UTF-8")).append(",").append("NaN").append(",").append("NaN");
-                    pos++;
-                }
-
-                System.out.println(sbProcessUrl.toString());
-
-                HttpClient client = new HttpClient();
-                PostMethod get = new PostMethod(sbProcessUrl.toString());
-                get.addRequestHeader("Accept", "text/plain");
-
-                int result = client.executeMethod(get);
-                String slist = get.getResponseBodyAsString();
-                String[] alist = slist.split("\n");
-                data.setPid(alist[0]);
-
-                updateCount(alist[1]);
-
-                System.out.println("selection pid:" + alist[0] + " count:" + alist[1]);
+                updateCount(String.valueOf(q.getOccurrenceCount()));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -613,7 +610,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         //get top species and list of env/ctx layers
         if (sac.getSelectedItem() == null || sac.getSelectedItem().getValue() == null) {
             //String species = layersUtil.getFirstSpeciesLayer();
-            String speciesandlsid = layersUtil.getFirstSpeciesLsidLayer();
+            String speciesandlsid = layersUtil.getFirstSpeciesLayer();
             String species = null;
             if (StringUtils.isNotBlank(speciesandlsid)) {
                 species = speciesandlsid.split(",")[0];
@@ -680,33 +677,17 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     public void onClick$addSelectedRecords(Event event) {
-        String id = addSelectedRecords(false);
-        addUserLayer(id, "IN " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
+        addUserLayer(data.getQuery().newFacet(getFacetIn(), true), "IN " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
     }
 
     public void onClick$addUnSelectedRecords(Event event) {
-        String id = addSelectedRecords(true);
-        addUserLayer(id, "OUT " + data.getSpeciesName(), "from scatterplot out group", results.split("\n").length - selectionCount - 1);   //-1 for header
+        addUserLayer(data.getQuery().newFacet(getFacetOut(), true), "OUT " + data.getSpeciesName(), "from scatterplot out group", results.split("\n").length - selectionCount - 1);   //-1 for header
     }
 
-    void addUserLayer(String id, String layername, String description, int numRecords) {
+    void addUserLayer(Query query, String layername, String description, int numRecords) {
         layername = StringUtils.capitalize(layername);
 
-        getMapComposer().mapSpeciesByLsid(id, layername, LayerUtilities.SPECIES, null);
-
-        UserData ud = new UserData(layername, description, "scatterplot");
-        ud.setFeatureCount(numRecords);
-        ud.setLsid(id);
-        ud.setMetadata(id + ", " + layername + ", " + description);
-        ud.setSubType(LayerUtilities.SPECIES);
-
-        // add it to the user session
-        Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
-        if (htUserSpecies == null) {
-            htUserSpecies = new Hashtable<String, UserData>();
-        }
-        htUserSpecies.put(id, ud);
-        getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
+        getMapComposer().mapSpecies(query, layername, "species", -1, LayerUtilities.SPECIES, null, -1);
     }
 
     public void onClick$addNewLayers(Event event) {
@@ -732,33 +713,27 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 //            e.printStackTrace();
 //        }
 
-        Filedownload.save(results, "text/plain", data.getSpeciesName() + "_" + data.getLayer1Name() + "_" + data.getLayer2Name() + ".csv");
-    }
-
-    String addSelectedRecords(boolean include) {
-        //register with alaspatial using data.getPid();
-        try {
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("species/highlight/register");
-            sbProcessUrl.append("?lsid=").append(URLEncoder.encode(data.getLsid().replace(".", "__"), "UTF-8"));
-            sbProcessUrl.append("&pid=").append(data.getPid());
-            if (include) {
-                sbProcessUrl.append("&include=1");
-            }
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString());
-
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            return slist;
-        } catch (Exception e) {
-            e.printStackTrace();
+        //make output csv; id, series, layer1, layer2, highlight
+        StringBuilder sb = new StringBuilder();
+        sb.append("id,series," + data.getLayer1Name() + "," + data.getLayer2Name());
+        String[] series = data.getSeries();
+        String[] ids = data.getIds();
+        //double [][] points = data.getPoints();
+        double[][] d = data.getData();
+//        SimpleRegion r = null;
+//        if(data.getHighlightWkt() != null) {
+//            sb.append(",area highlight");
+//            r = SimpleShapeFile.parseWKT(data.getHighlightWkt());
+//        }
+        for (int i = 0; i < series.length; i++) {
+            sb.append("\n\"").append(ids[i].replace("\"", "\"\"")).append("\",\"").append(series[i].replace("\"", "\"\"")).append("\",").append(String.valueOf(d[i][0])).append(",").append(String.valueOf(d[i][1]));
+//            if(r != null) {
+//                String highlight = r.isWithin(points[i][0],points[i][1])?"true":"false";
+//                sb.append(",").append(highlight).append(",")
+//            }
         }
-        return null;
+
+        Filedownload.save(sb.toString(), "text/plain", "scatterplot.csv");
     }
 
     void refreshMapLayer() {
@@ -783,7 +758,6 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     public void onCheck$chkShowEnvIntersection(Event event) {
-        //envLegend.setVisible(chkShowEnvIntersection.isChecked());
         imagePath = null;
         redraw();
     }
@@ -798,7 +772,42 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             //refresh mapLayer
             refreshMapLayer();
 
-            mapLayer.setHighlight(data.getPid());
+//            String e1 = CommonData.getLayerFacetName(data.getLayer1());
+//            String e2 = CommonData.getLayerFacetName(data.getLayer2());
+//            String fq = mapLayer.getHighlight();
+//            /* fq states:
+//             * 1. missing selected only; starts with '-'
+//             * 2. layers selected only; does not start with '(' or '-'
+//             * 3. missing and layers selected; starts with '('
+//             * 4. no selection; fq null or empty
+//             */
+//            int state = 0;
+//            if(fq == null || fq.length() == 0){
+//                state = 4;
+//            } else if(fq.startsWith("-")) {
+//                state = 1;
+//            } else if(fq.startsWith("(")) {
+//                state = 3;
+//            } else {
+//                state = 2;
+//            }
+//            String missingTerm = "-" + e1 + ":[*%20TO%20*]%20OR%20-" + e2 + ":[*%20TO%20*]";
+//            if(chkSelectMissingRecords.isChecked()) {
+//                //add missingTerm to states without missingTerm
+//                if(state == 4) {
+//                    fq = missingTerm;
+//                } else if(state == 2) {
+//                    fq = "(" + fq + ")%20OR%20" + missingTerm;
+//                }
+//            } else {
+//                //remove missingTerm from states with missingTerm
+//                if(state == 1) {
+//                    fq = null;
+//                } else if(state == 3) {
+//                    fq = fq.substring(1, fq.indexOf(")"));
+//                }
+//            }
+            mapLayer.setHighlight(getFacetIn().toString());
 
             getMapComposer().applyChange(mapLayer);
 
@@ -826,7 +835,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             int countNonZero = 0;
             try {
                 StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(CommonData.satServer).append("/alaspatial/ws/sampling/chart?basis=layer&filter=lsid:none;area:none");
+                sbProcessUrl.append(CommonData.satServer).append("/ws/sampling/chart?basis=layer&filter=lsid:none;area:none");
 
                 sbProcessUrl.append("&xaxis=").append(URLEncoder.encode(env1, "UTF-8")).append(",").append(min1).append(",").append(max1);
                 sbProcessUrl.append("&yaxis=").append(URLEncoder.encode(env2, "UTF-8")).append(",").append(min2).append(",").append(max2);
@@ -886,20 +895,14 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             defaultXYZDataset.addSeries("Environmental area intersection", dat);
             blockXYZDataset = defaultXYZDataset;
 
-
             xyBlockRenderer = new XYBlockRenderer();
-            //        LookupPaintScale ramp = new LookupPaintScale();
-            //        for(int i=0;i<=10;i++) {
-            //            //yellow - red
-            //            int colour = 0xFFFFFF00 - (0x0000FF00 & (i * 0x0000FF00 / 25));
-            //            ramp.add(i/10.0,new Color(colour));
-            //        }
+
             GrayPaintScale ramp = new GrayPaintScale(Math.log10(min + 1), Math.log10(max + 1));
             xyBlockRenderer.setPaintScale(ramp);
             xyBlockRenderer.setBlockHeight(ydiv);   //backwards
             xyBlockRenderer.setBlockWidth(xdiv);    //backwards
             xyBlockRenderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
-            //XYPlot plot = new XYPlot(defaultXYZDataset,x,y, xyBlockRenderer);
+
         }
 
         //add to the plot
@@ -917,121 +920,115 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         plot.getRangeAxis().setUpperMargin(0);
     }
 
-    private HashMap<String, Integer> getSeriesSummary(String[] series, double[] seriesDbl) {
-        HashMap<String, Integer> ts = new HashMap<String, Integer>();
+    private void createDataset() {
+        xyzDataset = new DefaultXYZDataset();
 
-        int pos = series.length;
-        int count = 0;
-        for (int i = 0; i < pos; i++) {
-            count++;
-            if (i == pos - 1 || !series[i].equals(series[i + 1])) {
-                String key = series[i];
-                if (!Double.isNaN(seriesDbl[i])) {
-                    key = NUMBER_SERIES;
-                }
-                Integer c = ts.get(key);
-                if (c == null) {
-                    c = new Integer(0);
-                }
-                c += count;
-                ts.put(key, c);
-
-                count = 0;
-            }
+        String[] seriesNames = {data.getQuery().getName()};
+        if (data.getLegend() != null && data.getLegend().getCategories() != null) {
+            seriesNames = data.getLegend().getCategories();
         }
 
-        return ts;
-    }
-
-    private double[] convertStringsToDoubles(String[] series) {
-        double[] seriesDbl = new double[series.length];
-        zmin = Double.MAX_VALUE;
-        zmax = -1 * Double.MAX_VALUE;
-        for (int i = 0; i < series.length; i++) {
-            try {
-                if (series[i] == null || series[i].length() == 0 || series[i].equals("In Active Area")) {
-                    seriesDbl[i] = Double.NaN;
-                } else {
-                    seriesDbl[i] = Double.parseDouble(series[i]);
-                    series[i] = NUMBER_SERIES;
-                    if (seriesDbl[i] < zmin) {
-                        zmin = seriesDbl[i];
-                    }
-                    if (seriesDbl[i] > zmax) {
-                        zmax = seriesDbl[i];
-                    }
-                }
-            } catch (Exception e) {
-                seriesDbl[i] = Double.NaN;
-            }
-        }
-        return seriesDbl;
-    }
-
-    private DefaultXYZDataset createDataset(int pos, double[][] dblTmp, HashMap<String, Integer> ts, String[] series, double[] seriesDbl, String[] seriesNames) {
-        DefaultXYZDataset xyzDataset = new DefaultXYZDataset();
-        double[][] dbl = {{0.0}, {0.0}, {0.0}};
-        missing_data = false;
-        if (dblTmp != null && dblTmp.length > 0 && dblTmp[0].length > 0
-                && series != null && series.length > 0) {
-            //add series
-            if (ts.size() > 1) {
-                if (seriesNames == null) {
-                    seriesNames = new String[ts.size()];
-                    ts.keySet().toArray(seriesNames);
-                }
-                for (int j = 0; j <= seriesNames.length; j++) {
-                    String key;
-                    if (j < seriesNames.length) {
-                        key = seriesNames[j];
-                    } else if (ts.containsKey(ACTIVE_AREA_SERIES) && ts.size() > seriesNames.length) {
-                        key = ACTIVE_AREA_SERIES;
+        int missingCount = 0;
+        for (int i = 0; i < seriesNames.length; i++) {
+            ArrayList<double[]> records = new ArrayList<double[]>(data.getPoints().length);
+            double[][] d = data.getData();
+            String[] series = data.getSeries();
+            for (int j = 0; j < d.length; j++) {
+                if (seriesNames.length == 1 || series[j].equals(seriesNames[i])) {
+                    if (!Double.isNaN(d[j][0]) && !Double.isNaN(d[j][1])) {
+                        double[] r = {d[j][0], d[j][1], i};
+                        records.add(r);
                     } else {
-                        continue;
-                    }
-                    int size = ts.get(key);
-                    dbl = new double[3][size];
-                    int p = 0;
-                    for (int i = 0; i < pos; i++) {
-                        if (key.equals(series[i])) {
-                            dbl[0][p] = dblTmp[0][i];
-                            dbl[1][p] = dblTmp[1][i];
-                            dbl[2][p] = seriesDbl[i];
-                            p++;
-                        }
-                    }
-                    if (key.length() == 0) {
-                        xyzDataset.addSeries("unknown", dbl);
-                    } else if (key.equalsIgnoreCase(ACTIVE_AREA_SERIES)) {
-                        aaDataset = new DefaultXYZDataset();
-                        aaDataset.addSeries(key, dbl);
-                    } else {
-                        xyzDataset.addSeries(key, dbl);
+                        missingCount++;
                     }
                 }
-            } else {
-                dbl = new double[3][pos];
-                for (int i = 0; i < pos; i++) {
-                    dbl[0][i] = dblTmp[0][i];
-                    dbl[1][i] = dblTmp[1][i];
-                    dbl[2][i] = seriesDbl[i];
-                }
-                xyzDataset.addSeries(series[0], dbl);
             }
-        } else {
-            xyzDataset.addSeries("lsid", dbl);
-            missing_data = true;
+            if (records.size() > 0) {
+                //flip data into an array
+                double[][] sd = new double[3][records.size()];
+                for (int j = 0; j < records.size(); j++) {
+                    sd[0][j] = records.get(j)[0];
+                    sd[1][j] = records.get(j)[1];
+                    sd[2][j] = records.get(j)[2];
+                }
+                xyzDataset.addSeries(seriesNames[i], sd);
+            }
         }
 
-        return xyzDataset;
+        missing_data = missingCount == data.getPoints().length / 2;
+        data.setMissingCount(missingCount);
     }
 
-    private XYShapeRenderer getRenderer(double min, double max, int[] datasetColours, String[] seriesNames) {
+    private void createAADataset() {
+        if (data.getHighlightSa() == null) {
+            aaDataset = null;
+            return;
+        }
+
+        aaDataset = new DefaultXYZDataset();
+
+        SimpleRegion region = SimpleShapeFile.parseWKT(data.getHighlightSa().getWkt());
+
+        ArrayList<double[]> records = new ArrayList<double[]>(data.getPoints().length);
+        double[][] d = data.getData();
+        double[] points = data.getPoints();
+        for (int j = 0; j < d.length; j++) {
+            if (!Double.isNaN(d[j][0]) && !Double.isNaN(d[j][1])
+                    && region.isWithin(points[j * 2], points[j * 2 + 1])) {
+                double[] r = {d[j][0], d[j][1], 0};
+                records.add(r);
+            }
+        }
+        if (records.size() > 0) {
+            //flip data into an array
+            double[][] sd = new double[3][records.size()];
+            for (int j = 0; j < records.size(); j++) {
+                sd[0][j] = records.get(j)[0];
+                sd[1][j] = records.get(j)[1];
+                sd[2][j] = records.get(j)[2];
+            }
+            aaDataset.addSeries(ACTIVE_AREA_SERIES, sd);
+        }
+    }
+
+    private void createBackgroundDataset() {
+        backgroundXyzDataset = new DefaultXYZDataset();
+
+        String[] seriesNames = {data.getBackgroundQuery().getName()};
+
+        for (int i = 0; i < seriesNames.length; i++) {
+            ArrayList<double[]> records = new ArrayList<double[]>(data.getBackgroundPoints().length);
+            double[][] d = data.getBackgroundData();
+            String[] series = data.getBackgroundSeries();
+            for (int j = 0; j < d.length; j++) {
+                if (series[j].equals(seriesNames[i])) {
+                    if (!Double.isNaN(d[j][0]) && !Double.isNaN(d[j][1])) {
+                        double[] r = {d[j][0], d[j][1], i};
+                        records.add(r);
+                    }
+                }
+            }
+            if (records.size() > 0) {
+                //flip data into an array
+                double[][] sd = new double[3][records.size()];
+                for (int j = 0; j < records.size(); j++) {
+                    sd[0][j] = records.get(j)[0];
+                    sd[1][j] = records.get(j)[1];
+                    sd[2][j] = records.get(j)[2];
+                }
+                backgroundXyzDataset.addSeries(seriesNames[i], sd);
+            }
+        }
+    }
+
+    private XYShapeRenderer getRenderer(LegendObject legend, int[] datasetColours, String[] seriesNames, double[] seriesValues) {
         class MyXYShapeRenderer extends XYShapeRenderer {
 
             public int alpha = 255;
             public Paint[] datasetColours;
             public int shapeSize = 8;
+            public double[] seriesValues;
+            public LegendObject legend;
             Shape shape = null;
 
             @Override
@@ -1046,9 +1043,14 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
             @Override
             public Paint getPaint(XYDataset dataset, int series, int item) {
-                if (datasetColours != null && datasetColours.length > series && datasetColours[series] != null) {
+                if (legend != null && legend.getCategories() == null) {
+                    //colour item
+                    return new Color(legend.getColour(seriesValues[item]) | (alpha << 24), true);
+                } else if (datasetColours != null && datasetColours.length > series && datasetColours[series] != null) {
+                    //colour series
                     return datasetColours[series];
                 }
+
                 return super.getPaint(dataset, series, item);
             }
         }
@@ -1075,37 +1077,68 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             }
         }
         renderer.alpha = alpha;
+        renderer.seriesValues = seriesValues;
+        renderer.legend = legend;
 
-        if (!(min < max)) {
-            min = 0;
-            max = 1;
-        }
+        class LegendFieldPaintScale implements PaintScale, Serializable {
 
-        LookupPaintScale paint = new LookupPaintScale(min, max, new Color(red, green, blue, alpha)) {
+            LegendObject legend;
+            Color defaultColour;
+
+            public LegendFieldPaintScale(LegendObject legend, Color defaultColour) {
+                this.legend = legend;
+                this.defaultColour = defaultColour;
+            }
 
             @Override
-            public Paint getPaint(double value) {
-                if (Double.isNaN(value)) {
-                    return this.getDefaultPaint();
+            public double getLowerBound() {
+                if (legend == null) {
+                    return 0;
                 }
-
-                //yellow - red
-                return new Color(255, 255 - (int) (((value - getLowerBound()) * 255) / (getUpperBound() - getLowerBound())), 0, (int) (0x000000FF * data.opacity / 100));
+                double[] d = legend.getMinMax();
+                return d == null ? 0 : d[0];
             }
-        };
 
-        renderer.setPaintScale(paint);
+            @Override
+            public double getUpperBound() {
+                if (legend == null) {
+                    return 1;
+                }
+                double[] d = legend.getMinMax();
+                return d == null ? 0 : d[1];
+            }
+
+            @Override
+            public Paint getPaint(double d) {
+                if (legend == null) {
+                    return defaultColour;
+                }
+                return new Color(legend.getColour(d));
+            }
+        }
+
+        renderer.setPaintScale(new LegendFieldPaintScale(legend, new Color(red, green, blue, alpha)));
 
         return renderer;
     }
     LayerLegendComposer layerWindow = null;
 
     public void onClick$btnEditAppearance1(Event event) {
+        if (layerWindow != null) {
+            boolean closing = layerWindow.getParent() != null;
+            layerWindow.detach();
+            layerWindow = null;
+
+            if (closing) {
+                return;
+            }
+        }
+
         getScatterplotData();
 
-        if (data.getLsid() != null && data.getLsid().length() > 0) {
+        if (data.getQuery() != null) {
             //preview species list
-            layerWindow = (LayerLegendComposer) Executions.createComponents("WEB-INF/zul/LayerLegend.zul", this, null);
+            layerWindow = (LayerLegendComposer) Executions.createComponents("WEB-INF/zul/LayerLegend.zul", getRoot(), null);
             EventListener el = new EventListener() {
 
                 @Override
@@ -1113,10 +1146,11 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     updateFromLegend();
                 }
             };
-            layerWindow.init(data.getLsid(), data.red, data.green, data.blue, data.size, data.opacity, data.colourMode, el);
+            layerWindow.init(data.getQuery(), data.red, data.green, data.blue, data.size, data.opacity, data.colourMode, el);
 
             try {
-                layerWindow.doModal();
+                layerWindow.doOverlapped();
+                layerWindow.setPosition("right");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1131,6 +1165,17 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 layerWindow.getOpacity(),
                 layerWindow.getSize(),
                 layerWindow.getColourMode());
+
+        if (mapLayer != null) {
+            mapLayer.setColourMode(layerWindow.getColourMode());
+            mapLayer.setRedVal(layerWindow.getRed());
+            mapLayer.setGreenVal(layerWindow.getGreen());
+            mapLayer.setBlueVal(layerWindow.getBlue());
+            mapLayer.setOpacity(layerWindow.getOpacity() / 100.0f);
+            mapLayer.setSizeVal(layerWindow.getSize());
+
+            getMapComposer().applyChange(mapLayer);
+        }
     }
 
     public void updateFromLegend(int red, int green, int blue, int opacity, int size, String colourMode) {
@@ -1144,262 +1189,185 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         imagePath = null;
         redraw();
     }
-
-    String registerPointsColourModeLegend(String speciesLsid, String colourmode) {
-        try {
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/species/colourlegend?lsid="
-                    + URLEncoder.encode(speciesLsid.replace(".", "__"), "UTF-8")
-                    + "&colourmode="
-                    + URLEncoder.encode(colourmode, "UTF-8")); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-
-            int result = client.executeMethod(get);
-
-            if (result == 200) {
-                String slist = get.getResponseBodyAsString();
-                return slist;
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace(System.out);
-        }
-
-        return null;
-    }
-    String prevLegendColours = null;
-
-    void buildSeriesColours(HashMap<String, Integer> ts, String lsid, String colourMode) {
-        try {
-            String thisLegendColours = lsid + "*" + colourMode;
-            if (prevLegendColours == null || !prevLegendColours.equals(thisLegendColours)) {
-                prevLegendColours = thisLegendColours;
-
-                //reset
-                seriesColours = null;
-                seriesNames = null;
-
-                String pid = registerPointsColourModeLegend(lsid, colourMode);
-
-                if (pid == null) {
-                    return;
-                }
-
-                // call get
-                StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/layer/get?");
-                sbProcessUrl.append("pid=" + URLEncoder.encode(pid, "UTF-8"));
-
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(sbProcessUrl.toString());
-
-                get.addRequestHeader("Accept", "text/plain");
-
-                int result = client.executeMethod(get);
-                String slist = get.getResponseBodyAsString();
-
-                // retrieve legend file
-                String[] slista = slist.split("\n");
-
-                client = new HttpClient();
-                get = new GetMethod(CommonData.satServer + "/alaspatial/" + slista[1]);
-                get.addRequestHeader("Accept", "text/plain");
-                result = client.executeMethod(get);
-                slist = get.getResponseBodyAsString();
-
-                String[] lines = slist.split("\r\n");
-                if (lines.length == 1) {
-                    lines = slist.split("\n");
-                }
-
-                ts = (HashMap<String, Integer>) ts.clone();
-                if (ts.containsKey(ACTIVE_AREA_SERIES)) {
-                    ts.remove(ACTIVE_AREA_SERIES);
-                }
-
-                int[] colours = new int[ts.size()];
-                String[] keys = new String[ts.size()];
-                ts.keySet().toArray(keys);
-
-                int i = 0;
-                for (i = 1; i < lines.length; i++) {
-                    if (lines[i].split(",").length > 3) {
-                        String[] ss = lines[i].split(",");
-                        int red = Integer.parseInt(ss[1]);
-                        int green = Integer.parseInt(ss[2]);
-                        int blue = Integer.parseInt(ss[3]);
-
-                        for (int j = 0; j < keys.length; j++) {
-                            if (keys[j].equalsIgnoreCase(ss[0])) {
-                                colours[j] = (red << 16) | (green << 8) | (blue);
-                                break;
-                            }
-                        }
-                    }
-                }
-                seriesColours = colours;
-                seriesNames = keys;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            seriesColours = null;
-        }
-    }
-    String prevResample = null;
+    String prevResampleData = null;
+    String prevResampleLayers = null;
+    String prevResampleHighlight = null;
 
     private void resample() {
         try {
-            if (data != null && data.getLsid() != null && data.getLsid().length() > 0
+            if (data != null && data.getQuery() != null
                     && data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
 
-                String thisResample = data.getLsid() + "*" + data.getLayer1() + "*" + data.getLayer2() + "*" + data.colourMode
-                        + "*" + ((data.getHighlightWkt() != null) ? "Y" : "N")
-                        + "*" + ((data.getFilterWkt() != null) ? "Y" : "N");
+                String thisResampleData = data.getQuery().getQ() + "*" + data.colourMode
+                        + "*" + ((data.getFilterSa() != null) ? "Y" : "N");
 
-                if (prevResample == null || !prevResample.equals(thisResample)) {
-                    prevResample = thisResample;
+                String thisResampleLayers = data.getLayer1() + "*" + data.getLayer2();
+                String thisResampleHighlight = ((data.getHighlightSa() != null) ? "Y" : "N");
 
-                    HttpClient client = new HttpClient();
+                if (prevResampleData == null || !prevResampleData.equals(thisResampleData)) {
+                    prevResampleData = thisResampleData;
+                    prevResampleLayers = null;
+                    prevResampleHighlight = null;
 
-                    StringBuffer sbProcessUrl = new StringBuffer();
-                    sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/scatterplot?");
-                    sbProcessUrl.append("taxonid=" + URLEncoder.encode(data.getLsid().replace(".", "__"), "UTF-8"));
-                    String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
-                    sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
+                    ArrayList<QueryField> fields = new ArrayList<QueryField>();
+                    fields.add(new QueryField(data.getQuery().getRecordIdFieldName()));
+                    fields.add(new QueryField("longitude"));
+                    fields.add(new QueryField("latitude"));
 
-                    sbProcessUrl.append("&colourmode=").append(data.colourMode);
+                    if (!data.colourMode.equals("-1")) {
+                        fields.add(new QueryField(data.colourMode));
 
-                    PostMethod get = new PostMethod(sbProcessUrl.toString());
-
-                    if (data.getHighlightWkt() != null) {
-                        get.addParameter("areahighlight", data.getHighlightWkt());
+                        data.setLegend(data.getQuery().getLegend(data.colourMode));
+                    } else {
+                        data.setLegend(null);
                     }
-                    
-                    if (data.getFilterWkt() != null) {
-                        //Now done in AddToolScatterplotComposer
-                        //get.addParameter("arearestrict", data.getFilterWkt());
+
+                    results = data.getQuery().sample(fields);
+
+                    if (results == null) {
+                        //TODO: fail nicely
                     }
-                    
-                    get.addRequestHeader("Accept", "text/plain");
 
-                    int result = client.executeMethod(get);
-                    String slist = get.getResponseBodyAsString();
-                    results = slist;
+                    CSVReader csvreader = new CSVReader(new StringReader(results));
+                    List<String[]> csv = csvreader.readAll();
+                    csvreader.close();
 
-                    String[] lines = slist.split("\n");
+                    int longitudeColumn = findInArray("longitude", csv.get(0));
+                    int latitudeColumn = findInArray("latitude", csv.get(0));
+                    int idColumn = findInArray(data.getQuery().getRecordIdFieldName(), csv.get(0));
+                    int seriesColumn = findInArray(data.colourMode, csv.get(0));
 
-                    double[][] dblTmp = new double[2][lines.length - 1];
-                    HashMap<String, Integer> ts = new HashMap<String, Integer>();
-                    String[] series = new String[lines.length - 1];
+                    double[] points = new double[(csv.size() - 1) * 2];
+                    String[] series = new String[csv.size() - 1];
+                    double[] seriesValues = new double[points.length];
+                    String[] ids = new String[csv.size() - 1];
                     int pos = 0;
-                    for (int i = 1; i < lines.length; i++) {   //skip header
-                        String[] words = lines[i].split(",");
-
+                    for (int i = 1; i < csv.size(); i++) {
                         try {
-                            if (words.length > 2) {
-                                dblTmp[1][pos] = Double.parseDouble(words[words.length - 1]);
-                                dblTmp[0][pos] = Double.parseDouble(words[words.length - 2]);
-                                series[pos] = words[1];
-                                if (series[pos] == null) {
-                                    series[pos] = "";
-                                }
-                                pos++;
-                            }
+                            points[pos] = Double.parseDouble(csv.get(i)[longitudeColumn]);
+                            points[pos + 1] = Double.parseDouble(csv.get(i)[latitudeColumn]);
+                        } catch (Exception e) {
+                            points[pos] = Double.NaN;
+                            points[pos + 1] = Double.NaN;
+                        }
+                        if (seriesColumn < 0) {
+                            series[pos / 2] = data.getQuery().getName();
+                        } else {
+                            series[pos / 2] = csv.get(i)[seriesColumn];
+                        }
+                        try {
+                            seriesValues[pos / 2] = Double.parseDouble(csv.get(i)[seriesColumn]);
                         } catch (Exception e) {
                         }
+                        ids[pos / 2] = csv.get(i)[idColumn];
+                        pos += 2;
                     }
 
-                    series = java.util.Arrays.copyOf(series, pos);
-                    double[] seriesDbl = convertStringsToDoubles(series);
-                    ts = getSeriesSummary(series, seriesDbl);
+                    data.setPoints(points);
+                    data.setSeries(series);
+                    data.setSeriesValues(seriesValues);
+                    data.setIds(ids);
+                }
 
-                    buildSeriesColours(ts, data.getLsid(), data.colourMode);
+                if (prevResampleLayers == null || !prevResampleLayers.equals(thisResampleLayers)) {
+                    prevResampleLayers = thisResampleLayers;
 
-                    missingCount = lines.length - 1 - pos;
+                    //TODO: put this somewhere where it makes more sense, Recordslookup
+                    if (data.getQuery() instanceof UploadQuery) {
+                        ArrayList<QueryField> fields = new ArrayList<QueryField>();
+                        fields.add(new QueryField(CommonData.getLayerFacetName(data.getLayer1())));
+                        fields.add(new QueryField(CommonData.getLayerFacetName(data.getLayer2())));
+                        data.getQuery().sample(fields);
+                    }
 
-                    aaDataset = null;
-                    xyzDataset = createDataset(pos, dblTmp, ts, series, seriesDbl, seriesNames);
+                    sample();
+
+                    createDataset();
+                }
+
+                if (prevResampleHighlight == null || !prevResampleHighlight.equals(thisResampleHighlight)) {
+                    prevResampleHighlight = thisResampleHighlight;
+                    if (data.getHighlightSa() == null) {
+                        aaDataset = null;
+                    } else {
+                        createAADataset();
+                    }
                 }
             } else {
                 //no resample available
+                aaDataset = null;
                 xyzDataset = null;
                 annotation = null;
-                missingCount = 0;
+                if (data != null) {
+                    data.setMissingCount(0);
+                }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    String prevResampleBackground = null;
+    String prevResampleBackgroundData = null;
+    String prevResampleBackgroundLayers = null;
 
     private void resampleBackground() {
         try {
-            if (data.getBackgroundLsid() != null && data.getBackgroundLsid().length() > 0
+            if (data.getBackgroundQuery() != null
                     && data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
 
-                String thisResampleBackground = data.getBackgroundLsid() + "*" + data.getLayer1() + "*" + data.getLayer2();
-                if (prevResampleBackground == null || !prevResampleBackground.equals(thisResampleBackground)) {
-                    StringBuffer sbProcessUrl = new StringBuffer();
-                    sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/scatterplot?");
-                    sbProcessUrl.append("taxonid=" + URLEncoder.encode(data.getBackgroundLsid().replace(".", "__"), "UTF-8"));
-                    String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
-                    sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
+                String thisResampleBackgroundData = data.getBackgroundQuery().getQ();
+                String thisResampleBackgroundLayers = data.getLayer1() + "*" + data.getLayer2();
+                if (prevResampleBackgroundData == null || !prevResampleBackgroundData.equals(thisResampleBackgroundData)) {
+                    prevResampleBackgroundData = thisResampleBackgroundData;
+                    prevResampleBackgroundLayers = null;
 
-//                    if (data.getHighlightWkt() != null) {
-//                        sbProcessUrl.append("&areahighlight=").append(data.getHighlightWkt());
-//                    }
-                    if (data.getFilterWkt() != null) {
-                        //Now done in AddToolScatterplotComposer
-                        //sbProcessUrl.append("&arearestrict=").append(data.getFilterWkt());
+                    ArrayList<QueryField> fields = new ArrayList<QueryField>();
+                    fields.add(new QueryField(data.getBackgroundQuery().getRecordIdFieldName()));
+                    fields.add(new QueryField("longitude"));
+                    fields.add(new QueryField("latitude"));
+
+                    String backgroundResults = data.getBackgroundQuery().sample(fields);
+
+                    if (backgroundResults == null) {
+                        //TODO: fail nicely
                     }
 
-                    //sbProcessUrl.append("&colourmode=").append(data.colourMode);
-                    sbProcessUrl.append("&colourmode=").append("-1");   //default
+                    CSVReader csvReader = new CSVReader(new StringReader(backgroundResults));
+                    List<String[]> csv = csvReader.readAll();
+                    csvReader.close();
 
-                    HttpClient client = new HttpClient();
-                    PostMethod post = new PostMethod(sbProcessUrl.toString());
-                    post.addRequestHeader("Accept", "text/plain");
+                    int longitudeColumn = findInArray("longitude", csv.get(0));
+                    int latitudeColumn = findInArray("latitude", csv.get(0));
+                    int idColumn = findInArray(data.getBackgroundQuery().getRecordIdFieldName(), csv.get(0));
 
-                    int result = client.executeMethod(post);
-                    String slist = post.getResponseBodyAsString();
-
-                    String[] lines = slist.split("\n");
-
-                    double[][] dblTmp = new double[2][lines.length - 1];
-                    HashMap<String, Integer> ts = new HashMap<String, Integer>();
-                    String[] series = new String[lines.length - 1];
+                    double[] points = new double[(csv.size() - 1) * 2];
+                    String[] series = new String[csv.size() - 1];
+                    String[] ids = new String[csv.size() - 1];
                     int pos = 0;
-                    for (int i = 1; i < lines.length; i++) {   //skip header
-                        String[] words = lines[i].split(",");
-
+                    for (int i = 1; i < csv.size(); i++) {
                         try {
-                            if (words.length > 2) {
-                                dblTmp[1][pos] = Double.parseDouble(words[words.length - 1]);
-                                dblTmp[0][pos] = Double.parseDouble(words[words.length - 2]);
-                                series[pos] = words[1];
-                                if (series[pos] == null) {
-                                    series[pos] = "";
-                                }
-                                pos++;
-                            }
+                            points[pos] = Double.parseDouble(csv.get(i)[longitudeColumn]);
+                            points[pos + 1] = Double.parseDouble(csv.get(i)[latitudeColumn]);
                         } catch (Exception e) {
+                            points[pos] = Double.NaN;
+                            points[pos + 1] = Double.NaN;
                         }
+                        series[pos / 2] = data.getBackgroundQuery().getName();
+                        ids[pos / 2] = csv.get(i)[idColumn];
+                        pos += 2;
                     }
 
-                    series = java.util.Arrays.copyOf(series, pos);
-                    double[] seriesDbl = convertStringsToDoubles(series);
-                    ts = getSeriesSummary(series, seriesDbl);
+                    data.setBackgroundPoints(points);
+                    data.setBackgroundSeries(series);
+                    data.setBackgroundIds(ids);
+                }
 
-                    //buildSeriesColours(ts, backgroundLSID, data.colourMode);
+                if (prevResampleBackgroundLayers == null || !prevResampleBackgroundLayers.equals(thisResampleBackgroundLayers)) {
+                    sampleBackground();
 
-                    //missingCount = lines.length - 1 - pos;
-                    String[] snames = new String[ts.size()];
-                    ts.keySet().toArray(snames);
-                    backgroundXyzDataset = createDataset(pos, dblTmp, ts, series, seriesDbl, snames);
-
-                    //annotation = null;
+                    createBackgroundDataset();
                 }
             } else {
                 //invalid background
@@ -1411,7 +1379,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     public void onClick$btnClear(Event event) {
-        data.setBackgroundLsid(null);
+        data.setBackgroundQuery(null);
 
         sacBackground.setValue("");
 
@@ -1485,12 +1453,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     addNewLayers.setVisible(false);
                 }
                 results = (String) mapLayer.getData("results");
-                missingCount = (Integer) mapLayer.getData("missingCount");
                 prevSelection = (double[]) mapLayer.getData("prevSelection");
                 zmin = (Double) mapLayer.getData("zmin");
                 zmax = (Double) mapLayer.getData("zmax");
-                seriesColours = (int[]) mapLayer.getData("seriesColours");
-                seriesNames = (String[]) mapLayer.getData("seriesNames");
                 backgroundXyzDataset = (DefaultXYZDataset) mapLayer.getData("backgroundXyzDataset");
 
                 //interface
@@ -1512,17 +1477,19 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 imagePath = (String) mapLayer.getData("imagePath");
                 missing_data = (Boolean) mapLayer.getData("missing_data");
 
-                if (missingCount > 0) {
-                    tbxMissingCount.setValue("(" + missingCount + ")");
+                if (data.getMissingCount() > 0) {
+                    tbxMissingCount.setValue("(" + data.getMissingCount() + ")");
                     chkSelectMissingRecords.setVisible(true);
                 } else {
                     tbxMissingCount.setValue("");
                     chkSelectMissingRecords.setVisible(false);
                 }
 
-                prevResample = (String) mapLayer.getData("prevResample");
-                prevResampleBackground = (String) mapLayer.getData("prevResampleBackground");
-                prevLegendColours = (String) mapLayer.getData("prevLegendColours");
+                prevResampleData = (String) mapLayer.getData("prevResampleData");
+                prevResampleHighlight = (String) mapLayer.getData("prevResampleHighlight");
+                prevResampleLayers = (String) mapLayer.getData("prevResampleLayers");
+                prevResampleBackgroundData = (String) mapLayer.getData("prevResampleBackgroundData");
+                prevResampleBackgroundLayers = (String) mapLayer.getData("prevResampleBackgroundLayers");
             }
         } catch (Exception e) {
             //e.printStackTrace();
@@ -1542,12 +1509,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             mapLayer.setData("aaDataset", aaDataset);
             mapLayer.setData("selectionCount", new Integer(selectionCount));
             mapLayer.setData("results", results);
-            mapLayer.setData("missingCount", new Integer(missingCount));
             mapLayer.setData("prevSelection", prevSelection);
             mapLayer.setData("zmin", new Double(zmin));
             mapLayer.setData("zmax", new Double(zmax));
-            mapLayer.setData("seriesColours", seriesColours);
-            mapLayer.setData("seriesNames", seriesNames);
             mapLayer.setData("backgroundXyzDataset", backgroundXyzDataset);
 
             mapLayer.setData("tbxChartSelection", tbxChartSelection.getValue());
@@ -1568,9 +1532,110 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             mapLayer.setData("imagePath", imagePath);
             mapLayer.setData("missing_data", new Boolean(missing_data));
 
-            mapLayer.setData("prevResample", prevResample);
-            mapLayer.setData("prevResampleBackground", prevResampleBackground);
-            mapLayer.setData("prevLegendColours", prevLegendColours);
+            mapLayer.setData("prevResampleData", prevResampleData);
+            mapLayer.setData("prevResampleHighlight", prevResampleHighlight);
+            mapLayer.setData("prevResampleLayers", prevResampleLayers);
+            mapLayer.setData("prevResampleBackgroundData", prevResampleBackgroundData);
+            mapLayer.setData("prevResampleBackgroundLayers", prevResampleBackgroundLayers);
         }
+    }
+
+    private Facet getFacetIn() {
+        double x1 = prevSelection[0];
+        double x2 = prevSelection[1];
+        double y1 = prevSelection[2];
+        double y2 = prevSelection[3];
+
+        String e1 = CommonData.getLayerFacetName(data.getLayer1());
+        String e2 = CommonData.getLayerFacetName(data.getLayer2());
+        Facet f1 = new Facet(e1, y1, y2, true);
+        Facet f2 = new Facet(e2, x1, x2, true);
+        String fq = f1.toString() + "%20AND%20" + f2.toString();
+        if (chkSelectMissingRecords.isChecked()) {
+            fq = "(" + fq + ")%20OR%20-" + e1 + ":[*%20TO%20*]%20OR%20-" + e2 + ":[*%20TO%20*]";
+        }
+
+        return Facet.parseFacet(fq);
+    }
+
+    private Facet getFacetOut() {
+        double x1 = prevSelection[0];
+        double x2 = prevSelection[1];
+        double y1 = prevSelection[2];
+        double y2 = prevSelection[3];
+
+        String e1 = CommonData.getLayerFacetName(data.getLayer1());
+        String e2 = CommonData.getLayerFacetName(data.getLayer2());
+        Facet f1 = new Facet(e1, y1, y2, true);
+        Facet f2 = new Facet(e2, x1, x2, true);
+        String fq = "-" + f1.toString() + "%20OR%20-" + f2.toString();
+        if (chkSelectMissingRecords.isChecked()) {
+            fq = "(" + fq + ")%20AND%20" + e1 + ":[*%20TO%20*]%20AND%20" + e2 + ":[*%20TO%20*]";
+        }
+
+        return Facet.parseFacet(fq);
+    }
+
+    private int findInArray(String lookFor, String[] array) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].equals(lookFor)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void sample() {
+        double[] points = data.getPoints();
+        double[][] p = new double[points.length / 2][2];
+        for (int i = 0; i < points.length; i += 2) {
+            p[i / 2][0] = points[i];
+            p[i / 2][1] = points[i + 1];
+        }
+
+        ArrayList<String> layers = new ArrayList<String>();
+        layers.add(CommonData.getLayerFacetName(data.getLayer1()));
+        layers.add(CommonData.getLayerFacetName(data.getLayer2()));
+        List<String[]> sample = Sampling.sampling(layers, p);
+
+        double[][] d = new double[p.length][2];
+        for (int j = 0; j < p.length; j++) {
+            for (int i = 0; i < sample.size(); i++) {
+                try {
+                    d[j][i] = Double.parseDouble(sample.get(i)[j]);
+                } catch (Exception e) {
+                    d[j][i] = Double.NaN;
+                }
+            }
+        }
+
+        data.setData(d);
+    }
+
+    private void sampleBackground() {
+        double[] points = data.getBackgroundPoints();
+        double[][] p = new double[points.length / 2][2];
+        for (int i = 0; i < points.length; i += 2) {
+            p[i / 2][0] = points[i];
+            p[i / 2][1] = points[i + 1];
+        }
+
+        ArrayList<String> layers = new ArrayList<String>();
+        layers.add(CommonData.getLayerFacetName(data.getLayer1()));
+        layers.add(CommonData.getLayerFacetName(data.getLayer2()));
+        List<String[]> sample = Sampling.sampling(layers, p);
+
+        double[][] d = new double[p.length][2];
+        for (int j = 0; j < p.length; j++) {
+            for (int i = 0; i < sample.size(); i++) {
+                try {
+                    d[j][i] = Double.parseDouble(sample.get(i)[j]);
+                } catch (Exception e) {
+                    d[j][i] = Double.NaN;
+                }
+            }
+        }
+
+        data.setBackgroundData(d);
     }
 }

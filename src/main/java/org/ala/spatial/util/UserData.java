@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import org.ala.spatial.data.Query;
 
 /**
  * Object to hold user uploaded data information
@@ -21,6 +22,7 @@ public class UserData implements Serializable {
     private String metadata;
     private int subType;
     private String lsid;
+    private Query query;
 
     public UserData(String name) {
         this.name = name;
@@ -123,5 +125,11 @@ public class UserData implements Serializable {
         return lsid;
     }
 
+    public void setQuery(Query query) {
+        this.query = query;
+    }
 
+    public Query getQuery() {
+        return query;
+    }
 }

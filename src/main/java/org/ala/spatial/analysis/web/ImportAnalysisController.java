@@ -135,7 +135,7 @@ public class ImportAnalysisController extends UtilityComposer {
     String get(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/ws/jobs/").append(type).append("?pid=").append(pid);
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
@@ -172,7 +172,7 @@ public class ImportAnalysisController extends UtilityComposer {
     }
 
     public void loadMapAloc(Event event) {
-        String uri = CommonData.satServer + "/alaspatial/output/layers/" + pid + "/img.png";
+        String uri = CommonData.satServer + "/output/layers/" + pid + "/img.png";
         float opacity = Float.parseFloat("0.75");
 
         List<Double> bbox = new ArrayList<Double>();
@@ -192,12 +192,12 @@ public class ImportAnalysisController extends UtilityComposer {
             ex.printStackTrace();
         }
 
-        String mapurl = CommonData.geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_" + pid + "&FORMAT=image%2Fpng";
+        String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_" + pid + "&FORMAT=image%2Fpng";
         String legendurl = CommonData.geoServer
-                + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
+                + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:aloc_" + pid;
         System.out.println(legendurl);
-        getMapComposer().addWMSLayer(layerLabel, mapurl, (float) 0.5, "", legendurl, LayerUtilities.ALOC);
+        getMapComposer().addWMSLayer(layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
 
         //getMapComposer().addImageLayer(pid, layerLabel, uri, opacity, bbox, LayerUtilities.ALOC);
         MapLayer mapLayer = getMapComposer().getMapLayer(layerLabel);
@@ -217,7 +217,7 @@ public class ImportAnalysisController extends UtilityComposer {
                 md = new MapLayerMetadata();
             }
 
-            String infoUrl = CommonData.satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:" + pid;
+            String infoUrl = CommonData.satServer + "/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:" + pid;
             md.setMoreInfo(infoUrl);
             md.setId(Long.valueOf(pid));
 
@@ -225,7 +225,7 @@ public class ImportAnalysisController extends UtilityComposer {
 
             try {
                 // set off the download as well
-                String fileUrl = CommonData.satServer + "/alaspatial/ws/download/" + pid;
+                String fileUrl = CommonData.satServer + "/ws/download/" + pid;
                 Filedownload.save(new URL(fileUrl).openStream(), "application/zip", layerLabel.replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
             } catch (Exception ex) {
                 System.out.println("Error generating download for classification model:");
@@ -246,7 +246,7 @@ public class ImportAnalysisController extends UtilityComposer {
         double[] d = new double[6];
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/alaspatial/output/aloc/" + pid + "/aloc.pngextents.txt");
+            sbProcessUrl.append(CommonData.satServer + "/output/aloc/" + pid + "/aloc.pngextents.txt");
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
@@ -270,7 +270,7 @@ public class ImportAnalysisController extends UtilityComposer {
     String getJob(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/ws/jobs/").append(type).append("?pid=").append(pid);
 
             System.out.println(sbProcessUrl.toString());
             HttpClient client = new HttpClient();
@@ -321,10 +321,10 @@ public class ImportAnalysisController extends UtilityComposer {
 
     public void loadMapMaxent(Event event) {
 
-        String mapurl = CommonData.geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
+        String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
 
         String legendurl = CommonData.geoServer
-                + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
+                + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:species_" + pid
                 + "&STYLE=alastyles";
 
@@ -350,9 +350,9 @@ public class ImportAnalysisController extends UtilityComposer {
 
 
         String layername = "Maxent - " + pid;
-        getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, "", legendurl, LayerUtilities.MAXENT);
+        getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
         MapLayer ml = getMapComposer().getMapLayer(layername);
-        String infoUrl = CommonData.satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html";
+        String infoUrl = CommonData.satServer + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();
         if (md == null) {
             md = new MapLayerMetadata();
@@ -363,7 +363,7 @@ public class ImportAnalysisController extends UtilityComposer {
 
         try {
             // set off the download as well
-            String fileUrl = CommonData.satServer + "/alaspatial/ws/download/" + pid;
+            String fileUrl = CommonData.satServer + "/ws/download/" + pid;
             Filedownload.save(new URL(fileUrl).openStream(), "application/zip",layername.replaceAll(" ", "_")+".zip"); // "ALA_Prediction_"+pid+".zip"
         } catch (Exception ex) {
             System.out.println("Error generating download for prediction model:");

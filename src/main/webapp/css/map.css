@@ -649,4 +649,22 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     left: 42px! important;
 }
 
+#radiusDisplay {
+    position: absolute;
+    padding: 10px; 
+    background-color: rgba(250,245,175,0.5);
+    width: 350px! important;
+    height: 30px! important;
+    cursor: pointer;
+
+    z-index: 410;
+    top: 0px! important;
+    left: 60px! important;
+
+    font-family: verdana;
+    font-size: 20px;
+    text-align: center;
+
+    display: none; 
+}
 

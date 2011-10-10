@@ -5,6 +5,7 @@
 
 package au.org.emii.portal.config;
 
+import java.util.ArrayList;
 import java.util.Date;
 import javax.servlet.ServletContext;
 
@@ -13,6 +14,8 @@ import javax.servlet.ServletContext;
  * @author geoff
  */
 public interface ConfigurationLoaderStage1 extends Runnable {
+    public static final ArrayList<Thread> loaders = new ArrayList<Thread>();
+
     /**
      * The config file re-read interval is normally read from the
      * config file, but if the config file is broken, we can't

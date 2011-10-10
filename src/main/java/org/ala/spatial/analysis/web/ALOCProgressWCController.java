@@ -101,7 +101,7 @@ public class ALOCProgressWCController extends UtilityComposer {
     String get(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/ws/jobs/").append(type).append("?pid=").append(pid);
 
             System.out.println("checking status every '"+timer.getDelay()+"' sec: " + sbProcessUrl.toString());
             

@@ -87,9 +87,9 @@ public class LayerUtilitiesImpl implements LayerUtilities {
 //        worldBBox.add(180.0);
 //        worldBBox.add(90.0);
         worldBBox.add(-179.999);
-        worldBBox.add(-84.999);
+        worldBBox.add(-89.999);
         worldBBox.add(179.999);
-        worldBBox.add(84.999);
+        worldBBox.add(89.999);
     }
 
     /**

@@ -41,7 +41,6 @@ public class AreaWKT extends AreaToolComposer {
     public void onClick$btnOk(Event event) {
         String wkt = displayGeom.getText();
         if (validWKT(wkt)) {
-            //wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace(")),((", ")),POLYGON((");
             
             MapComposer mc = getThisMapComposer();
 

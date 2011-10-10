@@ -1,0 +1,29 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+   
+    <window id="samplingresults" title="Sampling Results Preview" border="normal"
+    use="org.ala.spatial.analysis.web.SamplingResultsWCController"
+            apply="org.ala.spatial.analysis.web.SamplingResultsWCController"
+            closable="true" mode="embedded" width="90%">
+
+             <separator />
+            <label id="samplingresultslabel" value=""/>
+            <separator />
+            <separator />
+            <grid id="results_gridbox" sizedByContent="true" height="300px">
+                <rows id="results_rows" />
+            </grid>
+
+            <hbox>
+
+                <hbox>
+                    <separator/>
+                    <separator/>
+                    <button id="btnDownload" label="Download" sclass="goButton" />
+                </hbox>
+                <separator/>
+                <separator/>
+                <div align="right"><button label="Close" id="btnClose" sclass="goButton" /> </div>
+            </hbox>
+    </window>
+</zk>

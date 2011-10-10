@@ -6,7 +6,10 @@ package org.ala.spatial.analysis.web;
 
 import java.awt.geom.Rectangle2D;
 import net.sf.json.JSONObject;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.ScatterplotData;
+import org.ala.spatial.util.SelectedArea;
 import org.zkoss.zul.Checkbox;
 
 /**
@@ -17,9 +20,6 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
     int generation_count = 1;
     ScatterplotData data;
-    EnvLayersCombobox cbLayer1;
-    EnvLayersCombobox cbLayer2;
-    SpeciesAutoComplete bgSearchSpeciesAuto;
     Checkbox chkShowEnvIntersection;
 
     @Override
@@ -54,7 +54,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
         //this.detach();
 
-        String lsid = getSelectedSpecies();
+        Query lsid = getSelectedSpecies();
         String name = getSelectedSpeciesName();
 
         JSONObject jo = (JSONObject) cbLayer1.getSelectedItem().getValue();
@@ -69,24 +69,61 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         Rectangle2D.Double selection = null;
         boolean enabled = true;
 
-        String backgroundLsid = getSelectedSpeciesBk();
+        Query backgroundLsid = getSelectedSpeciesBk();
         if (bgSearchSpeciesAuto.getSelectedItem() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() > 0) {
-            backgroundLsid = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+            backgroundLsid = QueryUtil.get((String) bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), false);
         }
 
-        String filterWkt = getSelectedArea();
-        String highlightWkt = getSelectedAreaHighlight();
+        SelectedArea filterSa = getSelectedArea();
+        SelectedArea highlightSa = getSelectedAreaHighlight();
 
         boolean envGrid = chkShowEnvIntersection.isChecked();
 
-        ScatterplotData data = new ScatterplotData(lsid, name, lyr1value, 
+        Query lsidQuery = QueryUtil.queryFromSelectedArea(lsid, filterSa, false);
+
+        Query backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false);
+
+        ScatterplotData data = new ScatterplotData(lsidQuery, name, lyr1value,
                 lyr1name, lyr2value, lyr2name, pid, selection, enabled,
-                backgroundLsid, filterWkt, highlightWkt, envGrid);
+                (backgroundLsid != null) ? backgroundLsidQuery : null,
+                filterSa, highlightSa, envGrid);
 
         getMapComposer().loadScatterplot(data, tToolName.getValue());
 
         this.detach();
+    }
+
+    @Override
+    void fixFocus() {
+        switch (currentStep) {
+            case 1:
+                rgArea.setFocus(true);
+                break;
+            case 2:
+                if(rSpeciesSearch.isChecked()) {
+                    searchSpeciesAuto.setFocus(true);
+                } else {
+                    rgSpecies.setFocus(true);
+                }
+                break;
+            case 3:
+                rgAreaHighlight.setFocus(true);
+                break;
+           case 4:
+                cbLayer2.setFocus(true);
+                break;
+            case 5:
+                if(rSpeciesSearchBk.isChecked()) {
+                    bgSearchSpeciesAuto.setFocus(true);
+                } else {
+                    rgSpeciesBk.setFocus(true);
+                }
+                break;
+            case 6:
+                tToolName.setFocus(true);
+                break;
+        }
     }
 }

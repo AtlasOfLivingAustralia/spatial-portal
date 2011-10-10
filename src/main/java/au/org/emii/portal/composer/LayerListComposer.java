@@ -35,9 +35,6 @@ import org.zkoss.zul.Treerow;
 public class LayerListComposer extends UtilityComposer {
 
     public Tree tree;
-    private Popup pupLayerAction;
-    private Toolbarbutton llAdd;
-    private Toolbarbutton llInfo;
     private ArrayList empty = new ArrayList();
     private MapComposer mc;
     public AddLayerController alc;
@@ -75,9 +72,8 @@ public class LayerListComposer extends UtilityComposer {
 
             TreeMap htCat1 = new TreeMap();
             TreeMap htCat2 = new TreeMap();
-            //System.out.println("LAYERLIST>>>>>>>>>>" + (String) llist);
 
-            JSONArray layerlist = CommonData.getLayerListJSONArray();//JSONArray.fromObject(llist);
+            JSONArray layerlist = CommonData.getLayerListJSONArray();
             for (int i = 0; i < layerlist.size(); i++) {
                 JSONObject jo = layerlist.getJSONObject(i);
 
@@ -94,10 +90,8 @@ public class LayerListComposer extends UtilityComposer {
                     stn = new SimpleTreeNode(jo, empty);
                 } else {
                     stn = new SimpleTreeNode(jo, classNodes);
-                }
-                //System.out.println("=========== classification 1: " + jo.getString("classification1") + " classification 2: " + jo.getString("classification2") + " layer display name:" + jo.getString("displayname"));
+                }                
                 addToMap2(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
-                //System.out.println(jo.toString(4));
             }
 
             Iterator it1 = htCat1.keySet().iterator();
@@ -186,30 +180,23 @@ public class LayerListComposer extends UtilityComposer {
                     +((subtype.equalsIgnoreCase("environmental"))?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL)
                     + "}");
             SimpleTreeNode stnCat2 = new SimpleTreeNode(joCat2, alCat2);
-            //System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
-            //System.out.println("\t=======================" + stnCat2);
             boolean found = false;
             for (int i = 0; i < alCat1.size(); i++) {
-                //System.out.print("\t\t " + alCat1.get(i));
-                //System.out.println("comparing " + stnCat2.toString() + " to " + alCat1.get(i).toString());
-                //if (stnCat2.toString().equals(alCat1.get(i).toString())) {
                 if (alCat1.get(i).toString().indexOf(cat2) != -1){
-                    //System.out.println(": found");
                     found = true;
                     break;
                 } else {
-                    //System.out.println(": not this");
                 }
             }
             if (!found) {
                 alCat1.add(stnCat2);
             }
-            //System.out.println("\t=======================");
+
 
             if (!htCat1.containsKey(cat1)) {
                 htCat1.put(cat1, alCat1);
             } else {
-                //  System.out.println("\thad existing");
+
             }
 
         }
@@ -235,7 +222,6 @@ public class LayerListComposer extends UtilityComposer {
                 SimpleTreeNode t = (SimpleTreeNode) data;
 
                 JSONObject joLayer = JSONObject.fromObject(t.getData());
-                //System.out.println("Rendering tree item: " + joLayer.getString("displayName"));
                 
                 Treerow tr = null;
                 /*
@@ -251,7 +237,7 @@ public class LayerListComposer extends UtilityComposer {
                     tr.getChildren().clear();
                 }
 
-                String displayname = joLayer.getString("displayname");
+                String displayname = joLayer.getString("displayname").trim();
                 displayname = (displayname.contains(">")) ? displayname.split(">")[1] : displayname;
                 Treecell tcName = new Treecell();
                 String scale = "";
@@ -286,80 +272,42 @@ public class LayerListComposer extends UtilityComposer {
                 Label lbl = new Label(displayname + scale);
                 lbl.setParent(tcName);
 
-                //Treecell  tcDesc = new Treecell(joLayer.getString("displayname"));
-
                 Treecell tcAdd = new Treecell();
                 Treecell tcInfo = new Treecell();
 
-                //System.out.print("name: " + joLayer.getString("displayname:") + " --- ");
-                //System.out.println("type: " + joLayer.getString("type"));
 
                 if (!joLayer.getString("type").equals("node")) {
-
                     // add the "add" button
-                    //tcAdd = new Treecell();
                     tcAdd.setImage("/img/add.png");
 
                     // add the "info" button
-                    //tcInfo = new Treecell();
                     tcInfo.setImage("/img/information.png");
 
                     // set the layer data for the row
                     tr.setAttribute("lyr", joLayer);
-
-                    //item.setPopup(pupLayerAction);
-
-
                 } else {
-                    //tcAdd.setLabel(displayname);
-                    //tcInfo.setLabel("");
-                    //tcName.setLabel("");
                 }
 
                 if (joLayer.getString("type").equals("class")) {
                     tcAdd.setImage("/img/add.png");
                 }
 
-
-
                 // Attach onclick events:
                 if (!joLayer.getString("type").equals("node")) {
-
-                    /*
-                    tcName.addEventListener("onClick", new EventListener() {
-
-                    @Override
-                    public void onEvent(Event event) throws Exception {
-                    Treecell tc = (Treecell) event.getTarget();
-                    tc.setPopup(pupLayerAction);
-
-                    }
-
-                    });
-                     * 
-                     */
-
                     // tcAdd
                     tr.addEventListener("onClick", new EventListener() {
 
                         @Override
                         public void onEvent(Event event) throws Exception {
-                            //Object o = event.getTarget().getId();
-                            //Treecell tc = (Treecell) event.getTarget();
-                            //JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
                             JSONObject joLayer = JSONObject.fromObject(tree.getSelectedItem().getTreerow().getAttribute("lyr"));
-                            if (!joLayer.getString("type").contentEquals("class")) {
+                            if (joLayer.getString("type") != null && !joLayer.getString("type").contentEquals("class")) {
 
-                                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
 
                                 initALC();
                                 alc.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata, 
                                         joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
-
-//                                mc.addWMSLayer(joLayer.getString("displayname"),
-//                                        joLayer.getString("displaypath"),
-//                                        (float) 0.75, metadata);
-                            } else {
+                             } else {
                                 String classAttribute = joLayer.getString("classname");
                                 String classValue = joLayer.getString("displayname");
                                 String layer = joLayer.getString("layername");
@@ -367,22 +315,11 @@ public class LayerListComposer extends UtilityComposer {
                                 //Filtered requests don't work on
                                 displaypath = displaypath.replace("gwc/service/", "");
                                 // Messagebox.show(displaypath);
-                                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
 
                                 initALC();
                                 alc.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
-
-//                                mc.addWMSLayer(layer + " - " + classValue,
-//                                        displaypath,
-//                                        (float) 0.75, metadata);
                             }
-
-//                            mc.updateUserLogMapLayer("env - tree - add", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
-
-                            //close parent if it is 'addlayerwindow'
-//                            try {
-//                                getRoot().getFellow("addlayerwindow").detach();
-//                            } catch (Exception e) {}
                         }
                     });
 

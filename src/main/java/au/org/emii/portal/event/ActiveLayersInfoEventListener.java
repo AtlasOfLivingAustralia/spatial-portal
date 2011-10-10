@@ -3,6 +3,7 @@ package au.org.emii.portal.event;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.util.LayerUtilities;
+import org.ala.spatial.data.Query;
 import org.ala.spatial.util.ScatterplotData;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
@@ -21,7 +22,11 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
             MapLayer activeLayer = (MapLayer) listItem.getValue();
 
             if (activeLayer != null) {
-                if (activeLayer.getMapLayerMetadata() != null
+                if(activeLayer.getData("query") != null) {
+                    //TODO: update for scatterplot layers
+                    Query q = (Query) activeLayer.getData("query");
+                    Events.echoEvent("openHTML", mapComposer, q.getMetadataHtml());
+                } else if (activeLayer.getMapLayerMetadata() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo().startsWith("http://")) {
                     String infourl = activeLayer.getMapLayerMetadata().getMoreInfo().replace("__", ".");

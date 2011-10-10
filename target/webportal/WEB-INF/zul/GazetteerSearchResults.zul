@@ -1,0 +1,25 @@
+<?page title="Search Results" id="pgeSearchResult" contentType="text/html;charset=UTF-8"?>
+<?init class="org.zkoss.zkplus.databind.AnnotateDataBinderInit" arg0="./gazetteerSearchResults"?>
+<zk>
+<window title="Gazetteer Search Results" border="normal"
+apply="org.ala.spatial.gazetteer.GazetteerSearchController"
+use="org.ala.spatial.gazetteer.GazetteerSearchController"
+width="650px" id="gazetteerSearchResults"
+sizable="true"
+closable="true"
+>
+
+
+
+<listbox id="gazetteerResults"  fixedLayout="true">
+	<listhead>
+		<listheader label="Feature Name" />
+		<listheader label="Description" />
+		<listheader label="State" />
+		<listheader label="Add to map"  />
+	</listhead>	
+</listbox>
+
+
+</window>
+</zk>

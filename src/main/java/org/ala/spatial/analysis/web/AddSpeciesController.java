@@ -5,18 +5,18 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryUtil;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Vbox;
-import org.zkoss.zul.Window;
 
 /**
  *
@@ -35,7 +35,7 @@ public class AddSpeciesController extends UtilityComposer {
     Vbox vboxSearch;
     Checkbox chkArea;
     
-    String lsid;
+    Query query;
     String rank;
     String taxon;
 
@@ -49,6 +49,9 @@ public class AddSpeciesController extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
+        if(btnOk.isDisabled()) {
+            return;
+        }
         if(rAllSpecies.isSelected()) {
             AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
             window.setAllSpecies(true);
@@ -65,7 +68,7 @@ public class AddSpeciesController extends UtilityComposer {
 
             if (rSearch.isSelected()) {
                 AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-                window.setSpeciesParams(lsid, rank, taxon);
+                window.setSpeciesParams(query, rank, taxon);
                 window.loadAreaLayers();
                 try {
                     window.doModal();
@@ -100,13 +103,7 @@ public class AddSpeciesController extends UtilityComposer {
     public void onClick$btnUpload(Event event) {
         try {
             UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", getMapComposer(), null);
-//            usc.setEventListener(new EventListener() {
-//
-//                    @Override
-//                    public void onEvent(Event event) throws Exception {
-//                        setLsid((String)event.getData());
-//                    }
-//                });
+
             if (rUploadCoordinates.isSelected()) {
                 usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
             } else if (rUploadLSIDs.isSelected()) {
@@ -154,18 +151,11 @@ public class AddSpeciesController extends UtilityComposer {
 
     public void onCheck$rgAddSpecies(Event event) {
         if(rSearch.isSelected()) {
-           vboxSearch.setVisible(true);           
+           vboxSearch.setVisible(true);
+//           searchSpeciesAuto.setFocus(true);
         } else {
             vboxSearch.setVisible(false);
         }
-//        if(rAllSpecies.isSelected()) {
-//            chkArea.setDisabled(true);
-//            prevAreaState = chkArea.isChecked();
-//            chkArea.setChecked(true);
-//        } else {
-//            chkArea.setDisabled(false);
-//            chkArea.setChecked(prevAreaState);
-//        }
 
         refreshBtnOkDisabled();
     }
@@ -177,8 +167,6 @@ public class AddSpeciesController extends UtilityComposer {
             btnOk.setDisabled(false);
         }
     }
-
-
 
     void getFromAutocomplete() {
         // check if the species name is not valid
@@ -200,13 +188,13 @@ public class AddSpeciesController extends UtilityComposer {
             rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
 
         } else {
-            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
+            rank = StringUtils.substringBefore(spVal, ",").toLowerCase();
             System.out.println("mapping rank and species: " + rank + " - " + taxon);
         }
         if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
             rank = "taxon";
         }
 
-        lsid = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+        query = QueryUtil.get((String)searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), true);
     }
 }

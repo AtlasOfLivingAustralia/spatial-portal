@@ -21,11 +21,9 @@ import org.geotools.factory.Hints;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Button;
-import org.zkoss.zul.Combobox;
-import org.zkoss.zul.Comboitem;
+import org.zkoss.zul.Doublebox;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Textbox;
 
@@ -36,11 +34,7 @@ import org.zkoss.zul.Textbox;
 public class AreaAddressRadiusSelection extends AreaToolComposer {
 
     private Textbox addressBox;
-    Combobox cbRadius;
-    Comboitem ci1km;
-    Comboitem ci5km;
-    Comboitem ci10km;
-    Comboitem ci20km;
+    Doublebox dRadius;
     Label addressLabel;
     private Textbox displayGeom;
     //String layerName;
@@ -53,14 +47,15 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        cbRadius.setReadonly(true);
-        cbRadius.setDisabled(true);
-        cbRadius.setSelectedItem(ci1km);
+        dRadius.setDisabled(true);
         btnOk.setDisabled(true);
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
     }
 
     public void onClick$btnOk(Event event) {
+        if (!validate()) {
+            return;
+        }
         createRadiusFromAddress();
         ok = true;
         this.detach();
@@ -90,7 +85,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
                     md = new MapLayerMetadata();
                     mapLayer.setMapLayerMetadata(md);
                 }
-                md.setMoreInfo(LayersUtil.getMetadata(cbRadius.getText() + " radius around " + addressLabel.getValue() + " (" + longitude + ", " + latitude + ")"));
+                md.setMoreInfo(LayersUtil.getMetadata(dRadius.getText() + "km radius around " + addressLabel.getValue() + " (" + longitude + ", " + latitude + ")"));
 
                 displayGeom.setText(wkt);
             } catch (Exception e) {
@@ -106,7 +101,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
             List<GeoAddress> addresses = st.standardizeToGeoAddresses(addressBox.getText() + ", Australia");
 
             addressLabel.setValue(addresses.get(0).getAddressLine());
-            cbRadius.setDisabled(false);
+            dRadius.setDisabled(false);
             btnOk.setDisabled(false);
         } catch (geo.google.GeoException ge) {
             ge.printStackTrace();
@@ -122,19 +117,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
 
             GeoCoordinate gco = addresses.get(0).getCoordinate();
 
-            double radius = 1000;
-            if (cbRadius.getSelectedItem() == ci1km) {
-                radius = 1000;
-            }
-            if (cbRadius.getSelectedItem() == ci5km) {
-                radius = 5000;
-            }
-            if (cbRadius.getSelectedItem() == ci10km) {
-                radius = 10000;
-            }
-            if (cbRadius.getSelectedItem() == ci20km) {
-                radius = 20000;
-            }
+            double radius = dRadius.getValue() * 1000.0;
             longitude = gco.getLongitude();
             latitude = gco.getLatitude();
             //return createCircle(gco.getLongitude(), gco.getLatitude(), radius);
@@ -150,19 +133,19 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
 
     }
 
-       private String createCircle(double x, double y, final double RADIUS, int sides) {
+    private String createCircle(double x, double y, final double RADIUS, int sides) {
 
         try {
-            Hints hints = new Hints( Hints.CRS, DefaultGeographicCRS.WGS84 );
+            Hints hints = new Hints(Hints.CRS, DefaultGeographicCRS.WGS84);
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(hints);
 
             Point point = geometryFactory.createPoint(new Coordinate(x, y));
 
-            Polygon polygon = bufferInKm(point, RADIUS/1000);
+            Polygon polygon = bufferInKm(point, RADIUS / 1000);
 
             WKTWriter writer = new WKTWriter();
             String wkt = writer.write(polygon);
-              
+
             return wkt.replaceAll("POLYGON ", "POLYGON").replaceAll(", ", ",");
 
         } catch (Exception e) {
@@ -172,30 +155,44 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
         }
     }
 
-    public Polygon bufferInKm(Point p,Double radiusKm)
-    {
-        Hints hints = new Hints( Hints.CRS, DefaultGeographicCRS.WGS84 );
-            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(hints);
-    GeodeticCalculator c = new GeodeticCalculator();
-    c.setStartingGeographicPoint(p.getX(), p.getY());
-    Unit u = c.getEllipsoid().getAxisUnit();
-    Unit km = Unit.valueOf("km");
+    public Polygon bufferInKm(Point p, Double radiusKm) {
+        Hints hints = new Hints(Hints.CRS, DefaultGeographicCRS.WGS84);
+        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(hints);
+        GeodeticCalculator c = new GeodeticCalculator();
+        c.setStartingGeographicPoint(p.getX(), p.getY());
+        Unit u = c.getEllipsoid().getAxisUnit();
+        Unit km = Unit.valueOf("km");
 
-    Coordinate coords[] = new Coordinate[361];
-        for (int i=0;i<360;i++) {
-        UnitConverter converter = km.getConverterTo(u);
-        double converted = converter.convert(radiusKm);
+        Coordinate coords[] = new Coordinate[361];
+        for (int i = 0; i < 360; i++) {
+            UnitConverter converter = km.getConverterTo(u);
+            double converted = converter.convert(radiusKm);
 
-        c.setDirection(i-180, converted);
+            c.setDirection(i - 180, converted);
 
-        java.awt.geom.Point2D boundaryPoint = c.getDestinationGeographicPoint();
+            java.awt.geom.Point2D boundaryPoint = c.getDestinationGeographicPoint();
 
-        coords[i] = new Coordinate(boundaryPoint.getX(), boundaryPoint.getY());
+            coords[i] = new Coordinate(boundaryPoint.getX(), boundaryPoint.getY());
+        }
+        coords[360] = coords[0];
+        LinearRing ring = geometryFactory.createLinearRing(coords);
+        Polygon polygon = geometryFactory.createPolygon(ring, null);
+        return polygon;
+
     }
-      coords[360] = coords[0];
-      LinearRing ring = geometryFactory.createLinearRing(coords);
-      Polygon polygon = geometryFactory.createPolygon(ring, null);
-      return polygon;
 
+    private boolean validate() {
+        StringBuilder sb = new StringBuilder();
+
+        double radius = dRadius.getValue();
+        if (radius <= 0) {
+            sb.append("\nRadius must be greater than 0.");
+        }
+
+        if (sb.length() > 0) {
+            getMapComposer().showMessage(sb.toString());
+        }
+
+        return sb.length() == 0;
     }
 }

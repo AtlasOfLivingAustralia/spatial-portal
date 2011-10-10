@@ -121,30 +121,8 @@ import org.apache.commons.lang.StringUtils;
     public String getFirstSpeciesLayer() {
         List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
         for (MapLayer ml : activeLayers) {
-            if (ml.isDisplayed() 
-                    && ((ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getSpeciesLsid() != null)
-                        || isSpeciesName(ml.getName()))) {
+            if (ml.isDisplayed() && ml.getData("query") != null) {
                 return ml.getName();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * gets first species layer found from active layers list
-     *
-     * @return species name found as String or null if none found
-     */
-    public String getFirstSpeciesLsidLayer() {
-        List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
-        Entry<String, UserData> entry;
-        for (MapLayer ml : activeLayers) {
-            if (ml.isDisplayed()
-                    && ((ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getSpeciesLsid() != null)
-                        || isSpeciesName(ml.getName()))) {
-                return ml.getName() + "," + ml.getMapLayerMetadata().getSpeciesLsid();
-            } else if (ml.isDisplayed() && ((entry = getUserData(ml.getName())) != null)) {
-                return entry.getValue().getName() + "," + entry.getKey();
             }
         }
         return null;
@@ -201,42 +179,42 @@ import org.apache.commons.lang.StringUtils;
      * species autocomplete value.  Note that false is
      * returned if there is error communicating with SAT
      */
-    public boolean isSpeciesName(String val) {
-        String snUrl = satServer + "/alaspatial/species/taxon/";
-        // get rid of the common name if present
-        if (val.contains(" (")) {
-            val = StringUtils.substringBefore(val, " (");
-        }
-
-        val = val.trim();
-        try {
-
-            String nsurl = snUrl + URLEncoder.encode(val, "UTF-8");
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(nsurl);
-            get.addRequestHeader("Content-type", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            System.out.println("Response status code: " + result);
-
-            String[] aslist = slist.split("\n");
-
-            if (aslist.length > 0) {		//only interested in first match from autocomplete search
-                String[] spVal = aslist[0].split("/");
-                String taxon = spVal[0].trim();
-                if (taxon.equalsIgnoreCase(val)) {
-                    return true;
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-        return false;
-    }
+//    public boolean isSpeciesName(String val) {
+//        String snUrl = satServer + "/species/taxon/";
+//        // get rid of the common name if present
+//        if (val.contains(" (")) {
+//            val = StringUtils.substringBefore(val, " (");
+//        }
+//
+//        val = val.trim();
+//        try {
+//
+//            String nsurl = snUrl + URLEncoder.encode(val, "UTF-8");
+//
+//            HttpClient client = new HttpClient();
+//            GetMethod get = new GetMethod(nsurl);
+//            get.addRequestHeader("Content-type", "text/plain");
+//
+//            int result = client.executeMethod(get);
+//            String slist = get.getResponseBodyAsString();
+//
+//            System.out.println("Response status code: " + result);
+//
+//            String[] aslist = slist.split("\n");
+//
+//            if (aslist.length > 0) {		//only interested in first match from autocomplete search
+//                String[] spVal = aslist[0].split("/");
+//                String taxon = spVal[0].trim();
+//                if (taxon.equalsIgnoreCase(val)) {
+//                    return true;
+//                }
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace(System.out);
+//        }
+//        return false;
+//    }
 
     /**
      * tests if a Species is sensitive
@@ -244,31 +222,31 @@ import org.apache.commons.lang.StringUtils;
      * @param lsid text value to test as String
      * @return String 0: non-sensitive, 1: sensitive, -1: cannot be determined
      */
-    public String isSensitiveSpecies(String lsid) {
-        try {
-
-            lsid = StringUtils.replace(lsid, ".", "__");
-            lsid = URLEncoder.encode(lsid, "UTF-8");
-
-            String snUrl = satServer + "/alaspatial/species/lsid/" + lsid + "/sensitivity";
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(snUrl);
-            get.addRequestHeader("Content-type", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString().trim();
-
-            if (slist.equals("0") || slist.equals("1")) {
-                return slist;
-            } else {
-                return "-1";
-            }
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-        return "-1";
-    }
+//    public String isSensitiveSpecies(String lsid) {
+//        try {
+//
+//            lsid = StringUtils.replace(lsid, ".", "__");
+//            lsid = URLEncoder.encode(lsid, "UTF-8");
+//
+//            String snUrl = satServer + "/species/lsid/" + lsid + "/sensitivity";
+//
+//            HttpClient client = new HttpClient();
+//            GetMethod get = new GetMethod(snUrl);
+//            get.addRequestHeader("Content-type", "text/plain");
+//
+//            int result = client.executeMethod(get);
+//            String slist = get.getResponseBodyAsString().trim();
+//
+//            if (slist.equals("0") || slist.equals("1")) {
+//                return slist;
+//            } else {
+//                return "-1";
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace(System.out);
+//        }
+//        return "-1";
+//    }
 
     /**
      * Check if the species is a pest species
@@ -279,7 +257,7 @@ import org.apache.commons.lang.StringUtils;
         //TODO: do this function when pestStatuses is available
         return false;
     /*
-        String snUrl = "http://bie.ala.org.au/species/" + lsid + ".json";
+        String snUrl = CommonData.bieServer + "/species/" + lsid + ".json";
 
         try {
             HttpClient client = new HttpClient();
@@ -311,7 +289,7 @@ import org.apache.commons.lang.StringUtils;
      */
     static public String getScientificName(String lsid) {
 
-        String snUrl = "http://bie.ala.org.au/species/" + lsid + ".json";
+        String snUrl = CommonData.bieServer + "/species/" + lsid + ".json";
 
         try {
             HttpClient client = new HttpClient();
@@ -335,7 +313,7 @@ import org.apache.commons.lang.StringUtils;
 
     static public String getScientificNameRank(String lsid) {
 
-        String snUrl = "http://bie.ala.org.au/species/" + lsid + ".json";
+        String snUrl = CommonData.bieServer + "/species/" + lsid + ".json";
         System.out.println(snUrl);
 
         try {

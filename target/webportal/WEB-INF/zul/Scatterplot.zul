@@ -1,0 +1,261 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?page title="Maxent" contentType="text/html;charset=UTF-8" id="ScatterplotPage"?>
+<zk xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
+    <!--hbox>
+        <button sclass="goButton" id="btnScatOverlapped" label="+" onClick='
+            scatterplotwindow.setWidth("500px");
+            scatterplotwindow.setHeight("800px");
+            scatterplotwindow.setParent(scatterplotwindow.getRoot());
+            scatterplotwindow.setPosition("left,center");
+            scatterplotwindow.setSizable(true);scatterplotwindow.doOverlapped();
+            scatterplotwindow.setBorder("normal");
+            btnScatEmbedded.setVisible(true);
+            scatterplotwindow.getFellow("btnEmbedded").setVisible(true);
+            scatterplotwindow.getFellow("btnOverlapped").setVisible(false);
+            Clients.evalJavaScript("setupRband();");
+            '
+            visible="false" />
+        <button sclass="goButton" id="btnScatEmbedded" label="Docked" onClick='
+            scatterplotwindow.setWidth("340px");
+            scatterplotwindow.setHeight("850px");
+            scatterplotwindow.setParent(btnScatEmbedded.getParent().getParent());
+            scatterplotwindow.setSizable(false);scatterplotwindow.doEmbedded();
+            scatterplotwindow.setBorder("none");
+            btnScatEmbedded.setVisible(false);
+            scatterplotwindow.getFellow("btnEmbedded").setVisible(false);
+            scatterplotwindow.getFellow("btnOverlapped").setVisible(true);
+            Clients.evalJavaScript("setupRband();");
+            '
+            visible="false"/>
+    </hbox-->
+    <window id="scatterplotwindow" use="org.ala.spatial.analysis.web.ScatterplotWCController"
+            apply="org.ala.spatial.analysis.web.ScatterplotWCController"
+            width="380px"
+            height="600px"
+            >
+        <!--caption id="scatCaption" visible="true" >
+            <toolbarbutton id="btnEmbedded" label="Docked" visible="false" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatEmbedded")[0]),"onClick", null));'/>
+            <toolbarbutton id="btnOverlapped" label="Floating" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatOverlapped")[0]),"onClick", null));'/>
+        </caption-->
+        <div id="scatControls" visible="false" width="100%">
+            <vbox >
+                <separator />
+                <checkbox id="chkRestrictOccurrencesToActiveArea" label="Only use occurrences in Active Area" />
+                <groupbox >
+                    <caption label="Enter a scientific or common name" />
+                    <hbox>
+                        <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="320px" >
+                            <comboitem label=""/>
+                        </combobox>
+                        <separator orient="vertical" />
+                        <separator orient="vertical" />
+                        <!-- moved to unhide, button id="btnEditAppearance1" label="settings" sclass="goButton" /-->
+                    </hbox>
+
+                    <checkbox id="chkHighlightActiveAreaOccurrences" label="Highlight Active Area occurrences" />
+                    <separator />
+                    <separator />
+                    <label>Background</label>
+                    <hbox>
+                        <combobox id="sacBackground" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="320px" >
+                            <comboitem label=""/>
+                        </combobox>
+                        <separator orient="vertical" />
+                        <separator orient="vertical" />
+                        <button label="clear" id="btnClear" sclass="goButton" />
+                    </hbox>
+                </groupbox>
+                <groupbox >
+                    <caption label="Select two environmental layers" />
+                    <hbox>X
+                        <combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="280px" >
+                        </combobox>
+                    </hbox>
+                    <hbox>Y
+                        <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="280px" >
+                        </combobox>
+                    </hbox>
+                    <checkbox id="chkShowEnvIntersection" label="Show environmental layer intersection" />
+                    <hbox>
+                        <div width="30px" />
+                        <div id="envLegend" visible="true">
+                            <n:table style="border:1px solid black">
+                                <n:tr>
+                                    <n:td>
+                                        high relative sq km
+                                    </n:td>
+                                    <n:td style="background-color:#ffffff;width:20px;border:1px solid black">
+                                    </n:td>
+                                </n:tr>
+                                <n:tr>
+                                    <n:td>
+                                        low relative sq km
+                                    </n:td>
+                                    <n:td style="background-color:#000000;width:20px;border:1px solid black">
+                                    </n:td>
+                                </n:tr>
+                            </n:table>
+                        </div>
+                    </hbox>
+                </groupbox>
+            </vbox>
+        </div>
+        <vbox >
+            <button id="btnEditAppearance1" label="Species display settings" sclass="goButton" />
+            <div id="scatterplotDownloads" visible="false">
+                <hbox>
+                    <button sclass="goButton" label="Download image" id="scatterplotImageDownload" />
+                    <button sclass="goButton" label="Download data" id="scatterplotDataDownload" />
+                </hbox>
+            </div>
+            <separator />
+            <hbox>
+                <label id="tbxSelectionCount" />
+                <div id="scatterplotButtons" visible="false">
+                    <button sclass="goButton" label="clear selection" id="btnClearSelection" visible="false" />
+                    <button sclass="goButton" label="add in/out layers to map" id="addNewLayers" visible="false"/>
+                </div>
+            </hbox>
+            <label id="tbxRange" />
+            <label id="tbxDomain" />
+            <separator />
+            <hbox>
+                <checkbox id="chkSelectMissingRecords" style="font-weight: bold" label="SELECT records with missing values " visible="false" />
+                <label id="tbxMissingCount" />
+            </hbox>
+            <separator />
+            <div width="100%" >
+                <label id="lblMissing" value="No records available for the scatterplot" visible="false" style="float:left;"/>
+            </div>
+        </vbox>
+        
+        
+        <html><![CDATA[       
+        <div id="chartDivBack" class="chartDiv">
+        <div id="chartDiv" class="chartDiv" 
+            onMouseDown="doMouseDown(event)"
+            onMouseMove="doMouseDrag(event)"
+            onMouseUp="doMouseUp(event)"></div></div>
+        <div id="rband"
+            onMouseDown="doMouseDown(event)"
+            onMouseMove="doMouseDrag(event)"
+            onMouseUp="doMouseUp(event)"></div>
+        ]]>
+        </html>
+
+        <div id="chartImg" width="300px" height="300px" style="float:left;" />
+
+        <!-- chartImg.height = scatterplotwindow.height - tbxChartSelection.height -->
+        <textbox id="tbxChartSelection" visible="false" height="215px" />
+        <script type="text/JavaScript"><![CDATA[
+var startx = 0;
+var starty = 0;
+var endx = 0;
+var endy = 0;
+var resizing = false;
+
+function doMouseDown(event) {
+document.getElementById('chartDiv').UNSELECTABLE="on"
+document.getElementById('rband').UNSELECTABLE="on"
+document.getElementById('chartDivBack').UNSELECTABLE="on"
+
+ $('#rband').offset($('#chartDivBack').offset());
+        setPageXY(event);
+        startx = event.pageX;
+        starty = event.pageY;
+        resizing = true;
+
+        $('#rband').offset({ top: starty, left: startx }).show();
+
+        // prevent default behavior of text selection
+        return false;
+}
+
+function setPageXY(event) {
+if (event.pageX || event.pageY) {
+} else if (event.clientX || event.clientY) {
+event.pageX = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+event.pageY = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+}
+}
+
+function doMouseDrag(event) {
+    if(resizing){
+        var left, top, width, height;
+
+        setPageXY(event);
+
+        endx = event.pageX;
+        endy = event.pageY;
+
+        if(event.pageX>startx){
+            left = startx;
+            width = event.pageX - startx;
+        }
+        else {
+            left = event.pageX;
+            width = startx - event.pageX;
+        }
+        if(event.pageY>starty){
+            top = starty;
+            height = event.pageY - starty;
+        }
+        else {
+            top = event.pageY;
+            height = starty - event.pageY;
+        }
+
+        $('#rband').offset({ top: top, left: left });
+        $("#rband").css({
+            'width'  :    width,
+            'height' :    height
+        });
+    }
+}
+
+function doMouseUp(event) {
+    if(resizing){
+        resizing = false;
+        chartSelection(startx, starty, endx, endy);
+    }
+}
+
+function clearSelection() {
+    
+}
+
+function chartSelection(x1, y1, x2, y2) {
+    x1 = x1 + "";
+    x2 = x2 + "";
+    y1 = y1 + "";
+    y2 = y2 + "";
+    var value = (x1.replace("px","")-$(jq('#chartDivBack')[0]).offset().left)
+        + "," + (y1.replace("px","")-$(jq('#chartDivBack')[0]).offset().top)
+        + "," + (x2.replace("px","")-$(jq('#chartDivBack')[0]).offset().left)
+        + "," + (y2.replace("px","")-$(jq('#chartDivBack')[0]).offset().top);
+    var cd = document.getElementById('chartDiv');
+    var ci = document.getElementById('chartDivBack');
+    ci.style.backgroundImage=cd.style.backgroundImage;
+    zAu.send(new zk.Event(zk.Widget.$(jq('$scatterplotwindow')[0]), 'onChange$tbxChartSelection', value));
+}
+
+function updateScatterplot(width, height, background) {
+    var cd = document.getElementById('chartDiv');
+    var ci = document.getElementById('chartDivBack');
+    ci.style.backgroundImage=cd.style.backgroundImage;
+    cd.style.backgroundImage=background;
+    cd.style.width=width + 'px';
+    cd.style.height=height + 'px';
+    ci.style.width=cd.style.width;
+    ci.style.height=cd.style.height;
+
+    $("#rband").css({
+        'width'  : 0,
+        'height' : 0
+    }).hide();
+}
+ ]]>
+        </script>
+
+    </window>
+</zk>

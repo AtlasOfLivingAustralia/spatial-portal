@@ -22,8 +22,7 @@ public class RemoteMapImpl implements RemoteMap {
      */
     protected LanguagePack languagePack = null;
     protected UriResolver uriResolver = null;
-    protected LayerUtilities layerUtilities = null;   
-   
+    protected LayerUtilities layerUtilities = null;
     private HttpConnection httpConnection = null;
     private GeoJSONUtilities geoJSONUtilities = null;
 
@@ -72,11 +71,11 @@ public class RemoteMapImpl implements RemoteMap {
 
     }
 
-    public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type) {
-        return createGeoJSONLayer(label, uri, points_type,null);
+    public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type, int colour) {
+        return createGeoJSONLayer(label, uri, points_type, null, colour);
     }
 
-    public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type, Hashtable properties) {
+    public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type, Hashtable properties, int colour) {
         MapLayer geoJSON = new MapLayer();
         geoJSON.setPolygonLayer(true);
 
@@ -102,48 +101,49 @@ public class RemoteMapImpl implements RemoteMap {
         logger.debug(uri);
         //get colour as label hash
         //TODO: when SPECIES use hash of ID instead of name
-        int hash = Math.abs(label.hashCode());
-        int r = (hash >> 16) % 255;
-        int g = (hash >> 8) % 255;
-        int b = (hash) % 255;
+        //int hash = Math.abs(label.hashCode());
+        int hash = colour;
+        int r = (hash >> 16) & 0x000000ff;
+        int g = (hash >> 8) & 0x000000ff;
+        int b = (hash) & 0x000000ff;
 
         geoJSON.setSizeUncertain(false);
         String rgbColour = "rgb(" + String.valueOf(r) + "," + String.valueOf(g) + "," + String.valueOf(b) + ")";
         if (properties.containsKey("blue")) {
-            int blue = ((Integer)properties.get("blue")).intValue();
+            int blue = ((Integer) properties.get("blue")).intValue();
             geoJSON.setBlueVal(blue);
         } else {
             geoJSON.setBlueVal(b);
         }
         if (properties.containsKey("green")) {
-            int green = ((Integer)properties.get("green")).intValue();
+            int green = ((Integer) properties.get("green")).intValue();
             geoJSON.setGreenVal(green);
         } else {
             geoJSON.setGreenVal(g);
         }
         if (properties.containsKey("red")) {
-            int red = ((Integer)properties.get("red")).intValue();
+            int red = ((Integer) properties.get("red")).intValue();
             geoJSON.setRedVal(red);
         } else {
             geoJSON.setRedVal(r);
         }
         if (properties.containsKey("size")) {
-            int size = ((Integer)properties.get("size")).intValue();
+            int size = ((Integer) properties.get("size")).intValue();
             geoJSON.setSizeVal(size);
         } else {
             geoJSON.setSizeVal(3);
         }
         if (properties.containsKey("envColour")) {
-            String envColour = (String)properties.get("envColour");
+            String envColour = (String) properties.get("envColour");
             geoJSON.setEnvColour(envColour);
         } else {
             geoJSON.setEnvColour(rgbColour);
         }
-        
+
 
         geoJSON.setType(layerUtilities.GEOJSON);
         System.out.println("getting json .... " + uri);
-       
+
         geoJSON.setGeoJSON(geoJSONUtilities.getJson(uri));
 
         System.out.println("got json");
@@ -152,30 +152,22 @@ public class RemoteMapImpl implements RemoteMap {
             geoJSON.setMapLayerMetadata(new MapLayerMetadata());
         }
 
-        if(points_type){
+        if (points_type) {
             geoJSON.setGeometryType(geoJSONUtilities.POINT);    //for clustering only
             geoJSON.setQueryable(true);
             geoJSON.setDynamicStyle(true);
-        }else{
+        } else {
             //Parsing is taking too long...
-                //lets parse the json to find out what type of feature it is
-                //JSONObject jo = JSONObject.fromObject(geoJSON.getGeoJSON());
-                //int geomTypeCheck = geoJSONUtilities.getFirstFeatureType(jo);
+            //lets parse the json to find out what type of feature it is
+            //JSONObject jo = JSONObject.fromObject(geoJSON.getGeoJSON());
+            //int geomTypeCheck = geoJSONUtilities.getFirstFeatureType(jo);
             String typeStart = "\"type\":\"";
             String typeEnd = "\"";
             int start = geoJSON.getGeoJSON().indexOf(typeStart) + typeStart.length();
             int end = geoJSON.getGeoJSON().indexOf('\"', start);
             int geomTypeCheck = geoJSONUtilities.type(geoJSON.getGeoJSON().substring(start, end));
 
-            //do this at the add level
-            //String taxonconceptid = geoJSONUtilities.getFirstFeatureValue(jo, "ti" /*"taxonconceptid"*/);
-            //if (!taxonconceptid.equals("")) {
-            //    System.out.println("species: " + "http://bie.ala.org.au/species/" + taxonconceptid);
-             //   geoJSON.getMapLayerMetadata().setMoreInfo("http://bie.ala.org.au/species/" + taxonconceptid + "\n" + label);
-            //} else {
-                System.out.println("not species");
-                geoJSON.getMapLayerMetadata().setMoreInfo("");
-            //}
+            geoJSON.getMapLayerMetadata().setMoreInfo("");
 
             //skip checking since initial geojson may be empty (restricted by view extent)
             if (geomTypeCheck >= 0) {
@@ -189,7 +181,7 @@ public class RemoteMapImpl implements RemoteMap {
         return geoJSON;
     }
 
-    public String getJson(String uri){
+    public String getJson(String uri) {
         return geoJSONUtilities.getJson(uri);
     }
 
@@ -201,7 +193,7 @@ public class RemoteMapImpl implements RemoteMap {
 
         geoJSON.setId(uri);
         geoJSON.setLayer(label);
-        
+
         if (uri.indexOf("?") == -1) {
             geoJSON.setUri(uri);
         } else {
@@ -219,9 +211,9 @@ public class RemoteMapImpl implements RemoteMap {
         //get colour as label hash
         //TODO: when SPECIES use hash of ID instead of name
         int hash = Math.abs(label.hashCode());
-        int r = (hash >> 16) % 255;
-        int g = (hash >> 8) % 255;
-        int b = (hash) % 255;
+        int r = (hash >> 16) & 0x000000ff;
+        int g = (hash >> 8) & 0x000000ff;
+        int b = (hash) & 0x000000ff;
 
         geoJSON.setBlueVal(b);
         geoJSON.setGreenVal(g);
@@ -242,11 +234,11 @@ public class RemoteMapImpl implements RemoteMap {
 
 
         //if (geomTypeCheck >= 0) {
-            geoJSON.setGeometryType(geoJSONUtilities.POINT);
-            geoJSON.setQueryable(true);
-            geoJSON.setDynamicStyle(true);
+        geoJSON.setGeometryType(geoJSONUtilities.POINT);
+        geoJSON.setQueryable(true);
+        geoJSON.setDynamicStyle(true);
         //} else {
-          //  geoJSON = null;
+        //  geoJSON = null;
         //}
 
         return geoJSON;
@@ -277,7 +269,6 @@ public class RemoteMapImpl implements RemoteMap {
 
         return kml;
     }
-
 
     /**
      * Create a MapLayer instance and test that an image can be read from
@@ -335,7 +326,7 @@ public class RemoteMapImpl implements RemoteMap {
         //    testedMapLayer = mapLayer;
         //}
         //return testedMapLayer;
-        return mapLayer; 
+        return mapLayer;
     }
 
     @Override

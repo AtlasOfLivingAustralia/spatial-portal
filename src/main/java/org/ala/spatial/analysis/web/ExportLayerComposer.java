@@ -57,17 +57,19 @@ public class ExportLayerComposer extends AddToolComposer {
 
     @Override
     public void onFinish() {
-        //getMapComposer().exportAreaAs(exportFormat.getSelectedItem().getValue());
-        //System.out.println("Exporting Area: " + getSelectedArea());
-        getMapComposer().exportAreaAs(exportFormat.getSelectedItem().getValue(),rAreaSelected.getLabel(),getSelectedArea());
+        getMapComposer().exportAreaAs(exportFormat.getSelectedItem().getValue(), rAreaSelected.getLabel(), getSelectedArea());
         detach();
     }
 
-//    public void onClick$btnExportCancel(Event event) {
-//        this.detach();
-//    }
-    public void onClick$btnExportOk(Event event) {
-        getMapComposer().exportAreaAs(exportFormat.getSelectedItem().getValue());
-        detach();
+     @Override
+    void fixFocus() {
+         switch(currentStep) {
+             case 1:
+                 rgArea.setFocus(true);
+                 break;
+             case 2:
+                 exportFormat.setFocus(true);
+                 break;
+         }
     }
 }

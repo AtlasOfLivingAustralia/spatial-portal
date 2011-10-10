@@ -59,10 +59,6 @@ function showInfo(curr) {
     window.mapFrame.showInfo(curr); 
 }
 
-function showInfoOne() {
-    window.mapFrame.showInfoOne();
-}
-
 function setSearchPointAnalysis(point_orig) {
     var point = point_orig.clone();
    
@@ -189,10 +185,6 @@ function changeBaseLayer(type) {
 
 function showSpeciesInfo(occids, lon, lat) {
     window.mapFrame.showSpeciesInfo(occids, lon, lat);
-}
-
-function appendUploadSpeciesMetadata(name,metadata) {
-    window.mapFrame.appendUploadSpeciesMetadata(name,metadata);
 }
 
 function goToUserLocation() {

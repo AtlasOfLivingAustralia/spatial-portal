@@ -17,6 +17,13 @@
 
         <caption label="Select Area from Polygonal Layer" />
         <vbox sclass="embedWindowsContent">
+            <label sclass="wordwrap" value="1. Name the new polygon layer." />
+            <label sclass="wordwrap" value="2. If more than one contextual layer is available, select the desired later." />
+            <label sclass="wordwrap" value="3. Mouse click within the desired polygon on the map." />
+            <label sclass="wordwrap" value="4. The selected area will be highlighted red and its description displayed in the box below." />
+            <label sclass="wordwrap" value="5. Press Next for the layer to be generated." />
+            <separator />
+
             <div>
                 <hbox width="100%">
                     <label value="Area name" sclass="h3" />
@@ -24,11 +31,7 @@
                 </hbox>
             </div>
             <separator />
-            <label sclass="wordwrap" value="1. Choose layer to select polygon from." />
-            <label sclass="wordwrap" value="2. Left mouse click within the desired polygon on the map." />
-            <label sclass="wordwrap" value="3. The area selected will be highlighted red." /> 
-            <separator />
-            
+
             <radiogroup id="rgPolygonLayers" orient="vertical">
 
                    <!-- <radio id="rAddLayer" label="Add Layer" value="addLayer" /> -->
@@ -47,6 +50,8 @@
                 </div>
             </vbox>
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
+            <separator />
+            <checkbox id="displayAsWms" label="display as WMS layer"  visible="false" checked="true" />
             <div sclass="embedWindowsButtons">
                 <hbox>
                     <button sclass="goButton" label="Clear" id="btnClear"/>                    

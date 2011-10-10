@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+  <class lazy="false" name="au.org.emii.portal.userdata.UserSearch" table="UserSearch">
+    <id name="id" type="long">
+      <column name="id"/>
+      <generator class="sequence">
+        <param name="sequence">userdata_id_seq</param>
+      </generator>
+    </id>
+    <property name="east" type="java.lang.Double">
+      <column default="-999" name="east" precision="17" scale="17"/>
+    </property>
+    <property name="west" type="java.lang.Double">
+      <column default="-999" name="west" precision="17" scale="17"/>
+    </property>
+    <property name="north" type="java.lang.Double">
+      <column default="-999" name="north" precision="17" scale="17"/>
+    </property>
+    <property name="south" type="java.lang.Double">
+      <column default="-999" name="south" precision="17" scale="17"/>
+    </property>
+    <property name="startDate" type="date">
+      <column name="startDate"/>
+    </property>
+    <property name="endDate" type="date">
+      <column name="endDate"/>
+    </property>
+    <property name="keyword" type="string">
+      <column name="keyword"/>
+    </property>
+    <property name="userId" type="long">
+      <column name="userId"/>
+    </property>
+    <property name="searchName" type="string">
+      <column name="searchName"/>
+    </property>
+  </class>
+</hibernate-mapping>

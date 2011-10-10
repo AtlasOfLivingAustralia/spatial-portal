@@ -5,19 +5,17 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.Util;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.zkoss.zk.ui.Component;
+import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.util.SelectedArea;
 import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
@@ -39,16 +37,14 @@ public class AddSpeciesInArea extends UtilityComposer {
     Radio rAreaWorld, rAreaCustom, rAreaSelected, rAreaAustralia;
     Button btnCancel, btnOk;
     Textbox tToolName;
-    boolean setCustomArea = false;
-    String lsid;
-
+    boolean hasCustomArea = false;
+    Query query;
     String rank;
     String taxon;
     private String name;
     private String s;
     private int type;
     private int featureCount;
-
     boolean filterGrid = false;
     boolean filter = false;
     boolean byLsid = false;
@@ -78,7 +74,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 rgArea.insertBefore(rAr, rAreaCurrent);
             }
 
-            if(!allSpecies) {
+            if (!allSpecies) {
                 //rgArea.setSelectedItem(rAreaWorld);
                 rAreaSelected = rAreaWorld; //set as default in the zul
             } else {
@@ -116,14 +112,17 @@ public class AddSpeciesInArea extends UtilityComposer {
         this.detach();
     }
 
-    public void onClick$btnOk(Event event) {       
+    public void onClick$btnOk(Event event) {
+        if(btnOk.isDisabled()) {
+            return;
+        }
 
         try {
             if (rAreaSelected == rAreaCustom) {
                 Map<String, Object> winProps = new HashMap<String, Object>();
                 winProps.put("parent", this);
                 winProps.put("parentname", "AddSpeciesInArea");
-                winProps.put("lsid", lsid);
+                winProps.put("query", query);
                 winProps.put("rank", rank);
                 winProps.put("taxon", taxon);
                 winProps.put("name", name);
@@ -149,43 +148,44 @@ public class AddSpeciesInArea extends UtilityComposer {
     }
 
     public void onFinish() {
-        try {            
-            String wkt = getSelectedArea();
-            //wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace(")),((", ")),POLYGON((");
+        try {
+            SelectedArea sa = getSelectedArea();
 
-            String spname = name + ";" + lsid;
+            //String spname = name + ";" + lsid;
             boolean setupMetadata = true;
 
             MapLayer ml = null;
 
+            Query q = null;
+            q = QueryUtil.queryFromSelectedArea(query, sa, true);
+            if (q instanceof UploadQuery) {
+                //do default sampling now
+                if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
+                    q.sample(CommonData.getDefaultUploadSamplingFields());
+                    ((UploadQuery) q).resetOriginalFieldCount(-1);
+                }
+            }
             if (byLsid) {
-                ml = getMapComposer().mapSpeciesByLsid(Util.newLsidArea(lsid, wkt),spname, s, featureCount, type, wkt);
-            } else if(filter) {
-                ml = getMapComposer().mapSpeciesByLsidFilter(Util.newLsidArea(lsid, wkt), spname, s, featureCount, type, wkt);
-            } else if(filterGrid) {
-                ml = getMapComposer().mapSpeciesByLsidFilterGrid(Util.newLsidArea(lsid, wkt), spname, s, featureCount, type, wkt);
-            } else if (rank != null && taxon != null && lsid != null) {
-                String sptaxon = taxon+";"+lsid;
-                ml = getMapComposer().mapSpeciesByLsid(Util.newLsidArea(lsid, wkt), sptaxon, rank, 0, LayerUtilities.SPECIES, wkt);
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1);
+            } else if (filter) {
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1);
+            } else if (filterGrid) {
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1);
+            } else if (rank != null && taxon != null && q != null) {
+                //String sptaxon = taxon+";"+lsid;
+                ml = getMapComposer().mapSpecies(q, taxon, rank, -1, LayerUtilities.SPECIES, sa.getWkt(), -1);
                 setupMetadata = false;
             } else {
-                StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append("/filtering/apply");
-                sbProcessUrl.append("/pid/" + URLEncoder.encode("none", "UTF-8"));
-                sbProcessUrl.append("/species/count");
-                String[] out = postInfo(sbProcessUrl.toString(), wkt).split("\n");
-                //int results_count = Integer.parseInt(out[0]);
-                int results_count_occurrences = Integer.parseInt(out[1]);
+                int results_count_occurrences = q.getOccurrenceCount();
 
                 //test limit
-                if (results_count_occurrences > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
-                    //register points with a new id for mapping
-                    String lsid = registerPointsInArea(wkt);
-                    sbProcessUrl = new StringBuffer();
-                    String activeAreaLayerName = getSelectedAreaDisplayName();
-                    ml = getMapComposer().mapSpeciesByLsid(lsid, "Occurrences in " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, wkt);
+                if (results_count_occurrences > 0
+                        && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
 
-                    //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
+                    String activeAreaLayerName = getSelectedAreaDisplayName();
+                    ml = getMapComposer().mapSpecies(q, "Occurrences in " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, sa.getWkt(), -1);
+
+                    //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/" + sbProcessUrl.toString(), pid, "map species in area");
                 } else {
                     getMapComposer().showMessage(results_count_occurrences
                             + " occurrences in this area.\r\nSelect an area with fewer than "
@@ -211,46 +211,29 @@ public class AddSpeciesInArea extends UtilityComposer {
         }
     }
 
-    String registerPointsInArea(String area) {
-        //register with alaspatial using data.getPid();
-        try {
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("species/area/register");
-
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString());
-            post.addParameter("area", area);
-            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-            int result = client.executeMethod(post);
-            String slist = post.getResponseBodyAsString();
-
-            return slist;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public String getSelectedArea() {
+    public SelectedArea getSelectedArea() {
         //String area = rgArea.getSelectedItem().getValue();
-        String area = rAreaSelected.getValue(); 
+        String area = rAreaSelected.getValue();
 
+        SelectedArea sa = null;
         try {
             if (area.equals("current")) {
-                area = getMapComposer().getViewArea();
+                sa = new SelectedArea(null, getMapComposer().getViewArea());
             } else if (area.equals("australia")) {
-                area = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
+                sa = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
             } else if (area.equals("world")) {
-                //area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
-                area = "POLYGON((-179.999 -84.999,-179.999 84.999,179.999 84.999,179.999 -84.999,-179.999 -84.999))";
+                sa = new SelectedArea(null, CommonData.WORLD_WKT);
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {
-                    if (area.equals(ml.getDisplayName())) {
-                        area = ml.getWKT();
+                    if (area.equals(ml.getWKT())) {
+                        sa = new SelectedArea(ml, null);
                         break;
                     }
+                }
+                if (sa == null) {
+                    //for 'all areas'
+                    sa = new SelectedArea(null, area);
                 }
             }
         } catch (Exception e) {
@@ -258,7 +241,7 @@ public class AddSpeciesInArea extends UtilityComposer {
             e.printStackTrace(System.out);
         }
 
-        return area;
+        return sa;
     }
 
     public String getSelectedAreaName() {
@@ -280,37 +263,14 @@ public class AddSpeciesInArea extends UtilityComposer {
         return areaName;
     }
 
-    private String postInfo(String urlPart, String wkt) {
-        try {
-            HttpClient client = new HttpClient();
-
-            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
-
-            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            post.addParameter("area", wkt);
-
-            int result = client.executeMethod(post);
-
-            //TODO: confirm result
-            String slist = post.getResponseBodyAsString();
-
-            return slist;
-        } catch (Exception ex) {
-            //TODO: error message
-            System.out.println("getInfo.error:");
-            ex.printStackTrace(System.out);
-        }
-        return null;
-    }
-
-    void setSpeciesParams(String lsid, String rank, String taxon) {
-        this.lsid = lsid;
+    void setSpeciesParams(Query q, String rank, String taxon) {
+        this.query = q;
         this.rank = rank;
         this.taxon = taxon;
     }
 
-    void setSpeciesFilterGridParams(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
-        this.lsid = lsid;
+    void setSpeciesFilterGridParams(Query q, String name, String s, int featureCount, int type, String metadata, String rank) {
+        this.query = q;
         this.name = name;
         this.s = s;
         this.featureCount = featureCount;
@@ -319,8 +279,9 @@ public class AddSpeciesInArea extends UtilityComposer {
         this.metadata = metadata;
         this.rank = rank;
     }
-    void setSpeciesFilterParams(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
-        this.lsid = lsid;
+
+    void setSpeciesFilterParams(Query q, String name, String s, int featureCount, int type, String metadata, String rank) {
+        this.query = q;
         this.name = name;
         this.s = s;
         this.featureCount = featureCount;
@@ -330,8 +291,8 @@ public class AddSpeciesInArea extends UtilityComposer {
         this.rank = rank;
     }
 
-    void setSpeciesByLsidParams(String lsid, String name, String s, int featureCount, int type, String metadata) {
-        this.lsid = lsid;
+    void setSpeciesByLsidParams(Query q, String name, String s, int featureCount, int type, String metadata) {
+        this.query = q;
         this.name = name;
         this.s = s;
         this.featureCount = featureCount;

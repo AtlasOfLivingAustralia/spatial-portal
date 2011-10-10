@@ -33,22 +33,24 @@ public class AddLayerController extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-
-        //((LayerListComposer)((HtmlMacroComponent)getFellow("layerList")).getFellow("layerswindow")).alc = this;
+        
         rSearch.setChecked(true);
     }
 
     public void onClick$btnOk(Event event) {
+        if(btnOk.isDisabled()) {
+            return;
+        }
         if(treeName != null) {
             getMapComposer().addWMSLayer(treeName,
                             treePath,
-                            (float) 0.75, treeMetadata, treeSubType);
+                            (float) 0.75, treeMetadata, null, treeSubType, null, null);
 
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
         } else if(searchName != null) {
             getMapComposer().addWMSLayer(searchName,
                             searchPath,
-                            (float) 0.75, searchMetadata, searchSubType);
+                            (float) 0.75, searchMetadata, null, searchSubType, null, null);
 
             getMapComposer().updateUserLogMapLayer("env - search - add", /*joLayer.getString("uid")+*/"|"+searchName);
         }
@@ -70,38 +72,11 @@ public class AddLayerController extends UtilityComposer {
             JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
             String metadata = "";
 
-            metadata = CommonData.satServer + "/alaspatial/layers/" + jo.getString("uid");
+            metadata = CommonData.satServer + "/layers/" + jo.getString("uid");
 
             setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata, 
                     jo.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
         }
-//        else {
-//            JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
-//            if (!joLayer.getString("type").contentEquals("class")) {
-//
-//                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
-//
-//                setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
-//                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
-//            } else {
-//                String classAttribute = joLayer.getString("classname");
-//                String classValue = joLayer.getString("displayname");
-//                String layer = joLayer.getString("layername");
-//                String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
-//                //Filtered requests don't work on
-//                displaypath = displaypath.replace("gwc/service/", "");
-//                // Messagebox.show(displaypath);
-//                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
-//
-//                setLayer(layer + " - " + classValue, displaypath, metadata,
-//                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
-//            }
-//
-//            //close parent if it is 'addlayerwindow'
-//            try {
-//                getRoot().getFellow("addlayerwindow").detach();
-//            } catch (Exception e) {}
-//        }
     }
 
     public void setLayer(String name, String displaypath, String metadata, int subType) {
@@ -110,13 +85,6 @@ public class AddLayerController extends UtilityComposer {
             treePath = displaypath;
             treeMetadata = metadata;
             treeSubType = subType;
-
-            //fill autocomplete text
-            //lac.setText(name);
-
-            //clear selection on tree
-            //LayerListComposer llc = (LayerListComposer) getFellow("layerList").getFellow("layerswindow");
-            //llc.tree.clearSelection();
         } else {
             searchName = name;
             searchPath = displaypath;
@@ -133,6 +101,12 @@ public class AddLayerController extends UtilityComposer {
 
         btnOk.setDisabled((rTree.isChecked() && treeName == null)
                 || (rSearch.isChecked() && searchName == null));
+
+//        if(rSearch.isChecked()) {
+//            lac.setFocus(true);
+//        } else {
+//            ((LayerListComposer)((HtmlMacroComponent)getFellow("layerList")).getFellow("layerswindow")).setFocus(true);
+//        }
     }
 
 }

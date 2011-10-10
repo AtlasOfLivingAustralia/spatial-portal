@@ -1,13 +1,16 @@
 package org.ala.spatial.analysis.web;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
-import java.net.URLEncoder;
+import java.io.IOException;
+import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.ala.spatial.util.CommonData;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryUtil;
+import org.ala.spatial.util.SelectedArea;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zul.Button;
@@ -35,36 +38,27 @@ public class SpeciesListResults extends UtilityComposer {
     Row rowCounts;
     int results_count = 0;
     int results_count_occurrences = 0;
-
-    public String wkt;
+    SelectedArea selectedArea;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-        wkt = (String) Executions.getCurrent().getArg().get("wkt");
+        selectedArea = (SelectedArea) Executions.getCurrent().getArg().get("selectedarea");
 
         populateList();
     }
     boolean addedListener = false;
 
     public void populateList() {
-        updateParameters();
+        if (selectedArea == null) {
+            selectedArea = new SelectedArea(null, getMapComposer().getViewArea());
+        }
 
         try {
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/filtering/apply");
-            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-            sbProcessUrl.append("/species/list");
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false);
 
-            String out = postInfo(sbProcessUrl.toString());
-            if (out.length() > 0 && out.charAt(out.length() - 1) == ',') {
-                out = out.substring(0, out.length() - 1);
-            }
-            results = out.split("\\|");
-            java.util.Arrays.sort(results);
-
-            if (results.length == 0 || results[0].trim().length() == 0) {
+            if (sq.getSpeciesCount() <= 0) {
                 getMapComposer().showMessage("No species records in the active area.");
                 results = null;
                 popup_listbox_results.setVisible(false);
@@ -72,6 +66,12 @@ public class SpeciesListResults extends UtilityComposer {
                 this.detach();
                 return;
             }
+
+            //remove header
+            String speciesList = sq.speciesList();
+            results = speciesList.substring(speciesList.indexOf('\n') + 1).split("\n");
+
+            java.util.Arrays.sort(results);
 
             // results should already be sorted: Arrays.sort(results);
             String[] tmp = results;
@@ -88,8 +88,18 @@ public class SpeciesListResults extends UtilityComposer {
 
                         public void render(Listitem li, Object data) {
                             String s = (String) data;
-                            String[] ss = s.split("[*]");
+                            CSVReader reader = new CSVReader(new StringReader(s));
 
+                            String[] ss = null;
+                            try {
+                                ss = reader.readNext();
+                            } catch (Exception e) {
+                                ss = new String[0];
+                            }
+
+                            if (ss == null || ss.length == 0) {
+                                return;
+                            }
 
                             Listcell lc = new Listcell(ss[0]);
                             lc.setParent(li);
@@ -118,6 +128,11 @@ public class SpeciesListResults extends UtilityComposer {
                                 lc = new Listcell(ss[5]);
                                 lc.setParent(li);
                             }
+                            try {
+                                reader.close();
+                            } catch (IOException ex) {
+                                Logger.getLogger(SpeciesListResults.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
                     });
         } catch (Exception e) {
@@ -129,9 +144,7 @@ public class SpeciesListResults extends UtilityComposer {
         StringBuffer sb = new StringBuffer();
         sb.append("Family Name,Scientific Name,Common name/s,Taxon rank,Scientific Name LSID,Number of Occurrences\r\n");
         for (String s : results) {
-            sb.append("\"");
-            sb.append(s.replaceAll("\\*", "\",\""));
-            sb.append("\"");
+            sb.append(s);
             sb.append("\r\n");
         }
 
@@ -145,58 +158,11 @@ public class SpeciesListResults extends UtilityComposer {
 
         Filedownload.save(sb.toString(), "text/plain", "Species_list_" + sdate + "_" + spid + ".csv");
 
-        if(wkt == null) {
-            wkt = getMapComposer().getViewArea();
+        if (selectedArea == null) {
+            selectedArea = new SelectedArea(null, getMapComposer().getViewArea());
         }
-        getMapComposer().updateUserLogAnalysis("species list", wkt/*getMapComposer().getSelectionArea()*/, "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
+        getMapComposer().updateUserLogAnalysis("species list", selectedArea.getWkt(), "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
 
         detach();
-    }
-
-    private String postInfo(String urlPart) {
-        try {
-            HttpClient client = new HttpClient();
-
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
-
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            get.addParameter("area", shape);
-
-            System.out.println("satServer:" + CommonData.satServer + " ** postInfo:" + urlPart + " ** " + shape);
-
-            int result = client.executeMethod(get);
-
-            //TODO: confirm result
-            String slist = get.getResponseBodyAsString();
-
-            return slist;
-        } catch (Exception ex) {
-            //TODO: error message
-            System.out.println("getInfo.error:");
-            ex.printStackTrace(System.out);
-        }
-        return null;
-    }
-
-    boolean updateParameters() {
-        //extract 'shape' and 'pid' from composer
-        String area = wkt;//getMapComposer().getSelectionArea();
-        if(area == null) {
-            wkt = getMapComposer().getViewArea();
-            area = wkt;
-        }
-        if (area.contains("ENVELOPE(")) {
-            shape = "none";
-            pid = area.substring(9, area.length() - 1);
-            return true;
-        } else {
-            pid = "none";
-            if (shape != area) {
-                shape = area;
-                return true;
-            } else {
-                return false;
-            }
-        }
     }
 }

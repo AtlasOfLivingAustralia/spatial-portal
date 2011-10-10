@@ -16,16 +16,17 @@
 
         <caption label="Draw Bounding Box" />
         <vbox sclass="embedWindowsContent">
+            <label sclass="wordwrap" value="1. Name the new bounding box layer." />
+            <label sclass="wordwrap" value="2. Zoom and pan to the area of interest." />
+            <label sclass="wordwrap" value="3. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size." />
+            <label sclass="wordwrap" value="4. Release the mouse button." />
+            <separator />
             <div>
                 <hbox width="100%">
                     <label value="Area name" sclass="h3" />
                     <textbox id="txtLayerName" width="250px"/>
                 </hbox>
             </div>
-            <separator />
-            <label sclass="wordwrap" value="1. Zoom and pan to the area of interest." />
-            <label sclass="wordwrap" value="2. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size." />
-            <label sclass="wordwrap" value="3. Release the mouse button." />
             <separator />
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
             <div style="float:right;margin-right:5px">

@@ -10,19 +10,16 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.ala.spatial.data.Facet;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.SolrQuery;
 import org.apache.commons.lang.StringUtils;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
@@ -44,66 +41,12 @@ public class Util {
      * @param register_shape true to register the shape with alaspatial shape register
      * @return
      */
-    public static String getWktFromURI(String layer, boolean register_shape) {
+    public static String getWktFromURI(String layer) {
         String feature_text = null;//DEFAULT_AREA;
 
-        if (!register_shape) {
-            String json = readGeoJSON(layer);
-            return feature_text = wktFromJSON(json);
-        }
+        String json = readGeoJSON(layer);
 
-        try {
-            String uri = layer;
-            String gaz = "gazetteer/";
-            int i1 = uri.indexOf(gaz);
-            int i2 = uri.indexOf("/", i1 + gaz.length() + 1);
-            int i3 = uri.lastIndexOf(".json");
-            String table = uri.substring(i1 + gaz.length(), i2);
-            String value = uri.substring(i2 + 1, i3);
-            //test if available in alaspatial
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/lookup");
-            get.addParameter("table", table);
-            get.addParameter("value", value);
-            get.addRequestHeader("Accept", "text/plain");
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            System.out.println("register table and value with alaspatial: " + slist);
-
-            if (slist != null && result == 200) {
-                feature_text = "LAYER(" + layer + "," + slist + ")";
-
-                return feature_text;
-            }
-        } catch (Exception e) {
-            System.out.println("no alaspatial shape for layer: " + layer);
-            e.printStackTrace();
-        }
-        try {
-            //class_name is same as layer name
-            String json = readGeoJSON(layer);
-            feature_text = wktFromJSON(json);
-
-            if (!register_shape) {
-                return feature_text;
-            }
-
-            //register wkt with alaspatial and use LAYER(layer name, id)
-            HttpClient client = new HttpClient();
-            //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/register");
-            get.addParameter("area", feature_text);
-            get.addRequestHeader("Accept", "text/plain");
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            System.out.println("register wkt shape with alaspatial: " + slist);
-
-            feature_text = "LAYER(" + layer + "," + slist + ")";
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("SelectionController.getLayerGeoJsonAsWkt(" + layer + "): " + feature_text);
-        return feature_text;
+        return feature_text = wktFromJSON(json);
     }
 
     static public String createCircle(double x, double y, final double RADIUS) {
@@ -218,27 +161,12 @@ public class Util {
      */
     static public String wktFromJSON(String json) {
         try {
-//            JSONObject obj = JSONObject.fromObject(json);
-//            JSONArray geometries = obj.getJSONArray("geometries");
-//            String wkt = "";
-//            for (int i = 0; i < geometries.size(); i++) {
-//                String coords = geometries.getJSONObject(i).getString("coordinates");
-//
-//                if (geometries.getJSONObject(i).getString("type").equalsIgnoreCase("multipolygon")) {
-//                    wkt += coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
-//
-//                } else {
-//                    wkt += coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[", "POLYGON((").replace("]]]", "))").replace("],[", "),(");
-//                }
-//
-//                wkt = wkt.replace(")))MULTIPOLYGON(", ")),");
-//            }
-//            return wkt;
-
             StringBuilder sb = new StringBuilder();
             boolean isPolygon = json.contains("\"type\":\"Polygon\"");
             sb.append("MULTIPOLYGON(");
-            if(isPolygon) sb.append("("); //for conversion Polygon to Multipolygon.
+            if (isPolygon) {
+                sb.append("("); //for conversion Polygon to Multipolygon.
+            }
             int pos = json.indexOf("coordinates") + "coordinates".length() + 3;
             int end = json.indexOf("}", pos);
             char c = json.charAt(pos);
@@ -248,19 +176,19 @@ public class Util {
             while (pos < end) {
                 next_c = json.charAt(pos);
                 //lbrace to lbracket, next character is not a number
-                if(c == '[') {
-                    if(next_c != '-' && (next_c < '0' || next_c > '9')) {
+                if (c == '[') {
+                    if (next_c != '-' && (next_c < '0' || next_c > '9')) {
                         sb.append('(');
                     }
-                //rbrace to rbracket, prev character was not a number
-                } else if(c == ']') {
+                    //rbrace to rbracket, prev character was not a number
+                } else if (c == ']') {
                     if (prev_c < '0' || prev_c > '9') {
                         sb.append(')');
                     }
-                //comma to space, prev character was a number
-                } else if(c == ',' && prev_c >= '0' && prev_c <= '9') {
+                    //comma to space, prev character was a number
+                } else if (c == ',' && prev_c >= '0' && prev_c <= '9') {
                     sb.append(' ');
-                //keep the original value
+                    //keep the original value
                 } else {
                     sb.append(c);
                 }
@@ -269,7 +197,9 @@ public class Util {
                 pos++;
             }
             sb.append(")");
-            if(isPolygon) sb.append(")"); //for conversion Polygon to Multipolygon.
+            if (isPolygon) {
+                sb.append(")"); //for conversion Polygon to Multipolygon.
+            }
             return sb.toString();
         } catch (JSONException e) {
             return "none";
@@ -332,7 +262,7 @@ public class Util {
 
                 for (String area : areas) {
                     area = StringUtils.replace(area, "MULTIPOLYGON((", "");
-                    area = StringUtils.replace(area, "POLYGON((", "");
+                    area = StringUtils.replace(area, "POLYGON(", "");
                     area = StringUtils.replace(area, ")", "");
                     area = StringUtils.replace(area, "(", "");
 
@@ -353,10 +283,13 @@ public class Util {
                             //return 510000000;
                         } else {
                             isWorld = false;
+                            break;
                         }
                     }
                     //if (isWorld) return (510000000 * 1000 * 1000 * 1L);
-                    if (isWorld) return 510000000000000L;
+                    if (isWorld) {
+                        return 510000000000000L;
+                    }
 
                     double totalarea = 0.0;
                     String d = areaarr[0];
@@ -485,54 +418,32 @@ public class Util {
         return pt;
     }
 
-    public static String newLsidArea(String lsid, String wkt) {
-        try {
-            //get lsid to match
-            StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append("/species/lsidarea/register");
-            sbProcessUrl.append("?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-            post.addParameter("area", wkt);
-            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(post);
-            String pid = post.getResponseBodyAsString();
-            return pid;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
-     /**
+    /**
      * Util function to add line breaks to a string - it breaks on whole word
      * @param message The text to perform the break on
      * @param length The interval to add a line break to
      * @return 
      */
-    public static String breakString(String message, int length){
+    public static String breakString(String message, int length) {
         StringBuffer newMessage = new StringBuffer();
         //buffer of last word (used to split lines by whole word
         StringBuffer lastWord = new StringBuffer();
-        for (int i = 0; i < message.length(); i++){
-            if (i%length == 0 && i != 0){
-                if (lastWord.length() > 0){
+        for (int i = 0; i < message.length(); i++) {
+            if (i % length == 0 && i != 0) {
+                if (lastWord.length() > 0) {
                     newMessage.delete(newMessage.length() - lastWord.length(), newMessage.length());
                     newMessage.append("\n");
                     newMessage.append(lastWord);
                     newMessage.append(message.charAt(i));
                     lastWord = new StringBuffer();
-                }
-                else{
+                } else {
                     newMessage.append("\n");
                 }
-            }
-            else{
+            } else {
                 //reset lastWord stringbuffer when in hits a space
-                if (message.charAt(i) == ' '){
+                if (message.charAt(i) == ' ') {
                     lastWord = new StringBuffer();
-                }
-                else{
+                } else {
                     lastWord.append(message.charAt(i));
                 }
                 newMessage.append(message.charAt(i));

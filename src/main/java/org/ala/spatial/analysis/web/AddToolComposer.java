@@ -1,13 +1,9 @@
 package org.ala.spatial.analysis.web;
 
-import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -15,19 +11,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.LayersUtil;
-import org.ala.spatial.util.UserData;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.lang.StringUtils;
-import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.event.ForwardEvent;
-import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Comboitem;
@@ -85,14 +76,16 @@ public class AddToolComposer extends UtilityComposer {
         //loadStepLabels();
         updateWindowTitle();
 
-        if (fileUpload != null) {
-            fileUpload.addEventListener("onUpload", new EventListener() {
+//        if (fileUpload != null) {
+//            fileUpload.addEventListener("onUpload", new EventListener() {
+//
+//                public void onEvent(Event event) throws Exception {
+//                    doFileUpload(null, event);
+//                }
+//            });
+//        }
 
-                public void onEvent(Event event) throws Exception {
-                    doFileUpload(null, event);
-                }
-            });
-        }
+        fixFocus();
     }
 
     private void setupDefaultParams() {
@@ -174,7 +167,7 @@ public class AddToolComposer extends UtilityComposer {
             List<MapLayer> layers = getMapComposer().getSpeciesLayers();
 
             Radio selectedSpecies = null;
-            String selectedLsid = (String) params.get("lsid");
+            String selectedSpeciesLayer = (String) params.get("speciesLayerName");
             int speciesLayersCount = 0;
 
             for (int i = 0; i < layers.size(); i++) {
@@ -184,11 +177,11 @@ public class AddToolComposer extends UtilityComposer {
                 }
 
                 Radio rSp = new Radio(lyr.getDisplayName());
-                rSp.setValue(lyr.getMapLayerMetadata().getSpeciesLsid());
+                rSp.setValue(lyr.getName());
                 rSp.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rgSpecies.insertBefore(rSp, rSpeciesMapped);
 
-                if (selectedLsid != null && rSp.getValue().equals(selectedLsid)) {
+                if (selectedSpeciesLayer != null && rSp.getValue().equals(selectedSpeciesLayer)) {
                     selectedSpecies = rSp;
                 }
             }
@@ -201,7 +194,7 @@ public class AddToolComposer extends UtilityComposer {
 
             if (selectedSpecies != null) {
                 rgSpecies.setSelectedItem(selectedSpecies);
-            } else if (selectedLsid != null && selectedLsid.equals("none")) {
+            } else if (selectedSpeciesLayer != null && selectedSpeciesLayer.equals("none")) {
                 rgSpecies.setSelectedItem(rSpeciesAll);
             } else if (layers.size() > 0) {
                 rgSpecies.setSelectedItem(rgSpecies.getItemAtIndex(1));
@@ -234,7 +227,7 @@ public class AddToolComposer extends UtilityComposer {
                 }
 
                 Radio rSp = new Radio(lyr.getDisplayName());
-                rSp.setValue(lyr.getMapLayerMetadata().getSpeciesLsid());
+                rSp.setValue(lyr.getName());
                 rSp.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rgSpecies.insertBefore(rSp, rSpeciesMapped);
             }
@@ -258,9 +251,9 @@ public class AddToolComposer extends UtilityComposer {
         try {
             Radiogroup rgArea = (Radiogroup) getFellowIfAny("rgArea");
             //remove all radio buttons that don't have an id
-            for (int i=rgArea.getItemCount()-1;i>=0;i--) {
-                String id = ((Radio)rgArea.getItems().get(i)).getId();
-                if(id == null || id.length() == 0) {
+            for (int i = rgArea.getItemCount() - 1; i >= 0; i--) {
+                String id = ((Radio) rgArea.getItems().get(i)).getId();
+                if (id == null || id.length() == 0) {
                     rgArea.removeItemAt(i);
                 } else {
                     rgArea.getItemAtIndex(i).setSelected(false);
@@ -281,13 +274,14 @@ public class AddToolComposer extends UtilityComposer {
                 //rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
 
-                if(!lyr.getWKT().contains("ENVELOPE")) {
-                    if (count_not_envelopes > 0)
+                if (!lyr.getWKT().contains("ENVELOPE")) {
+                    if (count_not_envelopes > 0) {
                         allWKT.append(',');
+                    }
                     count_not_envelopes++;
                     String wkt = lyr.getWKT();
-                    if(wkt.startsWith("GEOMETRYCOLLECTION(")) {
-                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length()-1);
+                    if (wkt.startsWith("GEOMETRYCOLLECTION(")) {
+                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length() - 1);
                     }
                     allWKT.append(wkt);
                 }
@@ -302,8 +296,8 @@ public class AddToolComposer extends UtilityComposer {
             }
 
             if (!layers.isEmpty() && count_not_envelopes > 1) {
-                 Radio rAr = new Radio("All area layers"
-                         + ((count_not_envelopes < layers.size())?" (excluding Environmental Envelopes)": ""));
+                Radio rAr = new Radio("All area layers"
+                        + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
                 //rAr.setId("AllActiveAreas");
                 rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
                 rAr.setParent(rgArea);
@@ -320,7 +314,7 @@ public class AddToolComposer extends UtilityComposer {
                         break;
                     }
                 }
-            }else if (rSelectedLayer != null) {
+            } else if (rSelectedLayer != null) {
                 rAreaSelected = rSelectedLayer;
                 rgArea.setSelectedItem(rAreaSelected);
             } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
@@ -348,9 +342,9 @@ public class AddToolComposer extends UtilityComposer {
         try {
             Radiogroup rgArea = (Radiogroup) getFellowIfAny("rgAreaHighlight");
             //remove all radio buttons that don't have an id
-            for (int i=rgArea.getItemCount()-1;i>=0;i--) {
-                String id = ((Radio)rgArea.getItems().get(i)).getId();
-                if(id == null || id.length() == 0) {
+            for (int i = rgArea.getItemCount() - 1; i >= 0; i--) {
+                String id = ((Radio) rgArea.getItems().get(i)).getId();
+                if (id == null || id.length() == 0) {
                     rgArea.removeItemAt(i);
                 } else {
                     rgArea.getItemAtIndex(i).setSelected(false);
@@ -362,7 +356,7 @@ public class AddToolComposer extends UtilityComposer {
             String selectedLayerName = (String) params.get("polygonLayerName");
             Radio rSelectedLayer = null;
 
-            String allWKT = "";
+            StringBuilder allWKT = new StringBuilder();
             int count_not_envelopes = 0;
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
@@ -371,12 +365,18 @@ public class AddToolComposer extends UtilityComposer {
                 //rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
 
-                if(!allWKT.contains("ENVELOPE")) {
-                    if (!allWKT.isEmpty())
-                        allWKT+=",";
-                    count_not_envelopes ++;
-                    allWKT += lyr.getWKT();
+                if (!lyr.getWKT().contains("ENVELOPE")) {
+                    if (count_not_envelopes > 0) {
+                        allWKT.append(',');
+                    }
+                    count_not_envelopes++;
+                    String wkt = lyr.getWKT();
+                    if (wkt.startsWith("GEOMETRYCOLLECTION(")) {
+                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length() - 1);
+                    }
+                    allWKT.append(wkt);
                 }
+
 
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrentHighlight);
@@ -388,10 +388,10 @@ public class AddToolComposer extends UtilityComposer {
             }
 
             if (!layers.isEmpty() && count_not_envelopes > 1) {
-                 Radio rAr = new Radio("All area layers"
-                         + ((count_not_envelopes < layers.size())?" (excluding Environmental Envelopes)": ""));
+                Radio rAr = new Radio("All area layers"
+                        + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
                 //rAr.setId("AllActiveAreas");
-                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
+                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrentHighlight);
             }
@@ -406,7 +406,7 @@ public class AddToolComposer extends UtilityComposer {
                         break;
                     }
                 }
-            }else if (rSelectedLayer != null) {
+            } else if (rSelectedLayer != null) {
                 //rAreaSelected = rSelectedLayer;
                 rgArea.setSelectedItem(rAreaSelected);
             } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
@@ -495,7 +495,7 @@ public class AddToolComposer extends UtilityComposer {
             rAreaSelected = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
         } catch (Exception e) {
         }
-        if(rAreaSelected == rAreaCustom) {
+        if (rAreaSelected == rAreaCustom) {
             //setCustomArea = true;
             hasCustomArea = false;
         }
@@ -507,7 +507,7 @@ public class AddToolComposer extends UtilityComposer {
         }
         //setCustomArea = false;
         hasCustomArea = false;
-        if(rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight")) {
+        if (rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight")) {
             //setCustomArea = true;
             hasCustomArea = false;
         }
@@ -661,6 +661,7 @@ public class AddToolComposer extends UtilityComposer {
                 this.setTop(winTop);
                 this.setLeft(winLeft);
                 this.doModal();
+                fixFocus();
                 return;
             }
             if (type.compareTo("normal") == 0) {
@@ -673,13 +674,13 @@ public class AddToolComposer extends UtilityComposer {
             this.setLeft(winLeft);
             this.doModal();
             onClick$btnOk(null);
+
+            fixFocus();
         } catch (Exception e) {
             System.out.println("Exception when resetting analysis window");
             e.printStackTrace();
         }
     }
-
-
 
     public void resetWindow(String selectedArea) {
         try {
@@ -722,6 +723,8 @@ public class AddToolComposer extends UtilityComposer {
                 hasCustomArea = false;
                 //setCustomArea = false;
             }
+
+            fixFocus();
         } catch (InterruptedException ex) {
             System.out.println("InterruptedException when resetting analysis window");
             ex.printStackTrace(System.out);
@@ -732,9 +735,11 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
-
+        if(btnOk.isDisabled()) {
+            return;
+        }
         try {
-            if (!hasCustomArea &&(isAreaCustom() || isAreaHighlightCustom())){
+            if (!hasCustomArea && (isAreaCustom() || isAreaHighlightCustom())) {
                 this.doOverlapped();
                 this.setTop("-9999px");
                 this.setLeft("-9999px");
@@ -762,20 +767,18 @@ public class AddToolComposer extends UtilityComposer {
             Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
             Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep + 1))) : null;
 
-
-
             if (!currentDiv.getZclass().contains("last")) {
                 currentDiv.setVisible(false);
                 nextDiv.setVisible(true);
 
-                 Image previousStepCompletedImg = (Image) getFellowIfAny("imgCompletedStep" + (currentStep));
-            previousStepCompletedImg.setVisible(true);
+                Image previousStepCompletedImg = (Image) getFellowIfAny("imgCompletedStep" + (currentStep));
+                previousStepCompletedImg.setVisible(true);
 
-            Label previousStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep));
-            previousStepLabel.setStyle("font-weight:normal");
+                Label previousStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep));
+                previousStepLabel.setStyle("font-weight:normal");
 
-            Label currentStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep + 1));
-            currentStepLabel.setStyle("font-weight:bold");
+                Label currentStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep + 1));
+                currentStepLabel.setStyle("font-weight:bold");
 
                 // now include the extra options for step 4
                 if (nextDiv != null) {
@@ -801,7 +804,6 @@ public class AddToolComposer extends UtilityComposer {
                 onFinish();
             }
 
-            //btnCancel.setLabel("< Back");
             btnBack.setDisabled(false);
             updateWindowTitle();
 
@@ -810,7 +812,13 @@ public class AddToolComposer extends UtilityComposer {
         }
 
         toggles();
+
+        fixFocus();
     }
+
+    void fixFocus(){
+        //set element of focus
+    };
 
     public void onLastPanel() {
     }
@@ -829,54 +837,56 @@ public class AddToolComposer extends UtilityComposer {
     public void loadMap(Event event) {
     }
 
-    public String getSelectedArea() {
+    public SelectedArea getSelectedArea() {
         //String area = rgArea.getSelectedItem().getValue();
         String area = rAreaSelected.getValue();
-
+        SelectedArea sa = null;
         try {
             if (area.equals("current")) {
-                area = getMapComposer().getViewArea();
+                sa = new SelectedArea(null, getMapComposer().getViewArea());
             } else if (area.equals("australia")) {
-                area = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
+                sa = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
             } else if (area.equals("world")) {
-                //area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
-                area = "POLYGON((-179.999 -84.999,-179.999 84.999,179.999 84.999,179.999 -84.999,-179.999 -84.999))";
+                sa = new SelectedArea(null, CommonData.WORLD_WKT);
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {
-                    if (area.equals(ml.getDisplayName())) {
-                        area = ml.getWKT();
+                    if (area.equals(ml.getWKT())) {
+                        sa = new SelectedArea(ml, null);
                         break;
                     }
                 }
+
+                //for 'all areas'
+                if(sa == null) {
+                    sa = new SelectedArea(null, area);
+                }
             }
-            //area = area.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace(")),((", ")),POLYGON((");
         } catch (Exception e) {
             System.out.println("Unable to retrieve selected area");
             e.printStackTrace(System.out);
         }
 
-        return area;
+        return sa;
     }
 
-    public String getSelectedAreaHighlight() {
+    public SelectedArea getSelectedAreaHighlight() {
         String area = rgAreaHighlight.getSelectedItem().getValue();
 
+        SelectedArea sa = null;
         try {
             if (area.equals("none")) {
-                area = null;
             } else if (area.equals("current")) {
-                area = getMapComposer().getViewArea();
+                sa = new SelectedArea(null, getMapComposer().getViewArea());
             } else if (area.equals("australia")) {
-                area = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
+                sa = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
             } else if (area.equals("world")) {
-                //area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
-                area = "POLYGON((-179.999 -84.999,-179.999 84.999,179.999 84.999,179.999 -84.999,-179.999 -84.999))";
+                sa = new SelectedArea(null, CommonData.WORLD_WKT);
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {
                     if (area.equals(ml.getDisplayName())) {
-                        area = ml.getWKT();
+                        sa = new SelectedArea(ml, null);
                         break;
                     }
                 }
@@ -886,112 +896,103 @@ public class AddToolComposer extends UtilityComposer {
             e.printStackTrace(System.out);
         }
 
-        return area;
+        return sa;
     }
 
-    public String getSelectedSpecies() {
+    public Query getSelectedSpecies() {
         return getSelectedSpecies(false);
     }
-    public String getSelectedSpecies(boolean mapspecies) {
-        String species = rgSpecies.getSelectedItem().getValue();
-        try {
-            System.out.println("getSelectedSpecies: " + species);
-            if (species.equals("allspecies")) {
-                species = "none";
-            } else if (species.equals("allmapped")) {
-                species = "";
-                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
 
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < layers.size(); i++) {
-                    MapLayer lyr = layers.get(i);
-                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
-                        sb.append(lyr.getMapLayerMetadata().getSpeciesLsid() + ",");
+    public Query getSelectedSpecies(boolean mapspecies) {
+        Query q = null;
+
+        String species = rgSpecies.getSelectedItem().getValue();
+
+        MapLayer ml = getMapComposer().getMapLayer(species);
+        if (ml != null) {
+            q = (Query) ml.getData("query");
+        } else {
+            try {
+                System.out.println("getSelectedSpecies: " + species);
+                if (species.equals("allspecies")) {
+                    species = "none";
+                    q = new SolrQuery(null, null, null, null, false);
+                } else if (species.equals("allmapped")) {
+
+                    //                species = "";
+                    //                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+                    //
+                    //                SolrQuery sq = new SolrQuery();
+                    //                for (int i = 0; i < layers.size(); i++) {
+                    //                    MapLayer lyr = layers.get(i);
+                    //                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
+                    //                        sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
+                    //                    }
+                    //                }
+                    //
+                    //                species = sq.getShortQuery();
+                    throw new UnsupportedOperationException("Not yet implemented");
+
+                } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
+                    if (searchSpeciesAuto.getSelectedItem() != null) {
+                        species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+                        q = new SolrQuery(species, null, null, null, false);
                     }
                 }
-                String lsids = sb.toString().substring(0, sb.length() - 1);
-
-                //get lsid to match
-                StringBuilder sbProcessUrl = new StringBuilder();
-                sbProcessUrl.append("/species/lsid/register");
-                sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
-
-                HttpClient client = new HttpClient();
-                PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-                int result = client.executeMethod(get);
-                String pid = get.getResponseBodyAsString();
-
-                if (result == 200 && pid != null && pid.length() > 0) {
-                    species = pid;
-                } else {
-                    //TODO: error
-                }
-
-            } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
-                if (searchSpeciesAuto.getSelectedItem() != null) {
-                    species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                }
+            } catch (Exception e) {
+                System.out.println("Unable to retrieve selected species");
+                e.printStackTrace(System.out);
             }
-        } catch (Exception e) {
-            System.out.println("Unable to retrieve selected species");
-            e.printStackTrace(System.out);
         }
 
-        return species;
+        return q;
     }
 
-    public String getSelectedSpeciesBk() {
-        String species = rgSpeciesBk.getSelectedItem().getValue();
-        try {
-            if (species.equals("none")) {
-                species = null;
-            } else if (species.equals("allspecies")) {
-                species = "none";
-            } else if (species.equals("allmapped")) {
-                species = "";
-                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+    public Query getSelectedSpeciesBk() {
+        Query q = null;
 
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < layers.size(); i++) {
-                    MapLayer lyr = layers.get(i);
-                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
-                        sb.append(lyr.getMapLayerMetadata().getSpeciesLsid() + ",");
+        String species = rgSpeciesBk.getSelectedItem().getValue();
+
+        MapLayer ml = getMapComposer().getMapLayer(species);
+        if (ml != null) {
+            q = (Query) ml.getData("query");
+        } else {
+            try {
+                if (species.equals("none")) {
+                    species = null;
+                } else if (species.equals("allspecies")) {
+                    species = "none";
+                } else if (species.equals("allmapped")) {
+                    //                species = "";
+                    //                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+                    //
+                    //                SolrQuery sq = new SolrQuery();
+                    //                for (int i = 0; i < layers.size(); i++) {
+                    //                    MapLayer lyr = layers.get(i);
+                    //                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
+                    //                        sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
+                    //                    }
+                    //                }
+                    //
+                    //                species = sq.getShortQuery();
+                    throw new UnsupportedOperationException("Not yet implemented");
+
+                } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
+                    if (bgSearchSpeciesAuto == null) {
+                        bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
+                    }
+                    if (bgSearchSpeciesAuto.getSelectedItem() != null) {
+                        species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+                        q = new SolrQuery(species, null, null, null, false);
                     }
                 }
-                String lsids = sb.toString().substring(0, sb.length() - 1);
-
-                //get lsid to match
-                StringBuilder sbProcessUrl = new StringBuilder();
-                sbProcessUrl.append("/species/lsid/register");
-                sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
-
-                HttpClient client = new HttpClient();
-                PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-                int result = client.executeMethod(get);
-                String pid = get.getResponseBodyAsString();
-
-                if (result == 200 && pid != null && pid.length() > 0) {
-                    species = pid;
-                } else {
-                    //TODO: error
-                }
-
-            } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
-                if (bgSearchSpeciesAuto == null) {
-                    bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
-                }
-                if (bgSearchSpeciesAuto.getSelectedItem() != null) {
-                    species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                }
+            } catch (Exception e) {
+                System.out.println("Unable to retrieve selected species");
+                e.printStackTrace(System.out);
             }
-        } catch (Exception e) {
-            System.out.println("Unable to retrieve selected species");
-            e.printStackTrace(System.out);
         }
 
-        return species;
+        return q;
     }
 
     public String getSelectedSpeciesName() {
@@ -999,22 +1000,23 @@ public class AddToolComposer extends UtilityComposer {
         try {
             if (species.equals("allspecies")) {
             } else if (species.equals("allmapped")) {
-                species = "";
-                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+//                species = "";
+//                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+//
+//                for (int i = 0; i < layers.size(); i++) {
+//                    MapLayer lyr = layers.get(i);
+//                    Radio rSp = new Radio(lyr.getDisplayName());
+//                    species += lyr.getMapLayerMetadata().getSpeciesLsid() + ",";
+//                }
+//                species = species.substring(0, species.length() - 1);
 
-                for (int i = 0; i < layers.size(); i++) {
-                    MapLayer lyr = layers.get(i);
-                    Radio rSp = new Radio(lyr.getDisplayName());
-                    species += lyr.getMapLayerMetadata().getSpeciesLsid() + ",";
-                }
-                species = species.substring(0, species.length() - 1);
+                species = "All mapped species";
             } else if (species.equals("search")) {
                 if (searchSpeciesAuto.getSelectedItem() != null) {
                     species = (String) (searchSpeciesAuto.getText());
                 }
             } else {
                 species = rgSpecies.getSelectedItem().getLabel();
-//                    species = species.substring(0,species.lastIndexOf(" "));
             }
         } catch (Exception e) {
             System.out.println("Unable to retrieve selected species");
@@ -1071,7 +1073,7 @@ public class AddToolComposer extends UtilityComposer {
             }
             btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
 
-            if(!btnOk.isDisabled()) {
+            if (!btnOk.isDisabled()) {
                 rgSpecies.setSelectedItem(rSpeciesSearch);
                 Clients.evalJavaScript("jq('#" + rSpeciesSearch.getUuid() + "-real').attr('checked', true);");
                 toggles();
@@ -1081,7 +1083,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     void setLsidBk(String lsidName) {
-        if(lsidName == null) {
+        if (lsidName == null) {
             return;
         }
         String[] s = lsidName.split("\t");
@@ -1117,7 +1119,7 @@ public class AddToolComposer extends UtilityComposer {
             rgSpecies.setSelectedItem(rSpeciesSearch);
             Clients.evalJavaScript("jq('#" + rSpeciesSearch.getUuid() + "-real').attr('checked', true);");
 
-            if(!btnOk.isDisabled()) {
+            if (!btnOk.isDisabled()) {
                 onClick$btnOk(null);
             }
         }
@@ -1138,7 +1140,7 @@ public class AddToolComposer extends UtilityComposer {
         btnOk.setDisabled(true);
         btnOk.setVisible(true);
 
-        if(fileUpload != null) {
+        if (fileUpload != null) {
             fileUpload.setVisible(false);
         }
 
@@ -1163,7 +1165,7 @@ public class AddToolComposer extends UtilityComposer {
         }
 
         if (currentDiv.getZclass().contains("species")) {
-        //if (divSpeciesSearch != null && divSpeciesSearch.isVisible()){
+            //if (divSpeciesSearch != null && divSpeciesSearch.isVisible()){
             btnOk.setDisabled(
                     divSpeciesSearch.isVisible()
                     && (searchSpeciesAuto.getSelectedItem().getValue() == null
@@ -1202,239 +1204,6 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onClick$btnClearSelection(Event event) {
         lbListLayers.clearSelection();
-    }
-
-    public void doFileUpload(UserData ud, Event event) {
-        UploadEvent ue = null;
-        if (event.getName().equals("onUpload")) {
-            ue = (UploadEvent) event;
-        } else if (event.getName().equals("onForward")) {
-            ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
-        }
-        if (ue == null) {
-            System.out.println("unable to upload file");
-            return;
-        } else {
-            System.out.println("fileUploaded()");
-        }
-        try {
-            Media m = ue.getMedia();
-            if (ud == null) {
-                ud = new UserData(m.getName());
-            }
-            if (ud.getName().trim().equals("")) {
-                ud.setName(m.getName());
-            }
-            ud.setFilename(m.getName());
-
-            if (ud.getName() == null || ud.getName().length() == 0) {
-                ud.setName(m.getName());
-            }
-//            if (ud.getDescription() == null || ud.getDescription().length() == 0) {
-//                ud.setDescription(date/time + #lsids or #coordinates);
-//            }
-
-            String name = ud.getName();
-
-            System.out.println("Got file '" + ud.getName() + "' with type '" + m.getContentType() + "'");
-
-            // check the content-type
-            // TODO: check why LB is sending 'application/spc' mime-type. remove from future use.
-            if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
-                loadUserPoints(ud, m.getReaderData());
-            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL) || m.getContentType().equalsIgnoreCase("application/spc")) {
-                byte[] csvdata = m.getByteData();
-                loadUserPoints(ud, new StringReader(new String(csvdata)));
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-
-    }
-    public void loadUserPoints(UserData ud, Reader data) {
-        try {
-            // Read a line in to check if it's a valid file
-            // if it throw's an error, then it's not a valid csv file
-            CSVReader reader = new CSVReader(data);
-
-            List userPoints = reader.readAll();
-
-            //if only one column treat it as a list of LSID's
-            if (((String[]) userPoints.get(0)).length == 1) {
-                continueLoadUserLSIDs(ud, data, reader, userPoints);
-                return;
-            }
-
-            boolean hasHeader = false;
-
-            // check if it has a header
-            String[] upHeader = (String[]) userPoints.get(0);
-            try {
-                Double d1 = new Double(upHeader[1]);
-                Double d2 = new Double(upHeader[2]);
-            } catch (Exception e) {
-                hasHeader = true;
-            }
-
-            System.out.println("hasHeader: " + hasHeader);
-
-            // check if the count of points goes over the threshold.
-            int sizeToCheck = (hasHeader) ? userPoints.size() - 1 : userPoints.size();
-            System.out.println("Checking user points size: " + sizeToCheck + " -> " + settingsSupplementary.getValueAsInt("max_record_count_upload"));
-            if (sizeToCheck > settingsSupplementary.getValueAsInt("max_record_count_upload")) {
-                getMapComposer().showMessage(settingsSupplementary.getValue("max_record_count_upload_message"));
-                return;
-            }
-
-            StringBuffer sbUIds = new StringBuffer();
-            StringBuffer sbUPoints = new StringBuffer();
-            int counter = 1;
-            for (int i = 0; i < userPoints.size(); i++) {
-                String[] up = (String[]) userPoints.get(i);
-                if (up.length > 2) {
-                    sbUIds.append(up[0] + "\n");
-                    sbUPoints.append(up[1] + "," + up[2] + "\n");
-                } else if (up.length > 1) {
-                    sbUIds.append(counter + "\n");
-                    sbUPoints.append(up[0] + "," + up[1] + "\n");
-                    counter++;
-                }
-            }
-
-            System.out.println("Loading points into alaspatial");
-            System.out.println(sbUPoints.toString());
-
-            // Post it to alaspatial app
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws/points/register"); // testurl
-            post.addRequestHeader("Accept", "text/plain");
-            post.addParameter("name", ud.getName());
-            post.addParameter("points", sbUPoints.toString());
-            post.addParameter("ids", sbUIds.toString());
-
-            int result = client.executeMethod(post);
-            String slist = post.getResponseBodyAsString();
-            //uploadLSID = slist + "\t" + ud.getName();
-
-            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + slist);
-
-            ud.setFeatureCount(userPoints.size());
-            Long did = new Long(slist);
-            System.out.println("lval: " + did.longValue());
-            ud.setUploadedTimeInMs(did.longValue());
-
-            ud.setDescription(ud.getFeatureCount() + " coordinates, " + ud.getDisplayTime());
-
-            String metadata = "";
-            metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " <br />\n";
-            metadata += "Description: " + ud.getDescription() + " <br />\n";
-            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
-
-            ud.setMetadata(metadata);
-            ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
-            ud.setLsid(slist);
-
-            // add it to the user session
-            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
-            if (htUserSpecies == null) {
-                htUserSpecies = new Hashtable<String, UserData>();
-            }
-            htUserSpecies.put(slist, ud);
-            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
-
-            // close the reader and data streams
-            reader.close();
-            data.close();
-
-            if(rSpeciesUploadSpecies.isSelected() || rSpeciesUploadLSID.isSelected()){
-                setLsid(slist + "\t" + ud.getName());
-            } else {
-                setLsidBk(slist + "\t" + ud.getName());
-            }
-        } catch (Exception e) {
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
-            e.printStackTrace(System.out);
-        }
-    }
-
-    public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
-        try {
-            //don't care if it has a header
-
-            // check if the count of LSIDs goes over the threshold (+1).
-            int sizeToCheck = userPoints.size();
-            System.out.println("Checking user LSIDs size: " + sizeToCheck + " -> " + 50);
-            if (sizeToCheck > 50) {
-                getMapComposer().showMessage("Cannot upload more than 50 LSIDs");
-                return;
-            }
-
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < userPoints.size(); i++) {
-                String[] up = (String[]) userPoints.get(i);
-                if (i > 0) {
-                    sb.append(",");
-                }
-                sb.append(up[0].replace(",", "").trim().toLowerCase());
-            }
-
-            String lsids = sb.toString();
-
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/species/lsid/register");
-            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
-
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
-            String pid = get.getResponseBodyAsString();
-
-            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + pid);
-
-            ud.setFeatureCount(userPoints.size());
-            Long did = new Long(pid);
-            System.out.println("lval: " + did.longValue());
-            ud.setUploadedTimeInMs(did.longValue());
-
-            ud.setDescription(ud.getFeatureCount() + " LSIDS, " + ud.getDisplayTime());
-
-            String metadata = "";
-            metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " <br />\n";
-            metadata += "Description: " + ud.getDescription() + " <br />\n";
-            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
-
-            ud.setMetadata(metadata);
-            ud.setSubType(LayerUtilities.SPECIES);
-            ud.setLsid(pid);
-
-            // add it to the user session
-            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
-            if (htUserSpecies == null) {
-                htUserSpecies = new Hashtable<String, UserData>();
-            }
-            htUserSpecies.put(pid, ud);
-            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
-
-            // close the reader and data streams
-            reader.close();
-            data.close();
-
-            if(rSpeciesUploadSpecies.isSelected() || rSpeciesUploadLSID.isSelected()){
-                setLsid(pid + "\t" + ud.getName());
-            } else {
-                setLsidBk(pid + "\t" + ud.getName());
-            }
-
-        } catch (Exception e) {
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
-            e.printStackTrace(System.out);
-        }
     }
 
     private boolean isAreaHighlightTab() {

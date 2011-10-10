@@ -6,6 +6,8 @@ package org.ala.spatial.util;
 
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
+import org.ala.spatial.data.LegendObject;
+import org.ala.spatial.data.Query;
 
 /**
  *
@@ -20,17 +22,14 @@ public class ScatterplotData implements Serializable {
     String pid;
     Rectangle2D.Double selection;
     boolean enabled;
-    String lsid;
+    Query query;
     String name;
-    String backgroundLsid;
-
+    Query backgroundQuery;
     //area info
-    String filterWkt;
-    String highlightWkt;
-
+    SelectedArea filterSa;
+    SelectedArea highlightSa;
     //grid
     boolean envGrid;
-
     //appearance
     public String colourMode = "-1";
     public int red = 0;
@@ -38,14 +37,25 @@ public class ScatterplotData implements Serializable {
     public int blue = 255;
     public int opacity = 100;
     public int size = 4;
+    //data
+    double[] points;
+    String[] series;
+    String[] ids;
+    double[][] data;
+    double[] seriesValues;
+    double[] backgroundPoints;
+    String[] backgroundSeries;
+    String[] backgroundIds;
+    double[][] backgroundData;
+    int missingCount;
+    LegendObject legend;
 
     public ScatterplotData() {
         enabled = false;
     }
 
-    public ScatterplotData(String lsid, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled
-            ,String backgroundLsid, String filterWkt, String highlightWkt, boolean envGrid) {
-        this.lsid = lsid;
+    public ScatterplotData(Query query, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled, Query backgroundQuery, SelectedArea filterSa, SelectedArea highlightSa, boolean envGrid) {
+        this.query = query;
         this.name = name;
         this.layer1 = layer1;
         this.layer1name = layer1name;
@@ -54,9 +64,9 @@ public class ScatterplotData implements Serializable {
         this.pid = pid;
         this.selection = selection;
         this.enabled = enabled;
-        this.backgroundLsid = backgroundLsid;
-        this.filterWkt = filterWkt;
-        this.highlightWkt = highlightWkt;
+        this.backgroundQuery = backgroundQuery;
+        this.filterSa = filterSa;
+        this.highlightSa = highlightSa;
         this.envGrid = envGrid;
     }
 
@@ -116,39 +126,127 @@ public class ScatterplotData implements Serializable {
         enabled = state;
     }
 
-    public void setLsid(String lsid) {
-        this.lsid = lsid;
-    }
-
     public void setSpeciesName(String name) {
         this.name = name;
-    }
-
-    public String getLsid() {
-        return lsid;
     }
 
     public String getSpeciesName() {
         return name;
     }
 
-    public String getBackgroundLsid() {
-        return backgroundLsid;
+    public Query getBackgroundQuery() {
+        return backgroundQuery;
     }
 
-    public String getFilterWkt() {
-        return filterWkt;
+    public SelectedArea getFilterSa() {
+        return filterSa;
     }
 
-    public String getHighlightWkt() {
-        return highlightWkt;
+    public SelectedArea getHighlightSa() {
+        return highlightSa;
     }
 
     public boolean isEnvGrid() {
         return envGrid;
     }
 
-    public void setBackgroundLsid(String backgroundLsid) {
-        this.backgroundLsid = backgroundLsid;
+    public void setBackgroundQuery(Query backgroundQuery) {
+        this.backgroundQuery = backgroundQuery;
+    }
+
+    public Query getQuery() {
+        return query;
+    }
+
+    public void setQuery(Query query) {
+        this.query = query;
+    }
+
+    public void setPoints(double[] points) {
+        this.points = points;
+    }
+
+    public double[] getPoints() {
+        return points;
+    }
+
+    public void setSeries(String[] series) {
+        this.series = series;
+    }
+
+    public String[] getSeries() {
+        return series;
+    }
+
+    public void setIds(String[] ids) {
+        this.ids = ids;
+    }
+
+    public String[] getIds() {
+        return ids;
+    }
+
+    public void setData(double[][] data) {
+        this.data = data;
+    }
+
+    public double[][] getData() {
+        return data;
+    }
+
+    public void setMissingCount(int missingCount) {
+        this.missingCount = missingCount;
+    }
+
+    public int getMissingCount() {
+        return missingCount;
+    }
+
+    public void setLegend(LegendObject legend) {
+        this.legend = legend;
+    }
+
+    public LegendObject getLegend() {
+        return legend;
+    }
+
+    public void setBackgroundPoints(double[] points) {
+        this.backgroundPoints = points;
+    }
+
+    public double[] getBackgroundPoints() {
+        return backgroundPoints;
+    }
+
+    public void setBackgroundSeries(String[] series) {
+        this.backgroundSeries = series;
+    }
+
+    public String[] getBackgroundSeries() {
+        return backgroundSeries;
+    }
+
+    public void setBackgroundIds(String[] ids) {
+        this.backgroundIds = ids;
+    }
+
+    public String[] getBackgroundIds() {
+        return backgroundIds;
+    }
+
+    public void setBackgroundData(double[][] data) {
+        this.backgroundData = data;
+    }
+
+    public double[][] getBackgroundData() {
+        return backgroundData;
+    }
+
+    public void setSeriesValues(double[] seriesValues) {
+        this.seriesValues = seriesValues;
+    }
+
+    public double[] getSeriesValues() {
+        return seriesValues;
     }
 }

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+  <class dynamic-insert="false" dynamic-update="false" lazy="true" mutable="true" name="au.org.emii.portal.menu.MapLayer" optimistic-lock="version" polymorphism="implicit" select-before-update="false">
+    <id name="mapLayerId" type="long">
+      <column name="mapLayerId"/>
+      <generator class="sequence">
+        <param name="sequence">userdata_id_seq</param>
+      </generator>
+    </id>
+    <property name="userMapId" type="long">
+      <column name="usermapid"/>
+    </property>
+    <property name="id" type="string">
+      <column name="id"/>
+    </property>
+    <property name="currentlyAnimated" type="boolean">
+      <column name="currentlyAnimated"/>
+    </property>
+    <property name="defaultStyleLegendUriSet" type="boolean">
+      <column name="defaultStyleLegendUriSet"/>
+    </property>
+    <property name="displayed" type="boolean">
+      <column name="displayed"/>
+    </property>
+    <property name="baseLayer" type="boolean">
+      <column name="baseLayer"/>
+    </property>
+    <property name="displayable" type="boolean">
+      <column name="displayable"/>
+    </property>
+    <property name="listedInActiveLayers" type="boolean">
+      <column name="listedInActiveLayers"/>
+    </property>
+    <property name="userDefinedLayer" type="boolean">
+      <column name="userDefinedLayer"/>
+    </property>
+    <property name="queryable" type="boolean">
+      <column name="queryable"/>
+    </property>
+    <property name="cql" type="string">
+      <column name="cql"/>
+    </property>
+    <property name="name" type="string">
+      <column name="name"/>
+    </property>
+    <property name="uri" type="string">
+      <column name="uri"/>
+    </property>
+    <property name="layer" type="string">
+      <column name="layer"/>
+    </property>
+    <property name="imageFormat" type="string">
+      <column name="imageFormat"/>
+    </property>
+    <property name="type" type="int">
+      <column name="type"/>
+    </property>
+    <property name="selectedStyleIndex" type="int">
+      <column name="selectedStyleIndex"/>
+    </property>
+    <property name="parentmaplayerid" type="long">
+      <column name="parentmaplayerid"/>
+    </property>
+    <property name="opacity" type="float">
+      <column name="opacity"/>
+    </property>
+  </class>
+</hibernate-mapping>

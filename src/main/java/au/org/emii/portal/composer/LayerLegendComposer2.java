@@ -8,14 +8,14 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.GeoJSONUtilities;
 import java.awt.Color;
-import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.ala.spatial.util.CommonData;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryField;
+import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.LegendMaker;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -69,7 +69,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     Comboitem ciColourUser; //User selected colour
     Label layerName;
     EventListener listener;
-    String lsid;
+    Query query;
     public Radiogroup pointtype;
     public Radio rPoint, rCluster, rGrid;
     MapLayer mapLayer;
@@ -200,13 +200,14 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
             legendHtml.removeChild(legendHtml.getFirstChild());
         }
 
+        //TODO: make work for query instead of lsid
         //1. register legend
-        String pid = registerPointsColourModeLegend(lsid, (String) cbColour.getSelectedItem().getValue());
+        //String pid = registerPointsColourModeLegend(lsid, (String) cbColour.getSelectedItem().getValue());
 
         //put any parameters into map
         Map map = new HashMap();
-        map.put("pid", pid);
-        map.put("lsid", lsid);
+        //map.put("pid", pid);
+        map.put("query", query);
         map.put("layer", "points layer");
         map.put("readonly", "true");
         map.put("colourmode", (String) cbColour.getSelectedItem().getValue());
@@ -219,14 +220,14 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void init(MapLayer ml, String lsid, int red, int green, int blue, int size, int opacity, String colourMode, int type, boolean uncertainty, EventListener listener) {
+    public void init(MapLayer ml, Query query, int red, int green, int blue, int size, int opacity, String colourMode, int type, boolean uncertainty, EventListener listener) {
         mapLayer = ml;
         inInit = true;
 
         txtLayerName.setValue(ml.getDisplayName());
         sLayerName = ml.getDisplayName();
 
-        this.lsid = lsid;
+        this.query = query;
 
         opacitySlider.setCurpos(opacity);
         onScroll$opacitySlider(null);
@@ -322,12 +323,10 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         if (pointtype.getSelectedItem() == rGrid) {
             colourMode = "grid";
         }
-        String pid = registerPointsColourModeLegend(lsid, colourMode);
 
         //put any parameters into map
         Map map = new HashMap();
-        map.put("pid", pid);
-        map.put("lsid", m.getMapLayerMetadata().getSpeciesLsid());
+        map.put("query", m.getData("query"));
         map.put("layer", "points layer");
         map.put("readonly", "true");
         map.put("colourmode", colourMode);
@@ -338,29 +337,6 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private String registerPointsColourModeLegend(String speciesLsid, String colourmode) {
-        try {
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/species/colourlegend?lsid="
-                    + URLEncoder.encode(speciesLsid.replace(".", "__"), "UTF-8")
-                    + "&colourmode="
-                    + URLEncoder.encode(colourmode, "UTF-8")); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-
-            int result = client.executeMethod(get);
-
-            //TODO: test results
-            String slist = get.getResponseBodyAsString();
-
-            return slist;
-        } catch (Exception ex) {
-            ex.printStackTrace(System.out);
-        }
-
-        return null;
     }
 
     public int getPointType() {
@@ -418,6 +394,9 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                     pointtype.setSelectedItem(rPoint);
                 }
 
+                //fill cbColour
+                setupCBColour(m);
+
                 updateComboBoxesColour(currentSelection);
 
                 if (currentSelection.getColourMode().equals("-1")) {
@@ -434,15 +413,14 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                     if (m.getGeoJSON() != null && m.getGeoJSON().length() > 0) {
                         uncertainty.setVisible(false);
                     } else {
-                        uncertainty.setVisible(true);
+                        uncertainty.setVisible(!(query instanceof UploadQuery));
                     }
                 }
 
                 colourChooser.setVisible(pointtype.getSelectedItem() != rGrid);
-
+                
                 if ((cbColour.getSelectedItem() != ciColourUser || pointtype.getSelectedItem() == rGrid)
-                        && m.getMapLayerMetadata() != null
-                        && m.getMapLayerMetadata().getSpeciesLsid() != null
+                        && m.isSpeciesLayer()
                         /*&& !m.isClustered()*/) {
                     legendHtml.setVisible(true);
                     legendImg.setVisible(false);
@@ -519,34 +497,15 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
             layerControls.setAttribute("activeLayerName", currentSelection.getName());
         }
 
-        if (m != null && m.getMapLayerMetadata() != null
-                && m.getMapLayerMetadata().getSpeciesLsid() != null) {
+        if (m != null && m.isSpeciesLayer()) {
             clusterpoints.setVisible(true);
-            cbColour.setDisabled(m.isClustered() || isUserUploadedCoordinates(m));
+            cbColour.setDisabled(m.isClustered());
         } else {
             clusterpoints.setVisible(false);
             cbColour.setDisabled(true);
         }
 
         uncertaintyLegend.setVisible(chkUncertaintySize.isChecked());
-    }
-
-     private boolean isUserUploadedCoordinates(MapLayer currentSelection) {
-        //check for user uploaded coordinates
-        boolean isUserUploadedCoordinates = false;
-        try {
-            String lsid = currentSelection.getMapLayerMetadata().getSpeciesLsid();
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer + "/species/colouroptions?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            if (slist != null && slist.length() == 0) {
-                isUserUploadedCoordinates = true;
-            }
-        } catch (Exception e) {
-        }
-        return isUserUploadedCoordinates;
     }
 
     public String getDisplayName() {
@@ -569,6 +528,27 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     public void onBlur$txtLayerName(Event event) {
         if(sLayerName.equals(txtLayerName.getValue())) {
             btnLayerName.setDisabled(true);
+        }
+    }
+
+    private void setupCBColour(MapLayer m) {
+        for(int i=0;i<cbColour.getItemCount();i++) {
+            if(cbColour.getItemAtIndex(i) != ciColourUser) {
+                cbColour.removeItemAt(i);
+                i--;
+            }
+        }
+
+        Query q = (Query) m.getData("query");
+//        Object [] o = (Object []) RecordsLookup.getData(q.getQ());
+//        ArrayList<QueryField> fields = (ArrayList<QueryField>) o[1];
+        if(q != null) {
+            ArrayList<QueryField> fields = q.getFacetFieldList();
+            for(int i=0;i<fields.size();i++) {
+                Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
+                ci.setValue(fields.get(i).getName());
+                ci.setParent(cbColour);
+            }
         }
     }
 }

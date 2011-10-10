@@ -26,20 +26,20 @@ import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Textbox;
-
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
+			
+	import com.vividsolutions.jts.geom.Geometry;
+	import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.util.Collection;
-import org.geotools.geometry.jts.JTSFactoryFinder;
-import org.geotools.kml.KML;
-import org.geotools.kml.KMLConfiguration;
-import org.geotools.xml.Encoder;
-import org.geotools.xml.Parser;
-import org.opengis.feature.simple.SimpleFeature;
+	import com.vividsolutions.jts.io.WKTWriter;
+	import java.io.FileInputStream;
+	import java.io.FileReader;
+	import java.util.Collection;
+	import org.geotools.geometry.jts.JTSFactoryFinder;
+	import org.geotools.kml.KML;
+	import org.geotools.kml.KMLConfiguration;
+	import org.geotools.xml.Encoder;
+	import org.geotools.xml.Parser;
+	import org.opengis.feature.simple.SimpleFeature;
 
 /**
  *
@@ -250,7 +250,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
             out.write(kmlstr);
             out.close();
 
-            String kmlurl = CommonData.satServer + "/output/layers/" + id + "/" + name;
+            //String kmlurl = CommonData.satServer + "/output/layers/" + id + "/" + name;
 
             //MapLayer mapLayer = getMapComposer().getGenericServiceAndBaseLayerSupport().createMapLayer("User-defined kml layer", txtLayerName.getValue(), "KML", kmlurl);
             //MapLayer mapLayer = getMapComposer().addKMLLayer(txtLayerName.getValue(), txtLayerName.getValue(), kmlurl);
@@ -277,9 +277,8 @@ public class AreaUploadShapefile extends AreaToolComposer {
             e.printStackTrace(System.out);
         }
     }
-   
-    private static String getKMLPolygonAsWKT(String kmldata) {
 
+    private static String getKMLPolygonAsWKT(String kmldata) {
         try {
             Parser parser = new Parser(new KMLConfiguration());
             SimpleFeature f = (SimpleFeature) parser.parse(new StringReader(kmldata));
@@ -289,7 +288,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
             SimpleFeature sf = null;
 
             //for <Placemark>
-            if(placemarks.size() > 0 && placemarks.size() > 0) {
+            if (placemarks.size() > 0 && placemarks.size() > 0) {
                 sf = (SimpleFeature) placemarks.iterator().next();
                 g = (Geometry) sf.getAttribute("Geometry");
             }
@@ -297,7 +296,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
             //for <Folder><Placemark>
             if (g == null && sf != null) {
                 placemarks = (Collection) sf.getAttribute("Feature");
-                if(placemarks != null && placemarks.size() > 0) {
+                if (placemarks != null && placemarks.size() > 0) {
                     g = (Geometry) ((SimpleFeature) placemarks.iterator().next()).getAttribute("Geometry");
                 }
             }
@@ -305,65 +304,13 @@ public class AreaUploadShapefile extends AreaToolComposer {
             if(g != null) {
                 WKTWriter wr = new WKTWriter();
                 String wkt = wr.write(g);
-                return wkt.replace(" (","(").replace(", ", ",").replace(") ", ")");
+                return wkt.replace(" (", "(").replace(", ", ",").replace(") ", ")");
             }
+
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
 
         return null;
-
-//        try {
-//
-//            String[] kml = kmldata.toLowerCase().split("polygon");
-//            int trueLength = (kml.length - 1) / 2;
-//
-//            StringBuilder sbKml = new StringBuilder();
-//            if (trueLength > 1) {
-//                sbKml.append("GEOMETRYCOLLECTION(");
-//            }
-//            for (int j = 1; j < kml.length; j += 2) {
-//                String k = kml[j];
-//                if (k.trim().equals("")) {
-//                    continue;
-//                }
-//                int pos1 = k.indexOf("coordinates") + 12;
-//                int pos2 = k.indexOf("/coordinates") - 1;
-//                String kcoords = k.substring(pos1, pos2);
-//
-//                String[] coords = kcoords.split(" ");
-//                if (coords.length == 1) {
-//                    coords = kcoords.split("\n");
-//                }
-//
-//                if (j > 1) {
-//                    sbKml.append(",");
-//                }
-//
-//                sbKml.append("POLYGON((");
-//                for (int i = 0; i < coords.length; i++) {
-//                    String c = coords[i];
-//                    String[] cs = c.split(",");
-//                    if (cs.length > 1) {
-//                        if (i > 0) {
-//                            sbKml.append(",");
-//                        }
-//                        sbKml.append(cs[0]).append(" ").append(cs[1]);
-//                    }
-//                }
-//                sbKml.append("))");
-//            }
-//
-//            if (trueLength > 1) {
-//                sbKml.append(")");
-//            }
-//
-//            return sbKml.toString();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace(System.out);
-//        }
-//
-//        return null;
     }
 }

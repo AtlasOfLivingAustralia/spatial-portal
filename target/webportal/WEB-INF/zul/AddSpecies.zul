@@ -1,0 +1,52 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?component name="uploadSpecies" macro-uri="/WEB-INF/zul/UploadSpecies.zul"?>
+<zk>
+    <window id="addspecieswindow" use="org.ala.spatial.analysis.web.AddSpeciesController"
+    apply="org.ala.spatial.analysis.web.AddSpeciesController" width="400px" height="300px" xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />        
+        <a sclass="fancybox-close" onClick="addspecieswindow.onClick$btnCancel(null)" style="display: inline" />
+        <n:a class="fancybox-help" n:onClick="loadHelp('species-add-to-map')" style="display: inline" />
+        <caption label="Add species" sclass="caption" />
+        <separator/>
+        <div style="margin-left:20px" >
+            <radiogroup id="rgAddSpecies">
+                <vbox height="143px">
+                    <radio id ="rAllSpecies" label="All species" />
+                    <radio id="rSearch" label="Search for a species by scientific or common name" />
+                    <vbox id="vboxSearch">
+                        <hbox>
+                            <separator orient="vertical" />
+                            <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="330px" >
+                                <comboitem label=""/>
+                            </combobox>
+                        </hbox>
+                        <separator/>
+                        <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
+                        <separator />
+                        <separator />
+                    </vbox>
+                    <radio id ="rUploadCoordinates" label="Upload coordinates" />
+                    <radio id ="rUploadLSIDs" label="Upload LSIDs" />
+                </vbox>
+            </radiogroup>
+            <separator />
+            <separator />
+            <separator />
+            <checkbox id="chkArea" label="Restrict to an area" visible="false"/>
+        </div>
+        <div sclass="wButtons">
+            <hbox>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                <button sclass="goButton" label="Next" id="btnOk" disabled="true" />
+            </hbox>
+        </div>
+        <separator />
+    </window>
+</zk>

@@ -59,15 +59,13 @@ public class ShapefileUtils {
                 WKTWriter wkt = new WKTWriter();
 
                 String wktString = wkt.write(geom);
-                wktString = wktString.replace(" (","(").replace(", ", ",").replace(") ",")");
-                
-//                wktString = wktString.replaceAll(", ", ",").replace(",(", ",POLYGON(").replace("),", "),");
-//
-//                if (wktString.indexOf(",POLYGON") > -1) {
-//                    wktString = wktString.replace("MULTIPOLYGON (((", "GEOMETRYCOLLECTION(POLYGON((");
-//                } else {
-//                    wktString = wktString.replace("MULTIPOLYGON (((", "POLYGON((").replace(")))", "))");
-//                }
+                wktString = wktString.replaceAll(", ", ",").replace(",(", ",POLYGON(").replace("),", "),");
+
+                if (wktString.indexOf(",POLYGON") > -1) {
+                    wktString = wktString.replace("MULTIPOLYGON (((", "GEOMETRYCOLLECTION(POLYGON((");
+                } else {
+                    wktString = wktString.replace("MULTIPOLYGON (((", "POLYGON((").replace(")))", "))");
+                }
 
                 //System.out.println(wkt.writeFormatted(geom));
                 //addWKTLayer(wkt.write(geom), feature.getID());
@@ -91,10 +89,8 @@ public class ShapefileUtils {
     public static void saveShapefile(File shpfile, String wktString) {
         try {
             String wkttype = "POLYGON";
-            if (wktString.contains("GEOMETRYCOLLECTION")) {
+            if (wktString.contains("GEOMETRYCOLLECTION") || wktString.contains("MULTIPOLYGON")) {
                 wkttype = "GEOMETRYCOLLECTION";
-            } else if(wktString.contains("MULTIPOLYGON")) {
-                wkttype = "MULTIPOLYGON";
             }
             final SimpleFeatureType TYPE = createFeatureType(wkttype);
 

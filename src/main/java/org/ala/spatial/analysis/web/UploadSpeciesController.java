@@ -1,24 +1,28 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
+import java.io.IOException;
 import org.zkoss.zul.Textbox;
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.LayersUtil;
+import org.ala.spatial.data.QueryField;
+import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.UserData;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.ala.spatial.wms.RecordsLookup;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -46,10 +50,8 @@ public class UploadSpeciesController extends UtilityComposer {
     Label tbInstructions;
     String uploadLSID;
     String uploadType = "normal";
-    
     private EventListener eventListener;
     private boolean addToMap;
-
     boolean defineArea;
 
     @Override
@@ -103,7 +105,7 @@ public class UploadSpeciesController extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         if (this.getParent().getId().equals("addtoolwindow")) {
-            AddToolComposer analysisParent = (AddToolComposer)this.getParent();
+            AddToolComposer analysisParent = (AddToolComposer) this.getParent();
             analysisParent.resetWindowFromSpeciesUpload("", "cancel");
         }
         this.detach();
@@ -172,33 +174,74 @@ public class UploadSpeciesController extends UtilityComposer {
                 ud.setDescription(m.getName());
             }
 
+            ud.setUploadedTimeInMs(System.currentTimeMillis());
+
             System.out.println("Got file '" + ud.getName() + "' with type '" + m.getContentType() + "'");
 
             // check the content-type
             // TODO: check why LB is sending 'application/spc' mime-type. remove from future use.
-            if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
+//            if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
+//                loadUserPoints(ud, m.getReaderData());
+//            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL) || m.getContentType().equalsIgnoreCase("application/spc")) {
+//                byte[] csvdata = m.getByteData();
+//                loadUserPoints(ud, new StringReader(new String(csvdata)));
+//            }
+
+            //forget content types, do 'try'
+            boolean loaded = false;
+            try {
                 loadUserPoints(ud, m.getReaderData());
-            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL) || m.getContentType().equalsIgnoreCase("application/spc")) {
-                byte[] csvdata = m.getByteData();
-                loadUserPoints(ud, new StringReader(new String(csvdata)));
+                loaded = true;
+                System.out.println("read type " + m.getContentType() + " with getReaderData");
+            } catch (Exception e) {
+                //e.printStackTrace();
+            }
+            if (!loaded) {
+                try {
+                    loadUserPoints(ud, new StringReader(new String(m.getByteData())));
+                    loaded = true;
+                    System.out.println("read type " + m.getContentType() + " with getByteData");
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+            if (!loaded) {
+                try {
+                    loadUserPoints(ud, new InputStreamReader(m.getStreamData()));
+                    loaded = true;
+                    System.out.println("read type " + m.getContentType() + " with getStreamData");
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+            if (!loaded) {
+                try {
+                    loadUserPoints(ud, new StringReader(m.getStringData()));
+                    loaded = true;
+                    System.out.println("read type " + m.getContentType() + " with getStringData");
+                } catch (Exception e) {
+                    //last one, report error
+                    getMapComposer().showMessage("Unable to load your file. Please try again.");
+                    System.out.println("unable to load user points: ");
+                    e.printStackTrace();
+                }
             }
 
             //call reset window on caller to perform refresh'
             if (this.getParent().getId().equals("addtoolwindow")) {
-                AddToolComposer analysisParent = (AddToolComposer)this.getParent();
+                AddToolComposer analysisParent = (AddToolComposer) this.getParent();
                 analysisParent.resetWindowFromSpeciesUpload(uploadLSID, uploadType);
-            }            
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    public void loadUserPoints(String name, Reader data) {
+    public void loadUserPoints(String name, Reader data) throws Exception {
         loadUserPoints(new UserData(name), data);
     }
 
-    public void loadUserPoints(UserData ud, Reader data) {
-        try {
+    public void loadUserPoints(UserData ud, Reader data) throws Exception {
             // Read a line in to check if it's a valid file
             // if it throw's an error, then it's not a valid csv file
             CSVReader reader = new CSVReader(data);
@@ -206,6 +249,9 @@ public class UploadSpeciesController extends UtilityComposer {
             List userPoints = reader.readAll();
 
             //if only one column treat it as a list of LSID's
+            if(userPoints.size() == 0) {
+                throw(new RuntimeException("no data in csv"));
+            }
             if (((String[]) userPoints.get(0)).length == 1) {
                 continueLoadUserLSIDs(ud, data, reader, userPoints);
                 return;
@@ -232,39 +278,59 @@ public class UploadSpeciesController extends UtilityComposer {
                 return;
             }
 
-            StringBuffer sbUIds = new StringBuffer();
-            StringBuffer sbUPoints = new StringBuffer();
+            ArrayList<QueryField> fields = new ArrayList<QueryField>();
+            if (upHeader.length == 2) {
+                //only points upload, add 'id' column at the start
+                fields.add(new QueryField("id"));
+                fields.get(0).ensureCapacity(sizeToCheck);
+            }
+            String[] defaultHeader = {"id", "longitude", "latitude"};
+            for (int i = 0; i < upHeader.length; i++) {
+                String name = upHeader[i];
+                if (upHeader.length == 2 && i < 2) {
+                    name = defaultHeader[i + 1];
+                } else if (upHeader.length > 2 && i < 3) {
+                    name = defaultHeader[i];
+                }
+                fields.add(new QueryField(name));
+                fields.get(fields.size() - 1).ensureCapacity(sizeToCheck);
+            }
+
+            double[] points = new double[sizeToCheck * 2];
             int counter = 1;
-            for (int i = 0; i < userPoints.size(); i++) {
-                String[] up = (String[]) userPoints.get(i);
+            int hSize = hasHeader ? 1 : 0;
+            for (int i = 0; i < userPoints.size() - hSize; i++) {
+                String[] up = (String[]) userPoints.get(i + hSize);
                 if (up.length > 2) {
-                    sbUIds.append("user").append(ud.getName()).append("-").append(up[0]).append("\n");
-                    sbUPoints.append(up[1]).append(",").append(up[2]).append("\n");
+                    for (int j = 0; j < up.length && j < fields.size(); j++) {
+                        fields.get(j).add(up[j]);
+                    }
+                    try {
+                        points[i * 2] = Double.parseDouble(up[1]);
+                        points[i * 2 + 1] = Double.parseDouble(up[2]);
+                    } catch (Exception e) {
+                    }
                 } else if (up.length > 1) {
-                    sbUIds.append("user").append(ud.getName()).append("-").append(counter).append("\n");
-                    sbUPoints.append(up[0]).append(",").append(up[1]).append("\n");
+                    fields.get(0).add(ud.getName() + "-" + counter);
+                    for (int j = 0; j < up.length && j < fields.size(); j++) {
+                        fields.get(j + 1).add(up[j]);
+                    }
+                    try {
+                        points[i * 2] = Double.parseDouble(up[0]);
+                        points[i * 2 + 1] = Double.parseDouble(up[1]);
+                    } catch (Exception e) {
+                    }
                     counter++;
                 }
             }
 
-            // Post it to alaspatial app
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws/points/register"); // testurl
-            post.addRequestHeader("Accept", "text/plain");
-            post.addParameter("name", ud.getName());
-            post.addParameter("points", sbUPoints.toString());
-            post.addParameter("ids", sbUIds.toString());
+            for (int i = 0; i < fields.size(); i++) {
+                fields.get(i).store();
+            }
 
-            int result = client.executeMethod(post);
-            String slist = post.getResponseBodyAsString();
-            uploadLSID = slist + "\t" + ud.getName();
+            String pid = String.valueOf(System.currentTimeMillis());
 
-            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + slist);
-
-            ud.setFeatureCount(userPoints.size());
-            Long did = new Long(slist);
-            System.out.println("lval: " + did.longValue());
-            ud.setUploadedTimeInMs(did.longValue());
+            ud.setFeatureCount(userPoints.size() - hSize);
 
             String metadata = "";
             metadata += "User uploaded points \n";
@@ -273,23 +339,46 @@ public class UploadSpeciesController extends UtilityComposer {
             metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
 
+            ud.setMetadata(metadata);
+            ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
+            ud.setLsid(pid);
+
+            Query q = new UploadQuery(pid, ud.getName(), points, fields, metadata);
+            ud.setQuery(q);
+            RecordsLookup.putData(pid, points, fields, metadata);
+
+            // add it to the user session
+            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
+            if (htUserSpecies == null) {
+                htUserSpecies = new Hashtable<String, UserData>();
+            }
+            htUserSpecies.put(pid, ud);
+            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
+
             if (addToMap) {
+                if (!defineArea) {
+                    //do default sampling now
+                    if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
+                        q.sample(CommonData.getDefaultUploadSamplingFields());
+                        ((UploadQuery) q).resetOriginalFieldCount(-1);
+                    }
+                }
                 MapLayer ml = null;
                 if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
                     //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
-                    if(defineArea) {
-                        mapFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
+                    if (defineArea) {
+                        mapFilterGrid(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
                     } else {
-                        ml = getMapComposer().mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null);
+                        ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1);
                     }
                 } else {
-                    if(defineArea) {
-                        mapFilter(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
+                    if (defineArea) {
+                        mapFilter(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
                     } else {
-                        ml = getMapComposer().mapSpeciesByLsidFilter(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null);
+                        ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1);
                     }
                 }
-                if(ml != null) {
+                if (ml != null) {
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();
@@ -300,35 +389,13 @@ public class UploadSpeciesController extends UtilityComposer {
                 }
             }
 
-            ud.setMetadata(metadata);
-            ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
-            ud.setLsid(slist);
-
-            // add it to the user session
-            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
-            if (htUserSpecies == null) {
-                htUserSpecies = new Hashtable<String, UserData>();
-            }
-            htUserSpecies.put(slist, ud);
-            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
-
             if (eventListener != null) {
-                eventListener.onEvent(new Event("", null, slist + "\t" + ud.getName()));
+                eventListener.onEvent(new Event("", null, pid + "\t" + ud.getName()));
             }
 
             // close the reader and data streams
             reader.close();
             data.close();
-
-            Clients.evalJavaScript("appendUploadSpeciesMetadata('"+ud.getName()+"','"+metadata.replaceAll("\n", "_n_")+"');");
-
-        } catch (Exception e) {
-
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
-
-            System.out.println("unable to load user points: ");
-            e.printStackTrace(System.out);
-        }
     }
 
     public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
@@ -354,24 +421,9 @@ public class UploadSpeciesController extends UtilityComposer {
 
             String lsids = sb.toString();
 
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/species/lsid/register");
-            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
-
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
-            String pid = get.getResponseBodyAsString();
-
-            uploadLSID = pid + "\t" + ud.getName();
-
-            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + pid);
+            String pid = String.valueOf(System.currentTimeMillis());
 
             ud.setFeatureCount(userPoints.size());
-            Long did = new Long(pid);
-            System.out.println("lval: " + did.longValue());
-            ud.setUploadedTimeInMs(did.longValue());
 
             String metadata = "";
             metadata += "User uploaded points \n";
@@ -380,23 +432,12 @@ public class UploadSpeciesController extends UtilityComposer {
             metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
 
-            if (addToMap) {
-                if(defineArea) {
-                    mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, metadata);
-                } else {
-                    MapLayer ml = getMapComposer().mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, null);
-                    MapLayerMetadata md = ml.getMapLayerMetadata();
-                    if (md == null) {
-                        md = new MapLayerMetadata();
-                        ml.setMapLayerMetadata(md);
-                    }
-                    md.setMoreInfo(metadata);
-                }                
-            }
-
             ud.setMetadata(metadata);
             ud.setSubType(LayerUtilities.SPECIES);
             ud.setLsid(pid);
+
+            Query q = new SolrQuery(lsids, null, null, null, true);
+            ud.setQuery(q);
 
             // add it to the user session
             Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
@@ -406,10 +447,24 @@ public class UploadSpeciesController extends UtilityComposer {
             htUserSpecies.put(pid, ud);
             getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
 
+            if (addToMap) {
+                if (defineArea) {
+                    mapSpeciesByLsid(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, metadata);
+                } else {
+                    MapLayer ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, null, -1);
+                    MapLayerMetadata md = ml.getMapLayerMetadata();
+                    if (md == null) {
+                        md = new MapLayerMetadata();
+                        ml.setMapLayerMetadata(md);
+                    }
+                    md.setMoreInfo(metadata);
+                }
+            }
+
             if (eventListener != null) {
                 eventListener.onEvent(new Event("", null, pid + "\t" + ud.getName()));
             }
-            
+
             // close the reader and data streams
             reader.close();
             data.close();
@@ -425,11 +480,11 @@ public class UploadSpeciesController extends UtilityComposer {
         this.eventListener = eventListener;
     }
 
-    void setTbInstructions(String instructions){
+    void setTbInstructions(String instructions) {
         tbInstructions.setValue(instructions);
     }
 
-    void setUploadType(String uploadType){
+    void setUploadType(String uploadType) {
         this.uploadType = uploadType;
     }
 
@@ -437,19 +492,9 @@ public class UploadSpeciesController extends UtilityComposer {
         this.defineArea = defineArea;
     }
 
-//    void map(String lsid, String rank, String taxon) {
-//        AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-//        window.setSpeciesParams(lsid, rank, taxon);
-//        try {
-//            window.doModal();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    private void mapFilterGrid(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
+    private void mapFilterGrid(Query q, String name, String s, int featureCount, int type, String metadata, String rank) {
         AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-        window.setSpeciesFilterGridParams(lsid, name, s, featureCount, type, metadata, rank);
+        window.setSpeciesFilterGridParams(q, name, s, featureCount, type, metadata, rank);
         window.loadAreaLayers();
         try {
             window.doModal();
@@ -458,9 +503,9 @@ public class UploadSpeciesController extends UtilityComposer {
         }
     }
 
-    private void mapFilter(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
+    private void mapFilter(Query q, String name, String s, int featureCount, int type, String metadata, String rank) {
         AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-        window.setSpeciesFilterParams(lsid, name, s, featureCount, type, metadata, rank);
+        window.setSpeciesFilterParams(q, name, s, featureCount, type, metadata, rank);
         window.loadAreaLayers();
         try {
             window.doModal();
@@ -469,9 +514,9 @@ public class UploadSpeciesController extends UtilityComposer {
         }
     }
 
-    private void mapSpeciesByLsid(String lsid, String name, String s, int featureCount, int type, String metadata) {
+    private void mapSpeciesByLsid(Query q, String name, String s, int featureCount, int type, String metadata) {
         AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-        window.setSpeciesByLsidParams(lsid, name, s, featureCount, type, metadata);
+        window.setSpeciesByLsidParams(q, name, s, featureCount, type, metadata);
         window.loadAreaLayers();
         try {
             window.doModal();
