@@ -58,6 +58,7 @@ public class AreaMapPolygon extends AreaToolComposer {
     }
 
     public void onClick$btnOk(Event event) {
+        getMapComposer().getMapLayer(layerName).setDisplayName(txtLayerName.getValue());
         ok = true;
         Clients.evalJavaScript("mapFrame.toggleClickHandler(true);");
         this.detach();
@@ -200,7 +201,11 @@ public class AreaMapPolygon extends AreaToolComposer {
                             searchComplete = true;
                             displayGeom.setValue(wkt);
                             //mc.removeFromList(mc.getMapLayer("Active Area"));
+                            System.out.println("**********************************");
+                            System.out.println("setting layerName from " + layerName);
                             layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
+                            System.out.println("to " + layerName);
+                            System.out.println("**********************************");
                             MapLayer mapLayer;
                             if (displayAsWms.isChecked()) {
                                 String url = CommonData.geoServer

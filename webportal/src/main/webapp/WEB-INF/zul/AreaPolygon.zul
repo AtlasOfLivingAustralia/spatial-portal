@@ -16,15 +16,16 @@
 
         <caption label="Draw Polygon" />
         <vbox sclass="embedWindowsContent">
+            <label sclass="wordwrap" value="1. Name the new polygon layer." />
+            <label sclass="wordwrap" value="2. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button." />
+            <label sclass="wordwrap" value="3. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area." />
+            <separator />
             <div>
                 <hbox width="100%">
                     <label value="Area name" sclass="h3" />
                     <textbox id="txtLayerName" width="250px"/>
                 </hbox>
             </div>
-            <separator />
-            <label sclass="wordwrap" value="1. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button." />
-            <label sclass="wordwrap" value="2. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area." />
             <separator />
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
             <div sclass="embedWindowsButtons">
