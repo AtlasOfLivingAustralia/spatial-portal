@@ -47,12 +47,13 @@ public class ObjectsStatsGenerator {
         }
 
         Connection c = getConnection();
-        String count_sql = "select count(*) as cnt from objects where bbox is null or area_km is null";
+        //String count_sql = "select count(*) as cnt from objects where bbox is null or area_km is null";
+        String count_sql = "select count(*) as cnt from objects where area_km is null and st_geometrytype(the_geom) <> 'ST_Point' ";
         int count = 0;
         try {
             Statement s = c.createStatement();
             ResultSet rs = s.executeQuery(count_sql);
-            while (rs.next()) {
+             while (rs.next()) {
                 count = rs.getInt("cnt");
             }
         } catch (Exception e) {
@@ -63,7 +64,7 @@ public class ObjectsStatsGenerator {
         System.out.println("Breaking into " + iter + " iterations");
         for (int i = 0; i <= iter; i++) {
             long iterStart = System.currentTimeMillis();
-            updateBbox();
+          //  updateBbox();
             updateArea();
             System.out.println("iteration " + i + " completed after " + (System.currentTimeMillis() - iterStart) + "ms");
             System.out.println("total time taken is " + (System.currentTimeMillis() - start) + "ms");
@@ -95,6 +96,7 @@ public class ObjectsStatsGenerator {
             cdl.await();
 
             for (int j = 0; j < CONCURRENT_THREADS; j++) {
+                threads[j].s.close();
                 threads[j].interrupt();
             }
             return;
@@ -108,14 +110,14 @@ public class ObjectsStatsGenerator {
 
         try {
             Connection conn = getConnection();
-            String sql = "SELECT pid from objects where area_km is null limit 200000;";
+            String sql = "SELECT pid from objects where area_km is null and st_geometrytype(the_geom) <> 'Point' limit 200000;";
             System.out.println("loading area_km ...");
             Statement s1 = conn.createStatement();
             ResultSet rs1 = s1.executeQuery(sql);
 
-            LinkedBlockingQueue<String[]> data = new LinkedBlockingQueue<String[]>();
+            LinkedBlockingQueue<String> data = new LinkedBlockingQueue<String>();
             while (rs1.next()) {
-                data.put(new String[]{rs1.getString("pid")});
+                data.put(rs1.getString("pid"));
             }
 
             CountDownLatch cdl = new CountDownLatch(data.size());
@@ -129,8 +131,12 @@ public class ObjectsStatsGenerator {
             cdl.await();
 
             for (int j = 0; j < CONCURRENT_THREADS; j++) {
+                threads[j].s.close();
                 threads[j].interrupt();
             }
+            rs1.close();
+            s1.close();
+            conn.close();
             return;
         } catch (Exception e) {
             e.printStackTrace();
@@ -186,10 +192,10 @@ class BboxThread extends Thread {
 class AreaThread extends Thread {
 
     Statement s;
-    LinkedBlockingQueue<String[]> lbq;
+    LinkedBlockingQueue<String> lbq;
     CountDownLatch cdl;
 
-    public AreaThread(LinkedBlockingQueue<String[]> lbq, CountDownLatch cdl, Statement s) {
+    public AreaThread(LinkedBlockingQueue<String> lbq, CountDownLatch cdl, Statement s) {
         this.s = s;
         this.cdl = cdl;
         this.lbq = lbq;
@@ -200,10 +206,10 @@ class AreaThread extends Thread {
         try {
             while (true) {
                 String pid = "";
-                double area = 0;
+                double area = 0;                
                 try {
-                    String[] data = lbq.take();
-                    pid = data[0];
+                    String data = lbq.take();
+                    pid = data;
                     String sql = "SELECT ST_AsText(the_geom) as wkt from objects where pid = '" + pid + "';";
                     ResultSet rs = s.executeQuery(sql);
                     String wkt = "";
@@ -211,11 +217,14 @@ class AreaThread extends Thread {
                         wkt = rs.getString("wkt");
                     }
                     
-                    area = TabulationUtil.calculateArea(wkt) / 1000;
+                    area = TabulationUtil.calculateArea(wkt) / 1000.0 / 1000.0;
 
                     sql = "UPDATE objects SET area_km = " + area + " WHERE pid='" + pid + "'";
                     int update = s.executeUpdate(sql);
-                    
+                    System.out.println(pid + " has area " + area + " sq km");
+                    rs.close();
+                }catch (InterruptedException e) {
+                    break;
                 } catch (Exception e) {
                     System.out.println("ERROR PROCESSING PID " + pid);
                     System.out.println("AREA CALCULATION IS " + area);
