@@ -13,11 +13,15 @@ public class IntersectionFile {
     String name;
     String filePath;
     String shapeFields;
+    String layerName;
+    String fieldId;
 
-    public IntersectionFile(String name, String filePath, String shapeFields) {
+    public IntersectionFile(String name, String filePath, String shapeFields, String layerName, String fieldId) {
         this.name = name.trim();
         this.filePath = filePath.trim();
         this.shapeFields = (shapeFields == null)?null:shapeFields.trim();
+        this.layerName = layerName;
+        this.fieldId = fieldId;
     }
 
     public void setName(String name) {
@@ -42,6 +46,22 @@ public class IntersectionFile {
 
     public String getShapeFields() {
         return shapeFields;
+    }
+
+    public void setLayerName(String layerName) {
+        this.layerName = layerName;
+    }
+
+    public String getLayerName() {
+        return layerName;
+    }
+
+    public void setFieldId(String fieldId) {
+        this.fieldId = fieldId;
+    }
+
+    public String getFieldId() {
+        return fieldId;
     }
 
 }

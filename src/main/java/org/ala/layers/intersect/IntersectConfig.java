@@ -15,6 +15,7 @@ import org.ala.layers.dao.FieldDAO;
 import org.ala.layers.dao.LayerDAO;
 import org.ala.layers.dto.Field;
 import org.ala.layers.dto.IntersectionFile;
+import org.ala.layers.dto.Layer;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
@@ -144,26 +145,41 @@ public class IntersectConfig {
             //request from url
             JSONArray layers = JSONArray.fromObject(getUrl(layerIndexUrl + "/layers"));
             HashMap<String, String> layerPathOrig = new HashMap<String, String>();
+            HashMap<String, String> layerName = new HashMap<String, String>();
             for (int i = 0; i < layers.size(); i++) {
                 layerPathOrig.put(layers.getJSONObject(i).getString("id"),
                         layers.getJSONObject(i).getString("path_orig"));
+                layerPathOrig.put(layers.getJSONObject(i).getString("id"),
+                        layers.getJSONObject(i).getString("name"));
             }
 
             JSONArray fields = JSONArray.fromObject(getUrl(layerIndexUrl + "/fieldsdb"));
             for (int i = 0; i < fields.size(); i++) {
                 JSONObject jo = fields.getJSONObject(i);
                 intersectionFiles.put(jo.getString("id"),
-                        new IntersectionFile(jo.getString("id"),
+                        new IntersectionFile(jo.getString("name"),
                         layerFilesPath + layerPathOrig.get(jo.getString("spid")),
-                        (jo.containsKey("sname") ? jo.getString("sname") : null)));
+                        (jo.containsKey("sname") ? jo.getString("sname") : null),
+                        layerName.get(jo.getString("spid")),
+                        jo.getString("id")));
+                //also register it under the layer name
+                intersectionFiles.put(layerName.get(jo.getString("spid")),
+                        new IntersectionFile(jo.getString("name"),
+                        layerFilesPath + layerPathOrig.get(jo.getString("spid")),
+                        (jo.containsKey("sname") ? jo.getString("sname") : null),
+                        layerName.get(jo.getString("spid")),
+                        jo.getString("id")));
             }
         } else {
             for (Field f : fieldDao.getFields()) {
                 if (f.isIndb()) {
+                    Layer layer = layerDao.getLayerById(Integer.parseInt(f.getSpid()));
                     intersectionFiles.put(f.getId(),
-                            new IntersectionFile(f.getId(),
-                            getLayerFilesPath() + layerDao.getLayerById(Integer.parseInt(f.getSpid())).getPath_orig(),
-                            f.getSname()));
+                            new IntersectionFile(f.getName(),
+                            getLayerFilesPath() + layer.getPath_orig(),
+                            f.getSname(),
+                            layer.getName(),
+                            f.getId()));
                 }
             }
         }
@@ -204,7 +220,7 @@ public class IntersectConfig {
             columns = new String[countCL];
             int i = 0;
             for (IntersectionFile f : intersectionFiles.values()) {
-                if (f.getName().startsWith("cl")) {
+                if (f.getFieldId().startsWith("cl")) {
                     layers[i] = f.getFilePath();
                     columns[i] = f.getShapeFields();
                     i++;
@@ -215,6 +231,43 @@ public class IntersectConfig {
                 layers[i] = getIntersectionFile(fields[i].trim()).getFilePath();
                 columns[i] = getIntersectionFile(fields[i].trim()).getShapeFields();
             }
+        }
+
+        if (shapeFileCache == null) {
+            shapeFileCache = new SimpleShapeFileCache(layers, columns);
+        } else {
+            shapeFileCache.update(layers, columns);
+        }
+    }
+
+    /**
+     * Add shape files to the shape file cache.
+     *
+     * @param fieldIds comma separated fieldIds.  Must be cl fields.
+     */
+    public void addToShapeFileCache(String fieldIds) {
+        if(preloadedShapeFiles != null) {
+            fieldIds += "," + preloadedShapeFiles;
+        }
+        String[] fields = fieldIds.split(",");
+
+        //requres readLayerInfo() first
+        String[] layers = new String[fields.length];
+        String[] columns = new String[fields.length];
+
+        int pos = 0;
+        for (int i = 0; i < fields.length; i++) {
+            try {
+                layers[pos] = getIntersectionFile(fields[i].trim()).getFilePath();
+                columns[pos] = getIntersectionFile(fields[i].trim()).getShapeFields();
+                pos++;
+            } catch (Exception e) {
+                logger.error("problem adding shape file to cache for field: " + fields[i], e);
+            }
+        }
+        if(pos < layers.length) {
+            layers = java.util.Arrays.copyOf(layers, pos);
+            columns = java.util.Arrays.copyOf(columns, pos);
         }
 
         if (shapeFileCache == null) {

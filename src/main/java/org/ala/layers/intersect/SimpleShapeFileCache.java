@@ -25,22 +25,22 @@ public class SimpleShapeFileCache {
     }
 
     public void update(String[] layers, String[] columns) {
-        //remove layers no longer required
-        ArrayList<String> toRemove = new ArrayList<String>();
-        for (String key : cache.keySet()) {
-            int j = 0;
-            for (j = 0; j < layers.length; j++) {
-                if (key.equals(layers[j])) {
-                    break;
-                }
-            }
-            if (j == layers.length) {
-                toRemove.add(key);
-            }
-        }
-        for (String key : toRemove) {
-            cache.remove(key);
-        }
+//        //remove layers no longer required
+//        ArrayList<String> toRemove = new ArrayList<String>();
+//        for (String key : cache.keySet()) {
+//            int j = 0;
+//            for (j = 0; j < layers.length; j++) {
+//                if (key.equals(layers[j])) {
+//                    break;
+//                }
+//            }
+//            if (j == layers.length) {
+//                toRemove.add(key);
+//            }
+//        }
+//        for (String key : toRemove) {
+//            cache.remove(key);
+//        }
 
         //add layers not loaded
         System.out.println("start caching shape files");

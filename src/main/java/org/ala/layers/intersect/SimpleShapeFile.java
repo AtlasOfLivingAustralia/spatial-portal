@@ -269,6 +269,16 @@ public class SimpleShapeFile extends Object implements Serializable {
         return target;
     }
 
+    public String intersect(double longitude, double latitude) {
+        int idx = shapesreference.intersection(longitude, latitude);
+
+        if(idx >= 0 && idx < singleColumn.length) {
+            return singleLookup[singleColumn[idx]];
+        }
+
+        return null;
+    }
+
     /**
      * gets shape header as String
      * @return String

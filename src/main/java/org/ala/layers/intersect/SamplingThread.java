@@ -60,7 +60,7 @@ public class SamplingThread extends Thread {
     public void sample(double[][] points, IntersectionFile intersectionFile, StringBuilder sb) {
         String shapeFieldName = intersectionFile.getShapeFields();
         String fileName = intersectionFile.getFilePath();
-        String name = intersectionFile.getName();
+        String name = intersectionFile.getFieldId();
         long start = System.currentTimeMillis();
         logger.info("start sampling " + points.length + " points in " + name + ":" + fileName + (shapeFieldName == null ? "" : " field: " + shapeFieldName));
         if (shapeFieldName != null) {

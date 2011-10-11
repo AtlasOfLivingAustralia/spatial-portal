@@ -15,6 +15,8 @@
 package org.ala.layers.dao;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Vector;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.intersect.IntersectConfig;
 
@@ -23,6 +25,31 @@ import org.ala.layers.intersect.IntersectConfig;
  * @author adam
  */
 public interface LayerIntersectDAO {
+
+    /**
+     * Sampling one point
+     *
+     * Must have local access to layer files and db connection.
+     *
+     * @param fieldId one field table id for intersection with the coordinates
+     * @param longitude longitude as double
+     * @param latitude latitude as double
+     * @return value of the intersection as String or null if no value available.
+     */
+    public String sampling(String fieldId, double longitude, double latitude);
+
+    /**
+     * Sampling one point, multiple fields.  Full result returned
+     *
+     * Must have local access to layer files and db connection.
+     *
+     *  @param fieldIds fields to intersect as field table ids in comma separated String.  e.g. "cl22,cl23"
+     * @param longitude longitude as double
+     * @param latitude latitude as double
+     * @return full result of sampling returned as Vector containing one Map for each fieldId.
+     * Map objects contain, "fieldid", "value", "layername", and in addition for shape results "pid", "description"
+     */
+    public Vector samplingFull(String fieldIds, double longitude, double latitude);
 
     /**
      * Sampling
