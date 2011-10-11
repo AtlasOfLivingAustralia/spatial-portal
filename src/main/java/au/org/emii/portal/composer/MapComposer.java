@@ -232,7 +232,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
                     envString += ";name:circle;size:" + selectedLayer.getSizeVal();
                     envString += ";opacity:" + selectedLayer.getOpacity();
-                    if (selectedLayer.getHighlight() != null && selectedLayer.getHighlight().length() > 0) {
+                    if (selectedLayer.getHighlight() != null && selectedLayer.getHighlight().length() > 0
+                            && !selectedLayer.getColourMode().equals("grid")) {
                         envString += ";sel:" + selectedLayer.getHighlight();
                     } else if (selectedLayer.getSizeUncertain()) {
                         envString += ";uncertainty:1";
@@ -1239,8 +1240,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
                     System.out.println("query: " + sb.toString());
                     try {
-                        Query q = new SolrQuery(null, null, sb.toString(), null, true);
-                        ml = mapSpecies(q, q.getName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, -1);
+                        SolrQuery q = new SolrQuery(null, null, sb.toString(), null, true);
+
+                        if(getMapLayerDisplayName(q.getSolrName()) == null) {
+                            List<Double> bbox = q.getBBox();
+                            String script = "map.zoomToExtent(new OpenLayers.Bounds("
+                                + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")"
+                                + ".transform("
+                                + "  new OpenLayers.Projection('EPSG:4326'),"
+                                + "  map.getProjectionObject()));";
+                            openLayersJavascript.setAdditionalScript(script);
+
+                            ml = mapSpecies(q, q.getSolrName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, -1);
+                        }
+                        
                     } catch (Exception e) {
                     }
                     showLayerTab = true;
@@ -2431,6 +2444,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public String getNextAreaLayerName(String layerPrefix) {
+        if(getMapLayer(layerPrefix) == null && getMapLayerDisplayName(layerPrefix) == null) {
+            return layerPrefix;
+        }
+
         layerPrefix += " ";
         int i = 1;
         while (getMapLayer(layerPrefix + i) != null

@@ -44,6 +44,7 @@ public class SolrQuery implements Query, Serializable {
     static final String SPECIES_LIST_SERVICE_CSV = "/webportal/species.csv?";
     static final String DOWNLOAD_URL = "/occurrences/download?";
     static final String DATA_PROVIDERS_SERVICE = "/webportal/dataProviders?";
+    static final String QUERY_TITLE_URL = "/occurrences/search?";
     static final String LEGEND_SERVICE_CSV = "/webportal/legend?";
     static final String BOUNDING_BOX_CSV = "/webportal/bbox?";
     static final String INDEXED_FIELDS_LIST = "/indexed/fields?";
@@ -84,6 +85,7 @@ public class SolrQuery implements Query, Serializable {
     int speciesCount = -1;
     int occurrenceCount = -1;
     double [] points = null;
+    String solrName = null;
 
 
     static String [][] facetNameExceptions = { { "cl22", "state" }, { "cl23", "places" }, {"cl20", "ibra"} , {"cl21", "imcra"}};
@@ -882,6 +884,8 @@ public class SolrQuery implements Query, Serializable {
 //        if(lsids != null && lsids.length() > 0) {
 //            html += "<tr class='md_grey-bg'><td class='md_value' colspan='3'>More information for <a href='" + CommonData.bieServer + BIE_SPECIES + lsids + "' target='_blank'>"+ spname +"</a></td></tr>";
 //        }
+
+        html += "<tr class='md_grey-bg'><td class='md_th'><a href='" + CommonData.biocacheWebServer + "/occurrences/search?q=" + getQ() + "' target='_blank'>view records in biocache</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
         html += "</table>";
 
         return html;
@@ -985,5 +989,51 @@ public class SolrQuery implements Query, Serializable {
 
     public String getLsids() {
         return lsids;
+    }
+
+    public String getSolrName() {
+        if(solrName != null) {
+            return solrName;
+        }
+
+        HttpClient client = new HttpClient();
+        String url = CommonData.biocacheServer
+                + QUERY_TITLE_URL
+                + "&q=" + getQ();
+        System.out.println(url);
+        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
+
+        try {
+            int result = client.executeMethod(get);
+            String response = get.getResponseBodyAsString();
+
+            if (result == 200) {
+
+                JSONObject jo = JSONObject.fromObject(response);
+
+                if(jo.containsKey("queryTitle")) {
+                    String title = jo.getString("queryTitle");
+
+                    //clean default parameter
+                    title = title.replace(" AND geospatial_kosher:true","");
+                    title = title.replace("geospatial_kosher:true AND ","");
+
+                    //clean spans
+                    int p1 = title.indexOf("<span");
+                    if(p1 >= 0) {
+                        int p2 = title.indexOf(">",p1);
+                        title = title.substring(0,p1) + title.substring(p2+1,title.length());
+                        title = title.replace("</span>", "");
+                    }
+
+                    solrName = title;
+                    return solrName;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

@@ -175,7 +175,7 @@ public class WMSService {
             double[] pointsBB = null;
             Facet facet = null;
             String[] facetFields = null;
-            if (highlight != null) {
+            if (highlight != null && !(colourMode != null && colourMode.equals("grid"))) {
                 facet = Facet.parseFacet(highlight);
                 facetFields = facet.getFields();
                 listHighlight = new ArrayList<QueryField>();

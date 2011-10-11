@@ -212,7 +212,8 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         map.put("readonly", "true");
 
         String colourmode = (String) cbColour.getSelectedItem().getValue();
-        if (query.getLegend(colourmode).getCategories() != null) {
+        if (query.getLegend(colourmode).getCategories() != null
+                && !mapLayer.getColourMode().equals("grid")) {
             map.put("checkmarks", "true");
         }
 
@@ -338,7 +339,8 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         map.put("colourmode", colourMode);
 
         String colourmode = (String) cbColour.getSelectedItem().getValue();
-        if (query.getLegend(colourmode).getCategories() != null) {
+        if (query.getLegend(colourmode).getCategories() != null
+                && !m.getColourMode().equals("grid")) {
             map.put("checkmarks", "true");
         }
 

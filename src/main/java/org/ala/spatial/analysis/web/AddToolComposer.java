@@ -1168,7 +1168,8 @@ public class AddToolComposer extends UtilityComposer {
             //if (divSpeciesSearch != null && divSpeciesSearch.isVisible()){
             btnOk.setDisabled(
                     divSpeciesSearch.isVisible()
-                    && (searchSpeciesAuto.getSelectedItem().getValue() == null
+                    && searchSpeciesAuto.getSelectedItem() != null &&
+                    (searchSpeciesAuto.getSelectedItem().getValue() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));
         }

@@ -46,7 +46,9 @@ public class CommonData {
     static final String WEBPORTAL_URL = "webportal_url";
     static final String BIE_URL = "bie_url";
     static final String BIOCACHE_SERVICE_URL = "biocache_service_url";
+    static final String BIOCACHE_WEBAPP_URL = "biocache_webapp_url";
     static final String DEFAULT_UPLOAD_SAMPLING = "default_upload_sampling";
+
     //(1) for LayersUtil
     static String[] environmentalLayerNames = null;
     static String[] contextualLayerNames = null;
@@ -89,6 +91,7 @@ public class CommonData {
     static public String webportalServer;
     static public String bieServer;
     static public String biocacheServer;
+    static public String biocacheWebServer;
     static public Map<String, String> settings;
     //lsid counts, for species autocomplete
     static public LsidCounts lsidCounts;
@@ -104,6 +107,7 @@ public class CommonData {
         webportalServer = settings.get(WEBPORTAL_URL);
         bieServer = settings.get(BIE_URL);
         biocacheServer = settings.get(BIOCACHE_SERVICE_URL);
+        biocacheWebServer = settings.get(BIOCACHE_WEBAPP_URL);
         defaultFieldString = settings.get(DEFAULT_UPLOAD_SAMPLING);
         CommonData.settings = settings;
 
