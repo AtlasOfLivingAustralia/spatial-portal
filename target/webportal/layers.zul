@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
-<?component name="layerList" macro-uri="/WEB-INF/zul/layers.zul"?>
-
-<zk xmlns="http://www.zkoss.org/2005/zul">
-    <layerList id="layerList" />
-</zk>
