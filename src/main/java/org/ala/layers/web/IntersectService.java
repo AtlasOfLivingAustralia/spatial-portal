@@ -118,14 +118,14 @@ public class IntersectService {
                         float[] v = g.getValues(p);
                         //s = "{\"value\":" + v[0] + ",\"layername\":\"" + layer.getDisplayname() + "\"}";
                         Map m = new HashMap();
-                        m.put("value", v[0]);
+                        m.put("value", (Float.isNaN(v[0])?"":v[0]));
                         m.put("layername", layer.getDisplayname());
 
                         out.add(m);
                     } else {
                         logger.error("Cannot find grid file: " + layerIntersectDao.getConfig().getLayerFilesPath() + layer.getPath_orig());
                         Map m = new HashMap();
-                        m.put("value", Float.NaN);
+                        m.put("value", "");
                         m.put("layername", layer.getDisplayname());   //close enough
 
                         out.add(m);
@@ -157,11 +157,11 @@ public class IntersectService {
                             Map m = new HashMap();
                             if (Float.isNaN(v[0])) {
                                 //s = "{\"value\":\"no data\",\"layername\":\"" + name + " (" + gid + ")\"}";
-                                m.put("value", "no data");
+                                m.put("value", "");
                                 m.put("layername", name + "(" + gid + ")");
                             } else {
                                 //s = "{\"value\":" + v[0] + ",\"layername\":\"" + name + " (" + gid + ")\"}";
-                                m.put("value", v[0]);
+                                m.put("value", (Float.isNaN(v[0])?"":v[0]));
                                 m.put("layername", name + "(" + gid + ")");
                             }
                             out.add(m);
