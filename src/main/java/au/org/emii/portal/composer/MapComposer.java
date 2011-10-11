@@ -232,7 +232,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
                     envString += ";name:circle;size:" + selectedLayer.getSizeVal();
                     envString += ";opacity:" + selectedLayer.getOpacity();
-                    if (selectedLayer.getHighlight() != null) {
+                    if (selectedLayer.getHighlight() != null && selectedLayer.getHighlight().length() > 0) {
                         envString += ";sel:" + selectedLayer.getHighlight();
                     } else if (selectedLayer.getSizeUncertain()) {
                         envString += ";uncertainty:1";
@@ -364,14 +364,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //close any prevously opened externalcontentwindow
         try {
             Component c = getFellowIfAny("externalContentWindow");
-            if(c != null) {
+            if (c != null) {
                 System.out.println("found externalContentWindow, closing");
                 c.detach();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
 
         Window externalContentWindow = (Window) Executions.createComponents("WEB-INF/zul/ExternalContent.zul", layerControls, null);
 
@@ -561,8 +561,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void deactiveLayer(MapLayer itemToRemove, boolean updateMapAndLayerControls, boolean recursive, boolean updateOnly) {
         if (itemToRemove != null) {
             Query q = (Query) itemToRemove.getData("query");
-            if(q != null && q instanceof UploadQuery) {
-                String pid = ((UploadQuery)q).getQ();
+            if (q != null && q instanceof UploadQuery) {
+                String pid = ((UploadQuery) q).getQ();
 
                 Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
                 if (htUserSpecies != null) {
@@ -1230,8 +1230,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     StringBuilder sb = new StringBuilder();
                     while (itParams.hasNext()) {
                         String key = itParams.next();
-                        if(key.equals("q") || key.equals("fq")) {
-                            if(sb.length() > 0) {
+                        if (key.equals("q") || key.equals("fq")) {
+                            if (sb.length() > 0) {
                                 sb.append(" AND ");
                             }
                             sb.append("(").append(userParams.get(key)).append(")");
@@ -1522,7 +1522,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 logger.error("error redirecting to error page", ex);
             }
         } else {
-            // all good - put the portal user back in, then force a page reload            
+            // all good - put the portal user back in, then force a page reload
             Executions.getCurrent().sendRedirect(null);
         }
     }
@@ -2284,7 +2284,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Iterator it = attrs.keySet().iterator();
         while (it.hasNext()) {
             String key = (String) it.next();
-            if(key != null && attrs != null && attrs.get(key) != null) {
+            if (key != null && attrs != null && attrs.get(key) != null) {
                 MDC.put(key, attrs.get(key));
             }
         }

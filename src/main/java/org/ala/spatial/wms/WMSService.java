@@ -36,6 +36,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class WMSService {
+    final static int HIGHLIGHT_RADIUS = 4;
+
     /*
     http://spatial.ala.org.au/geoserver/wms/reflect?styles=&format=image/png&
     layers=ALA:occurrences&transparent=true&
@@ -143,8 +145,8 @@ public class WMSService {
             }
 
             //adjust offset for pixel height/width
-            xoffset += pixelWidth;
-            yoffset += pixelHeight;
+            xoffset += pixelWidth + (highlight!=null?HIGHLIGHT_RADIUS:0);
+            yoffset += pixelHeight + (highlight!=null?HIGHLIGHT_RADIUS:0);
 
             double[][] bb = {{Utils.convertMetersToLng(bbox[0] - xoffset), Utils.convertMetersToLat(bbox[1] - yoffset)}, {Utils.convertMetersToLng(bbox[2] + xoffset), Utils.convertMetersToLat(bbox[3] + yoffset)}};
 
@@ -217,7 +219,7 @@ public class WMSService {
             g.setColor(new Color(red, green, blue, alpha));
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             int x, y;
-            int pointWidth = size * 2;
+            int pointWidth = size * 2 + 1;
             double width_mult = (width / (pbbox[2] - pbbox[0]));
             double height_mult = (height / (pbbox[1] - pbbox[3]));
 
@@ -281,8 +283,8 @@ public class WMSService {
 
                 if (highlight != null && facet != null) {
                     g.setColor(new Color(255, 0, 0, alpha));
-                    int sz = size + 3;
-                    int w = sz * 2;
+                    int sz = size + HIGHLIGHT_RADIUS;
+                    int w = sz * 2 + 1;
                     for (i = 0; i < points.length; i += 2) {
                         if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
                                 && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {

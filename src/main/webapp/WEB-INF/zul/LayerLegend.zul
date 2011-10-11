@@ -15,9 +15,8 @@
         <a sclass="fancybox-close" onClick="scatterplotlayerlegend.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('sampling-tools')" style="display: inline" />
 
-        
+
         <div id="layerControls"  >
-            <hbox><button sclass="goButton" label="Close" onClick="scatterplotlayerlegend.detach();" /><button sclass="goButton" label="Apply" id="btnApply" /></hbox>
             <label id="layerName" sclass="h2" />
             <separator />
             <separator />
@@ -189,20 +188,28 @@ border-bottom: none;
 
                 </div>
 
-                <div style="padding-top:0px" width="60px">
-                    <label value="Legend : " sclass="h3" />
+                <div height="200px">
+                    <div style="padding-top:0px" width="60px">
+                        <label value="Legend : " sclass="h3" />
+                    </div>
+                    <div  width="60%">
+                        <image id="legendImg" width="50px" height="50px" />
+                    </div>
+                    <div align="right" style="padding-top:0px" visible="false">
+                        <label id="legendLabel" value="Click symbol to edit" />
+                    </div>
+                    <div  width="60%">
+                        <image id="legendImgUri" visible="false"/>
+                    </div>
+                    <div id="legendHtml" visible="true" height="150px"/>
                 </div>
-                <div  width="60%">
-                    <image id="legendImg" width="50px" height="50px" />
-                </div>
-                <div align="right" style="padding-top:0px" visible="false">
-                    <label id="legendLabel" value="Click symbol to edit" />
-                </div>
-                <div  width="60%">
-                    <image id="legendImgUri" visible="false"/>
-                </div>
-                <div id="legendHtml" visible="true" height="150px"/>
             </div>
-        </div>        
+        </div>
+        <div sclass="wizButtonContainer">
+            <hbox>
+                <button sclass="goButton" label="Close" onClick="scatterplotlayerlegend.detach();" />
+                <button sclass="goButton" label="Apply" id="btnApply" />
+            </hbox>
+        </div>
     </window>
 </zk>

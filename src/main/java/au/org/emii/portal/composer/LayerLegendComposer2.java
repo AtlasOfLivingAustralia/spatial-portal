@@ -193,7 +193,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
             updateUserColourDiv();
         }
     }
-   
+
     void showPointsColourModeLegend() {
         //remove all
         while (legendHtml.getChildren().size() > 0) {
@@ -208,9 +208,15 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         Map map = new HashMap();
         //map.put("pid", pid);
         map.put("query", query);
-        map.put("layer", "points layer");
+        map.put("layer", mapLayer);
         map.put("readonly", "true");
-        map.put("colourmode", (String) cbColour.getSelectedItem().getValue());
+
+        String colourmode = (String) cbColour.getSelectedItem().getValue();
+        if (query.getLegend(colourmode).getCategories() != null) {
+            map.put("checkmarks", "true");
+        }
+
+        map.put("colourmode", colourmode);
 
         try {
             Executions.createComponents(
@@ -252,15 +258,15 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         }
         this.listener = listener;
 
-        if(type == 0) {
+        if (type == 0) {
             pointtype.setSelectedItem(rGrid);
-        } else if(type == 1) {
+        } else if (type == 1) {
             pointtype.setSelectedItem(rCluster);
-        } else if(type == 2) {
+        } else if (type == 2) {
             pointtype.setSelectedItem(rPoint);
         }
 
-        chkUncertaintySize.setChecked(uncertainty);        
+        chkUncertaintySize.setChecked(uncertainty);
 
         updateUserColourDiv();
         updateLegendImage();
@@ -291,7 +297,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     }
 
     public String getColourMode() {
-        if(pointtype.getSelectedItem() == rGrid) {
+        if (pointtype.getSelectedItem() == rGrid) {
             return "grid";
         } else {
             return (String) cbColour.getSelectedItem().getValue();
@@ -327,9 +333,14 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         //put any parameters into map
         Map map = new HashMap();
         map.put("query", m.getData("query"));
-        map.put("layer", "points layer");
+        map.put("layer", m);
         map.put("readonly", "true");
         map.put("colourmode", colourMode);
+
+        String colourmode = (String) cbColour.getSelectedItem().getValue();
+        if (query.getLegend(colourmode).getCategories() != null) {
+            map.put("checkmarks", "true");
+        }
 
         try {
             Executions.createComponents(
@@ -340,11 +351,11 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     }
 
     public int getPointType() {
-        if(pointtype.getSelectedItem() == rGrid) {
+        if (pointtype.getSelectedItem() == rGrid) {
             return 0;
-        } else if(pointtype.getSelectedItem() == rCluster) {
+        } else if (pointtype.getSelectedItem() == rCluster) {
             return 1;
-        }else {//if(pointtype.getSelectedItem() == rPoint) {
+        } else {//if(pointtype.getSelectedItem() == rPoint) {
             return 2;
         }
     }
@@ -354,8 +365,8 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     }
 
     public void onCheck$chkUncertaintySize() {
-         refreshLayer();
-         uncertaintyLegend.setVisible(chkUncertaintySize.isChecked());
+        refreshLayer();
+        uncertaintyLegend.setVisible(chkUncertaintySize.isChecked());
     }
 
     public void onCheck$pointtype(Event event) {
@@ -382,7 +393,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         }
     }
 
-     public void setupLayerControls(MapLayer m) {
+    public void setupLayerControls(MapLayer m) {
 
         MapLayer currentSelection = m;
 
@@ -418,10 +429,9 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                 }
 
                 colourChooser.setVisible(pointtype.getSelectedItem() != rGrid);
-                
+
                 if ((cbColour.getSelectedItem() != ciColourUser || pointtype.getSelectedItem() == rGrid)
-                        && m.isSpeciesLayer()
-                        /*&& !m.isClustered()*/) {
+                        && m.isSpeciesLayer() /*&& !m.isClustered()*/) {
                     legendHtml.setVisible(true);
                     legendImg.setVisible(false);
 
@@ -515,25 +525,23 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 //    public void onChanging$txtLayerName(Event event) {
 //        refreshLayer();
 //    }
-    
 //    public void onChange$txtLayerName(Event event) {
 //        refreshLayer();
 //    }
-
     public void onOK$txtLayerName(Event event) {
         refreshLayer();
         btnLayerName.setDisabled(true);
     }
 
     public void onBlur$txtLayerName(Event event) {
-        if(sLayerName.equals(txtLayerName.getValue())) {
+        if (sLayerName.equals(txtLayerName.getValue())) {
             btnLayerName.setDisabled(true);
         }
     }
 
     private void setupCBColour(MapLayer m) {
-        for(int i=0;i<cbColour.getItemCount();i++) {
-            if(cbColour.getItemAtIndex(i) != ciColourUser) {
+        for (int i = 0; i < cbColour.getItemCount(); i++) {
+            if (cbColour.getItemAtIndex(i) != ciColourUser) {
                 cbColour.removeItemAt(i);
                 i--;
             }
@@ -542,9 +550,9 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         Query q = (Query) m.getData("query");
 //        Object [] o = (Object []) RecordsLookup.getData(q.getQ());
 //        ArrayList<QueryField> fields = (ArrayList<QueryField>) o[1];
-        if(q != null) {
+        if (q != null) {
             ArrayList<QueryField> fields = q.getFacetFieldList();
-            for(int i=0;i<fields.size();i++) {
+            for (int i = 0; i < fields.size(); i++) {
                 Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
                 ci.setValue(fields.get(i).getName());
                 ci.setParent(cbColour);

@@ -57,8 +57,8 @@ public class Facet implements Serializable {
         //- single string field.  <field>:CSV formatted values
         if (!hasSqBracket && !hasAnd && !hasOr) {
             int offset = fq.startsWith("-") ? 1 : 0;
-            String f = fq.substring(offset, fq.indexOf(':'));
-            String v = fq.substring(fq.indexOf(':') + 1);
+            String f = fq.substring(offset, fq.indexOf(':')).replace("%20"," ");
+            String v = fq.substring(fq.indexOf(':') + 1).replace("%20"," ");
             return new Facet(f, v, offset == 0);
         } else //- one or more number fields.  <term1> AND <term2> AND ...
         if (!hasStartBracket && hasAnd && hasSqBracket) {
@@ -89,7 +89,7 @@ public class Facet implements Serializable {
         for (int i = 0; i < terms.length; i++) {
             String ff = terms[i];
             int offset = ff.startsWith("-") ? 1 : 0;
-            String f = ff.substring(offset, ff.indexOf(':'));
+            String f = ff.substring(offset, ff.indexOf(':')).replace("%20"," ");
             String v = ff.substring(fq.indexOf(':') + 1);
             String[] n = v.substring(1, v.length() - 1).split("%20TO%20");
             double[] d = {n[0].equals("*") ? Double.NEGATIVE_INFINITY : Double.parseDouble(n[0]),
@@ -124,7 +124,7 @@ public class Facet implements Serializable {
     }
 
     public Facet(String field, double min, double max, boolean includeRange) {
-        this.field = field;
+        this.field = field.replace("%20"," ");
         this.min = min;
         this.max = max;
         this.includeRange = includeRange;
@@ -240,7 +240,7 @@ public class Facet implements Serializable {
      * 0 = numeric
      * 1 = string
      * 2 = group
-     * 
+     *
      * @return
      */
     public int getType() {

@@ -491,8 +491,8 @@
         </repository>
         <repository>
             <id>osgeo</id>
-            <name>OpenGeo GeoTools Repository</name>
-            <url>http://repo.opengeo.org/</url>
+            <name>Open Source Geospatial Foundation Repository</name>
+            <url>http://download.osgeo.org/webdav/geotools/</url>
         </repository>
         <!--
         <repository>
@@ -516,7 +516,7 @@
             </releases>
             <id>geogoogle</id>
             <name>geogoogle repo</name>
-            <url>http://www.cs.drexel.edu/~zl25/maven2/repo</url>
+            <url>https://www.cs.drexel.edu/~zl25/maven2/repo</url>
         </repository>
         
         <repository>
@@ -558,12 +558,12 @@
         </plugins>
     </reporting>
     <properties>
-        <netbeans.hint.deploy.server>Tomcat</netbeans.hint.deploy.server>
+        <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
         <springVersion>3.0.1.RELEASE</springVersion>
         <zkVersion>5.0.8</zkVersion>
         <jerseyVersion>1.1.4.1</jerseyVersion>
         <aspectJVersion>1.6.8</aspectJVersion>
-        <geotools.version>2.7-SNAPSHOT</geotools.version>
+        <geotools.version>2.7.3</geotools.version>
 
         <org.springframework.version>3.0.1.RELEASE</org.springframework.version>
 

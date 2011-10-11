@@ -29,6 +29,8 @@ public class LsidCounts {
             System.out.println(url);
             GetMethod get = new GetMethod(url);
             HashMap<Long, Long> map = new HashMap<Long, Long>();
+            client.getHttpConnectionManager().getParams().setSoTimeout(30000);
+
             int result = client.executeMethod(get);
 
             CSVReader csv = new CSVReader(new InputStreamReader(get.getResponseBodyAsStream()));
@@ -60,7 +62,7 @@ public class LsidCounts {
             e.printStackTrace();
         }
     }
-    
+
     public long getCount(long left, long right) {
         if(lft == null) {
             return 0;

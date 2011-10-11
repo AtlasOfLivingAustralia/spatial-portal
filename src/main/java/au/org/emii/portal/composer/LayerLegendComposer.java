@@ -190,7 +190,7 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         Map map = new HashMap();
         //map.put("pid", pid);
         map.put("query", query);
-        map.put("layer", "points layer");
+        map.put("layer", null);
         map.put("readonly", "true");
         map.put("colourmode", (String) cbColour.getSelectedItem().getValue());
 
@@ -227,7 +227,7 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
             }
         }
         this.listener = listener;
-        
+
         //fill cbColour
         setupCBColour(query);
 
@@ -279,8 +279,8 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
     }
 
     private void setupCBColour(Query q) {
-        for(int i=0;i<cbColour.getItemCount();i++) {
-            if(cbColour.getItemAtIndex(i) != ciColourUser) {
+        for (int i = 0; i < cbColour.getItemCount(); i++) {
+            if (cbColour.getItemAtIndex(i) != ciColourUser) {
                 cbColour.removeItemAt(i);
                 i--;
             }
@@ -289,9 +289,9 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         //Query q = (Query) m.getData("query");
 //        Object [] o = (Object []) RecordsLookup.getData(q.getQ());
 //        ArrayList<QueryField> fields = (ArrayList<QueryField>) o[1];
-        if(q != null) {
+        if (q != null) {
             ArrayList<QueryField> fields = q.getFacetFieldList();
-            for(int i=0;i<fields.size();i++) {
+            for (int i = 0; i < fields.size(); i++) {
                 Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
                 ci.setValue(fields.get(i).getName());
                 ci.setParent(cbColour);

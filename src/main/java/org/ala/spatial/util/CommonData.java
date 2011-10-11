@@ -26,7 +26,7 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * common data store
- * 
+ *
  * 1. alaspatial environmental and contextual layer names (use in LayersUtil)
  * 2. alaspatial layers associations, environmental and contextual layer names (use in EnvironmentalList)
  * 3. layer list as string and JSON (layer tree, (2))
@@ -107,15 +107,15 @@ public class CommonData {
         defaultFieldString = settings.get(DEFAULT_UPLOAD_SAMPLING);
         CommonData.settings = settings;
 
-        //(1) for LayersUtil        
+        //(1) for LayersUtil
         initEnvironmentalLayers();
         initContextualLayers();
 
-        //(3) for layer list json        
+        //(3) for layer list json
         initLayerList();
         initContextualClasses();
 
-        //(2) for EnvironmentalList - uses layer list json, so run after        
+        //(2) for EnvironmentalList - uses layer list json, so run after
         initEnvironmentalOnlyList();
         initEnvironmentalAllList();
 
@@ -612,6 +612,9 @@ public class CommonData {
      * returns array of WMS species requests
      */
     static public String[] getSpeciesDistributionWMS(String lsids) {
+        if(species_wms_layers == null) {
+            return null;
+        }
         String[] lsid = lsids.split(",");
         ArrayList<String[]> wmsurls = new ArrayList<String[]>();
         int count = 0;
@@ -637,6 +640,9 @@ public class CommonData {
      * returns array of WMS species requests
      */
     static public String[] getSpeciesDistributionMetadata(String lsids) {
+        if(species_wms_layers == null) {
+            return null;
+        }
         String[] lsid = lsids.split(",");
         ArrayList<String[]> wmsurls = new ArrayList<String[]>();
         int count = 0;
@@ -661,7 +667,7 @@ public class CommonData {
     static HashMap<String, String> facetToLayer;
     static HashMap<String, String> facetShapeNameField;
     static HashMap<String, String> facetToLayerDisplayName;
-    
+
     public static String getLayerFacetName(String layer) {
         return layerToFacet.get(layer.toLowerCase());
     }
