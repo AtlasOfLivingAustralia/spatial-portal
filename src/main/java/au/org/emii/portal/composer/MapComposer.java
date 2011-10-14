@@ -39,7 +39,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1231,7 +1230,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     StringBuilder sb = new StringBuilder();
                     while (itParams.hasNext()) {
                         String key = itParams.next();
-                        if (key.equals("q") || key.equals("fq")) {
+                        if (key.equals("q") || key.equals("fq") || key.equals("qc")) {
                             if (sb.length() > 0) {
                                 sb.append(" AND ");
                             }
