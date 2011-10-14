@@ -1505,7 +1505,7 @@ function getOccurrence(query, lat, lon, start, pos, dotradius) {
     var url = parent.jq('$biocache_service_url')[0].innerHTML + "/webportal/occurrences?q=" + query
         + "&fq=longitude:[" + (lon-lonSize) + "%20TO%20" + (lon+lonSize) + "]"
         + "&fq=latitude:[" + (lat-latSize) + "%20TO%20" + (lat+latSize) + "]"
-        + "&pageSize=1&facets=none";  
+        + "&pageSize=1";  
     var ret = null;
     $.ajax({
         url: proxy_script + URLEncode(url + "&start=" + start),
