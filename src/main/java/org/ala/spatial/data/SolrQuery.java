@@ -1017,6 +1017,7 @@ public class SolrQuery implements Query, Serializable {
                     //clean default parameter
                     title = title.replace(" AND geospatial_kosher:true","");
                     title = title.replace("geospatial_kosher:true AND ","");
+                    title = title.replace(" AND null","");
 
                     //clean spans
                     int p1 = title.indexOf("<span");
