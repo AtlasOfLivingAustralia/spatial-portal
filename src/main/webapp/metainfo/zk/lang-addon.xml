@@ -1,0 +1,25 @@
+<language-addon>	
+	<addon-name>rangeslider</addon-name>
+	<language-name>xul/html</language-name>
+
+	<component>
+		<component-name>rangeslider</component-name>
+		<component-class>org.zkoss.zul.Rangeslider</component-class>
+		<widget-class>rangeslider.Rangeslider</widget-class>
+		<mold>
+			<mold-name>default</mold-name>
+			<mold-uri>mold/rangeslider.js</mold-uri>
+			<css-uri>css/slider.css.dsp</css-uri>
+		</mold>
+		<mold>
+			<mold-name>sphere</mold-name>
+			<mold-uri>mold/rangeslider.js</mold-uri>
+			<css-uri>css/slider.css.dsp</css-uri>
+		</mold>
+		<mold>
+			<mold-name>scale</mold-name>
+			<mold-uri>mold/rangeslider.js</mold-uri>
+			<css-uri>css/slider.css.dsp</css-uri>
+		</mold>
+	</component>
+</language-addon>

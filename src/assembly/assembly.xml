@@ -1,0 +1,26 @@
+
+<assembly>
+    <id>plugin</id>
+    <formats>
+        <format>jar</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.outputDirectory}</directory>
+            <outputDirectory>/</outputDirectory>
+        </fileSet>
+    </fileSets>
+    <files>
+        <file>
+            <source>${project.basedir}/src/main/webapp/web/js/rangeslider/Rangeslider.js</source>
+            <outputDirectory>web/js/rangeslider</outputDirectory>
+            <destName>Rangeslider.src.js</destName>
+        </file>
+        <file>
+            <source>${project.basedir}/src/main/webapp/web/js/rangeslider/mold/rangeslider.js</source>
+            <outputDirectory>web/js/rangeslider/mold</outputDirectory>
+            <destName>rangeslider.src.js</destName>
+        </file>
+    </files>
+</assembly>
