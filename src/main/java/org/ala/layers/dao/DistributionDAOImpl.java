@@ -83,7 +83,7 @@ public class DistributionDAOImpl implements DistributionDAO {
             params.add(wkt);
         }
 
-        String sql = "select * from distributions";
+        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid from distributions";
         if(where.length() > 0) {
             sql += " WHERE " + where.toString();
         }
