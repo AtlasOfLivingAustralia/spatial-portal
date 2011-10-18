@@ -19,7 +19,7 @@ import java.util.Map;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.QueryField;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.UserData;
 import org.ala.spatial.wms.RecordsLookup;
@@ -292,7 +292,7 @@ public class UploadSpeciesController extends UtilityComposer {
                 } else if (upHeader.length > 2 && i < 3) {
                     name = defaultHeader[i];
                 }
-                fields.add(new QueryField(name));
+                fields.add(new QueryField("f" + String.valueOf(i),name,QueryField.FieldType.AUTO));
                 fields.get(fields.size() - 1).ensureCapacity(sizeToCheck);
             }
 
@@ -303,7 +303,12 @@ public class UploadSpeciesController extends UtilityComposer {
                 String[] up = (String[]) userPoints.get(i + hSize);
                 if (up.length > 2) {
                     for (int j = 0; j < up.length && j < fields.size(); j++) {
-                        fields.get(j).add(up[j]);
+                        //replace anything that may interfere with webportal facet parsing
+                        String s = up[j].replace("\"","'").replace(" AND "," and ").replace(" OR "," or ");
+                        if(s.length() > 0 && s.charAt(0) == '*') {
+                            s = "_" + s;
+                        }
+                        fields.get(j).add(s);
                     }
                     try {
                         points[i * 2] = Double.parseDouble(up[1]);
@@ -436,7 +441,7 @@ public class UploadSpeciesController extends UtilityComposer {
             ud.setSubType(LayerUtilities.SPECIES);
             ud.setLsid(pid);
 
-            Query q = new SolrQuery(lsids, null, null, null, true);
+            Query q = new BiocacheQuery(lsids, null, null, null, true);
             ud.setQuery(q);
 
             // add it to the user session

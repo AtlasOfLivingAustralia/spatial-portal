@@ -151,6 +151,7 @@ public class UploadQuery implements Query, Serializable {
      *
      * @return number of species as int or -1 on error.
      */
+    @Override
     public int getSpeciesCount() {
         return 1;
     }
@@ -162,6 +163,7 @@ public class UploadQuery implements Query, Serializable {
      * If a QueryField isStored() it will be populated with the field data.
      * @return coordinates as double [] like [lng, lat, lng, lat, ...].
      */
+    @Override
     public double[] getPoints(ArrayList<QueryField> fields) {
         if (fields != null) {
             for (int i = 0; i < fields.size(); i++) {
@@ -193,7 +195,7 @@ public class UploadQuery implements Query, Serializable {
     }
 
     @Override
-    public String getFullQ() {
+    public String getFullQ(boolean encode) {
         StringBuilder sb = new StringBuilder();        
         sb.append(metadata).append("\n");
         
@@ -387,6 +389,7 @@ public class UploadQuery implements Query, Serializable {
         return null;
     }
 
+    @Override
     public Query newFacets(List<Facet> facet, boolean forMapping) {
         //copy all the data through the list of facets (AND)
 
@@ -476,7 +479,30 @@ public class UploadQuery implements Query, Serializable {
 
     @Override
     public String getMetadataHtml() {
-        return metadata;
+        String [] m = metadata.replace("<br />","").split("\n");
+        String name = m[1].substring(m[1].indexOf(':') + 1).trim();
+        String description = m[2].substring(m[2].indexOf(':') + 1).trim();
+        String date = m[3].substring(m[3].indexOf(':') + 1).trim();
+
+        StringBuilder fieldsList = new StringBuilder();
+        for(int i=0;i<data.size();i++) {
+            if(i > 0) {
+                fieldsList.append(", ");
+            }
+            fieldsList.append(data.get(i).getDisplayName());
+        }
+
+        String html = "User uploaded coordinates\n";
+        html += "<table class='md_table'>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Name: </td><td class='md_spacer'/><td class='md_value'>" + name + "</td></tr>";
+        html += "<tr><td class='md_th'>Description: </td><td class='md_spacer'/><td class='md_value'>" + description + "</td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Date: </td><td class='md_spacer'/><td class='md_value'>" + date + "</td></tr>";
+        html += "<tr><td class='md_th'>Number of coordinates: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCount() + "</td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Number of fields: </td><td class='md_spacer'/><td class='md_spacer'>" + data.size() + "</td></tr>";
+        html += "<tr><td class='md_th'>List of fields: </td><td class='md_spacer'/><td class='md_spacer'>" + fieldsList.toString() + "</td></tr>";
+        html += "</table>";
+
+        return html;
     }
 
     @Override
@@ -510,5 +536,15 @@ public class UploadQuery implements Query, Serializable {
             Logger.getLogger(UploadQuery.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+
+    @Override
+    public String getQc() {
+        return null;
+    }
+
+    @Override
+    public void setQc(String qc) {
+
     }
 }
