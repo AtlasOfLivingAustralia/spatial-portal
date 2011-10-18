@@ -29,6 +29,11 @@ public abstract class Legend implements Serializable {
     double[] cutoffs;
 
     /*
+     * for determining the records that are equal to the minimum value
+     */
+    double[] cutoffMins;
+
+    /*
      * cutoffs.length may not match colours.length, this a translation
      */
     double[] cutoffsColours;
@@ -208,6 +213,9 @@ public abstract class Legend implements Serializable {
 
         int[] grpSizes = new int[cutoffs.length];
 
+        cutoffMins = new double[cutoffs.length];
+        cutoffMins[0] = min;
+
         int cutoffPos = 0;
         for (int i = 0; i < d.length; i++) {
             if (Double.isNaN(d[i])) {
@@ -216,6 +224,7 @@ public abstract class Legend implements Serializable {
             while (d[i] > cutoffs[cutoffPos]) {
                 while (d[i] > cutoffs[cutoffPos]) {
                     cutoffPos++;
+                    cutoffMins[cutoffPos] = d[i];
                 }
             }
             grpSizes[cutoffPos]++;
@@ -455,5 +464,9 @@ public abstract class Legend implements Serializable {
     public double[] getMinMax() {
         double[] f = {min, max};
         return f;
+    }
+
+    public double[] getCutoffMindoubles() {
+        return cutoffMins;
     }
 }

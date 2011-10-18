@@ -17,10 +17,6 @@
 
 
         <div id="layerControls"  >
-            <label id="layerName" sclass="h2" />
-            <separator />
-            <separator />
-
             <!-- opacity-->
             <div id="opacityControls" >
                 <vbox>
@@ -201,7 +197,7 @@ border-bottom: none;
                     <div  width="60%">
                         <image id="legendImgUri" visible="false"/>
                     </div>
-                    <div id="legendHtml" visible="true" height="150px"/>
+                    <div id="legendHtml" visible="true" height="450px" style="overflow:auto" />
                 </div>
             </div>
         </div>

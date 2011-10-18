@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.ala.spatial.data.LegendObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.UploadQuery;
@@ -166,6 +167,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     }
 
     public void onChange$cbColour(Event event) {
+        mapLayer.setHighlight(null);
         updateUserColourDiv();
         updateLegendImage();
         refreshLayer();
@@ -212,9 +214,18 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         map.put("readonly", "true");
 
         String colourmode = (String) cbColour.getSelectedItem().getValue();
-        if (query.getLegend(colourmode).getCategories() != null
-                && !mapLayer.getColourMode().equals("grid")) {
+        if (!mapLayer.getColourMode().equals("grid")
+                && query.getLegend(colourmode).getCategories() != null) {
             map.put("checkmarks", "true");
+        }
+
+        try {
+            LegendObject lo = query.getLegend(colourmode);
+            if(lo != null) {
+                mapLayer.setData("legendobject", lo);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         map.put("colourmode", colourmode);
@@ -339,9 +350,17 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         map.put("colourmode", colourMode);
 
         String colourmode = (String) cbColour.getSelectedItem().getValue();
-        if (query.getLegend(colourmode).getCategories() != null
-                && !m.getColourMode().equals("grid")) {
+        if (!m.getColourMode().equals("grid")
+                &&query.getLegend(colourmode).getCategories() != null) {
             map.put("checkmarks", "true");
+        }
+        try {
+            LegendObject lo = ((Query)m.getData("query")).getLegend(colourmode);
+            if(lo != null) {
+                m.setData("legendobject", lo);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         try {
@@ -376,6 +395,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         try {
             selectedItem = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
             pointtype.setSelectedItem(selectedItem);
+            mapLayer.setHighlight(null);
         } catch (Exception e) {
         }
 

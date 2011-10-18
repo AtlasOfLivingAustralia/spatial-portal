@@ -7,6 +7,7 @@ package org.ala.spatial.data;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.HashMap;
+import org.ala.spatial.data.QueryField.FieldType;
 
 /**
  *
@@ -23,6 +24,7 @@ public class LegendObject implements Serializable {
     //[0] is colour, [1] is count
     HashMap<String, int[]> categories;
     String[] categoryNameOrder;
+    String colourMode;
 
     public LegendObject(Legend numericLegend, QueryField.FieldType fieldType) {
         this.numericLegend = numericLegend;
@@ -75,6 +77,7 @@ public class LegendObject implements Serializable {
             if (numericLegend.getMinMax() != null) { //catch manually set numeric fields without numeric data
                 double[] minmax = numericLegend.getMinMax();
                 double[] cutoffs = numericLegend.getCutoffdoubles();
+                double[] cutoffMins = numericLegend.getCutoffMindoubles();
 
                 String format = "%.4f";
                 if (fieldType == QueryField.FieldType.INT
@@ -91,13 +94,11 @@ public class LegendObject implements Serializable {
                     String rgb = getRGB(numericLegend.getColour(minmax[0]));
                     sb.append("\n").append(String.format(format, minmax[0])).append(",").append(rgb).append(",");
                 } else {
-                    for (int i = -1; i < cutoffs.length; i++) {
-                        if (i == -1) {
-                            String rgb = getRGB(numericLegend.getColour(minmax[0]));
-                            sb.append("\n>=").append(String.format(format, minmax[0])).append(",").append(rgb).append(",").append(numericLegend.groupSizesArea[0]);
-                        } else if (i + 1 == cutoffs.length || (cutoffs[i] < cutoffs[i + 1] && cutoffs[i] > minmax[0])) {
+                    for (int i = 0; i < cutoffs.length; i++) {
+                        if (i + 1 == cutoffs.length || cutoffs[i] < cutoffs[i + 1]) {
                             String rgb = getRGB(numericLegend.getColour(cutoffs[i]));
-                            sb.append("\n<=").append(String.format(format, cutoffs[i])).append(",").append(rgb).append(",").append(numericLegend.groupSizesArea[0]);
+                            sb.append("\n>= ").append(String.format(format, cutoffMins[i])).append(" and ");
+                            sb.append("<= ").append(String.format(format, cutoffs[i])).append(",").append(rgb).append(",").append(numericLegend.groupSizesArea[i]);
                         }
                     }
                 }
@@ -171,5 +172,25 @@ public class LegendObject implements Serializable {
 
     public String[] getCategories() {
         return categoryNameOrder;
+    }
+
+    public String getColourMode() {
+        return colourMode;
+    }
+
+    public void setColourMode(String colourMode) {
+        this.colourMode = colourMode;
+    }
+
+    public Legend getNumericLegend() {
+        return numericLegend;
+    }
+
+    void setNumericLegend(Legend numericLegend) {
+        this.numericLegend = numericLegend;
+    }
+
+    public FieldType getFieldType() {
+        return fieldType;
     }
 }

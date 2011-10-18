@@ -7,17 +7,15 @@ package au.org.emii.portal.composer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.awt.Color;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryField;
-import org.ala.spatial.util.CommonData;
+import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.LegendMaker;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -68,6 +66,7 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
     Label layerName;
     EventListener listener;
     Query query;
+    MapLayer mapLayer;
 
     @Override
     public void afterCompose() {
@@ -190,9 +189,14 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         Map map = new HashMap();
         //map.put("pid", pid);
         map.put("query", query);
-        map.put("layer", null);
+        map.put("layer", mapLayer);
         map.put("readonly", "true");
         map.put("colourmode", (String) cbColour.getSelectedItem().getValue());
+        if (!mapLayer.getColourMode().equals("grid")
+                && query.getLegend((String) cbColour.getSelectedItem().getValue()).getCategories() != null) {
+            map.put("checkmarks", "true");
+        }
+        map.put("disableselection","true");
 
         try {
             Executions.createComponents(
@@ -202,8 +206,9 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void init(Query query, int red, int green, int blue, int size, int opacity, String colourMode, EventListener listener) {
+    public void init(Query query, MapLayer mapLayer, int red, int green, int blue, int size, int opacity, String colourMode, EventListener listener) {
         this.query = query;
+        this.mapLayer = mapLayer;
 
         opacitySlider.setCurpos(opacity);
         onScroll$opacitySlider(null);
@@ -292,9 +297,12 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         if (q != null) {
             ArrayList<QueryField> fields = q.getFacetFieldList();
             for (int i = 0; i < fields.size(); i++) {
-                Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
-                ci.setValue(fields.get(i).getName());
-                ci.setParent(cbColour);
+                //TODO: make changes to support biocache year and month
+                if(q != null && (q instanceof UploadQuery || !(q.getName().equals("year") || q.getName().equals("month")))) {
+                    Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
+                    ci.setValue(fields.get(i).getName());
+                    ci.setParent(cbColour);
+                }
             }
         }
     }

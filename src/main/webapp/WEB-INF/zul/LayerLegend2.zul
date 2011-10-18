@@ -162,10 +162,10 @@ padding: 1px 0px 0px 5px;
 
                         <vbox >
                             <separator />
-                            <hbox>                                
+                            <hbox>
                                 <div style="padding-top:0px" width="65px">
                                     <label value="Red" sclass="h3" />
-                                </div>
+                    </div>
 
                                 <div width="250px">
                                     <slider id="redSlider" maxpos="255" width="95%" />
@@ -204,7 +204,7 @@ padding: 1px 0px 0px 5px;
                         </vbox>
                     </div>
                     <vbox>
-                        <hbox width="100%">
+                        <hbox width="100%" visible="false">
                             <div id="uncertainty" align="left" style="padding-top:0px" visible="false">
                                 <separator />
                                 <separator />
