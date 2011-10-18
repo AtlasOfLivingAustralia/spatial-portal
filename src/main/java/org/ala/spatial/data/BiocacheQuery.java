@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ import org.ala.spatial.util.CommonData;
  *
  * @author Adam
  */
-public class SolrQuery implements Query, Serializable {
+public class BiocacheQuery implements Query, Serializable {
 
     static final String SAMPLING_SERVICE_CSV_GZIP = "/webportal/occurrences.gz?";
     static final String SAMPLING_SERVICE = "/webportal/occurrences?";
@@ -51,7 +52,7 @@ public class SolrQuery implements Query, Serializable {
     static final String POST_SERVICE = "/webportal/params?";
     static final String DEFAULT_ROWS = "pageSize=1000000";
     /** DEFAULT_VALIDATION must not be null */
-    static final String DEFAULT_VALIDATION = "geospatial_kosher:true";//%20AND%20longitude:[*%20TO%20*]%20AND%20latitude:[*%20TO%20*]";
+    static final String DEFAULT_VALIDATION = "geospatial_kosher:true";
     static final String BIE_SPECIES = "/species/";
     static final String WMS_URL = "/webportal/wms/reflect?";
     private static String[] commonTaxonRanks = new String[]{
@@ -78,21 +79,19 @@ public class SolrQuery implements Query, Serializable {
     String wkt;
     String extraParams;
     String paramId;
+    String qc;
     boolean forMapping;
-
     //stored query responses.
     String speciesList = null;
     int speciesCount = -1;
     int occurrenceCount = -1;
-    double [] points = null;
+    double[] points = null;
     String solrName = null;
-
-
-    static String [][] facetNameExceptions = { { "cl22", "state" }, { "cl23", "places" }, {"cl20", "ibra"} , {"cl21", "imcra"}};
+    static String[][] facetNameExceptions = {{"cl22", "state"}, {"cl23", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
 
     static String translateFieldForSolr(String facetName) {
-        for(String [] s : facetNameExceptions) {
-            if(facetName.equals(s[0])) {
+        for (String[] s : facetNameExceptions) {
+            if (facetName.equals(s[0])) {
                 facetName = s[1];
                 break;
             }
@@ -101,8 +100,8 @@ public class SolrQuery implements Query, Serializable {
     }
 
     static String translateSolrForField(String facetName) {
-        for(String [] s : facetNameExceptions) {
-            if(facetName.equals(s[1])) {
+        for (String[] s : facetNameExceptions) {
+            if (facetName.equals(s[1])) {
                 facetName = s[0];
                 break;
             }
@@ -110,13 +109,14 @@ public class SolrQuery implements Query, Serializable {
         return facetName;
     }
 
-    public SolrQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping) {
+    public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping) {
         this.lsids = lsids;
         this.facets = facets;
         this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : wkt;
         this.extraParams = extraParams;
         this.forMapping = forMapping;
-
+        this.qc = CommonData.biocacheQc;
+        
         makeParamId();
     }
 
@@ -127,14 +127,18 @@ public class SolrQuery implements Query, Serializable {
      * @param values
      */
     @Override
-    public SolrQuery newFacet(Facet facet, boolean forMapping) {
+    public BiocacheQuery newFacet(Facet facet, boolean forMapping) {
+        if(facet == null && (this.forMapping || !forMapping)) {
+            return this;
+        }
+
         ArrayList<Facet> newFacets = new ArrayList<Facet>();
         if (facets != null) {
             newFacets.addAll(facets);
         }
         newFacets.add(facet);
 
-        return new SolrQuery(lsids, wkt, extraParams, newFacets, forMapping);
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping);
     }
 
     /**
@@ -143,19 +147,19 @@ public class SolrQuery implements Query, Serializable {
      * If an area already exists the additional area is applied.
      *
      * @param wkt
-     * @return new SolrQuery with the additional wkt area applied.
+     * @return new BiocacheQuery with the additional wkt area applied.
      */
     @Override
-    public SolrQuery newWkt(String wkt, boolean forMapping) {
+    public BiocacheQuery newWkt(String wkt, boolean forMapping) {
         if (wkt == null || wkt.equals(CommonData.WORLD_WKT) || wkt.equals(this.wkt)) {
-            if(this.forMapping != forMapping) {
-                return new SolrQuery(lsids, wkt, extraParams, facets, forMapping);
-            } else {
+            if (this.forMapping || !forMapping) {
                 return this;
+            } else {
+                return new BiocacheQuery(lsids, wkt, extraParams, facets, forMapping);
             }
         }
 
-        SolrQuery sq = null;
+        BiocacheQuery sq = null;
         try {
             String newWkt = wkt;
             if (this.wkt != null) {
@@ -165,7 +169,7 @@ public class SolrQuery implements Query, Serializable {
                 newWkt = (new WKTWriter()).write(intersectionGeom).replace(" (", "(").replace(", ", ",").replace(") ", ")");
             }
 
-            sq = new SolrQuery(lsids, newWkt, extraParams, facets, forMapping);
+            sq = new BiocacheQuery(lsids, newWkt, extraParams, facets, forMapping);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -186,9 +190,10 @@ public class SolrQuery implements Query, Serializable {
                 + SAMPLING_SERVICE_CSV_GZIP
                 + DEFAULT_ROWS
                 + "&q=" + getQ()
-                + paramQueryFields(fields);
+                + paramQueryFields(fields)
+                + getQc();
         System.out.println(url);
-        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
+        GetMethod get = new GetMethod(url);
 
         String sample = null;
 
@@ -196,11 +201,11 @@ public class SolrQuery implements Query, Serializable {
         try {
             int result = client.executeMethod(get);
             sample = decompressGz(get.getResponseBodyAsStream());
-            
+
             //in the first line do field name replacement
-            for(QueryField f : fields) {
+            for (QueryField f : fields) {
                 String t = translateFieldForSolr(f.getName());
-                if(!f.getName().equals(t)) {
+                if (!f.getName().equals(t)) {
                     sample = sample.replaceFirst(t, f.getName());
                 }
             }
@@ -219,7 +224,7 @@ public class SolrQuery implements Query, Serializable {
      */
     @Override
     public String speciesList() {
-        if(speciesList != null) {
+        if (speciesList != null) {
             return speciesList;
         }
 
@@ -227,9 +232,10 @@ public class SolrQuery implements Query, Serializable {
         String url = CommonData.biocacheServer
                 + SPECIES_LIST_SERVICE_CSV
                 + DEFAULT_ROWS
-                + "&q=" + getQ();
+                + "&q=" + getQ()
+                + getQc();
         System.out.println(url);
-        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
+        GetMethod get = new GetMethod(url);
 
         try {
             int result = client.executeMethod(get);
@@ -248,17 +254,18 @@ public class SolrQuery implements Query, Serializable {
      */
     @Override
     public int getOccurrenceCount() {
-        if(occurrenceCount >= 0) {
+        if (occurrenceCount >= 0) {
             return occurrenceCount;
         }
 
         HttpClient client = new HttpClient();
         String url = CommonData.biocacheServer
                 + SAMPLING_SERVICE
-                + "pageSize=0"
-                + "&q=" + getQ();
+                + "pageSize=0&facet=false"
+                + "&q=" + getQ()
+                + getQc();
         System.out.println(url);
-        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
+        GetMethod get = new GetMethod(url);
 
         try {
             int result = client.executeMethod(get);
@@ -283,7 +290,7 @@ public class SolrQuery implements Query, Serializable {
      */
     @Override
     public int getSpeciesCount() {
-        if(speciesCount >= 0) {
+        if (speciesCount >= 0) {
             return speciesCount;
         }
 
@@ -292,7 +299,7 @@ public class SolrQuery implements Query, Serializable {
 
         speciesCount = 0; //first line is header, last line is not \n terminated
         int p = 0;
-        while((p=speciesList.indexOf('\n',p+1)) > 0) {
+        while ((p = speciesList.indexOf('\n', p + 1)) > 0) {
             speciesCount++;
         }
 
@@ -335,7 +342,7 @@ public class SolrQuery implements Query, Serializable {
     @Override
     public double[] getPoints(ArrayList<QueryField> fields) {
         //if no additional fields requested, return points only
-        if(fields == null && points != null) {
+        if (fields == null && points != null) {
             return points;
         }
 
@@ -366,7 +373,7 @@ public class SolrQuery implements Query, Serializable {
         try {
             line = csv.readNext();
         } catch (IOException ex) {
-            Logger.getLogger(SolrQuery.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BiocacheQuery.class.getName()).log(Level.SEVERE, null, ex);
         }
         for (int i = 0; i < line.length; i++) {
             if (line[i] != null && i < fieldsToCsv.length) {
@@ -425,7 +432,7 @@ public class SolrQuery implements Query, Serializable {
 
             csv.close();
         } catch (IOException ex) {
-            Logger.getLogger(SolrQuery.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BiocacheQuery.class.getName()).log(Level.SEVERE, null, ex);
         }
         if (points.length != pos) {
             double[] pointsCopy = new double[pos];
@@ -460,18 +467,18 @@ public class SolrQuery implements Query, Serializable {
             return "qid:" + paramId;
         }
 
-        return getFullQ();
+        return getFullQ(true);
     }
 
     @Override
-    public String getFullQ() {
+    public String getFullQ(boolean encode) {
         StringBuilder sb = new StringBuilder();
 
         int queryTerms = 0;
         if (lsids != null) {
             for (String s : lsids.split(",")) {
                 if (queryTerms > 0) {
-                    sb.append("%20OR%20");
+                    sb.append(" OR ");
                 } else {
                     sb.append("(");
                 }
@@ -491,16 +498,19 @@ public class SolrQuery implements Query, Serializable {
         if (facets != null && facets.size() > 0) {
             for (int i = 0; i < facets.size(); i++) {
                 if (queryTerms > 0) {
-                    sb.append("%20AND%20");
+                    sb.append(" AND ");
                 }
                 String facet = facets.get(i).toString();
                 int p = facet.indexOf(':');
-                if(p > 0) {
-                    String f = facet.substring(0,p);
+                if (p > 0) {
+                    String f = facet.substring(0, p);
                     String t = translateFieldForSolr(f);
-                    if(!f.equals(t)) {
+                    if (!f.equals(t)) {
                         facet = t + facet.substring(p);
                     }
+                }
+                if(facet.contains(" OR ")) {
+                    facet = "(" + facet + ")";
                 }
                 sb.append(facet);
                 queryTerms++;
@@ -509,7 +519,7 @@ public class SolrQuery implements Query, Serializable {
 
         if (DEFAULT_VALIDATION.length() > 0) {
             if (queryTerms > 0) {
-                sb.append("%20AND%20");
+                sb.append(" AND ");
             }
             queryTerms++;
             sb.append(DEFAULT_VALIDATION);
@@ -518,10 +528,20 @@ public class SolrQuery implements Query, Serializable {
         //extra parameters
         if (extraParams != null) {
             if (queryTerms > 0) {
-                sb.append("%20AND%20");
+                sb.append(" AND ");
             }
             queryTerms++;
             sb.append(extraParams);
+        }
+
+        if(encode) {
+            String s = sb.toString();
+            sb = new StringBuilder();
+            try {
+                sb.append(URLEncoder.encode(s, "UTF-8"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         //wkt term
@@ -530,7 +550,6 @@ public class SolrQuery implements Query, Serializable {
         }
 
         try {
-            //String q = URLEncoder.encode(sb.toString(), "UTF-8");
             return sb.toString();
         } catch (Exception e) {
             e.printStackTrace();
@@ -547,12 +566,19 @@ public class SolrQuery implements Query, Serializable {
     final void makeParamId() {
         paramId = null;
 
+        //do not create paramId for short queries
+        if ((wkt == null || !forMapping) && getFullQ(true).length() < CommonData.maxQLength) {
+            return;
+        }
+
         HttpClient client = new HttpClient();
         String url = CommonData.biocacheServer
-                + POST_SERVICE;
-        PostMethod post = new PostMethod(url.replace("[", "%5B").replace("]", "%5D"));
+                + POST_SERVICE
+                + getQc()
+                + "&facet=false";
+        PostMethod post = new PostMethod(url);
         try {
-            String[] qs = getQ().replace("%20", " ").split("&");
+            String[] qs = getFullQ(false).split("&");
             for (int i = 0; i < qs.length; i++) {
                 String q = qs[i];
                 int p = q.indexOf('=');
@@ -563,7 +589,7 @@ public class SolrQuery implements Query, Serializable {
                     post.addParameter(q.substring(0, p), q.substring(p + 1));
                     System.out.println("param: " + q.substring(0, p) + " : " + q.substring(p + 1));
                 }
-                post.addParameter("bbox",forMapping?"true":"false");
+                post.addParameter("bbox", forMapping ? "true" : "false");
             }
             int result = client.executeMethod(post);
             String response = post.getResponseBodyAsString();
@@ -623,7 +649,7 @@ public class SolrQuery implements Query, Serializable {
 //     * @param args
 //     */
 //    static public void main(String[] args) {
-//        SolrQuery sq = new SolrQuery();
+//        BiocacheQuery sq = new BiocacheQuery();
 //
 //        //count all occurrences and species
 //        System.out.println("total number of occurrences: " + sq.getOccurrenceCount());
@@ -722,6 +748,7 @@ public class SolrQuery implements Query, Serializable {
             fields.add(new QueryField("data_provider", "Data Provider", QueryField.FieldType.STRING));
             fields.add(new QueryField("institution_name", "Institution", QueryField.FieldType.STRING));
             fields.add(new QueryField("year", "Year", QueryField.FieldType.INT));
+            fields.add(new QueryField("month", "Month", QueryField.FieldType.STRING));
             fields.add(new QueryField("collection_name", "Collection", QueryField.FieldType.STRING));
             fields.add(new QueryField("basis_of_record", "Basis of Record", QueryField.FieldType.STRING));
 
@@ -754,16 +781,23 @@ public class SolrQuery implements Query, Serializable {
      */
     @Override
     public LegendObject getLegend(String colourmode) {
+        if(colourmode.equals("-1") || colourmode.equals("grid")) {
+            return null;
+        }
         LegendObject lo = legends.get(colourmode);
+        if(lo != null && lo.getColourMode() != null && !lo.getColourMode().equals(colourmode)) {
+            lo = legends.get(lo.getColourMode());
+        }
         if (lo == null) {
             HttpClient client = new HttpClient();
             String url = CommonData.biocacheServer
                     + LEGEND_SERVICE_CSV
                     + DEFAULT_ROWS
                     + "&q=" + getQ()
-                    + "&cm=" + translateFieldForSolr(colourmode);
+                    + "&cm=" + translateFieldForSolr(colourmode)
+                    + getQc();
             System.out.println(url);
-            GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
+            GetMethod get = new GetMethod(url);
 
             String legend = null;
 
@@ -773,12 +807,58 @@ public class SolrQuery implements Query, Serializable {
 
                 //in the first line do field name replacement
                 String t = translateFieldForSolr(colourmode);
-                if(!colourmode.equals(t)) {
+                if (!colourmode.equals(t)) {
                     s = s.replaceFirst(t, colourmode);
                 }
 
-                lo = new SolrLegendObject(colourmode, s);
-                legends.put(colourmode, lo);
+                lo = new BiocacheLegendObject(colourmode, s);
+
+                //test for exceptions
+                if (!colourmode.contains(",") && (colourmode.equals("year"))) {
+                    lo = ((BiocacheLegendObject) lo).getAsIntegerLegend();
+
+                    //apply cutpoints to colourMode string
+                    Legend l = lo.getNumericLegend();
+                    double[] minmax = l.getMinMax();
+                    double[] cutpoints = l.getCutoffdoubles();
+                    double [] cutpointmins = l.getCutoffMindoubles();
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(colourmode);                    
+                    int i = 0;                    
+                    while (i < cutpoints.length) {
+                        if (i == cutpoints.length - 1 || cutpoints[i] != cutpoints[i + 1]) {
+                            if(i > 0) sb.append(",").append(cutpoints[i-1]);
+                            else sb.append(",*");
+                            sb.append(",").append(cutpoints[i]);
+                        }
+                        i++;
+                    }
+                    String newColourMode = sb.toString();
+
+                    lo.setColourMode(newColourMode);
+                    legends.put(colourmode, lo);
+
+                    LegendObject newlo = getLegend(newColourMode);
+                    newlo.setColourMode(newColourMode);
+                    newlo.setNumericLegend(lo.getNumericLegend());
+                    legends.put(newColourMode, newlo);
+
+                    lo = newlo;
+                } else if (colourmode.equals("month")) {
+                    String newColourMode = "month,00,00,01,01,02,02,03,03,04,04,05,05,06,06,07,07,08,08,09,09,10,10,11,11,12,12";
+
+                    lo.setColourMode(newColourMode);
+                    legends.put(colourmode, lo);
+
+                    LegendObject newlo = getLegend(newColourMode);
+                    newlo.setColourMode(newColourMode);
+                    newlo.setNumericLegend(lo.getNumericLegend());
+                    legends.put(newColourMode, newlo);
+
+                    lo = newlo;
+                }else  {
+                    legends.put(colourmode, lo);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -789,13 +869,16 @@ public class SolrQuery implements Query, Serializable {
 
     @Override
     public Query newFacets(List<Facet> facets, boolean forMapping) {
+        if((facets == null || !facets.isEmpty()) && (this.forMapping || !forMapping)) {
+            return this;
+        }
         ArrayList<Facet> newFacets = new ArrayList<Facet>();
         if (this.facets != null) {
             newFacets.addAll(this.facets);
         }
         newFacets.addAll(facets);
 
-        return new SolrQuery(lsids, wkt, extraParams, newFacets, forMapping);
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping);
     }
 
     @Override
@@ -816,11 +899,12 @@ public class SolrQuery implements Query, Serializable {
         String url = CommonData.biocacheServer
                 + BOUNDING_BOX_CSV
                 + DEFAULT_ROWS
-                + "&q=" + getQ();
+                + "&q=" + getQ()
+                + getQc();
 
         System.out.println(url);
 
-        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
+        GetMethod get = new GetMethod(url);
         try {
             int result = client.executeMethod(get);
             String[] s = get.getResponseBodyAsString().split(",");
@@ -851,7 +935,7 @@ public class SolrQuery implements Query, Serializable {
 //                + "<br>classification=" + lsids
 //                + "<br>data providers=" + getDataProviders();
 
-        String spname = getName();
+        String spname = getSolrName();
 
         String html = "Species information for " + spname + "\n";
         //html += "<h2 class='md_heading'>Species information for " + spname + "</h2>";
@@ -860,7 +944,7 @@ public class SolrQuery implements Query, Serializable {
         html += "<tr><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCount() + "</td></tr>";
         html += "<tr class='md_grey-bg'><td class='md_th'>Classification: </td><td class='md_spacer'/><td class='md_value'>";
 
-        if(lsids != null) {
+        if (lsids != null) {
             for (String s : lsids.split(",")) {
                 Map<String, String> classification = getSpeciesClassification(s);
                 Iterator<String> it = classification.keySet().iterator();
@@ -874,18 +958,18 @@ public class SolrQuery implements Query, Serializable {
                 }
 
                 html += "<br />";
-                html += "More information for <a href='" + CommonData.bieServer + BIE_SPECIES + s + "' target='_blank'>"+ getScientificNameRank(s).split(",")[0] +"</a>";
+                html += "More information for <a href='" + CommonData.bieServer + BIE_SPECIES + s + "' target='_blank'>" + getScientificNameRank(s).split(",")[0] + "</a>";
                 html += "<br />";
             }
         }
 
         html += "</td></tr>";
-        html += "<tr><td class='md_th'>Data providers: </td><td class='md_spacer'/><td class='md_value'>"+getDataProviders()+"</td></tr>";
+        html += "<tr><td class='md_th'>Data providers: </td><td class='md_spacer'/><td class='md_value'>" + getDataProviders() + "</td></tr>";
 //        if(lsids != null && lsids.length() > 0) {
 //            html += "<tr class='md_grey-bg'><td class='md_value' colspan='3'>More information for <a href='" + CommonData.bieServer + BIE_SPECIES + lsids + "' target='_blank'>"+ spname +"</a></td></tr>";
 //        }
 
-        html += "<tr class='md_grey-bg'><td class='md_th'><a href='" + CommonData.biocacheWebServer + "/occurrences/search?q=" + getQ() + "' target='_blank'>view records in biocache</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th' span=3><a href='" + CommonData.biocacheWebServer + "/occurrences/search?q=" + getQ() + "' target='_blank'>view records in biocache</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
         html += "</table>";
 
         return html;
@@ -936,8 +1020,9 @@ public class SolrQuery implements Query, Serializable {
                 //Solr download has some default fields
                 // these include the 'translate' fields
                 // remove them from extraFields
-                if(!extraFields[i].equals(translateFieldForSolr(extraFields[i])))
+                if (!extraFields[i].equals(translateFieldForSolr(extraFields[i]))) {
                     continue;
+                }
 
                 if (sb.length() == 0) {
                     //sb.append("&extra=").append(extraFields[i]);
@@ -946,7 +1031,7 @@ public class SolrQuery implements Query, Serializable {
                 }
             }
         }
-        return CommonData.biocacheServer + DOWNLOAD_URL + "q=" + getQ() + sb.toString();
+        return CommonData.biocacheServer + DOWNLOAD_URL + "q=" + getQ() + sb.toString() + getQc();
     }
 
     @Override
@@ -959,9 +1044,10 @@ public class SolrQuery implements Query, Serializable {
         String url = CommonData.biocacheServer
                 + DATA_PROVIDERS_SERVICE
                 + DEFAULT_ROWS
-                + "&q=" + getQ();
+                + "&q=" + getQ()
+                + getQc();
         System.out.println(url);
-        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
+        GetMethod get = new GetMethod(url);
 
         try {
             int result = client.executeMethod(get);
@@ -992,16 +1078,18 @@ public class SolrQuery implements Query, Serializable {
     }
 
     public String getSolrName() {
-        if(solrName != null) {
+        if (solrName != null) {
             return solrName;
         }
 
         HttpClient client = new HttpClient();
         String url = CommonData.biocacheServer
                 + QUERY_TITLE_URL
-                + "&q=" + getQ();
+                + "&q=" + getQ()
+                + getQc()
+                + "&pageSize=0&facet=false";
         System.out.println(url);
-        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
+        GetMethod get = new GetMethod(url);
 
         try {
             int result = client.executeMethod(get);
@@ -1011,19 +1099,20 @@ public class SolrQuery implements Query, Serializable {
 
                 JSONObject jo = JSONObject.fromObject(response);
 
-                if(jo.containsKey("queryTitle")) {
+                if (jo.containsKey("queryTitle")) {
                     String title = jo.getString("queryTitle");
 
                     //clean default parameter
-                    title = title.replace(" AND geospatial_kosher:true","");
-                    title = title.replace("geospatial_kosher:true AND ","");
+                    title = title.replace(" AND geospatial_kosher:true", "");
+                    title = title.replace("geospatial_kosher:true AND ", "");
+                    title = title.replace(" AND <span>null</span>", "");
                     title = title.replace(" AND null","");
 
                     //clean spans
                     int p1 = title.indexOf("<span");
-                    if(p1 >= 0) {
-                        int p2 = title.indexOf(">",p1);
-                        title = title.substring(0,p1) + title.substring(p2+1,title.length());
+                    if (p1 >= 0) {
+                        int p2 = title.indexOf(">", p1);
+                        title = title.substring(0, p1) + title.substring(p2 + 1, title.length());
                         title = title.replace("</span>", "");
                     }
 
@@ -1036,5 +1125,15 @@ public class SolrQuery implements Query, Serializable {
         }
 
         return null;
+    }
+
+    @Override
+    public String getQc() {
+        return qc;
+    }
+
+    @Override
+    public void setQc(String qc) {
+        this.qc = qc;
     }
 }

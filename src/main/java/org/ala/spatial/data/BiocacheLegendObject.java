@@ -8,6 +8,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -17,7 +18,7 @@ import java.util.logging.Logger;
  *
  * @author Adam
  */
-public class SolrLegendObject extends LegendObject {
+public class BiocacheLegendObject extends LegendObject {
     //[0] is colour, [1] is count
 
     HashMap<Double, int[]> categoriesNumeric;
@@ -25,7 +26,7 @@ public class SolrLegendObject extends LegendObject {
     String rawCsvLegend;
     String colourMode;
 
-    public SolrLegendObject(String colourMode, String legend) {
+    public BiocacheLegendObject(String colourMode, String legend) {
         super((Legend) null, null);
 
         this.colourMode = colourMode;
@@ -38,7 +39,7 @@ public class SolrLegendObject extends LegendObject {
             csv = csvReader.readAll();
             csvReader.close();
         } catch (IOException ex) {
-            Logger.getLogger(SolrLegendObject.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BiocacheLegendObject.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         int count = 0;
@@ -100,10 +101,12 @@ public class SolrLegendObject extends LegendObject {
      * 
      * @return
      */
+    @Override
     public String getTable() {
         return csvLegend;
     }
 
+    @Override
     public int getColour(String value) {
         int[] data = categories.get(value);
 
@@ -114,6 +117,7 @@ public class SolrLegendObject extends LegendObject {
         }
     }
 
+    @Override
     public int getColour(double value) {
         int[] data = categoriesNumeric.get(value);
 
@@ -124,7 +128,11 @@ public class SolrLegendObject extends LegendObject {
         }
     }
 
+    @Override
     public double[] getMinMax() {
+        if(getNumericLegend() != null) {
+            return super.getMinMax();
+        }
         double[] minmax = new double[2];
         boolean first = true;
         for (Double d : categoriesNumeric.keySet()) {
@@ -147,5 +155,24 @@ public class SolrLegendObject extends LegendObject {
 
     private int readColour(String red, String green, String blue) {
         return new Color(Integer.parseInt(red), Integer.parseInt(green), Integer.parseInt(blue)).getRGB();
+    }
+
+    public LegendObject getAsIntegerLegend() {
+        int size = 0;
+        for(double d : categoriesNumeric.keySet()) {
+            int [] v = categoriesNumeric.get(d);
+            size += v[1];
+        }
+        double [] values = new double[size];
+        int pos = 0;
+        for(double d : categoriesNumeric.keySet()) {
+            int [] v = categoriesNumeric.get(d);
+            for(int i=0;i<v[1];i++) {
+                values[pos] = d;
+                pos++;
+            }
+        }
+
+        return LegendBuilder.legendFromDoubles(values, new QueryField(colourMode,QueryField.FieldType.INT));
     }
 }
