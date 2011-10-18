@@ -179,7 +179,7 @@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"
                             </ul>
                             
                             <h3>Webportal Services</h3>
-                            <p>These Webportal services are available at </p>
+                            <p>These Webportal services are available at <a href="http://biocache.ala.org.au/ws/webportal">http://biocache.ala.org.au/ws/webportal</a> </p>
                             <ul>
                                 These services will include all records that satisfy the q, fq and wkt parameters.
                                 <ul>
@@ -203,23 +203,24 @@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"
                                     </ul>
                                 </li>
                                 <li><strong>Occurrences Bounding Box:</strong> /webportal/bbox <br>
-                                    Returns CSV of bounding box of occurrences</li>
-                                <li><strong>Data Providers</strong> /webportal/dataProviders </li>
+                                    Returns CSV of bounding box of occurrences eg. <a href="http://biocache.ala.org.au/ws/webportal/bbox?q=macropus">http://biocache.ala.org.au/ws/webportal/bbox?q=macropus</a></li>
+                                <li><strong>Data Providers</strong> /webportal/dataProviders eg. <a href="http://biocache.ala.org.au/ws/webportal/dataProviders?q=macropus">http://biocache.ala.org.au/ws/webportal/dataProviders?q=macropus</a></li>
                                 <li><strong>Species List:</strong>
                                     <ul>
-                                        <li><strong>Get species list:</strong> /webportal/species</li>
-                                        <li><strong>Get species list as CSV:</strong> /webportal/species.csv</li>
+                                        <li><strong>Get species list:</strong> /webportal/species eg. <a href="http://biocache.ala.org.au/ws/webportal/species?q=macropus&pageSize=100">http://biocache.ala.org.au/ws/webportal/species?q=macropus&pageSize=100</a></li>
+                                        <li><strong>Get species list as CSV:</strong> /webportal/species.csv eg. <a href="http://biocache.ala.org.au/ws/webportal/species.csv?q=macropus&wkt=POLYGON((140:-37,151:-37,151:-26,140.1310:-26,140:-37))&pageSize=100">http://biocache.ala.org.au/ws/webportal/species.csv?q=macropus&wkt=POLYGON((140:-37,151:-37,151:-26,140.1310:-26,140:-37))&pageSize=100</a></li>
                                     </ul>
                                 </li>
                                 <li><strong>Occurrences:</strong>
                                     <ul>
-                                        <li><strong>Get occurrences:</strong> /webportal/occurrences</li>
-                                        <li><strong>Get occurrences as gzipped CSV:</strong> /webportal/occurrences.gz</li>
+                                        <li><strong>Get occurrences:</strong> /webportal/occurrences eg. <a href="http://biocache.ala.org.au/ws/webportal/occurrences?q=macropus">http://biocache.ala.org.au/ws/webportal/occurrences?q=macropus</a></li>
+                                        <li><strong>Get occurrences as gzipped CSV:</strong> /webportal/occurrences.gz eg. <a href="http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=macropus&fl=longitude,latitude">http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=macropus&fl=longitude,latitude</a></li>
                                     </ul>
                                 </li>
                             </ul>
 
                             <h3>Webportal WMS Service</h3>
+                            <p>A worked example is located <a href="http://code.google.com/p/alageospatialportal/wiki/SimpleWMSExample">here.</a></p>
                             <ul>
                                 <li><strong>Tile:</strong> /webportal/wms/reflect
                                     <ul>
