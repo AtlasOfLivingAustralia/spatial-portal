@@ -141,9 +141,9 @@ public class EnvironmentalList extends Listbox {
         for (int i = 0; i < listEntries.size(); i++) {
             float value = listEntries.get(i).value;
             Listcell lc = (Listcell) (getItemAtIndex(i).getLastChild());
-            if (threasholds[0] > value) {
+            if (!getSelectedItems().isEmpty() && threasholds[0] > value) {
                 lc.setSclass("lcRed");//setStyle("background: #bb2222;");
-            } else if (threasholds[1] > value) {
+            } else if (!getSelectedItems().isEmpty() && threasholds[1] > value) {
                 lc.setSclass("lcYellow");//lc.setStyle("background: #ffff22;");
             } else {
                 lc.setSclass("lcGreen");//lc.setStyle("background: #22aa22;");

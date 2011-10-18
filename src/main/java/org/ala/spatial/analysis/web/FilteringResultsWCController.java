@@ -18,7 +18,7 @@ import net.sf.json.JSONObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
@@ -541,7 +541,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void onClick$sdLabel(Event event) {
         int c = 0;
         try {
-            c = Integer.parseInt(sdLabel.getValue());
+            c = Integer.parseInt(sdLabel.getValue().replace(",",""));
         } catch (Exception e) {
         }
         if (c > 0 && speciesDistributionText != null) {

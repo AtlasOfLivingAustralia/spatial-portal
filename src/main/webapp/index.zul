@@ -240,7 +240,6 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     </div>
                     
                     <leftMenuSearch id="leftMenuSearch" visible="false" />
-                    <textbox id="userparams" visible="false" multiline="true" value="${param}" />
                 </div>
 
             </west>

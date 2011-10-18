@@ -18,83 +18,108 @@ import java.util.Set;
 public class Facet implements Serializable {
 
     /**
-     * Parse a facet. Used with uploaded data in UploadQuery and WMSService
+     * Parse a facet created by webportal:
      *
-     * Recognised facets:
+     * Classification legend queries
      *
-     *  - single string field.  <field>:CSV formatted values
+     * (1) <field>:"<value>" OR <field>:"<value>"
+     * (2) -<field>:*
+     * (3) -(<field>:* AND -<field>:"<value>" AND -<field>:"<value>")
      *
-     *  - inverse of 'single string field'.  -<field>:CSV formatted values
+     * (4) <field>:[<min> TO <max>] OR <field>:[<min> TO <max>]
+     * (5) -<field>:[* TO *]
+     * (6) -(<field>:[* TO *] AND -<field>:[<min> TO <max>] AND -<field>:[<min> TO <max>])
      *
-     *  - one or more number fields.  <term1> AND <term2> AND ...
-     *    where <term> is <field>:[<min> TO <max>]
-     *          <min>, <max> may be '*'
      *
-     *  - inverse of 'one or more number fields'.  -<term1> OR -<term2> OR ...
-     *    where <term> is <field>:[<min> TO <max>]
-     *          <min>, <max> may be '*'
+     * Environmental Envelope queries
      *
-     *  - two number fields and their null value records.
-     *    (<term1> AND <term2>) OR -<field1>:[* TO *] OR -<field2>:[* TO *]
+     * (7) <field>:[<min> TO <max>] AND <field>:[<min> TO <max>]
      *
-     *  - inverse of 'two number fields and their null value records'.
-     *    (-<term1> OR -<term2>) AND <field1>:[* TO *] AND <field2>:[* TO *]
-
-     * @param fq
+     *
+     * Scatterplot queries
+     *
+     * (8) <field>:[<min> TO <max>] AND <field>:[<min> TO <max>]
+     * (9) -(<field>:[* TO *] AND <field>:[* TO *])
+     * (10) -(-(<field>:[<min> TO <max>] AND <field>:[<min> TO <max>]) AND <field>:[* TO *] AND <field>:[* TO *])
+     *
+     *
+     * (11) -(<field>:[<min> TO <max>] AND <field>:[<min> TO <max>])
+     * (12) <field>:[* TO *] AND <field>:[* TO *]
+     * (13) (-<field>:[<min> TO <max>] OR -<field>:[<min> TO <max>]) AND <field>:[* TO *] AND <field>:[* TO *]
+     *
+     *
+     * @param fq facet to parse as String
+     * @param isInteger flag for range queries.  Want to report an inclusive range
      * @return
      */
-    public static Facet parseFacet(String fq) {
-        fq = fq.replace(" ", "%20");
+    public static Facet parseFacet(String fq){
+        if(fq == null || fq.length() < 3) {
+            return null;
 
+        }
+        
         //tests
-        boolean hasAnd = fq.contains("%20AND%20");
-        boolean hasOr = fq.contains("%20OR%20");
-        boolean hasStartBracket = fq.startsWith("(");
-        boolean hasStartMinus = fq.startsWith("-");
-        boolean has2ndCharMinus = fq.charAt(1) == '-';
-        boolean hasSqBracket = fq.contains("[");
+        boolean hasAnd = fq.contains(" AND ");
+        boolean hasOr = fq.contains(" OR ");
+        
+        if(fq.startsWith("-(-(")) {
+            // (10) -(-(<field>:[<min> TO <max>] AND <field>:[<min> TO <max>]) AND <field>:[* TO *] AND <field>:[* TO *])
+            int p = fq.indexOf(')');
 
-        //- single string field.  <field>:CSV formatted values
-        if (!hasSqBracket && !hasAnd && !hasOr) {
-            int offset = fq.startsWith("-") ? 1 : 0;
-            String f = fq.substring(offset, fq.indexOf(':')).replace("%20"," ");
-            String v = fq.substring(fq.indexOf(':') + 1).replace("%20"," ");
-            return new Facet(f, v, offset == 0);
-        } else //- one or more number fields.  <term1> AND <term2> AND ...
-        if (!hasStartBracket && hasAnd && hasSqBracket) {
-            return new Facet(fq, null, parseTerms("%20AND%20", fq), null);
-        } else //- inverse of 'one or more number fields'.  -<term1> OR -<term2> OR ...
-        if (hasStartMinus && hasOr && hasSqBracket) {
-            return new Facet(fq, parseTerms("%20OR%20", fq), null, null);
-        } else //- two number fields and their null value records.
-        if (hasStartBracket && !has2ndCharMinus && hasAnd) {
-            String[] parts = fq.split("%20OR%20");
-            Facet[] firstTwo = parseTerms("%20AND%20", parts[0].substring(1, parts[0].length() - 1));
-            Facet[] lastTwo = {parseTerms("%20OR%20", parts[1])[0], parseTerms("%20OR%20", parts[2])[0]};
-            return new Facet(fq, null, firstTwo, lastTwo);
-        } else //- inverse of 'two number fields and their null value records'.
-        if (hasStartBracket && has2ndCharMinus && hasOr) {
-            String[] parts = fq.split("%20AND%20");
-            Facet[] firstTwo = parseTerms("%20OR%20", parts[0].substring(1, parts[0].length() - 1));
-            Facet[] lastTwo = {parseTerms("%20AND%20", parts[1])[0], parseTerms("%20AND%20", parts[2])[0]};
-            return new Facet(fq, firstTwo, lastTwo, null);
+            //reverse sign to convert first inner AND into OR
+            Facet [] orPart = parseTerms(" AND ", fq.substring(4,p), true);
+            Facet [] andPart = parseTerms(" AND ", fq.substring(p + 6, fq.length()-1), false);
+
+            return new Facet(fq, orPart, andPart, null);
+        } else if(fq.startsWith("-(") && !fq.endsWith(")") && !hasOr) {
+            //(13) -(<field>:[<min> TO <max>] AND <field>:[<min> TO <max>]) AND <field>:[* TO *] AND <field>:[* TO *]
+            int p = fq.indexOf(')');
+
+            //reverse sign to convert first inner AND into OR
+            Facet [] orPart = parseTerms(" AND ", fq.substring(2,p), true);
+            Facet [] andPart = parseTerms(" AND ", fq.substring(p + 6, fq.length()-1), false);
+            return new Facet(fq, orPart, andPart, null);
+        } else {//if((hasAnd != hasOr) || (!hasAnd && !hasOr)) {
+            //(1) (2) (3) (4) (5) (6) (7) (8) (9) (11) (12)
+            boolean invert = fq.charAt(0) == '-' && fq.charAt(1) == '(';
+            String s = invert?fq.substring(2,fq.length()-1):fq;
+            Facet [] f = parseTerms((hasAnd?" AND ":" OR "), s, invert);
+
+            if(f.length == 1) {
+                return f[0];
+            } else {
+                if(invert) {
+                    return new Facet(fq, (hasAnd?f:null) , (hasOr?f:null) , null);
+                } else {
+                    return new Facet(fq, (hasOr?f:null) , (hasAnd?f:null) , null);
+                }
+            }
         }
 
-        return null;
+        //return null;
     }
 
-    static Facet[] parseTerms(String separator, String fq) {
+    static Facet[] parseTerms(String separator, String fq, boolean invert) {
         String[] terms = fq.split(separator);
         Facet[] facets = new Facet[terms.length];
         for (int i = 0; i < terms.length; i++) {
             String ff = terms[i];
             int offset = ff.startsWith("-") ? 1 : 0;
-            String f = ff.substring(offset, ff.indexOf(':')).replace("%20"," ");
-            String v = ff.substring(fq.indexOf(':') + 1);
-            String[] n = v.substring(1, v.length() - 1).split("%20TO%20");
-            double[] d = {n[0].equals("*") ? Double.NEGATIVE_INFINITY : Double.parseDouble(n[0]),
-                n[1].equals("*") ? Double.POSITIVE_INFINITY : Double.parseDouble(n[1])};
-            facets[i] = new Facet(f, d[0], d[1], offset == 0);
+            String f = ff.substring(offset, ff.indexOf(':'));
+            String v = ff.substring(ff.indexOf(':') + 1);
+            if(v.charAt(0) == '\"' || v.charAt(0) == '*') {
+                //value
+                if(v.charAt(0) != '*') {
+                    v = v.substring(1, v.length()-1);
+                }
+                facets[i] = new Facet(f, v, invert != (offset == 0));
+            } else {
+                //range
+                String[] n = v.substring(1, v.length() - 1).split(" TO ");
+                double[] d = {n[0].equals("*") ? Double.NEGATIVE_INFINITY : Double.parseDouble(n[0]),
+                    n[1].equals("*") ? Double.POSITIVE_INFINITY : Double.parseDouble(n[1])};
+                facets[i] = new Facet(f, d[0], d[1], invert != (offset == 0));
+            }
         }
 
         return facets;
@@ -106,6 +131,10 @@ public class Facet implements Serializable {
     double min;
     double max;
     boolean includeRange;
+
+    Facet[] orInAndTerms;
+    Facet[] andTerms;
+    Facet[] orTerms;
 
     public Facet(String field, String value, boolean includeRange) {
         this.field = field;
@@ -124,24 +153,20 @@ public class Facet implements Serializable {
     }
 
     public Facet(String field, double min, double max, boolean includeRange) {
-        this.field = field.replace("%20"," ");
+        this.field = field;
         this.min = min;
         this.max = max;
         this.includeRange = includeRange;
 
-        this.value = "["
-                + String.valueOf(min)
-                + " TO "
-                + String.valueOf(max)
-                + "]";
+        String strMin = Double.isInfinite(min)?"*":(min==(int)min)?String.format("%d",(int)min):String.valueOf(min);
+        String strMax = Double.isInfinite(max)?"*":(max==(int)max)?String.format("%d",(int)max):String.valueOf(max);
+
+        this.value = "[" + strMin + " TO " + strMax + "]";
 
         this.valueArray = null;
 
-        this.parameter = null;
+        this.parameter = (includeRange?"":"-") + this.field + ":" + this.value;
     }
-    Facet[] orInAndTerms;
-    Facet[] andTerms;
-    Facet[] orTerms;
 
     public Facet(String fq, Facet[] orInAndTerms, Facet[] andTerms, Facet[] orTerms) {
         //make toString work
@@ -156,7 +181,7 @@ public class Facet implements Serializable {
     @Override
     public String toString() {
         if (parameter == null) {
-            return (includeRange ? "" : "-") + field + ":" + value.replace(" ", "%20");
+            return (includeRange ? "" : "-") + field + ":\"" + value + "\"";
         } else {
             return parameter;
         }
@@ -195,44 +220,89 @@ public class Facet implements Serializable {
     }
 
     public boolean isValid(String v) {
-        if (valueArray != null) {
+        if (getType() == 1) {
             for (int i = 0; i < valueArray.length; i++) {
-                if (valueArray[i].equals(v)) {
-                    return true;
+                if (valueArray[i].equals(v) || (v.length() != 0 && valueArray[i].equals("*"))) {
+                    return includeRange;
                 }
             }
             return !includeRange;
-        } else {
+        } else if(getType() == 0) {
             try {
                 double d = Double.parseDouble(v);
                 boolean inside = d >= min && d <= max;
                 return includeRange ? inside : !inside;
             } catch (Exception e) {
             }
+        } else {
+            boolean state = true;
+            if (orInAndTerms != null) {
+                state = sumTermTests(orInAndTerms, v) > 0;
+            }
+            if (andTerms != null) {
+                if (!state) {
+                    //state = false;
+                } else {
+                    state = sumTermTests(andTerms, v) == andTerms.length;
+                }
+            }
+            if (orTerms != null) {
+                if (state) {
+                    return true;
+                } else {
+                    return sumTermTests(orTerms, v) > 0;
+                }
+            } else {
+                return state;
+            }
         }
 
-        return false;
+        return !includeRange;
     }
 
     public boolean isValid(double d) {
-        if (Double.isNaN(max)) {
+        if (getType() == 1) {
             String v = String.valueOf(d);
+            if(Double.isNaN(d)) {
+                v = "";
+            }
             for (int i = 0; i < valueArray.length; i++) {
-                if (valueArray[i].equals(v)) {
-                    return true;
+                if (valueArray[i].equals(v) || (v.length() != 0 && valueArray[i].equals("*"))) {
+                    return includeRange;
                 }
             }
 
             return !includeRange;
-        } else {
+        } else if(getType() == 0){
             try {
                 boolean inside = d >= min && d <= max;
                 return includeRange ? inside : !inside;
             } catch (Exception e) {
             }
+        } else {
+            boolean state = true;
+            if (orInAndTerms != null) {
+                state = sumTermTests(orInAndTerms, d) > 0;
+            }
+            if (andTerms != null) {
+                if (!state) {
+                    //state = false;
+                } else {
+                    state = sumTermTests(andTerms, d) == andTerms.length;
+                }
+            }
+            if (orTerms != null) {
+                if (state) {
+                    return true;
+                } else {
+                    return sumTermTests(orTerms, d) > 0;
+                }
+            } else {
+                return state;
+            }
         }
 
-        return false;
+        return !includeRange;
     }
 
     /**
@@ -315,5 +385,107 @@ public class Facet implements Serializable {
             }
         }
         return sum;
+    }
+
+    private int sumTermTests(Facet[] andTerms, String value) {
+        int sum = 0;
+        for (int i = 0; andTerms != null && i < andTerms.length; i++) {
+            if (andTerms[i].getType() == 2) {
+                if (andTerms[i].isValid(value)) {
+                    sum++;
+                }
+            } else {
+                if (andTerms[i].isValid(value)) {
+                    sum++;
+                }
+            }
+        }
+        return sum;
+    }
+
+    private int sumTermTests(Facet[] andTerms, double value) {
+        int sum = 0;
+        for (int i = 0; andTerms != null && i < andTerms.length; i++) {
+            if (andTerms[i].getType() == 2) {
+                if (andTerms[i].isValid(value)) {
+                    sum++;
+                }
+            } else {
+                if (andTerms[i].isValid(value)) {
+                    sum++;
+                }
+            }
+        }
+        return sum;
+    }
+
+    public double getMin() {
+        if(getType() == 0) {
+            return min;
+        } else if(getType() == 1) {
+            return Float.NaN;
+        } else {
+            double min = Double.POSITIVE_INFINITY;
+            if(orInAndTerms != null) {
+                for(int i=0;i<orInAndTerms.length;i++) {
+                    double newMin = orInAndTerms[i].getMin();
+                    if(orInAndTerms[i].includeRange && newMin < min) {
+                        min = newMin;
+                    }
+                }
+            }
+            if(andTerms != null) {
+                for(int i=0;i<andTerms.length;i++) {
+                    double newMin = andTerms[i].getMin();
+                    if(andTerms[i].includeRange && newMin < min) {
+                        min = newMin;
+                    }
+                }
+            }
+            if(orTerms != null) {
+                for(int i=0;i<orTerms.length;i++) {
+                    double newMin = orTerms[i].getMin();
+                    if(orTerms[i].includeRange && newMin < min) {
+                        min = newMin;
+                    }
+                }
+            }
+            return min;
+        }
+    }
+
+    public double getMax() {
+        if(getType() == 0) {
+            return max;
+        } else if(getType() == 1) {
+            return Float.NaN;
+        } else {
+            double max = Double.NEGATIVE_INFINITY;
+            if(orInAndTerms != null) {
+                for(int i=0;i<orInAndTerms.length;i++) {
+                    double newMax = orInAndTerms[i].getMax();
+                    if(orInAndTerms[i].includeRange && newMax > max) {
+                        max = newMax;
+                    }
+                }
+            }
+            if(andTerms != null) {
+                for(int i=0;i<andTerms.length;i++) {
+                    double newMax = andTerms[i].getMax();
+                    if(andTerms[i].includeRange && newMax > max) {
+                        max = newMax;
+                    }
+                }
+            }
+            if(orTerms != null) {
+                for(int i=0;i<orTerms.length;i++) {
+                    double newMax = orTerms[i].getMax();
+                    if(orTerms[i].includeRange && newMax > max) {
+                        max = newMax;
+                    }
+                }
+            }
+            return max;
+        }
     }
 }

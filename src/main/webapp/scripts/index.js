@@ -130,7 +130,7 @@ function roundNumber(num, dec) {
             //does not always stick
             if(retryFixExtent < 1) {
                 retryFixExtent++;
-                setTimeout(function() { fixExtent(a,b,c,d); }, 2000);
+                setTimeout(function() {fixExtent(a,b,c,d);}, 2000);
             }
         }
 
@@ -148,7 +148,6 @@ jQuery('.hidden_image :hidden').show();
 
 if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.location.href.indexOf("spatial.ala.org.au") > -1 || parent.location.href.indexOf("spatial-test.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
     jQuery('.z-north').show();
-    jQuery('.z-south').show();
 }
 
 function printHack(o) {
@@ -230,25 +229,26 @@ function addCommas(nStr) {
 }
 
 
+//Not required in zk 5.0.8
 //capture mouse events during window resize or move over an iframe
-var overlayon = false;
-function needOverlay() {
-    var zkresizing = parent.document.getElementById("zk_ddghost");
-    var zkmoving = parent.document.getElementById("zk_wndghost");
-
-    if(zkresizing != null && zkresizing.className.indexOf('drop') >= 0) {
-        //do nothing with drag/drop
-    } else if(!overlayon && (zkmoving != null || zkresizing != null)) {
-        //sit above zk (z-index:1800)
-        parent.jq(parent.document.body).append("<div id='overlay_' style='position:absolute;width:100%;height:100%;top:0;left:0;z-index:1900;background-color:white;opacity:0.01;filter:alpha(opacity=1);'></div>");
-        overlayon = true;
-    } else if(overlayon && zkmoving == null && zkresizing == null) {
-        overlayon = false;
-        parent.jq(parent.document.getElementById("overlay_")).remove();
-    }
-    setTimeout(needOverlay, 500);
- }
-setTimeout(needOverlay, 500);  //start
+//var overlayon = false;
+//function needOverlay() {
+//    var zkresizing = parent.document.getElementById("zk_ddghost");
+//    var zkmoving = parent.document.getElementById("zk_wndghost");
+//
+//    if(zkresizing != null && zkresizing.className.indexOf('drop') >= 0) {
+//        //do nothing with drag/drop
+//    } else if(!overlayon && (zkmoving != null || zkresizing != null)) {
+//        //sit above zk (z-index:1800)
+//        parent.jq(parent.document.body).append("<div id='overlay_' style='position:absolute;width:100%;height:100%;top:0;left:0;z-index:1900;background-color:white;opacity:0.01;filter:alpha(opacity=1);'></div>");
+//        overlayon = true;
+//    } else if(overlayon && zkmoving == null && zkresizing == null) {
+//        overlayon = false;
+//        parent.jq(parent.document.getElementById("overlay_")).remove();
+//    }
+//    setTimeout(needOverlay, 500);
+// }
+//setTimeout(needOverlay, 500);  //start
 
 
 //TODO: WIRE THESE INTO ZK
