@@ -40,7 +40,7 @@ public class QueryUtil {
 
         //treat as lsid
         if (q == null) {
-            q = new SolrQuery(id, null, null, null, forMapping);
+            q = new BiocacheQuery(id, null, null, null, forMapping);
         }
 
         return q;
@@ -55,7 +55,7 @@ public class QueryUtil {
             if (sa.getMapLayer().getData("facets") != null) {
                 ArrayList<Facet> facets = (ArrayList<Facet>) sa.getMapLayer().getData("facets");
                 if (baseQuery == null) {
-                    q = new SolrQuery(null, null, null, facets, forMapping);
+                    q = new BiocacheQuery(null, null, null, facets, forMapping);
                 } else {
                     q = baseQuery.newFacets(facets, forMapping);
                 }
@@ -63,7 +63,7 @@ public class QueryUtil {
         }
         if (q == null) {
             if (baseQuery == null) {
-                q = new SolrQuery(null, sa.getWkt(), null, null, false);
+                q = new BiocacheQuery(null, sa.getWkt(), null, null, false);
             } else {
                 q = baseQuery.newWkt(sa.getWkt(), forMapping);
             }

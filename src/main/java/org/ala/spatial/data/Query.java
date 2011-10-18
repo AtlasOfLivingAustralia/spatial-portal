@@ -63,7 +63,7 @@ public interface Query {
      *
      * @return
      */
-    public String getFullQ();
+    public String getFullQ(boolean encode);
 
 
     /**
@@ -147,4 +147,14 @@ public interface Query {
     public String getDownloadUrl(String[] extraFields);
 
     public byte[] getDownloadBytes(String[] extraFields);
+
+    /**
+     * Get parameter to add into WMS requests
+     */
+    public String getQc();
+
+    /**
+     * Set parameter to add into WMS requests
+     */
+    public void setQc(String qc);
 }
