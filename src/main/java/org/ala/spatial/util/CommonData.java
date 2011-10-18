@@ -48,6 +48,8 @@ public class CommonData {
     static final String BIOCACHE_SERVICE_URL = "biocache_service_url";
     static final String BIOCACHE_WEBAPP_URL = "biocache_webapp_url";
     static final String DEFAULT_UPLOAD_SAMPLING = "default_upload_sampling";
+    static final String MAX_Q_LENGTH = "max_q_length";
+    static final String BIOCACHE_QC = "biocache_qc";
 
     //(1) for LayersUtil
     static String[] environmentalLayerNames = null;
@@ -92,9 +94,11 @@ public class CommonData {
     static public String bieServer;
     static public String biocacheServer;
     static public String biocacheWebServer;
+    static public int maxQLength;
     static public Map<String, String> settings;
     //lsid counts, for species autocomplete
     static public LsidCounts lsidCounts;
+    public static String biocacheQc;
 
     /*
      * initialize common data from geoserver and satserver
@@ -109,6 +113,11 @@ public class CommonData {
         biocacheServer = settings.get(BIOCACHE_SERVICE_URL);
         biocacheWebServer = settings.get(BIOCACHE_WEBAPP_URL);
         defaultFieldString = settings.get(DEFAULT_UPLOAD_SAMPLING);
+        maxQLength = Integer.parseInt(settings.get(MAX_Q_LENGTH));
+        biocacheQc = settings.get(BIOCACHE_QC);
+        if(biocacheQc == null) {
+            biocacheQc = "";
+        }
         CommonData.settings = settings;
 
         //(1) for LayersUtil

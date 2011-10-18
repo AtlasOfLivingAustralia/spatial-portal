@@ -16,7 +16,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.data.Facet;
 import org.ala.spatial.data.Query;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SPLFilter;
@@ -573,7 +573,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 //                Facet f = new Facet(CommonData.getLayerFacetName(splf.layername), splf.minimum_value, splf.maximum_value, true);
 //                facets.add(f);
 //            }
-//            Query q = new SolrQuery(null, null, null, facets);
+//            Query q = new BiocacheQuery(null, null, null, facets);
 
             String urlPart = "";
             if (commit) {
@@ -698,7 +698,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     private int getSpeciesCount() {
-        Query q = new SolrQuery(null, null, null, getFacets(), false);
+        Query q = new BiocacheQuery(null, null, null, getFacets(), false);
 
         return q.getSpeciesCount();
     }

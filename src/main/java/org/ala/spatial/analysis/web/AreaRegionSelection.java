@@ -15,7 +15,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import net.sf.json.JSONObject;
 import org.ala.spatial.data.Facet;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
@@ -233,7 +233,7 @@ public class AreaRegionSelection extends AreaToolComposer {
                 //test if this facet is in solr
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(f);
-                if(new SolrQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
+                if(new BiocacheQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
                     return f;
                 }
             }

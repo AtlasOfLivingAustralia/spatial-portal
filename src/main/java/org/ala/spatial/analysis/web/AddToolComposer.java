@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
@@ -916,13 +916,13 @@ public class AddToolComposer extends UtilityComposer {
                 System.out.println("getSelectedSpecies: " + species);
                 if (species.equals("allspecies")) {
                     species = "none";
-                    q = new SolrQuery(null, null, null, null, false);
+                    q = new BiocacheQuery(null, null, null, null, false);
                 } else if (species.equals("allmapped")) {
 
                     //                species = "";
                     //                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
                     //
-                    //                SolrQuery sq = new SolrQuery();
+                    //                BiocacheQuery sq = new BiocacheQuery();
                     //                for (int i = 0; i < layers.size(); i++) {
                     //                    MapLayer lyr = layers.get(i);
                     //                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
@@ -936,7 +936,7 @@ public class AddToolComposer extends UtilityComposer {
                 } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                     if (searchSpeciesAuto.getSelectedItem() != null) {
                         species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                        q = new SolrQuery(species, null, null, null, false);
+                        q = new BiocacheQuery(species, null, null, null, false);
                     }
                 }
             } catch (Exception e) {
@@ -966,7 +966,7 @@ public class AddToolComposer extends UtilityComposer {
                     //                species = "";
                     //                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
                     //
-                    //                SolrQuery sq = new SolrQuery();
+                    //                BiocacheQuery sq = new BiocacheQuery();
                     //                for (int i = 0; i < layers.size(); i++) {
                     //                    MapLayer lyr = layers.get(i);
                     //                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
@@ -983,7 +983,7 @@ public class AddToolComposer extends UtilityComposer {
                     }
                     if (bgSearchSpeciesAuto.getSelectedItem() != null) {
                         species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                        q = new SolrQuery(species, null, null, null, false);
+                        q = new BiocacheQuery(species, null, null, null, false);
                     }
                 }
             } catch (Exception e) {

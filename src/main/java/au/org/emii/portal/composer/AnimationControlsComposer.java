@@ -23,7 +23,7 @@ import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Window;
-import au.org.emii.zk.DateboxPlus;
+//import au.org.emii.zk.DateboxPlus;
 
 public class AnimationControlsComposer extends GenericAutowireAutoforwardComposer {
 
@@ -35,11 +35,11 @@ public class AnimationControlsComposer extends GenericAutowireAutoforwardCompose
     /**
      * Start date
      */
-    private DateboxPlus startDatebox;
+  //  private DateboxPlus startDatebox;
     /**
      * End date
      */
-    private DateboxPlus endDatebox;
+//    private DateboxPlus endDatebox;
     /**
      * Start animation button
      */
@@ -68,17 +68,17 @@ public class AnimationControlsComposer extends GenericAutowireAutoforwardCompose
     public boolean animationDatesValid() {
         boolean valid = false;
 
-        Date start = startDatebox.getValue();
-        Date end = endDatebox.getValue();
-
-        if ((start != null)
-                && (end != null)
-                && (start.before(end))
-                && startDatebox.isValid()
-                && endDatebox.isValid()) {
-
-            valid = true;
-        }
+//        Date start = startDatebox.getValue();
+//        Date end = endDatebox.getValue();
+//
+//        if ((start != null)
+//                && (end != null)
+//                && (start.before(end))
+//                && startDatebox.isValid()
+//                && endDatebox.isValid()) {
+//
+//            valid = true;
+//        }
         return valid;
     }
 
@@ -93,9 +93,9 @@ public class AnimationControlsComposer extends GenericAutowireAutoforwardCompose
                 // 1) check dates are valid
                 if (animationDatesValid()) {
 
-                    // 2) populate maplayer.animationSelection
-                    as.setStartDate(startDatebox.getValue());
-                    as.setEndDate(endDatebox.getValue());
+//                    // 2) populate maplayer.animationSelection
+//                    as.setStartDate(startDatebox.getValue());
+//                    as.setEndDate(endDatebox.getValue());
 
                     // 3) ask ncwms for the the timeStrings
                     // (will be stored within activeLayer)
@@ -232,11 +232,11 @@ public class AnimationControlsComposer extends GenericAutowireAutoforwardCompose
     private void preSelectNcWMSDateRange(List<String> validDates) throws WrongValueException, ParseException {
         logger.debug("selecting maximum date range for ncwms");
         DateFormat sd = Validate.getShortIsoDateFormatter();
-        startDatebox.setValue(
-                sd.parse(validDates.get(0)));
-        endDatebox.setValue(
-                sd.parse(
-                validDates.get(validDates.size() - 1)));
+//        startDatebox.setValue(
+//                sd.parse(validDates.get(0)));
+//        endDatebox.setValue(
+//                sd.parse(
+//                validDates.get(validDates.size() - 1)));
     }
 
     /**
@@ -260,11 +260,11 @@ public class AnimationControlsComposer extends GenericAutowireAutoforwardCompose
          * MAXIMUM_ALLOWED_FRAMES of animation available
          */
         int startIndex = Math.max(0, validDates.size() - settingsSupplementary.getValueAsInt(ThreddsSupport.MAXIMUM_ALLOWED_FRAMES));
-        startDatebox.setValue(
-                sd.parse(validDates.get(startIndex)));
-        endDatebox.setValue(
-                sd.parse(
-                validDates.get(validDates.size() - 1)));
+//        startDatebox.setValue(
+//                sd.parse(validDates.get(startIndex)));
+//        endDatebox.setValue(
+//                sd.parse(
+//                validDates.get(validDates.size() - 1)));
     }
 
     public void updateAnimationControls(MapLayer currentSelection) {
@@ -276,8 +276,8 @@ public class AnimationControlsComposer extends GenericAutowireAutoforwardCompose
             List<String> validDates = animationParameters.getDatesWithData();
             updateAnimationStartStopButtons(currentSelection);
 
-            startDatebox.setValidDates(validDates);
-            endDatebox.setValidDates(validDates);
+//            startDatebox.setValidDates(validDates);
+//            endDatebox.setValidDates(validDates);
 
             if (validDates.size() > 1) {
                 try {
@@ -321,12 +321,12 @@ public class AnimationControlsComposer extends GenericAutowireAutoforwardCompose
 
     public void onChange$startDatebox() {
         logger.debug("start date changed");
-        invalidStartDate.setVisible(!startDatebox.isValid());
+//        invalidStartDate.setVisible(!startDatebox.isValid());
     }
 
     public void onChange$endDatebox() {
         logger.debug("end date changed");
-        invalidEndDate.setVisible(!endDatebox.isValid());
+//        invalidEndDate.setVisible(!endDatebox.isValid());
     }
 
     public OpenLayersJavascript getOpenLayersJavascript() {

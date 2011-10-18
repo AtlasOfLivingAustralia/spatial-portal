@@ -15,7 +15,7 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.data.Facet;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
@@ -199,7 +199,11 @@ public class AreaMapPolygon extends AreaToolComposer {
                             //  break;
                         } else {
                             searchComplete = true;
-                            displayGeom.setValue(wkt);
+                            if(wkt.length() > 200) {
+                                displayGeom.setValue(wkt.substring(0, 200) + "...");
+                            } else {
+                                displayGeom.setValue(wkt);
+                            }
                             //mc.removeFromList(mc.getMapLayer("Active Area"));
                             System.out.println("**********************************");
                             System.out.println("setting layerName from " + layerName);
@@ -328,7 +332,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                 //test if this facet is in solr
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(f);
-                if(new SolrQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
+                if(new BiocacheQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
                     return f;
                 }
             }

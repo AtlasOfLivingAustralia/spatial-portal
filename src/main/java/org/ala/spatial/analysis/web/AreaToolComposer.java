@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.UploadQuery;
 import org.zkoss.zk.ui.Executions;
 
@@ -145,7 +145,7 @@ public class AreaToolComposer extends UtilityComposer {
         try {
             String wkt = layers.get(0).getWKT();
 
-            SolrQuery sq = new SolrQuery(null, wkt, null,  null, true);
+            BiocacheQuery sq = new BiocacheQuery(null, wkt, null,  null, true);
             int results_count_occurrences = sq.getOccurrenceCount();
 
             //test limit

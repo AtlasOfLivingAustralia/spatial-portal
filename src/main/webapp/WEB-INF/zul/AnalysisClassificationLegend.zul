@@ -13,8 +13,9 @@
              }
         </style>
 
-            <div height="20px" style="bottom: 0px;right: 0px;margin: 0px 5px 5px 0px;padding: 0px 5px 5px 0px;" >
-                <button id="createInGroup" label="create layer from selection" sclass="goButton" visible="false" />
+            <div height="20px" style="bottom: 0px;right: 0px;margin: 0px 5px 5px 0px;padding: 0px 5px 5px 0px;" >                
+                <button id="createInGroup" label="Create layer" sclass="goButton" visible="true" />
+                <button id="clearSelection" label="Clear selection" sclass="goButton" visible="true" />
             </div>
 
             <listbox sclass="legendlist" id="legend" width="100%" vflex="true"  >
@@ -25,6 +26,24 @@
                     <listheader id="countheader" label="count" width="60px" align="right"></listheader>
                 </listhead>
             </listbox>
+
+            <vbox height="120px" >
+                <separator height="15px" />
+                <div id="divContinous" visible="false">
+                   <label id="dlabel" width="350px" />
+                    <rangeslider id="dslider" width="350px" />
+                    <hbox>
+                        <doublebox id="dmin" />
+                        <vbox>
+                            <separator height="10px" />
+                            <label value=" TO " style="" />
+                        </vbox>
+                        <doublebox id="dmax" />
+                        <button id="dbutton" label="Select" sclass="gobutton" />
+                    </hbox>
+                    <checkbox id="dunknown" label="Select Unknown" checked="true" />
+                 </div>
+            </vbox>
 
     </window>
 

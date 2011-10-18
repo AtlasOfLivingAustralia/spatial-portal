@@ -22,7 +22,7 @@ import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.QueryUtil;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.httpclient.HttpClient;
@@ -211,7 +211,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
             StringBuffer sbParams = new StringBuffer();
             sbParams.append("Species: " + query.getName());
-            sbParams.append(";Query: " + query.getFullQ());
+            sbParams.append(";Query: " + query.getFullQ(false));
             sbParams.append(";Jackknife: " + chkJackknife.isChecked());
             sbParams.append(";Response curves: " + chkRCurves.isChecked());
             sbParams.append(";Test per: " + txtTestPercentage.getValue());
@@ -358,7 +358,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
             //identify sensitive species records
             List<String[]> sensitiveSpecies = null;
             try {
-                String sensitiveSpeciesRaw = new SolrQuery(null, null, "sensitive:[* TO *]", null, false).speciesList();
+                String sensitiveSpeciesRaw = new BiocacheQuery(null, null, "sensitive:[* TO *]", null, false).speciesList();
                 CSVReader csv = new CSVReader(new StringReader(sensitiveSpeciesRaw));
                 sensitiveSpecies = csv.readAll();
                 csv.close();
