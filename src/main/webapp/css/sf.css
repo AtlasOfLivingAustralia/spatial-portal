@@ -143,7 +143,8 @@ ul.sf li.sfHover li ul {
 .md_table {
     border-collapse: collapse;
     border-spacing: 0px;
-    padding-left: 15px; 
+    padding-left: 15px;
+    width: 100%;
 }
 .md_value{
 	text-align: left;
@@ -151,6 +152,7 @@ ul.sf li.sfHover li ul {
 	font-size: 11px;
 	line-height: 20.8px;
 	padding:5px;
+        width: 80%;
 }
 
 .md_grey-bg{

@@ -5,6 +5,7 @@
 package org.ala.spatial.wms;
 
 import au.org.emii.portal.config.ConfigurationLoaderStage1;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -36,7 +37,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class WMSService {
-    final static int HIGHLIGHT_RADIUS = 4;
+    final static int HIGHLIGHT_RADIUS = 6;
 
     /*
     http://spatial.ala.org.au/geoserver/wms/reflect?styles=&format=image/png&
@@ -101,7 +102,9 @@ public class WMSService {
 //            } else if (pair[0].equals("uncertainty")) {
 //                uncertainty = true;
             } else if (pair[0].equals("sel")) {
-                highlight = s.replace("sel:", "");//pair[1];
+                try {
+                    highlight = URLDecoder.decode(s.replace("sel:", ""),"UTF-8").replace("%3B",";");
+                } catch (Exception e) {}
             } else if (pair[0].equals("colormode")) {
                 colourMode = pair[1];
             }
@@ -129,8 +132,8 @@ public class WMSService {
             bbox[3] -= pixelHeight / 2;
 
             //offset for points bounding box by size
-            double xoffset = (bbox[2] - bbox[0]) / (double) width * size;
-            double yoffset = (bbox[3] - bbox[1]) / (double) height * size;
+            double xoffset = (bbox[2] - bbox[0]) / (double) width * (size + (highlight!=null?HIGHLIGHT_RADIUS*2 + size * 0.2:0) + 5);
+            double yoffset = (bbox[3] - bbox[1]) / (double) height * (size + (highlight!=null?HIGHLIGHT_RADIUS*2 + size * 0.2:0) + 5);
 
             //check offset for points bb by maximum uncertainty (?? 30k ??)
             if (uncertainty) {
@@ -145,8 +148,8 @@ public class WMSService {
             }
 
             //adjust offset for pixel height/width
-            xoffset += pixelWidth + (highlight!=null?HIGHLIGHT_RADIUS:0);
-            yoffset += pixelHeight + (highlight!=null?HIGHLIGHT_RADIUS:0);
+            xoffset += pixelWidth;
+            yoffset += pixelHeight;
 
             double[][] bb = {{Utils.convertMetersToLng(bbox[0] - xoffset), Utils.convertMetersToLat(bbox[1] - yoffset)}, {Utils.convertMetersToLng(bbox[2] + xoffset), Utils.convertMetersToLat(bbox[3] + yoffset)}};
 
@@ -282,8 +285,9 @@ public class WMSService {
                 }
 
                 if (highlight != null && facet != null) {
-                    g.setColor(new Color(255, 0, 0, alpha));
-                    int sz = size + HIGHLIGHT_RADIUS;
+                    g.setStroke(new BasicStroke(2));
+                    g.setColor(new Color(255, 0, 0, 255));
+                    int sz = size + HIGHLIGHT_RADIUS + (int)(size * 0.2);
                     int w = sz * 2 + 1;
                     for (i = 0; i < points.length; i += 2) {
                         if (points[i] >= bb[0][0] && points[i] <= bb[1][0]

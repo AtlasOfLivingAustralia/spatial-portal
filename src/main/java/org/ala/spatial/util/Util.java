@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import net.sf.json.JSONException;
 import org.ala.spatial.data.Facet;
 import org.ala.spatial.data.Query;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.BiocacheQuery;
 import org.apache.commons.lang.StringUtils;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;

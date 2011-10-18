@@ -344,7 +344,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             //refresh mapLayer
             refreshMapLayer();
 
-            mapLayer.setHighlight(getFacetIn().toString());
+            Facet f = getFacetIn();
+            if(f != null) {
+                mapLayer.setHighlight(f.toString());
+            } else {
+                mapLayer.setHighlight(null);
+            }
 
             getMapComposer().applyChange(mapLayer);
 
@@ -556,11 +561,14 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     && */data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
                 ArrayList<Facet> facets = new ArrayList<Facet>();
-                facets.add(getFacetIn());
+                Facet f = getFacetIn();
 
-                Query q = data.getQuery().newFacets(facets, false);
-
-                updateCount(String.valueOf(q.getOccurrenceCount()));
+                int count = 0;
+                if(f != null) {
+                    Query q = data.getQuery().newFacet(f, false);
+                    count = q.getOccurrenceCount();
+                } 
+                updateCount(String.valueOf(count));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -677,7 +685,10 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     public void onClick$addSelectedRecords(Event event) {
-        addUserLayer(data.getQuery().newFacet(getFacetIn(), true), "IN " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
+        Facet f = getFacetIn();
+        if(f != null) {
+            addUserLayer(data.getQuery().newFacet(getFacetIn(), true), "IN " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
+        }
     }
 
     public void onClick$addUnSelectedRecords(Event event) {
@@ -772,42 +783,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             //refresh mapLayer
             refreshMapLayer();
 
-//            String e1 = CommonData.getLayerFacetName(data.getLayer1());
-//            String e2 = CommonData.getLayerFacetName(data.getLayer2());
-//            String fq = mapLayer.getHighlight();
-//            /* fq states:
-//             * 1. missing selected only; starts with '-'
-//             * 2. layers selected only; does not start with '(' or '-'
-//             * 3. missing and layers selected; starts with '('
-//             * 4. no selection; fq null or empty
-//             */
-//            int state = 0;
-//            if(fq == null || fq.length() == 0){
-//                state = 4;
-//            } else if(fq.startsWith("-")) {
-//                state = 1;
-//            } else if(fq.startsWith("(")) {
-//                state = 3;
-//            } else {
-//                state = 2;
-//            }
-//            String missingTerm = "-" + e1 + ":[*%20TO%20*]%20OR%20-" + e2 + ":[*%20TO%20*]";
-//            if(chkSelectMissingRecords.isChecked()) {
-//                //add missingTerm to states without missingTerm
-//                if(state == 4) {
-//                    fq = missingTerm;
-//                } else if(state == 2) {
-//                    fq = "(" + fq + ")%20OR%20" + missingTerm;
-//                }
-//            } else {
-//                //remove missingTerm from states with missingTerm
-//                if(state == 1) {
-//                    fq = null;
-//                } else if(state == 3) {
-//                    fq = fq.substring(1, fq.indexOf(")"));
-//                }
-//            }
-            mapLayer.setHighlight(getFacetIn().toString());
+            Facet f = getFacetIn();
+            if(f == null) {
+                mapLayer.setHighlight(null);
+            } else {
+                mapLayer.setHighlight(f.toString());
+            }
 
             getMapComposer().applyChange(mapLayer);
 
@@ -1146,7 +1127,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     updateFromLegend();
                 }
             };
-            layerWindow.init(data.getQuery(), data.red, data.green, data.blue, data.size, data.opacity, data.colourMode, el);
+            layerWindow.init(data.getQuery(), mapLayer, data.red, data.green, data.blue, data.size, data.opacity, data.colourMode, el);
 
             try {
                 layerWindow.doOverlapped();
@@ -1541,36 +1522,50 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     private Facet getFacetIn() {
-        double x1 = prevSelection[0];
-        double x2 = prevSelection[1];
-        double y1 = prevSelection[2];
-        double y2 = prevSelection[3];
-
+        String fq = null;
         String e1 = CommonData.getLayerFacetName(data.getLayer1());
         String e2 = CommonData.getLayerFacetName(data.getLayer2());
-        Facet f1 = new Facet(e1, y1, y2, true);
-        Facet f2 = new Facet(e2, x1, x2, true);
-        String fq = f1.toString() + "%20AND%20" + f2.toString();
-        if (chkSelectMissingRecords.isChecked()) {
-            fq = "(" + fq + ")%20OR%20-" + e1 + ":[*%20TO%20*]%20OR%20-" + e2 + ":[*%20TO%20*]";
+
+         if (chkSelectMissingRecords.isChecked() && prevSelection == null) {
+             fq = "-(" + e1 + ":[* TO *] AND " + e2 + ":[* TO *])";
+         } else if(prevSelection != null) {
+            double x1 = prevSelection[0];
+            double x2 = prevSelection[1];
+            double y1 = prevSelection[2];
+            double y2 = prevSelection[3];
+
+            Facet f1 = new Facet(e1, y1, y2, true);
+            Facet f2 = new Facet(e2, x1, x2, true);
+
+            if (chkSelectMissingRecords.isChecked()) {
+                fq = "-(-(" + f1.toString() + " AND " + f2.toString() + ") AND " + e1 + ":[* TO *] AND " + e2 + ":[* TO *])";
+            } else {
+                fq = f1.toString() + " AND " + f2.toString();
+            }
         }
 
         return Facet.parseFacet(fq);
     }
 
     private Facet getFacetOut() {
-        double x1 = prevSelection[0];
-        double x2 = prevSelection[1];
-        double y1 = prevSelection[2];
-        double y2 = prevSelection[3];
-
+        String fq = "*:*";
         String e1 = CommonData.getLayerFacetName(data.getLayer1());
-        String e2 = CommonData.getLayerFacetName(data.getLayer2());
-        Facet f1 = new Facet(e1, y1, y2, true);
-        Facet f2 = new Facet(e2, x1, x2, true);
-        String fq = "-" + f1.toString() + "%20OR%20-" + f2.toString();
-        if (chkSelectMissingRecords.isChecked()) {
-            fq = "(" + fq + ")%20AND%20" + e1 + ":[*%20TO%20*]%20AND%20" + e2 + ":[*%20TO%20*]";
+            String e2 = CommonData.getLayerFacetName(data.getLayer2());
+        if (chkSelectMissingRecords.isChecked() && prevSelection == null) {
+             fq = e1 + ":[* TO *] AND " + e2 + ":[* TO *]";
+        } else if(prevSelection !=  null) {
+            double x1 = prevSelection[0];
+            double x2 = prevSelection[1];
+            double y1 = prevSelection[2];
+            double y2 = prevSelection[3];
+
+            Facet f1 = new Facet(e1, y1, y2, true);
+            Facet f2 = new Facet(e2, x1, x2, true);            
+            if (chkSelectMissingRecords.isChecked()) {                
+                fq = "-(" + f1.toString() + " AND " + f2.toString() + ") AND " + e1 + ":[* TO *] AND " + e2 + ":[* TO *]";
+            } else {
+                fq = "-(" + f1.toString() + " AND " + f2.toString() + ")";
+            }
         }
 
         return Facet.parseFacet(fq);
