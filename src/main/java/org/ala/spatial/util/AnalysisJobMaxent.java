@@ -122,7 +122,15 @@ public class AnalysisJobMaxent extends AnalysisJob {
             msets.setEnvList(Arrays.asList(envpathlist));
             msets.setRandomTestPercentage(Integer.parseInt(txtTestPercentage));
             msets.setEnvPath(cutDataPath);          //use (possibly) cut layers
-            msets.setEnvVarToggler("world");
+
+            String ctxVarToggler = "";
+            for (int l=0;l<layers.length;l++){
+                if (layers[l].type.equalsIgnoreCase("contextual")) {
+                    ctxVarToggler += layers[l].name + " ";
+                }
+            }
+            msets.setEnvVarToggler(ctxVarToggler);
+
             //msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator));
             msets.setSpeciesFilepath(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species_points.csv");
             msets.setOutputPath(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator);

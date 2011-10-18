@@ -17,13 +17,11 @@ public class MaxentSettings {
     private boolean doResponsecurves;
     private int randomTestPercentage;
     private String speciesFilepath;
-    
     private String envVarToggler;
     private String envPath;
     private String envPrefix;
     private String envSuffix;
     private List envList;
-
     private String outputPath;
     private String defaultCmdVars;
 
@@ -31,9 +29,9 @@ public class MaxentSettings {
         //maxentPath = "C:/projects/biomaps/modelling/maxent3/runmaxent.bat ";
         maxentPath = "java -mx900m -jar /Users/ajay/projects/modelling/maxent/maxent.jar ";
 
-        envVarToggler = ""; 
+        envVarToggler = "";
         envPrefix = "";
-        envSuffix = ""; 
+        envSuffix = "";
 
         doJackknife = false;
         doResponsecurves = false;
@@ -177,14 +175,22 @@ public class MaxentSettings {
 
         // add the env.var toggler
         //cmd += " -N " + envVarToggler;
+        if (envVarToggler.length() > 0) {
+            String[] ctxlist = envVarToggler.split(" ");
+            for (String ctx : ctxlist) {
+                cmd += " -t " + ctx;
+            }
+        }
 
         // add the env vars
         for (Iterator<String> itr = envList.iterator(); itr.hasNext();) {
             String eval = itr.next();
 
-            if (eval.length() == 1) eval = "0"+eval;
+            if (eval.length() == 1) {
+                eval = "0" + eval;
+            }
 
-          //  cmd += " -N " + envPrefix + eval + envSuffix;
+            //  cmd += " -N " + envPrefix + eval + envSuffix;
 
         }
 

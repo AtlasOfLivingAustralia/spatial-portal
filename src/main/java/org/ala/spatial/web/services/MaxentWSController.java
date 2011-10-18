@@ -285,6 +285,7 @@ public class MaxentWSController {
         Layer[] sellayers = new Layer[nameslist.length];
 
         Layer[] _layerlist = ssets.getEnvironmentalLayers();
+        Layer[] _layerlist2 = ssets.getContextualLayers();
 
         for (int j = 0; j < nameslist.length; j++) {
             for (int i = 0; i < _layerlist.length; i++) {
@@ -292,7 +293,16 @@ public class MaxentWSController {
                         || _layerlist[i].name.equalsIgnoreCase(nameslist[j])) {
                     sellayers[j] = _layerlist[i];
                     //sellayers[j].name = _layerPath + sellayers[j].name;
-                    System.out.println("Adding layer for ALOC: " + sellayers[j].name);
+                    System.out.println("Adding layer for maxent: " + sellayers[j].name);
+                    continue;
+                }
+            }
+            for (int i = 0; i < _layerlist2.length; i++) {
+                if (_layerlist2[i].display_name.equalsIgnoreCase(nameslist[j])
+                        || _layerlist2[i].name.equalsIgnoreCase(nameslist[j])) {
+                    sellayers[j] = _layerlist2[i];
+                    //sellayers[j].name = _layerPath + sellayers[j].name;
+                    System.out.println("Adding ctx layer for maxent: " + sellayers[j].name);
                     continue;
                 }
             }
