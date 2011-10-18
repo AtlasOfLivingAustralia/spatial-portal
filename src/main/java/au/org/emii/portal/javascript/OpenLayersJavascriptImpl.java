@@ -315,7 +315,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public String removeMapLayer(MapLayer layer) {
-        return removeMapLayer(layer, false);
+        return removeMapLayer(layer, true);
     }
 
     /**
@@ -433,7 +433,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public String activateMapLayer(MapLayer mapLayer) {
-        return activateMapLayer(mapLayer, false, false);
+        return activateMapLayer(mapLayer, true, false);
     }
 
     /**
@@ -444,7 +444,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
      * @return
      */
     @Override
-    public String activateMapLayer(MapLayer mapLayer, boolean recursive, boolean alternativeScript) {
+    public String activateMapLayer(MapLayer mapLayer, boolean recursive, boolean alternativeScript) { 
         String associativeArray;
         boolean okToAddLayer;
         if (mapLayer.isBaseLayer()) {
@@ -531,7 +531,9 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
         if (recursive) {
             for (MapLayer child : mapLayer.getChildren()) {
-                script.append(activateMapLayer(child, recursive, alternativeScript));
+                if(child.getData("highlight") == null || ((String)child.getData("highlight")).equals("show")) {
+                    script.append(activateMapLayer(child, recursive, alternativeScript));
+                }
             }
         }
 
@@ -777,7 +779,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 MapLayer layer = (MapLayer) layers.get(i);
                 // skip any layers that are not marked for display
                 if (layer.isDisplayed()) {
-                    script.append(activateMapLayer(layer, false, true));
+                    script.append(activateMapLayer(layer, true, true));
                 }
             }
         }

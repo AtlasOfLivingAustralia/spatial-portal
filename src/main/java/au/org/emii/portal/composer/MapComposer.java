@@ -33,12 +33,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +60,7 @@ import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.ShapefileUtils;
-import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.UserData;
@@ -123,7 +127,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private West menus;
     private Div westContent;
     private Div westMinimised;
-    private Textbox userparams;
     /*
      * User data object to allow for the saving of maps and searches
      */
@@ -140,6 +143,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     int mapZoomLevel = 4;
     Hashtable activeLayerMapProperties;
     Label lblSelectedLayer;
+
+    String useSpeciesWMSCache = "on";
 
     /*
      * for capturing layer loaded events signaling listeners
@@ -221,23 +226,48 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 } else if (selectedLayer.getType() == LayerUtilities.WKT) {
                     openLayersJavascript.redrawWKTFeatures(selectedLayer);
                 } else {
-                    System.out.println("nothing:" + selectedLayer.getType());
-                    //selectedLayer.setEnvParams("color:" + rgbColour + ";name:circle;size:8");
                     String envString = "";
                     if (selectedLayer.getColourMode().equals("-1")) {
                         envString += "color:" + hexColour;
                     } else {
-                        envString += "colormode:" + selectedLayer.getColourMode();
+                        LegendObject lo = (LegendObject) selectedLayer.getData("legendobject");
+                        if(lo != null && lo.getColourMode() != null) {
+                            envString += "colormode:" + lo.getColourMode();
+                        } else {
+                            envString += "colormode:" + selectedLayer.getColourMode();
+                        }
                     }
                     envString += ";name:circle;size:" + selectedLayer.getSizeVal();
-                    envString += ";opacity:" + selectedLayer.getOpacity();
+
+                    //Opacity now handled only by openlayers
+//                    envString += ";opacity:" + selectedLayer.getOpacity();
+
                     if (selectedLayer.getHighlight() != null && selectedLayer.getHighlight().length() > 0
                             && !selectedLayer.getColourMode().equals("grid")) {
-                        envString += ";sel:" + selectedLayer.getHighlight();
-                    } else if (selectedLayer.getSizeUncertain()) {
+                        //Highlight now handled in a second layer
+                    } else
+                    if (selectedLayer.getSizeUncertain()) {
                         envString += ";uncertainty:1";
                     }
-                    selectedLayer.setEnvParams(envString);
+                    selectedLayer.setEnvParams(envString + ";opacity:1");
+
+                    if(selectedLayer.hasChildren()) {
+                        MapLayer highlightLayer = selectedLayer.getChild(0);
+                        if(highlightLayer.getName().equals(selectedLayer.getName() + "_highlight")) {
+                            //apply sel to envString
+                            String highlightEnv = "color:000000;size:" + selectedLayer.getSizeVal() + ";opacity:0";
+                            highlightLayer.setOpacity(1);
+                            if (selectedLayer.getHighlight() != null && selectedLayer.getHighlight().length() > 0
+                                && !selectedLayer.getColourMode().equals("grid")) {
+                                highlightLayer.setEnvParams(highlightEnv + ";sel:" + selectedLayer.getHighlight().replace(";","%3B"));
+                                highlightLayer.setData("highlight", "show");
+                            } else {
+                                highlightLayer.setData("highlight", "hide");
+                                highlightLayer.setEnvParams(highlightEnv);
+                            }
+                        }
+                    }
+                    
                     reloadMapLayerNowAndIndexes(selectedLayer);
                 }
             } else if (selectedLayer.getSelectedStyle() != null) {
@@ -1181,6 +1211,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             return null;
         }
 
+        Executions.getCurrent().getArg();
         Map<String, String> uparams = new HashMap();
 
         // check if the string is a proper params
@@ -1211,59 +1242,64 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     private MapLayer loadUrlParameters() {
-        MapLayer ml = null;
+        String params = null;
         try {
-            boolean showLayerTab = false;
+            params = Executions.getCurrent().getDesktop().getQueryString();
+            System.out.println("User params: " + params);
 
-            System.out.println("User params: " + userparams.getValue());
+            List<Entry<String, String>> userParams = getQueryParameters(params);
+            StringBuilder sb = new StringBuilder();
+            String qc = null;
+            if (userParams != null) {
+                for(int i=0;i<userParams.size();i++) {
+                    String key = userParams.get(i).getKey();
+                    String value = userParams.get(i).getValue();
 
-            Map<String, String> userParams = getUserParameters(userparams.getValue());
-            if (userParams != null && userParams.get("p") == null) {
+                    if (key.equals("wmscache") && !value.equals("on")) {
+                        useSpeciesWMSCache = value;
+                    }
 
-                if (userParams.containsKey("species_lsid")) {
-                    Events.echoEvent("echoMapSpeciesByLSID", this, userParams.get("species_lsid"));
-                    showLayerTab = true;
-                } else if (userParams.containsKey("layer")) {
-                    // TODO: eventually add env/ctx layer loading code here
-                } else {
-                    Iterator<String> itParams = userParams.keySet().iterator();
-                    StringBuilder sb = new StringBuilder();
-                    while (itParams.hasNext()) {
-                        String key = itParams.next();
-                        if (key.equals("q") || key.equals("fq") || key.equals("qc")) {
+                    if (key.contains("species_lsid")) {
+                        Events.echoEvent("echoMapSpeciesByLSID", this, value);
+                        return null;
+                    } else {
+                        if (key.equals("q") || key.equals("fq")) {
                             if (sb.length() > 0) {
                                 sb.append(" AND ");
                             }
-                            sb.append("(").append(userParams.get(key)).append(")");
+                            sb.append("(").append(value).append(")");
+                        } else if (key.equals("qc")) {
+                            qc = "&qc=" + URLEncoder.encode(value,"UTF-8");
                         }
                     }
-                    System.out.println("query: " + sb.toString());
-                    try {
-                        SolrQuery q = new SolrQuery(null, null, sb.toString(), null, true);
+                }
 
-                        if(getMapLayerDisplayName(q.getSolrName()) == null) {
-                            List<Double> bbox = q.getBBox();
-                            String script = "map.zoomToExtent(new OpenLayers.Bounds("
-                                + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")"
-                                + ".transform("
-                                + "  new OpenLayers.Projection('EPSG:4326'),"
-                                + "  map.getProjectionObject()));";
-                            openLayersJavascript.setAdditionalScript(script);
-
-                            ml = mapSpecies(q, q.getSolrName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, -1);
-                        }
-                        
-                    } catch (Exception e) {
+                System.out.println("url query: " + sb.toString());
+                if(sb.toString().length() > 0) {
+                    BiocacheQuery q = new BiocacheQuery(null, null, sb.toString(), null, true);
+                    if(qc != null) {
+                        q.setQc(qc);
                     }
-                    showLayerTab = true;
+
+                    if(getMapLayerDisplayName(q.getSolrName()) == null) {
+                        List<Double> bbox = q.getBBox();
+                        String script = "map.zoomToExtent(new OpenLayers.Bounds("
+                            + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")"
+                            + ".transform("
+                            + "  new OpenLayers.Projection('EPSG:4326'),"
+                            + "  map.getProjectionObject()));";
+                        openLayersJavascript.setAdditionalScript(script);
+
+                        return mapSpecies(q, q.getSolrName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, -1);
+                    }
                 }
             }
         } catch (Exception e) {
-            System.out.println("Opps error loading url parameters");
+            System.out.println("Opps error loading url parameters: " + params);
             e.printStackTrace(System.out);
         }
 
-        return ml;
+        return null;
     }
 
     public void onActivateLink(ForwardEvent event) {
@@ -1765,8 +1801,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     MapLayer mapSpeciesFilter(Query q, String species, String rank, int count, int subType, String wkt, boolean grid) {
         String filter = q.getQ();
 
-        if (q instanceof SolrQuery) {
-            String lsids = ((SolrQuery) q).getLsids();
+        if (q instanceof BiocacheQuery) {
+            String lsids = ((BiocacheQuery) q).getLsids();
             if (lsids != null && lsids.length() > 0) {
                 loadDistributionMap(lsids, species, wkt);
             }
@@ -1818,7 +1854,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         int uncertaintyCheck = 0; //0 == false default
 
         int size = 3;
-        float opacity = (float) 0.8;
+        float opacity = (float) 0.6;
 
         if (activeLayerMapProperties != null) {
             r = ((Integer) activeLayerMapProperties.get("red")).intValue();
@@ -1846,7 +1882,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             envString = "color:" + hexColour;
         }
-        envString += ";name:circle;size:" + size + ";opacity:" + opacity;
+        envString += ";name:circle;size:" + size + ";opacity:1";// + opacity;
         if (uncertaintyCheck > 0) {
             envString += ";uncertainty:1";
         }
@@ -1855,18 +1891,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         uri += "service=WMS&version=1.1.0&request=GetMap&styles=&format=image/png";
         uri += "&layers=ALA:occurrences";
         uri += "&transparent=true"; // "&env=" + envString +
+        uri += (query.getQc()==null?"":query.getQc());        
+        uri += "&CACHE=" + useSpeciesWMSCache;
         uri += "&CQL_FILTER=";
 
         System.out.println("Mapping: " + label + " with " + uri + filter);
 
         try {
             if (safeToPerformMapAction()) {
-
-                MapLayer gjLayer = getMapLayer(label);
-
-                MapLayer mapLayer = null;
                 if (getMapLayer(label) == null) {
-                    MapLayer ml = addWMSLayer(label, uri + filter, (float) 0.8, null, null, subType, "", envString);
+                    MapLayer ml = addWMSLayer(label, uri + filter, opacity, null, null, subType, "", envString);
                     if (ml != null) {
                         ml.setDynamicStyle(true);
                         ml.setEnvParams(envString);
@@ -1889,6 +1923,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         ml.setData("query", query);
 
                         updateLayerControls();
+
+                        //create highlight layer
+                        MapLayer mlHighlight = (MapLayer) ml.clone();
+                        mlHighlight.setName(ml.getName() + "_highlight");
+                        ml.addChild(mlHighlight);
 
                         return ml;
                     } else {
@@ -2869,5 +2908,28 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         currentColourIdx++;
 
         return colour;
+    }
+
+    private List<Entry<String, String>> getQueryParameters(String params) {
+        if(params == null || params.length() == 0) {
+            return null;
+        }
+
+        ArrayList<Entry<String, String>> list = new ArrayList<Entry<String, String>>();
+        for(String s : params.split("&")) {
+            String [] keyvalue = s.split("=");
+            if(keyvalue.length >= 2) {
+                String key = keyvalue[0];
+                String value = keyvalue[1];
+                try {
+                    value = URLDecoder.decode(value,"UTF-8");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                list.add(new HashMap.SimpleEntry<String, String>(key, value));
+            }
+        }   
+
+        return list;
     }
 }

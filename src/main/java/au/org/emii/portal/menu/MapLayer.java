@@ -504,6 +504,9 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     }
 
     public String getUri() {
+        if(getData("CACHE") != null) {
+            return uri + "&CACHE=" + (String) getData("CACHE");
+        }
         return uri;
     }
 
@@ -527,7 +530,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      * @return
      */
     public String getUniqueId() {
-        return getId() + DELIM + layer;
+        return getId() + DELIM + layer + DELIM + getName();
     }
 
     public String getLayer() {

@@ -25,7 +25,10 @@ public class LsidCounts {
         HttpClient client = new HttpClient();
 
         try {
-            String url = CommonData.biocacheServer + "/webportal/legend?cm=lft&q=" + URLEncoder.encode("longitude:[* TO *] AND geospatial_kosher:true", "UTF-8");
+            String url = CommonData.biocacheServer
+                    + "/webportal/legend?cm=lft&q="
+                    + URLEncoder.encode("longitude:[* TO *] AND geospatial_kosher:true", "UTF-8")
+                    + CommonData.biocacheQc;
             System.out.println(url);
             GetMethod get = new GetMethod(url);
             HashMap<Long, Long> map = new HashMap<Long, Long>();

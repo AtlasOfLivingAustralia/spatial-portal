@@ -347,9 +347,10 @@ function iterateSpeciesInfoQuery(curr) {
         }
     } catch (err) {}
 
+    var biocacheurl = parent.jq('$biocache_service_url')[0].innerHTML;
     var url = query_url[pos] + "&start=" + curpos;
     $.getJSON(proxy_script + URLEncode(url), function(data) {
-        if (query_[pos].indexOf("qid:") < 0) {
+        if (query_url[pos].indexOf(biocacheurl) < 0) {
             var ulyr = query_[pos];
             var ulyr_occ_id = data.occurrences[0].id;
             var ulyr_occ_lng = data.occurrences[0].longitude;
@@ -433,6 +434,8 @@ function pointSpeciesSearch(e) {
     var lonlat = map.getLonLatFromViewPortPx(e.xy);
     lonlat.transform(map.projection, map.displayProjection);
 
+    var biocacheurl = parent.jq('$biocache_service_url')[0].innerHTML;
+
     //handles point click in mapComposer
     //parent.setSpeciesSearchPoint(lonlat);
 
@@ -458,7 +461,11 @@ function pointSpeciesSearch(e) {
             if(p1 < 0) p1 = layer.url.indexOf(";", p0);            
             if(p1 < 0) p1 = layer.url.length;            
             if(p0 >= 0 && p1 >= 0 && layer.params != null) {
-                userquery = layer.url.substring(p0 + 11,p1);
+                if(layer.url.contains(biocacheurl)) {
+                    query = layer.url.substring(p0 + 11,p1);
+                } else {
+                    userquery = layer.url.substring(p0 + 11,p1);
+                }
             }
         } else {
             query = layer.url.substring(p0,p1);
@@ -1505,7 +1512,7 @@ function getOccurrence(query, lat, lon, start, pos, dotradius) {
     var url = parent.jq('$biocache_service_url')[0].innerHTML + "/webportal/occurrences?q=" + query
         + "&fq=longitude:[" + (lon-lonSize) + "%20TO%20" + (lon+lonSize) + "]"
         + "&fq=latitude:[" + (lat-latSize) + "%20TO%20" + (lat+latSize) + "]"
-        + "&pageSize=1";  
+        + "&pageSize=1&facet=false";
     var ret = null;
     $.ajax({
         url: proxy_script + URLEncode(url + "&start=" + start),
