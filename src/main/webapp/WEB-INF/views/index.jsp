@@ -174,12 +174,12 @@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"
 
                             <h3>Occurrences</h3>
                             <ul>
-                                <li><strong>Static Species Density Heatmap </strong><a href="/ws/density/map?q=*:*">/density/map?q=*:*</a></li> - returns heatmap image (optional param forceRefresh=true will regenerate the image)
-                                <li><strong>Static Species Density Legend: </strong><a href="/ws/density/legend?q=*:*">/density/legend?q=*:*</a></li> - returns associated legend image (optional param forceRefresh=true will regenerate the image)
+                                <li><strong>Static Species Density Heatmap </strong><a href="http://biocache.ala.org.au/density/map?q=*:*">http://biocache.ala.org.au/density/map?q=*:*</a></li> - returns heatmap image (optional param forceRefresh=true will regenerate the image)
+                                <li><strong>Static Species Density Legend: </strong><a href="http://biocache.ala.org.au/density/legend?q=*:*">http://biocache.ala.org.au/legend/map?q=*:*</a></li> - returns associated legend image (optional param forceRefresh=true will regenerate the image)
                             </ul>
                             
                             <h3>Webportal Services</h3>
-                            <p>These Webportal services are available at <a href="http://biocache.ala.org.au/ws/webportal">http://biocache.ala.org.au/ws/webportal</a> </p>
+                            <p>These Webportal services are available at <a href="http://biocache.ala.org.au/ws">http://biocache.ala.org.au/ws</a> </p>
                             <ul>
                                 These services will include all records that satisfy the q, fq and wkt parameters.
                                 <ul>
