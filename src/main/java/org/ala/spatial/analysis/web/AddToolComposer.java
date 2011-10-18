@@ -1205,6 +1205,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onClick$btnClearSelection(Event event) {
         lbListLayers.clearSelection();
+        btnOk.setDisabled(true);
     }
 
     private boolean isAreaHighlightTab() {

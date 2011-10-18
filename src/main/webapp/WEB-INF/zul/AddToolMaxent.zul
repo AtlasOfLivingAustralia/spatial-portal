@@ -17,64 +17,65 @@
         
         <separator />
         <hbox id="stepCounter">
-        <vbox style="padding-left: 10px">
-            <grid width="150px">
-<columns>
- <column width="120px"/>
-        <column />
-</columns>
-    <rows>
-            <row>
+            <vbox style="padding-left: 10px">
+                <grid width="150px">
+                    <columns>
+                        <column width="120px"/>
+                        <column />
+                    </columns>
+                    <rows>
+                        <row>
+                            <label id="lblStep1" style="font-weight:bold" value="1. Apply to an area"/>
+                            <image id="imgCompletedStep1" visible="false" src="img/accept.png"/>
+                        </row>
+                        <row>
+                            <label id="lblStep2" value="2. Select species"/>
+                            <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
+                        </row>
+                        <row>
+                            <label id="lblStep3" value="3. Select environmental layers"/>
+                            <image id="imgCompletedStep3" visible="false" src="img/accept.png"/>
             
-                <label id="lblStep1" style="font-weight:bold" value="1. Apply to an area"/>
-                <image id="imgCompletedStep1" visible="false" src="img/accept.png"/>
-            </row>
-            <row>
-            
-                <label id="lblStep2" value="2. Select species"/>
-                <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
-            </row>
-            <row>
-           
-                <label id="lblStep3" value="3. Select environmental layers"/>
-                <image id="imgCompletedStep3" visible="false" src="img/accept.png"/>
-            
-           </row>
-            <row>
-                <label id="lblStep4" value="4. MaxEnt options"/>
-                <image id="imgCompletedStep4" visible="false" src="img/accept.png"/>
-           </row>
-            <row>
-          
-                <label id="lblStep5" value="5. Set layer name"/>
-                <image id="imgCompletedStep5" visible="false" src="img/accept.png"/>
-           
-</row>
-</rows>
-        
-             </grid>
-        </vbox>
-        <vbox style="padding-left: 10px" >
-            <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
-                <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
-                <label id="atstep1_label" value="" />
-                <separator />
-                <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
-                    <radio id="rAreaCurrent" label="Current extent" value="current" />
-                    <radio id="rAreaAustralia" label="Australia" value="australia" />
-                    <radio id="rAreaWorld" label="World" value="world" />
-                    <radio id="rAreaCustom" label="Define new area" value="custom" />
-                </radiogroup>
-            </div>
+                        </row>
+                        <row>
+                            <label id="lblStep4" value="4. Select contextual layers"/>
+                            <image id="imgCompletedStep4" visible="false" src="img/accept.png"/>
 
-            <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep">
-                <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
-                <label id="atstep2_label" value="" />
-                <separator />
-                <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
-                    <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false" />
-                    <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false" />
-                    <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" />
+                        </row>
+                        <row>
+                            <label id="lblStep5" value="5. MaxEnt options"/>
+                            <image id="imgCompletedStep5" visible="false" src="img/accept.png"/>
+                        </row>
+                        <row>
+                            <label id="lblStep6" value="6. Set layer name"/>
+                            <image id="imgCompletedStep6" visible="false" src="img/accept.png"/>
+           
+                        </row>
+                    </rows>
+        
+                </grid>
+            </vbox>
+            <vbox style="padding-left: 10px" >
+                <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
+                    <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
+                    <label id="atstep1_label" value="" />
+                    <separator />
+                    <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
+                        <radio id="rAreaCurrent" label="Current extent" value="current" />
+                        <radio id="rAreaAustralia" label="Australia" value="australia" />
+                        <radio id="rAreaWorld" label="World" value="world" />
+                        <radio id="rAreaCustom" label="Define new area" value="custom" />
+                    </radiogroup>
+                </div>
+
+                <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep">
+                    <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
+                    <label id="atstep2_label" value="" />
+                    <separator />
+                    <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
+                        <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false" />
+                        <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false" />
+                        <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" />
                         <vbox width="100%">
                             <div id="divSpeciesSearch" visible="false" >
                                 <separator />
@@ -94,71 +95,141 @@
                                 <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
                         </vbox>
-                    <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Upload coordinates" />
-                    <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Upload LSIDs" />
-                </radiogroup>
-            </div>
+                        <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Upload coordinates" />
+                        <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Upload LSIDs" />
+                    </radiogroup>
+                </div>
 
-            <div id="atstep3" visible="false" zclass="step3 minlayers1">
-                <label id="atstep3_desc" value="Select one or more environmental layers" sclass="wSubLabel"/>
-                <label id="atstep3_label" value="" />
-                <separator />
-                <vbox>
-                    <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
+                <div id="atstep3" visible="false" zclass="step3 minlayers1">
+                    <label id="atstep3_desc" value="Select one or more environmental and/or contextual layers" sclass="wSubLabel"/>
+                    <label id="atstep3_label" value="" />
+                    <separator />
+                    <vbox>
+                        <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
                     use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px"
-                    height="450px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
-                        <listhead>
-                            <listheader label="category"  />
-                            <listheader label="name" />
-                            <listheader label=" "  />
-                            <listheader label=" " width="10px" />
-                        </listhead>
-                    </listbox>
-                    <button id="btnClearSelection" label="Clear layers"  sclass="goButton" style="float:left" />
-                </vbox>
-            </div>
+                    height="250px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
+                            <listhead>
+                                <listheader label="category"  />
+                                <listheader label="name" />
+                                <listheader label=" "  />
+                                <listheader label=" " width="10px" />
+                            </listhead>
+                        </listbox>
+                        <button id="btnClearSelection" label="Clear layers"  sclass="goButton" style="float:left" />
+                    </vbox>
 
-            <div id="atstep4" visible="false" zclass="step4 optional">
-                <label id="atstep4_desc" value="MaxEnt options" sclass="wSubLabel"/>
-                <label id="atstep4_label" value="" />
-                <vbox>
-                    <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" onOK="addtoolwindow.onClick$btnOk(null)"/>
-                    <checkbox id="chkRCurves" label="Create response curves" checked="true" onOK="addtoolwindow.onClick$btnOk(null)"/>
-                </vbox>
-                <vbox>
+                        <!--
+                        <label id="atstep4_desc" value="Select one or more contextual layers" sclass="wSubLabel"/>
+                        <label id="atstep4_label" value="" />
+                        -->
+                        <separator />
+                        <vbox>
+                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayersCtx"
+                    width="500px"
+                    height="150px" multiple="true" checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
+                                <listhead>
+                                    <listheader label="category"  />
+                                    <listheader label="name" />
+                                    <listheader label=" "  />
+                                    <listheader label=" " width="10px" visible="false" />
+                                </listhead>
+                                <listitem value="landcover">
+                                    <listcell>Vegetation</listcell>
+                                    <listcell>Land cover</listcell>
+                                    <listcell value="618" image="/img/information.png"></listcell>
+                                </listitem>
+                                <listitem value="landuse">
+                                    <listcell>Vegetation</listcell>
+                                    <listcell>Land use</listcell>
+                                    <listcell value="618" image="/img/information.png"></listcell>
+                                </listitem>
+                                <listitem value="present_veg">
+                                    <listcell>Vegetation</listcell>
+                                    <listcell>Vegetation types - present</listcell>
+                                    <listcell value="618" image="/img/information.png"></listcell>
+                                </listitem>
+                            </listbox>
+                            <button id="btnClearSelectionCtx" label="Clear layers"  sclass="goButton" style="float:left" />
+                        </vbox>
+                </div>
+
+                <!--
+                <div id="atstep4" visible="false" zclass="step4 minlayers1">
+                    <label id="atstep4_desc" value="Select one or more contextual layers" sclass="wSubLabel"/>
+                    <label id="atstep4_label" value="" />
+                    <separator />
+                    <vbox>
+                        <listbox sclass="envlist" fixedLayout="false" id="lbListLayersCtx"
+                    width="500px"
+                    height="450px" multiple="true" checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
+                            <listhead>
+                                <listheader label="category"  />
+                                <listheader label="name" />
+                                <listheader label=" "  />
+                                <listheader label=" " width="10px" visible="false" />
+                            </listhead>
+                            <listitem value="landcover">
+                                <listcell>Vegetation</listcell>
+                                <listcell>Land cover</listcell>
+                                <listcell value="618" image="/img/information.png"></listcell>
+                            </listitem>
+                            <listitem value="landuse">
+                                <listcell>Vegetation</listcell>
+                                <listcell>Land use</listcell>
+                                <listcell value="618" image="/img/information.png"></listcell>
+                            </listitem>
+                            <listitem value="present_veg">
+                                <listcell>Vegetation</listcell>
+                                <listcell>Vegetation types - present</listcell>
+                                <listcell value="618" image="/img/information.png"></listcell>
+                            </listitem>
+                        </listbox>
+                        <button id="btnClearSelectionCtx" label="Clear layers"  sclass="goButton" style="float:left" />
+                    </vbox>
+                </div>
+                -->
+
+                <div id="atstep4" visible="false" zclass="step4 optional">
+                    <label id="atstep4_desc" value="MaxEnt options" sclass="wSubLabel"/>
+                    <label id="atstep4_label" value="" />
+                    <vbox>
+                        <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" onOK="addtoolwindow.onClick$btnOk(null)"/>
+                        <checkbox id="chkRCurves" label="Create response curves" checked="true" onOK="addtoolwindow.onClick$btnOk(null)"/>
+                    </vbox>
+                    <vbox>
+                        <separator />
+                        <hbox>
+                            <label value="Random test percentage (0 - 100):" />
+                            <textbox id="txtTestPercentage" value="0"  onOK="addtoolwindow.onClick$btnOk(null)"/>
+                        </hbox>
+                    </vbox>
+                </div>
+
+                <div id="atstep5" visible="false" zclass="last optional">
+                    <label id="atstep5_desc" value="Name for prediction layer" sclass="wSubLabel"/>
+                    <label id="atstep5_label" value="" />
                     <separator />
                     <hbox>
-                        <label value="Random test percentage (0 - 100):" />
-                        <textbox id="txtTestPercentage" value="0"  onOK="addtoolwindow.onClick$btnOk(null)"/>
+                        <textbox id="tToolName" width="250px" onOK="addtoolwindow.onClick$btnOk(null)"/>
                     </hbox>
-                </vbox>
-            </div>
+                    <vbox>
+                        <label value="Summary" style="font-weight: bold" visible="false" />
+                        <div id="atsummary"></div>
+                    </vbox>
+                </div>
 
-            <div id="atstep5" visible="false" zclass="last optional">
-                <label id="atstep5_desc" value="Name for prediction layer" sclass="wSubLabel"/>
-                <label id="atstep5_label" value="" />
-                <separator />
-                <hbox>
-                    <textbox id="tToolName" width="250px" onOK="addtoolwindow.onClick$btnOk(null)"/>
-                </hbox>
-                <vbox>
-                    <label value="Summary" style="font-weight: bold" visible="false" />
-                    <div id="atsummary"></div>
-                </vbox>
-            </div>
+                <div sclass="wizButtonContainer">
+                    <hbox>
+                        <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
+                        <button sclass="goButton" label="Cancel" id="btnCancel" />
+                        <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
+                        <button sclass="goButton" label="Next &gt;" id="btnOk" />
+                        <fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+                    </hbox>
+                </div>
 
-            <div sclass="wizButtonContainer">
-                <hbox>
-                    <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
-                    <button sclass="goButton" label="Cancel" id="btnCancel" />
-                    <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
-                    <button sclass="goButton" label="Next &gt;" id="btnOk" />
-                    <fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
-                </hbox>
-            </div>
-
-        </vbox>
-</hbox>
+            </vbox>
+        </hbox>
 
     </window>
 </zk>

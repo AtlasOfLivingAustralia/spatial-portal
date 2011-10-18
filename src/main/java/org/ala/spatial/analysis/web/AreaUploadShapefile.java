@@ -26,20 +26,20 @@ import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Textbox;
-			
-	import com.vividsolutions.jts.geom.Geometry;
-	import com.vividsolutions.jts.geom.GeometryFactory;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
-	import com.vividsolutions.jts.io.WKTWriter;
-	import java.io.FileInputStream;
-	import java.io.FileReader;
-	import java.util.Collection;
-	import org.geotools.geometry.jts.JTSFactoryFinder;
-	import org.geotools.kml.KML;
-	import org.geotools.kml.KMLConfiguration;
-	import org.geotools.xml.Encoder;
-	import org.geotools.xml.Parser;
-	import org.opengis.feature.simple.SimpleFeature;
+import com.vividsolutions.jts.io.WKTWriter;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.util.Collection;
+import org.geotools.geometry.jts.JTSFactoryFinder;
+import org.geotools.kml.KML;
+import org.geotools.kml.KMLConfiguration;
+import org.geotools.xml.Encoder;
+import org.geotools.xml.Parser;
+import org.opengis.feature.simple.SimpleFeature;
 
 /**
  *
@@ -190,7 +190,6 @@ public class AreaUploadShapefile extends AreaToolComposer {
                         writer.write(buffer, 0, n);
                     }
                 } finally {
-
                 }
                 kmlData = writer.toString();
             }
@@ -301,7 +300,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 }
             }
 
-            if(g != null) {
+            if (g != null) {
                 WKTWriter wr = new WKTWriter();
                 String wkt = wr.write(g);
                 return wkt.replace(" (", "(").replace(", ", ",").replace(") ", ")");
