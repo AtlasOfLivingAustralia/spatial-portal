@@ -25,6 +25,18 @@
             <separator />
             <label id="tbInstructions" style="white-space: normal; padding: 5px" />
             <separator />
+            <html><![CDATA[
+                <p>
+                NOTE: If you wish to built an assemblage of various taxa,
+                we have created an Excel macro
+                (<a href="http://spatial.ala.org.au/files/getLsid.zip">getLsid.xlm</a>)
+                that will accept a list of the scientific names of taxa and then
+                do a bulk lookup for the corresponding LSIDs (at all taxonomic
+                levels). The resulting filled columns can be copy/pasted to a
+                CSV file for the LSID import.
+                </p>
+            ]]></html>
+            <separator />
             <div style="float:right;margin-right:5px">
                 <hbox>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
