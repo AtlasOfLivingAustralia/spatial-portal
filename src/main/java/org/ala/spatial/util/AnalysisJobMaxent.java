@@ -225,7 +225,6 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     readReplace(pth + "species.html", " using Maxent version 3.3.3e.", ".");
                     readReplace(pth + "species.html", "If you would like to do further analyses, the raw data used here is linked to at the end of this page", "Links at the bottom of this page to the raw data may be used for further analysis");
 
-                    System.out.println("********* chkResponseCurves: " + chkResponseCurves);
                     if (chkResponseCurves != null) {
                         StringBuffer sbTable = new StringBuffer();
                         String[] ctxlist = msets.getEnvVarToggler().split(" ");
@@ -236,9 +235,6 @@ public class AnalysisJobMaxent extends AnalysisJob {
                             sbTable.append("<br /><br />");
                         }
                         sbTable.append("</pre>");
-                        System.out.println("Writing\n***************************");
-                        System.out.println(sbTable.toString());
-                        System.out.println("***************************");
                         readReplace(pth + "species.html", "<br><HR><H2>Analysis of variable contributions</H2><br>", sbTable.toString() + "<br><HR><H2>Analysis of variable contributions</H2><br>");
 
                     }
