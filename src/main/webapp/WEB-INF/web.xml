@@ -63,9 +63,9 @@
         <welcome-file>default.html</welcome-file>
         <welcome-file>default.htm</welcome-file>
         <welcome-file>default.jsp</welcome-file>
-        <welcome-file>index.zul</welcome-file>
-        -->
         <welcome-file>wrapper.html</welcome-file>
+        -->
+        <welcome-file>index.zul</welcome-file>
     </welcome-file-list>
     <error-page>
         <error-code>500</error-code>

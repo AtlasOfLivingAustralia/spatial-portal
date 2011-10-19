@@ -63,13 +63,15 @@ ul.sf li.sfHover li ul {
 
 .nav-login.nav-right a, .nav-logout.nav-right a {position:absolute;right:-263px;}
 
-.nav-add a{width:92px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:0 0;}
-.nav-tools a{width:52px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-92px 0;}
-.nav-help a{width:56px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-144px 0;}
+.nav-home a{width:56px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:0 0;}
+.nav-add a{width:92px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-56px 0;}
+.nav-tools a{width:52px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-148px 0;}
+.nav-help a{width:56px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-200px 0;}
 
-.nav-add a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:0px -51px;z-index:100;}
-.nav-tools a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-92px -51px;z-index:100;}
-.nav-help a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-144px -51px;z-index:100;}
+.nav-home a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:0px -51px;z-index:100;}
+.nav-add a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-56px -51px;z-index:100;}
+.nav-tools a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-148px -51px;z-index:100;}
+.nav-help a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-200px -51px;z-index:100;}
 
 /* end of image replace */
 

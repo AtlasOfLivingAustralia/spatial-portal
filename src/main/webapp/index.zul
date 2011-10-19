@@ -77,6 +77,11 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         <div width="100%" sclass="menudiv" height="39px" >
                             <n:div id='nav' style="left: 50px;">
                                 <n:ul class='sf'>
+                                    <n:li class='nav-home'>
+                                        <n:a href="http://www.ala.org.au/" target="_blank">
+                                            <n:span>Home</n:span>
+                                        </n:a>
+                                    </n:li>
                                     <n:li class='nav-add'>
                                         <n:a href='#'>
                                             <n:span>Add To Map</n:span>
