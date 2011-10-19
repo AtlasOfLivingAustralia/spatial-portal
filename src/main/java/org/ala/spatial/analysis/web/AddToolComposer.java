@@ -63,6 +63,8 @@ public class AddToolComposer extends UtilityComposer {
     MapLayer prevTopArea = null;
     Fileupload fileUpload;
 
+    Div tlinfo; 
+
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -652,7 +654,18 @@ public class AddToolComposer extends UtilityComposer {
         btnOk.setLabel("Next >");
         toggles();
         updateWindowTitle();
+        displayTrafficLightInfo();
 
+    }
+
+    private void displayTrafficLightInfo() {
+        if (selectedMethod.equalsIgnoreCase("Prediction") && currentStep == 3) {
+            tlinfo.setVisible(true);
+        } else if (selectedMethod.equalsIgnoreCase("Classification") && currentStep == 2) {
+            tlinfo.setVisible(true);
+        } else {
+            tlinfo.setVisible(false);
+        }
     }
 
     public void resetWindowFromSpeciesUpload(String lsid, String type) {
@@ -812,6 +825,7 @@ public class AddToolComposer extends UtilityComposer {
         }
 
         toggles();
+        displayTrafficLightInfo();
 
         fixFocus();
     }

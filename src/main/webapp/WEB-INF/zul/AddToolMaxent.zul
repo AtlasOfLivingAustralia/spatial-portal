@@ -54,6 +54,14 @@
                     </rows>
         
                 </grid>
+
+                <div id="tlinfo" visible="false">
+                    <separator spacing="20px" />
+                    <label value="The colours against the layers are like traffic lights. Green implies the layer is uncorrelated to all selected layers, orange implies some correlation while red implies high correlation. As you select layers, the colours change to reflect correlation with already selected layers. For example a red layer implies high correlation with at least one selected layer while a green layer implies little or no correlation to any selected layer" />
+                    <separator />
+                    <label value="Note: The correlations are currently based on full layer spatial extents and not any selected sub-area." />
+                </div>
+
             </vbox>
             <vbox style="padding-left: 10px" >
                 <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
@@ -105,9 +113,10 @@
                     <label id="atstep3_label" value="" />
                     <separator />
                     <vbox>
+                        <label value="Environmental layers" sclass="wSubLabel" />
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
                     use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px"
-                    height="250px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
+                    height="300px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
                             <listhead>
                                 <listheader label="category"  />
                                 <listheader label="name" />
@@ -124,29 +133,39 @@
                         -->
                         <separator />
                         <vbox>
-                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayersCtx"
-                    width="500px"
-                    height="150px" multiple="true" checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
+                            <label value="Contextual layers" sclass="wSubLabel" />
+                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayersCtx" width="500px"
+                    height="135px" multiple="true" checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
                                 <listhead>
-                                    <listheader label="category"  />
-                                    <listheader label="name" />
+                                    <listheader label="category" />
+                                    <listheader label="name" width="300px" />
                                     <listheader label=" "  />
                                     <listheader label=" " width="10px" visible="false" />
                                 </listhead>
                                 <listitem value="landcover">
                                     <listcell>Vegetation</listcell>
                                     <listcell>Land cover</listcell>
-                                    <listcell value="618" image="/img/information.png"></listcell>
+                                    <listcell value="618" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/618", "Metadata", false);'></listcell>
                                 </listitem>
                                 <listitem value="landuse">
                                     <listcell>Vegetation</listcell>
                                     <listcell>Land use</listcell>
-                                    <listcell value="618" image="/img/information.png"></listcell>
+                                    <listcell value="678" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/678", "Metadata", false);'></listcell>
+                                </listitem>
+                                <listitem value="vast">
+                                    <listcell>Vegetation</listcell>
+                                    <listcell>Vegetation condition</listcell>
+                                    <listcell value="619" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/619", "Metadata", false);'></listcell>
+                                </listitem>
+                                <listitem value="native_veg">
+                                    <listcell>Vegetation</listcell>
+                                    <listcell>Vegetation types - native</listcell>
+                                    <listcell value="617" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/617", "Metadata", false);'></listcell>
                                 </listitem>
                                 <listitem value="present_veg">
                                     <listcell>Vegetation</listcell>
                                     <listcell>Vegetation types - present</listcell>
-                                    <listcell value="618" image="/img/information.png"></listcell>
+                                    <listcell value="620" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/620", "Metadata", false);'></listcell>
                                 </listitem>
                             </listbox>
                             <button id="btnClearSelectionCtx" label="Clear layers"  sclass="goButton" style="float:left" />
