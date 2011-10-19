@@ -17,9 +17,9 @@
         <caption label="Draw Bounding Box" />
         <vbox sclass="embedWindowsContent">
             <label sclass="wordwrap" value="1. Name the new bounding box layer." />
-            <label sclass="wordwrap" value="2. Zoom and pan to the area of interest." />
-            <label sclass="wordwrap" value="3. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size." />
-            <label sclass="wordwrap" value="4. Release the mouse button." />
+            <label sclass="wordwrap" value="2. Zoom and pan to the area of interest." visible="false" />
+            <label sclass="wordwrap" value="2. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size." />
+            <label sclass="wordwrap" value="3. Release the mouse button." />
             <separator />
             <div>
                 <hbox width="100%">
