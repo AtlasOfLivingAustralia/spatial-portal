@@ -438,8 +438,8 @@ public class GridCutter {
                         double tx = (j + 0.5) * TabulationSettings.grd_xdiv + TabulationSettings.grd_xmin;
                         double ty = (i + 0.5) * TabulationSettings.grd_ydiv + TabulationSettings.grd_ymin;
                         if (region.isWithin_EPSG900913(tx, ty)) {
-                            tcells[tp][0] = j;
-                            tcells[tp][1] = i;
+                            tcells[tp][0] = j - startj;
+                            tcells[tp][1] = i - starti;
                             tp++;
                         }
                     }
