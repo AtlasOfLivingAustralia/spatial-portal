@@ -68,6 +68,16 @@
                     <label id="atstep2_desc" value="Select two or more environmental layers" sclass="wSubLabel"/>
                     <label id="atstep2_label" value="" />
                     <separator />
+                    <hbox>
+                        <label value="add set a of layers:" />
+                        <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="350px" />
+                    </hbox>
+                    <separator />
+                    <hbox>
+                        <label value="search layers:" />
+                        <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" />
+                    </hbox>
+                    <separator />
                     <vbox>
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px" height="450px" multiple="true" checkmark="true"
                      onOK="addtoolwindow.onClick$btnOk(null)">
@@ -101,6 +111,11 @@
                     <vbox>
                         <label value="Summary" style="font-weight: bold" visible="false" />
                         <div id="atsummary"></div>
+                    </vbox>
+                    <separator height="60px" />
+                    <vbox id="dLayerSummary" visible="true" >
+                        <label value="List of selected layers" />
+                        <textbox id="tLayerList" width="500px" height="80px" readonly="true" multiline="true"/>
                     </vbox>
                 </div>
 

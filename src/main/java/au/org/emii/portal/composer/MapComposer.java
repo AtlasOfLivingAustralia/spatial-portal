@@ -16,6 +16,7 @@ import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.util.LayerSelection;
 import au.org.emii.portal.util.PortalSessionIO;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.util.SessionPrint;
@@ -35,7 +36,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.AbstractMap.SimpleEntry;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -98,7 +99,6 @@ import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Toolbarbutton;
 import org.zkoss.zul.Window;
-import org.zkoss.zul.api.Textbox;
 
 /**
  * ZK composer for the index.zul page
@@ -145,6 +145,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     Label lblSelectedLayer;
 
     String useSpeciesWMSCache = "on";
+    ArrayList<LayerSelection> selectedLayers = new ArrayList<LayerSelection>();
 
     /*
      * for capturing layer loaded events signaling listeners
@@ -1243,6 +1244,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     private MapLayer loadUrlParameters() {
         String params = null;
+        Cookie[] cookies = ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("analysis_layer_selections")) {
+                    try {
+                        String [] s = cookie.getValue().split("\n");
+                        for(int i=0;i<s.length;i++) {
+                            String [] ls = s[i].split(" // ");
+                            selectedLayers.add(new LayerSelection(ls[0],ls[1]));
+                        }
+                        break;
+                    } catch (Exception e) {
+                    }
+
+                }
+            }
+        }
         try {
             params = Executions.getCurrent().getDesktop().getQueryString();
             System.out.println("User params: " + params);
@@ -1250,6 +1268,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             List<Entry<String, String>> userParams = getQueryParameters(params);
             StringBuilder sb = new StringBuilder();
             String qc = null;
+            String bs = null;
+            String ws = null;
             if (userParams != null) {
                 for(int i=0;i<userParams.size();i++) {
                     String key = userParams.get(i).getKey();
@@ -1270,13 +1290,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             sb.append("(").append(value).append(")");
                         } else if (key.equals("qc")) {
                             qc = "&qc=" + URLEncoder.encode(value,"UTF-8");
+                        } else if(key.equals("bs")) {
+                            bs = value;
+                        } else if(key.equals("ws")) {
+                            ws = value;
                         }
                     }
                 }
 
                 System.out.println("url query: " + sb.toString());
                 if(sb.toString().length() > 0) {
-                    BiocacheQuery q = new BiocacheQuery(null, null, sb.toString(), null, true);
+                    BiocacheQuery q = new BiocacheQuery(null, null, sb.toString(), null, true, bs, ws);
                     if(qc != null) {
                         q.setQc(qc);
                     }
@@ -2933,5 +2957,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }   
 
         return list;
+    }
+
+    public ArrayList<LayerSelection> getLayerSelections() {
+        return selectedLayers;
     }
 }

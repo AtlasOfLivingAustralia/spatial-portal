@@ -4,6 +4,7 @@
  */
 package org.ala.spatial.util;
 
+import au.org.emii.portal.util.LayerSelection;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.text.DateFormat;
@@ -50,7 +51,7 @@ public class CommonData {
     static final String DEFAULT_UPLOAD_SAMPLING = "default_upload_sampling";
     static final String MAX_Q_LENGTH = "max_q_length";
     static final String BIOCACHE_QC = "biocache_qc";
-
+    static final String ANALYSIS_LAYER_SETS = "analysis_layer_sets";
     //(1) for LayersUtil
     static String[] environmentalLayerNames = null;
     static String[] contextualLayerNames = null;
@@ -98,12 +99,15 @@ public class CommonData {
     static public Map<String, String> settings;
     //lsid counts, for species autocomplete
     static public LsidCounts lsidCounts;
-    public static String biocacheQc;
+    static public String biocacheQc;
+    static public ArrayList<LayerSelection> analysisLayerSets;
 
     /*
      * initialize common data from geoserver and satserver
      */
     static public void init(Map<String, String> settings) {
+        CommonData.settings = settings;
+
         //Common
         satServer = settings.get(SAT_URL);
         geoServer = settings.get(GEOSERVER_URL);
@@ -115,10 +119,10 @@ public class CommonData {
         defaultFieldString = settings.get(DEFAULT_UPLOAD_SAMPLING);
         maxQLength = Integer.parseInt(settings.get(MAX_Q_LENGTH));
         biocacheQc = settings.get(BIOCACHE_QC);
-        if(biocacheQc == null) {
+        if (biocacheQc == null) {
             biocacheQc = "";
         }
-        CommonData.settings = settings;
+        setupAnalysisLayerSets();
 
         //(1) for LayersUtil
         initEnvironmentalLayers();
@@ -625,7 +629,7 @@ public class CommonData {
      * returns array of WMS species requests
      */
     static public String[] getSpeciesDistributionWMS(String lsids) {
-        if(species_wms_layers == null) {
+        if (species_wms_layers == null) {
             return null;
         }
         String[] lsid = lsids.split(",");
@@ -653,7 +657,7 @@ public class CommonData {
      * returns array of WMS species requests
      */
     static public String[] getSpeciesDistributionMetadata(String lsids) {
-        if(species_wms_layers == null) {
+        if (species_wms_layers == null) {
             return null;
         }
         String[] lsid = lsids.split(",");
@@ -785,5 +789,27 @@ public class CommonData {
         } else {
             ssfCache.update(layers, columns);
         }
+    }
+
+    static void setupAnalysisLayerSets() {
+        ArrayList<LayerSelection> a = new ArrayList<LayerSelection>();
+        try {
+            if (CommonData.settings.get(ANALYSIS_LAYER_SETS) != null) {
+                String[] list = settings.get(ANALYSIS_LAYER_SETS).split("\\|");
+
+                for (String row : list) {
+                    if(row.length() > 0) {
+                        String[] cells = row.split("//");
+                        if(cells.length == 2) {
+                            a.add(new LayerSelection(cells[0].trim(), cells[1].trim()));
+                        }
+                    }
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        analysisLayerSets = a;
     }
 }

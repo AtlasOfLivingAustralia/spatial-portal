@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" use="org.ala.spatial.analysis.web.AddToolMaxentComposer"
-    apply="org.ala.spatial.analysis.web.AddToolMaxentComposer" width="700px" height="600px"
+    apply="org.ala.spatial.analysis.web.AddToolMaxentComposer" width="700px" height="680px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -111,6 +111,16 @@
                 <div id="atstep3" visible="false" zclass="step3 minlayers1">
                     <label id="atstep3_desc" value="Select one or more environmental and/or contextual layers" sclass="wSubLabel"/>
                     <label id="atstep3_label" value="" />
+                    <separator />
+                   <hbox>
+                        <label value="add set a of layers:" />
+                        <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="350px" />
+                    </hbox>
+                    <separator />
+                    <hbox>
+                        <label value="search layers:" />
+                        <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" />
+                    </hbox>
                     <separator />
                     <vbox>
                         <label value="Environmental layers" sclass="wSubLabel" />
@@ -234,6 +244,11 @@
                     <vbox>
                         <label value="Summary" style="font-weight: bold" visible="false" />
                         <div id="atsummary"></div>
+                    </vbox>
+                    <separator height="60px" />
+                    <vbox id="dLayerSummary" visible="true" >
+                        <label value="List of selected layers" />
+                        <textbox id="tLayerList" width="500px" height="80px" readonly="true" multiline="true"/>
                     </vbox>
                 </div>
 

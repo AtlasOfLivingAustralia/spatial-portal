@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolSamplingComposer"
-    apply="org.ala.spatial.analysis.web.AddToolSamplingComposer" width="700px" height="600px"
+    apply="org.ala.spatial.analysis.web.AddToolSamplingComposer" width="700px" height="640px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -94,6 +94,16 @@
             <div id="atstep3" visible="false" zclass="last optional download">
                 <label id="atstep3_desc" value="Select layers" sclass="wSubLabel"/>
                 <label id="atstep3_label" value="" />
+                <separator />
+                <hbox>
+                    <label value="add set a of layers:" />
+                    <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="350px" />
+                </hbox>
+                <separator />
+                <hbox>
+                    <label value="search layers:" />
+                    <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" />
+                </hbox>
                 <separator />
                 <vbox>
                     <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
