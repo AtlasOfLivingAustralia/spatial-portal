@@ -502,8 +502,7 @@ public class ClassificationLegend extends UtilityComposer {
                     }
                     legend_facets.put("Unknown", v);
                 } else {
-                    s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
-                    String[] ss = s.split(" TO ");
+                    String[] ss = s.split(" ");
 
                     double[] cutoffs = lo.getNumericLegend().getCutoffdoubles();
                     double[] cutoffMins = lo.getNumericLegend().getCutoffMindoubles();
@@ -511,11 +510,11 @@ public class ClassificationLegend extends UtilityComposer {
                     double min;
                     double max;
                     if (ss.length > 1) {
-                        if (ss[0].equals("*")) {
-                            double v = Double.parseDouble(ss[1]);
+                        if (ss[1].equals("*")) {
+                            double v = Double.parseDouble(ss[3]);
                             min = cutoffMins[0];
                             max = cutoffs[0];
-                        } else if (ss[1].equals("*")) {
+                        } else if (ss[3].equals("*")) {
                             min = cutoffMins[cutoffMins.length - 1];
                             max = gMaxValue;
                         } else {
@@ -529,10 +528,10 @@ public class ClassificationLegend extends UtilityComposer {
                         }
                         if (intContinous) {
                             range = String.format(">= %d and <= %d", (int) min, (int) max);
-                            strFacet = colourmode + ":[" + (int) max + " TO " + (int) min + "]";
+                            strFacet = colourmode + ":[" + (int) min + " TO " + (int) max + "]";
                         } else {
                             range = String.format(">= %g and <= %g", min, max);
-                            strFacet = colourmode + ":[" + max + " TO " + min + "]";
+                            strFacet = colourmode + ":[" + min + " TO " + max + "]";
                         }
                         legend_lines.set(j, range + back);
                         legend_facets.put(range, strFacet);
