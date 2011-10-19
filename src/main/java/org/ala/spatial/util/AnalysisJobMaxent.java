@@ -20,6 +20,7 @@ import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
 import org.ala.spatial.analysis.service.SamplingService;
+import org.apache.commons.io.IOUtils;
 
 /**
  *
@@ -124,7 +125,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
             msets.setEnvPath(cutDataPath);          //use (possibly) cut layers
 
             String ctxVarToggler = "";
-            for (int l=0;l<layers.length;l++){
+            for (int l = 0; l < layers.length; l++) {
                 if (layers[l].type.equalsIgnoreCase("contextual")) {
                     ctxVarToggler += layers[l].name + " ";
                 }
@@ -219,10 +220,28 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
 
                     // replace the summary
-                    readReplace(pth + "species.html", "This page contains some analysis of the Maxent model for", "This <a href='http://www.cs.princeton.edu/~schapire/maxent/'>Maxent</a> v3.3.3a predictive model for");
+                    readReplace(pth + "species.html", "This page contains some analysis of the Maxent model for", "This <a href='http://www.cs.princeton.edu/~schapire/maxent/'>Maxent</a> v3.3.3e predictive model for");
                     readReplace(pth + "species.html", ", created", " was created");
-                    readReplace(pth + "species.html", " using Maxent version 3.3.3a.", ".");
+                    readReplace(pth + "species.html", " using Maxent version 3.3.3e.", ".");
                     readReplace(pth + "species.html", "If you would like to do further analyses, the raw data used here is linked to at the end of this page", "Links at the bottom of this page to the raw data may be used for further analysis");
+
+                    System.out.println("********* chkResponseCurves: " + chkResponseCurves);
+                    if (chkResponseCurves != null) {
+                        StringBuffer sbTable = new StringBuffer();
+                        String[] ctxlist = msets.getEnvVarToggler().split(" ");
+                        sbTable.append("<pre>");
+                        for (String ctx : ctxlist) {
+                            sbTable.append("<span style='font-weight: bold; text-decoration: underline'>"+ctx+" legend</span><br />");
+                            sbTable.append(IOUtils.toString(new FileInputStream(TabulationSettings.environmental_data_path + ctx + ".txt")));
+                            sbTable.append("<br /><br />");
+                        }
+                        sbTable.append("</pre>");
+                        System.out.println("Writing\n***************************");
+                        System.out.println(sbTable.toString());
+                        System.out.println("***************************");
+                        readReplace(pth + "species.html", "<br><HR><H2>Analysis of variable contributions</H2><br>", sbTable.toString() + "<br><HR><H2>Analysis of variable contributions</H2><br>");
+
+                    }
 
                     readReplaceBetween(pth + "species.html", "<br>Click <a href=species_explain.bat", "memory.<br>", "");
                     readReplaceBetween(pth + "species.html", "(A link to the Explain", "additive models.)", "");
@@ -232,7 +251,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
                         BufferedReader br = new BufferedReader(new FileReader(
                                 currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "removedSpecies.txt"));
                         String s;
-                        while((s = br.readLine()) != null) {
+                        while ((s = br.readLine()) != null) {
                             removedSpecies.append(s);
                         }
                         br.close();
@@ -633,38 +652,38 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
             //maxent output grid is:
             s = br.readLine();
-            int ncols = Integer.parseInt(s.replace("ncols","").trim());
+            int ncols = Integer.parseInt(s.replace("ncols", "").trim());
 
             s = br.readLine();
-            int nrows = Integer.parseInt(s.replace("nrows","").trim());
+            int nrows = Integer.parseInt(s.replace("nrows", "").trim());
 
             s = br.readLine();
-            double lng1 = Double.parseDouble(s.replace("xllcorner","").trim());
+            double lng1 = Double.parseDouble(s.replace("xllcorner", "").trim());
 
             s = br.readLine();
-            double lat1 = Double.parseDouble(s.replace("yllcorner","").trim());
+            double lat1 = Double.parseDouble(s.replace("yllcorner", "").trim());
 
             s = br.readLine();
-            double div = Double.parseDouble(s.replace("cellsize","").trim());
+            double div = Double.parseDouble(s.replace("cellsize", "").trim());
 
             s = br.readLine();
-            double nodata = Double.parseDouble(s.replace("NODATA_value","").trim());
+            double nodata = Double.parseDouble(s.replace("NODATA_value", "").trim());
 
-            double [] data = new double[ncols * nrows];
-            for(int i=0;i<ncols * nrows;i++) {
+            double[] data = new double[ncols * nrows];
+            for (int i = 0; i < ncols * nrows; i++) {
                 data[i] = Double.NaN;
             }
             int r = 0;
-            while((s = br.readLine()) != null) {
-                String [] row = s.split(" ");
-                for(int i=0;i<row.length && i < ncols;i++) {
+            while ((s = br.readLine()) != null) {
+                String[] row = s.split(" ");
+                for (int i = 0; i < row.length && i < ncols; i++) {
                     double v = Double.parseDouble(row[i]);
-                    if(v != nodata) {
+                    if (v != nodata) {
                         data[r * ncols + i] = v;
                     }
                 }
-                r ++;
-                if(r == nrows) {
+                r++;
+                if (r == nrows) {
                     break;
                 }
             }
