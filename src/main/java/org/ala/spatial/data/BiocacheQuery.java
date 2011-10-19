@@ -80,6 +80,8 @@ public class BiocacheQuery implements Query, Serializable {
     String extraParams;
     String paramId;
     String qc;
+    String biocacheWebServer;
+    String biocacheServer;
     boolean forMapping;
     //stored query responses.
     String speciesList = null;
@@ -116,7 +118,29 @@ public class BiocacheQuery implements Query, Serializable {
         this.extraParams = extraParams;
         this.forMapping = forMapping;
         this.qc = CommonData.biocacheQc;
-        
+
+        this.biocacheWebServer = CommonData.biocacheWebServer;
+        this.biocacheServer = CommonData.biocacheServer;
+
+        makeParamId();
+    }
+
+    public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, String biocacheServer, String biocacheWebServer) {
+        this.lsids = lsids;
+        this.facets = facets;
+        this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : wkt;
+        this.extraParams = extraParams;
+        this.forMapping = forMapping;
+        this.qc = CommonData.biocacheQc;
+
+        if(biocacheServer != null && biocacheWebServer != null) {
+            this.biocacheWebServer = biocacheWebServer;
+            this.biocacheServer = biocacheServer;
+        } else {
+            this.biocacheWebServer = CommonData.biocacheWebServer;
+            this.biocacheServer = CommonData.biocacheServer;
+        }
+
         makeParamId();
     }
 
@@ -138,7 +162,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
         newFacets.add(facet);
 
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping);
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, biocacheServer, biocacheWebServer);
     }
 
     /**
@@ -155,7 +179,7 @@ public class BiocacheQuery implements Query, Serializable {
             if (this.forMapping || !forMapping) {
                 return this;
             } else {
-                return new BiocacheQuery(lsids, wkt, extraParams, facets, forMapping);
+                return new BiocacheQuery(lsids, wkt, extraParams, facets, forMapping, biocacheServer, biocacheWebServer);
             }
         }
 
@@ -169,7 +193,7 @@ public class BiocacheQuery implements Query, Serializable {
                 newWkt = (new WKTWriter()).write(intersectionGeom).replace(" (", "(").replace(", ", ",").replace(") ", ")");
             }
 
-            sq = new BiocacheQuery(lsids, newWkt, extraParams, facets, forMapping);
+            sq = new BiocacheQuery(lsids, newWkt, extraParams, facets, forMapping, biocacheServer, biocacheWebServer);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -186,7 +210,7 @@ public class BiocacheQuery implements Query, Serializable {
     @Override
     public String sample(ArrayList<QueryField> fields) {
         HttpClient client = new HttpClient();
-        String url = CommonData.biocacheServer
+        String url = biocacheServer
                 + SAMPLING_SERVICE_CSV_GZIP
                 + DEFAULT_ROWS
                 + "&q=" + getQ()
@@ -229,7 +253,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
 
         HttpClient client = new HttpClient();
-        String url = CommonData.biocacheServer
+        String url = biocacheServer
                 + SPECIES_LIST_SERVICE_CSV
                 + DEFAULT_ROWS
                 + "&q=" + getQ()
@@ -259,7 +283,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
 
         HttpClient client = new HttpClient();
-        String url = CommonData.biocacheServer
+        String url = biocacheServer
                 + SAMPLING_SERVICE
                 + "pageSize=0&facet=false"
                 + "&q=" + getQ()
@@ -572,7 +596,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
 
         HttpClient client = new HttpClient();
-        String url = CommonData.biocacheServer
+        String url = biocacheServer
                 + POST_SERVICE
                 + getQc()
                 + "&facet=false";
@@ -790,7 +814,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
         if (lo == null) {
             HttpClient client = new HttpClient();
-            String url = CommonData.biocacheServer
+            String url = biocacheServer
                     + LEGEND_SERVICE_CSV
                     + DEFAULT_ROWS
                     + "&q=" + getQ()
@@ -878,12 +902,12 @@ public class BiocacheQuery implements Query, Serializable {
         }
         newFacets.addAll(facets);
 
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping);
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, biocacheServer, biocacheWebServer);
     }
 
     @Override
     public String getUrl() {
-        return CommonData.biocacheServer + WMS_URL;
+        return biocacheServer + WMS_URL;
     }
     List<Double> bbox = null;
 
@@ -896,7 +920,7 @@ public class BiocacheQuery implements Query, Serializable {
         bbox = new ArrayList<Double>();
 
         HttpClient client = new HttpClient();
-        String url = CommonData.biocacheServer
+        String url = biocacheServer
                 + BOUNDING_BOX_CSV
                 + DEFAULT_ROWS
                 + "&q=" + getQ()
@@ -969,7 +993,7 @@ public class BiocacheQuery implements Query, Serializable {
 //            html += "<tr class='md_grey-bg'><td class='md_value' colspan='3'>More information for <a href='" + CommonData.bieServer + BIE_SPECIES + lsids + "' target='_blank'>"+ spname +"</a></td></tr>";
 //        }
 
-        html += "<tr class='md_grey-bg'><td class='md_th' span=3><a href='" + CommonData.biocacheWebServer + "/occurrences/search?q=" + getQ() + "' target='_blank'>view records in biocache</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th' span=3><a href='" + biocacheWebServer + "/occurrences/search?q=" + getQ() + "' target='_blank'>view records in biocache</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
         html += "</table>";
 
         return html;
@@ -1031,7 +1055,7 @@ public class BiocacheQuery implements Query, Serializable {
                 }
             }
         }
-        return CommonData.biocacheServer + DOWNLOAD_URL + "q=" + getQ() + sb.toString() + getQc();
+        return biocacheServer + DOWNLOAD_URL + "q=" + getQ() + sb.toString() + getQc();
     }
 
     @Override
@@ -1041,7 +1065,7 @@ public class BiocacheQuery implements Query, Serializable {
 
     private String getDataProviders() {
         HttpClient client = new HttpClient();
-        String url = CommonData.biocacheServer
+        String url = biocacheServer
                 + DATA_PROVIDERS_SERVICE
                 + DEFAULT_ROWS
                 + "&q=" + getQ()
@@ -1083,7 +1107,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
 
         HttpClient client = new HttpClient();
-        String url = CommonData.biocacheServer
+        String url = biocacheServer
                 + QUERY_TITLE_URL
                 + "&q=" + getQ()
                 + getQc()

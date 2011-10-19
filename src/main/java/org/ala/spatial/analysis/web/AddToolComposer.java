@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerSelection;
 import au.org.emii.portal.util.LayerUtilities;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -11,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+import net.sf.json.JSONObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.BiocacheQuery;
@@ -62,8 +66,11 @@ public class AddToolComposer extends UtilityComposer {
     boolean hasCustomArea = false;
     MapLayer prevTopArea = null;
     Fileupload fileUpload;
-
-    Div tlinfo; 
+    SelectedLayersCombobox selectedLayersCombobox;
+    Div tlinfo;
+    Textbox tLayerList;
+    Div dLayerSummary;
+    EnvLayersCombobox cbLayer;
 
     @Override
     public void afterCompose() {
@@ -464,6 +471,9 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void loadGridLayers(boolean environmentalOnly, boolean fullList) {
+        if (selectedLayersCombobox != null) {
+            selectedLayersCombobox.init(getMapComposer().getLayerSelections());
+        }
         try {
 
             if (fullList) {
@@ -480,6 +490,8 @@ public class AddToolComposer extends UtilityComposer {
             if (layers != null) {
                 lbListLayers.selectLayers(layers.split(","));
             }
+
+            lbListLayers.renderAll();
         } catch (Exception e) {
             System.out.println("Unable to load species layers:");
             e.printStackTrace(System.out);
@@ -659,12 +671,14 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     private void displayTrafficLightInfo() {
-        if (selectedMethod.equalsIgnoreCase("Prediction") && currentStep == 3) {
-            tlinfo.setVisible(true);
-        } else if (selectedMethod.equalsIgnoreCase("Classification") && currentStep == 2) {
-            tlinfo.setVisible(true);
-        } else {
-            tlinfo.setVisible(false);
+        if (tlinfo != null) {
+            if (selectedMethod.equalsIgnoreCase("Prediction") && currentStep == 3) {
+                tlinfo.setVisible(true);
+            } else if (selectedMethod.equalsIgnoreCase("Classification") && currentStep == 2) {
+                tlinfo.setVisible(true);
+            } else {
+                tlinfo.setVisible(false);
+            }
         }
     }
 
@@ -748,7 +762,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
-        if(btnOk.isDisabled()) {
+        if (btnOk.isDisabled()) {
             return;
         }
         try {
@@ -814,7 +828,14 @@ public class AddToolComposer extends UtilityComposer {
                 currentStep++;
             } else {
                 currentStep = 1;
+
+                saveLayerSelection();
+
                 onFinish();
+            }
+
+            if (nextDiv != null && nextDiv.getZclass().contains("last")) {
+                updateLayerListText();
             }
 
             btnBack.setDisabled(false);
@@ -830,9 +851,9 @@ public class AddToolComposer extends UtilityComposer {
         fixFocus();
     }
 
-    void fixFocus(){
+    void fixFocus() {
         //set element of focus
-    };
+    }
 
     public void onLastPanel() {
     }
@@ -872,7 +893,7 @@ public class AddToolComposer extends UtilityComposer {
                 }
 
                 //for 'all areas'
-                if(sa == null) {
+                if (sa == null) {
                     sa = new SelectedArea(null, area);
                 }
             }
@@ -1182,8 +1203,8 @@ public class AddToolComposer extends UtilityComposer {
             //if (divSpeciesSearch != null && divSpeciesSearch.isVisible()){
             btnOk.setDisabled(
                     divSpeciesSearch.isVisible()
-                    && searchSpeciesAuto.getSelectedItem() != null &&
-                    (searchSpeciesAuto.getSelectedItem().getValue() == null
+                    && searchSpeciesAuto.getSelectedItem() != null
+                    && (searchSpeciesAuto.getSelectedItem().getValue() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));
         }
@@ -1237,5 +1258,112 @@ public class AddToolComposer extends UtilityComposer {
     boolean isAreaHighlightCustom() {
         return isAreaHighlightTab() && rgAreaHighlight != null
                 && rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight");
+    }
+
+    public void onSelect$selectedLayersCombobox(Event event) {
+        Comboitem ci = selectedLayersCombobox.getSelectedItem();
+        if (ci != null && lbListLayers != null) {
+            String layersList = null;
+            if (ci.getValue() != null && ci.getValue() instanceof LayerSelection) {
+                layersList = ((LayerSelection) ci.getValue()).getLayers();
+            } else {
+                if (ci.getLabel().equalsIgnoreCase("paste a layer list") || ci.getValue() == null) {
+                    Hashtable<String, Object> params = new Hashtable<String, Object>();
+                    Window window = (Window) Executions.createComponents("WEB-INF/zul/PasteLayerList.zul", this, null);
+
+                    try {
+                        window.doModal();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    selectedLayersCombobox.setSelectedIndex(-1);
+                }
+            }
+            selectLayerFromList(layersList);
+        }
+    }
+
+    public void selectLayerFromList(String layersList) {
+        if (layersList == null) {
+            return;
+        }
+
+        //check the whole layer string as well as the one at the end
+        String[] layers = layersList.split(",");
+        String [] list = new String[layers.length * 2];
+        for (int i = 0; i < layers.length; i++) {
+            int p1 = layers[i].lastIndexOf('(');
+            int p2 = layers[i].lastIndexOf(')');
+            if (p1 >= 0 && p2 >= 0 && p1 < p2) {
+                list[i*2] = layers[i].substring(p1 + 1, p2).trim();
+            }
+            list[i*2+1] = layers[i];
+        }
+        lbListLayers.selectLayers(list);
+        toggles();
+    }
+
+    public void saveLayerSelection() {
+        //save layer selection
+        if (lbListLayers != null && lbListLayers.getSelectedCount() > 0) {
+            String list = getLayerListText();
+            LayerSelection ls = new LayerSelection(selectedMethod, tToolName.getText(), System.currentTimeMillis(), list);
+            getMapComposer().getLayerSelections().add(ls);
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < getMapComposer().getLayerSelections().size(); i++) {
+                if (i > 0) {
+                    sb.append("\n");
+                }
+                sb.append(getMapComposer().getLayerSelections().get(i).toString());
+                sb.append(" // ");
+                sb.append(getMapComposer().getLayerSelections().get(i).getLayers());
+            }
+
+            try {
+                Cookie c = new Cookie("analysis_layer_selections", sb.toString());
+                c.setMaxAge(Integer.MAX_VALUE);
+                ((HttpServletResponse) Executions.getCurrent().getNativeResponse()).addCookie(c);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    void updateLayerListText() {
+        if (lbListLayers != null && lbListLayers.getSelectedCount() > 0
+                && tLayerList != null) {
+            tLayerList.setText(getLayerListText());
+            dLayerSummary.setVisible(tLayerList.getText().length() > 0);
+        }
+    }
+
+    String getLayerListText() {
+        StringBuilder sb = new StringBuilder();
+        for (String s : lbListLayers.getSelectedLayers()) {
+            try {
+                String displayname = CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
+                if (displayname != null && displayname.length() > 0) {
+                    if (sb.length() > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(displayname).append(" (").append(s).append(")");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return sb.toString();
+    }
+
+    public void onChange$cbLayer(Event event) {
+        //seek to and select the same layer in the list
+        if(lbListLayers != null && cbLayer.getSelectedItem() != null) {
+            JSONObject jo = (JSONObject) cbLayer.getSelectedItem().getValue();
+            String [] layer = jo.getString("name").split("/");
+            lbListLayers.selectLayers(layer);
+        }
+        toggles();
     }
 }

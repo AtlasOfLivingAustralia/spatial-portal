@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class WMSService {
-    final static int HIGHLIGHT_RADIUS = 6;
+    final static int HIGHLIGHT_RADIUS = 3;
 
     /*
     http://spatial.ala.org.au/geoserver/wms/reflect?styles=&format=image/png&
@@ -287,7 +287,7 @@ public class WMSService {
                 if (highlight != null && facet != null) {
                     g.setStroke(new BasicStroke(2));
                     g.setColor(new Color(255, 0, 0, 255));
-                    int sz = size + HIGHLIGHT_RADIUS + (int)(size * 0.2);
+                    int sz = size + HIGHLIGHT_RADIUS;
                     int w = sz * 2 + 1;
                     for (i = 0; i < points.length; i += 2) {
                         if (points[i] >= bb[0][0] && points[i] <= bb[1][0]

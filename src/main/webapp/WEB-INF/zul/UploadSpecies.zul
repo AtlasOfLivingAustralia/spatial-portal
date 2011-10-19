@@ -29,7 +29,7 @@
                 <p>
                 NOTE: If you wish to built an assemblage of various taxa,
                 we have created an Excel macro
-                (<a href="http://spatial.ala.org.au/files/getLsid.zip">getLsid.xlm</a>)
+                (<a href="http://spatial.ala.org.au/files/getLsid.zip">getLsid.xlsm</a>)
                 that will accept a list of the scientific names of taxa and then
                 do a bulk lookup for the corresponding LSIDs (at all taxonomic
                 levels). The resulting filled columns can be copy/pasted to a

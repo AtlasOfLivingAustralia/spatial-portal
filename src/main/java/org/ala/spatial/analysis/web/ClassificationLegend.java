@@ -345,8 +345,8 @@ public class ClassificationLegend extends UtilityComposer {
         if (!dmax.isDisabled()) {    //slider cannot be disabled
             uncheckAll();
             double range = gMaxValue - gMinValue;
-            minValue = dslider.getCurpos() * range / SLIDER_MAX + gMinValue;
-            maxValue = dslider.getCurmaxpos() * range / SLIDER_MAX + gMinValue;
+            minValue = dslider.getCurpos() * range / (double) SLIDER_MAX + gMinValue;
+            maxValue = dslider.getCurmaxpos() * range / (double) SLIDER_MAX + gMinValue;
             updateD();
         }
     }
@@ -464,10 +464,9 @@ public class ClassificationLegend extends UtilityComposer {
             gMaxValue = maxValue = lo.getMinMax()[1];
             double rng = gMaxValue - gMinValue;
             if(intContinous && rng < SLIDER_MAX && rng > 0) {
-                dslider.setMaxpos((int)rng);
-            } else {
-                dslider.setMaxpos(SLIDER_MAX);
+                SLIDER_MAX = (int) rng;
             }
+            dslider.setMaxpos(SLIDER_MAX);
             try {
                 if (facet != null) {
                     //count OR and test for null

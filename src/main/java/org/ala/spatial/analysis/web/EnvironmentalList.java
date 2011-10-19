@@ -2,6 +2,7 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.ListEntry;
@@ -122,9 +123,10 @@ public class EnvironmentalList extends Listbox {
     }
 
     public void updateDistances() {
-        if(distances == null)
+        if (distances == null) {
             return;
-        
+        }
+
         for (ListEntry le : listEntries) {
             le.value = 1;
         }
@@ -195,21 +197,26 @@ public class EnvironmentalList extends Listbox {
     }
 
     void selectLayers(String[] layers) {
+        HashSet<Listitem> items = new HashSet<Listitem>();
         for (int i = 0; i < listEntries.size(); i++) {
             for (int j = 0; j < layers.length; j++) {
                 if (listEntries.get(i).displayname.equalsIgnoreCase(layers[j])
-	                        || listEntries.get(i).name.equalsIgnoreCase(layers[j])) {
-	                    toggleItemSelection(getItemAtIndex(i));
-		                    break;
-		                }
+                        || listEntries.get(i).name.equalsIgnoreCase(layers[j])) {
+                    items.add(getItemAtIndex(i));
+                    break;
+                }
             }
+        }
+        if (items.size() > 0) {
+            setSelectedItems(items);
         }
         updateDistances();
     }
 
     @Override
-    public void clearSelection() {        
+    public void clearSelection() {
         updateDistances();
         super.clearSelection();
+        updateDistances();
     }
 }

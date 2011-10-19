@@ -89,8 +89,9 @@ public class PortalDocumentFactoryFileImpl implements PortalDocumentFactory, Con
         PortalDocument portalDocument = null;
 
         // Have xmlbeans read the file and parse it
+        InputStream is = null;
         try {
-            InputStream is = new FileInputStream(getConfigFilename());
+            is = new FileInputStream(getConfigFilename());
             portalDocument = PortalDocument.Factory.parse(is);
 
             // if the XML is valid, we're good to go...
@@ -102,8 +103,6 @@ public class PortalDocumentFactoryFileImpl implements PortalDocumentFactory, Con
                         + "xmllint --schema on the command line to determine the problem!");
                 portalDocument = null;
             }
-
-            is.close();
         } catch (FileNotFoundException e) {
             portalDocument = null;
             logger.error("Could not load portal configuration file from: " + getConfigFilename());
@@ -113,6 +112,12 @@ public class PortalDocumentFactoryFileImpl implements PortalDocumentFactory, Con
         } catch (IOException e) {
             portalDocument = null;
             logger.error("IOException reading configuration - should never happen, you may have big problems! - check this stack trace", e);
+        } finally {
+            try {
+                is.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         return portalDocument;
