@@ -2703,6 +2703,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         activeLayersList.setModel(new ListModelList(activeLayers, true));
         adjustActiveLayersList();
         activeLayersList.setSelectedIndex(idx);
+        llc2.txtLayerName.setValue(llc2MapLayer.getDisplayName());
+        lblSelectedLayer.setValue(llc2MapLayer.getDisplayName());
     }
 
     public void onSelect$activeLayersList(Event event) {
