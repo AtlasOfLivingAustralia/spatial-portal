@@ -59,6 +59,7 @@ public class AreaMapPolygon extends AreaToolComposer {
 
     public void onClick$btnOk(Event event) {
         getMapComposer().getMapLayer(layerName).setDisplayName(txtLayerName.getValue());
+        getMapComposer().redrawLayersList();
         ok = true;
         Clients.evalJavaScript("mapFrame.toggleClickHandler(true);");
         this.detach();
