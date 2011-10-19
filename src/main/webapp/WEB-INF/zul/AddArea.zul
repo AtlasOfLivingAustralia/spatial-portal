@@ -48,7 +48,7 @@
                     <separator />
                     <label value="Other" sclass="wSubLabel" />
                     <radio label="Define environmental envelope" id="ciEnvironmentalEnvelope" />
-                    <radio label="Paste Well Known Text (WKT)" id="ciWKT" />
+                    <radio label="Enter area coordinates (WKT)" id="ciWKT" />
                     </vbox>
                 </radiogroup>
             </div>

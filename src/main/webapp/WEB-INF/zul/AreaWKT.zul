@@ -23,7 +23,23 @@
                 </hbox>
             </div>
             <separator />
-            <label sclass="wordwrap" value="1. Paste text into WKT (Well Known Text) Format" />
+            <html><![CDATA[
+            <p>
+              Coordinates of complex or simple area boundaries can be pasted
+              into the box below using a language call 
+              <a target="_blank" href="http://en.wikipedia.org/wiki/Well-known_text">Well Known Text</a>.
+              For an area, a closed POLYGON is required. For example, the
+              following longitude(x) latitude(y) pairs form an arrow-shaped polygon
+            </p>
+            
+            <p>
+              POLYGON ((130.0 -20.0, 140 -30.0, 140.0 -25.0, 145.0 -15.0, 130 -20.0))
+            </p>
+            
+            <p>
+              Store your area in a text file and copy/paste the WKT content into the box below.
+            </p>
+            ]]></html>
             
             <separator />
             <textbox id="displayGeom" readonly="false" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
