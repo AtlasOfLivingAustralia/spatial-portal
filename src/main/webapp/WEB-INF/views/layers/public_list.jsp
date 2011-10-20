@@ -254,7 +254,7 @@
                                 <!--<li><a href="/layers.csv">Download as CSV</a></li>-->
                             </ul>
                             <table border="1">
-                                <tr>
+                                <tr style="height:220px">
                                     <th>Classification 1</th>
                                     <th>Classification 2</th>
                                     <th>Display name</th>
@@ -288,7 +288,7 @@
                                         <td>${layer.keywords}</td>
                                         <td>
                                             <!--<img src="/output/layerthumbs/ALA:${layer.name}.jpeg" />-->
-                                            <img src="/geoserver/wms/reflect?layers=ALA:${layer.name}&width=200" />
+                                            <img src="/geoserver/wms/reflect?layers=ALA:${layer.name}&width=200&height=200" />
                                             <br />
                                             <!--<a href="/geoserver/wms/kml?layers=ALA:${layer.name}">KML</a>-->
                                         </td>
