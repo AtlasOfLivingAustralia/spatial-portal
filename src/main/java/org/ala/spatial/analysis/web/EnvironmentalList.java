@@ -197,19 +197,22 @@ public class EnvironmentalList extends Listbox {
     }
 
     void selectLayers(String[] layers) {
-        HashSet<Listitem> items = new HashSet<Listitem>();
+        //HashSet<Listitem> items = new HashSet<Listitem>();
         for (int i = 0; i < listEntries.size(); i++) {
             for (int j = 0; j < layers.length; j++) {
                 if (listEntries.get(i).displayname.equalsIgnoreCase(layers[j])
                         || listEntries.get(i).name.equalsIgnoreCase(layers[j])) {
-                    items.add(getItemAtIndex(i));
+//                    items.add(getItemAtIndex(i));
+                    if(!getItemAtIndex(i).isSelected()) {
+                        toggleItemSelection(getItemAtIndex(i));
+                    }
                     break;
                 }
             }
         }
-        if (items.size() > 0) {
-            setSelectedItems(items);
-        }
+//        if (items.size() > 0) {
+//            setSelectedItems(items);
+//        }
         updateDistances();
     }
 

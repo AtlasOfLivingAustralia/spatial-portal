@@ -9,6 +9,9 @@ import au.org.emii.portal.util.Validate;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.ArrayList;
 import java.util.List;
+import org.ala.spatial.data.BiocacheQuery;
+import org.ala.spatial.data.Query;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 import org.zkoss.zk.ui.Sessions;
@@ -248,17 +251,17 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + " 		new OpenLayers.Bounds(";
 
         if (mapLayer.getSubType() == LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
-            script +=  "112" + ","
-                + "-44" + ","
-                + "154" + ","
-                + "-9";
+            script += "112" + ","
+                    + "-44" + ","
+                    + "154" + ","
+                    + "-9";
         } else {
             script += bbox.get(0) + ","
-                + bbox.get(1) + ","
-                + bbox.get(2) + ","
-                + bbox.get(3);
+                    + bbox.get(1) + ","
+                    + bbox.get(2) + ","
+                    + bbox.get(3);
         }
-        
+
         script += "		).transform(map.displayProjection, map.projection), "
                 //+ "             map.baseLayer.getExtent(),       "
                 + " 		new OpenLayers.Size("
@@ -444,7 +447,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
      * @return
      */
     @Override
-    public String activateMapLayer(MapLayer mapLayer, boolean recursive, boolean alternativeScript) { 
+    public String activateMapLayer(MapLayer mapLayer, boolean recursive, boolean alternativeScript) {
         String associativeArray;
         boolean okToAddLayer;
         if (mapLayer.isBaseLayer()) {
@@ -480,7 +483,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 script.append(defineKMLMapLayer(mapLayer));
                 okToAddLayer = true;
                 break;
-            case LayerUtilitiesImpl.GEOJSON:                
+            case LayerUtilitiesImpl.GEOJSON:
                 script.append(defineGeoJSONMapLayer(mapLayer));
                 okToAddLayer = true;
                 break;
@@ -531,7 +534,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
         if (recursive) {
             for (MapLayer child : mapLayer.getChildren()) {
-                if(child.getData("highlight") == null || ((String)child.getData("highlight")).equals("show")) {
+                if (child.getData("highlight") == null || ((String) child.getData("highlight")).equals("show")) {
                     script.append(activateMapLayer(child, recursive, alternativeScript));
                 }
             }
@@ -693,7 +696,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + "		'" + layer.getNameJS() + "', "
                 + "		'" + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&", "wms\\/reflect?") + "', "
                 + "		{"
-                + ((layer.getSelectedStyleNameJS().equals("Default"))?"":"			styles: '" + layer.getSelectedStyleNameJS() + "', ")
+                + ((layer.getSelectedStyleNameJS().equals("Default")) ? "" : "			styles: '" + layer.getSelectedStyleNameJS() + "', ")
                 + "			layers: '" + layer.getLayerJS() + "', "
                 + "			format: '" + layer.getImageFormat() + "', "
                 + "                     srs: 'epsg:900913', "
@@ -715,6 +718,19 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 // it's used to set a margin of cached tiles around the viewport!!
                 associativeArray + "['" + layer.getUniqueIdJS() + "']"
                 + ".getFeatureInfoBuffer =" + settingsSupplementary.getValue("get_feature_info_buffer") + "; ";
+        //add ws and bs urls for species layers
+        if (layer.getData("query") != null) {
+            Query q = (Query) layer.getData("query");
+            if (q instanceof BiocacheQuery) {
+                BiocacheQuery bq = (BiocacheQuery) q;
+                try {
+                    script += associativeArray + "['" + layer.getUniqueIdJS() + "']" + ".ws ='" + StringEscapeUtils.escapeJavaScript(bq.getWS()) + "'; "
+                            + associativeArray + "['" + layer.getUniqueIdJS() + "']" + ".bs ='" + StringEscapeUtils.escapeJavaScript(bq.getBS()) + "'; ";
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
 
         if (!layer.isBaseLayer()) {

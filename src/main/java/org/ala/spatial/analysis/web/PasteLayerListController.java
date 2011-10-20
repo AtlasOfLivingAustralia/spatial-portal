@@ -24,6 +24,7 @@ public class PasteLayerListController extends UtilityComposer {
     public void onClick$btnOk(Event event) {
         if (getParent() instanceof AddToolComposer) {
             ((AddToolComposer) getParent()).selectLayerFromList(layerList.getText());
+            ((AddToolComposer) getParent()).updateLayerSelectionCount();
         }
         this.detach();
     }

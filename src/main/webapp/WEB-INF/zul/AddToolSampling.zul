@@ -93,15 +93,16 @@
 
             <div id="atstep3" visible="false" zclass="last optional download">
                 <label id="atstep3_desc" value="Select layers" sclass="wSubLabel"/>
+                <a href="http://spatial.ala.org.au/layers" label="layers" style="float:right" target="_blank" />
                 <label id="atstep3_label" value="" />
-                <separator />
+                <separator height="15px" />
                 <hbox>
                     <label value="add set a of layers:" />
                     <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="350px" />
                 </hbox>
                 <separator />
                 <hbox>
-                    <label value="search layers:" />
+                    <label value="add from search:" />
                     <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" />
                 </hbox>
                 <separator />
@@ -116,7 +117,11 @@
                             <listheader label=" " width="10px" visible="false" />
                         </listhead>
                     </listbox>
-                    <button id="btnClearSelection" label="Clear layers"  sclass="goButton" style="float:left" />
+                    <hbox>
+                        <button id="btnClearSelection" label="Clear layers" sclass="goButton" style="float:left" />
+                        <button id="bLayerListDownload1" label="Download selection" />
+                        <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />
+                    </hbox>
                 </vbox>
             </div>
 

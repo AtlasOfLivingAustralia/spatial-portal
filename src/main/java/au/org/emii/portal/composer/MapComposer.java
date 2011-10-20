@@ -906,10 +906,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @param legend URI for map layer legend
      */
     public MapLayer addWMSLayer(String label, String uri, float opacity, String metadata, String legendUri, int subType, String cqlfilter, String envParams) {
+        return addWMSLayer(label, uri, opacity, metadata, legendUri, subType, cqlfilter, envParams, null);
+    }
+    
+    public MapLayer addWMSLayer(String label, String uri, float opacity, String metadata, String legendUri, int subType, String cqlfilter, String envParams, Query q) {
         MapLayer mapLayer = null;
         if (safeToPerformMapAction()) {
             if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
                 mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
+                if(q != null) {
+                    mapLayer.setData("query", q);
+                }
                 if (mapLayer == null) {
                     // fail
                     //errorMessageBrokenWMSLayer(imageTester);
@@ -1924,7 +1931,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         try {
             if (safeToPerformMapAction()) {
                 if (getMapLayer(label) == null) {
-                    MapLayer ml = addWMSLayer(label, uri + filter, opacity, null, null, subType, "", envString);
+                    MapLayer ml = addWMSLayer(label, uri + filter, opacity, null, null, subType, "", envString, query);
                     if (ml != null) {
                         ml.setDynamicStyle(true);
                         ml.setEnvParams(envString);
@@ -2961,5 +2968,30 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public ArrayList<LayerSelection> getLayerSelections() {
         return selectedLayers;
+    }
+
+    public void addLayerSelection(LayerSelection ls) {
+        //check for duplication
+        for(int i=0;i<selectedLayers.size();i++) {
+            if(selectedLayers.get(i).equalsList(ls)) {
+                selectedLayers.get(i).setLastUse(System.currentTimeMillis());
+                return;
+            }
+        }
+
+        //add
+        selectedLayers.add(ls);
+
+        //if more than 10, remove the recod with oldest use
+        if(selectedLayers.size() > 20) {
+            int oldestIdx = 0;
+            for(int i=1;i<selectedLayers.size();i++) {
+                if(selectedLayers.get(i).getLastUse() <
+                        selectedLayers.get(oldestIdx).getLastUse()) {
+                    oldestIdx = i;
+                }
+            }
+            selectedLayers.remove(oldestIdx);
+        }
     }
 }

@@ -5,6 +5,8 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerSelection;
 import au.org.emii.portal.util.LayerUtilities;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -27,6 +29,7 @@ import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
+import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
@@ -71,6 +74,9 @@ public class AddToolComposer extends UtilityComposer {
     Textbox tLayerList;
     Div dLayerSummary;
     EnvLayersCombobox cbLayer;
+    Button bLayerListDownload1;
+    Button bLayerListDownload2;
+    Label lLayersSelected;
 
     @Override
     public void afterCompose() {
@@ -625,7 +631,8 @@ public class AddToolComposer extends UtilityComposer {
     public void onClick$btnCancel(Event event) {
         currentStep = 1;
         if (lbListLayers != null) {
-            lbListLayers.clearSelection();
+            lbListLayers.clearSelection();            
+            toggles();
         }
         this.detach();
     }
@@ -1160,15 +1167,8 @@ public class AddToolComposer extends UtilityComposer {
         }
     }
 
-    public void onSelect$lbListLayers(Event event) {
-        Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
-        if (currentDiv.getZclass().contains("minlayers1")) {
-            btnOk.setDisabled(lbListLayers.getSelectedCount() < 1);
-        } else if (currentDiv.getZclass().contains("minlayers2")) {
-            btnOk.setDisabled(lbListLayers.getSelectedCount() < 2);
-        } else if (currentDiv.getZclass().contains("optional")) {
-            btnOk.setDisabled(false);
-        }
+    public void onSelect$lbListLayers(Event event) { 
+        toggles();
     }
 
     void toggles() {
@@ -1179,7 +1179,18 @@ public class AddToolComposer extends UtilityComposer {
             fileUpload.setVisible(false);
         }
 
-        onSelect$lbListLayers(null);
+        if(lbListLayers != null) {
+            Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
+            if (currentDiv.getZclass().contains("minlayers1")) {
+                btnOk.setDisabled(lbListLayers.getSelectedCount() < 1);
+            } else if (currentDiv.getZclass().contains("minlayers2")) {
+                btnOk.setDisabled(lbListLayers.getSelectedCount() < 2);
+            } else if (currentDiv.getZclass().contains("optional")) {
+                btnOk.setDisabled(false);
+            }
+            updateLayerSelectionCount();
+        }
+
         if (rgSpecies != null) {
             onCheck$rgSpecies(null);
         }
@@ -1209,6 +1220,12 @@ public class AddToolComposer extends UtilityComposer {
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));
         }
 
+        if(lbListLayers != null) {
+            if(bLayerListDownload1 != null && bLayerListDownload2 != null) {
+                bLayerListDownload1.setDisabled(lbListLayers.getSelectedCount() == 0);
+                bLayerListDownload2.setDisabled(lbListLayers.getSelectedCount() == 0);
+            }
+        }
     }
 
     public void onChange$cbLayer2(Event event) {
@@ -1239,7 +1256,8 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void onClick$btnClearSelection(Event event) {
-        lbListLayers.clearSelection();
+        lbListLayers.clearSelection();        
+        toggles();
         btnOk.setDisabled(true);
     }
 
@@ -1267,16 +1285,24 @@ public class AddToolComposer extends UtilityComposer {
             if (ci.getValue() != null && ci.getValue() instanceof LayerSelection) {
                 layersList = ((LayerSelection) ci.getValue()).getLayers();
             } else {
-                if (ci.getLabel().equalsIgnoreCase("paste a layer list") || ci.getValue() == null) {
-                    Hashtable<String, Object> params = new Hashtable<String, Object>();
-                    Window window = (Window) Executions.createComponents("WEB-INF/zul/PasteLayerList.zul", this, null);
+                if (ci.getValue() == null) {
+                    if(ci.getLabel().toLowerCase().contains("paste")) {
+                        Window window = (Window) Executions.createComponents("WEB-INF/zul/PasteLayerList.zul", this, null);
 
-                    try {
-                        window.doModal();
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        try {
+                            window.doModal();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }else if(ci.getLabel().toLowerCase().contains("upload")) {
+                        Window window = (Window) Executions.createComponents("WEB-INF/zul/UploadLayerList.zul", this, null);
+
+                        try {
+                            window.doModal();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-
                     selectedLayersCombobox.setSelectedIndex(-1);
                 }
             }
@@ -1300,16 +1326,16 @@ public class AddToolComposer extends UtilityComposer {
             }
             list[i*2+1] = layers[i];
         }
-        lbListLayers.selectLayers(list);
+        lbListLayers.selectLayers(list);        
         toggles();
     }
 
     public void saveLayerSelection() {
         //save layer selection
         if (lbListLayers != null && lbListLayers.getSelectedCount() > 0) {
-            String list = getLayerListText();
+            String list = getLayerListShortText();
             LayerSelection ls = new LayerSelection(selectedMethod, tToolName.getText(), System.currentTimeMillis(), list);
-            getMapComposer().getLayerSelections().add(ls);
+            getMapComposer().addLayerSelection(ls);
 
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < getMapComposer().getLayerSelections().size(); i++) {
@@ -1332,10 +1358,14 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     void updateLayerListText() {
-        if (lbListLayers != null && lbListLayers.getSelectedCount() > 0
-                && tLayerList != null) {
-            tLayerList.setText(getLayerListText());
-            dLayerSummary.setVisible(tLayerList.getText().length() > 0);
+        try {
+            if (lbListLayers != null && lbListLayers.getSelectedCount() > 0
+                    && tLayerList != null) {
+                tLayerList.setText(getLayerListText());
+                dLayerSummary.setVisible(tLayerList.getText().length() > 0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -1357,13 +1387,54 @@ public class AddToolComposer extends UtilityComposer {
         return sb.toString();
     }
 
+    String getLayerListShortText() {
+        StringBuilder sb = new StringBuilder();
+        for (String s : lbListLayers.getSelectedLayers()) {
+            try {
+                String displayname = CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
+                if (displayname != null && displayname.length() > 0) {
+                    if (sb.length() > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(s);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return sb.toString();
+    }
+
     public void onChange$cbLayer(Event event) {
         //seek to and select the same layer in the list
         if(lbListLayers != null && cbLayer.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) cbLayer.getSelectedItem().getValue();
             String [] layer = jo.getString("name").split("/");
-            lbListLayers.selectLayers(layer);
+            lbListLayers.selectLayers(layer);            
         }
         toggles();
+    }
+
+    public void onClick$bLayerListDownload1(Event event) {
+        downloadLayerList();
+    }
+    
+    public void onClick$bLayerListDownload2(Event event) {
+        downloadLayerList();
+    }
+
+    void downloadLayerList() {
+        SimpleDateFormat sdf = new SimpleDateFormat("ddmmyyyy_hhmm");
+        Filedownload.save(getLayerListShortText(), "text/plain", "layer_selection_" + sdf.format(new Date()) + ".txt");
+    }
+
+    void updateLayerSelectionCount() {
+        if(lLayersSelected != null && lbListLayers != null) {
+            if(lbListLayers.getSelectedCount() == 1) {
+                lLayersSelected.setValue("1 layer selected");
+            } else {
+                lLayersSelected.setValue(lbListLayers.getSelectedCount() + " layers selected");
+            }
+        }
     }
 }

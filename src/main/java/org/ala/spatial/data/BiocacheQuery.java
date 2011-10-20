@@ -1160,4 +1160,12 @@ public class BiocacheQuery implements Query, Serializable {
     public void setQc(String qc) {
         this.qc = qc;
     }
+
+    public String getBS() {
+        return biocacheServer;
+    }
+
+    public String getWS() {
+        return biocacheWebServer;
+    }
 }

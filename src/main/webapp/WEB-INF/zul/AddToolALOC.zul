@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolALOCComposer"
-    apply="org.ala.spatial.analysis.web.AddToolALOCComposer" width="700px" height="600px"
+    apply="org.ala.spatial.analysis.web.AddToolALOCComposer" width="720px" height="650px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -66,20 +66,21 @@
 
                 <div id="atstep2" visible="false" zclass="step2 minlayers2" style="padding:5px">
                     <label id="atstep2_desc" value="Select two or more environmental layers" sclass="wSubLabel"/>
+                    <a href="http://spatial.ala.org.au/layers" label="layers" style="float:right" target="_blank" />
                     <label id="atstep2_label" value="" />
-                    <separator />
+                    <separator height="15px" />
                     <hbox>
                         <label value="add set a of layers:" />
                         <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="350px" />
                     </hbox>
                     <separator />
                     <hbox>
-                        <label value="search layers:" />
+                        <label value="add from search:" />
                         <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" />
                     </hbox>
                     <separator />
                     <vbox>
-                        <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px" height="450px" multiple="true" checkmark="true"
+                        <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="520px" height="450px" multiple="true" checkmark="true"
                      onOK="addtoolwindow.onClick$btnOk(null)">
                             <listhead>
                                 <listheader label="category"  />
@@ -88,7 +89,14 @@
                                 <listheader label=" " width="10px" />
                             </listhead>
                         </listbox>
-                        <button id="btnClearSelection" label="Clear layers" sclass="goButton" style="float:left" />
+                        <hbox>
+                            <button id="btnClearSelection" label="Clear layers" sclass="goButton" style="float:left" />
+                            <button id="bLayerListDownload1" label="Download selection" />
+                            <vbox>
+                                <separator height="2px" />
+                                <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />
+                            </vbox>
+                        </hbox>
                     </vbox>
                 </div>
 
@@ -114,8 +122,9 @@
                     </vbox>
                     <separator height="60px" />
                     <vbox id="dLayerSummary" visible="true" >
-                        <label value="List of selected layers" />
+                        <label value="List of selected environmental layers" />
                         <textbox id="tLayerList" width="500px" height="80px" readonly="true" multiline="true"/>
+                        <button id="bLayerListDownload2" label="Download selection" />
                     </vbox>
                 </div>
 

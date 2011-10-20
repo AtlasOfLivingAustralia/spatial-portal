@@ -17,8 +17,9 @@
 
 
         <div id="layerControls"  >
-            <label value="Press the Apply button after changes using the sliders or colour palette." sclass="wSubLabel"/>
-            <separator/>
+            <separator height="20px"/>
+            <label value="Press the Apply button after changes using the sliders, colour palette or facet selection." sclass="wSubLabel"/>
+            <separator height="20px"/>
             <!-- opacity-->
             <div id="opacityControls" >
                 <vbox>

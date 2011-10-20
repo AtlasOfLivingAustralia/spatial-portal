@@ -326,6 +326,7 @@ function buildMapReal() {
 }
 
 var query_
+var query_layer
 var query_size
 function iterateSpeciesInfoQuery(curr) {
     var pos = 0;
@@ -347,10 +348,9 @@ function iterateSpeciesInfoQuery(curr) {
         }
     } catch (err) {}
 
-    var biocacheurl = parent.jq('$biocache_service_url')[0].innerHTML;
     var url = query_url[pos] + "&start=" + curpos;
     $.getJSON(proxy_script + URLEncode(url), function(data) {
-        if (query_url[pos].indexOf(biocacheurl) < 0) {
+        if (!query_layer[pos].bs) {
             var ulyr = query_[pos];
             var ulyr_occ_id = data.occurrences[0].id;
             var ulyr_occ_lng = data.occurrences[0].longitude;
@@ -375,7 +375,7 @@ function iterateSpeciesInfoQuery(curr) {
                 }
             }, 50);
         } else {
-            displaySpeciesInfo(data.occurrences[0], prevBtn, nextBtn, curr, query_count_total);            
+            displaySpeciesInfo(pos, data.occurrences[0], prevBtn, nextBtn, curr, query_count_total);
         }
     });
 }
@@ -434,61 +434,60 @@ function pointSpeciesSearch(e) {
     var lonlat = map.getLonLatFromViewPortPx(e.xy);
     lonlat.transform(map.projection, map.displayProjection);
 
-    var biocacheurl = parent.jq('$biocache_service_url')[0].innerHTML;
+    var webportal_url = parent.jq('$webportal_url')[0].innerHTML;
 
     //handles point click in mapComposer
     //parent.setSpeciesSearchPoint(lonlat);
 
-    //get all 'qid:' layers and open for paging
-    var layers = map.getLayersByClass("OpenLayers.Layer.WMS");
-
     query_count_total = 0;
     query_ = new Array();
+    query_layer = new Array();
     query_size = new Array();
     query_url = new Array();
     var pos = 0;
-    for(var i=layers.length-1;i>=0;i--) {
-        var layer = layers[i];
-        var p0 = layer.url.indexOf("qid:");
-        var p1 = layer.url.indexOf("&", p0);
-        if(p1 < 0) p1 = layer.url.indexOf(";", p0);
-        if(p1 < 0) p1 = layer.url.length;
-        var query = null;
-        var userquery = null;
-        if(p0 < 0 || p1 < 0 || layer.params == null) {
+
+console.log("a");
+    for (var key in mapLayers) {
+        console.log("b: " + key);
+        if(map.getLayer(mapLayers[key].id)) {
+            var layer = mapLayers[key];
+            console.log(layer);
+            var query = null;
+            var userquery = null;
             var p0 = layer.url.indexOf("CQL_FILTER=");
-            var p1 = layer.url.indexOf("&", p0);            
-            if(p1 < 0) p1 = layer.url.indexOf(";", p0);            
-            if(p1 < 0) p1 = layer.url.length;            
+            var p1 = layer.url.indexOf("&", p0);
+            if(p1 < 0) p1 = layer.url.indexOf(";", p0);
+            if(p1 < 0) p1 = layer.url.length;
             if(p0 >= 0 && p1 >= 0 && layer.params != null) {
-                if(layer.url.contains(biocacheurl)) {
-                    query = layer.url.substring(p0 + 11,p1);
-                } else {
+                if(layer.url.contains(webportal_url)) {
                     userquery = layer.url.substring(p0 + 11,p1);
+                } else {
+                    query = layer.url.substring(p0 + 11,p1);
                 }
             }
-        } else {
-            query = layer.url.substring(p0,p1);
-        }
-        
 
-        var size = 10;
-        if(layer.params != null && layer.params.ENV != null) {
-            var p2 = layer.params.ENV.indexOf("size:");
-            p3 = layer.params.ENV.indexOf(";", p2);
-            if(p3 < 0) p3 = layer.params.ENV.length;
 
-            if(p2 >= 0 && p3 >= 0) {
-                size = layer.params.ENV.substring(p2 + 5,p3)
+            console.log(query);
+            console.log(userquery);
+
+            var size = 10;
+            if(layer.params != null && layer.params.ENV != null) {
+                var p2 = layer.params.ENV.indexOf("size:");
+                p3 = layer.params.ENV.indexOf(";", p2);
+                if(p3 < 0) p3 = layer.params.ENV.length;
+
+                if(p2 >= 0 && p3 >= 0) {
+                    size = layer.params.ENV.substring(p2 + 5,p3)
+                }
             }
-        }
 
-        var data = null;
-        if(query != null) data = getOccurrence(query, lonlat.lat, lonlat.lon, 0, pos, size);
-        if(userquery != null) data = getOccurrenceUploaded(userquery, lonlat.lat, lonlat.lon, 0, pos, size);
-        if(data != null) {
-            query_count_total += query_size[pos];
-            pos += 1;
+            var data = null;
+            if(query != null) data = getOccurrence(layer, query, lonlat.lat, lonlat.lon, 0, pos, size);
+            if(userquery != null) data = getOccurrenceUploaded(layer, userquery, lonlat.lat, lonlat.lon, 0, pos, size);
+            if(data != null) {
+                query_count_total += query_size[pos];
+                pos += 1;
+            }
         }
     }
 
@@ -764,10 +763,10 @@ function relocatePopup(lon, lat) {
     popup.updatePosition(); 
 }
 
-function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
+function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
     var occinfo = data;
     var bie = parent.jq('$bie_url')[0].innerHTML;
-    var biocache = parent.jq('$biocache_webapp_url')[0].innerHTML;
+    var biocache = query_layer[pos].ws;
     var rank = occinfo.taxonRank;
     var speciesname = occinfo.scientificName;
     var specieslsid = occinfo.taxonConceptID;
@@ -1501,7 +1500,8 @@ function getLayerValue(layer, lat, lon) {
     return ret; 
 }
 
-function getOccurrence(query, lat, lon, start, pos, dotradius) {
+function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {
+    console.log("d");
     dotradius = dotradius*1 + 3
     var px = map.getViewPortPxFromLonLat(new OpenLayers.LonLat(lon,lat).transform(
             new OpenLayers.Projection("EPSG:4326"),map.getProjectionObject()));
@@ -1509,10 +1509,11 @@ function getOccurrence(query, lat, lon, start, pos, dotradius) {
             map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));    
     var lonSize = Math.abs(lon - lonlat.lon);
     var latSize = Math.abs(lat - lonlat.lat);
-    var url = parent.jq('$biocache_service_url')[0].innerHTML + "/webportal/occurrences?q=" + query
+    var url = layer.bs + "/webportal/occurrences?q=" + query
         + "&fq=longitude:[" + (lon-lonSize) + "%20TO%20" + (lon+lonSize) + "]"
         + "&fq=latitude:[" + (lat-latSize) + "%20TO%20" + (lat+latSize) + "]"
         + "&pageSize=1&facet=false";
+    console.log(url);
     var ret = null;
     $.ajax({
         url: proxy_script + URLEncode(url + "&start=" + start),
@@ -1524,16 +1525,19 @@ function getOccurrence(query, lat, lon, start, pos, dotradius) {
     });
     query_size[pos] = 0;
     if(ret != null) {
+        console.log("e");
+        query_layer[pos] = layer;
         query_size[pos] = ret.totalRecords;
         query_[pos] = query;
         query_url[pos] = url;
         return ret.occurrences[0];
     } else {
+        console.log("f");
         return null;
     }
 }
 
-function getOccurrenceUploaded(query, lat, lon, start, pos, dotradius) {
+function getOccurrenceUploaded(layer, query, lat, lon, start, pos, dotradius) {
     dotradius = dotradius*1 + 3
     var px = map.getViewPortPxFromLonLat(new OpenLayers.LonLat(lon,lat).transform(
             new OpenLayers.Projection("EPSG:4326"),map.getProjectionObject()));
@@ -1554,6 +1558,7 @@ function getOccurrenceUploaded(query, lat, lon, start, pos, dotradius) {
     });
     query_size[pos] = 0;
     if(ret != null) {
+        query_layer[pos] = layer;
         query_size[pos] = ret.totalRecords;
         query_[pos] = query;
         query_url[pos] = url;

@@ -44,7 +44,7 @@ public class AddLayerController extends UtilityComposer {
         if(treeName != null) {
             getMapComposer().addWMSLayer(treeName,
                             treePath,
-                            (float) 0.75, treeMetadata, null, treeSubType, null, null);
+                            (float) 0.75, treeMetadata, null, treeSubType, null, null, null);
 
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
         } else if(searchName != null) {
