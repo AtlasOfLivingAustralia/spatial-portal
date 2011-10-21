@@ -1,4 +1,5 @@
 <language-addon>
+    <language-name>xul/html</language-name>
     <addon-name>myapp</addon-name>
     <component>
         <component-name>window</component-name>

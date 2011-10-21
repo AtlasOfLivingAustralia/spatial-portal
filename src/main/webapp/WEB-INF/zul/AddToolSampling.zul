@@ -96,23 +96,22 @@
                 <a href="http://spatial.ala.org.au/layers" label="layers" style="float:right" target="_blank" />
                 <label id="atstep3_label" value="" />
                 <separator height="15px" />
-                    <hbox>
-                        <label value="The layers lists use the layer 'short name': see layers " />
-                        <a href="http://spatial.ala.org.au/layers" target="_blank" label="http://spatial.ala.org.au/layers"/>
-                    </hbox>
-                    <separator />
-                    <hbox>
-                        <label value="Add set a of layers:" />
-                        <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="350px" />
-                    </hbox>
-                    <separator />
-                    <hbox>
-                        <label value="Add from search:" />
-                        <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" />
-                    </hbox>
-                    <separator />
-                    <fileupload sclass="fUploadButton" id="uploadLayerList" label="Upload layer list" upload="true" />
-                    <separator />
+                <hbox>
+                    <label value="The layer sets use layer 'short name': see " />
+                    <a href="http://spatial.ala.org.au/layers" target="_blank" label="layers"/>
+                </hbox>
+                <separator />
+                <hbox>
+                    <label value="Add set a of layers:" />
+                    <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="320px" />
+                    <fileupload sclass="fUploadButton" id="uploadLayerList" label="Upload set" upload="true" />
+                </hbox>
+                <separator />
+                <hbox>
+                    <label value="Add from search:" />
+                    <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" />
+                </hbox>
+                <separator />
                 <vbox>
                     <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
                     use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px" height="450px" multiple="true"
@@ -126,8 +125,11 @@
                     </listbox>
                     <hbox>
                         <button id="btnClearSelection" label="Clear layers" sclass="goButton" style="float:left" />
-                        <button id="bLayerListDownload1" label="Download selection" sclass="goButton" />
-                        <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />
+                        <button id="bLayerListDownload1" label="Download set" sclass="goButton" />
+                        <vbox>
+                            <separator height="2px" />
+                            <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />
+                        </vbox>
                     </hbox>
                 </vbox>
             </div>

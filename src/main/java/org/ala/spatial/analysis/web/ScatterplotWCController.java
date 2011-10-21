@@ -1013,7 +1013,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
             public int alpha = 255;
             public Paint[] datasetColours;
-            public int shapeSize = 3;
+            public int shapeSize = 4;
             public double[] seriesValues;
             public LegendObject legend;
             Shape shape = null;

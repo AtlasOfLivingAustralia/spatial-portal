@@ -219,7 +219,6 @@ public class EnvironmentalList extends Listbox {
     @Override
     public void clearSelection() {
         updateDistances();
-        super.clearSelection();
-        updateDistances();
+        super.clearSelection();        
     }
 }

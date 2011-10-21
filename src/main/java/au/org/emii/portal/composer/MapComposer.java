@@ -1256,7 +1256,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals("analysis_layer_selections")) {
                     try {
-                        String [] s = cookie.getValue().split("\n");
+                        String [] s = URLDecoder.decode(cookie.getValue(), "UTF-8").split("\n");
                         for(int i=0;i<s.length;i++) {
                             String [] ls = s[i].split(" // ");
                             selectedLayers.add(new LayerSelection(ls[0],ls[1]));

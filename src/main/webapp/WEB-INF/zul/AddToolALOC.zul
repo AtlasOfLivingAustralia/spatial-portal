@@ -96,7 +96,7 @@
                         </listbox>
                         <hbox>
                             <button id="btnClearSelection" label="Clear layers" sclass="goButton" style="float:left" />
-                            <button id="bLayerListDownload1" label="Download selection" sclass="goButton" />
+                            <button id="bLayerListDownload1" label="Download set" sclass="goButton" />
                             <vbox>
                                 <separator height="2px" />
                                 <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />

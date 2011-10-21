@@ -10,9 +10,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -31,6 +33,7 @@ import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zk.ui.util.Clients;
@@ -41,6 +44,7 @@ import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
@@ -85,6 +89,8 @@ public class AddToolComposer extends UtilityComposer {
     Button bLayerListDownload1;
     Button bLayerListDownload2;
     Label lLayersSelected;
+
+    Button btnClearSelection;
 
     @Override
     public void afterCompose() {
@@ -1356,7 +1362,7 @@ public class AddToolComposer extends UtilityComposer {
             }
 
             try {
-                Cookie c = new Cookie("analysis_layer_selections", sb.toString());
+                Cookie c = new Cookie("analysis_layer_selections", URLEncoder.encode(sb.toString(),"UTF-8"));
                 c.setMaxAge(Integer.MAX_VALUE);
                 ((HttpServletResponse) Executions.getCurrent().getNativeResponse()).addCookie(c);
             } catch (Exception e) {
@@ -1370,7 +1376,9 @@ public class AddToolComposer extends UtilityComposer {
             if (lbListLayers != null && lbListLayers.getSelectedCount() > 0
                     && tLayerList != null) {
                 tLayerList.setText(getLayerListText());
-                dLayerSummary.setVisible(tLayerList.getText().length() > 0);
+                if(dLayerSummary != null) {
+                    dLayerSummary.setVisible(tLayerList.getText().length() > 0);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
