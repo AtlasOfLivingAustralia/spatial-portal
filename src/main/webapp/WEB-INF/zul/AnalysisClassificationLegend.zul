@@ -21,9 +21,9 @@
             <listbox sclass="legendlist" id="legend" width="360px" vflex="true"  >
                 <listhead>
                     <listheader label="   " width="20px" id="lhFirstColumn" />
-                    <listheader label="group" width="210px"></listheader>
+                    <listheader label="group" width="210px" id="lhSecondColumn"></listheader>
                     <listheader label="colour" width="50px" id="lhThirdColumn" ></listheader>
-                    <listheader id="countheader" label="count" width="60px" align="right"></listheader>
+                    <listheader label="count" width="60px" align="right" id="lhFourthColumn"></listheader>
                 </listhead>
             </listbox>
 

@@ -47,7 +47,6 @@ public class ClassificationLegend extends UtilityComposer {
     Button clearSelection;
     ArrayList<String> legend_lines;
     boolean readonly = false;
-    Listheader countheader;
     boolean checkmarks = false;
     Rangeslider dslider;
     Doublebox dmin;
@@ -68,7 +67,9 @@ public class ClassificationLegend extends UtilityComposer {
     Facet facet;
     Div dCreateButtons;
     Listheader lhFirstColumn;
+    Listheader lhSecondColumn;
     Listheader lhThirdColumn;
+    Listheader lhFourthColumn;
 
     @Override
     public void afterCompose() {
@@ -88,9 +89,11 @@ public class ClassificationLegend extends UtilityComposer {
         if(disableselection) {
             dCreateButtons.setVisible(false);
             lhFirstColumn.setWidth("0px");
+            lhSecondColumn.setWidth("190px");
             lhThirdColumn.setWidth("15px");
             lhThirdColumn.setLabel("");
-            legend.setWidth("240px");
+            lhFourthColumn.setWidth("50px");
+            legend.setWidth("280px");
         }
 
         buildLegend();
@@ -253,11 +256,11 @@ public class ClassificationLegend extends UtilityComposer {
 
                     //count
                     try {
-                        countheader.setVisible(true);
+                        lhFourthColumn.setVisible(true);
                         lc = new Listcell(ss[4]);
                         lc.setParent(li);
                     } catch (Exception e) {
-                        countheader.setVisible(false);
+                        lhFourthColumn.setVisible(false);
                     }
                 }
             });

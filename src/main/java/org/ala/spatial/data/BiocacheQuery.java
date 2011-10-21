@@ -776,17 +776,18 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("collection_name", "Collection", QueryField.FieldType.STRING));
             fields.add(new QueryField("basis_of_record", "Basis of Record", QueryField.FieldType.STRING));
 
-            fields.add(new QueryField("state", "Australian States and Territories", QueryField.FieldType.STRING));
             fields.add(new QueryField("country", "Country Boundaries", QueryField.FieldType.STRING));
+            
+            fields.add(new QueryField("state", "Australian States and Territories", QueryField.FieldType.STRING));
+            fields.add(new QueryField("places", "LGA Boundaries", QueryField.FieldType.STRING));
             fields.add(new QueryField("ibra", "IBRA Regions", QueryField.FieldType.STRING));
             fields.add(new QueryField("imcra", "IMCRA Regions", QueryField.FieldType.STRING));
 
-            fields.add(new QueryField("places", "LGA Boundaries", QueryField.FieldType.STRING));
-            
+            fields.add(new QueryField("cl678", "Land use", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl620", "Vegetation types - present", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl617", "Vegetation types - native", QueryField.FieldType.STRING));
             //fields.add(new QueryField("cl619", "Vegetation - condition", QueryField.FieldType.STRING));
-            fields.add(new QueryField("cl678", "Land use", QueryField.FieldType.STRING));
+            
 
             for (int i = 0; i < fields.size(); i++) {
                 fields.get(i).setStored(true);
