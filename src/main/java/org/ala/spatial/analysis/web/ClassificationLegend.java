@@ -66,6 +66,9 @@ public class ClassificationLegend extends UtilityComposer {
     boolean disableselection = false;
     HashMap<String, String> legend_facets = null;
     Facet facet;
+    Div dCreateButtons;
+    Listheader lhFirstColumn;
+    Listheader lhThirdColumn;
 
     @Override
     public void afterCompose() {
@@ -82,6 +85,13 @@ public class ClassificationLegend extends UtilityComposer {
         checkmarks = (Executions.getCurrent().getArg().get("checkmarks")) != null;
 
         disableselection = (Executions.getCurrent().getArg().get("disableselection")) != null;
+        if(disableselection) {
+            dCreateButtons.setVisible(false);
+            lhFirstColumn.setWidth("0px");
+            lhThirdColumn.setWidth("15px");
+            lhThirdColumn.setLabel("");
+            legend.setWidth("240px");
+        }
 
         buildLegend();
     }

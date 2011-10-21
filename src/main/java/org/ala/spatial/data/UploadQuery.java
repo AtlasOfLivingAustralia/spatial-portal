@@ -359,7 +359,7 @@ public class UploadQuery implements Query, Serializable {
 
     @Override
     public String getRecordIdFieldName() {
-        return data.get(0).getName();
+        return data.get(0).getDisplayName();
     }
 
     @Override

@@ -78,9 +78,9 @@ public class LayerSelection {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy hh:mm:ss");
         int len = layers.split(",").length;
         if (len != 1) {
-            return layerName + " / " + sdf.format(new Date(created)) + " / " + len + " layers";
+            return layerName + " | " + sdf.format(new Date(created)) + " | " + len + " layers";
         } else {
-            return layerName + " / " + sdf.format(new Date(created)) + " / " + len + " layer";
+            return layerName + " | " + sdf.format(new Date(created)) + " | " + len + " layer";
         }
     }
 

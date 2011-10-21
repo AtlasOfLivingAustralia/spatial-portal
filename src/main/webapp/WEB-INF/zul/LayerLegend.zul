@@ -2,7 +2,7 @@
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
     <window id="scatterplotlayerlegend" use="au.org.emii.portal.composer.LayerLegendComposer"
-    apply="au.org.emii.portal.composer.LayerLegendComposer" title="Scatterplot legend" width="400px" height="600px"
+    apply="au.org.emii.portal.composer.LayerLegendComposer" title="Scatterplot legend" width="290px" height="400px"
          xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -15,11 +15,10 @@
         <a sclass="fancybox-close" onClick="scatterplotlayerlegend.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('sampling-tools')" style="display: inline" />
 
-
         <div id="layerControls"  >
-            <separator height="20px"/>
+            <separator height="10px"/>
             <label value="Press the Apply button after changes using the sliders, colour palette or facet selection." sclass="wSubLabel"/>
-            <separator height="20px"/>
+            <separator height="10px"/>
             <!-- opacity-->
             <div id="opacityControls" >
                 <vbox>
@@ -27,7 +26,7 @@
                         <div style="padding-top:0px" width="60px">
                             <label value="Opacity: " sclass="h3" />
                         </div>
-                        <div  width="250px">
+                        <div  width="180px">
                             <slider id="opacitySlider" width="95%" />
                         </div>
                         <div align="right" style="padding-top:0px">
@@ -44,7 +43,7 @@
                         <div style="padding-top:0px" width="60px">
                             <label value="Size: " sclass="h3" />
                         </div>
-                        <div width="250px">
+                        <div width="180px">
                             <slider id="sizeSlider" maxpos="30" width="95%" />
                         </div>
                         <div align="right" style="padding-top:0px">
@@ -74,11 +73,6 @@
                     <div id="divUserColours" >
                         <separator />
                         <hbox >
-                            <separator orient="vertical" />
-                            <separator orient="vertical" />
-                            <separator orient="vertical" />
-                            <separator orient="vertical" />
-                            <separator orient="vertical" />
                             <style dynamic="true">
 
 			<!-- cut/hide the vertical borders in the grid rows -->
@@ -140,7 +134,6 @@ border-bottom: none;
                                     </row>
                                 </rows>
                             </grid>
-                            <separator height="20px" />
                         </hbox>
                         <vbox >
                             <hbox>
@@ -148,7 +141,7 @@ border-bottom: none;
                                     <label value="Red: " sclass="h3" />
                                 </div>
 
-                                <div width="250px">
+                                <div width="180px">
                                     <slider id="redSlider" maxpos="255" width="95%" />
                                 </div>
 
@@ -161,7 +154,7 @@ border-bottom: none;
                                     <label value="Green: " sclass="h3" />
                                 </div>
 
-                                <div  width="250px">
+                                <div  width="180px">
                                     <slider id="greenSlider" maxpos="255" width="95%" />
                                 </div>
 
@@ -174,7 +167,7 @@ border-bottom: none;
                                     <label value="Blue: " sclass="h3" />
                                 </div>
 
-                                <div  width="250px">
+                                <div  width="180px">
                                     <slider id="blueSlider" maxpos="255" width="95%" />
                                 </div>
 
@@ -184,14 +177,12 @@ border-bottom: none;
                             </hbox>
                         </vbox>
                     </div>
-
                 </div>
-
                 <div height="200px">
                     <div style="padding-top:0px" width="60px">
                         <label value="Legend : " sclass="h3" />
                     </div>
-                    <div  width="60%">
+                    <div width="60%" style="position:absolute;float:left">
                         <image id="legendImg" width="50px" height="50px" />
                     </div>
                     <div align="right" style="padding-top:0px" visible="false">
@@ -200,14 +191,14 @@ border-bottom: none;
                     <div  width="60%">
                         <image id="legendImgUri" visible="false"/>
                     </div>
-                    <div id="legendHtml" visible="true" height="450px" style="overflow:auto" />
+                    <div id="legendHtml" visible="true" height="200px" style="overflow:auto" />
                 </div>
             </div>
         </div>
         <div sclass="wizButtonContainer">
             <hbox>
                 <button sclass="goButton" label="Close" onClick="scatterplotlayerlegend.detach();" />
-                <button sclass="goButton" label="Apply" id="btnApply" />
+                <button sclass="goButton" label="Apply" id="btnApply" autodisable="self"/>
             </hbox>
         </div>
     </window>

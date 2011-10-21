@@ -776,6 +776,12 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("collection_name", "Collection", QueryField.FieldType.STRING));
             fields.add(new QueryField("basis_of_record", "Basis of Record", QueryField.FieldType.STRING));
 
+            fields.add(new QueryField("state", "Australian State", QueryField.FieldType.STRING));
+            fields.add(new QueryField("country", "Country", QueryField.FieldType.STRING));
+            fields.add(new QueryField("ibra", "IBRA Region", QueryField.FieldType.STRING));
+            fields.add(new QueryField("imcra", "IMCRA Region", QueryField.FieldType.STRING));
+            fields.add(new QueryField("biogeographic_region", "Biogeographic Region", QueryField.FieldType.STRING));
+
             for (int i = 0; i < fields.size(); i++) {
                 fields.get(i).setStored(true);
             }

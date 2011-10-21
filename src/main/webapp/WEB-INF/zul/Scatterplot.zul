@@ -101,7 +101,7 @@
             </vbox>
         </div>
         <vbox >
-            <button id="btnEditAppearance1" label="Species display settings" sclass="goButton" />
+            <button id="btnEditAppearance1" label="Species display settings" sclass="goButton" style="float:left" />
             <div id="scatterplotDownloads" visible="false">
                 <hbox>
                     <button sclass="goButton" label="Download image" id="scatterplotImageDownload" />

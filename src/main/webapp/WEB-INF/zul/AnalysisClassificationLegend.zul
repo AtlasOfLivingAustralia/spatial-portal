@@ -13,16 +13,16 @@
              }
         </style>
 
-            <div height="20px" style="bottom: 0px;right: 0px;margin: 0px 5px 5px 0px;padding: 0px 5px 5px 0px;" >                
+            <div id="dCreateButtons" height="20px" style="bottom: 0px;right: 0px;margin: 0px 5px 5px 0px;padding: 0px 5px 5px 0px;" >
                 <button id="createInGroup" label="Create layer" sclass="goButton" visible="true" />
                 <button id="clearSelection" label="Clear selection" sclass="goButton" visible="true" />
             </div>
 
-            <listbox sclass="legendlist" id="legend" width="100%" vflex="true"  >
+            <listbox sclass="legendlist" id="legend" width="360px" vflex="true"  >
                 <listhead>
-                    <listheader label="   " width="20px" />
+                    <listheader label="   " width="20px" id="lhFirstColumn" />
                     <listheader label="group" width="210px"></listheader>
-                    <listheader label="colour" width="50px"></listheader>
+                    <listheader label="colour" width="50px" id="lhThirdColumn" ></listheader>
                     <listheader id="countheader" label="count" width="60px" align="right"></listheader>
                 </listhead>
             </listbox>

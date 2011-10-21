@@ -57,6 +57,7 @@ import org.jfree.chart.renderer.LookupPaintScale;
 import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.chart.renderer.xy.XYShapeRenderer;
+import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.xy.DefaultXYZDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleAnchor;
@@ -935,6 +936,11 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 xyzDataset.addSeries(seriesNames[i], sd);
             }
         }
+        
+        if(xyzDataset.getSeriesCount() == 0) {
+            int i = 4;
+            i++;
+        }
 
         missing_data = missingCount == data.getPoints().length / 2;
         data.setMissingCount(missingCount);
@@ -1007,7 +1013,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
             public int alpha = 255;
             public Paint[] datasetColours;
-            public int shapeSize = 8;
+            public int shapeSize = 3;
             public double[] seriesValues;
             public LegendObject legend;
             Shape shape = null;
@@ -1042,7 +1048,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         int alpha = data.opacity * 255 / 100;
 
         MyXYShapeRenderer renderer = new MyXYShapeRenderer();
-        renderer.shapeSize = data.size;
+        //renderer.shapeSize = data.size;
         if (datasetColours != null) {
             renderer.datasetColours = new Color[datasetColours.length];
             for (int i = 0; i < datasetColours.length; i++) {
@@ -1186,7 +1192,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 String thisResampleLayers = data.getLayer1() + "*" + data.getLayer2();
                 String thisResampleHighlight = ((data.getHighlightSa() != null) ? "Y" : "N");
 
-                if (prevResampleData == null || !prevResampleData.equals(thisResampleData)) {
+                if (prevResampleData == null || !prevResampleData.equals(thisResampleData)
+                        || xyzDataset == null || xyzDataset.getSeriesCount() == 0) {
                     prevResampleData = thisResampleData;
                     prevResampleLayers = null;
                     prevResampleHighlight = null;
@@ -1236,6 +1243,13 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                             series[pos / 2] = data.getQuery().getName();
                         } else {
                             series[pos / 2] = csv.get(i)[seriesColumn];
+
+                            //why is this required only sometimes?
+                            String s = series[pos/2];
+                            if(s != null && s.length() > 2
+                                    && s.charAt(0) == '[' && s.charAt(s.length()-1) == ']') {
+                                s = s.substring(1,s.length()-1);
+                            }
                         }
                         try {
                             seriesValues[pos / 2] = Double.parseDouble(csv.get(i)[seriesColumn]);
@@ -1251,7 +1265,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     data.setIds(ids);
                 }
 
-                if (prevResampleLayers == null || !prevResampleLayers.equals(thisResampleLayers)) {
+                if (prevResampleLayers == null || !prevResampleLayers.equals(thisResampleLayers)
+                        || xyzDataset == null || xyzDataset.getSeriesCount() == 0) {
                     prevResampleLayers = thisResampleLayers;
 
                     //TODO: put this somewhere where it makes more sense, Recordslookup
@@ -1267,7 +1282,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     createDataset();
                 }
 
-                if (prevResampleHighlight == null || !prevResampleHighlight.equals(thisResampleHighlight)) {
+                if (prevResampleHighlight == null || !prevResampleHighlight.equals(thisResampleHighlight)
+                        || aaDataset == null || aaDataset.getSeriesCount() == 0) {
                     prevResampleHighlight = thisResampleHighlight;
                     if (data.getHighlightSa() == null) {
                         aaDataset = null;

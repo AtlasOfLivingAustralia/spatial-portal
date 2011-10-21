@@ -17,12 +17,9 @@
         <div style="margin-left:20px" width="520px" >
 
             <separator/>
-            <label value="Enter a comma separated list of layer short_names." />
-            <separator/>
-            <hbox>
-                <label value="A list of all layers and their short name can be found here: " />
-                <a href="http://spatial.ala.org.au/layers" label="link to layers" target="_blank" />
-            </hbox>
+            <label value="Enter a comma separated list of layer Short names." />
+                <label value="A list of all layers and their short name can be found " />
+                 <a href="http://spatial.ala.org.au/layers" target="_blank" label="here."/>
             <separator/>
             <textbox id="layerList" width="100%" height="300px" multiline="true"/>
         </div>

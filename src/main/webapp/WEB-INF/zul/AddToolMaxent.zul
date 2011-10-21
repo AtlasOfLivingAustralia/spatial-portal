@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" use="org.ala.spatial.analysis.web.AddToolMaxentComposer"
-    apply="org.ala.spatial.analysis.web.AddToolMaxentComposer" width="700px" height="680px"
+    apply="org.ala.spatial.analysis.web.AddToolMaxentComposer" width="750px" height="680px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -113,15 +113,22 @@
                     <a href="http://spatial.ala.org.au/layers" label="layers" style="float:right" target="_blank" />
                     <label id="atstep3_label" value="" />
                     <separator height="15px" />
-                   <hbox>
-                        <label value="add set a of layers:" />
+                    <hbox>
+                        <label value="The layers lists use the layer 'short name': see layers " />
+                        <a href="http://spatial.ala.org.au/layers" target="_blank" label="http://spatial.ala.org.au/layers"/>
+                    </hbox>
+                    <separator />
+                    <hbox>
+                        <label value="Add set a of layers:" />
                         <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="350px" />
                     </hbox>
                     <separator />
                     <hbox>
-                        <label value="add from search: " />
+                        <label value="Add from search:" />
                         <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" />
                     </hbox>
+                    <separator />
+                    <fileupload sclass="fUploadButton" id="uploadLayerList" label="Upload layer list" upload="true" />
                     <separator />
                     <vbox>
                         <label value="Environmental layers" sclass="wSubLabel" />
@@ -137,7 +144,7 @@
                         </listbox>
                         <hbox>
                             <button id="btnClearSelection" label="Clear layers" sclass="goButton" style="float:left" />
-                            <button id="bLayerListDownload1" label="Download selection" />
+                            <button id="bLayerListDownload1" label="Download selection" sclass="goButton" />
                             <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />
                         </hbox>
                     </vbox>
@@ -254,7 +261,7 @@
                     <vbox id="dLayerSummary" visible="true" >
                         <label value="List of selected environmental layers" />
                         <textbox id="tLayerList" width="500px" height="80px" readonly="true" multiline="true"/>
-                        <button id="bLayerListDownload2" label="Download selection" />
+                        <button id="bLayerListDownload2" label="Download selection" visible="false" sclass="goButton" />
                     </vbox>
                 </div>
 

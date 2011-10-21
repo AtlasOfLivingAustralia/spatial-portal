@@ -446,47 +446,45 @@ function pointSpeciesSearch(e) {
     query_url = new Array();
     var pos = 0;
 
-console.log("a");
     for (var key in mapLayers) {
-        console.log("b: " + key);
-        if(map.getLayer(mapLayers[key].id)) {
-            var layer = mapLayers[key];
-            console.log(layer);
-            var query = null;
-            var userquery = null;
-            var p0 = layer.url.indexOf("CQL_FILTER=");
-            var p1 = layer.url.indexOf("&", p0);
-            if(p1 < 0) p1 = layer.url.indexOf(";", p0);
-            if(p1 < 0) p1 = layer.url.length;
-            if(p0 >= 0 && p1 >= 0 && layer.params != null) {
-                if(layer.url.contains(webportal_url)) {
-                    userquery = layer.url.substring(p0 + 11,p1);
-                } else {
-                    query = layer.url.substring(p0 + 11,p1);
+        if(mapLayers[key]) {
+            if(mapLayers[key].id) {
+
+                if(map.getLayer(mapLayers[key].id)) {
+                    var layer = mapLayers[key];
+                    var query = null;
+                    var userquery = null;
+                    var p0 = layer.url.indexOf("CQL_FILTER=");
+                    var p1 = layer.url.indexOf("&", p0);
+                    if(p1 < 0) p1 = layer.url.indexOf(";", p0);
+                    if(p1 < 0) p1 = layer.url.length;
+                    if(p0 >= 0 && p1 >= 0 && layer.params != null) {
+                        if(layer.url.contains(webportal_url)) {
+                            userquery = layer.url.substring(p0 + 11,p1);
+                        } else {
+                            query = layer.url.substring(p0 + 11,p1);
+                        }
+                    }
+
+                    var size = 10;
+                    if(layer.params != null && layer.params.ENV != null) {
+                        var p2 = layer.params.ENV.indexOf("size:");
+                        p3 = layer.params.ENV.indexOf(";", p2);
+                        if(p3 < 0) p3 = layer.params.ENV.length;
+
+                        if(p2 >= 0 && p3 >= 0) {
+                            size = layer.params.ENV.substring(p2 + 5,p3)
+                        }
+                    }
+
+                    var data = null;
+                    if(query != null) data = getOccurrence(layer, query, lonlat.lat, lonlat.lon, 0, pos, size);
+                    if(userquery != null) data = getOccurrenceUploaded(layer, userquery, lonlat.lat, lonlat.lon, 0, pos, size);
+                    if(data != null) {
+                        query_count_total += query_size[pos];
+                        pos += 1;
+                    }
                 }
-            }
-
-
-            console.log(query);
-            console.log(userquery);
-
-            var size = 10;
-            if(layer.params != null && layer.params.ENV != null) {
-                var p2 = layer.params.ENV.indexOf("size:");
-                p3 = layer.params.ENV.indexOf(";", p2);
-                if(p3 < 0) p3 = layer.params.ENV.length;
-
-                if(p2 >= 0 && p3 >= 0) {
-                    size = layer.params.ENV.substring(p2 + 5,p3)
-                }
-            }
-
-            var data = null;
-            if(query != null) data = getOccurrence(layer, query, lonlat.lat, lonlat.lon, 0, pos, size);
-            if(userquery != null) data = getOccurrenceUploaded(layer, userquery, lonlat.lat, lonlat.lon, 0, pos, size);
-            if(data != null) {
-                query_count_total += query_size[pos];
-                pos += 1;
             }
         }
     }
@@ -1500,8 +1498,7 @@ function getLayerValue(layer, lat, lon) {
     return ret; 
 }
 
-function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {
-    console.log("d");
+function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {    
     dotradius = dotradius*1 + 3
     var px = map.getViewPortPxFromLonLat(new OpenLayers.LonLat(lon,lat).transform(
             new OpenLayers.Projection("EPSG:4326"),map.getProjectionObject()));
@@ -1513,7 +1510,6 @@ function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {
         + "&fq=longitude:[" + (lon-lonSize) + "%20TO%20" + (lon+lonSize) + "]"
         + "&fq=latitude:[" + (lat-latSize) + "%20TO%20" + (lat+latSize) + "]"
         + "&pageSize=1&facet=false";
-    console.log(url);
     var ret = null;
     $.ajax({
         url: proxy_script + URLEncode(url + "&start=" + start),
@@ -1525,14 +1521,12 @@ function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {
     });
     query_size[pos] = 0;
     if(ret != null) {
-        console.log("e");
         query_layer[pos] = layer;
         query_size[pos] = ret.totalRecords;
         query_[pos] = query;
         query_url[pos] = url;
         return ret.occurrences[0];
     } else {
-        console.log("f");
         return null;
     }
 }

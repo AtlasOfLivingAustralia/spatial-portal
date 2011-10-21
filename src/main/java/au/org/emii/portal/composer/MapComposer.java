@@ -1282,7 +1282,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     String key = userParams.get(i).getKey();
                     String value = userParams.get(i).getValue();
 
-                    if (key.equals("wmscache") && !value.equals("on")) {
+                    if (key.equals("wmscache")) {
                         useSpeciesWMSCache = value;
                     }
 
