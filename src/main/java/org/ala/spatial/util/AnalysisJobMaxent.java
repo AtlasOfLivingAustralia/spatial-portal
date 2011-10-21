@@ -228,15 +228,16 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     if (chkResponseCurves != null) {
                         StringBuffer sbTable = new StringBuffer();
                         String[] ctxlist = msets.getEnvVarToggler().split(" ");
-                        sbTable.append("<pre>");
-                        for (String ctx : ctxlist) {
-                            sbTable.append("<span style='font-weight: bold; text-decoration: underline'>"+ctx+" legend</span><br />");
-                            sbTable.append(IOUtils.toString(new FileInputStream(TabulationSettings.environmental_data_path + ctx + ".txt")));
-                            sbTable.append("<br /><br />");
+                        if(msets.getEnvVarToggler().length() > 0) {
+                            sbTable.append("<pre>");
+                            for (String ctx : ctxlist) {
+                                sbTable.append("<span style='font-weight: bold; text-decoration: underline'>"+ctx+" legend</span><br />");
+                                sbTable.append(IOUtils.toString(new FileInputStream(TabulationSettings.environmental_data_path + ctx + ".txt")));
+                                sbTable.append("<br /><br />");
+                            }
+                            sbTable.append("</pre>");
+                            readReplace(pth + "species.html", "<br><HR><H2>Analysis of variable contributions</H2><br>", sbTable.toString() + "<br><HR><H2>Analysis of variable contributions</H2><br>");
                         }
-                        sbTable.append("</pre>");
-                        readReplace(pth + "species.html", "<br><HR><H2>Analysis of variable contributions</H2><br>", sbTable.toString() + "<br><HR><H2>Analysis of variable contributions</H2><br>");
-
                     }
 
                     readReplaceBetween(pth + "species.html", "<br>Click <a href=species_explain.bat", "memory.<br>", "");
