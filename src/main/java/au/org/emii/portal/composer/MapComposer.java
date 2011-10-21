@@ -1902,6 +1902,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             g = 0;
             b = 255;
             opacity = 1;
+            size = 8;
         }
 
         Color c = new Color(r, g, b);

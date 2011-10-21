@@ -1048,7 +1048,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         int alpha = data.opacity * 255 / 100;
 
         MyXYShapeRenderer renderer = new MyXYShapeRenderer();
-        //renderer.shapeSize = data.size;
+        renderer.shapeSize = data.size / 2;
         if (datasetColours != null) {
             renderer.datasetColours = new Color[datasetColours.length];
             for (int i = 0; i < datasetColours.length; i++) {

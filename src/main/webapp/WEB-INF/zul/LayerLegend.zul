@@ -2,7 +2,7 @@
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
     <window id="scatterplotlayerlegend" use="au.org.emii.portal.composer.LayerLegendComposer"
-    apply="au.org.emii.portal.composer.LayerLegendComposer" title="Scatterplot legend" width="290px" height="400px"
+    apply="au.org.emii.portal.composer.LayerLegendComposer" title="Scatterplot legend" width="290px" height="420px"
          xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -41,13 +41,24 @@
                 <div id="sizeChooser"  width="100%">
                     <hbox>
                         <div style="padding-top:0px" width="60px">
-                            <label value="Size: " sclass="h3" />
+                            <label value="Map Size: " sclass="h3" />
                         </div>
                         <div width="180px">
                             <slider id="sizeSlider" maxpos="30" width="95%" />
                         </div>
                         <div align="right" style="padding-top:0px">
                             <label id="sizeLabel" />
+                        </div>
+                    </hbox>
+                    <hbox>
+                        <div style="padding-top:0px" width="60px">
+                            <label value="Plot Size: " sclass="h3" />
+                        </div>
+                        <div width="180px">
+                            <slider id="plotSizeSlider" maxpos="30" width="95%" />
+                        </div>
+                        <div align="right" style="padding-top:0px">
+                            <label id="plotSizeLabel" />
                         </div>
                     </hbox>
                 </div>

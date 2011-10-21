@@ -77,7 +77,7 @@ public class SpeciesListResults extends UtilityComposer {
             String[] tmp = results;
             if (results.length > 200) {
                 tmp = java.util.Arrays.copyOf(results, 200);
-                results_label.setValue("preview of first 200 species found");
+                results_label.setValue("preview of first 200 of " + results.length + " species found");
             } else {
                 results_label.setValue("preview of all " + results.length + " species found");
             }
