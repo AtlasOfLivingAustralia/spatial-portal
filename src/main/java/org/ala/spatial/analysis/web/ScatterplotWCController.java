@@ -1248,7 +1248,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                             String s = series[pos/2];
                             if(s != null && s.length() > 2
                                     && s.charAt(0) == '[' && s.charAt(s.length()-1) == ']') {
-                                s = s.substring(1,s.length()-1);
+                                series[pos/2] = s.substring(1,s.length()-1);
                             }
                         }
                         try {
