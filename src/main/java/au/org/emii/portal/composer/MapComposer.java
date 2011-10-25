@@ -1277,6 +1277,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String qc = null;
             String bs = null;
             String ws = null;
+            String wkt = null;
             if (userParams != null) {
                 for(int i=0;i<userParams.size();i++) {
                     String key = userParams.get(i).getKey();
@@ -1301,13 +1302,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             bs = value;
                         } else if(key.equals("ws")) {
                             ws = value;
+                        } else if(key.equals("wkt")) {
+                            wkt = value;
                         }
                     }
                 }
 
                 System.out.println("url query: " + sb.toString());
                 if(sb.toString().length() > 0) {
-                    BiocacheQuery q = new BiocacheQuery(null, null, sb.toString(), null, true, bs, ws);
+                    BiocacheQuery q = new BiocacheQuery(null, wkt, sb.toString(), null, true, bs, ws);
                     if(qc != null) {
                         q.setQc(qc);
                     }
@@ -1902,7 +1905,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             g = 0;
             b = 255;
             opacity = 1;
-            size = 8;
+            size = 4;
         }
 
         Color c = new Color(r, g, b);

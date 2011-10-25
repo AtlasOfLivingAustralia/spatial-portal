@@ -452,6 +452,9 @@ function pointSpeciesSearch(e) {
 
                 if(map.getLayer(mapLayers[key].id)) {
                     var layer = mapLayers[key];
+                    if(layer == null || layer.url == null) {
+                        continue;
+                    }
                     var query = null;
                     var userquery = null;
                     var p0 = layer.url.indexOf("CQL_FILTER=");

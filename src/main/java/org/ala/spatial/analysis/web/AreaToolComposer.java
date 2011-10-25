@@ -15,7 +15,9 @@ import java.util.Map;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.BiocacheQuery;
+import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.util.SelectedArea;
 import org.zkoss.zk.ui.Executions;
 
 /**
@@ -67,7 +69,13 @@ public class AreaToolComposer extends UtilityComposer {
 
                 Query q = null;
                 if(winProps.get("query") != null) {
-                    q = ((Query) winProps.get("query")).newWkt(wkt, true);
+                    q = ((Query) winProps.get("query"));
+
+                    SelectedArea sa = new SelectedArea(getMapComposer().getMapLayer(layerName),
+                            (getMapComposer().getMapLayer(layerName).getData("facets")==null?wkt:null));
+
+                    q = QueryUtil.queryFromSelectedArea(q, sa, true);
+                    
                     if(q instanceof UploadQuery) {
                          //do default sampling now
                         if(CommonData.getDefaultUploadSamplingFields().size() > 0) {

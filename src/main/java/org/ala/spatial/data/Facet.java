@@ -181,7 +181,11 @@ public class Facet implements Serializable {
     @Override
     public String toString() {
         if (parameter == null) {
-            return (includeRange ? "" : "-") + field + ":\"" + value + "\"";
+            if(value.startsWith("\"") && value.endsWith("\"")) {
+                return (includeRange ? "" : "-") + field + ":" + value;
+            } else {
+                return (includeRange ? "" : "-") + field + ":\"" + value + "\"";
+            }
         } else {
             return parameter;
         }

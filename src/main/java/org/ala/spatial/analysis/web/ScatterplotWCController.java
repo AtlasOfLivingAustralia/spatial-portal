@@ -1150,7 +1150,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 layerWindow.getGreen(),
                 layerWindow.getBlue(),
                 layerWindow.getOpacity(),
-                layerWindow.getSize(),
+                layerWindow.getPlotSize(),
                 layerWindow.getColourMode());
 
         if (mapLayer != null) {

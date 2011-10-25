@@ -69,7 +69,7 @@
                                         <textbox id="popup_idx" visible="false"></textbox>
                                     </hbox>
                                     <hbox>
-                                        <button label="Update species count" id="apply_continous" sclass="goButton" />
+                                        <button label="Update species count" id="apply_continous" sclass="goButton" autodisable="self"/>
                                         <button label="Remove" id="remove_continous" sclass="goButton" />
                                         <button label="preview results" id="preview_continous" visible="false"/>
                                     </hbox>
@@ -84,7 +84,7 @@
         <div style="float:right;margin-right:5px">
             <hbox>                
                 <button sclass="goButton" label="Cancel" id="btnCancel" onClick="areaenvironmentalenvelopewindow.detach()"/>
-                <button label="Next" id="filter_done" sclass="goButton" disabled="true"/>
+                <button label="Next" id="filter_done" sclass="goButton" disabled="true" autodisable="self"/>
             </hbox>
         </div>
 

@@ -8,7 +8,6 @@ import au.org.emii.portal.util.LayerUtilities;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -49,7 +48,7 @@ import org.zkoss.zul.Window;
  */
 public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
-    public static final String LAYER_PREFIX = "";//"Envelope: ";
+    public static final String LAYER_PREFIX = "working envelope: ";
     private static final long serialVersionUID = -26560838825366347L;
     private EnvLayersCombobox cbEnvLayers;
     private Listbox lbSelLayers;
@@ -85,6 +84,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     Textbox txtLayerName;
     int speciescount = 0;
     boolean isDirtyCount = true;
+    String final_wkt = null;
 
     @Override
     public void afterCompose() {
@@ -564,17 +564,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
     private void doApplyFilter(String pid, String layerdisplayname, String layername, String type, String val1, String val2, boolean commit) {
         try {
-
-//            ArrayList<Facet> facets = new ArrayList<Facet>();
-//            Iterator<String> it = selectedSPLFilterLayers.keySet().iterator();
-//            for (int i=0; i<selectedSPLFilterLayers.size(); i++) {
-//                String lyrname = it.next();
-//                SPLFilter splf = selectedSPLFilterLayers.get(lyrname);
-//                Facet f = new Facet(CommonData.getLayerFacetName(splf.layername), splf.minimum_value, splf.maximum_value, true);
-//                facets.add(f);
-//            }
-//            Query q = new BiocacheQuery(null, null, null, facets);
-
             String urlPart = "";
             if (commit) {
                 urlPart += "/filtering/apply4";
@@ -589,11 +578,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             urlPart += "/depth/" + lbSelLayers.getItemCount();
 
             String imagefilepath = getInfo(urlPart);
-            MapLayer ml = loadMap(imagefilepath, layerdisplayname);
-//            ml.setData("environmentEnvelope", facets);
-
-//            popup_filter.setCount(q.getSpeciesCount());
-//            ((Listcell) popup_item.getChildren().get(2)).setLabel(q.getSpeciesCount()+"");
+            MapLayer ml = loadMap(imagefilepath, LAYER_PREFIX + layerdisplayname);
 
             selectedLayersUrl.set(lbSelLayers.getItemCount() - 1, imagefilepath);
 
@@ -633,6 +618,12 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             }
             activeAreaMetadata = LayersUtil.getMetadata(sb.toString());
 
+            try {
+                final_wkt = getWkt(pid);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             removeAllSelectedLayers(true);  //this also shows active area
 
         } catch (Exception e) {
@@ -644,7 +635,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
     void showActiveArea() {
         if (activeAreaUrl != null) {
-            loadMap(activeAreaUrl, txtLayerName.getValue());
+            loadMap(activeAreaUrl, txtLayerName.getValue(), true);
             MapLayer ml = mc.getMapLayer(txtLayerName.getValue());
             if (ml.getMapLayerMetadata() == null) {
                 ml.setMapLayerMetadata(new MapLayerMetadata());
@@ -812,6 +803,9 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     private MapLayer loadMap(String filename, String layername) {
+        return loadMap(filename, layername, false);
+    }
+    private MapLayer loadMap(String filename, String layername, boolean final_layer) {
         //String label = "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount();
         //label = selectedLayers.get(selectedLayers.size() - 1);
         String uri = CommonData.satServer + "/output/filtering/" + pid + "/" + filename;
@@ -827,11 +821,13 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         //bbox.add(17143201.58216413);
         //bbox.add(-1006021.0627551343);
 
-        MapLayer ml = mc.addImageLayer(pid, LAYER_PREFIX + layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
-        ml.setWKT(getWkt(pid));
-        ml.setData("envelope", pid);
-        ml.setData("area", activeAreaSize);
-        ml.setData("facets", getFacets());
+        MapLayer ml = mc.addImageLayer(pid, layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
+        if(final_layer) {
+            ml.setWKT(final_wkt);
+            ml.setData("envelope", pid);
+            ml.setData("area", activeAreaSize);
+            ml.setData("facets", getFacets());
+        }
 
         return ml;
 
@@ -944,7 +940,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         //hide + layername to hide
         if (idx.startsWith("show")) {
             int i = Integer.parseInt(idx.substring(4));
-            loadMap(selectedLayersUrl.get(i), getSPLFilter(selectedLayers.get(i)).layer.display_name);
+            loadMap(selectedLayersUrl.get(i), LAYER_PREFIX + getSPLFilter(selectedLayers.get(i)).layer.display_name);
         } else { //"hide"
             if (mc.getMapLayer(LAYER_PREFIX + idx.substring(4)) != null) {
                 mc.removeLayer(LAYER_PREFIX + idx.substring(4));

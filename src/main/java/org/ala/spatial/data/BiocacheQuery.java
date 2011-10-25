@@ -591,7 +591,7 @@ public class BiocacheQuery implements Query, Serializable {
         paramId = null;
 
         //do not create paramId for short queries
-        if ((wkt == null || !forMapping) && getFullQ(true).length() < CommonData.maxQLength) {
+        if (wkt == null && !forMapping && getFullQ(true).length() < CommonData.maxQLength) {
             return;
         }
 
@@ -906,7 +906,7 @@ public class BiocacheQuery implements Query, Serializable {
 
     @Override
     public Query newFacets(List<Facet> facets, boolean forMapping) {
-        if((facets == null || !facets.isEmpty()) && (this.forMapping || !forMapping)) {
+        if((facets == null || facets.isEmpty()) && (this.forMapping || !forMapping)) {
             return this;
         }
         ArrayList<Facet> newFacets = new ArrayList<Facet>();

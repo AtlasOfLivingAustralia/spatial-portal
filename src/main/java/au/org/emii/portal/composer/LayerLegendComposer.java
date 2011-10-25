@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.ala.spatial.analysis.web.ScatterplotWCController;
-import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.UploadQuery;
@@ -45,6 +44,7 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
     Slider greenSlider;
     Slider blueSlider;
     Slider sizeSlider;
+    Slider plotSizeSlider;
     Checkbox chkUncertaintySize;
     public Button btnPointsCluster;
     Label lblFupload;
@@ -52,6 +52,7 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
     Label greenLabel;
     Label blueLabel;
     Label sizeLabel;
+    Label plotSizeLabel;
     Listbox activeLayersList;
     Div layerControls;
     Div uncertainty;
@@ -108,6 +109,11 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
     public void onScroll$sizeSlider() {
         int size = sizeSlider.getCurpos();
         sizeLabel.setValue(String.valueOf(size));
+    }
+
+    public void onScroll$plotSizeSlider() {
+        int size = plotSizeSlider.getCurpos();
+        plotSizeLabel.setValue(String.valueOf(size));
     }
 
     public void onScroll$blueSlider() {
@@ -224,8 +230,11 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         blueSlider.setCurpos(blue);
         onScroll$blueSlider();
 
-        sizeSlider.setCurpos(size);
+        sizeSlider.setCurpos(mapLayer.getSizeVal());
         onScroll$sizeSlider();
+
+        plotSizeSlider.setCurpos(size);
+        onScroll$plotSizeSlider();
 
         for (Comboitem item : (List<Comboitem>) cbColour.getItems()) {
             if (item.getValue().equals(colourMode)) {
@@ -256,6 +265,10 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
 
     public int getSize() {
         return sizeSlider.getCurpos();
+    }
+
+    public int getPlotSize() {
+        return plotSizeSlider.getCurpos();
     }
 
     public int getOpacity() {
