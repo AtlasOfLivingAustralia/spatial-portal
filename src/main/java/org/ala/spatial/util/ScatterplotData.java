@@ -249,4 +249,8 @@ public class ScatterplotData implements Serializable {
     public double[] getSeriesValues() {
         return seriesValues;
     }
+
+    public void setHighlightSa(SelectedArea sa) {
+        highlightSa = sa;
+    }
 }

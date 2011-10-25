@@ -19,11 +19,11 @@
             <separator />
             <label sclass="wLabel" value="Select method to define area."/>
             <div style="margin-left:20px" >
-                <radiogroup id="cbAreaSelection" orient="vertical" onCheck="btnOk.setDisabled(false)" onOK="addareawindow.onClick$btnOk(null)" >
+                <radiogroup id="cbAreaSelection" orient="vertical" onOK="addareawindow.onClick$btnOk(null)" >
                     <vbox>
                     <separator />
                     <label value="Interact with the map" sclass="wSubLabel"/>
-                    <radio label="Draw bounding box" id="ciBoundingBox" focus="true" />
+                    <radio label="Draw bounding box" id="ciBoundingBox" focus="true" checked="true" />
                     <radio label="Draw polygon" id="ciPolygon" />
                     <radio label="Draw point and radius" id="ciPointAndRadius" />
                     <radio label="Select area from polygonal layer" id="ciMapPolygon" />
@@ -58,7 +58,7 @@
             <div sclass="wButtons">
                 <hbox>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel" />
-                    <button sclass="goButton" label="Next" id="btnOk" disabled="true" />
+                    <button sclass="goButton" label="Next" id="btnOk" disabled="false" />
                 </hbox>
             </div>
             <separator />

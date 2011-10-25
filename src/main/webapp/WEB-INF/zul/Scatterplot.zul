@@ -126,6 +126,14 @@
             <separator />
             <div width="100%" >
                 <label id="lblMissing" value="No records available for the scatterplot" visible="false" style="float:left;"/>
+            </div>    
+            <div id="divHighlightArea" >
+                <label value="Highlight occurrences on the scatterplot that are in an area" />
+                <hbox>
+                    <combobox id="cbHighlightArea" width="300px" />
+                    <button id="bClearHighlightArea" label="Clear" sclass="goButton" />
+                </hbox>
+                <separator />
             </div>
         </vbox>
         

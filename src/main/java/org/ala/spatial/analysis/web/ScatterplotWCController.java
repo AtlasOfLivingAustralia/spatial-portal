@@ -6,6 +6,7 @@ package org.ala.spatial.analysis.web;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.composer.LayerLegendComposer;
+import au.org.emii.portal.composer.MapComposer;
 import java.awt.Shape;
 import org.apache.commons.lang.StringUtils;
 import au.org.emii.portal.composer.UtilityComposer;
@@ -48,6 +49,7 @@ import org.ala.spatial.sampling.SimpleRegion;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
+import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jfree.chart.annotations.XYBoxAnnotation;
 import org.jfree.chart.axis.NumberAxis;
@@ -68,6 +70,7 @@ import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Filedownload;
@@ -98,6 +101,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     LayersUtil layersUtil;
     Div scatterplotButtons;
     Div scatterplotDownloads;
+    Div divHighlightArea;
     MapLayer mapLayer = null;
     private XYBoxAnnotation annotation;
     DefaultXYZDataset xyzDataset;
@@ -118,6 +122,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     Boolean missing_data = false;
     Label lblMissing;
     Button addNewLayers;
+    Combobox cbHighlightArea;
 
     @Override
     public void afterCompose() {
@@ -392,10 +397,16 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 && data.getLayer1() != null && data.getLayer1().length() > 0
                 && data.getLayer2() != null && data.getLayer2().length() > 0
                 && xyzDataset != null) {
+            if(data != null && cbHighlightArea.getItemCount() == 0) {
+                updateCbHighlightArea();
+            }
+
             if (missing_data) {
                 lblMissing.setVisible(true);
+                divHighlightArea.setVisible(false);
             } else {
                 lblMissing.setVisible(false);
+                divHighlightArea.setVisible(true);
                 try {
                     //only permits redrawing if imagePath has been defined
                     if (imagePath != null) {
@@ -1048,7 +1059,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         int alpha = data.opacity * 255 / 100;
 
         MyXYShapeRenderer renderer = new MyXYShapeRenderer();
-        renderer.shapeSize = data.size / 2;
+        renderer.shapeSize = data.size;
         if (datasetColours != null) {
             renderer.datasetColours = new Color[datasetColours.length];
             for (int i = 0; i < datasetColours.length; i++) {
@@ -1190,7 +1201,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                         + "*" + ((data.getFilterSa() != null) ? "Y" : "N");
 
                 String thisResampleLayers = data.getLayer1() + "*" + data.getLayer2();
-                String thisResampleHighlight = ((data.getHighlightSa() != null) ? "Y" : "N");
+                String thisResampleHighlight = ((data.getHighlightSa() != null) ? String.valueOf(data.getHighlightSa().getWkt().hashCode()) : "N");
 
                 if (prevResampleData == null || !prevResampleData.equals(thisResampleData)
                         || xyzDataset == null || xyzDataset.getSeriesCount() == 0) {
@@ -1417,6 +1428,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         renderer.setPaintScale(paint);
         renderer.setOutlinePaint(new Color(255, 0, 0, 255));
         renderer.setDrawOutlines(true);
+        renderer.setDefaultEntityRadius(data.size + 3);
 
         return renderer;
     }
@@ -1648,5 +1660,71 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         }
 
         data.setBackgroundData(d);
+    }
+
+    private void updateCbHighlightArea() {
+        for(int i=cbHighlightArea.getItemCount()-1;i>=0;i--) {
+            cbHighlightArea.removeItemAt(i);
+        }
+
+        boolean selectionSuccessful = false;
+        for(MapLayer ml : getMapComposer().getPolygonLayers()) {
+            Comboitem ci = new Comboitem(ml.getDisplayName());
+            ci.setValue(ml);
+            ci.setParent(cbHighlightArea);
+            if(data != null && data.getHighlightSa() != null
+                    && data.getHighlightSa().getMapLayer() == ml) {
+                cbHighlightArea.setSelectedItem(ci);
+                selectionSuccessful = true;
+            }
+        }
+
+        //this may be a deleted layer or current view or au or world
+        if(!selectionSuccessful && data != null
+                && data.getHighlightSa() != null) {            
+            MapLayer ml = data.getHighlightSa().getMapLayer();
+            if(ml != null) {
+                Comboitem ci = new Comboitem(ml.getDisplayName());
+                ci.setValue(ml);
+                ci.setParent(cbHighlightArea);
+                cbHighlightArea.setSelectedItem(ci);
+            } else {
+                String name = "Previous area";
+                if(data.getHighlightSa().getWkt() != null) {
+                    if(data.getHighlightSa().getWkt().equals(CommonData.AUSTRALIA_WKT)) {
+                        name = "Australia";
+                    } else if(data.getHighlightSa().getWkt().equals(CommonData.WORLD_WKT)) {
+                        name = "World";
+                    }
+                }
+                Comboitem ci = new Comboitem(name);
+                ci.setValue(data.getHighlightSa().getWkt());
+                ci.setParent(cbHighlightArea);
+                cbHighlightArea.setSelectedItem(ci);
+            }
+        }
+    }
+
+    public void onChange$cbHighlightArea(Event event) {
+        if(cbHighlightArea.getSelectedItem() != null) {
+            if(cbHighlightArea.getSelectedItem().getValue() instanceof MapLayer) {
+                MapLayer ml = ((MapLayer)cbHighlightArea.getSelectedItem().getValue());
+                SelectedArea sa = new SelectedArea(ml, ml.getWKT());
+                data.setHighlightSa(sa);
+            } else {
+                String wkt = (String) cbHighlightArea.getSelectedItem().getValue();
+                SelectedArea sa = new SelectedArea(null, wkt);
+                data.setHighlightSa(sa);
+            }
+        } else {
+            data.setHighlightSa(null);
+        }
+        imagePath = null;
+        redraw();
+    }
+
+    public void onClick$bClearHighlightArea(Event event) {
+        cbHighlightArea.setSelectedIndex(-1);
+        onChange$cbHighlightArea(null);
     }
 }
