@@ -90,6 +90,7 @@ public class BiocacheQuery implements Query, Serializable {
     double[] points = null;
     String solrName = null;
     static String[][] facetNameExceptions = {{"cl22", "state"}, {"cl23", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
+    HashMap<String, LegendObject> legends = new HashMap<String, LegendObject>();
 
     static String translateFieldForSolr(String facetName) {
         for (String[] s : facetNameExceptions) {
@@ -808,7 +809,16 @@ public class BiocacheQuery implements Query, Serializable {
     public String getRecordIdFieldName() {
         return "id";
     }
-    HashMap<String, LegendObject> legends = new HashMap<String, LegendObject>();
+
+    @Override
+    public String getRecordLongitudeFieldName() {
+        return "longitude";
+    }
+
+    @Override
+    public String getRecordLatitudeFieldName() {
+        return "latitude";
+    }
 
     /**
      * Get legend for a facet field.

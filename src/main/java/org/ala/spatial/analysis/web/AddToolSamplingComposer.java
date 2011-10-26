@@ -43,26 +43,25 @@ public class AddToolSamplingComposer extends AddToolComposer {
     }
 
     @Override
-    public void onFinish() {
+    public boolean onFinish() {
         //super.onFinish();
 
         System.out.println("Area: " + getSelectedArea());
         System.out.println("Species: " + getSelectedSpecies());
         System.out.println("Layers: " + getSelectedLayers());
 
-        download(null);
-
+        return download(null);
     }
 
-    public void download(Event event) {
+    public boolean download(Event event) {
 
         try {
             SelectedArea sa = getSelectedArea();
             Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
             //test size        
             if (query.getOccurrenceCount() <= 0) {
-                Messagebox.show("No occurrences selected. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
-                return;
+                getMapComposer().showMessage("No occurrences selected. Please try again", this);
+                return false;
             }
 
             //translate layer names
@@ -111,10 +110,15 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 this.detach();
             }
 
+            return true;
+
         } catch (Exception e) {
             System.out.println("Exception calling sampling.download:");
             e.printStackTrace(System.out);
+            getMapComposer().showMessage("Unknown error.", this);
         }
+
+        return false;
     }
 
     @Override

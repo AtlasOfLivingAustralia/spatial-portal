@@ -712,6 +712,25 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
+     * A simple message dialogue to display over AnalysisToolComposer
+     * @param message Full text of message to show
+     */
+    boolean mp = true;
+    public void showMessage(String message, Component parent) {
+        ErrorMessageComposer window = (ErrorMessageComposer) Executions.createComponents("WEB-INF/zul/ErrorMessage.zul", parent, null);
+        window.setMessage(message);
+        if(mp) {
+            try {
+                window.doModal();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            window.doOverlapped();
+        }
+    }
+
+    /**
      * Show a message dialogue.  Initially a short message is
      * shown but the user can click 'show details' to get a more
      * informative message.

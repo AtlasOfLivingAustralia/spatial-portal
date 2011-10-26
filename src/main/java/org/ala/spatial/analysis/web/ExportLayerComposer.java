@@ -56,9 +56,10 @@ public class ExportLayerComposer extends AddToolComposer {
     }
 
     @Override
-    public void onFinish() {
+    public boolean onFinish() {
         getMapComposer().exportAreaAs(exportFormat.getSelectedItem().getValue(), rAreaSelected.getLabel(), getSelectedArea());
         detach();
+        return true;
     }
 
      @Override

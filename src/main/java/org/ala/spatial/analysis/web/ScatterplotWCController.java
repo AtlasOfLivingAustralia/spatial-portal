@@ -1211,8 +1211,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
                     ArrayList<QueryField> fields = new ArrayList<QueryField>();
                     fields.add(new QueryField(data.getQuery().getRecordIdFieldName()));
-                    fields.add(new QueryField("longitude"));
-                    fields.add(new QueryField("latitude"));
+                    fields.add(new QueryField(data.getQuery().getRecordLongitudeFieldName()));
+                    fields.add(new QueryField(data.getQuery().getRecordLatitudeFieldName()));
 
                     if (!data.colourMode.equals("-1")) {
                         fields.add(new QueryField(data.colourMode));
@@ -1232,8 +1232,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     List<String[]> csv = csvreader.readAll();
                     csvreader.close();
 
-                    int longitudeColumn = findInArray("longitude", csv.get(0));
-                    int latitudeColumn = findInArray("latitude", csv.get(0));
+                    int longitudeColumn = findInArray(data.getQuery().getRecordLongitudeFieldName(), csv.get(0));
+                    int latitudeColumn = findInArray(data.getQuery().getRecordLatitudeFieldName(), csv.get(0));
                     int idColumn = findInArray(data.getQuery().getRecordIdFieldName(), csv.get(0));
                     int seriesColumn = findInArray(data.colourMode, csv.get(0));
 
@@ -1333,8 +1333,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
                     ArrayList<QueryField> fields = new ArrayList<QueryField>();
                     fields.add(new QueryField(data.getBackgroundQuery().getRecordIdFieldName()));
-                    fields.add(new QueryField("longitude"));
-                    fields.add(new QueryField("latitude"));
+                    fields.add(new QueryField(data.getBackgroundQuery().getRecordLongitudeFieldName()));
+                    fields.add(new QueryField(data.getBackgroundQuery().getRecordLatitudeFieldName()));
 
                     String backgroundResults = data.getBackgroundQuery().sample(fields);
 
@@ -1346,8 +1346,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     List<String[]> csv = csvReader.readAll();
                     csvReader.close();
 
-                    int longitudeColumn = findInArray("longitude", csv.get(0));
-                    int latitudeColumn = findInArray("latitude", csv.get(0));
+                    int longitudeColumn = findInArray(data.getBackgroundQuery().getRecordLongitudeFieldName(), csv.get(0));
+                    int latitudeColumn = findInArray(data.getBackgroundQuery().getRecordLatitudeFieldName(), csv.get(0));
                     int idColumn = findInArray(data.getBackgroundQuery().getRecordIdFieldName(), csv.get(0));
 
                     double[] points = new double[(csv.size() - 1) * 2];

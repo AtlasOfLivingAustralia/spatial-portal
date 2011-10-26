@@ -36,12 +36,15 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
     }
 
     @Override
-    public void onFinish() {
+    public boolean onFinish() {
         try {
             onClick$btnDownload();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            getMapComposer().showMessage("Unknown error.", this);
         }
+        return false;
     }
 
     public void onClick$btnDownload() {

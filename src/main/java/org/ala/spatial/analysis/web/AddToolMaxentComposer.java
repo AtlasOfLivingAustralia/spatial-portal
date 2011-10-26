@@ -86,7 +86,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
     }
 
     @Override
-    public void onFinish() {
+    public boolean onFinish() {
         //super.onFinish();
 
         if (searchSpeciesAuto.getSelectedItem() != null) {
@@ -109,15 +109,10 @@ public class AddToolMaxentComposer extends AddToolComposer {
             e.printStackTrace(System.out);
         }
 
-
-
-        runmaxent();
-        lbListLayers.clearSelection();
-        //this.detach();
-
+        return runmaxent();
     }
 
-    public void runmaxent() {
+    public boolean runmaxent() {
         try {
             SelectedArea sa = getSelectedArea();
             Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
@@ -134,8 +129,6 @@ public class AddToolMaxentComposer extends AddToolComposer {
                     sbenvsel += it.next().getValue();
                 }
             }
-
-
 
             //String area = getSelectedArea();
             //String taxonlsid = taxon;
@@ -190,11 +183,11 @@ public class AddToolMaxentComposer extends AddToolComposer {
             //check for no data
             if (speciesData[0] == null) {
                 if (speciesData[1] == null) {
-                    getMapComposer().showMessage("No records available for Prediction");
+                    getMapComposer().showMessage("No records available for Prediction", this);
                 } else {
-                    getMapComposer().showMessage("All species and records selected are marked as sensitive");
+                    getMapComposer().showMessage("All species and records selected are marked as sensitive", this);
                 }
-                return;
+                return false;
             }
             get.addParameter("species", speciesData[0]);
             if (speciesData[1] != null) {
@@ -228,14 +221,20 @@ public class AddToolMaxentComposer extends AddToolComposer {
             attrs.put("params", sbParams.toString());
             attrs.put("downloadfile", "");
             getMapComposer().updateUserLog(attrs, "analysis result: " + CommonData.satServer + "/output/maxent/" + pid + "/species.html");
+
+            this.setVisible(false);
+
+            return true;
         } catch (Exception e) {
             System.out.println("Maxent error: ");
             e.printStackTrace(System.out);
+            getMapComposer().showMessage("Unknown error.", this);
         }
+        return false;
     }
 
     void openProgressBar() {
-        MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", this, null);
+        MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", null, null);
         window.parent = this;
         window.start(pid);
         try {

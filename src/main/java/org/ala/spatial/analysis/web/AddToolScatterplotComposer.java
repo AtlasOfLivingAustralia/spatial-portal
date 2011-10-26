@@ -45,7 +45,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
     }
 
     @Override
-    public void onFinish() {
+    public boolean onFinish() {
         //super.onFinish();
 
         System.out.println("Area: " + getSelectedArea());
@@ -93,6 +93,8 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         getMapComposer().loadScatterplot(data, tToolName.getValue());
 
         this.detach();
+
+        return true;
     }
 
     @Override

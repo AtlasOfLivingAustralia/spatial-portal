@@ -138,7 +138,7 @@
                         <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
                         <button sclass="goButton" label="Cancel" id="btnCancel" />
                         <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
-                        <button sclass="goButton" label="Next &gt;" id="btnOk" />
+                        <button sclass="goButton" label="Next &gt;" id="btnOk" autodisable="self" />
                     </hbox>
                 </div>
 

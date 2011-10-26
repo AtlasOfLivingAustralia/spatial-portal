@@ -115,6 +115,11 @@ public class AddToolComposer extends UtilityComposer {
 //        }
 
         fixFocus();
+
+        if(lbListLayers != null) {
+            lbListLayers.clearSelection();
+            lbListLayers.updateDistances();
+        }
     }
 
     private void setupDefaultParams() {
@@ -786,6 +791,7 @@ public class AddToolComposer extends UtilityComposer {
         if (btnOk.isDisabled()) {
             return;
         }
+        boolean successful = false;
         try {
             if (!hasCustomArea && (isAreaCustom() || isAreaHighlightCustom())) {
                 this.doOverlapped();
@@ -847,20 +853,26 @@ public class AddToolComposer extends UtilityComposer {
                 }
 
                 currentStep++;
-            } else {
-                currentStep = 1;
 
+                successful = true;
+            } else {
                 saveLayerSelection();
 
-                onFinish();
+                successful = onFinish();
+
+                if(successful) {
+                    currentStep = 1;
+                }
             }
 
-            if (nextDiv != null && nextDiv.getZclass().contains("last")) {
-                updateLayerListText();
-            }
+            if(successful) {
+                if (nextDiv != null && nextDiv.getZclass().contains("last")) {
+                    updateLayerListText();
+                }
 
-            btnBack.setDisabled(false);
-            updateWindowTitle();
+                btnBack.setDisabled(false);
+                updateWindowTitle();
+            }
 
         } catch (Exception ex) {
             Logger.getLogger(AddToolComposer.class.getName()).log(Level.SEVERE, null, ex);
@@ -879,7 +891,7 @@ public class AddToolComposer extends UtilityComposer {
     public void onLastPanel() {
     }
 
-    public void onFinish() {
+    public boolean onFinish() {
         try {
             this.detach();
             Messagebox.show("Running your analysis tool: " + selectedMethod);
@@ -888,6 +900,8 @@ public class AddToolComposer extends UtilityComposer {
             Logger.getLogger(AddToolComposer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception e) {
         }
+
+        return true;
     }
 
     public void loadMap(Event event) {

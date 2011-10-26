@@ -131,6 +131,18 @@ public interface Query {
     public String getRecordIdFieldName();
 
     /**
+     * Get the name of the longitude field.
+     * @return
+     */
+    public String getRecordLongitudeFieldName();
+
+    /**
+     * Get the name of the latitude field.
+     * @return
+     */
+    public String getRecordLatitudeFieldName();
+
+    /**
      * Get legend data for a facet.
      *
      * @param colourmode name of field for facet.

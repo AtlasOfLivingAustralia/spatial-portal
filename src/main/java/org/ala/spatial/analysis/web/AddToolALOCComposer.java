@@ -13,6 +13,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import org.ala.spatial.sampling.SimpleRegion;
+import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.httpclient.HttpClient;
@@ -59,11 +61,8 @@ public class AddToolALOCComposer extends AddToolComposer {
     }
 
     @Override
-    public void onFinish() {
-        //super.onFinish();
-
-        runclassification();
-        lbListLayers.clearSelection();
+    public boolean onFinish() {
+        return runclassification();
     }
 
     @Override
@@ -215,7 +214,7 @@ public class AddToolALOCComposer extends AddToolComposer {
         return "";
     }
 
-    public void runclassification() {
+    public boolean runclassification() {
         try {
 
             //layerLabel = "Classification #" + generation_count + " - " + groupCount.getValue() + " groups";
@@ -223,18 +222,45 @@ public class AddToolALOCComposer extends AddToolComposer {
 
             String sbenvsel = getSelectedLayers();
             if (sbenvsel.split(":").length > 50) {
-                Messagebox.show(sbenvsel.split(":").length + " layers selected.  Please select fewer than 50 environmental layers in step 1.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
-                return;
+                getMapComposer().showMessage(sbenvsel.split(":").length + " layers selected.  Please select fewer than 50 environmental layers in step 1.");
+                return false;
             }
 
             if (groupCount.getValue() <= 1 || groupCount.getValue() > 200) {
-                Messagebox.show("Please enter the number of groups to generate (2 to 200) in step 2.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                getMapComposer().showMessage("Please enter the number of groups to generate (2 to 200) in step 2.");
                 //highlight step 2
 //                tabboxclassification.setSelectedIndex(1);
-                return;
+               return false;
             }
 
             SelectedArea sa = getSelectedArea();//getMapComposer().getSelectionArea();
+
+            //estimate analysis size in bytes
+            SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
+            double [][] bbox;
+            if(sr != null) {
+                bbox = sr.getBoundingBox();
+            } else {
+                bbox = new double[][] {{-180,-90},{180,90}};
+            }
+            //analysis currently restricted to australian extents and 0.01 degree grid
+            if(bbox[0][0] < 112) bbox[0][0] = 112;
+            if(bbox[1][0] > 155) bbox[1][0] = 155;
+            if(bbox[0][1] < -44) bbox[0][1] = -44;
+            if(bbox[1][1] > -9) bbox[1][1] = -9;
+
+            long cellsInBBox = (long)((bbox[1][0] - bbox[0][0]) / 0.01 * (bbox[1][1] - bbox[0][1]) / 0.01);
+            long size = (groupCount.getValue() + sbenvsel.split(":").length + 2) * cellsInBBox * 4;
+            System.out.println("ALOC estimate size in MB, cells=" + cellsInBBox
+                    + ", bbox=" + bbox[0][0] + "," + bbox[0][1] + "," + bbox[1][0] + "," + bbox[1][1]
+                    + ", groups=" + groupCount.getValue()
+                    + ", layers=" + sbenvsel.split(":").length
+                    + ", size=" + size/1024/1024
+                    + ", max size=" + settingsSupplementary.getValueAsInt("aloc_size_limit_in_mb"));
+            if(size /1024/1024 > settingsSupplementary.getValueAsInt("aloc_size_limit_in_mb")) {
+                getMapComposer().showMessage("Analysis is too large.  Reduce the number of groups, number of layers or area.", this);
+                return false;
+            }
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/aloc/processgeoq?");
@@ -263,13 +289,20 @@ public class AddToolALOCComposer extends AddToolComposer {
 
             getMapComposer().updateUserLogAnalysis("Classification", "gc: " + groupCount.getValue() + ";area: " + area, sbenvsel.toString(), slist, pid, layerLabel);
 
-            ALOCProgressWCController window = (ALOCProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisALOCProgress.zul", this, null);
+            ALOCProgressWCController window = (ALOCProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisALOCProgress.zul", null, null);
             window.parent = this;
             window.start(pid);
             window.doModal();
 
+            this.setVisible(false);
+
+            return true;
+
         } catch (Exception ex) {
             ex.printStackTrace(System.out);
+             getMapComposer().showMessage("Unknown error.", this);
         }
+
+        return false;
     }
 }

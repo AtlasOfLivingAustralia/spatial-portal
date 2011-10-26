@@ -36,7 +36,7 @@ public class AddToolAreaReportComposer extends AddToolComposer {
     }
 
     @Override
-    public void onFinish() {
+    public boolean onFinish() {
         //close any existing area report
         Window w = (Window) getPage().getFellowIfAny("popup_results");
         if (w != null) {
@@ -59,6 +59,8 @@ public class AddToolAreaReportComposer extends AddToolComposer {
         FilteringResultsWCController.open(sa, areaName, areaDisplayName,
                 (String) ((ml == null) ? null : ml.getData("area")), bbox);
         detach();
+
+        return true;
     }
 
     @Override

@@ -9,8 +9,8 @@ user clicks ok - not acceptable in production
 <window title="Message" border="normal" mode="overlapped" 
 	position="center,center" use="au.org.emii.portal.composer.ErrorMessageComposer"
 	apply="au.org.emii.portal.composer.ErrorMessageComposer"
-	closable="true" width="350px">
-	<label pre="true" multiline="true" id="message" />
+	closable="true" width="600px">
+	<label pre="true" id="message" multiline="true" sclass="wordwrap" />
 	<separator height="20px" />
 	<div align="center">
 		<button id="ok" label="Ok" />
