@@ -1232,9 +1232,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     List<String[]> csv = csvreader.readAll();
                     csvreader.close();
 
-                    int longitudeColumn = findInArray(data.getQuery().getRecordLongitudeFieldName(), csv.get(0));
-                    int latitudeColumn = findInArray(data.getQuery().getRecordLatitudeFieldName(), csv.get(0));
-                    int idColumn = findInArray(data.getQuery().getRecordIdFieldName(), csv.get(0));
+                    int longitudeColumn = findInArray(data.getQuery().getRecordLongitudeFieldDisplayName(), csv.get(0));
+                    int latitudeColumn = findInArray(data.getQuery().getRecordLatitudeFieldDisplayName(), csv.get(0));
+                    int idColumn = findInArray(data.getQuery().getRecordIdFieldDisplayName(), csv.get(0));
                     int seriesColumn = findInArray(data.colourMode, csv.get(0));
 
                     double[] points = new double[(csv.size() - 1) * 2];
@@ -1346,9 +1346,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     List<String[]> csv = csvReader.readAll();
                     csvReader.close();
 
-                    int longitudeColumn = findInArray(data.getBackgroundQuery().getRecordLongitudeFieldName(), csv.get(0));
-                    int latitudeColumn = findInArray(data.getBackgroundQuery().getRecordLatitudeFieldName(), csv.get(0));
-                    int idColumn = findInArray(data.getBackgroundQuery().getRecordIdFieldName(), csv.get(0));
+                    int longitudeColumn = findInArray(data.getBackgroundQuery().getRecordLongitudeFieldDisplayName(), csv.get(0));
+                    int latitudeColumn = findInArray(data.getBackgroundQuery().getRecordLatitudeFieldDisplayName(), csv.get(0));
+                    int idColumn = findInArray(data.getBackgroundQuery().getRecordIdFieldDisplayName(), csv.get(0));
 
                     double[] points = new double[(csv.size() - 1) * 2];
                     String[] series = new String[csv.size() - 1];
@@ -1401,16 +1401,13 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
     XYShapeRenderer getBackgroundRenderer() {
         XYShapeRenderer renderer = new XYShapeRenderer();
-        LookupPaintScale paint = new LookupPaintScale(0, 1, new Color(255, 164, 96, 150)) {
+        Color c = new Color(255, 164, 96, 150);
+        renderer.setSeriesPaint(0, c);
 
-            @Override
-            public Paint getPaint(double value) {
-                return this.getDefaultPaint();
-            }
-        };
-
-        renderer.setPaintScale(paint);
-
+        double size = data.size + 10;
+        double delta = size / 2;
+        renderer.setSeriesShape(0, new Ellipse2D.Double(-delta, -delta, size, size));
+        
         return renderer;
     }
 
@@ -1426,9 +1423,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         };
 
         renderer.setPaintScale(paint);
-        renderer.setOutlinePaint(new Color(255, 0, 0, 255));
+        renderer.setSeriesOutlinePaint(0, new Color(255, 0, 0, 255));
         renderer.setDrawOutlines(true);
-        renderer.setDefaultEntityRadius(data.size + 3);
+
+        double size = data.size + 3;
+        double delta = size / 2;
+        renderer.setSeriesShape(0, new Ellipse2D.Double(-delta, -delta, size, size));
 
         return renderer;
     }

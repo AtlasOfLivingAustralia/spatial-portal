@@ -373,6 +373,21 @@ public class UploadQuery implements Query, Serializable {
     }
 
     @Override
+    public String getRecordIdFieldDisplayName() {
+        return data.get(0).getDisplayName();
+    }
+
+    @Override
+    public String getRecordLongitudeFieldDisplayName() {
+        return data.get(1).getDisplayName();
+    }
+
+    @Override
+    public String getRecordLatitudeFieldDisplayName() {
+        return data.get(2).getDisplayName();
+    }
+
+    @Override
     public LegendObject getLegend(String colourmode) {
         //get existing
         for (int i = 0; i < data.size(); i++) {

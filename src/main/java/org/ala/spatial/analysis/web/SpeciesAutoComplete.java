@@ -103,7 +103,7 @@ public class SpeciesAutoComplete extends Combobox {
 
                 //sb.append(searchService(val));
                 sb.append(autoService(val));
-                //sb.append(loadUserPoints(val));
+                sb.append(loadUserPoints(val));
 
                 String sslist = sb.toString();
                 System.out.println("SpeciesAutoComplete: \n" + sslist);

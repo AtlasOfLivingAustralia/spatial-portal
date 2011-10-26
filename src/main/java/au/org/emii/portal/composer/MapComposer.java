@@ -2621,6 +2621,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void updateLayerControls() {
+        //remove any scatterplot legend
+        Component c = getFellowIfAny("scatterplotlayerlegend");
+        if(c != null) {
+            c.detach();
+        }
+
         //remove children
         for (int i = layerControls.getChildren().size() - 1; i >= 0; i--) {
             try {

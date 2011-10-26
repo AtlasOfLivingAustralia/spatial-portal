@@ -819,6 +819,20 @@ public class BiocacheQuery implements Query, Serializable {
     public String getRecordLatitudeFieldName() {
         return "latitude";
     }
+    @Override
+    public String getRecordIdFieldDisplayName() {
+        return "id";
+    }
+
+    @Override
+    public String getRecordLongitudeFieldDisplayName() {
+        return "longitude";
+    }
+
+    @Override
+    public String getRecordLatitudeFieldDisplayName() {
+        return "latitude";
+    }
 
     /**
      * Get legend for a facet field.

@@ -143,6 +143,27 @@ public interface Query {
     public String getRecordLatitudeFieldName();
 
     /**
+     * Get the display name of the unique id field
+     * as it appears in the output of sample()
+     * @return
+     */
+    public String getRecordIdFieldDisplayName();
+
+    /**
+     * Get the display name of the longitude field.
+     * as it appears in the output of sample()
+     * @return
+     */
+    public String getRecordLongitudeFieldDisplayName();
+
+    /**
+     * Get the display name of the latitude field.
+     * as it appears in the output of sample()
+     * @return
+     */
+    public String getRecordLatitudeFieldDisplayName();
+
+    /**
      * Get legend data for a facet.
      *
      * @param colourmode name of field for facet.

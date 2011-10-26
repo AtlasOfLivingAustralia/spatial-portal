@@ -1,7 +1,6 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
-import java.io.IOException;
 import org.zkoss.zul.Textbox;
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.menu.MapLayer;
@@ -31,7 +30,6 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
-import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Constraint;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Label;
@@ -51,7 +49,7 @@ public class UploadSpeciesController extends UtilityComposer {
     String uploadLSID;
     String uploadType = "normal";
     private EventListener eventListener;
-    private boolean addToMap;
+    public boolean addToMap;
     boolean defineArea;
 
     @Override
@@ -146,9 +144,9 @@ public class UploadSpeciesController extends UtilityComposer {
 
     public void doFileUpload(UserData ud, Event event) {
         UploadEvent ue = null;
-        if (event.getName().equals("onUpload")) {
+        if (event instanceof UploadEvent) {
             ue = (UploadEvent) event;
-        } else if (event.getName().equals("onForward")) {
+        } else if (event instanceof ForwardEvent) {
             ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
         }
         if (ue == null) {
@@ -347,6 +345,7 @@ public class UploadSpeciesController extends UtilityComposer {
             ud.setMetadata(metadata);
             ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
             ud.setLsid(pid);
+            uploadLSID = pid + "\t" + ud.getName();
 
             Query q = new UploadQuery(pid, ud.getName(), points, fields, metadata);
             ud.setQuery(q);
@@ -440,6 +439,7 @@ public class UploadSpeciesController extends UtilityComposer {
             ud.setMetadata(metadata);
             ud.setSubType(LayerUtilities.SPECIES);
             ud.setLsid(pid);
+            uploadLSID = pid + "\t" + ud.getName();
 
             Query q = new BiocacheQuery(lsids, null, null, null, true);
             ud.setQuery(q);

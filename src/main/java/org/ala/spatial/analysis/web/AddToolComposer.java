@@ -6,7 +6,6 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerSelection;
 import au.org.emii.portal.util.LayerUtilities;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
@@ -14,7 +13,6 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -27,13 +25,13 @@ import net.sf.json.JSONObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.BiocacheQuery;
+import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zk.ui.util.Clients;
@@ -44,7 +42,6 @@ import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
-import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
@@ -71,8 +68,7 @@ public class AddToolComposer extends UtilityComposer {
     Textbox tToolName;
     SpeciesAutoComplete searchSpeciesAuto, bgSearchSpeciesAuto;
     EnvironmentalList lbListLayers;
-    Div divSpeciesSearch, divSpeciesSearchBk;
-    UploadSpeciesController usc;
+    Div divSpeciesSearch, divSpeciesSearchBk;    
     EnvLayersCombobox cbLayer1;
     EnvLayersCombobox cbLayer2;
     String winTop = "300px";
@@ -104,15 +100,6 @@ public class AddToolComposer extends UtilityComposer {
 
         //loadStepLabels();
         updateWindowTitle();
-
-//        if (fileUpload != null) {
-//            fileUpload.addEventListener("onUpload", new EventListener() {
-//
-//                public void onEvent(Event event) throws Exception {
-//                    doFileUpload(null, event);
-//                }
-//            });
-//        }
 
         fixFocus();
 
@@ -711,9 +698,9 @@ public class AddToolComposer extends UtilityComposer {
     public void resetWindowFromSpeciesUpload(String lsid, String type) {
         try {
             if (type.compareTo("cancel") == 0) {
-                this.setTop(winTop);
-                this.setLeft(winLeft);
-                this.doModal();
+//                this.setTop(winTop);
+//                this.setLeft(winLeft);
+//                this.doModal();
                 fixFocus();
                 return;
             }
@@ -723,12 +710,12 @@ public class AddToolComposer extends UtilityComposer {
             if (type.compareTo("bk") == 0) {
                 setLsidBk(lsid);
             }
-            this.setTop(winTop);
-            this.setLeft(winLeft);
-            this.doModal();
-            onClick$btnOk(null);
+//            this.setTop(winTop);
+//            this.setLeft(winLeft);
+//            this.doModal();
+//            onClick$btnOk(null);
 
-            fixFocus();
+//            fixFocus();
         } catch (Exception e) {
             System.out.println("Exception when resetting analysis window");
             e.printStackTrace();
@@ -1006,7 +993,7 @@ public class AddToolComposer extends UtilityComposer {
                 } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                     if (searchSpeciesAuto.getSelectedItem() != null) {
                         species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                        q = new BiocacheQuery(species, null, null, null, false);
+                        q = QueryUtil.get(species, getMapComposer(), false);
                     }
                 }
             } catch (Exception e) {
@@ -1053,7 +1040,7 @@ public class AddToolComposer extends UtilityComposer {
                     }
                     if (bgSearchSpeciesAuto.getSelectedItem() != null) {
                         species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                        q = new BiocacheQuery(species, null, null, null, false);
+                        q = QueryUtil.get(species, getMapComposer(), false);
                     }
                 }
             } catch (Exception e) {
@@ -1143,12 +1130,12 @@ public class AddToolComposer extends UtilityComposer {
             }
             btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
 
-            if (!btnOk.isDisabled()) {
+//            if (!btnOk.isDisabled()) {
                 rgSpecies.setSelectedItem(rSpeciesSearch);
                 Clients.evalJavaScript("jq('#" + rSpeciesSearch.getUuid() + "-real').attr('checked', true);");
                 toggles();
                 onClick$btnOk(null);
-            }
+//            }
         }
     }
 
@@ -1186,12 +1173,12 @@ public class AddToolComposer extends UtilityComposer {
                 }
             }
             btnOk.setDisabled(bgSearchSpeciesAuto.getSelectedItem() == null);
-            rgSpecies.setSelectedItem(rSpeciesSearch);
-            Clients.evalJavaScript("jq('#" + rSpeciesSearch.getUuid() + "-real').attr('checked', true);");
+            rgSpeciesBk.setSelectedItem(rSpeciesSearchBk);
+            Clients.evalJavaScript("jq('#" + rSpeciesSearchBk.getUuid() + "-real').attr('checked', true);");
 
-            if (!btnOk.isDisabled()) {
+//            if (!btnOk.isDisabled()) {
                 onClick$btnOk(null);
-            }
+//            }
         }
     }
 
@@ -1470,6 +1457,23 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onUpload$uploadLayerList(Event event) {
         doFileUpload(event);
+    }
+
+    public void onUpload$fileUpload(Event event) {
+        UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", this, null);
+        usc.addToMap = false;
+        
+        //is it bk or normal lsid
+        if(rgSpeciesBk != null &&
+                (rgSpeciesBk.getSelectedItem() == rSpeciesUploadLSIDBk
+                || rgSpeciesBk.getSelectedItem() == rSpeciesUploadSpeciesBk)) {
+            usc.setUploadType("bk");
+        }
+
+        usc.setVisible(false);
+        usc.doOverlapped();
+        usc.doFileUpload("",event);
+        usc.detach();
     }
 
     public void doFileUpload(Event event) {
