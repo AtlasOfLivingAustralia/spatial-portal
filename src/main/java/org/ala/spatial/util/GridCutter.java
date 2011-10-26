@@ -75,6 +75,18 @@ public class GridCutter {
             int tp = 0;
             int[][] tcells = new int[tw * th][2];
             double[][] bb = region.getBoundingBox();
+            if (bb[0][0] < TabulationSettings.grd_xmin) {
+                bb[0][0] = TabulationSettings.grd_xmin;
+            }
+            if (bb[1][0] > TabulationSettings.grd_xmax) {
+                bb[1][0] = TabulationSettings.grd_xmax;
+            }
+            if (bb[0][1] < TabulationSettings.grd_ymin) {
+                bb[0][1] = TabulationSettings.grd_ymin;
+            }
+            if (bb[1][1] > TabulationSettings.grd_ymax) {
+                bb[1][1] = TabulationSettings.grd_ymax;
+            }
             int startj = (int) Math.max(0, (bb[0][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
             int endj = (int) Math.min(tw, (bb[1][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
             int starti = (int) Math.max(0, (bb[0][1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
@@ -302,8 +314,8 @@ public class GridCutter {
         double[][] points = new double[xrange * yrange][2];
         for (int i = 0; i < xrange; i++) {
             for (int j = 0; j < yrange; j++) {
-                points[i + j * xrange][0] = (double) (xmin + i * TabulationSettings.grd_xdiv);
-                points[i + j * xrange][1] = (double) (ymin + j * TabulationSettings.grd_ydiv);
+                points[i + j * xrange][0] = (double) (xmin + i * TabulationSettings.grd_xdiv + TabulationSettings.grd_xdiv / 2);
+                points[i + j * xrange][1] = (double) (ymin + j * TabulationSettings.grd_ydiv + TabulationSettings.grd_ydiv / 2);
             }
         }
         for (int k = 0; k < envelope.length; k++) {
@@ -339,6 +351,75 @@ public class GridCutter {
         }
 
         return cells;
+    }
+
+    public static Object[] getOverlapGridCells2(LayerFilter[] envelope) {
+        TabulationSettings.load();
+
+        //output structure; false == passes filter, true == does not pass filter
+        int length = TabulationSettings.grd_nrows * TabulationSettings.grd_ncols;
+        BitSet bs = new BitSet(length);
+        for (int k = 0; k < envelope.length; k++) {
+            //analysis grids are aligned
+            System.out.println("cutting with: " + envelope[k].layer.name);
+            Grid grid = Grid.getGrid(TabulationSettings.getPath(envelope[k].layer.name));
+            float[] d = grid.getGrid();
+
+            LayerFilter lf = envelope[k];
+            for (int i = 0; i < d.length; i++) {
+                if (Float.isNaN(d[i]) || lf.maximum_value < d[i] || lf.minimum_value > d[i]) {
+                    bs.set(i);
+                }
+            }
+        }
+
+        //determine output bbox as rows & columns
+        int[] bbox = new int[4];
+        int count = 0;
+        for (int i = 0; i < bs.size(); i++) {
+            if (!bs.get(i)) {
+                int x = i % TabulationSettings.grd_ncols;
+                int y = i / TabulationSettings.grd_ncols;
+
+
+                if (count == 0 || bbox[0] > x) {
+                    bbox[0] = x;
+                }
+                if (count == 0 || bbox[2] < x) {
+                    bbox[2] = x;
+                }
+                if (count == 0 || bbox[1] > y) {
+                    bbox[1] = y;
+                }
+                if (count == 0 || bbox[3] < y) {
+                    bbox[3] = y;
+                }
+
+                count++;
+            }
+        }
+
+        //make output
+        int rows = bbox[3] - bbox[1] + 1;
+        int cols = bbox[2] - bbox[0] + 1;
+        byte[] grid = new byte[rows * cols];
+        for (int i = 0; i < bs.size(); i++) {
+            if (!bs.get(i)) {
+                int x = i % TabulationSettings.grd_ncols;
+                int y = i / TabulationSettings.grd_ncols;
+
+                int pos = x - bbox[0] + cols * (y - bbox[1]);
+                grid[pos] = 1;
+            }
+        }
+
+        Object[] ret = new Object[4];
+        ret[0] = grid;
+        ret[1] = bbox;
+        ret[2] = new int[]{rows, cols};
+        ret[3] = new double[]{TabulationSettings.grd_xmin + bbox[0] * TabulationSettings.grd_xdiv, TabulationSettings.grd_ymin + TabulationSettings.grd_ydiv * (TabulationSettings.grd_nrows - bbox[3] - 2)};
+
+        return ret;
     }
 
     public static ArrayList<Object> cut(Layer[] layers, SimpleRegion region, int pieces, String extentsFilename, LayerFilter[] envelopes) {
@@ -429,6 +510,18 @@ public class GridCutter {
                 int tp = 0;
                 int[][] tcells = new int[tw * th][2];
                 double[][] bb = region.getBoundingBox();
+                if (bb[0][0] < TabulationSettings.grd_xmin) {
+                    bb[0][0] = TabulationSettings.grd_xmin;
+                }
+                if (bb[1][0] > TabulationSettings.grd_xmax) {
+                    bb[1][0] = TabulationSettings.grd_xmax;
+                }
+                if (bb[0][1] < TabulationSettings.grd_ymin) {
+                    bb[0][1] = TabulationSettings.grd_ymin;
+                }
+                if (bb[1][1] > TabulationSettings.grd_ymax) {
+                    bb[1][1] = TabulationSettings.grd_ymax;
+                }
                 int startj = (int) Math.max(0, (bb[0][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
                 int endj = (int) Math.min(tw, (bb[1][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
                 int starti = (int) Math.max(0, (bb[0][1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
