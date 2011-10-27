@@ -1,3 +1,4 @@
+zk.Widget.$(jq('$westContent')[0]).firstChild.lastChild.listen({onMouseUp: function () { setTimeout("map.pan(1,1);",300); }});
 
 function updateSafeToLoadMap(status) {                        
     try {
