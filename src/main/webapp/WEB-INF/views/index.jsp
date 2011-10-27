@@ -267,6 +267,80 @@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"
                                     </ul>
                                 </li>
                             </ul>
+
+                            <h3>Analysis Web Services</h3>
+                            <p>There are three stages in using analysis web services; Start analysis, Monitor analysis, Retrieve output.</p>
+                            <ul>
+                                <li><strong>MaxEnt Prediction</strong>
+                                    <p>Start Maxent /ws/maxent/procesgeoq, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/maxent/processgeoq</p>
+                                    Parameters:
+                                    <ul>
+                                        <li>taxonid - this will be the name of maxent model.  E.g. “Macropus Rufus”.</li>
+                                        <li>taxonlsid – Life Science Identifier that is required but not currently used.  E.g. “urn:lsid:biodiversity.org.au:afd.taxon:aa745ff0-c776-4d0e-851d-369ba0e6f537”.</li>
+                                        <li>species – A csv file with a header record and containing all species points.  Column order is species name, longitude (decimal degrees), latitude (decimal degrees). E.g.
+                                                    “Species,longitude,latitude
+                                                    Macropus Rufus,122,-20
+                                                    Macropus Rufus,123,-18”.
+                                        </li>
+                                        <li>area - bounding area in Well Known Text (WKT) format.  E.g.  “POLYGON((118 -30,146 -30,146 -11,118 -11,118 -30))”.</li>
+                                        <li>envlist – a list of environmental and contextual layers as colon separated short names.  E.g. “bioclim_bio1:bioclim_bio12:bioclim_bio2:landuse”.
+                                            <ul>
+                                                <li>List of analysis valid environmental layer short names <a href="http://spatial.ala.org.au/alaspatial/ws/spatial/settings/layers/environmental/string">here</a>. These are a subset of all layers <a href="http://spatial.ala.org.au/layers.">here</a></li>
+                                                <li>List of analysis valid contextual layers; landcover, landuse, vast, native_veg, present_veg </li>
+                                            </ul>
+                                        </li>
+                                        <li>txtTestPercentage - optional percentage of records dedicated to testing.  E.g. “23”.</li>
+                                        <li>chkJackKnife - optional parameter to enable/disable Jacknifing.  E.g. “Y”.</li>
+                                        <li>chkResponseCurves – optional parameter to enable/disable plots of response curves.  E.g. “Y”.</li>
+                                    </ul>
+                                    <br>
+                                    <p>Returns: analysis id.  E.g. “123”.</p>
+                                </li>
+                                <li><strong>Classification (ALOC)</strong>
+                                    <p>Start ALOC /ws/aloc/processgeoq, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/aloc/processgeoq</p>
+                                    Parameters:
+                                    <ul>
+                                        <li>gc - number of groups to try and produce. No guarantee that convergence to the exact number will occur. If not, it will generate as close a number of groups as possible.  E.g. “20”.</li>
+                                        <li>area - bounding area in Well Known Text (WKT) format.  E.g.  “POLYGON((118 -30,146 -30,146 -11,118 -11,118 -30))”.</li>
+                                        <li>envlist – a list of environmental layers as colon separated short names.  E.g. “bioclim_bio1:bioclim_bio12:bioclim_bio2”.
+                                            <ul>
+                                                <li>List of analysis valid environmental layer short names <a href="http://spatial.ala.org.au/alaspatial/ws/spatial/settings/layers/environmental/string">here</a>. These are a subset of all layers <a href="http://spatial.ala.org.au/layers.">here</a></li>
+                                                <li>List of analysis valid contextual layers; landcover, landuse, vast, native_veg, present_veg </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                    <br>
+                                    <p>Returns: analysis id.  E.g. “123”.</p>
+                                </li>
+                                <li><strong>Monitor Analysis</strong>
+                                    <ul>
+                                        <li>/ws/jobs/state?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/state?pid=123
+                                                <br>returns one of "WAITING", "RUNNING", "SUCCESSFUL", "FAILED", "CANCELLED", </li>
+                                        <li>/ws/jobs/message?pid=&lt;analysis id>&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/message?pid=123
+                                                <br>returns any associated message or "job does not exist".</li>
+                                        <li>/ws/jobs/status?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/status?pid=123
+                                                <br>returns status text that may contain an estimate of time remaining or "job does not exist".</li>
+                                        <li>/ws/jobs/progress?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/progress?pid=123
+                                                <br>returns analysis job progress as a number between 0 and 1 or "job does not exist".</li>
+                                        <li>/ws/jobs/log?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/log?pid=123
+                                                <br>returns analysis job log or "job does not exist".</li>
+                                        <li>/ws/jobs/cancel?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/cancel?pid=123
+                                                <br>returns nothing if successful or "job does not exist"</li>
+                                    </ul>
+                                </li>
+                                <br>
+                                <li><strong>Retrieving Results</strong>
+                                    <ul>
+                                        <li>/ws/download/&lt;analysis id&gt;.  E.g. .  E.g. http://spatial.ala.org.au/alaspatial/ws/download/123
+                                            <br>downloads the zipped output of "SUCCESSFUL" analysis.</li>
+                                        <li>ALOC WMS service for the layer is /geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_&lt;analysis id&gt;&styles=alastyles&FORMAT=image%2Fpng.
+                                            <br> E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:aloc_123&height=200&width=200
+                                            <li>Maxent WMS service for the layer is /geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_&lt;analysis id&gt;&styles=alastyles&FORMAT=image%2Fpng.  
+                                                <br>E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:species_123&height=200&width=200
+                                             </li>
+                                    </ul>
+                                </li>
+                            </ul>
  
                         </div>
 
