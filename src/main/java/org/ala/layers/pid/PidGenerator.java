@@ -12,7 +12,6 @@
  *  implied. See the License for the specific language governing
  *  rights and limitations under the License.
  ***************************************************************************/
-
 package org.ala.layers.pid;
 
 import au.csiro.pidclient.AndsPidClient;
@@ -33,13 +32,46 @@ import java.util.logging.Logger;
  */
 public class PidGenerator {
 
-    private static Connection getConnection() {
+    private String DB_DRIVER_DEV = "org.postgresql.Driver";
+    private String DB_URL_DEV = "jdbc:postgresql://ala-devmaps-db.vm.csiro.au:5432/layersdb";
+    private String DB_USERNAME_DEV = "postgres";
+    private String DB_PASSWORD_DEV = "postgres";
+
+    private String DB_DRIVER_PROD = "org.postgresql.Driver";
+    private String DB_URL_PROD = "jdbc:postgresql://ala-maps-db.vic.csiro.au:5432/layersdb";
+    private String DB_USERNAME_PROD = "postgres";
+    private String DB_PASSWORD_PROD = "postgres";
+
+    private static String ANDS_APPID_TEST = "2c6ed180e966774eee8409f7152b0cc885d07f71";
+    private static String ANDS_AUTH_DOMAIN_TEST = "csiro.au";
+    private static String ANDS_IDENTIFIER_TEST = "ALA";
+    private static String ANDS_HOST_TEST = "test.ands.org.au";
+    
+    private static String ANDS_APPID_PROD = "2c6ed180e966774eee8409f7152b0cc885d07f71";
+    private static String ANDS_AUTH_DOMAIN_PROD = "csiro.au";
+    private static String ANDS_IDENTIFIER_PROD = "ALA";
+    private static String ANDS_HOST_PROD = "services.ands.org.au";
+    
+    private static boolean isProduction = false;
+
+    private Connection getConnection() {
         Connection conn = null;
+        String db_driver = DB_DRIVER_DEV;
+        String db_url = DB_URL_DEV;
+        String db_user = DB_USERNAME_DEV;
+        String db_pass = DB_PASSWORD_DEV;
+        if (isProduction) {
+            db_driver = DB_DRIVER_PROD;
+            db_url = DB_URL_PROD;
+            db_user = DB_USERNAME_PROD;
+            db_pass = DB_PASSWORD_PROD;
+        }
+
         try {
-            Class.forName("org.postgresql.Driver");
-            String url = "jdbc:postgresql://ala-devmaps-db.vm.csiro.au:5432/layersdb";
+            Class.forName(db_driver);
+            String url = db_url;
             //String url = "jdbc:postgresql://localhost:5432/layersdb";
-            conn = DriverManager.getConnection(url, "postgres", "postgres");
+            conn = DriverManager.getConnection(url, db_user, db_pass);
 
         } catch (Exception e) {
             System.out.println("Unable to create Connection");
@@ -49,15 +81,15 @@ public class PidGenerator {
         return conn;
     }
 
-    private static void testPidGeneration() {
+    private void testPidGeneration() {
         try {
             AndsPidIdentity andsid = new AndsPidIdentity();
-            andsid.setAppId("2c6ed180e966774eee8409f7152b0cc885d07f71");
-            andsid.setAuthDomain("csiro.au");
-            andsid.setIdentifier("ALA");
+            andsid.setAppId(ANDS_APPID_TEST);
+            andsid.setAuthDomain(ANDS_AUTH_DOMAIN_TEST);
+            andsid.setIdentifier(ANDS_IDENTIFIER_TEST);
 
             AndsPidClient ands = new AndsPidClient();
-            ands.setPidServiceHost("test.ands.org.au");
+            ands.setPidServiceHost(ANDS_HOST_TEST);
             ands.setPidServicePath("/pids");
             ands.setPidServicePort(8443);
             ands.setRequestorIdentity(andsid);
@@ -75,13 +107,24 @@ public class PidGenerator {
 
     public static String mintLayerPid(HandleType handleType, String value) {
         try {
+            String ands_appid = ANDS_APPID_TEST;
+            String ands_auth = ANDS_AUTH_DOMAIN_TEST;
+            String ands_ident = ANDS_IDENTIFIER_TEST;
+            String ands_host = ANDS_HOST_TEST;
+            if (isProduction) {
+                ands_appid = ANDS_APPID_PROD;
+                ands_auth = ANDS_AUTH_DOMAIN_PROD;
+                ands_ident = ANDS_IDENTIFIER_PROD;
+                ands_host = ANDS_HOST_PROD;
+            }
+
             AndsPidIdentity andsid = new AndsPidIdentity();
-            andsid.setAppId("2c6ed180e966774eee8409f7152b0cc885d07f71");
-            andsid.setAuthDomain("csiro.au");
-            andsid.setIdentifier("ALA");
+            andsid.setAppId(ands_appid);
+            andsid.setAuthDomain(ands_auth);
+            andsid.setIdentifier(ands_ident);
 
             AndsPidClient ands = new AndsPidClient();
-            ands.setPidServiceHost("test.ands.org.au");
+            ands.setPidServiceHost(ands_host);
             ands.setPidServicePath("/pids");
             ands.setPidServicePort(8443);
             ands.setRequestorIdentity(andsid);
@@ -101,38 +144,40 @@ public class PidGenerator {
 
     }
 
-    public static void main(String[] args) {
+    private void startGeneration() {
         System.out.println("starting PID generation...");
 
         try {
-        Connection conn = getConnection();
-        String sql = "SELECT id FROM layerpids WHERE pid IS NULL";
-        Statement s1 = conn.createStatement();
-        ResultSet rs1 = s1.executeQuery(sql);
+            Connection conn = getConnection();
+            String sql = "SELECT id FROM layerpids WHERE pid IS NULL";
+            Statement s1 = conn.createStatement();
+            ResultSet rs1 = s1.executeQuery(sql);
 
-        LinkedBlockingQueue<Statement> statements = new LinkedBlockingQueue<Statement>();
-        int CONCURRENT_THREADS = 50;
-        for(int j=0;j<CONCURRENT_THREADS;j++) {
-            statements.add(conn.createStatement());
-        }
-        long start = System.currentTimeMillis();
+            LinkedBlockingQueue<Statement> statements = new LinkedBlockingQueue<Statement>();
+            int CONCURRENT_THREADS = 50;
+            for (int j = 0; j < CONCURRENT_THREADS; j++) {
+                statements.add(conn.createStatement());
+            }
+            long start = System.currentTimeMillis();
 
-            int i=0;
+            int i = 0;
             while (rs1.next()) {
                 Statement s2 = statements.take();
 
                 new PidThread(rs1.getString("id"), s2, statements).start();
 
-                if (++i==100) break;
+                if (++i == 100) {
+                    break;
+                }
                 i++;
 
-                if(i % 100 == 0) {
+                if (i % 100 == 0) {
                     System.out.println("processed: " + i + " at " + (100 / ((System.currentTimeMillis() - start) / 1000.0)) + " records/s");
                     start = System.currentTimeMillis();
                 }
             }
 
-            while(statements.size() > 0) {
+            while (statements.size() > 0) {
                 statements.take().close();
             }
         } catch (Exception ex) {
@@ -143,9 +188,22 @@ public class PidGenerator {
 
         System.out.println("Completed PID threading");
     }
+
+    public static void main(String[] args) {
+        
+        if (args.length > 0) {
+            if (args[0].trim().toLowerCase().equals("production")) {
+                isProduction = true;
+            }
+        }
+
+        PidGenerator pg = new PidGenerator();
+        pg.startGeneration();
+    }
 }
 
 class PidThread extends Thread {
+
     String id = "";
     Statement s;
     LinkedBlockingQueue<Statement> lbq;
@@ -159,7 +217,7 @@ class PidThread extends Thread {
     public void run() {
         try {
             String handle = PidGenerator.mintLayerPid(HandleType.DESC, id);
-            String sql = "UPDATE layerpids SET pid = '"+handle+"' WHERE id = '"+id+"'";
+            String sql = "UPDATE layerpids SET pid = '" + handle + "' WHERE id = '" + id + "'";
             int update = s.executeUpdate(sql);
 
             lbq.put(s);
