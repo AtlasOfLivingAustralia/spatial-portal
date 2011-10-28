@@ -63,7 +63,7 @@ public class AreaRegionSelection extends AreaToolComposer {
         if (displayAsWms.isChecked()) {
             String url = CommonData.geoServer
                     + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
-                    + link.substring(link.lastIndexOf('/')+1);
+                    + link.substring(link.lastIndexOf('/') + 1);
             mapLayer = getMapComposer().addWMSLayer(label, url, 0.8f, /*metadata url*/ null,
                     null, LayerUtilities.WKT, null, null);
             mapLayer.setWKT(readUrl(CommonData.layersServer + link.replace("/geojson/", "/wkt/")));
@@ -94,29 +94,31 @@ public class AreaRegionSelection extends AreaToolComposer {
         }
 
         if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
-            String fid = getStringValue(null, "fid", readUrl(CommonData.layersServer + "/object/" + link.substring(link.lastIndexOf('/') + 1)));
+            String object = readUrl(CommonData.layersServer + "/object/" + link.substring(link.lastIndexOf('/') + 1));
+            String bbox = getStringValue(null, "bbox", object);
+            String fid = getStringValue(null, "fid", object);
             String spid = getStringValue("\"id\":\"" + fid + "\"", "spid", readUrl(CommonData.layersServer + "/fields"));
 
             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
-            if(md == null) {
-                md = new MapLayerMetadata();                
+            if (md == null) {
+                md = new MapLayerMetadata();
                 mapLayer.setMapLayerMetadata(md);
             }
             try {
-                double [][] bb = SimpleShapeFile.parseWKT(mapLayer.getWKT()).getBoundingBox();
-                ArrayList<Double> bbox = new ArrayList<Double>();
-                bbox.add(bb[0][0]);
-                bbox.add(bb[0][1]);
-                bbox.add(bb[1][0]);
-                bbox.add(bb[1][1]);
-                md.setBbox(bbox);
+                double[][] bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
+                ArrayList<Double> dbb = new ArrayList<Double>();
+                dbb.add(bb[0][0]);
+                dbb.add(bb[0][1]);
+                dbb.add(bb[1][0]);
+                dbb.add(bb[1][1]);
+                md.setBbox(dbb);
             } catch (Exception e) {
                 System.out.println("failed to parse: " + mapLayer.getWKT());
                 e.printStackTrace();
             }
-            md.setMoreInfo(CommonData.satServer + "/layers/" + spid);            
+            md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
 
-            Facet facet = getFacetForObject(link.substring(link.lastIndexOf('/')+1), label);
+            Facet facet = getFacetForObject(link.substring(link.lastIndexOf('/') + 1), label);
             if (facet != null) {
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(facet);
@@ -233,7 +235,7 @@ public class AreaRegionSelection extends AreaToolComposer {
                 //test if this facet is in solr
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(f);
-                if(new BiocacheQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
+                if (new BiocacheQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
                     return f;
                 }
             }
@@ -242,7 +244,7 @@ public class AreaRegionSelection extends AreaToolComposer {
         return null;
     }
 
-     private boolean validate() {
+    private boolean validate() {
         StringBuilder sb = new StringBuilder();
 
         double radius = dRadius.getValue();

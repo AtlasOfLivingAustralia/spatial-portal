@@ -258,9 +258,12 @@ public class LayerListComposer extends UtilityComposer {
                         @Override
                         public void onEvent(Event event) throws Exception {                            
                             JSONObject jo = JSONObject.fromObject(event.getTarget().getParent().getParent().getAttribute("lyr"));
-                            String s = jo.getString("uid");
-                            String metadata = CommonData.satServer + "/layers/" + s;
-                            mc.activateLink(metadata, "Metadata", false);
+
+                            if(jo.containsKey("uid")) {
+                                String s = jo.getString("uid");
+                                String metadata = CommonData.satServer + "/layers/" + s;
+                                mc.activateLink(metadata, "Metadata", false);
+                            }
                         }
                     });
                     img.setParent(tcName);
@@ -311,14 +314,18 @@ public class LayerListComposer extends UtilityComposer {
                                 String classAttribute = joLayer.getString("classname");
                                 String classValue = joLayer.getString("displayname");
                                 String layer = joLayer.getString("layername");
-                                String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
-                                //Filtered requests don't work on
-                                displaypath = displaypath.replace("gwc/service/", "");
+//                                String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
+//                                //Filtered requests don't work on
+//                                displaypath = displaypath.replace("gwc/service/", "");
                                 // Messagebox.show(displaypath);
                                 String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
+                                
+                                String displaypath = CommonData.geoServer
+                                        + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
+                                        + joLayer.getString("displaypath");
 
                                 initALC();
-                                alc.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
+                                alc.setLayer(classValue, joLayer.getString("displaypath"), displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
                             }
                         }
                     });

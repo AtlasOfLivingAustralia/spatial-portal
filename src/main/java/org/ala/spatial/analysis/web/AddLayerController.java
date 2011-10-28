@@ -2,13 +2,19 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.LayerListComposer;
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 import net.sf.json.JSONObject;
-import org.ala.spatial.analysis.web.LayersAutoComplete;
-import org.ala.spatial.analysis.web.SpeciesAutoComplete;
+import org.ala.spatial.data.BiocacheQuery;
+import org.ala.spatial.data.Facet;
+import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
-import org.zkoss.zk.ui.HtmlMacroComponent;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Div;
@@ -19,13 +25,12 @@ import org.zkoss.zul.Radio;
  * @author ajay
  */
 public class AddLayerController extends UtilityComposer {
-    
+
     LayersAutoComplete lac;
-    String treeName, treePath, treeMetadata;
+    String treeName, treePath, treeMetadata, treePid;
     int treeSubType;
     String searchName, searchPath, searchMetadata;
     int searchSubType;
-
     Button btnOk;
     Div divSearch, divTree;
     Radio rSearch, rTree;
@@ -33,26 +38,70 @@ public class AddLayerController extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        
+
         rSearch.setChecked(true);
     }
 
     public void onClick$btnOk(Event event) {
-        if(btnOk.isDisabled()) {
+        if (btnOk.isDisabled()) {
             return;
         }
-        if(treeName != null) {
-            getMapComposer().addWMSLayer(treeName,
-                            treePath,
-                            (float) 0.75, treeMetadata, null, treeSubType, null, null, null);
+        if (treeName != null) {
+            if (treePid != null) {
+                //map layerbranch as polygon layer
+                MapLayer mapLayer;
+                mapLayer = getMapComposer().addWMSLayer(treeName, treePath, 0.8f, /*metadata url*/ null,
+                        null, LayerUtilities.WKT, null, null);
+                if (mapLayer != null) {
+                    mapLayer.setWKT(readUrl(CommonData.layersServer + "/shape/wkt/" + treePid));
+                    mapLayer.setPolygonLayer(true);
 
-            getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
-        } else if(searchName != null) {
+                    String object = readUrl(CommonData.layersServer + "/object/" + treePid);
+                    String fid = getStringValue(null, "fid", object);
+                    String bbox = getStringValue(null, "bbox", object);
+                    String spid = getStringValue("\"id\":\"" + fid + "\"", "spid", readUrl(CommonData.layersServer + "/fields"));
+
+                    MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+                    if (md == null) {
+                        md = new MapLayerMetadata();
+                        mapLayer.setMapLayerMetadata(md);
+                    }
+                    try {
+                        double[][] bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
+                        ArrayList<Double> dbb = new ArrayList<Double>();
+                        dbb.add(bb[0][0]);
+                        dbb.add(bb[0][1]);
+                        dbb.add(bb[1][0]);
+                        dbb.add(bb[1][1]);
+                        md.setBbox(dbb);
+                    } catch (Exception e) {
+                        System.out.println("failed to parse: " + bbox);
+                        e.printStackTrace();
+                    }
+                    md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
+
+                    Facet facet = getFacetForObject(treePid, treeName);
+                    if (facet != null) {
+                        ArrayList<Facet> facets = new ArrayList<Facet>();
+                        facets.add(facet);
+                        mapLayer.setData("facets", facets);
+                    }
+
+                    getMapComposer().updateUserLogMapLayer("gaz", treeName + "|" + treePath);
+                }
+            } else {
+                getMapComposer().addWMSLayer(treeName,
+                        treePath,
+                        (float) 0.75, treeMetadata, null, treeSubType, null, null, null);
+            }
+
+            getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/ "|" + treeName);
+        } else if (searchName != null) {
             getMapComposer().addWMSLayer(searchName,
-                            searchPath,
-                            (float) 0.75, searchMetadata, null, searchSubType, null, null);
+                    searchPath,
+                    (float) 0.75, searchMetadata, null, searchSubType, null, null);
 
-            getMapComposer().updateUserLogMapLayer("env - search - add", /*joLayer.getString("uid")+*/"|"+searchName);
+            getMapComposer().updateUserLogMapLayer("env - search - add", /*joLayer.getString("uid")+*/ "|" + searchName);
         }
 
         this.detach();
@@ -65,7 +114,7 @@ public class AddLayerController extends UtilityComposer {
     public void onChange$lac(Event event) {
         searchName = null;
         btnOk.setDisabled(true);
-        
+
         LayerListComposer llc = (LayerListComposer) getFellow("layerList").getFellow("layerswindow");
 
         if (lac.getItemCount() > 0 && lac.getSelectedItem() != null) {
@@ -74,14 +123,19 @@ public class AddLayerController extends UtilityComposer {
 
             metadata = CommonData.satServer + "/layers/" + jo.getString("uid");
 
-            setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata, 
-                    jo.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
+            setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata,
+                    jo.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
         }
     }
 
     public void setLayer(String name, String displaypath, String metadata, int subType) {
-        if(rTree.isChecked()) {
+        setLayer(name, null, displaypath, metadata, subType);
+    }
+
+    public void setLayer(String name, String pid, String displaypath, String metadata, int subType) {
+        if (rTree.isChecked()) {
             treeName = name;
+            treePid = pid;
             treePath = displaypath;
             treeMetadata = metadata;
             treeSubType = subType;
@@ -109,4 +163,65 @@ public class AddLayerController extends UtilityComposer {
 //        }
     }
 
+    private String readUrl(String feature) {
+        StringBuffer content = new StringBuffer();
+
+        try {
+            // Construct data
+
+            // Send data
+            URL url = new URL(feature);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.connect();
+
+            // Get the response
+            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line;
+            while ((line = rd.readLine()) != null) {
+                content.append(line);
+            }
+            conn.disconnect();
+        } catch (Exception e) {
+        }
+        return content.toString();
+    }
+
+    String getStringValue(String startAt, String tag, String json) {
+        String typeStart = "\"" + tag + "\":\"";
+        String typeEnd = "\"";
+        int beginning = startAt == null ? 0 : json.indexOf(startAt) + startAt.length();
+        int start = json.indexOf(typeStart, beginning) + typeStart.length();
+        int end = json.indexOf(typeEnd, start);
+        return json.substring(start, end);
+    }
+
+    private Facet getFacetForObject(String pid, String name) {
+        //get field.id.
+        JSONObject jo = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + pid));
+        String fieldId = jo.getString("fid");
+
+        //get field objects.
+        String objects = readUrl(CommonData.layersServer + "/field/" + fieldId);
+        String lookFor = "\"name\":\"" + name + "\"";
+
+        //create facet if name is unique.
+        int p1 = objects.indexOf(lookFor);
+        if (p1 > 0) {
+            int p2 = objects.indexOf(lookFor, p1 + 1);
+            if (p2 < 0) {
+                /* TODO: use correct replacement in 'name' for " characters */
+                /* this function is also in AreaRegionSelection */
+                Facet f = new Facet(fieldId, "\"" + name + "\"", true);
+
+                //test if this facet is in solr
+                ArrayList<Facet> facets = new ArrayList<Facet>();
+                facets.add(f);
+                if (new BiocacheQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
+                    return f;
+                }
+            }
+        }
+
+        return null;
+    }
 }

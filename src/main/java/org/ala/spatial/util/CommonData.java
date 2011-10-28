@@ -24,6 +24,7 @@ import org.ala.spatial.sampling.SimpleShapeFileCache;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
+import org.zkoss.zul.SimpleTreeNode;
 
 /**
  * common data store
@@ -518,41 +519,66 @@ public class CommonData {
     static List getContextualClassesInit(JSONObject joLayer) {
         String layerName = joLayer.getString("name");
         String layerDisplayName = joLayer.getString("displayname");
-        String classesURL = layersServer + "/layer/classes/cl" + joLayer.getString("id");
+        String id = joLayer.getString("id");
+
+        //get field id with classes
+        String fid = null;
+        String classesURL = layersServer + "/fields";
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(classesURL);
+        try {
+            int result = client.executeMethod(get);
+            String classes = get.getResponseBodyAsString();
+            JSONArray ja = JSONArray.fromObject(classes);
+            for(int i=0;i<ja.size();i++) {
+                JSONObject jo = ja.getJSONObject(i);
+                if(jo.containsKey("spid") && jo.getString("spid").equals(id)
+                        && jo.containsKey("layerbranch")
+                        && jo.getString("layerbranch").equalsIgnoreCase("true")) {
+                    fid = jo.getString("id");
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         List<String> classList = new ArrayList();
         List classNodes = new ArrayList();
-//        try {
-//            int result = client.executeMethod(get);
-//            String classes = get.getResponseBodyAsString();
-//
-//            JSONArray ja = JSONArray.fromObject(classes);
-//
-//            if(ja != null) {
-//                for (int i = 0;i<ja.size();i++) {
-//                    JSONObject jo = ja.getJSONObject(i);
-//
-//                    String info = "{displayname:'"
-//                            + jo.getString("name")
-//                            + "',type:'class',displaypath:'"
-//                            + jo.getString("pid")
-//                            + "',uid:'"
-//                            + joLayer.getString("uid")
-//                            + "',classname:'"
-//                            + ""
-//                            + "',layername:'"
-//                            + layerDisplayName
-//                            + "'}";
-//
-//                    JSONObject joClass = JSONObject.fromObject(info);
-//                    classNodes.add(new SimpleTreeNode(joClass, empty));
-//                }
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Failure to get contextual classes for: " + layerName);
-//        }
+
+        if(fid != null) {
+            try {
+                client = new HttpClient();
+                get = new GetMethod(layersServer + "/objects/" + fid);
+                int result = client.executeMethod(get);
+                String classes = get.getResponseBodyAsString();
+
+                JSONArray ja = JSONArray.fromObject(classes);
+
+                if(ja != null) {
+                    for (int i = 0;i<ja.size();i++) {
+                        JSONObject jo = ja.getJSONObject(i);
+
+                        String info = "{displayname:'"
+                                + jo.getString("name")
+                                + "',type:'class',displaypath:'"
+                                + jo.getString("pid")
+                                + "',uid:'"
+                                + id
+                                + "',classname:'"
+                                + ""
+                                + "',layername:'"
+                                + jo.getString("fieldname")
+                                + "'}";
+
+                        JSONObject joClass = JSONObject.fromObject(info);
+                        classNodes.add(new SimpleTreeNode(joClass, empty));
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Failure to get contextual classes for: " + layerName);
+            }
+        }
 
         return classNodes;
     }

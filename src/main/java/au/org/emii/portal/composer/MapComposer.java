@@ -1308,8 +1308,29 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         return null;
                     } else {
                         if (key.equals("q") || key.equals("fq")) {
+                            if(value.equals("*:*")) {
+                                continue;
+                            }
                             if (sb.length() > 0) {
                                 sb.append(" AND ");
+                            }
+                            //wrap value in " when appropriate
+                            //Not key:[..
+                            //Not key:*
+                            //Not key:"...
+                            //Not key:... AND key:....
+                            //Not key:... OR key:...
+                            //Not key:.."..
+                            int p = value.indexOf(':');
+                            if(p > 0 && p +1 < value.length()
+                                    && value.charAt(p+1) != '['
+                                    && value.charAt(p+1) != '*'
+                                    && value.charAt(p+1) != '"'
+                                    && !value.contains(" AND ")
+                                    && !value.contains(" OR ")
+                                    && !value.contains("\"")) {
+                                value = value.substring(0,p+1) + "\""
+                                        + value.substring(p+1) + "\"";
                             }
                             sb.append("(").append(value).append(")");
                         } else if (key.equals("qc")) {
