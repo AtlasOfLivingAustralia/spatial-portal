@@ -14,17 +14,23 @@ import java.util.HashMap;
 public class SimpleShapeFileCache {
 
     HashMap<String, SimpleShapeFile> cache;
+    HashMap<String, SimpleShapeFile> cacheByFieldId;
 
-    public SimpleShapeFileCache(String[] shapeFileNames, String[] columns) {
+    public SimpleShapeFileCache(String[] shapeFileNames, String[] columns, String[] fieldIds) {
         cache = new HashMap<String, SimpleShapeFile>();
-        update(shapeFileNames, columns);
+        cacheByFieldId = new HashMap<String, SimpleShapeFile>();
+        update(shapeFileNames, columns, fieldIds);
     }
 
     public SimpleShapeFile get(String shapeFileName) {
         return cache.get(shapeFileName);
     }
 
-    public void update(String[] layers, String[] columns) {
+    public HashMap<String, SimpleShapeFile> getAll() {
+        return cacheByFieldId;
+    }
+
+    public void update(String[] layers, String[] columns, String[] fieldIds) {
 //        //remove layers no longer required
 //        ArrayList<String> toRemove = new ArrayList<String>();
 //        for (String key : cache.keySet()) {
@@ -55,6 +61,7 @@ public class SimpleShapeFileCache {
 
                     if (ssf != null) {
                         cache.put(layers[i], ssf);
+                        cacheByFieldId.put(fieldIds[i], ssf);
                     }
                 } catch (Exception e) {
                     System.out.println("error with shape file: " + layers[i] + ", field: " + columns[i]);

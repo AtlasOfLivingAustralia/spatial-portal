@@ -41,7 +41,7 @@ public class Grid { //  implements Serializable
     // properties
     public double minval, maxval;
     byte nbytes;
-    String filename;
+    public String filename;
     float[] grid_data = null;
 
     /**
@@ -530,11 +530,11 @@ public class Grid { //  implements Serializable
 
     }
 
-    void writeHeader(String newfilename, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols, double minvalue, double maxvalue) {
+    public void writeHeader(String newfilename, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols, double minvalue, double maxvalue) {
         writeHeader(newfilename, xmin, ymin, xmax, ymax, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
     }
 
-    void writeHeader(String newfilename, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols, double minvalue, double maxvalue, String datatype, String nodata) {
+    public void writeHeader(String newfilename, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols, double minvalue, double maxvalue, String datatype, String nodata) {
         try {
             FileWriter fw = new FileWriter(newfilename + ".grd");
 

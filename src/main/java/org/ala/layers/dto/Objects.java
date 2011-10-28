@@ -36,6 +36,8 @@ public class Objects {
     private String fieldname;
     private String geometry;
     private int name_id;
+    private String bbox;
+    private Double area_km;
 
     public String getDescription() {
         return description;
@@ -101,5 +103,20 @@ public class Objects {
         this.pid = pid;
     }
 
+    public String getBbox() {
+        return bbox;
+    }
+
+    public void setBbox(String bbox) {
+        this.bbox = bbox;
+    }
+
+    public Double getArea_km() {
+        return area_km;
+    }
+
+    public void setArea_km(Double area_km) {
+        this.area_km = area_km;
+    }
 
 }

@@ -4,10 +4,12 @@
  */
 package org.ala.layers.intersect;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Properties;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -35,6 +37,8 @@ public class IntersectConfig {
     static final String CONFIG_RELOAD_WAIT = "CONFIG_RELOAD_WAIT";
     static final String PRELOADED_SHAPE_FILES = "PRELOADED_SHAPE_FILES";
     static final String GRID_BUFFER_SIZE = "GRID_BUFFER_SIZE";
+    static final String GRID_CACHE_PATH = "GRID_CACHE_PATH";
+    static final String GRID_CACHE_READER_COUNT = "GRID_CACHE_READER_COUNT";
     static final String LAYER_PROPERTIES = "layer.properties";
     private FieldDAO fieldDao;
     private LayerDAO layerDao;
@@ -48,6 +52,8 @@ public class IntersectConfig {
     int gridBufferSize;
     SimpleShapeFileCache shapeFileCache;
     HashMap<String, IntersectionFile> intersectionFiles;
+    String gridCachePath;
+    int gridCacheReaderCount;
 
     public IntersectConfig(FieldDAO fieldDao, LayerDAO layerDao) {
         this.fieldDao = fieldDao;
@@ -82,6 +88,8 @@ public class IntersectConfig {
         configReloadWait = getPositiveLongProperty(CONFIG_RELOAD_WAIT, properties, 3600000);
         preloadedShapeFiles = getProperty(PRELOADED_SHAPE_FILES, properties);
         gridBufferSize = (int) getPositiveLongProperty(GRID_BUFFER_SIZE, properties, 4096);
+        gridCachePath = getProperty(GRID_CACHE_PATH, properties);
+        gridCacheReaderCount = (int) getPositiveLongProperty(GRID_CACHE_READER_COUNT, properties, 10);
 
         try {
             updateIntersectionFiles();
@@ -134,6 +142,24 @@ public class IntersectConfig {
 
     public IntersectionFile getIntersectionFile(String fieldId) {
         return intersectionFiles.get(fieldId);
+    }
+
+    public String getFieldIdFromFile(String file) {
+        String off, on;
+        if(File.separator.equals("/")) {
+            off = "\\";
+            on = "/";
+        } else {
+            on = "\\";
+            off = "/";
+        }
+        file = file.replace(off, on);
+        for(Entry<String, IntersectionFile> entry : intersectionFiles.entrySet()) {            
+            if(entry.getValue().getFilePath().replace(off, on).equalsIgnoreCase(file)) {
+                return entry.getKey();
+            }
+        }
+        return file;
     }
 
     private void updateIntersectionFiles() throws MalformedURLException, IOException {
@@ -209,6 +235,7 @@ public class IntersectConfig {
         //requres readLayerInfo() first
         String[] layers = new String[fields.length];
         String[] columns = new String[fields.length];
+        String[] fid = new String[fields.length];
         if (fields.length == 1 && fields[0].equalsIgnoreCase("all")) {
             int countCL = 0;
             for (String s : intersectionFiles.keySet()) {
@@ -218,11 +245,13 @@ public class IntersectConfig {
             }
             layers = new String[countCL];
             columns = new String[countCL];
+            fid = new String[countCL];
             int i = 0;
             for (IntersectionFile f : intersectionFiles.values()) {
                 if (f.getFieldId().startsWith("cl")) {
                     layers[i] = f.getFilePath();
                     columns[i] = f.getShapeFields();
+                    fid[i] = f.getFieldId();
                     i++;
                 }
             }
@@ -230,13 +259,14 @@ public class IntersectConfig {
             for (int i = 0; i < fields.length; i++) {
                 layers[i] = getIntersectionFile(fields[i].trim()).getFilePath();
                 columns[i] = getIntersectionFile(fields[i].trim()).getShapeFields();
+                fid[i] = fields[i];
             }
         }
 
         if (shapeFileCache == null) {
-            shapeFileCache = new SimpleShapeFileCache(layers, columns);
+            shapeFileCache = new SimpleShapeFileCache(layers, columns, fid);
         } else {
-            shapeFileCache.update(layers, columns);
+            shapeFileCache.update(layers, columns, fid);
         }
     }
 
@@ -254,12 +284,14 @@ public class IntersectConfig {
         //requres readLayerInfo() first
         String[] layers = new String[fields.length];
         String[] columns = new String[fields.length];
+        String[] fid = new String[fields.length];
 
         int pos = 0;
         for (int i = 0; i < fields.length; i++) {
             try {
                 layers[pos] = getIntersectionFile(fields[i].trim()).getFilePath();
                 columns[pos] = getIntersectionFile(fields[i].trim()).getShapeFields();
+                fid[pos] = fields[i];
                 pos++;
             } catch (Exception e) {
                 logger.error("problem adding shape file to cache for field: " + fields[i], e);
@@ -268,12 +300,13 @@ public class IntersectConfig {
         if(pos < layers.length) {
             layers = java.util.Arrays.copyOf(layers, pos);
             columns = java.util.Arrays.copyOf(columns, pos);
+            fid = java.util.Arrays.copyOf(fid, pos);
         }
 
         if (shapeFileCache == null) {
-            shapeFileCache = new SimpleShapeFileCache(layers, columns);
+            shapeFileCache = new SimpleShapeFileCache(layers, columns, fid);
         } else {
-            shapeFileCache.update(layers, columns);
+            shapeFileCache.update(layers, columns, fid);
         }
     }
 
@@ -283,5 +316,13 @@ public class IntersectConfig {
 
     public int getGridBufferSize() {
         return gridBufferSize;
+    }
+
+    public String getGridCachePath() {
+        return gridCachePath;
+    }
+
+    public int getGridCacheReaderCount() {
+        return gridCacheReaderCount;
     }
 }

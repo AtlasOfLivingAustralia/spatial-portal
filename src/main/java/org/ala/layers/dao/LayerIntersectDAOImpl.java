@@ -23,15 +23,18 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import javax.annotation.Resource;
 import org.ala.layers.dto.Field;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.dto.Layer;
 import org.ala.layers.dto.Objects;
+import org.ala.layers.grid.GridCacheReader;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.IntersectConfig;
 import org.ala.layers.intersect.SamplingThread;
@@ -55,10 +58,31 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
     @Resource(name = "objectDao")
     private ObjectDAO objectDao;
     IntersectConfig intersectConfig;
+    LinkedBlockingQueue<GridCacheReader> gridReaders = null;
+    int gridGroupCount = 0;
+    Object initLock = new Object();
 
     void init() {
         if (intersectConfig == null) {
-            intersectConfig = new IntersectConfig(fieldDao, layerDao);
+            synchronized(initLock) {
+                if(intersectConfig != null) {
+                    return;
+                }
+                intersectConfig = new IntersectConfig(fieldDao, layerDao);
+                gridReaders = new LinkedBlockingQueue<GridCacheReader>();
+                for (int i = 0; i < intersectConfig.getGridCacheReaderCount(); i++) {
+                    GridCacheReader gcr = fixGridCacheReaderNames(new GridCacheReader(intersectConfig.getGridCachePath()));
+                    try {
+                        gridReaders.put(gcr);
+                    } catch (InterruptedException ex) {
+                        logger.error("failed to add a GridCacheReader");
+                    }
+                    gridGroupCount = gcr.getGroupCount();
+                }
+                if(gridReaders.size() == 0) {
+                    gridReaders = null;
+                }
+            }
         } else {
             intersectConfig.load();
         }
@@ -66,6 +90,8 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
     @Override
     public Vector samplingFull(String fieldIds, double longitude, double latitude) {
+        init();
+
         Vector out = new Vector();
 
         for (String id : fieldIds.split(",")) {
@@ -76,7 +102,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
             if (newid != -1) {
                 layer = layerDao.getLayerById(newid);
             }
-            if(layer == null) {
+            if (layer == null) {
                 layer = layerDao.getLayerByName(id);
             }
 
@@ -85,7 +111,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
             if (layer != null) {
                 if (layer.isShape()) {
                     Objects o = objectDao.getObjectByIdAndLocation("cl" + layer.getId(), longitude, latitude);
-                    if(o != null) {
+                    if (o != null) {
                         Map m = new HashMap();
                         m.put("field", id);
                         m.put("value", o.getName());
@@ -105,12 +131,12 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                     }
                 } else if (layer.isGrid()) {
                     Grid g = new Grid(getConfig().getLayerFilesPath() + layer.getPath_orig());
-                    if(g != null) {
+                    if (g != null) {
                         float[] v = g.getValues(p);
                         //s = "{\"value\":" + v[0] + ",\"layername\":\"" + layer.getDisplayname() + "\"}";
                         Map m = new HashMap();
                         m.put("field", id);
-                        m.put("value", (Float.isNaN(v[0])?"":v[0]));
+                        m.put("value", (Float.isNaN(v[0]) ? "" : v[0]));
                         m.put("layername", layer.getDisplayname());
 
                         out.add(m);
@@ -155,7 +181,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                                 m.put("layername", name + "(" + gid + ")");
                             } else {
                                 //s = "{\"value\":" + v[0] + ",\"layername\":\"" + name + " (" + gid + ")\"}";
-                                m.put("value", (Float.isNaN(v[0])?"":v[0]));
+                                m.put("value", (Float.isNaN(v[0]) ? "" : v[0]));
                                 m.put("layername", name + "(" + gid + ")");
                             }
                             out.add(m);
@@ -168,53 +194,158 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
         return out;
     }
 
+    /**
+     * Single coordinate sampling.
+     *
+     *
+     * @param fieldIds comma separated field ids.
+     * @param longitude
+     * @param latitude
+     * @return the intersection value for each input field id as a \n separated
+     * String.
+     */
     @Override
-    public String sampling(String fieldId, double longitude, double latitude) {
-        IntersectionFile f = getConfig().getIntersectionFile(fieldId);
+    public String sampling(String fieldIds, double longitude, double latitude) {
+        init();
+        
+        double[][] p = {{longitude, latitude}};
+        String[] fields = fieldIds.split(",");
 
-        if (f != null) {
-            if (f.getFieldId().startsWith("cl")) {
-                SimpleShapeFile ssf = getConfig().getShapeFileCache().get(f.getFilePath());
-                if(ssf != null) {
-                    String s = ssf.intersect(longitude, latitude);
-                    return s;
-                }
-                Objects o = objectDao.getObjectByIdAndLocation(f.getFieldId(), longitude, latitude);
-                if(o != null) {
-                    return o.getName();
+        //count el fields
+        int elCount = 0;
+        for (int i = 0; i < fields.length; i++) {
+            if (fields[i].length() > 0 && fields[i].charAt(0) == 'e') {
+                elCount++;
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        HashMap<String, Float> gridValues = null;
+        for (String fid : fields) {
+            IntersectionFile f = getConfig().getIntersectionFile(fid);
+
+            if (sb.length() > 0) {
+                sb.append("\n");
+            }
+
+            if (f != null) {
+                if (f.getFieldId().startsWith("cl")) {
+                    SimpleShapeFile ssf = getConfig().getShapeFileCache().get(f.getFilePath());
+                    if (ssf != null) {
+                        String s = ssf.intersect(longitude, latitude);
+                        if(s != null) {
+                            sb.append(s);
+                        }
+                    } else {
+                        Objects o = objectDao.getObjectByIdAndLocation(f.getFieldId(), longitude, latitude);
+                        if (o != null) {
+                            sb.append(o.getName());
+                        }
+                    }
+                } else {
+                    if (gridValues == null && gridReaders != null && elCount > gridGroupCount) {
+                        try {
+                            GridCacheReader gcr = gridReaders.take();
+                            gridValues = gcr.sample(longitude, latitude);
+                            gridReaders.put(gcr);
+                        } catch (Exception e) {
+                            logger.error("GridCacheReader failed.", e);
+                        }
+                    }
+
+                    if (gridValues != null) {
+                        Float v = gridValues.get(fid);
+                        if (v == null && !gridValues.containsKey(fid)) {
+                            Grid g = new Grid(f.getFilePath());
+                            if (g != null) {
+                                float fv = g.getValues(p)[0];
+                                if(!Float.isNaN(fv)) {
+                                    sb.append(String.valueOf(fv));
+                                }
+                            }
+                        } else {
+                            if (v != null && !v.isNaN()) {
+                                sb.append(String.valueOf(v));
+                            }
+                        }
+                    } else {
+                        Grid g = new Grid(f.getFilePath());
+                        if (g != null) {
+                            float fv = g.getValues(p)[0];
+                            if(!Float.isNaN(fv)) {
+                                sb.append(String.valueOf(fv));
+                            }
+                        }
+                    }
                 }
             } else {
-                double[][] p = {{longitude, latitude}};
-                Grid g = new Grid(f.getFilePath());
-                if(g != null) {
-                    return String.valueOf(g.getValues(p)[0]);
+                String gid = null;
+                String filename = null;
+
+                if (fid.startsWith("species_")) {
+                    //maxent layer
+                    gid = fid.substring(8);
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "maxent" + File.separator + gid + File.separator + gid;
+                } else if (fid.startsWith("aloc_")) {
+                    //aloc layer
+                    gid = fid.substring(8);
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + gid;
                 }
-            }
-        } else {
-            String gid = null;
-            String filename = null;
 
-            if (fieldId.startsWith("species_")) {
-                //maxent layer
-                gid = fieldId.substring(8);
-                filename = getConfig().getAlaspatialOutputPath() + File.separator + "maxent" + File.separator + gid + File.separator + gid;
-            } else if (fieldId.startsWith("aloc_")) {
-                //aloc layer
-                gid = fieldId.substring(8);
-                filename = getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + gid;
-            }
+                if (filename != null) {
+                    Grid grid = new Grid(filename);
 
-            if (filename != null) {
-                Grid grid = new Grid(filename);
-
-                if (grid != null && (new File(filename + ".grd").exists())) {
-                    double[][] p = {{longitude, latitude}};
-                    return String.valueOf(grid.getValues(p)[0]);
+                    if (grid != null && (new File(filename + ".grd").exists())) {
+                        sb.append(String.valueOf(grid.getValues(p)[0]));
+                    }
                 }
             }
         }
 
-        return null;
+        return sb.toString();
+    }
+
+    public HashMap<String, String> sampling(double longitude, double latitude) {
+        init();
+        
+        HashMap<String, String> output = new HashMap<String, String>();
+
+        HashMap<String, SimpleShapeFile> ssfs = getConfig().getShapeFileCache().getAll();
+        for(Entry<String, SimpleShapeFile> entry : ssfs.entrySet()) {
+            String s = entry.getValue().intersect(longitude, latitude);
+            if(s == null) s = "";
+            output.put(entry.getKey(), s);
+        }
+
+        if(gridReaders != null) {
+            GridCacheReader gcr = null;
+            HashMap<String, Float> gridValues = null;
+            try {
+                gcr = gridReaders.take();
+                gridValues = gcr.sample(longitude, latitude);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if(gcr != null) {
+                    try {
+                        gridReaders.put(gcr);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            if(gridValues != null) {
+                for(Entry<String, Float> entry : gridValues.entrySet()) {
+                    if(entry.getValue() == null || entry.getValue().isNaN()) {
+                        output.put(entry.getKey(), "");
+                    } else {
+                        output.put(entry.getKey(), entry.getValue().toString());
+                    }
+                }
+            }
+        }
+
+        return output;
     }
 
     @Override
@@ -407,8 +538,21 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
         try {
             int i = Integer.parseInt(number);
             return i;
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         return -1;
+    }
+
+    /**
+     * update a grid cache reader with fieldIds
+     */
+    GridCacheReader fixGridCacheReaderNames(GridCacheReader gcr) {
+        ArrayList<String> fileNames = gcr.getFileNames();
+        for (int i = 0; i < fileNames.size(); i++) {
+            gcr.updateNames(fileNames.get(i), intersectConfig.getFieldIdFromFile(fileNames.get(i)));
+        }
+
+        return gcr;
     }
 }

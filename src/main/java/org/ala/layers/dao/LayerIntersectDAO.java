@@ -15,6 +15,7 @@
 package org.ala.layers.dao;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import org.ala.layers.dto.IntersectionFile;
@@ -89,4 +90,15 @@ public interface LayerIntersectDAO {
      * @return IntersectConfig
      */
     public IntersectConfig getConfig();
+
+    /**
+     * Sampling one point, all cached fields.
+     *
+     * Must have local access to layer files and db connection.
+     *
+     * @param longitude longitude as double
+     * @param latitude latitude as double
+     * @return full result of sampling returned as Map with key as field id and value String or Float
+     */
+    public HashMap<String, String> sampling(double longitude, double latitude);
 }

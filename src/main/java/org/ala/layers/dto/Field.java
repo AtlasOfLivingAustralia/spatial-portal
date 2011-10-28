@@ -77,6 +77,9 @@ public class Field {
     @Column(name = "defaultlayer")
     private Boolean defaultlayer;
 
+    @Column(name = "layerbranch")
+    private Boolean layerbranch;
+
     private List<Objects> objects;
 
     public List<Objects> getObjects() {
@@ -191,6 +194,12 @@ public class Field {
         this.type = type;
     }
 
+    public Boolean isLayerbranch() {
+        return layerbranch;
+    }
 
+    public void setLayerbranch(Boolean layerbranch) {
+        this.layerbranch = layerbranch;
+    }
 
 }

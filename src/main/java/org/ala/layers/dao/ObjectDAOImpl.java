@@ -52,7 +52,7 @@ public class ObjectDAOImpl implements ObjectDAO {
         //return hibernateTemplate.find("from Objects where id = ?", id);
         logger.info("Getting object info for fid = " + id);
         //String sql = "select * from objects where fid = ?";
-        String sql = "select o.pid as pid, o.id as id, o.name as name, o.desc as description, o.fid as fid, f.name as fieldname from objects o, fields f where o.fid = ? and o.fid = f.id";
+        String sql = "select o.pid as pid, o.id as id, o.name as name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from objects o, fields f where o.fid = ? and o.fid = f.id";
         return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), id);
     }
 
@@ -80,7 +80,7 @@ public class ObjectDAOImpl implements ObjectDAO {
     public Objects getObjectByPid(String pid) {
         //List<Objects> l = hibernateTemplate.find("from Objects where pid = ?", pid);
         logger.info("Getting object info for pid = " + pid);
-        String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname from objects o, fields f where o.pid = ? and o.fid = f.id";
+        String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from objects o, fields f where o.pid = ? and o.fid = f.id";
         List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), pid);
         if (l.size() > 0) {
             return l.get(0);
@@ -92,7 +92,7 @@ public class ObjectDAOImpl implements ObjectDAO {
     @Override
     public Objects getObjectByIdAndLocation(String fid, Double lng, Double lat) {
         logger.info("Getting object info for fid = " + fid + " at loc: (" + lng + ", " + lat + ") ");
-        String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname from objects o, fields f where o.fid = ? and ST_Within(ST_SETSRID(ST_Point(?,?),4326), o.the_geom) and o.fid = f.id";
+        String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from objects o, fields f where o.fid = ? and ST_Within(ST_SETSRID(ST_Point(?,?),4326), o.the_geom) and o.fid = f.id";
         List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] {fid, lng, lat});
         if (l.size() > 0) {
             return l.get(0);

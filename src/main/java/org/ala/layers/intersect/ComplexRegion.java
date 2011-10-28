@@ -403,7 +403,7 @@ public class ComplexRegion extends SimpleRegion {
                 sr.getOverlapGridCells_Acc(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask);
             }
 
-            fillAccMask(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask, true);
+            fillAccMask(p, k-1, longitude1, latitude1, longitude2, latitude2, width, height, tmpMask, true);
 
             //tmpMask into mask
             for (i = 0; i < height; i++) {
@@ -485,7 +485,7 @@ public class ComplexRegion extends SimpleRegion {
                 sr.getOverlapGridCells_Acc_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask);
             }
 
-            fillAccMask_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask, true);
+            fillAccMask_EPSG900913(k, p-1, longitude1, latitude1, longitude2, latitude2, width, height, tmpMask, true);
 
             //tmpMask into mask
             for (i = 0; i < height; i++) {
@@ -530,4 +530,109 @@ public class ComplexRegion extends SimpleRegion {
             polygons.add(nextSetNumber);
         }
     }
+
+    public int[][] fillAccMask(int startPolygon, int endPolygon, double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map, boolean noCellsReturned) {
+        double divx = (longitude2 - longitude1) / width;
+        double divy = (latitude2 - latitude1) / height;
+
+        int i, j;
+        //do raster check
+        int[][] data = null;
+        boolean cellsReturned = !noCellsReturned;
+        if (cellsReturned) {
+            data = new int[width * height][2];
+        }
+        int p = 0;
+        for (j = 0; j < three_state_map[0].length; j++) {
+            for (i = 0; i < three_state_map.length; i++) {
+                if (three_state_map[i][j] == GI_PARTIALLY_PRESENT) {
+                    //if it is partially present, do nothing
+                } else if ((j == 0 || three_state_map[i][j - 1] == GI_PARTIALLY_PRESENT)) {
+                    if (i > 0
+                            && (three_state_map[i - 1][j] == GI_FULLY_PRESENT
+                            || three_state_map[i - 1][j] == GI_ABSENCE)) {
+                        //use same as LHS
+                        three_state_map[i][j] = three_state_map[i - 1][j];
+                    } else {
+                        int count = 0;
+                        for(int k=startPolygon;k<=endPolygon;k++) {
+                            count += isWithin(j * divx + divx / 2 + longitude1, i * divy + divy / 2 + latitude1)?1:0;
+                        }
+                        if(count % 2 == 1) {
+                            //if the previous was partially present, test
+                            three_state_map[i][j] = GI_FULLY_PRESENT;
+                        } //else absent
+                    } //else absent
+                } else {
+                    //if the previous was fully present, repeat
+                    //if the previous was absent, repeat
+                    three_state_map[i][j] = three_state_map[i][j - 1];
+                }
+
+                //apply to cells;
+                if (cellsReturned && three_state_map[i][j] != GI_UNDEFINED) {   //undefined == absence
+                    data[p][0] = j;
+                    data[p][1] = i;
+                    p++;
+                }
+            }
+        }
+        if (data != null) {
+            data = java.util.Arrays.copyOf(data, p);
+        }
+        return data;
+    }
+
+    public int[][] fillAccMask_EPSG900913(int startPolygon, int endPolygon, double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map, boolean noCellsReturned) {
+        double divx = (longitude2 - longitude1) / width;
+        double divy = (latitude2 - latitude1) / height;
+
+        int i, j;
+        //do raster check
+        int[][] data = null;
+        boolean cellsReturned = !noCellsReturned;
+        if (cellsReturned) {
+            data = new int[width * height][2];
+        }
+        int p = 0;
+        for (j = 0; j < three_state_map[0].length; j++) {
+            for (i = 0; i < three_state_map.length; i++) {
+                if (three_state_map[i][j] == GI_PARTIALLY_PRESENT) {
+                    //if it is partially present, do nothing
+                } else if ((j == 0 || three_state_map[i][j - 1] == GI_PARTIALLY_PRESENT)) {
+                    if (i > 0
+                            && (three_state_map[i - 1][j] == GI_FULLY_PRESENT
+                            || three_state_map[i - 1][j] == GI_ABSENCE)) {
+                        //use same as LHS
+                        three_state_map[i][j] = three_state_map[i - 1][j];
+                    } else {
+                        int count = 0;
+                        for(int k=startPolygon;k<=endPolygon;k++) {
+                            count += isWithin_EPSG900913(j * divx + divx / 2 + longitude1, i * divy + divy / 2 + latitude1)?1:0;
+                        }
+                        if(count % 2 == 1) {
+                            //if the previous was partially present, test
+                            three_state_map[i][j] = GI_FULLY_PRESENT;
+                        } //else absent
+                    } //else absent
+                } else {
+                    //if the previous was fully present, repeat
+                    //if the previous was absent, repeat
+                    three_state_map[i][j] = three_state_map[i][j - 1];
+                }
+
+                //apply to cells;
+                if (cellsReturned && three_state_map[i][j] != GI_UNDEFINED) {   //undefined == absence
+                    data[p][0] = j;
+                    data[p][1] = i;
+                    p++;
+                }
+            }
+        }
+        if (data != null) {
+            data = java.util.Arrays.copyOf(data, p);
+        }
+        return data;
+    }
+
 }

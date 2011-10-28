@@ -61,7 +61,9 @@ public class Client {
 
     public static LayerIntersectDAO getLayerIntersectDao() {
         initContext();
-        return (LayerIntersectDAO) gContext.getBean("layerIntersectDao");
+        LayerIntersectDAO lidao = (LayerIntersectDAO) gContext.getBean("layerIntersectDao");
+        lidao.getConfig();  //also performs init.
+        return lidao;
     }
 
     public static FieldDAO getFieldDao() {
