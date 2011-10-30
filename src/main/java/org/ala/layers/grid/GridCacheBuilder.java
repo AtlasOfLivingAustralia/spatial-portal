@@ -31,7 +31,7 @@ import org.ala.layers.intersect.Grid;
 public class GridCacheBuilder {
 
     public static void main(String[] args) throws IOException {
-        args = new String[]{"e:\\layers\\ready\\diva", "e:\\layers\\ready\\diva_cache"};
+//        args = new String[]{"e:\\layers\\ready\\diva", "e:\\layers\\ready\\diva_cache"};
 
         System.out.println("args[0]=diva grid input dir\nargs[1]=cached diva grid output dir\n\n");
 

@@ -100,21 +100,23 @@ public class GridClassBuilder {
                 int len = ((String) wktIndexed.get("wkt")).length();
                 WKTReader r = new WKTReader();
                 for (int i = 0; i < index.length; i++) {
-                    String[] cells = index[i].split(",");
-                    raf.writeInt(Integer.parseInt(cells[0]));   //polygon number
-                    int polygonStart = Integer.parseInt(cells[1]);
-                    raf.writeInt(polygonStart);   //character offset
-                    int polygonEnd = len;
-                    if (i + 1 < index.length) {
-                        polygonEnd = Integer.parseInt(index[i + 1].split(",")[1]) - 1; //-1 for comma
+                    if(index[i].length() > 1) {
+                        String[] cells = index[i].split(",");
+                        raf.writeInt(Integer.parseInt(cells[0]));   //polygon number
+                        int polygonStart = Integer.parseInt(cells[1]);
+                        raf.writeInt(polygonStart);   //character offset
+                        int polygonEnd = len;
+                        if (i + 1 < index.length) {
+                            polygonEnd = Integer.parseInt(index[i + 1].split(",")[1]) - 1; //-1 for comma
+                        }
+                        String polygonWkt = ((String) wktIndexed.get("wkt")).substring(polygonStart, polygonEnd);
+                        Geometry g = r.read("POLYGON" + polygonWkt);
+                        raf.writeFloat((float) g.getEnvelopeInternal().getMinX());
+                        raf.writeFloat((float) g.getEnvelopeInternal().getMinY());
+                        raf.writeFloat((float) g.getEnvelopeInternal().getMaxX());
+                        raf.writeFloat((float) g.getEnvelopeInternal().getMaxY());
+                        raf.writeFloat((float) (TabulationUtil.calculateArea(polygonWkt) / 1000.0 / 1000.0));
                     }
-                    String polygonWkt = ((String) wktIndexed.get("wkt")).substring(polygonStart, polygonEnd);
-                    Geometry g = r.read(polygonWkt);
-                    raf.writeFloat((float) g.getEnvelopeInternal().getMinX());
-                    raf.writeFloat((float) g.getEnvelopeInternal().getMinY());
-                    raf.writeFloat((float) g.getEnvelopeInternal().getMaxX());
-                    raf.writeFloat((float) g.getEnvelopeInternal().getMaxY());
-                    raf.writeFloat((float) (TabulationUtil.calculateArea(polygonWkt) / 1000.0 / 1000.0));
                 }
                 raf.close();
                 wktIndexed = null;
