@@ -323,3 +323,10 @@ function loadHelp(page){
     }
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', help_base_url + "/" + page));
 }
+
+function clearNearestMarkerLayer(){
+    if(mapFrame != null && map != null && mapFrame.markers != null) {
+        map.removeLayer(mapFrame.markers);
+        mapFrame.markers = null;
+    }
+}

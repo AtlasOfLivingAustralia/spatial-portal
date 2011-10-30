@@ -637,6 +637,18 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     top: 350px! important;
     left: 22px! important;
 }
+#nearestTool {
+    position: absolute;
+    background-repeat: no-repeat;
+    background-image: url('../img/overview_replacement_off.gif');
+    width: 16px! important;
+    height: 16px! important;
+    cursor: pointer;
+
+    z-index: 110;
+    top: 370px! important;
+    left: 22px! important;
+}
 
 #hoverOutput {
     position: absolute;

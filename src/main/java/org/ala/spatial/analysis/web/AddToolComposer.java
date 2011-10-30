@@ -32,6 +32,7 @@ import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zk.ui.util.Clients;
@@ -42,6 +43,8 @@ import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Menuitem;
+import org.zkoss.zul.Menupopup;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
@@ -85,8 +88,8 @@ public class AddToolComposer extends UtilityComposer {
     Button bLayerListDownload1;
     Button bLayerListDownload2;
     Label lLayersSelected;
-
     Button btnClearSelection;
+    Menupopup mpLayer2, mpLayer1;
 
     @Override
     public void afterCompose() {
@@ -106,6 +109,67 @@ public class AddToolComposer extends UtilityComposer {
         if(lbListLayers != null) {
             lbListLayers.clearSelection();
             lbListLayers.updateDistances();
+        }
+
+        //init mpLayer1 and mpLayer2
+        if(mpLayer1 != null && mpLayer2 != null) {
+            for(MapLayer ml : getMapComposer().getGridLayers()) {
+                //get layer name
+                String name = null;
+                String url = ml.getUri();
+                int p1 = url.indexOf("ALA:") + 4;
+                int p2 = url.indexOf("&",p1);
+                if(p1 > 4) {
+                    if(p2 < 0) p2 = url.length();
+                    name = url.substring(p1,p2);
+                }
+
+                //cbLayer1
+                Menuitem mi = new Menuitem(ml.getDisplayName());
+                mi.setValue(name);
+                mi.addEventListener("onClick", new EventListener() {
+
+                    public void onEvent(Event event) throws Exception {
+                        Menuitem mi = (Menuitem) event.getTarget();
+                        cbLayer1.setValue(mi.getValue());
+                        cbLayer1.refresh(mi.getValue());
+                        for(Object o: cbLayer1.getItems()) {
+                            Comboitem ci = (Comboitem) o;
+                            JSONObject jo = (JSONObject) ci.getValue();
+                            if(jo.getString("name").equals(mi.getValue())) {
+                                cbLayer1.setSelectedItem(ci);
+                                cbLayer2.setText(ci.getLabel());
+                                toggles();
+                                return;
+                            }
+                        }
+                    }
+                });
+                mi.setParent(mpLayer1);
+
+                //cbLayer2
+                mi = new Menuitem(ml.getDisplayName());
+                mi.setValue(name);
+                mi.addEventListener("onClick", new EventListener() {
+
+                    public void onEvent(Event event) throws Exception {
+                        Menuitem mi = (Menuitem) event.getTarget();
+                        cbLayer2.setValue(mi.getValue());
+                        cbLayer2.refresh(mi.getValue());
+                        for(Object o: cbLayer2.getItems()) {
+                            Comboitem ci = (Comboitem) o;
+                            JSONObject jo = (JSONObject) ci.getValue();
+                            if(jo.getString("name").equals(mi.getValue())) {
+                                cbLayer2.setSelectedItem(ci);
+                                cbLayer2.setText(ci.getLabel());
+                                toggles();
+                                return;
+                            }
+                        }
+                    }
+                });
+                mi.setParent(mpLayer2);
+            }
         }
     }
 
@@ -484,7 +548,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public void loadGridLayers(boolean environmentalOnly, boolean fullList) {
         if (selectedLayersCombobox != null) {
-            selectedLayersCombobox.init(getMapComposer().getLayerSelections());
+            selectedLayersCombobox.init(getMapComposer().getLayerSelections(), getMapComposer());
         }
         try {
 

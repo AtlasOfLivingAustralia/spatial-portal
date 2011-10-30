@@ -324,6 +324,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                             mapFrame.document.getElementById("zoomtolocation").style.display="none";
                             mapFrame.document.getElementById("hoverTool").style.display="none";
+                            mapFrame.document.getElementById("nearestTool").style.display="none";
 
                             jQuery('.z-center')[0].style.border = "0px";
                         }
@@ -516,8 +517,20 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     <n:div id="hoverOutput"></n:div>
                 </div>
         </window>
+        <window id="nearesttool" border="normal" sizable="true"
+                 xmlns:n="http://www.zkoss.org/2005/zk/native" mode="overlapped" width="450px" height="120px" position="center,top">
+                <caption label="Nearest feature tool" >
+                    <n:a href='#' n:onClick="clearNearestMarkerLayer();">
+                        <n:span style="color:black">remove all markers</n:span>
+                    </n:a>
+                </caption>
+                <div height="100%" style="background:white">
+                    <n:div id="nearestOutput"></n:div>
+                </div>
+        </window>
         <zscript defer="true">
             hovertool.setVisible(false);
+            nearesttool.setVisible(false);
         </zscript>
     </window>
 

@@ -223,7 +223,10 @@ public class AreaMapPolygon extends AreaToolComposer {
                             } else {
                                 mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
                             }
-                            Facet facet = getFacetForObject(feature.get("pid"), feature.get("value"));
+                            Facet facet = null;
+                            if (!mapLayer.getWKT().startsWith("POINT")) {
+                                facet = getFacetForObject(feature.get("pid"), feature.get("value"));
+                            }
                             if (facet != null) {
                                 ArrayList<Facet> facets = new ArrayList<Facet>();
                                 facets.add(facet);

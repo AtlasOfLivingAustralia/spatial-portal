@@ -29,6 +29,7 @@
                             </combobox>
                             <separator/>
                             <label sclass="wCaption" value='For example: "Temperature"'/>
+                            <separator/>
                         </div>
                         <radio id="rTree" label="Browse by category" />
                      </vbox>

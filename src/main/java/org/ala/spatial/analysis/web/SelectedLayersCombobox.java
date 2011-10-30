@@ -5,6 +5,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
+import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerSelection;
 import java.net.URLEncoder;
@@ -32,8 +33,8 @@ import org.zkoss.zul.Window;
  */
 public class SelectedLayersCombobox extends Combobox {
 
-    public void init(ArrayList<LayerSelection> layerSelections) {
-        Comboitem ci = new Comboitem("paste a layer list");
+    public void init(ArrayList<LayerSelection> layerSelections, MapComposer mc) {
+        Comboitem ci = new Comboitem("paste a layer set");
         ci.setParent(this);
 //        ci = new Comboitem("upload a layer list");
 //        ci.setParent(this);
@@ -47,6 +48,23 @@ public class SelectedLayersCombobox extends Combobox {
             ci.setValue(layerSelections.get(i));
             ci.setParent(this);
 
+        }
+        //add on map layers, active and inactive
+        for(MapLayer ml : mc.getGridLayers()) {
+            //get layer name
+            String name = null;
+            String url = ml.getUri();
+            int p1 = url.indexOf("ALA:") + 4;
+            int p2 = url.indexOf("&",p1);
+            if(p1 > 4) {
+                if(p2 < 0) p2 = url.length();
+                name = url.substring(p1,p2);
+            }
+            if(name != null) {
+                ci = new Comboitem(ml.getDisplayName());
+                ci.setValue(new LayerSelection(ml.getDisplayName(), name));
+                ci.setParent(this);
+            }
         }
     }
 }

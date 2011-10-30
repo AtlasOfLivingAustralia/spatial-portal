@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul" xmlns:n="http://www.zkoss.org/2005/zk/native">
     <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolScatterplotComposer"
-    apply="org.ala.spatial.analysis.web.AddToolScatterplotComposer" width="600px" height="450px"
+    apply="org.ala.spatial.analysis.web.AddToolScatterplotComposer" width="650px" height="450px"
    xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -110,23 +110,31 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep4" visible="false" zclass="step4 layers2auto" sclass="atstep">
+            <div id="atstep4" visible="false" zclass="step4 layers2auto" sclass="atstep" width="500px">
                 <label id="atstep4_desc" value="Select two environmental layers" sclass="wSubLabel"/>
                 <label id="atstep4_label" value="" />
-                <separator />
-                <groupbox >
-                    <hbox>
-                        <label value="X" width="15px" />
-                        <combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="280px" >
-                        </combobox>
-                    </hbox>
-                    <hbox>
-                        <label value="Y" width="15px" />
-                        <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="280px" >
-                        </combobox>
-                    </hbox>
-                    <checkbox id="chkShowEnvIntersection" label="Display possible environments in area" />
-                </groupbox>
+                <separator height="20px"/>
+                <hbox width="500px">
+                    <label value="X" width="15px" />
+                    <combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="280px" />
+                    <menubar orient="vertical" autodrop="true">
+                        <menu label="mapped layers" >
+                            <menupopup id="mpLayer2" />
+                        </menu>
+                    </menubar>
+                </hbox>
+                <separator height="15px"/>
+                <hbox>
+                    <label value="Y" width="15px" />
+                    <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="280px" />
+                    <menubar orient="vertical" autodrop="true" >
+                        <menu label="mapped layers" >
+                            <menupopup id="mpLayer1" />
+                        </menu>
+                    </menubar>
+                </hbox>
+                <separator height="15px"/>
+                <checkbox id="chkShowEnvIntersection" label="Display possible environments in area" />
             </div>
             
             <div id="atstep5" visible="false" zclass="step5 optional" sclass="atstep">

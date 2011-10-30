@@ -361,6 +361,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         // hide legend controls
         //hideLayerControls(null);
+        refreshContextualMenu();
     }
 
     /**
@@ -1365,8 +1366,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                     if (getMapLayerDisplayName(q.getSolrName()) == null) {
                         if (showWarning) {
-                            showMessage("You are mapping a species layer that may have fewer occurrences than you expect.\n\n"
-                                    + q.getOccurrenceCount() + " occurrences with valid coordinates found.");
+//                            showMessage("You are mapping a species layer that may have fewer occurrences than you expect.\n\n"
+//                                    + q.getOccurrenceCount() + " occurrences with valid coordinates found.");
                         }
 
                         List<Double> bbox = q.getBBox();

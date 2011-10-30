@@ -67,30 +67,21 @@ public class AreaRegionSelection extends AreaToolComposer {
             mapLayer = getMapComposer().addWMSLayer(label, url, 0.8f, /*metadata url*/ null,
                     null, LayerUtilities.WKT, null, null);
             mapLayer.setWKT(readUrl(CommonData.layersServer + link.replace("/geojson/", "/wkt/")));
-            mapLayer.setGeoJSON(readUrl(CommonData.layersServer + link));
             mapLayer.setPolygonLayer(true);
         } else {
             mapLayer = getMapComposer().addGeoJSON(label, CommonData.layersServer + link);
         }
         this.layerName = mapLayer.getName();
 
-        //Parsing json taking too long for large polygons
-        //JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
-
         //if the layer is a point create a radius
-        String type = getStringValue(null, "type", mapLayer.getGeoJSON());
-        String geoJSON = mapLayer.getGeoJSON();
-        if ("point".equals(type.toLowerCase())) {
-            JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
-            String coords = jo.getString("coordinates").replace("[", "").replace("]", "");
+        if (mapLayer.getWKT().startsWith("POINT")) {
+            String coords = mapLayer.getWKT().replace("POINT(", "").replace(")","");
 
             double radius = dRadius.getValue() * 1000.0;
 
-            String wkt = Util.createCircleJs(Double.parseDouble(coords.split(",")[0]), Double.parseDouble(coords.split(",")[1]), radius);
+            String wkt = Util.createCircleJs(Double.parseDouble(coords.split(" ")[0]), Double.parseDouble(coords.split(" ")[1]), radius);
             getMapComposer().removeLayer(label);
             mapLayer = getMapComposer().addWKTLayer(wkt, label, label);
-
-            //return;
         }
 
         if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
@@ -105,7 +96,12 @@ public class AreaRegionSelection extends AreaToolComposer {
                 mapLayer.setMapLayerMetadata(md);
             }
             try {
-                double[][] bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
+                double[][] bb = null;
+                if(mapLayer.getWKT().startsWith("POINT")) {
+                    bb = SimpleShapeFile.parseWKT(mapLayer.getWKT()).getBoundingBox();
+                } else {
+                    bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
+                }
                 ArrayList<Double> dbb = new ArrayList<Double>();
                 dbb.add(bb[0][0]);
                 dbb.add(bb[0][1]);
@@ -118,7 +114,10 @@ public class AreaRegionSelection extends AreaToolComposer {
             }
             md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
 
-            Facet facet = getFacetForObject(link.substring(link.lastIndexOf('/') + 1), label);
+            Facet facet = null;
+            if(!mapLayer.getWKT().startsWith("POINT")) {
+                facet = getFacetForObject(link.substring(link.lastIndexOf('/') + 1), label);
+            }
             if (facet != null) {
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(facet);

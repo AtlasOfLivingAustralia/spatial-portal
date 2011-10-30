@@ -1299,6 +1299,9 @@ function loadKmlFile(name, kmlurl) {
 var prevHoverData = null;
 var prevHoverRequest = null;
 
+var prevNearestData = null;
+var prevNearestRequest = null;
+
 function envLayerInspection(e) {
     try {
         infoHtml = envLayerHover(e);
@@ -1395,6 +1398,97 @@ function envLayerHover(e) {
     }
     return null;
 }
+var markers = null;
+var markers_icon = null;
+var last_nearest_pos = null;
+var last_nearest_data = null;
+function envLayerNearest(e) {
+    //This variable will contain the body text to be displayed in the popup.
+    var body = "";
+
+    var pt = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(e.xy.x, e.xy.y) );
+    pt = pt.transform(map.projection, map.displayProjection);
+
+    var this_pos = pt.lat + "," + pt.lon;
+    if(this_pos == last_nearest_pos) {
+        return last_nearest_data;
+    }
+    last_nearest_pos = this_pos;
+
+    try {
+        var url = parent.jq('$layers_url')[0].innerHTML + "/objects/cl915/" + pt.lat + "/" + pt.lon + "?limit=10";
+        var ret = "";
+        var time = new Date().getTime();
+        $.ajax({
+            url: proxy_script + URLEncode(url),
+            dataType: "json",
+            success: function(data){
+                ret = data;
+            },
+            async: false
+        });
+
+        if(ret != null && ret.length > 0) {
+            body = body + "<tr><td width='200px'></td><td width='100px'><b>location</b></td><td width='70px'><b>distance (km)</b></td><td width='70px'><b>heading (deg)</b></td></tr>"
+            if(markers == null) {
+                initMarkersLayer();
+            }
+            for(i=0;i<ret.length;i++) {
+                var coords = ret[i].geometry.replace("POINT(","").replace(")","").split(" ");
+                var lng = coords[0] * 1.0;
+                var lat = coords[1] * 1.0;
+                var style = ""
+                if(i%2 == 1) {
+                    style = "class='md_grey-bg'"
+                }
+                body = body + "<tr " + style + "><td>" + ret[i].name
+                    + "</td><td>" + lng + "," + lat
+                    + "</td><td>" + (Math.round(ret[i].distance/100)/10)
+                    + "</td><td>" + (Math.round(ret[i].degrees*10)/10) + "</td></tr>";
+                
+                //markers.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(lng,lat).transform(map.displayProjection, map.projection),markers_icon.clone()));
+                var c = new OpenLayers.LonLat(lng,lat).transform(map.displayProjection, map.projection)
+                var point = new OpenLayers.Geometry.Point(c.lon, c.lat);
+                var pointFeature = new OpenLayers.Feature.Vector(point);
+                pointFeature.attributes = {name: ret[i].name};
+                markers.addFeatures([pointFeature]);
+            }
+            body = body + "<tr><td>&nbsp;</td></tr><tr><td colspan='4'>time taken " + (new Date().getTime() - time) + "ms</td></tr>";
+            last_nearest_data = body;
+            return body;
+        }
+    }catch(err){
+    }
+    return null;
+}
+
+function initMarkersLayer() {
+    var renderer = OpenLayers.Util.getParameters(window.location.href).renderer;
+    renderer = (renderer) ? [renderer] : OpenLayers.Layer.Vector.prototype.renderers;
+    markers = new OpenLayers.Layer.Vector("Nearest Localities", {
+        styleMap: new OpenLayers.StyleMap({'default':{
+            strokeColor: "#FFFF00",
+            strokeOpacity: 1,
+            strokeWidth: 2,
+            fillColor: "#FF0000",
+            fillOpacity: 1,
+            pointRadius: 6,
+            pointerEvents: "visiblePainted",
+            label : "${name}",
+
+            fontColor: "black",
+            fontSize: "12px",
+            fontFamily: "Courier New, monospace",
+            fontWeight: "bold",
+            labelAlign: "left",
+            labelXOffset: "5",
+            labelYOffset: "0"
+        }}),
+        renderers: renderer
+    });
+
+    map.addLayer(markers);
+}
 var hovercontrol = null;
 var hovercontrolprevpos = null;
 function initHover() {
@@ -1437,6 +1531,56 @@ function toggleActiveHover() {
         parent.document.getElementById('hoverOutput').innerHTML = "Hover cursor over map to view layer values";
         parent.jq('$hovertool')[0].style.display=""
         document.getElementById("hoverTool").style.backgroundImage = "url('img/overview_replacement.gif')";
+    }
+}
+var nearestcontrol = null;
+var nearestcontrolprevpos = null;
+function initNearest() {
+    nearestcontrol = new OpenLayers.Handler.Click({
+        'map': map
+    }, {
+        'click': function(e) {
+            var pt = map.getLonLatFromViewPortPx(new
+                OpenLayers.Pixel(e.xy.x, e.xy.y) );
+
+            pt = pt.transform(map.projection, map.displayProjection);
+
+            var this_pos = pt.lat + "," + pt.lon;
+            if(this_pos == nearestcontrolprevpos) {
+                return;
+            }
+            nearestcontrolprevpos = this_pos;
+
+            var output = parent.document.getElementById('nearestOutput');
+            output.innerHTML = "<table><tr><td>Point</td><td colspan='3'><b>" + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "</b></td></tr><tr><td>&nbsp;</td></tr><tr><td>Retrieving...</td></tr></table>"
+
+            setTimeout(function(){
+                var data = envLayerNearest(e);
+                if(data != null) {
+                    output.innerHTML = "<table><tr><td>Point</td><td colspan='3'><b>" + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "</b></td></tr>" + data + "</table>";
+                } else {
+                    output.innerHTML = "No values to display";
+                }
+            }, 2);
+        }
+    });
+    nearestcontrol.fallThrough = true;
+    nearestcontrol.activate();
+}
+function toggleActiveNearest() {
+    console.log("toggleActiveNearest");
+    if(nearestcontrol != null) {
+        console.log("a");
+        nearestcontrol.deactivate();
+        nearestcontrol = null;
+        parent.jq('$nearesttool')[0].style.display="none"
+        document.getElementById("nearestTool").style.backgroundImage = "url('img/overview_replacement_off.gif')";
+    } else {
+        console.log("b");
+        initNearest();
+        parent.document.getElementById('nearestOutput').innerHTML = "Click on the map for the nearest localities.";
+        parent.jq('$nearesttool')[0].style.display=""
+        document.getElementById("nearestTool").style.backgroundImage = "url('img/overview_replacement.gif')";
     }
 }
 

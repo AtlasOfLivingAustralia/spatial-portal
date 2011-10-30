@@ -50,7 +50,7 @@ public class EnvLayersCombobox extends Combobox {
         }
     }
 
-    private void refresh(String val) {
+    public void refresh(String val) {
         if (validLayers == null) {
             makeValidLayers();
         }
