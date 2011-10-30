@@ -39,6 +39,9 @@ public class Objects {
     private String bbox;
     private Double area_km;
 
+    private Double degrees;
+    private Double distance;
+
     public String getDescription() {
         return description;
     }
@@ -119,4 +122,19 @@ public class Objects {
         this.area_km = area_km;
     }
 
+    public Double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(Double distance) {
+        this.distance = distance;
+    }
+
+    public Double getDegrees() {
+        return degrees;
+    }
+
+    public void setDegrees(Double degrees) {
+        this.degrees = degrees;
+    }
 }

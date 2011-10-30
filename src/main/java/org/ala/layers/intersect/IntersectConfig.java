@@ -1,7 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/**************************************************************************
+ *  Copyright (C) 2010 Atlas of Living Australia
+ *  All Rights Reserved.
+ *
+ *  The contents of this file are subject to the Mozilla Public
+ *  License Version 1.1 (the "License"); you may not use this file
+ *  except in compliance with the License. You may obtain a copy of
+ *  the License at http://www.mozilla.org/MPL/
+ *
+ *  Software distributed under the License is distributed on an "AS
+ *  IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ *  implied. See the License for the specific language governing
+ *  rights and limitations under the License.
+ ***************************************************************************/
 package org.ala.layers.intersect;
 
 import java.io.File;
@@ -9,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import net.sf.json.JSONArray;
@@ -16,11 +27,15 @@ import net.sf.json.JSONObject;
 import org.ala.layers.dao.FieldDAO;
 import org.ala.layers.dao.LayerDAO;
 import org.ala.layers.dto.Field;
+import org.ala.layers.dto.GridClass;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.dto.Layer;
+import org.ala.layers.grid.GridClassBuilder;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 
 /**
  *
@@ -40,6 +55,7 @@ public class IntersectConfig {
     static final String GRID_CACHE_PATH = "GRID_CACHE_PATH";
     static final String GRID_CACHE_READER_COUNT = "GRID_CACHE_READER_COUNT";
     static final String LAYER_PROPERTIES = "layer.properties";
+    static ObjectMapper mapper = new ObjectMapper();
     private FieldDAO fieldDao;
     private LayerDAO layerDao;
     String layerFilesPath;
@@ -54,6 +70,7 @@ public class IntersectConfig {
     HashMap<String, IntersectionFile> intersectionFiles;
     String gridCachePath;
     int gridCacheReaderCount;
+    HashMap<String, HashMap<Integer, GridClass>> classGrids;
 
     public IntersectConfig(FieldDAO fieldDao, LayerDAO layerDao) {
         this.fieldDao = fieldDao;
@@ -63,9 +80,6 @@ public class IntersectConfig {
     }
 
     public void load() {
-        if (lastReload + configReloadWait >= System.currentTimeMillis()) {
-            return;
-        }
         lastReload = System.currentTimeMillis();
 
         Properties properties = new Properties();
@@ -146,7 +160,7 @@ public class IntersectConfig {
 
     public String getFieldIdFromFile(String file) {
         String off, on;
-        if(File.separator.equals("/")) {
+        if (File.separator.equals("/")) {
             off = "\\";
             on = "/";
         } else {
@@ -154,8 +168,8 @@ public class IntersectConfig {
             off = "/";
         }
         file = file.replace(off, on);
-        for(Entry<String, IntersectionFile> entry : intersectionFiles.entrySet()) {            
-            if(entry.getValue().getFilePath().replace(off, on).equalsIgnoreCase(file)) {
+        for (Entry<String, IntersectionFile> entry : intersectionFiles.entrySet()) {
+            if (entry.getValue().getFilePath().replace(off, on).equalsIgnoreCase(file)) {
                 return entry.getKey();
             }
         }
@@ -165,6 +179,7 @@ public class IntersectConfig {
     private void updateIntersectionFiles() throws MalformedURLException, IOException {
         if (intersectionFiles == null) {
             intersectionFiles = new HashMap<String, IntersectionFile>();
+            classGrids = new HashMap<String, HashMap<Integer, GridClass>>();
         }
 
         if (layerIndexUrl != null) {
@@ -172,40 +187,102 @@ public class IntersectConfig {
             JSONArray layers = JSONArray.fromObject(getUrl(layerIndexUrl + "/layers"));
             HashMap<String, String> layerPathOrig = new HashMap<String, String>();
             HashMap<String, String> layerName = new HashMap<String, String>();
+            HashMap<String, String> layerType = new HashMap<String, String>();
+            HashMap<String, String> layerPid = new HashMap<String, String>();
             for (int i = 0; i < layers.size(); i++) {
                 layerPathOrig.put(layers.getJSONObject(i).getString("id"),
                         layers.getJSONObject(i).getString("path_orig"));
-                layerPathOrig.put(layers.getJSONObject(i).getString("id"),
+                layerName.put(layers.getJSONObject(i).getString("id"),
                         layers.getJSONObject(i).getString("name"));
+                layerType.put(layers.getJSONObject(i).getString("id"),
+                        layers.getJSONObject(i).getString("type"));
+                layerType.put(layers.getJSONObject(i).getString("id"),
+                        layers.getJSONObject(i).getString("id"));
             }
 
             JSONArray fields = JSONArray.fromObject(getUrl(layerIndexUrl + "/fieldsdb"));
             for (int i = 0; i < fields.size(); i++) {
                 JSONObject jo = fields.getJSONObject(i);
+                String spid = jo.getString("spid");
+                HashMap<Integer, GridClass> gridClasses =
+                        getGridClasses(layerFilesPath + layerPathOrig.get(spid), layerType.get(spid));
+
                 intersectionFiles.put(jo.getString("id"),
                         new IntersectionFile(jo.getString("name"),
-                        layerFilesPath + layerPathOrig.get(jo.getString("spid")),
+                        layerFilesPath + layerPathOrig.get(spid),
                         (jo.containsKey("sname") ? jo.getString("sname") : null),
-                        layerName.get(jo.getString("spid")),
-                        jo.getString("id")));
+                        layerName.get(spid),
+                        jo.getString("id"),
+                        jo.getString("name"),
+                        layerPid.get(spid),
+                        jo.getString("type"),
+                        gridClasses));
                 //also register it under the layer name
-                intersectionFiles.put(layerName.get(jo.getString("spid")),
+                intersectionFiles.put(layerName.get(spid),
                         new IntersectionFile(jo.getString("name"),
-                        layerFilesPath + layerPathOrig.get(jo.getString("spid")),
+                        layerFilesPath + layerPathOrig.get(spid),
                         (jo.containsKey("sname") ? jo.getString("sname") : null),
                         layerName.get(jo.getString("spid")),
-                        jo.getString("id")));
+                        jo.getString("id"),
+                        jo.getString("name"),
+                        layerPid.get(spid),
+                        jo.getString("type"),
+                        gridClasses));
+                //also register it under the layer pid
+                intersectionFiles.put(layerPid.get(spid),
+                        new IntersectionFile(jo.getString("name"),
+                        layerFilesPath + layerPathOrig.get(spid),
+                        (jo.containsKey("sname") ? jo.getString("sname") : null),
+                        layerName.get(jo.getString("spid")),
+                        jo.getString("id"),
+                        jo.getString("name"),
+                        layerPid.get(spid),
+                        jo.getString("type"),
+                        gridClasses));
+                classGrids.put(jo.getString("id"), gridClasses);
             }
         } else {
             for (Field f : fieldDao.getFields()) {
                 if (f.isIndb()) {
                     Layer layer = layerDao.getLayerById(Integer.parseInt(f.getSpid()));
+                    if (layer == null) {
+                        logger.error("cannot find layer with id '" + f.getSpid() + "'");
+                        continue;
+                    }
+                    HashMap<Integer, GridClass> gridClasses = getGridClasses(getLayerFilesPath() + layer.getPath_orig(), layer.getType());
                     intersectionFiles.put(f.getId(),
                             new IntersectionFile(f.getName(),
                             getLayerFilesPath() + layer.getPath_orig(),
                             f.getSname(),
                             layer.getName(),
-                            f.getId()));
+                            f.getId(),
+                            f.getName(),
+                            String.valueOf(layer.getId()),
+                            f.getType(),
+                            gridClasses));
+                    //also register it under the layer name
+                    intersectionFiles.put(layer.getName(),
+                            new IntersectionFile(f.getName(),
+                            getLayerFilesPath() + layer.getPath_orig(),
+                            f.getSname(),
+                            layer.getName(),
+                            f.getId(),
+                            f.getName(),
+                            String.valueOf(layer.getId()),
+                            f.getType(),
+                            gridClasses));
+                    //also register it under the layer pid
+                    intersectionFiles.put(String.valueOf(layer.getId()),
+                            new IntersectionFile(f.getName(),
+                            getLayerFilesPath() + layer.getPath_orig(),
+                            f.getSname(),
+                            layer.getName(),
+                            f.getId(),
+                            f.getName(),
+                            String.valueOf(layer.getId()),
+                            f.getType(),
+                            gridClasses));
+                    classGrids.put(f.getId(), gridClasses);
                 }
             }
         }
@@ -276,7 +353,7 @@ public class IntersectConfig {
      * @param fieldIds comma separated fieldIds.  Must be cl fields.
      */
     public void addToShapeFileCache(String fieldIds) {
-        if(preloadedShapeFiles != null) {
+        if (preloadedShapeFiles != null) {
             fieldIds += "," + preloadedShapeFiles;
         }
         String[] fields = fieldIds.split(",");
@@ -297,7 +374,7 @@ public class IntersectConfig {
                 logger.error("problem adding shape file to cache for field: " + fields[i], e);
             }
         }
-        if(pos < layers.length) {
+        if (pos < layers.length) {
             layers = java.util.Arrays.copyOf(layers, pos);
             columns = java.util.Arrays.copyOf(columns, pos);
             fid = java.util.Arrays.copyOf(fid, pos);
@@ -324,5 +401,37 @@ public class IntersectConfig {
 
     public int getGridCacheReaderCount() {
         return gridCacheReaderCount;
+    }
+
+    static private HashMap<Integer, GridClass> getGridClasses(String filePath, String type) throws IOException {
+        HashMap<Integer, GridClass> classes = null;
+        if (filePath.contains("shape_diva")) {
+            int i = 4;
+        }
+        if (type.equals("Contextual")
+                && new File(filePath + ".gri").exists()
+                && new File(filePath + ".grd").exists()
+                && new File(filePath + ".txt").exists()) {
+            File gridClassesFile = new File(filePath + ".classes.json");
+            if (gridClassesFile.exists()) {
+                classes = mapper.readValue(gridClassesFile, new TypeReference<Map<Integer, GridClass>>() {
+                });
+            } else {
+                logger.info("building " + gridClassesFile.getPath());
+                long start = System.currentTimeMillis();
+                classes = GridClassBuilder.buildFromGrid(filePath);
+                mapper.writeValue(gridClassesFile, classes);
+                logger.info("finished building " + gridClassesFile.getPath() + " in " + (System.currentTimeMillis() - start) + " ms");
+            }
+        }
+        return classes;
+    }
+
+    public long getConfigReloadWait() {
+        return configReloadWait;
+    }
+
+    public boolean requiresReload() {
+        return lastReload + configReloadWait >= System.currentTimeMillis();
     }
 }

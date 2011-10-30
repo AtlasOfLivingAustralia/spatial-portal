@@ -1,7 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/**************************************************************************
+ *  Copyright (C) 2010 Atlas of Living Australia
+ *  All Rights Reserved.
+ *
+ *  The contents of this file are subject to the Mozilla Public
+ *  License Version 1.1 (the "License"); you may not use this file
+ *  except in compliance with the License. You may obtain a copy of
+ *  the License at http://www.mozilla.org/MPL/
+ *
+ *  Software distributed under the License is distributed on an "AS
+ *  IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ *  implied. See the License for the specific language governing
+ *  rights and limitations under the License.
+ ***************************************************************************/
 package org.ala.layers.util;
 
 import java.io.BufferedReader;
@@ -77,7 +87,7 @@ public class IntersectUtil {
         byte[] bComma = ",".getBytes(charSet);
         byte[] bDblQuote = "\"".getBytes(charSet);
 
-        os.write("longitude,latitude".getBytes(charSet));
+        os.write("latitude,longitude".getBytes(charSet));
         for (int i = 0; i < fields.length; i++) {
             os.write(bComma);
             os.write(fields[i].getBytes(charSet));
@@ -95,23 +105,25 @@ public class IntersectUtil {
                 if (nextPos == -1) {
                     nextPos = sample.get(j).length();
                 }
-                String s = sample.get(j).substring(curPos[j], nextPos);
-                curPos[j] = nextPos + 1;
+                if(curPos[j] <= nextPos) {
+                    String s = sample.get(j).substring(curPos[j], nextPos);
+                    curPos[j] = nextPos + 1;
 
-                if (s != null) {
-                    boolean useQuotes = false;
-                    if (s.contains("\"")) {
-                        s = s.replace("\"", "\"\"");
-                        useQuotes = true;
-                    } else if (s.contains(",")) {
-                        useQuotes = true;
-                    }
-                    if (useQuotes) {
-                        os.write(bDblQuote);
-                        os.write(s.getBytes(charSet));
-                        os.write(bDblQuote);
-                    } else {
-                        os.write(s.getBytes(charSet));
+                    if (s != null) {
+                        boolean useQuotes = false;
+                        if (s.contains("\"")) {
+                            s = s.replace("\"", "\"\"");
+                            useQuotes = true;
+                        } else if (s.contains(",")) {
+                            useQuotes = true;
+                        }
+                        if (useQuotes) {
+                            os.write(bDblQuote);
+                            os.write(s.getBytes(charSet));
+                            os.write(bDblQuote);
+                        } else {
+                            os.write(s.getBytes(charSet));
+                        }
                     }
                 }
             }

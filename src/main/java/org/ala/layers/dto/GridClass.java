@@ -12,25 +12,48 @@
  *  implied. See the License for the specific language governing
  *  rights and limitations under the License.
  ***************************************************************************/
-
-package org.ala.layers.dao;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-import org.ala.layers.dto.Objects;
+package org.ala.layers.dto;
 
 /**
- * DAO for the Object object
  *
- * @author ajay
+ * @author Adam
  */
-public interface ObjectDAO {
-    public List<Objects> getObjects();
-    public List<Objects> getObjectsById(String id);
-    public String getObjectsGeometryById(String id, String geomtype);
-    public Objects getObjectByPid(String pid);
-    public Objects getObjectByIdAndLocation(String fid, Double lng, Double lat);
-    public List<Objects> getNearestObjectByIdAndLocation(String fid, int limit, Double lng, Double lat);
-    public void streamObjectsGeometryById(OutputStream os, String id, String geomtype) throws IOException;
+public class GridClass {
+
+    Integer id;
+    String name;
+    Double area_km;
+    String bbox;
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setArea_km(Double area_km) {
+        this.area_km = area_km;
+    }
+
+    public Double getArea_km() {
+        return area_km;
+    }
+
+    public void setBbox(String bbox) {
+        this.bbox = bbox;
+    }
+
+    public String getBbox() {
+        return bbox;
+    }
 }

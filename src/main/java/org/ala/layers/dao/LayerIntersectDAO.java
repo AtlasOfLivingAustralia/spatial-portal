@@ -16,7 +16,6 @@ package org.ala.layers.dao;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.intersect.IntersectConfig;
@@ -26,6 +25,13 @@ import org.ala.layers.intersect.IntersectConfig;
  * @author adam
  */
 public interface LayerIntersectDAO {
+
+    /**
+     * Refresh properties and table images.
+     *
+     * Returns null if successful, else error as String.
+     */
+    public String reload();
 
     /**
      * Sampling one point

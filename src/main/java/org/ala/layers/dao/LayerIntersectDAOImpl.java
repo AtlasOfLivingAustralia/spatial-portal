@@ -18,6 +18,8 @@ import au.com.bytecode.opencsv.CSVReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -27,10 +29,9 @@ import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import javax.annotation.Resource;
-import org.ala.layers.dto.Field;
+import org.ala.layers.dto.GridClass;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.dto.Layer;
 import org.ala.layers.dto.Objects;
@@ -61,11 +62,55 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
     LinkedBlockingQueue<GridCacheReader> gridReaders = null;
     int gridGroupCount = 0;
     Object initLock = new Object();
+//    Thread reloadThread = null;
+
+    @Override
+    public String reload() {
+        String error = null;
+        try {
+            if (intersectConfig == null) {
+                init();
+            }
+            synchronized (initLock) {
+                int oldGridCacheReaderCount = intersectConfig.getGridCacheReaderCount();
+
+                intersectConfig = new IntersectConfig(fieldDao, layerDao);
+
+                ArrayList<GridCacheReader> newGridReaders = new ArrayList<GridCacheReader>();
+                for (int i = 0; i < intersectConfig.getGridCacheReaderCount(); i++) {
+                    GridCacheReader gcr = fixGridCacheReaderNames(new GridCacheReader(intersectConfig.getGridCachePath()));
+                    newGridReaders.add(gcr);
+                    gridGroupCount = gcr.getGroupCount();
+                }
+                if (newGridReaders.isEmpty()) {
+                    newGridReaders = null;
+                }
+
+                //remove old grid readers
+                for (int i = 0; i < oldGridCacheReaderCount; i++) {
+                    gridReaders.take();
+                }
+
+                //add new gridReaders
+                gridReaders.addAll(newGridReaders);
+
+                return null;
+            }
+        } catch (Exception e) {
+            logger.error("error reloading properties and table images", e);
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.close();
+            error = "error reloading properties and table images\n" + sw.getBuffer().toString();
+        }
+        return error;
+    }
 
     void init() {
         if (intersectConfig == null) {
-            synchronized(initLock) {
-                if(intersectConfig != null) {
+            synchronized (initLock) {
+                if (intersectConfig != null) {
                     return;
                 }
                 intersectConfig = new IntersectConfig(fieldDao, layerDao);
@@ -79,12 +124,27 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                     }
                     gridGroupCount = gcr.getGroupCount();
                 }
-                if(gridReaders.size() == 0) {
+                if (gridReaders.size() == 0) {
                     gridReaders = null;
                 }
             }
-        } else {
-            intersectConfig.load();
+//            reloadThread = new Thread() {
+//
+//                @Override
+//                public void run() {
+//                    while(true) {
+//                        try {
+//                            synchronized(reloadThread) {
+//                                reloadThread.wait(intersectConfig.getConfigReloadWait());
+//                            }
+//                        } catch (InterruptedException e) {
+//                            break;
+//                        }
+//                        reload();
+//                    }
+//                }
+//            };
+//            reloadThread.start();
         }
     }
 
@@ -95,21 +155,25 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
         Vector out = new Vector();
 
         for (String id : fieldIds.split(",")) {
-
             Layer layer = null;
             int newid = cleanObjectId(id);
 
-            if (newid != -1) {
-                layer = layerDao.getLayerById(newid);
-            }
-            if (layer == null) {
-                layer = layerDao.getLayerByName(id);
+            IntersectionFile f = intersectConfig.getIntersectionFile(id);
+            if (f != null) {
+                layer = layerDao.getLayerByName(f.getLayerName());
+            } else {
+                if (newid != -1) {
+                    layer = layerDao.getLayerById(newid);
+                }
+                if (layer == null) {
+                    layer = layerDao.getLayerByName(id);
+                }
             }
 
             double[][] p = {{longitude, latitude}};
 
             if (layer != null) {
-                if (layer.isShape()) {
+                if (layer.isShape() && (f != null && f.getClasses() == null)) {
                     Objects o = objectDao.getObjectByIdAndLocation("cl" + layer.getId(), longitude, latitude);
                     if (o != null) {
                         Map m = new HashMap();
@@ -129,16 +193,33 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
                         out.add(m);
                     }
-                } else if (layer.isGrid()) {
+                } else if (layer.isGrid() || (f != null && f.getClasses() != null)) {
                     Grid g = new Grid(getConfig().getLayerFilesPath() + layer.getPath_orig());
                     if (g != null) {
                         float[] v = g.getValues(p);
                         //s = "{\"value\":" + v[0] + ",\"layername\":\"" + layer.getDisplayname() + "\"}";
                         Map m = new HashMap();
                         m.put("field", id);
-                        m.put("value", (Float.isNaN(v[0]) ? "" : v[0]));
-                        m.put("layername", layer.getDisplayname());
 
+                        if (f != null && f.getClasses() != null) {
+                            GridClass gc = f.getClasses().get((int) v[0]);
+                            if (gc != null) {
+                                m.put("value", (gc == null ? "" : gc.getName()));
+                                if (f.getType().equals("a")) {           //class pid
+                                    m.put("pid", f.getLayerPid() + ":" + ((int) v[0]));
+                                } else { // if(f.getType().equals("b")) {//polygon pid
+                                    g = new Grid(f.getFilePath() + File.separator + "polygons");
+                                    if (g != null) {
+                                        int v0 = (int) v[0];
+                                        v = g.getValues(p);
+                                        m.put("pid", f.getLayerPid() + ":" + v0 + ":" + ((int) v[0]));
+                                    }
+                                }
+                            }
+                        }
+                        if (!m.containsKey("value")) {
+                            m.put("value", (Float.isNaN(v[0]) ? "" : v[0]));
+                        }
                         out.add(m);
                     } else {
                         logger.error("Cannot find grid file: " + getConfig().getLayerFilesPath() + layer.getPath_orig());
@@ -174,15 +255,14 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                         float[] v = grid.getValues(p);
                         if (v != null) {
                             Map m = new HashMap();
+                            m.put("field", id);
+                            m.put("layername", name + "(" + gid + ")");
                             if (Float.isNaN(v[0])) {
-                                //s = "{\"value\":\"no data\",\"layername\":\"" + name + " (" + gid + ")\"}";
-                                m.put("field", id);
+                                //s = "{\"value\":\"no data\",\"layername\":\"" + name + " (" + gid + ")\"}";                                
                                 m.put("value", "");
-                                m.put("layername", name + "(" + gid + ")");
                             } else {
                                 //s = "{\"value\":" + v[0] + ",\"layername\":\"" + name + " (" + gid + ")\"}";
                                 m.put("value", (Float.isNaN(v[0]) ? "" : v[0]));
-                                m.put("layername", name + "(" + gid + ")");
                             }
                             out.add(m);
                         }
@@ -207,7 +287,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
     @Override
     public String sampling(String fieldIds, double longitude, double latitude) {
         init();
-        
+
         double[][] p = {{longitude, latitude}};
         String[] fields = fieldIds.split(",");
 
@@ -229,11 +309,11 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
             }
 
             if (f != null) {
-                if (f.getFieldId().startsWith("cl")) {
+                if (f.getShapeFields() != null) {
                     SimpleShapeFile ssf = getConfig().getShapeFileCache().get(f.getFilePath());
                     if (ssf != null) {
                         String s = ssf.intersect(longitude, latitude);
-                        if(s != null) {
+                        if (s != null) {
                             sb.append(s);
                         }
                     } else {
@@ -259,21 +339,42 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                             Grid g = new Grid(f.getFilePath());
                             if (g != null) {
                                 float fv = g.getValues(p)[0];
-                                if(!Float.isNaN(fv)) {
-                                    sb.append(String.valueOf(fv));
+                                if (f.getClasses() != null) {
+                                    GridClass gc = f.getClasses().get((int) fv);
+                                    if (gc != null) {
+                                        sb.append(gc.getName());
+                                    }
+                                } else {
+                                    if (!Float.isNaN(fv)) {
+                                        sb.append(String.valueOf(fv));
+                                    }
                                 }
                             }
                         } else {
-                            if (v != null && !v.isNaN()) {
-                                sb.append(String.valueOf(v));
+                            if (f.getClasses() != null) {
+                                GridClass gc = f.getClasses().get(v.intValue());
+                                if (gc != null) {
+                                    sb.append(gc.getName());
+                                }
+                            } else {
+                                if (v != null && !v.isNaN()) {
+                                    sb.append(String.valueOf(v));
+                                }
                             }
                         }
                     } else {
                         Grid g = new Grid(f.getFilePath());
                         if (g != null) {
                             float fv = g.getValues(p)[0];
-                            if(!Float.isNaN(fv)) {
-                                sb.append(String.valueOf(fv));
+                            if (f.getClasses() != null) {
+                                GridClass gc = f.getClasses().get((int) fv);
+                                if (gc != null) {
+                                    sb.append(gc.getName());
+                                }
+                            } else {
+                                if (!Float.isNaN(fv)) {
+                                    sb.append(String.valueOf(fv));
+                                }
                             }
                         }
                     }
@@ -305,19 +406,22 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
         return sb.toString();
     }
 
+    @Override
     public HashMap<String, String> sampling(double longitude, double latitude) {
         init();
-        
+
         HashMap<String, String> output = new HashMap<String, String>();
 
         HashMap<String, SimpleShapeFile> ssfs = getConfig().getShapeFileCache().getAll();
-        for(Entry<String, SimpleShapeFile> entry : ssfs.entrySet()) {
+        for (Entry<String, SimpleShapeFile> entry : ssfs.entrySet()) {
             String s = entry.getValue().intersect(longitude, latitude);
-            if(s == null) s = "";
+            if (s == null) {
+                s = "";
+            }
             output.put(entry.getKey(), s);
         }
 
-        if(gridReaders != null) {
+        if (gridReaders != null) {
             GridCacheReader gcr = null;
             HashMap<String, Float> gridValues = null;
             try {
@@ -326,7 +430,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                if(gcr != null) {
+                if (gcr != null) {
                     try {
                         gridReaders.put(gcr);
                     } catch (Exception e) {
@@ -334,9 +438,9 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                     }
                 }
             }
-            if(gridValues != null) {
-                for(Entry<String, Float> entry : gridValues.entrySet()) {
-                    if(entry.getValue() == null || entry.getValue().isNaN()) {
+            if (gridValues != null) {
+                for (Entry<String, Float> entry : gridValues.entrySet()) {
+                    if (entry.getValue() == null || entry.getValue().isNaN()) {
                         output.put(entry.getKey(), "");
                     } else {
                         output.put(entry.getKey(), entry.getValue().toString());
@@ -377,19 +481,10 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
         IntersectionFile[] intersectionFiles = new IntersectionFile[fieldIds.length];
         for (int i = 0; i < fieldIds.length; i++) {
-            Field f = fieldDao.getFieldById(fieldIds[i]);
+            intersectionFiles[i] = intersectConfig.getIntersectionFile(fieldIds[i]);
 
-            if (f != null && f.getId() != null) {
-                Layer l = layerDao.getLayerById(Integer.parseInt(f.getSpid()));
-                if (l != null) {
-                    logger.info(l.getName() + "," + l.getId() + "," + l.getPath_orig() + "," + l.getLicence_link() + "," + l.getLicence_level());
-                    intersectionFiles[i] = new IntersectionFile(fieldIds[i], intersectConfig.getLayerFilesPath() + l.getPath_orig(), f.getSname(), l.getName(), f.getName());
-                } else {
-                    logger.warn("failed to find layer for id: " + f.getSpid());
-                }
-            } else {
-                logger.warn("failed to find field for id: " + fieldIds[i]);
-                intersectionFiles[i] = null;
+            if (intersectionFiles[i] == null) {
+                logger.warn("failed to find layer for id '" + fieldIds[i] + "'");
             }
         }
 
