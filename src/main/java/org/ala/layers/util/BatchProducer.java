@@ -1,8 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
+/**************************************************************************
+ *  Copyright (C) 2010 Atlas of Living Australia
+ *  All Rights Reserved.
+ *
+ *  The contents of this file are subject to the Mozilla Public
+ *  License Version 1.1 (the "License"); you may not use this file
+ *  except in compliance with the License. You may obtain a copy of
+ *  the License at http://www.mozilla.org/MPL/
+ *
+ *  Software distributed under the License is distributed on an "AS
+ *  IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ *  implied. See the License for the specific language governing
+ *  rights and limitations under the License.
+ ***************************************************************************/
 package org.ala.layers.util;
 
 import java.io.BufferedReader;
@@ -59,8 +68,8 @@ public class BatchProducer {
         if(new File(dir).exists()) {
             if(new File(dir + "error.txt").exists()) {
                 return readFile(dir + "error.txt");
-            } else if(new File(dir + "done.txt").exists()) {
-                return readFile(dir + "done.txt");
+            } else if(new File(dir + "finished.txt").exists()) {
+                return readFile(dir + "finished.txt");
             } else if(new File(dir + "started.txt").exists()) {
                 return readFile(dir + "started.txt");
             }
@@ -74,21 +83,25 @@ public class BatchProducer {
         if(new File(dir).exists()) {
             int count = 0;
             
-            if(new File(dir + "error.txt").exists()) {
-                count++;
-                map.put("error",readFile(dir + "error.txt"));
-            }
-            if(new File(dir + "done.txt").exists()) {
-                count++;
-                map.put("finished",readFile(dir + "done.txt"));
-            }
             if(new File(dir + "started.txt").exists()) {
                 count++;
                 map.put("started",readFile(dir + "started.txt"));
+                map.put("status","started");
+            }
+            if(new File(dir + "error.txt").exists()) {
+                count++;
+                map.put("error",readFile(dir + "error.txt"));
+                map.put("status","error");
+            }            
+            if(new File(dir + "finished.txt").exists()) {
+                count++;
+                map.put("finished",readFile(dir + "finished.txt"));
+                map.put("status","finished");
             }
 
             if(count == 0) {
-                map.put("error","unknown batchId: " + batchId);
+                map.put("waiting","In queue");
+                map.put("status","waiting");
             }
         } else {
             map.put("error","unknown batchId: " + batchId);

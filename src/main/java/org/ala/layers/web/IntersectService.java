@@ -16,7 +16,11 @@ package org.ala.layers.web;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +36,7 @@ import org.ala.layers.dao.ObjectDAO;
 import org.ala.layers.dto.Layer;
 import org.ala.layers.dto.Objects;
 import org.ala.layers.intersect.Grid;
+import org.ala.layers.intersect.IntersectConfig;
 import org.ala.layers.util.BatchConsumer;
 import org.ala.layers.util.BatchProducer;
 import org.ala.layers.util.IntersectUtil;
@@ -53,8 +58,9 @@ public class IntersectService {
     private final String WS_INTERSECT_BATCH = "/intersect/batch";
     private final String WS_INTERSECT_BATCH_STATUS = "/intersect/batch/{id}";
     private final String WS_INTERSECT_BATCH_DOWNLOAD = "/intersect/batch/download/{id}";
+    private final String WS_INTERSECT_RELOAD_CONFIG = "/intersect/reloadconfig";
 
-    private final String BATCH_PATH = "/data/batch_sampling/";
+    private final String USER_PROPERTIES = "user.properties";
 
     /**
      * Log4j instance
@@ -77,101 +83,7 @@ public class IntersectService {
     public
     @ResponseBody
     Object single(@PathVariable("ids") String ids, @PathVariable("lat") Double lat, @PathVariable("lng") Double lng, HttpServletRequest req) {
-        Vector out = new Vector();
-
-        for (String id : ids.split(",")) {
-
-            Layer layer = null;
-            int newid = cleanObjectId(id);
-
-            if (newid != -1) {
-                layer = layerDao.getLayerById(newid);
-            }
-            if(layer == null) {
-                layer = layerDao.getLayerByName(id);
-            }
-
-            double[][] p = {{lng, lat}};
-
-            if (layer != null) {
-                if (layer.isShape()) {
-                    Objects o = objectDao.getObjectByIdAndLocation("cl" + layer.getId(), lng, lat);
-                    if(o != null) {
-                        Map m = new HashMap();
-                        m.put("value", o.getName());
-                        m.put("layername", o.getFieldname());   //close enough
-                        m.put("pid", o.getPid());
-                        m.put("description", o.getDescription());
-                        //m.put("fid", o.getFid());
-
-                        out.add(m);
-                    } else {
-                        Map m = new HashMap();
-                        m.put("value", "");
-                        m.put("layername", layer.getDisplayname());   //close enough
-
-                        out.add(m);
-                    }
-                } else if (layer.isGrid()) {
-                    Grid g = new Grid(layerIntersectDao.getConfig().getLayerFilesPath() + layer.getPath_orig());
-                    if(g != null) {
-                        float[] v = g.getValues(p);
-                        //s = "{\"value\":" + v[0] + ",\"layername\":\"" + layer.getDisplayname() + "\"}";
-                        Map m = new HashMap();
-                        m.put("value", (Float.isNaN(v[0])?"":v[0]));
-                        m.put("layername", layer.getDisplayname());
-
-                        out.add(m);
-                    } else {
-                        logger.error("Cannot find grid file: " + layerIntersectDao.getConfig().getLayerFilesPath() + layer.getPath_orig());
-                        Map m = new HashMap();
-                        m.put("value", "");
-                        m.put("layername", layer.getDisplayname());   //close enough
-
-                        out.add(m);
-                    }
-                }
-            } else {
-                String gid = null;
-                String filename = null;
-                String name = null;
-
-                if (id.startsWith("species_")) {
-                    //maxent layer
-                    gid = id.substring(8);
-                    filename = layerIntersectDao.getConfig().getAlaspatialOutputPath() + File.separator + "maxent" + File.separator + gid + File.separator + gid;
-                    name = "Prediction";
-                } else if (id.startsWith("aloc_")) {
-                    //aloc layer
-                    gid = id.substring(8);
-                    filename = layerIntersectDao.getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + gid;
-                    name = "Classification";
-                }
-
-                if (filename != null) {
-                    Grid grid = new Grid(filename);
-
-                    if (grid != null && (new File(filename + ".grd").exists())) {
-                        float[] v = grid.getValues(p);
-                        if (v != null) {
-                            Map m = new HashMap();
-                            if (Float.isNaN(v[0])) {
-                                //s = "{\"value\":\"no data\",\"layername\":\"" + name + " (" + gid + ")\"}";
-                                m.put("value", "");
-                                m.put("layername", name + "(" + gid + ")");
-                            } else {
-                                //s = "{\"value\":" + v[0] + ",\"layername\":\"" + name + " (" + gid + ")\"}";
-                                m.put("value", (Float.isNaN(v[0])?"":v[0]));
-                                m.put("layername", name + "(" + gid + ")");
-                            }
-                            out.add(m);
-                        }
-                    }
-                }
-            }
-        }
-
-        return out;
+        return layerIntersectDao.samplingFull(ids, lng, lat);
     }
 
     /**
@@ -193,36 +105,39 @@ public class IntersectService {
         return -1;
     }
 
-    @RequestMapping(value = WS_INTERSECT_BATCH, method = RequestMethod.GET)
-    public void batchGet(
-            @RequestParam(value = "fids", required = false, defaultValue = "") String fids,
-            @RequestParam(value = "points", required = false, defaultValue = "") String pointsString,
-            HttpServletRequest request, HttpServletResponse response) {
-        try {
-            String [] pointsArray = pointsString.split(",");
-            String [] fields = fids.split(",");
+//    @RequestMapping(value = WS_INTERSECT_BATCH, method = RequestMethod.GET)
+//    public void batchGet(
+//            @RequestParam(value = "fids", required = false, defaultValue = "") String fids,
+//            @RequestParam(value = "points", required = false, defaultValue = "") String pointsString,
+//            HttpServletRequest request, HttpServletResponse response) {
+//        try {
+//            String [] pointsArray = pointsString.split(",");
+//            String [] fields = fids.split(",");
+//
+//            ArrayList<String> sample = layerIntersectDao.sampling(fids, pointsString);
+//
+//            //setup output stream
+//            OutputStream os = response.getOutputStream();
+//
+//            IntersectUtil.writeSampleToStream(fields, pointsArray, sample, os);
+//
+//            os.flush();
+//            os.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-            ArrayList<String> sample = layerIntersectDao.sampling(fids, pointsString);
+    Properties userProperties = null;    
 
-            //setup output stream
-            OutputStream os = response.getOutputStream();
-
-            IntersectUtil.writeSampleToStream(fields, pointsArray, sample, os);
-
-            os.flush();
-            os.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    static Properties userProperties;
-
-    @RequestMapping(value = WS_INTERSECT_BATCH, method = RequestMethod.POST)
+    @RequestMapping(value = WS_INTERSECT_BATCH, method = {RequestMethod.GET, RequestMethod.POST})
+    @ResponseBody
     public Map batch(
             @RequestParam(value = "fids", required = false, defaultValue = "") String fids,
             @RequestParam(value = "points", required = false, defaultValue = "") String pointsString,
             HttpServletRequest request, HttpServletResponse response) {
+        initUserProperties();
+
         Map map = new HashMap();
         String batchId = null;
         try {
@@ -243,28 +158,29 @@ public class IntersectService {
             }
 
             //count fields
-            int countFields = 0;
+            int countFields = 1;
             int p = 0;
             while((p = fids.indexOf(',', p+1)) > 0) countFields++;
 
             //count points
-            int countPoints = 0;
+            int countPoints = 1;
             p = 0;
             while((p = pointsString.indexOf(',', p+1)) > 0) countPoints++;
 
-            if(countPoints/2 < pointsLimit && countFields < fieldsLimit) {
+            if(countPoints/2 > pointsLimit) {
+                map.put("error","Too many points.  Maximum is " + pointsLimit);
+            } else if(countFields > fieldsLimit) {
+                map.put("error","Too many fields.  Maximum is " + fieldsLimit);
+            } else {
                 BatchConsumer.start(layerIntersectDao);
-                batchId = BatchProducer.produceBatch(BATCH_PATH,request.getRemoteAddr(),fids, pointsString);
+                batchId = BatchProducer.produceBatch(userProperties.getProperty("batch_path"),"request address:" + request.getRemoteAddr(),fids, pointsString);
 
                 map.put("batchId", batchId);
-                BatchProducer.addInfoToMap(BATCH_PATH, batchId, map);
-                map.put("statusUrl", WS_INTERSECT_BATCH_STATUS.replace("{id}", batchId));
-
-                return map;
-            } else {
-                map.put("error","too many fields or points");
-                return map;
+                BatchProducer.addInfoToMap(userProperties.getProperty("batch_path"), batchId, map);
+                map.put("statusUrl", userProperties.getProperty("layers_service_url") + WS_INTERSECT_BATCH_STATUS.replace("{id}", batchId));
             }
+
+            return map;
 
 //            ArrayList<String> sample = layerIntersectDao.sampling(fids, pointsString);
 //
@@ -287,14 +203,17 @@ public class IntersectService {
     }
 
     @RequestMapping(value = WS_INTERSECT_BATCH_STATUS, method = RequestMethod.GET)
+    @ResponseBody
     public Map batchStatus(
             @PathVariable("id") String id,
             HttpServletRequest request, HttpServletResponse response) {
+        initUserProperties();
+
         Map map = new HashMap();
         try {
-            BatchProducer.addInfoToMap(BATCH_PATH, id, map);
+            BatchProducer.addInfoToMap(userProperties.getProperty("batch_path"), id, map);
             if(map.get("finished") != null) {
-                map.put("downloadUrl", WS_INTERSECT_BATCH_DOWNLOAD.replace("{id}", id));
+                map.put("downloadUrl", userProperties.getProperty("layers_service_url") + WS_INTERSECT_BATCH_DOWNLOAD.replace("{id}", id));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -307,13 +226,15 @@ public class IntersectService {
     public void batchDownload(
             @PathVariable("id") String id,
             HttpServletRequest request, HttpServletResponse response) {
+        initUserProperties();
+
         try {
             Map map = new HashMap();
-            BatchProducer.addInfoToMap(BATCH_PATH, id, map);
+            BatchProducer.addInfoToMap(userProperties.getProperty("batch_path"), id, map);
             if(map.get("finished") != null) {
                 OutputStream os = response.getOutputStream();
-                FileInputStream fis = new FileInputStream(BATCH_PATH + File.separator + id + File.separator + "sample.csv.gz");
-                byte [] buffer = new byte[409600];
+                FileInputStream fis = new FileInputStream(userProperties.getProperty("batch_path") + File.separator + id + File.separator + "sample.zip");
+                byte [] buffer = new byte[4096];
                 int size;
                 while((size = fis.read(buffer)) > 0) {
                     os.write(buffer, 0, size);
@@ -326,5 +247,54 @@ public class IntersectService {
         }
 
         return;
+    }
+
+    /**
+     *
+     * @return null if successful or error as String
+     */
+    String initUserProperties() {
+        String error = null;
+        userProperties = new Properties();
+        try {
+            InputStream is = IntersectService.class.getResourceAsStream("/" + USER_PROPERTIES);
+            if (is != null) {
+                userProperties.load(is);
+            } else {
+                logger.error("failed to load " + USER_PROPERTIES);
+                error = "failed to load " + USER_PROPERTIES;
+            }
+        } catch (IOException e) {
+            logger.error("failed to load " + USER_PROPERTIES, e);
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.close();
+            error = "failed to load " + USER_PROPERTIES + "\n" + sw.getBuffer().toString();
+        }
+        return error;
+    }
+
+    @RequestMapping(value = WS_INTERSECT_RELOAD_CONFIG, method = RequestMethod.GET)
+    @ResponseBody
+    public Map reloadConfig(
+            @RequestParam(value = "p", required = false, defaultValue = "") String p,
+            HttpServletRequest request) {
+        Map map = new HashMap();
+
+        if(userProperties == null || !userProperties.containsKey("reload_config_password")
+                || userProperties.getProperty("reload_config_password").equals(p)) {
+            map.put("result","authorised");
+            
+            String error = initUserProperties();
+            map.put("user.properties",error==null?"successful":error);
+
+            error = layerIntersectDao.reload();
+            map.put("layerIntersectDao",error==null?"successful":error);
+        } else {
+            map.put("result","not authorised");
+        }
+
+        return map;
     }
 }

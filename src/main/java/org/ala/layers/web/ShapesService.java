@@ -14,10 +14,10 @@
  ***************************************************************************/
 package org.ala.layers.web;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.OutputStream;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.ala.layers.dao.ObjectDAO;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -25,7 +25,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  *
@@ -38,19 +37,17 @@ public class ShapesService {
      * Log4j instance
      */
     protected Logger logger = Logger.getLogger(this.getClass());
-    
-    @Resource(name="objectDao")
+    @Resource(name = "objectDao")
     private ObjectDAO objectDao;
 
     /*
      * return a shape as kml
      */
     @RequestMapping(value = "/shape/{type}/{id}", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String findShape(@PathVariable("type") String type, @PathVariable("id") String id, HttpServletRequest req) {
+    public void findShape(@PathVariable("type") String type, @PathVariable("id") String id, HttpServletRequest req, HttpServletResponse resp) {
+        OutputStream os = null;
         try {
-
+            os = resp.getOutputStream();
             //validate object id
             id = cleanObjectId(id);
 
@@ -76,16 +73,22 @@ public class ShapesService {
 //            }
 
             if (type.equalsIgnoreCase("wkt") || type.equalsIgnoreCase("kml") || type.equalsIgnoreCase("geojson") || type.equalsIgnoreCase("shp")) {
-                return objectDao.getObjectsGeometryById(id, type);
+                objectDao.streamObjectsGeometryById(os, id, type);
             } else {
-                return "'" + type + "' type not supported yet.";
+                os.write(("'" + type + "' type not supported yet.").getBytes());
             }
-
-         } catch (Exception e) {
+        } catch (Exception e) {
             logger.error("An error has occurred retrieving '" + type + "' for object id " + id);
             logger.error(ExceptionUtils.getFullStackTrace(e));
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (Exception e) {
+                    logger.error("Error closing http request stream", e);
+                }
+            }
         }
-        return "";
     }
 
     private String cleanObjectId(String id) {

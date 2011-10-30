@@ -25,6 +25,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
@@ -49,9 +50,6 @@ public class ObjectsService {
      */
     @RequestMapping(value = "/objects/{id}", method = RequestMethod.GET)
     public @ResponseBody List<Objects> fieldObjects(@PathVariable("id") String id, HttpServletRequest req) {
-//        String query = "SELECT pid, id, name, \"desc\" FROM objects WHERE fid='" + id + "';";
-//        ResultSet r = DBConnection.query(query);
-//        return Utils.resultSetToJSON(r);
         return objectDao.getObjectsById(id);
     }
     
@@ -67,5 +65,19 @@ public class ObjectsService {
 //        ResultSet r = DBConnection.query(query);
 //        return Utils.resultSetToJSON(r);
         return objectDao.getObjectByPid(pid);
-    }    
+    }
+
+    /**This method returns all objects associated with a field
+     *
+     * @param id
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/objects/{id}/{lat}/{lng:.+}", method = RequestMethod.GET)
+    public @ResponseBody List<Objects> fieldObjects(@PathVariable("id") String id,
+            @PathVariable("lat") Double lat,@PathVariable("lng") Double lng,
+            @RequestParam(value = "limit", required = false, defaultValue = "40") Integer limit,
+            HttpServletRequest req) {        
+        return objectDao.getNearestObjectByIdAndLocation(id, limit, lng, lat);
+    }
 }
