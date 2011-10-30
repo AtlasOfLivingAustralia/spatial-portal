@@ -138,7 +138,7 @@ public class AddToolComposer extends UtilityComposer {
                             JSONObject jo = (JSONObject) ci.getValue();
                             if(jo.getString("name").equals(mi.getValue())) {
                                 cbLayer1.setSelectedItem(ci);
-                                cbLayer2.setText(ci.getLabel());
+                                cbLayer1.setText(ci.getLabel());
                                 toggles();
                                 return;
                             }

@@ -93,7 +93,6 @@
 
             <div id="atstep3" visible="false" zclass="last optional download">
                 <label id="atstep3_desc" value="Select layers" sclass="wSubLabel"/>
-                <a href="http://spatial.ala.org.au/layers" label="layers" style="float:right" target="_blank" />
                 <label id="atstep3_label" value="" />
                 <separator height="15px" />
                 <hbox>
