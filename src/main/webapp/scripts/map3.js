@@ -1442,7 +1442,7 @@ function envLayerNearest(e) {
                     style = "class='md_grey-bg'"
                 }
                 body = body + "<tr " + style + "><td>" + ret[i].name
-                    + "</td><td>" + lng + "," + lat
+                    + "</td><td>" + lng + ", " + lat
                     + "</td><td>" + (Math.round(ret[i].distance/100)/10)
                     + "</td><td>" + (Math.round(ret[i].degrees*10)/10) + "</td></tr>";
                 
@@ -1568,19 +1568,14 @@ function initNearest() {
     nearestcontrol.activate();
 }
 function toggleActiveNearest() {
-    console.log("toggleActiveNearest");
     if(nearestcontrol != null) {
-        console.log("a");
         nearestcontrol.deactivate();
         nearestcontrol = null;
         parent.jq('$nearesttool')[0].style.display="none"
-        document.getElementById("nearestTool").style.backgroundImage = "url('img/overview_replacement_off.gif')";
     } else {
-        console.log("b");
         initNearest();
         parent.document.getElementById('nearestOutput').innerHTML = "Click on the map for the nearest localities.";
         parent.jq('$nearesttool')[0].style.display=""
-        document.getElementById("nearestTool").style.backgroundImage = "url('img/overview_replacement.gif')";
     }
 }
 

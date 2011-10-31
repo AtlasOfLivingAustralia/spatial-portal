@@ -24,7 +24,7 @@
                 <vbox>
                     <hbox>
                         <div style="padding-top:0px" width="60px">
-                            <label value="Opacity: " sclass="h3" />
+                            <label value="Opacity" sclass="h3" />
                         </div>
                         <div  width="180px">
                             <slider id="opacitySlider" width="95%" />
@@ -41,7 +41,7 @@
                 <div id="sizeChooser"  width="100%">
                     <hbox>
                         <div style="padding-top:0px" width="60px">
-                            <label value="Map Size: " sclass="h3" />
+                            <label value="Map Size" sclass="h3" />
                         </div>
                         <div width="180px">
                             <slider id="sizeSlider" maxpos="30" width="95%" />
@@ -52,7 +52,7 @@
                     </hbox>
                     <hbox>
                         <div style="padding-top:0px" width="60px">
-                            <label value="Plot Size: " sclass="h3" />
+                            <label value="Plot Size" sclass="h3" />
                         </div>
                         <div width="180px">
                             <slider id="plotSizeSlider" maxpos="30" width="95%" />
@@ -64,10 +64,10 @@
                 </div>
                 <div id="colourChooser" >
                     <hbox>
-                        <label value="Colour:" sclass="h3" />
+                        <label value="Facet" sclass="h3" />
                         <separator orient="vertical" />
                         <combobox id="cbColour" >
-                            <comboitem label="User defined" id="ciColourUser" value="-1" />
+                            <comboitem label="User defined colour" id="ciColourUser" value="-1" />
                             <comboitem label="Scientific Name" value="taxon_name" />
                             <comboitem label="Species" value="species" />
                             <comboitem label="Genus" value="genus" />
@@ -149,7 +149,7 @@ border-bottom: none;
                         <vbox >
                             <hbox>
                                 <div style="padding-top:0px" width="60px">
-                                    <label value="Red: " sclass="h3" />
+                                    <label value="Red" sclass="h3" />
                                 </div>
 
                                 <div width="180px">
@@ -162,7 +162,7 @@ border-bottom: none;
                             </hbox>
                             <hbox>
                                 <div style="padding-top:0px" width="60px">
-                                    <label value="Green: " sclass="h3" />
+                                    <label value="Green" sclass="h3" />
                                 </div>
 
                                 <div  width="180px">
@@ -175,7 +175,7 @@ border-bottom: none;
                             </hbox>
                             <hbox>
                                 <div style="padding-top:0px" width="60px">
-                                    <label value="Blue: " sclass="h3" />
+                                    <label value="Blue" sclass="h3" />
                                 </div>
 
                                 <div  width="180px">
@@ -191,7 +191,7 @@ border-bottom: none;
                 </div>
                 <div height="200px">
                     <div style="padding-top:0px" width="60px">
-                        <label value="Legend : " sclass="h3" />
+                        <label value="Legend" sclass="h3" />
                     </div>
                     <div width="60%" style="position:absolute;float:left">
                         <image id="legendImg" width="50px" height="50px" />
