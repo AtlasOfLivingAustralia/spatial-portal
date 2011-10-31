@@ -177,8 +177,8 @@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"
 
                             <h3>Occurrences</h3>
                             <ul>
-                                <li><strong>Static Species Density Heatmap </strong><a href="http://biocache.ala.org.au/density/map?q=*:*">http://biocache.ala.org.au/density/map?q=*:*</a></li> - returns heatmap image (optional param forceRefresh=true will regenerate the image)
-                                <li><strong>Static Species Density Legend: </strong><a href="http://biocache.ala.org.au/density/legend?q=*:*">http://biocache.ala.org.au/legend/map?q=*:*</a></li> - returns associated legend image (optional param forceRefresh=true will regenerate the image)
+                                <li><strong>Static Species Density Heatmap </strong><a href="http://biocache.ala.org.au/ws/density/map?q=*:*">http://biocache.ala.org.au/ws/density/map?q=*:*</a> <a href="http://biocache.ala.org.au/ws/density/map?q=Sarcophilus%20harrisii">http://biocache.ala.org.au/ws/density/map?q=Sarcophilus%20harrisii</a></li> - returns heatmap image (optional param forceRefresh=true will regenerate the image)</li>
+                                <li><strong>Static Species Density Legend: </strong><a href="http://biocache.ala.org.au/ws/density/legend?q=*:*">http://biocache.ala.org.au/ws/density/legend?q=*:*</a></li> - returns associated legend image (optional param forceRefresh=true will regenerate the image)</li>
                             </ul>
                             
                             <h3>Webportal Services</h3>
