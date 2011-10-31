@@ -2824,8 +2824,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         ArrayList<MapLayer> list = new ArrayList<MapLayer>();
         List<MapLayer> allLayers = getPortalSession().getActiveLayers();
         for (int i = 0; i < allLayers.size(); i++) {
-            if (allLayers.get(i).getData("query") != null
-                    && allLayers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
+            if (allLayers.get(i).getData("query") != null){ 
+                    //&& allLayers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
                 list.add(allLayers.get(i));
             }
         }
