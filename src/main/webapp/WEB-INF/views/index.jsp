@@ -144,6 +144,7 @@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"
                                         <li><strong>Download a shape object as KML, given its pid:</strong> /layers-service/shape/kml/{pid} e.g. <a href="/layers-service/shape/kml/3742602">/layers-service/shape/kml/3742602</a></li>
                                         <li><strong>Download a shape object as WKT, given its pid:</strong> /layers-service/shape/wkt/{pid} <a href="/layers-service/shape/wkt/3742602">/layers-service/shape/wkt/3742602</a></li>
                                         <li><strong>Download a shape object as GeoJSON, given its pid:</strong> /layers-service/shape/geojson/{pid} <a href="/layers-service/shape/geojson/3742602">/layers-service/shape/geojson/3742602</a></li>
+                                        <li><strong>Get the nearest objects to a coordinate</strong> /layers-service/objects/{id}/{lat}/{lng}?limit=40 e.g. <a href="/layers-service/objects/cl915/-22.465864536394/124.419921875?limit=10">/layers-service/objects/cl915/-22.465864536394/124.419921875?limit=10</a></li>
                                     </ul></li>
 
                                 <li>Search<ul>
