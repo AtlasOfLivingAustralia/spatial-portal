@@ -151,7 +151,10 @@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"
                                     </ul></li>
 
                                 <li>Intersect<ul>
-                                        <li><strong>Intersect a layer(s) at a given set of coordinates. Multiple field ids or layer names can be specified separated by a comma (e.g cl22,cl23):</strong> /layers-service/intersect/{id}/{latitude}/{longitude} e.g. <a href="/layers-service/intersect/cl22/-29.911/132.769">/layers-service/intersect/cl22/-29.911/132.769</a></li>
+                                        <li><strong>Intersect a layer(s) at a given set of coordinates. Multiple field ids or layer names can be specified separated by a comma (e.g. cl22,cl23):</strong> /layers-service/intersect/{id}/{latitude}/{longitude} e.g. <a href="/layers-service/intersect/cl22/-29.911/132.769">/layers-service/intersect/cl22/-29.911/132.769</a></li>
+                                        <li><strong>Batch intersect a layer(s) at given coordinates. Multiple field ids or layer names can be specified separated by a comma (e.g. cl22,cl23):</strong> /layers-service/intersect/batch e.g. <a href="/layers-service/intersect/batch?fids=cl22&points=-29.911,132.769">/layers-service/intersect/batch?fids=cl22&points=-29.911,132.769</a></li>
+                                        <li><strong>Check batch intersect status with a batchId:</strong> /layers-service/intersect/batch/{batchId} e.g. /layers-service/intersect/batch/1234</li>
+                                        <li><strong>Download a finished batch intersect with a batchId as zipped file 'sample.csv':</strong> /layers-service/intersect/batch/download/{batchId} e.g. /layers-service/intersect/batch/download/1234</li>
                                     </ul></li>
 
                                 <li>Distributions<ul>
