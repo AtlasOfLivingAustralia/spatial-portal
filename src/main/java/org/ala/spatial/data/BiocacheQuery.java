@@ -1205,4 +1205,17 @@ public class BiocacheQuery implements Query, Serializable {
     public String getWS() {
         return biocacheWebServer;
     }
+
+    
+    /**
+     * Get the column header name for a column in the output of sampling.
+     * 
+     * @param colourMode
+     * @return
+     */
+    @Override
+    public String getRecordFieldDisplayName(String colourMode) {
+        //sampling column name is the same as colourMode name.
+        return colourMode;
+    }
 }

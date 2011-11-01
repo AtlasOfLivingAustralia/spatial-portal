@@ -572,4 +572,20 @@ public class UploadQuery implements Query, Serializable {
     public void setQc(String qc) {
 
     }
+
+    /**
+     * Get the column header name for a column in the output of sampling.
+     *
+     * @param colourMode
+     * @return
+     */
+    @Override
+    public String getRecordFieldDisplayName(String colourMode) {
+        for(int i=0;i<data.size();i++) {
+            if(data.get(i).getName().equals(colourMode)) {
+                return data.get(i).getDisplayName();
+            }
+        }
+        return colourMode;
+    }
 }

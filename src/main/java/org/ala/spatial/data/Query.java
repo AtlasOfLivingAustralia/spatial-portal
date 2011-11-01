@@ -190,4 +190,6 @@ public interface Query {
      * Set parameter to add into WMS requests
      */
     public void setQc(String qc);
+
+    public String getRecordFieldDisplayName(String colourMode);
 }

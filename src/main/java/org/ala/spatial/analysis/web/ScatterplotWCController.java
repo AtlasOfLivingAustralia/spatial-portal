@@ -1235,7 +1235,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     int longitudeColumn = findInArray(data.getQuery().getRecordLongitudeFieldDisplayName(), csv.get(0));
                     int latitudeColumn = findInArray(data.getQuery().getRecordLatitudeFieldDisplayName(), csv.get(0));
                     int idColumn = findInArray(data.getQuery().getRecordIdFieldDisplayName(), csv.get(0));
-                    int seriesColumn = findInArray(data.colourMode, csv.get(0));
+                    int seriesColumn = findInArray(data.getQuery().getRecordFieldDisplayName(data.colourMode), csv.get(0));
 
                     double[] points = new double[(csv.size() - 1) * 2];
                     String[] series = new String[csv.size() - 1];
