@@ -257,7 +257,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             highlightLayer.setOpacity(1);
                             if (selectedLayer.getHighlight() != null && selectedLayer.getHighlight().length() > 0
                                     && !selectedLayer.getColourMode().equals("grid")) {
-                                highlightLayer.setEnvParams(highlightEnv + ";sel:" + selectedLayer.getHighlight().replace(";", "%3B"));
+                                if(selectedLayer.getData("query") instanceof UploadQuery) {
+                                    try {
+                                        highlightLayer.setEnvParams(highlightEnv + ";sel:" + URLEncoder.encode(selectedLayer.getHighlight().replace(";", "%3B"),"UTF-8"));
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                } else {
+                                    highlightLayer.setEnvParams(highlightEnv + ";sel:" + selectedLayer.getHighlight().replace(";", "%3B"));
+                                }
                                 highlightLayer.setData("highlight", "show");
                             } else {
                                 highlightLayer.setData("highlight", "hide");
