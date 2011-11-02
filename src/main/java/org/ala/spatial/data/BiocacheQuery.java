@@ -885,12 +885,14 @@ public class BiocacheQuery implements Query, Serializable {
                     double [] cutpointmins = l.getCutoffMindoubles();
                     StringBuilder sb = new StringBuilder();
                     sb.append(colourmode);                    
-                    int i = 0;                    
+                    int i = 0;
+                    int lasti = 0;
                     while (i < cutpoints.length) {
                         if (i == cutpoints.length - 1 || cutpoints[i] != cutpoints[i + 1]) {
-                            if(i > 0) sb.append(",").append(cutpoints[i-1]);
+                            if(i > 0) sb.append(",").append(cutpoints[lasti]);
                             else sb.append(",*");
                             sb.append(",").append(cutpoints[i]);
+                            lasti = i;
                         }
                         i++;
                     }

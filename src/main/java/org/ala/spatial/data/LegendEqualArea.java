@@ -98,19 +98,19 @@ public class LegendEqualArea extends Legend {
             }
 
             //compensate for '<' method by halving the size of cutoff spans of the same value
-            int start = 1;
-            for (int i = 1; i < divisions; i++) {
-                if (cutoffs[i] != cutoffs[i - 1] && (i - start) > 1) {
-                    int mid = (i - start) / 2 + start;
-
-                    //fill up with the lower value
-                    for (int j = start; j < mid; j++) {
-                        cutoffs[j] = cutoffs[j - 1];
-                    }
-
-                    start = i;
-                }
-            }
+//            int start = 1;
+//            for (int i = 1; i < divisions; i++) {
+//                if (cutoffs[i] != cutoffs[i - 1] && (i - start) > 1) {
+//                    int mid = (i - start) / 2 + start;
+//
+//                    //fill up with the lower value
+//                    for (int j = start; j < mid; j++) {
+//                        cutoffs[j] = cutoffs[j - 1];
+//                    }
+//
+//                    start = i;
+//                }
+//            }
 
             //set unqiue end
             if (cutoffs[divisions - 1] == cutoffs[divisions - 2]) {
