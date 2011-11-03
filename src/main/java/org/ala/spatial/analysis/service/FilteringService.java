@@ -163,15 +163,15 @@ public class FilteringService implements Serializable {
 
 
             /* get current top speciesrecord */
-            ArrayList<OccurrenceRecordNumbers> topspeciesrecord = getTopSpeciesRecord();
+            ArrayList<OccurrenceRecordNumbers> topspeciesrecord = new ArrayList<OccurrenceRecordNumbers>();//getTopSpeciesRecord();
 
             /* get new top record key list */
             layerfilters.add(new_filter);
             ArrayList<OccurrenceRecordNumbers> newspeciesrecord;
             if (new_filter.catagories == null) {
-                newspeciesrecord = OccurrencesCollection.getGridSampleSet(new_filter);
+                newspeciesrecord =  new ArrayList<OccurrenceRecordNumbers>();//OccurrencesCollection.getGridSampleSet(new_filter);
             } else {
-                newspeciesrecord = OccurrencesCollection.getCatagorySampleSet(new_filter);
+                newspeciesrecord = new ArrayList<OccurrenceRecordNumbers>();//OccurrencesCollection.getCatagorySampleSet(new_filter);
             }
 
             //reduce size of newspeciesrecord
@@ -302,7 +302,7 @@ public class FilteringService implements Serializable {
         if (session_id_.equals("none")) {
             /* TODO: fix this up when no longer using ArrayList
             in getSpeciesBitset */
-            ArrayList<OccurrencesSpeciesList> list = OccurrencesCollection.getSpeciesList(new OccurrencesFilter(region, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
+            ArrayList<OccurrencesSpeciesList> list = new ArrayList<OccurrencesSpeciesList>();//OccurrencesCollection.getSpeciesList(new OccurrencesFilter(region, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
             if(list != null && list.size() > 0){
                 osl = list.get(0);
             }
@@ -321,7 +321,7 @@ public class FilteringService implements Serializable {
             }
 
             /* make list of species, for inside region filter */
-            osl = OccurrencesCollection.getSpeciesList(rk);
+            osl =  new OccurrencesSpeciesList("", new OccurrencesFilter(rk,0));//OccurrencesCollection.getSpeciesList(rk);
         }        
 
         int[] ret = new int[2];
@@ -359,7 +359,7 @@ public class FilteringService implements Serializable {
 
         String output = null;
 
-        ArrayList<OccurrencesSpeciesList> osl = OccurrencesCollection.getSpeciesList(occurrencesFilter);
+        ArrayList<OccurrencesSpeciesList> osl = null;//OccurrencesCollection.getSpeciesList(occurrencesFilter);
         if(osl != null && osl.size() > 0){
             StringBuffer sb = new StringBuffer();
             for(String s : osl.get(0).getSpeciesList()){
@@ -414,7 +414,7 @@ public class FilteringService implements Serializable {
         }
 
         /* get samples records from records indexes */
-        ArrayList<String> samples = OccurrencesCollection.getFullRecords(occurrencesFilter);
+        ArrayList<String> samples = null;//OccurrencesCollection.getFullRecords(occurrencesFilter);
 
         //test for no records
         if (samples == null || samples.size() == 0) {

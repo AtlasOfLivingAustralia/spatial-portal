@@ -83,7 +83,8 @@ public class CalculateDistanceThread implements Runnable {
                 p1 = g1.getcellnumber(longitude, latitude);
                 p2 = g2.getcellnumber(longitude, latitude);
 
-                if (p1 >= 0 && p1 < d1.length && range[i][j] > 0) {
+//                if (p1 >= 0 && p1 < d1.length && range[i][j] > 0) {
+                if (p1 >= 0 && p1 < d1.length) {
                     v1 = d1[p1];//(d1[p1]-g1.minval) / (g1.maxval - g1.minval);
                 } else {
                     continue;
@@ -97,7 +98,8 @@ public class CalculateDistanceThread implements Runnable {
 
                 if (!Double.isNaN(v1) && !Double.isNaN(v2)) {
                     count++;
-                    sum += java.lang.Math.abs(v1 - v2) / range[i][j];
+//                    sum += java.lang.Math.abs(v1 - v2) / range[i][j];
+                    sum += java.lang.Math.abs(v1 - v2);
                 }
             }
         }

@@ -59,8 +59,9 @@ public class DownloadController {
                     parentName = "ALA_GDM_";
                 } else if ("filtering".equals(parentPath)) {
                     parentName = "ALA_EnvFilter_";
+                } else if ("sitesbyspecies".equals(parentPath)) {
+                    parentName = "ALA_SitesBySpecies_";
                 }
-
 
                 File file = new File(zipfile); 
                 response.setContentType("application/zip");

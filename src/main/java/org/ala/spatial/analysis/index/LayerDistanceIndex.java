@@ -38,36 +38,36 @@ public class LayerDistanceIndex {
 
         double[][] measures = new double[layers.length][layers.length];
 
-        min = new double[TabulationSettings.grd_nrows][TabulationSettings.grd_ncols];
-        max = new double[TabulationSettings.grd_nrows][TabulationSettings.grd_ncols];
-        range = new double[TabulationSettings.grd_nrows][TabulationSettings.grd_ncols];
-        for (int i = 0; i < min.length; i++) {
-            for (int j = 0; j < min[i].length; j++) {
-                min[i][j] = Double.MAX_VALUE;
-                max[i][j] = Double.MAX_VALUE * -1;
-                range[i][j] = Double.NaN;
-            }
-        }
-
+//        min = new double[TabulationSettings.grd_nrows][TabulationSettings.grd_ncols];
+//        max = new double[TabulationSettings.grd_nrows][TabulationSettings.grd_ncols];
+//        range = new double[TabulationSettings.grd_nrows][TabulationSettings.grd_ncols];
+//        for (int i = 0; i < min.length; i++) {
+//            for (int j = 0; j < min[i].length; j++) {
+//                min[i][j] = Double.MAX_VALUE;
+//                max[i][j] = Double.MAX_VALUE * -1;
+//                range[i][j] = Double.NaN;
+//            }
+//        }
+//
         for (int i = 0; i < measures.length; i++) {
             for (int j = 0; j < measures[i].length; j++) {
                 measures[i][j] = Double.NaN;
             }
         }
 
-        System.out.println("updating min/max");
-        for (int i = 0; i < layers.length; i++) {
-            updateMinMax(layers[i].name);
-        }
-        for (int i = 0; i < min.length; i++) {
-            for (int j = 0; j < min[i].length; j++) {
-                if (max[i][j] != Double.MAX_VALUE * -1) {
-                    range[i][j] = max[i][j] - min[i][j];
-                } else {
-                    range[i][j] = 0;
-                }
-            }
-        }
+//        System.out.println("updating min/max");
+//        for (int i = 0; i < layers.length; i++) {
+//            updateMinMax(layers[i].name);
+//        }
+//        for (int i = 0; i < min.length; i++) {
+//            for (int j = 0; j < min[i].length; j++) {
+//                if (max[i][j] != Double.MAX_VALUE * -1) {
+//                    range[i][j] = max[i][j] - min[i][j];
+//                } else {
+//                    range[i][j] = 0;
+//                }
+//            }
+//        }
 
         //do distance calculations in blocks to reduce grids being loaded
         SpatialLogger.log("calculating distances");

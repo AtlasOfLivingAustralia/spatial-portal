@@ -22,7 +22,7 @@ public class OccurrencesSpeciesList {
      * @param id dataset uniqueId() as String
      * @param filter OccurrencesFilter of species list to produce
      */
-    OccurrencesSpeciesList(String id, OccurrencesFilter filter) {
+    public OccurrencesSpeciesList(String id, OccurrencesFilter filter) {
         this.datasetId = id;
         occurrencesFilter = filter;
 
