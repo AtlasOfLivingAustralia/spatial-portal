@@ -39,6 +39,7 @@ import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
+import org.zkoss.zul.Doublebox;
 import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Image;
@@ -90,6 +91,7 @@ public class AddToolComposer extends UtilityComposer {
     Label lLayersSelected;
     Button btnClearSelection;
     Menupopup mpLayer2, mpLayer1;
+    Doublebox dResolution;
 
     @Override
     public void afterCompose() {
@@ -1298,7 +1300,7 @@ public class AddToolComposer extends UtilityComposer {
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));
         }
-
+        
         if(lbListLayers != null) {
             if(bLayerListDownload1 != null && bLayerListDownload2 != null) {
                 bLayerListDownload1.setDisabled(lbListLayers.getSelectedCount() == 0);

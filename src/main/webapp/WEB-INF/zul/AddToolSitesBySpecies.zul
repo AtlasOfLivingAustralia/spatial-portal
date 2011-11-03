@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zk xmlns="http://www.zkoss.org/2005/zul">
+    <window id="addtoolwindow" use="org.ala.spatial.analysis.web.AddToolSitesBySpeciesComposer"
+    apply="org.ala.spatial.analysis.web.AddToolMaxentComposer" width="750px" height="700px"
+    xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="addtoolwindow.onClick$btnCancel(null)" style="display: inline" />
+        <n:a class="fancybox-help" n:onClick="loadHelp('sitesbyspecies-tools')" style="display: inline" />
+        
+        <separator />
+        <hbox id="stepCounter">
+            <vbox style="padding-left: 10px">
+                <grid width="150px">
+                    <columns>
+                        <column width="120px"/>
+                        <column />
+                    </columns>
+                    <rows>
+                        <row>
+                            <label id="lblStep1" style="font-weight:bold" value="1. Apply to an area"/>
+                            <image id="imgCompletedStep1" visible="false" src="img/accept.png"/>
+                        </row>
+                        <row>
+                            <label id="lblStep2" value="2. Select species"/>
+                            <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
+                        </row>
+                        <row>
+                            <label id="lblStep3" value="3. Select environmental grid size"/>
+                            <image id="imgCompletedStep3" visible="false" src="img/accept.png"/>
+            
+                        </row>
+                    
+                    </rows>
+        
+                </grid>
+
+                <div id="tlinfo" visible="false">
+                    <separator spacing="20px" />
+                    <label value="The colours against the layers are like traffic lights. Green implies the layer is uncorrelated to all selected layers, orange implies some correlation while red implies high correlation. As you select layers, the colours change to reflect correlation with already selected layers. For example a red layer implies high correlation with at least one selected layer while a green layer implies little or no correlation to any selected layer" />
+                    <separator />
+                    <label value="Note: The correlations are currently based on full layer spatial extents and not any selected sub-area." />
+                </div>
+
+            </vbox>
+            <vbox style="padding-left: 10px" >
+                <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
+                    <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
+                    <label id="atstep1_label" value="" />
+                    <separator />
+                    <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
+                        <radio id="rAreaCurrent" label="Current extent" value="current" />
+                        <radio id="rAreaAustralia" label="Australia" value="australia" />
+                        <radio id="rAreaWorld" label="World" value="world" />
+                        <radio id="rAreaCustom" label="Define new area" value="custom" />
+                    </radiogroup>
+                </div>
+
+                <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep">
+                    <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
+                    <label id="atstep2_label" value="" />
+                    <separator />
+                    <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
+                        <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false" />
+                        <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false" />
+                        <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" />
+                        <vbox width="100%">
+                            <div id="divSpeciesSearch" visible="false" >
+                                <separator />
+                                <label sclass="wLabel" value="Enter a scientific or common name"/>
+                                <separator />
+                                <hbox>
+                                    <separator orient="vertical" />
+                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete"
+                                    autodrop="true"  width="320px" 
+                                    onOK="if(searchSpeciesAuto.getSelectedIndex()>=0)addtoolwindow.onClick$btnOk(null)" >
+                                        <comboitem label=""/>
+                                    </combobox>
+                                </hbox>
+                                <separator/>
+                                <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
+                                <separator />
+                                <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
+                            </div>
+                        </vbox>
+                        <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Upload coordinates" />
+                        <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Upload LSIDs" />
+                    </radiogroup>
+                </div>
+
+                <div id="atstep3" visible="false" zclass="last optional">
+                    <label id="atstep3_desc" value="Enter grid resolution." sclass="wSubLabel"/>                    
+                    <label id="atstep3_label" value="" />
+                    <separator height="15px" />
+                    <hbox>
+                        <label value="Enter resolution in degrees" />
+                        <doublebox id="dResolution" constraint="no negative,no empty" value="0.01"/>
+                    </hbox>
+                </div>
+
+                <div sclass="wizButtonContainer">
+                    <hbox>
+                        <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
+                        <button sclass="goButton" label="Cancel" id="btnCancel" />
+                        <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
+                        <button sclass="goButton" label="Next &gt;" id="btnOk" />
+                        <fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+                    </hbox>
+                </div>
+
+            </vbox>
+        </hbox>
+
+    </window>
+</zk>

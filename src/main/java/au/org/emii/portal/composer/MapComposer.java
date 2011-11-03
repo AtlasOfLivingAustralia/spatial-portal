@@ -2638,6 +2638,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onClick$btnSpeciesList(Event event) {
         openModal("WEB-INF/zul/AddToolSpeciesList.zul", null);
     }
+    
+    public void onClick$btnSitesBySpecies(Event event) {
+        openModal("WEB-INF/zul/AddToolSitesBySpecies.zul", null);
+    }
 
     public Window openModal(String page, Hashtable<String, Object> params) {
         Window window = (Window) Executions.createComponents(page, this, params);

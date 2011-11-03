@@ -270,6 +270,10 @@ function runSpeciesList(){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnSpeciesList', null));
 }
 
+function runSitesBySpecies(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnSitesBySpecies', null));
+}
+
 function runAreaReport(){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAreaReport', null));
 }

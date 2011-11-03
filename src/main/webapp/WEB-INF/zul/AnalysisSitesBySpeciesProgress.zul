@@ -1,0 +1,20 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
+<zk>
+<window id="sitesbyspeciesprogress" title="Sites By Species" border="normal"
+    use="org.ala.spatial.analysis.web.SitesBySpeciesProgressWCController"
+            apply="org.ala.spatial.analysis.web.SitesBySpeciesProgressWCController"
+            closable="false" mode="embedded" width="320px">
+
+            <separator />
+            <progressmeter value="0" id="jobprogress" width="300px"/>
+             <separator />
+            <label id="jobstatus" value="" width="300px"/>
+            <separator />
+            <timer id="timer" delay="3000" repeats="true" />
+            <separator />
+            <hbox visible="false"><label value="Reference number" /> <textbox readonly="true" id="tbPid" /> </hbox>
+            <separator />
+            <button visible="false" id="btnHide" label="continue" /> <button id="btnCancel" label="cancel" />
+    </window>
+</zk>
