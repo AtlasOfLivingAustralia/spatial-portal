@@ -1835,4 +1835,6 @@ if not csv, then tab delimited
 
     <!-- path to store generated object data -->
     <file_store>e:\mnt\output\</file_store>
+
+  <biocache_service>http://biocache.ala.org.au/ws</biocache_service>
 </tabulation>
