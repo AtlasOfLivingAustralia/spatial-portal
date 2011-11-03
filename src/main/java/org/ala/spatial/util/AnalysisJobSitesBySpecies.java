@@ -49,7 +49,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
 
             // dump the species data to a file
             setProgress(0, "dumping species data");
-            Records records = new Records("http://biocache.ala.org.au/ws", speciesq + "%20AND%20geospatial_kosher:true", bbox, /*currentPath + File.separator + "raw_data.csv"*/ null);
+            Records records = new Records(TabulationSettings.biocache_service, speciesq + "%20AND%20geospatial_kosher:true", bbox, /*currentPath + File.separator + "raw_data.csv"*/ null);
 
             setStage(1);
 
@@ -58,6 +58,8 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
             sbs.write(records, currentPath + File.separator);
 
             setProgress(1, "finished");
+
+            setCurrentState(SUCCESSFUL);
 
             System.out.println("finished building sites by species matrix");
 

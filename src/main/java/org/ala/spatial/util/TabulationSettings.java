@@ -268,6 +268,8 @@ public class TabulationSettings {
     public static int dataresource_property;
     public static Hashtable<String, String> institutions;
 
+    public static String biocache_service;
+
     /**
      * loads settings form name of the appropriate xml resource file
      *
@@ -575,6 +577,8 @@ public class TabulationSettings {
         //dataresource_list_url = xr.getValue("dataresource_list_url");
         dataresource_property = Integer.parseInt(xr.getValue("dataresource_property"));
         loadInstitutions();
+
+        biocache_service = xr.getValue("biocache_service");
     }
 
     static public String getPath(String layerName) {
