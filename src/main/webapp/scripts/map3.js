@@ -1324,10 +1324,10 @@ function envLayerInspection(e) {
             pt = pt.transform(map.projection, map.displayProjection);
 
             infoHtml = "<div id='sppopup'>"
-                + "<table><tr><td>Point</td><td><b>" 
-                + pt.lon.toPrecision(5) 
+                + "<table><tr><td colspan='5'><b>Point "
+                + pt.lon.toPrecision(8)
                 + ", " 
-                + pt.lat.toPrecision(5)
+                + pt.lat.toPrecision(8)
                 + "</b></td></tr>" 
                 + infoHtml
                 + "</table>"
@@ -1416,7 +1416,7 @@ function envLayerNearest(e) {
     last_nearest_pos = this_pos;
 
     try {
-        var url = parent.jq('$layers_url')[0].innerHTML + "/objects/cl915/" + pt.lat + "/" + pt.lon + "?limit=10";
+        var url = parent.jq('$layers_url')[0].innerHTML + "/objects/cl915/" + pt.lat + "/" + pt.lon + "?limit=5";
         var ret = "";
         var time = new Date().getTime();
         $.ajax({
@@ -1429,7 +1429,7 @@ function envLayerNearest(e) {
         });
 
         if(ret != null && ret.length > 0) {
-            body = body + "<tr><td width='200px'></td><td width='100px'><b>location</b></td><td width='70px'><b>distance (km)</b></td><td width='70px'><b>heading (deg)</b></td></tr>"
+             body = body + "<tr><td width='200px'><b>Feature</td><td width='85px'><b>Location</b></td><td width='55px'><b>Distance (km)</b></td><td width='50px'><b>Heading (deg)</b></td></tr>"
             if(markers == null) {
                 initMarkersLayer();
             }
@@ -1442,7 +1442,7 @@ function envLayerNearest(e) {
                     style = "class='md_grey-bg'"
                 }
                 body = body + "<tr " + style + "><td>" + ret[i].name
-                    + "</td><td>" + lng + ", " + lat
+                    + "</td><td>" + lng + ",<br>" + lat
                     + "</td><td>" + (Math.round(ret[i].distance/100)/10)
                     + "</td><td>" + (Math.round(ret[i].degrees*10)/10) + "</td></tr>";
                 
@@ -1452,8 +1452,7 @@ function envLayerNearest(e) {
                 var pointFeature = new OpenLayers.Feature.Vector(point);
                 pointFeature.attributes = {name: ret[i].name};
                 markers.addFeatures([pointFeature]);
-            }
-            body = body + "<tr><td>&nbsp;</td></tr><tr><td colspan='4'>time taken " + (new Date().getTime() - time) + "ms</td></tr>";
+            }           
             last_nearest_data = body;
             return body;
         }
@@ -1510,7 +1509,7 @@ function initHover() {
             var output = parent.document.getElementById('hoverOutput');
             var data = envLayerHover(e);
             if(data != null) {
-                output.innerHTML = "<table><tr><td>Point</td><td><b>" + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "</b></td></tr>" + data + "</table>";
+                output.innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>";
             } else {
                 output.innerHTML = "No values to display";
             }
@@ -1552,12 +1551,12 @@ function initNearest() {
             nearestcontrolprevpos = this_pos;
 
             var output = parent.document.getElementById('nearestOutput');
-            output.innerHTML = "<table><tr><td>Point</td><td colspan='3'><b>" + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "</b></td></tr><tr><td>&nbsp;</td></tr><tr><td>Retrieving...</td></tr></table>"
+            output.innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr><tr><td>&nbsp;</td></tr><tr><td>Retrieving...</td></tr></table>"
 
             setTimeout(function(){
                 var data = envLayerNearest(e);
                 if(data != null) {
-                    output.innerHTML = "<table><tr><td>Point</td><td colspan='3'><b>" + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "</b></td></tr>" + data + "</table>";
+                    output.innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>";
                 } else {
                     output.innerHTML = "No values to display";
                 }

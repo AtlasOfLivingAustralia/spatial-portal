@@ -4,9 +4,7 @@
  */
 package org.ala.spatial.data;
 
-import au.com.bytecode.opencsv.CSVReader;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -144,11 +142,8 @@ public class Facet implements Serializable {
         this.min = Double.NaN;
         this.max = Double.NaN;
         this.valueArray = null;
-        try {
-            CSVReader csv = new CSVReader(new StringReader(this.value));
-            this.valueArray = csv.readNext();
-            csv.close();
-        } catch (Exception e) {
+        if(this.value != null) {
+            this.valueArray = new String[]{this.value};
         }
     }
 

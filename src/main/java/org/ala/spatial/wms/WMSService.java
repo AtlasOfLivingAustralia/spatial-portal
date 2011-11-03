@@ -103,7 +103,7 @@ public class WMSService {
 //                uncertainty = true;
             } else if (pair[0].equals("sel")) {
                 try {
-                    highlight = URLDecoder.decode(s.replace("sel:", ""),"UTF-8").replace("%3B",";");
+                    highlight = URLDecoder.decode(s.substring(4),"UTF-8").replace("%3B",";");
                 } catch (Exception e) {}
             } else if (pair[0].equals("colormode")) {
                 colourMode = pair[1];
