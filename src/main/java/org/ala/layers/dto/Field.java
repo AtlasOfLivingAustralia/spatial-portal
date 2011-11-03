@@ -77,6 +77,9 @@ public class Field {
     @Column(name = "defaultlayer")
     private Boolean defaultlayer;
 
+    @Column(name = "intersect")
+    private Boolean intersect;
+
     @Column(name = "layerbranch")
     private Boolean layerbranch;
 
@@ -192,6 +195,14 @@ public class Field {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Boolean isIntersect() {
+        return intersect;
+    }
+
+    public void setIntersect(Boolean intersect) {
+        this.intersect = intersect;
     }
 
     public Boolean isLayerbranch() {

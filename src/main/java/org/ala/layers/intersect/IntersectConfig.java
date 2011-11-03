@@ -243,7 +243,7 @@ public class IntersectConfig {
             }
         } else {
             for (Field f : fieldDao.getFields()) {
-                if (f.isIndb()) {
+                if (f.isEnabled()) {
                     Layer layer = layerDao.getLayerById(Integer.parseInt(f.getSpid()));
                     if (layer == null) {
                         logger.error("cannot find layer with id '" + f.getSpid() + "'");

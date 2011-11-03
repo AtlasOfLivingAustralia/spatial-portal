@@ -116,21 +116,21 @@ public class TabulationDAOImpl implements TabulationDAO {
         } else {
             String sql = "SELECT fid1, pid1, name as name1,"
                     + " 'world' as fid2, 'world' as pid2, 'world' as name2, "
-                    + " ST_AsText(newgeom) as geometry FROM "
-                    + "(SELECT fid1, pid1, the_geom as newgeom FROM "
-                        + "tabulation WHERE fid1= ? ) t,"
-                    + "(SELECT pid, name FROM objects WHERE fid= ? ) o "
-                    + "WHERE o.pid=t.pid1 AND newgeom is not null AND ST_Area(newgeom) > 0;";
+                    + " ST_AsText(newgeom) as geometry, area_km as area FROM "
+                    + "(SELECT name, fid as fid1, pid as pid1, the_geom as newgeom FROM "
+                        + "objects WHERE fid= ? ) t "
+                    + "WHERE newgeom is not null AND ST_Area(newgeom) > 0;";
 
             List<Tabulation> tabulations = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Tabulation.class), fid, fid);
 
-            for(Tabulation t : tabulations) {
-                try {
-                    t.setArea(TabulationUtil.calculateArea(t.getGeometry()));
-                } catch (Exception e) {
-                    logger.error("fid:" + fid, e);
-                }
-            }
+            //objects table area ok to use
+//            for(Tabulation t : tabulations) {
+//                try {
+//                    t.setArea(TabulationUtil.calculateArea(t.getGeometry()));
+//                } catch (Exception e) {
+//                    logger.error("fid:" + fid, e);
+//                }
+//            }
 
             return tabulations;
         }
