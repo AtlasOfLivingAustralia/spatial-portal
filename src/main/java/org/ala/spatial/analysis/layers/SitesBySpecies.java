@@ -134,7 +134,7 @@ public class SitesBySpecies {
         }
 
         for (int i = 0; i < records.getRecordsSize(); i++) {
-            int y = height - 1 - (int) ((records.getLatitude(i) - bbox[1]) / resolution);
+            int y = (int) ((records.getLatitude(i) - bbox[1]) / resolution);
 
             if (y == row) {
                 int x = (int) ((records.getLongitude(i) - bbox[0]) / resolution);

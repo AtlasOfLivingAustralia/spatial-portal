@@ -182,4 +182,56 @@ public class CoordinateTransformer {
     }
 
 
+    public static String transformAscToGeotiff(String src) {
+        Runtime runtime = Runtime.getRuntime();
+        try {
+
+            String gdal_path = TabulationSettings.gdal_apps_dir;
+
+            System.out.println("Got gdal_path: " + gdal_path);
+
+            String base_command = gdal_path + "gdal_translate -of GTiff ";
+
+            String command = base_command + src + " " + src + ".tif";
+
+            System.out.println("Exec'ing " + command);
+            Process proc = runtime.exec(command);
+
+            System.out.println("Setting up output stream readers");
+            InputStreamReader isr = new InputStreamReader(proc.getInputStream());
+            InputStreamReader eisr = new InputStreamReader(proc.getErrorStream());
+            BufferedReader br = new BufferedReader(isr);
+            BufferedReader ebr = new BufferedReader(eisr);
+            String line;
+
+            System.out.printf("Output of running %s is:", command);
+
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            while ((line = ebr.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            int exitVal = proc.waitFor();
+
+            // any error???
+            //return exitVal;
+
+            System.out.println(exitVal);
+
+            // success == 0
+            // if successful, then rename to the original filename
+            if (exitVal == 0) {
+                return src + ".tif";
+            }
+        } catch (Exception e) {
+            System.out.println("OOOOPPPSSS: " + e.toString());
+            System.out.println("{success: false , responseText: 'Error occurred' + " + e.toString() + "}");
+            e.printStackTrace(System.out);
+        }
+
+        return null;
+    }
 }

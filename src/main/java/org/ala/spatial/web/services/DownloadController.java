@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import javax.servlet.http.HttpServletResponse;
+import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.Zipper;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.springframework.stereotype.Controller;
@@ -92,7 +93,7 @@ public class DownloadController {
             // the 'pid's are unique, so lets figure out
             // which directory they live under.
 
-            String basedir = "/data/ala/runtime/output/";
+            String basedir = TabulationSettings.base_output_dir + File.separator + "output" + File.separator;
             File baseDir = new File(basedir);
             FilenameFilter ff = DirectoryFileFilter.DIRECTORY;
             File[] files = baseDir.listFiles(ff);

@@ -44,15 +44,18 @@ public class SpeciesDensity {
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
-    public void write(Records records, String outputDirectory) throws IOException {
+    public void write(Records records, String outputDirectory, String filename) throws IOException {
+        if(filename == null) {
+            filename = "_species_density_av_" + gridSize + "x" + gridSize + "_" + String.valueOf(resolution).replace(".","");
+        }
         //write data
-        RandomAccessFile raf = new RandomAccessFile(outputDirectory + "_species_density_av_" + gridSize + "x" + gridSize + "_" + String.valueOf(resolution).replace(".","")+ ".gri", "rw");
+        RandomAccessFile raf = new RandomAccessFile(outputDirectory + filename + ".gri", "rw");
         byte[] bytes = new byte[4 * width];
         ByteBuffer bb = ByteBuffer.wrap(bytes);
         bb.order(ByteOrder.LITTLE_ENDIAN);
         bb.mark();
 
-        FileWriter fw = new FileWriter(outputDirectory + "_species_density_av_" + gridSize + "x" + gridSize + "_" + String.valueOf(resolution).replace(".","")+ ".asc");
+        FileWriter fw = new FileWriter(outputDirectory + filename + ".asc");
         fw.append("ncols " + width + "\n"
                 + "nrows " + height + "\n"
                 + "xllcorner " + bbox[0] + "\n"
@@ -125,6 +128,8 @@ public class SpeciesDensity {
 
         raf.close();
         fw.close();
+
+        DensityLayers.writeHeader(outputDirectory + filename + ".grd", resolution, height, width, bbox[0], bbox[1], bbox[2], bbox[3], 0, max, gridSize);
     }
 
     BitSet[] getNextBitSetRow(Records records, int row, int uniqueSpeciesCount, BitSet[] bs) {        

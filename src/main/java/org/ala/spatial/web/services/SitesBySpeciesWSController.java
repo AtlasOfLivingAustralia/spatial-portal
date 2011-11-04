@@ -34,9 +34,12 @@ public class SitesBySpeciesWSController {
             long currTime = System.currentTimeMillis();
 
             String currentPath = TabulationSettings.base_output_dir + "output" + File.separator + "sitesbyspecies";
+            String qname = URLDecoder.decode(req.getParameter("qname"), "UTF-8").replace("__",".");
             String speciesq = URLDecoder.decode(req.getParameter("speciesq"), "UTF-8").replace("__",".");
             String area = req.getParameter("area");
             double gridsize = Double.parseDouble(req.getParameter("gridsize"));
+            boolean occurrencedensity = req.getParameter("occurrencedensity") != null;
+            boolean speciesdensity = req.getParameter("speciesdensity") != null;
 
             LayerFilter[] filter = null;
             SimpleRegion region = null;
@@ -48,10 +51,11 @@ public class SitesBySpeciesWSController {
 
             String pid = Long.toString(currTime);
 
-            AnalysisJobSitesBySpecies sbs = new AnalysisJobSitesBySpecies(pid, currentPath, speciesq, gridsize, region, filter);
+            AnalysisJobSitesBySpecies sbs = new AnalysisJobSitesBySpecies(pid, currentPath, qname, speciesq, gridsize, region, filter, true, occurrencedensity, speciesdensity);
 
             StringBuffer inputs = new StringBuffer();
             inputs.append("pid:").append(pid);
+            inputs.append(";qname:").append(qname);
             inputs.append(";speciesq:").append(speciesq);
             inputs.append(";gridsize:").append(gridsize);
             inputs.append(";area:").append(area);

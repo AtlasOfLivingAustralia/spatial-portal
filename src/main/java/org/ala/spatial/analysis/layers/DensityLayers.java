@@ -1,6 +1,9 @@
 package org.ala.spatial.analysis.layers;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  *
@@ -40,7 +43,7 @@ public class DensityLayers {
             bbox[2] = Double.parseDouble(sbbox[2]);
             bbox[3] = Double.parseDouble(sbbox[3]);
 
-            String recordsFile = "d:\\records_saved.csv";
+            String recordsFile = args[1] + "_records.csv";
             Records records = null;
             if(new File(recordsFile).exists()) {
                 records = new Records(recordsFile);
@@ -55,16 +58,16 @@ public class DensityLayers {
 //            occurrenceDensity.write(records, args[1]);
 
             SpeciesDensity speciesDensity = new SpeciesDensity(gridSize, resolution, bbox);
-            speciesDensity.write(records, args[1]);
+            speciesDensity.write(records, args[1], null);
 
             speciesDensity.setResolution(0.01);
-            speciesDensity.write(records, args[1]);
+            speciesDensity.write(records, args[1], null);
 
             OccurrenceDensity occurrenceDensity2 = new OccurrenceDensity(gridSize, resolution, bbox);
-            occurrenceDensity2.write(records, args[1]);
+            occurrenceDensity2.write(records, args[1], null);
 
             occurrenceDensity2.setResolution(0.01);
-            occurrenceDensity2.write(records, args[1]);
+            occurrenceDensity2.write(records, args[1], null);
 
         } catch (Exception e) {
             printUsage();
@@ -79,6 +82,28 @@ public class DensityLayers {
                 + "args[3] = extents, e.g. -180,-90,180,90"
                 + "args[4] = grid resolution, e.g. 0.5"
                 + "args[5] = max threads, e.g. 1");
+    }
+
+    static void writeHeader(String filename, double resolution, int nrows, int ncols, double minx, double miny, double maxx, double maxy, double minvalue, double maxvalue, double nodatavalue) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+            File file = new File(filename);
+            FileWriter fw = new FileWriter(filename);
+            fw.append("[General]\nCreator=alaspatial\nCreated=" + sdf.format(new Date()) + "\nTitle=" + file.getName() + "\n\n");
+
+            fw.append("[GeoReference]\nProjection=\nDatum=nMapunits=\nColumns=" + ncols
+                    + "\nRows=" + nrows + "\nMinX=" + minx + "\nMaxX=" + maxx
+                    + "\nMinY=" + miny + "\nMaxY=" + maxy + "\nResolutionX=" + resolution
+                    + "\nResolutionY=" + resolution + "\n\n");
+
+            fw.append("[Data]\nDataType=FLT4S\nMinValue=" + minvalue
+                    + "\nMaxValue=" + maxvalue + "\nNoDataValue=" + nodatavalue
+                    + "\nTransparent=0\nUnits=\n");
+
+            fw.close();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

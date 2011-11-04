@@ -4,10 +4,15 @@
  */
 package org.ala.spatial.analysis.legend;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import javax.imageio.ImageIO;
+import org.ala.spatial.util.Grid;
+import org.ala.spatial.util.TabulationSettings;
 
 /**
  *
@@ -130,7 +135,7 @@ public abstract class Legend {
      *
      * @param d float [] sorted in ascending order
      */
-    void determineGroupSizes(float[] d) {
+    public void determineGroupSizes(float[] d) {
         if(cutoffs == null) {
             return;
         }
@@ -256,7 +261,7 @@ public abstract class Legend {
      * @param width row width
      * @param filename output filename
      */
-    void exportImage(float[] d, int width, String filename, int scaleDownBy) {
+    public void exportImage(float[] d, int width, String filename, int scaleDownBy) {
         try {
             /* make image */
             BufferedImage image = new BufferedImage(width / scaleDownBy, d.length / width / scaleDownBy,
@@ -449,4 +454,109 @@ public abstract class Legend {
         float [] f = {min, max};
         return f;
     }
+
+    public void exportSLD(Grid g, String outputfilename, String units, boolean hasNoDataValue) {
+        String header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<sld:UserStyle xmlns=\"http://www.opengis.net/sld\" xmlns:sld="
+                + "\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\">\n"
+                + "  <sld:Name>raster</sld:Name>\n"
+                + "<sld:Title>A very simple color map</sld:Title>\n"
+                + "  <sld:Abstract>A very basic color map</sld:Abstract>\n"
+                + "  <sld:FeatureTypeStyle>\n"
+                + "    <sld:Name>name</sld:Name>\n"
+                + "    <sld:FeatureTypeName>Feature</sld:FeatureTypeName>\n"
+                + "    <sld:Rule>\n"
+                + "      <sld:RasterSymbolizer>\n"
+                + "        <sld:Geometry>\n"
+                + "          <ogc:PropertyName>geom</ogc:PropertyName>\n"
+                + "        </sld:Geometry>\n"
+                + "        <sld:ChannelSelection>\n"
+                + "          <sld:GrayChannel>\n"
+                + "            <sld:SourceChannelName>1</sld:SourceChannelName>\n"
+                + "          </sld:GrayChannel>\n"
+                + "        </sld:ChannelSelection>\n"
+                + "        <sld:ColorMap>\n";
+        String footer = " </sld:ColorMap>\n"
+                + "      </sld:RasterSymbolizer>\n"
+                + "    </sld:Rule>\n"
+                + "  </sld:FeatureTypeStyle>\n"
+                + "</sld:UserStyle>";
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(header);
+
+        if(hasNoDataValue) {
+            sb.append("\n<sld:ColorMapEntry color=\"#ffffff\" opacity=\"0\" quantity=\""
+                    + g.nodatavalue + "\"/>\n");
+        }
+
+        String c = String.format("%6s", Integer.toHexString(colours[0])).replace(" ", "0");
+        sb.append("<sld:ColorMapEntry color=\"#" + c + "\" quantity=\"" + min + "\" label=\"" + min + " " + units+ "\"/>\n");
+
+        for (int i = 0; i < cutoffs.length - 1; i++) {
+            if ((i == 0 && cutoffs[i] != min)
+                    || (i > 0 && cutoffs[i] != cutoffs[i - 1])) {
+
+                c = String.format("%6s", Integer.toHexString(colours[i + 1])).replace(" ", "0");
+                sb.append("<sld:ColorMapEntry color=\"#" + c + "\" quantity=\"" + cutoffs[i] + "\" />\n");
+            }
+        }
+
+        c = String.format("%6s", Integer.toHexString(colours[cutoffs.length])).replace(" ", "0");
+        sb.append("<sld:ColorMapEntry color=\"#" + c + "\" quantity=\"" + cutoffs[cutoffs.length - 1] + "\" label=\"" + cutoffs[cutoffs.length - 1] + " " + units + "\"/>\n");
+
+        sb.append(footer);
+
+        try {
+            FileWriter fw = new FileWriter(outputfilename);
+            fw.append(sb.toString());
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Produce image legend
+     *
+     * @param filename output filename.  Must end with .png.
+     */
+    public void generateLegend(String filename) {
+        try {
+            System.out.println("generating legend using key: " + TabulationSettings.base_output_dir + "/output/base/legend_key.png" + " and producing output at " + filename);
+            BufferedImage legendImage = ImageIO.read(new File(TabulationSettings.base_output_dir + "/output/base/legend_key.png"));
+            File ciOut = new File(filename);
+            Graphics cg = legendImage.getGraphics();
+            cg.setColor(Color.BLACK);
+            cg.setFont(new Font("Arial", Font.PLAIN, 10));
+            String sdata = "";
+            int width = legendImage.getWidth();
+            int height = legendImage.getHeight();
+            int padding = 10; // 10px padding around the image
+            int keyHeight = 30; // 30px key height
+            int keyWidth = 25; // 30px key width
+
+            width -= padding * 2;
+            height -= padding * 2;
+
+            int top = padding + (keyHeight / 2);
+            int left = padding * 2 + keyWidth;
+
+            for(int i=0;i<cutoffs.length;i++) {
+                String value = "<= " + cutoffs[i];
+                cg.drawString(value, left, top);
+
+                top += keyHeight;
+            }
+
+            ImageIO.write(legendImage, "png", ciOut);
+        } catch (Exception e) {
+            System.out.println("Unable to write legendImage:");
+            e.printStackTrace(System.out);
+        }
+
+    }
+
 }
