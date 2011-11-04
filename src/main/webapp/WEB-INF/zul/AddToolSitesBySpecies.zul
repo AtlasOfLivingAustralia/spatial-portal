@@ -103,6 +103,13 @@
                         <label value="Enter resolution in degrees" />
                         <doublebox id="dResolution" constraint="no negative,no empty" value="0.01"/>
                     </hbox>
+                    <div visible="true">
+                        <vbox>
+                            <separator />
+                            <checkbox id="chkOccurrenceDensity" label="Produce occurrence density layer" />
+                            <checkbox id="chkSpeciesDensity" label="Produce species richness layer" />
+                        </vbox>
+                    </div>
                 </div>
 
                 <div sclass="wizButtonContainer">

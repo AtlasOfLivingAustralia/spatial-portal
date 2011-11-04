@@ -2,11 +2,19 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
+import org.ala.spatial.util.CommonData;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
@@ -14,8 +22,12 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Comboitem;
+import org.zkoss.zul.Listbox;
+import org.zkoss.zul.Listcell;
+import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
+import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Vbox;
 
 /**
@@ -28,12 +40,17 @@ public class AddSpeciesController extends UtilityComposer {
     SpeciesAutoComplete searchSpeciesAuto;
     Button btnOk;
     Radio rSearch;
+    Radio rMultiple;
     Radio rUploadCoordinates;
     Radio rUploadLSIDs;
     Radio rAllSpecies;
     Radiogroup rgAddSpecies;
     Vbox vboxSearch;
     Checkbox chkArea;
+    Vbox vboxMultiple;
+    SpeciesAutoComplete mSearchSpeciesAuto;
+    Textbox tMultiple;
+    Listbox lMultiple;
     
     Query query;
     String rank;
@@ -152,9 +169,14 @@ public class AddSpeciesController extends UtilityComposer {
     public void onCheck$rgAddSpecies(Event event) {
         if(rSearch.isSelected()) {
            vboxSearch.setVisible(true);
+           vboxMultiple.setVisible(false);
 //           searchSpeciesAuto.setFocus(true);
+        } else if(rMultiple.isSelected()) {
+            vboxSearch.setVisible(false);
+            vboxMultiple.setVisible(true);
         } else {
             vboxSearch.setVisible(false);
+            vboxMultiple.setVisible(false);
         }
 
         refreshBtnOkDisabled();
@@ -163,6 +185,8 @@ public class AddSpeciesController extends UtilityComposer {
     private void refreshBtnOkDisabled() {
         if (rSearch.isSelected()) {
             btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null || searchSpeciesAuto.getSelectedItem().getValue() == null);
+        } else if(rMultiple.isSelected()) {
+            btnOk.setDisabled(lMultiple.getItems() == null || lMultiple.getItems().isEmpty());
         } else {
             btnOk.setDisabled(false);
         }
@@ -196,5 +220,81 @@ public class AddSpeciesController extends UtilityComposer {
         }
 
         query = QueryUtil.get((String)searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), true);
+    }
+
+    public void onClick$bMultiple(Event event) {
+        String [] speciesNames = tMultiple.getText().replace("\n", ",").split(",");
+        ArrayList<String> notFound = new ArrayList<String>();
+        StringBuilder notFoundSb = new StringBuilder();
+        for(int i=0;i<speciesNames.length;i++) {
+            String s = speciesNames[i].trim();
+            if(s.length() > 0) {
+                JSONObject searchResult = processAdhoc(s);
+                try {
+                    JSONArray ja = searchResult.getJSONArray("values");
+
+                    String sciname= "", family="", kingdom="", lsid = null;
+                    for(int j=0;j<ja.size();j++) {
+                        if(ja.getJSONObject(j).getString("name").equals("scientificName")) {
+                            sciname = ja.getJSONObject(j).getString("processed");
+                        }
+                        if(ja.getJSONObject(j).getString("name").equals("family")) {
+                            family = ja.getJSONObject(j).getString("processed");
+                        }
+                        if(ja.getJSONObject(j).getString("name").equals("kingdom")) {
+                            kingdom = ja.getJSONObject(j).getString("processed");
+                        }
+                        if(ja.getJSONObject(j).getString("name").equals("taxonConceptID")) {
+                            lsid = ja.getJSONObject(j).getString("processed");
+                        }
+                    }
+
+                    if(lsid != null && lsid.length() > 0) {
+                        Listitem li = new Listitem();
+
+                        //sci name
+                        Listcell lc = new Listcell(sciname);
+                        lc.setParent(li);
+
+                        //family
+                        lc = new Listcell(family);
+                        lc.setParent(li);
+
+                        //kingdom
+                        lc = new Listcell(kingdom);
+                        lc.setParent(li);
+
+                        //lsid
+                        lc = new Listcell(lsid);
+                        lc.setParent(li);
+
+                        li.setParent(lMultiple);
+                    }
+                } catch (Exception e) {
+                    notFound.add(s);
+                    notFoundSb.append(s + "\n");
+                }
+            }
+        }
+
+        if(notFound.size() > 0) {
+            getMapComposer().showMessage("Cannot identify these scientific names:\n" + notFoundSb.toString(), this);
+        }
+    }
+
+    JSONObject processAdhoc(String scientificName) {
+        try {
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(CommonData.biocacheServer + "/process/adhoc");
+            StringRequestEntity sre = new StringRequestEntity("{ \"scientificName\": \"" + scientificName.replace("\"","'") + "\" } ", "application/json", "UTF-8");
+            post.setRequestEntity(sre);
+            int result = client.executeMethod(post);
+            if(result == 200) {
+                return JSONObject.fromObject(post.getResponseBodyAsString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

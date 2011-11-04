@@ -1,6 +1,9 @@
 package org.ala.spatial.analysis.web;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
+import au.org.emii.portal.util.LayerUtilities;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -14,6 +17,8 @@ import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.sampling.SimpleRegion;
+import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -21,12 +26,15 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Checkbox;
 
 /**
  *
  * @author ajay
  */
 public class AddToolSitesBySpeciesComposer extends AddToolComposer {
+    Checkbox chkOccurrenceDensity;
+    Checkbox chkSpeciesDensity;
 
     @Override
     public void afterCompose() {
@@ -63,19 +71,42 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
 
     public boolean runsitesbyspecies() {
         try {
-            SelectedArea sa = getSelectedArea();
-            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
             Double gridResolution = dResolution.getValue();
+            SelectedArea sa = getSelectedArea();
+            SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
+            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
+            int occurrenceCount = query.getOccurrenceCount();
+            int boundingboxcellcount = (int)
+                    ((sr.getBoundingBox()[1][0] - sr.getBoundingBox()[0][0])
+                    * (sr.getBoundingBox()[1][1] - sr.getBoundingBox()[0][1])
+                    / (gridResolution * gridResolution));
 
+            System.out.println("SitesBySpecies for " + occurrenceCount + " occurrences in up to " + boundingboxcellcount + " grid cells.");
+            
+            if(boundingboxcellcount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells")) {
+                //getMapComposer().showMessage("Too many potential output grid cells.  Reduce by at least " + String.format("%.2f",100* (1-boundingboxcellcount / (double)settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells"))) + "% by decreasing area or increasing resolution.", this);
+                getMapComposer().showMessage("Too many potential output grid cells.  Decrease area or increase resolution.", this);
+                return false;
+            }
+            
+            if(occurrenceCount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxoccurrences")) {
+                getMapComposer().showMessage("Too many occurrences for the selected species in this area.  " + occurrenceCount + " occurrences found, must be less than " + settingsSupplementary.getValueAsInt("sitesbyspecies_maxoccurrences"), this);
+                return false;
+            }
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/sitesbyspecies/processgeoq?");
-            
             
             sbProcessUrl.append("speciesq=" + URLEncoder.encode(query.getQ(), "UTF-8"));
             
             sbProcessUrl.append("&gridsize=" + URLEncoder.encode(String.valueOf(gridResolution), "UTF-8"));
 
+            if(chkOccurrenceDensity.isChecked()) {
+                sbProcessUrl.append("&occurrencedensity=1");
+            }
+            if(chkSpeciesDensity.isChecked()) {
+                sbProcessUrl.append("&speciesdensity=1");
+            }
 
 
             HttpClient client = new HttpClient();
@@ -90,6 +121,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             if (getSelectedArea() != null) {
                 get.addParameter("area", area);
             }
+            get.addParameter("qname", query.getName());
 
             get.addRequestHeader("Accept", "text/plain");
 
@@ -113,6 +145,52 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
     
     public void loadMap(Event event) {
         try {
+            if(chkOccurrenceDensity.isChecked()) {
+                String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:odensity_" + pid + "&styles=odensity_" + pid + "&FORMAT=image%2Fpng";
+                String legendurl = CommonData.geoServer
+                        + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
+                        + "&LAYER=ALA:odensity_" + pid
+                        + "&STYLE=odensity_" + pid;
+
+                System.out.println(legendurl);
+
+//                String layername = tToolName.getValue();
+                String layername = getMapComposer().getNextAreaLayerName("Occurrence Density");
+                getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.WMS_1_3_0, null, null);
+                MapLayer ml = getMapComposer().getMapLayer(layername);
+                String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/metadata.html";
+                MapLayerMetadata md = ml.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    ml.setMapLayerMetadata(md);
+                }
+                md.setMoreInfo(infoUrl + "\nSites by species\npid:" + pid);
+                md.setId(Long.valueOf(pid));
+            }
+            
+            if(chkSpeciesDensity.isChecked()) {
+                String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:srichness_" + pid + "&styles=srichness_" + pid + "&FORMAT=image%2Fpng";
+                String legendurl = CommonData.geoServer
+                        + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
+                        + "&LAYER=ALA:srichness_" + pid
+                        + "&STYLE=srichness_" + pid;
+
+                System.out.println(legendurl);
+
+//                String layername = tToolName.getValue();
+                String layername = getMapComposer().getNextAreaLayerName("Species Richness");
+                getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.WMS_1_3_0, null, null);
+                MapLayer ml = getMapComposer().getMapLayer(layername);
+                String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/metadata.html";
+                MapLayerMetadata md = ml.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    ml.setMapLayerMetadata(md);
+                }
+                md.setMoreInfo(infoUrl + "\nSites by species\npid:" + pid);
+                md.setId(Long.valueOf(pid));
+            }
+
             // set off the download as well
             String fileUrl = CommonData.satServer + "/ws/download/" + pid;
             Filedownload.save(new URL(fileUrl).openStream(), "application/zip", "sites_by_species.zip");
