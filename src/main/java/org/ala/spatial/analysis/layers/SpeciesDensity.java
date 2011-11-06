@@ -73,7 +73,7 @@ public class SpeciesDensity {
             //get rows
             if(row == 0) {
                 for(int i=0;i<gridSize;i++) {
-                    System.out.println("getting bitset row " + (row + i) + " or " + height);
+                    //System.out.println("getting bitset row " + (row + i) + " or " + height);
                     bsRows[i] = getNextBitSetRow(records, row + i, uniqueSpeciesCount, null);
                 }
             } else {
@@ -81,7 +81,7 @@ public class SpeciesDensity {
                     if(i + 1 < bsRows.length) {
                         bsRows[i] = bsRows[i+1];
                     } else {
-                        System.out.println("getting bitset row " + (row + i) + " or " + height);
+                        //System.out.println("getting bitset row " + (row + i) + " or " + height);
                         bsRows[i] = getNextBitSetRow(records, row + i, uniqueSpeciesCount, null);
                     }
                 }
@@ -122,7 +122,7 @@ public class SpeciesDensity {
                 }
                 raf.write(bytes);
                 fw.append("\n");
-                System.out.println("wrote out row " + currentRow);
+                //System.out.println("wrote out row " + currentRow);
             }
         }
 

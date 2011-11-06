@@ -489,7 +489,7 @@
         <environmental_data_path_common>/mnt/ala/data/envlayers/WorldClimCurrent/10minutes/common/</environmental_data_path_common>
 
         <environmental_data_files>
-            <environmental_data_file>
+           <environmental_data_file>
                 <environmental_data_file_name>adefi</environmental_data_file_name>
                 <environmental_data_file_display_name>Precipitation deficit - month max</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
@@ -1567,7 +1567,7 @@
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
 
-            <!-- environmental_data_file>
+        <!-- environmental_data_file>
                 <environmental_data_file_name>bath_topo_ausbath_09_v4</environmental_data_file_name>
                 <environmental_data_file_display_name>Bathymetry 9 sec</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description></environmental_data_file-->
@@ -1836,5 +1836,8 @@ if not csv, then tab delimited
     <!-- path to store generated object data -->
     <file_store>e:\mnt\output\</file_store>
 
-  <biocache_service>http://biocache.ala.org.au/ws</biocache_service>
+    <biocache_service>http://biocache.ala.org.au/ws</biocache_service>
+
+    <sxs_max_occurrences>1000000</sxs_max_occurrences>
+    <sxs_max_grid_cells>1000000</sxs_max_grid_cells>
 </tabulation>

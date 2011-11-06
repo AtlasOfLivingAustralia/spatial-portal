@@ -269,6 +269,8 @@ public class TabulationSettings {
     public static Hashtable<String, String> institutions;
 
     public static String biocache_service;
+    public static int sxs_max_occurrences;
+    public static int sxs_max_grid_cells;
 
     /**
      * loads settings form name of the appropriate xml resource file
@@ -579,6 +581,9 @@ public class TabulationSettings {
         loadInstitutions();
 
         biocache_service = xr.getValue("biocache_service");
+
+        sxs_max_occurrences = Integer.parseInt(xr.getValue("sxs_max_occurrences"));
+        sxs_max_grid_cells = Integer.parseInt(xr.getValue("sxs_max_grid_cells"));
     }
 
     static public String getPath(String layerName) {

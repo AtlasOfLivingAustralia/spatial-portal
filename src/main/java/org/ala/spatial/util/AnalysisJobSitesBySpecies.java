@@ -71,6 +71,29 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
             setProgress(0, "getting species data");
             Records records = new Records(TabulationSettings.biocache_service, speciesq + "%20AND%20geospatial_kosher:true", bbox, /*currentPath + File.separator + "raw_data.csv"*/ null);
 
+            //test restrictions
+            int occurrenceCount = records.getRecordsSize();
+            int boundingboxcellcount = (int)
+                    ((bbox[2] - bbox[0])
+                    * (bbox[3] - bbox[1])
+                    / (gridsize * gridsize));
+            System.out.println("SitesBySpecies for " + occurrenceCount + " occurrences in up to " + boundingboxcellcount + " grid cells.");
+            String error = null;
+            if(boundingboxcellcount > TabulationSettings.sxs_max_grid_cells) {
+                error = "Too many potential output grid cells.  Decrease area or increase resolution.";
+            } else if(occurrenceCount > TabulationSettings.sxs_max_occurrences) {
+                error = "Too many occurrences for the selected species.  " + occurrenceCount + " occurrences found, must be less than " + TabulationSettings.sxs_max_occurrences;
+            } else if(occurrenceCount == 0) {
+                error = "No occurrences found";
+            }
+            if(error != null) {
+                setProgress(1, "failed: " + error);
+                setCurrentState(FAILED);
+                System.out.println("SitesBySpecies ERROR: " + error);
+                setMessage(error);
+                return;
+            }
+
             setStage(1);
 
             setProgress(0, "building sites by species matrix for " + records.getSpeciesSize() + " species in " + records.getRecordsSize() + " occurrences");
@@ -155,26 +178,8 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                 speciesLegend.generateLegend(currentPath + File.separator + "species_richness_legend.png");
             }
 
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
-            FileWriter fw = new FileWriter(currentPath + File.separator + "metadata.html");
-            fw.append("<html><h1>Sites by species</h1>");
-            fw.append("<table>");
-            fw.append("<tr><td>Species selection " + qname + "</td></tr>");
-            fw.append("<tr><td>Grid resolution " + gridsize + " degrees</td></tr>");
-            fw.append("<tr><td>" + records.getSpeciesSize() + " species</td></tr>");
-            fw.append("<tr><td>" + records.getRecordsSize() + " occurrences</td></tr>");
-            fw.append("<tr><td>bounding box of the selected area " + bbox[0] + "," + bbox[1] + "," + bbox[2] + "," + bbox[3] + "</td></tr>");
-            fw.append("<tr><td>Date/time " + sdf.format(new Date()) + "</td></tr>");
-            if(occurrencedensity) {
-                fw.append("<tr><td><br>Occurrence Density</td></tr><tr><td><img src='occurrence_density.jpg' width='300px' height='300px'></td><td><img src='occurrence_density_legend.png'></td></tr>");
-            }
-            if(speciesdensity) {
-                fw.append("<tr><td><br>Species Richness</td></tr><tr><td><img src='species_richness.jpg' width='300px' height='300px'></td><td><img src='species_richness_legend.png'></td></tr>");
-            }
-            fw.append("</table>");
-            fw.append("</html>");
-            fw.close();
-
+            writeMetadata(currentPath + File.separator + "metadata.html", records, bbox);
+            
             setProgress(1, "finished");
 
             setCurrentState(SUCCESSFUL);
@@ -366,8 +371,32 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         g = new Grid(gridfilename);
         d = g.getGrid();
         legend.exportImage(d, g.ncols, gridfilename + ".jpg", 1);
-        legend.exportSLD(g, gridfilename + ".sld","", false);
+        legend.exportSLD(g, gridfilename + ".sld","", false, true);
 
         return legend;
+    }
+
+    void writeMetadata(String filename, Records records, double [] bbox) throws IOException {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+        FileWriter fw = new FileWriter(filename);
+        fw.append("<html><h1>Sites by species</h1>");
+        fw.append("<table>");
+        fw.append("<tr><td>Species selection " + qname + "</td></tr>");
+        fw.append("<tr><td>Grid resolution " + gridsize + " degrees</td></tr>");
+        fw.append("<tr><td>" + records.getSpeciesSize() + " species</td></tr>");
+        fw.append("<tr><td>" + records.getRecordsSize() + " occurrences</td></tr>");
+        fw.append("<tr><td>bounding box of the selected area " + bbox[0] + "," + bbox[1] + "," + bbox[2] + "," + bbox[3] + "</td></tr>");
+        fw.append("<tr><td>Date/time " + sdf.format(new Date()) + "</td></tr>");
+        if(occurrencedensity) {
+            fw.append("<tr><td><br>Occurrence Density (9x9 moving average)</td></tr>");
+            fw.append("<tr><td><img src='occurrence_density.jpg' width='300px' height='300px'></td><td><img src='occurrence_density_legend.png'></td></tr>");
+        }
+        if(speciesdensity) {
+            fw.append("<tr><td><br>Species Richness (9x9 moving average)</td></tr>");
+            fw.append("<tr><td><img src='species_richness.jpg' width='300px' height='300px'></td><td><img src='species_richness_legend.png'></td></tr>");
+        }
+        fw.append("</table>");
+        fw.append("</html>");
+        fw.close();
     }
 }

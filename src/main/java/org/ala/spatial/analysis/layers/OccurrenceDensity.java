@@ -73,7 +73,7 @@ public class OccurrenceDensity {
             //get rows
             if(row == 0) {
                 for(int i=0;i<gridSize;i++) {
-                    System.out.println("getting bitset row " + (row + i) + " or " + height);
+                    //System.out.println("getting bitset row " + (row + i) + " or " + height);
                     cRows[i] = getNextCountsRow(records, row + i);
                 }
             } else {
@@ -81,7 +81,7 @@ public class OccurrenceDensity {
                     if(i + 1 < cRows.length) {
                         cRows[i] = cRows[i+1];
                     } else {
-                        System.out.println("getting bitset row " + (row + i) + " or " + height);
+                      //  System.out.println("getting bitset row " + (row + i) + " or " + height);
                         cRows[i] = getNextCountsRow(records, row + i);
                     }
                 }
@@ -122,7 +122,7 @@ public class OccurrenceDensity {
                 }
                 raf.write(bytes);
                 fw.append("\n");
-                System.out.println("wrote out row " + currentRow);
+                //System.out.println("wrote out row " + currentRow);
             }
         }
 

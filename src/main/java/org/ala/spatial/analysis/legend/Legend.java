@@ -455,7 +455,7 @@ public abstract class Legend {
         return f;
     }
 
-    public void exportSLD(Grid g, String outputfilename, String units, boolean hasNoDataValue) {
+    public void exportSLD(Grid g, String outputfilename, String units, boolean hasNoDataValue, boolean minAsTransparent) {
         String header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<sld:UserStyle xmlns=\"http://www.opengis.net/sld\" xmlns:sld="
                 + "\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\">\n"
@@ -492,7 +492,11 @@ public abstract class Legend {
         }
 
         String c = String.format("%6s", Integer.toHexString(colours[0])).replace(" ", "0");
-        sb.append("<sld:ColorMapEntry color=\"#" + c + "\" quantity=\"" + min + "\" label=\"" + min + " " + units+ "\"/>\n");
+        if(minAsTransparent) {
+            sb.append("<sld:ColorMapEntry color=\"#" + c + "\" opacity=\"0\" quantity=\"" + min + "\" label=\"" + min + " " + units+ "\"/>\n");
+        } else {
+            sb.append("<sld:ColorMapEntry color=\"#" + c + "\" quantity=\"" + min + "\" label=\"" + min + " " + units+ "\"/>\n");
+        }
 
         for (int i = 0; i < cutoffs.length - 1; i++) {
             if ((i == 0 && cutoffs[i] != min)
@@ -525,8 +529,8 @@ public abstract class Legend {
      */
     public void generateLegend(String filename) {
         try {
-            System.out.println("generating legend using key: " + TabulationSettings.base_output_dir + "/output/base/legend_key.png" + " and producing output at " + filename);
-            BufferedImage legendImage = ImageIO.read(new File(TabulationSettings.base_output_dir + "/output/base/legend_key.png"));
+            System.out.println("generating legend using key: " + TabulationSettings.base_output_dir + "/output/sampling/base/legend_key.png" + " and producing output at " + filename);
+            BufferedImage legendImage = ImageIO.read(new File(TabulationSettings.base_output_dir + "/output/sampling/base/legend_key.png"));
             File ciOut = new File(filename);
             Graphics cg = legendImage.getGraphics();
             cg.setColor(Color.BLACK);
