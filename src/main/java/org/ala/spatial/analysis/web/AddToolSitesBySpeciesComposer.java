@@ -44,7 +44,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
         this.totalSteps = 3;
 
         this.loadAreaLayers();
-        this.loadSpeciesLayers();
+        this.loadSpeciesLayers(true);
         this.updateWindowTitle();
 
     }

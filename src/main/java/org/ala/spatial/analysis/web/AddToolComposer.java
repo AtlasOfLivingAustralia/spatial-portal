@@ -246,6 +246,9 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void loadSpeciesLayers() {
+        loadSpeciesLayers(false);
+    }
+    public void loadSpeciesLayers(boolean biocacheOnly) {
         try {
 
             Radiogroup rgSpecies = (Radiogroup) getFellowIfAny("rgSpecies");
@@ -259,6 +262,11 @@ public class AddToolComposer extends UtilityComposer {
 
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
+                if(biocacheOnly
+                        && lyr.getData("query") != null
+                        && !(lyr.getData("query") instanceof BiocacheQuery)) {
+                    continue;
+                }
                 if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
                     speciesLayersCount++;
                 }
