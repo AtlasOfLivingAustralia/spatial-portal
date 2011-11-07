@@ -59,7 +59,7 @@ public class GridFileLegends {
                 (new File(output_name + "_" + legends[i].getTypeName() + ".jpg")).delete();
             } catch (Exception e) {
             }
-            legends[i].exportImage(d, g.ncols, output_name + "_" + legends[i].getTypeName() + ".jpg", 8);
+            legends[i].exportImage(d, g.ncols, output_name + "_" + legends[i].getTypeName() + ".jpg", 8, false);
             legends[i].exportLegend(output_name + "_" + legends[i].getTypeName() + "_legend.txt");
 
             System.out.println(output_name + "," + legends[i].getTypeName() + ": " + String.valueOf(e2));
@@ -112,18 +112,18 @@ public class GridFileLegends {
             String dir = "d:\\legends\\";//args[1];
 
             //String[] legendTypes = {"Equal Area"};
-            String [] legendTypes = {"Even Interval","Even Interval Log 10","Equal Size","Equal Area"};
+            String[] legendTypes = {"Even Interval", "Even Interval Log 10", "Equal Size", "Equal Area"};
 
             try {
                 FileWriter fw = new FileWriter(dir + "cutpoints2.csv");
 
                 //produce legend for each environmental file
-                for(int i=0;i<TabulationSettings.environmental_data_files.length;i++) {
+                for (int i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
                     new GridFileLegends(
-                        TabulationSettings.environmental_data_files[i].name,
-                        dir + TabulationSettings.environmental_data_files[i].name,
-                        true,
-                        legendTypes,fw);
+                            TabulationSettings.environmental_data_files[i].name,
+                            dir + TabulationSettings.environmental_data_files[i].name,
+                            true,
+                            legendTypes, fw);
                 }
 
                 fw.close();

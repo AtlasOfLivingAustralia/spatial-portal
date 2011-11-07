@@ -45,64 +45,80 @@ public class SitesBySpecies {
 
     public void write(Records records, String outputDirectory) throws IOException {
         FileWriter fw = new FileWriter(outputDirectory + "fullSitesBySpecies.csv");
-        fw.append("label,lr longitude, lr latitude");
 
-        for(int i=0;i<records.lsids.length;i++) {
+        for (int j = 0; j < 4; j++) {
+            fw.append(",,");
+            for (int i = 0; i < records.lsids.length; i++) {
+                fw.append(",\"");
+                String[] split = records.lsids[i].split("\\|");
+                if (split.length > j + 1) {
+                    fw.append(split[j + 1].replace("\"", "\"\""));
+                }
+                fw.append("\"");
+            }
+            fw.append("\n");
+        }
+
+        fw.append("label,lr longitude, lr latitude");
+        for (int i = 0; i < records.lsids.length; i++) {
             fw.append(",\"");
-            fw.append(records.lsids[i].replace("\"", "\"\""));
+            String[] split = records.lsids[i].split("\\|");
+            if (split.length > 0) {
+                fw.append(split[0].replace("\"", "\"\""));
+            }
             fw.append("\"");
         }
 
         int uniqueSpeciesCount = records.getSpeciesSize();
 
-        int [] totalSpeciesCounts = new int[uniqueSpeciesCount];
-        
-        int [][][] bsRows = new int[1][][];
-        for(int row = 0;row < height; row++) {
-            bsRows[0] = getNextIntArrayRow(records, row, uniqueSpeciesCount, bsRows[0]);            
-            for(int i=0;i<width;i++) {
+        int[] totalSpeciesCounts = new int[uniqueSpeciesCount];
+
+        int[][][] bsRows = new int[1][][];
+        for (int row = 0; row < height; row++) {
+            bsRows[0] = getNextIntArrayRow(records, row, uniqueSpeciesCount, bsRows[0]);
+            for (int i = 0; i < width; i++) {
                 int sum = 0;
-                for(int n=0;n<uniqueSpeciesCount;n++) {
+                for (int n = 0; n < uniqueSpeciesCount; n++) {
                     sum += bsRows[0][i][n];
                     totalSpeciesCounts[n] += bsRows[0][i][n];
-                } 
+                }
 
-                if(sum > 0) {
+                if (sum > 0) {
                     fw.append("\n\"");
                     fw.append(String.valueOf(i * resolution + this.bbox[0]));
-                    fw.append(",");
+                    fw.append("_");
                     fw.append(String.valueOf(row * resolution + this.bbox[1]));
                     fw.append("\",");
                     fw.append(String.valueOf(i * resolution + this.bbox[0]));
                     fw.append(",");
                     fw.append(String.valueOf(row * resolution + this.bbox[1]));
-                    for(int n=0;n<uniqueSpeciesCount;n++) {
+                    for (int n = 0; n < uniqueSpeciesCount; n++) {
                         fw.append(",");
                         fw.append(String.valueOf(bsRows[0][i][n]));
                     }
                 }
             }
-        }        
+        }
         fw.close();
 
         //remove columns without species
         fw = new FileWriter(outputDirectory + "SitesBySpecies.csv");
         CSVReader r = new CSVReader(new FileReader(outputDirectory + "fullSitesBySpecies.csv"));
-        String [] line;
+        String[] line;
         int row = 0;
-        while((line = r.readNext()) != null) {
-            for(int i=0;i<line.length;i++) {
-                if(i < 3 || totalSpeciesCounts[i-3] > 0) {
-                    if(i > 0) {
+        while ((line = r.readNext()) != null) {
+            for (int i = 0; i < line.length; i++) {
+                if (i < 3 || totalSpeciesCounts[i - 3] > 0) {
+                    if (i > 0) {
                         fw.append(",");
-                    }  
+                    }
 
-                    if(row == 0) {
+                    if (row == 0) {
                         fw.append("\"");
                         fw.append(line[i].replace("\"", "\"\""));
                         fw.append("\"");
                     } else {
-                        if(i == 0) {
+                        if (i == 0) {
                             fw.append("\n");
                             fw.append("\"");
                             fw.append(line[i].replace("\"", "\"\""));
@@ -127,7 +143,7 @@ public class SitesBySpecies {
             bs = new int[width][uniqueSpeciesCount];
         } else {
             for (int i = 0; i < width; i++) {
-                for(int j=0;j<uniqueSpeciesCount;j++) {
+                for (int j = 0; j < uniqueSpeciesCount; j++) {
                     bs[i][j] = 0;
                 }
             }

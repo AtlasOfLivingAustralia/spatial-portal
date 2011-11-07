@@ -4,11 +4,9 @@
  */
 package org.ala.spatial.util;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
@@ -32,11 +30,11 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
     String qname;
     double gridsize;
     boolean sitesbyspecies, occurrencedensity, speciesdensity;
-
+    int movingAverageSize;
     LayerFilter[] envelope;
     SimpleRegion region;
 
-    public AnalysisJobSitesBySpecies(String pid, String currentPath_, String qname, String speciesq, double gridsize, SimpleRegion region_, LayerFilter[] filter_, boolean sitesbyspecies, boolean occurrencedensity, boolean speciesdensity) {
+    public AnalysisJobSitesBySpecies(String pid, String currentPath_, String qname, String speciesq, double gridsize, SimpleRegion region_, LayerFilter[] filter_, boolean sitesbyspecies, boolean occurrencedensity, boolean speciesdensity, int movingAverageSize) {
         super(pid);
         currentPath = currentPath_ + File.separator + pid + File.separator;
         new File(currentPath).mkdirs();
@@ -45,6 +43,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         region = region_;
         envelope = filter_;
         this.gridsize = gridsize;
+        this.movingAverageSize = movingAverageSize;
 
         stageTimes = new long[2];
 
@@ -56,12 +55,23 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
     @Override
     public void run() {
         try {
+            //moving average check
+            if (movingAverageSize % 2 == 0 || movingAverageSize <= 0
+                    || movingAverageSize >= 16) {
+                String msg = "Moving average size " + movingAverageSize + " is not valid.  Must be odd and between 1 and 15.";
+                setProgress(1, "failed: " + msg);
+                setCurrentState(FAILED);
+                System.out.println("failed: " + msg);
+                setMessage(msg);
+                return;
+            }
+
             SpatialSettings ssets = new SpatialSettings();
 
             setCurrentState(RUNNING);
             setStage(0);
 
-            double [] bbox = new double[4];
+            double[] bbox = new double[4];
             bbox[0] = region.getBoundingBox()[0][0];
             bbox[1] = region.getBoundingBox()[0][1];
             bbox[2] = region.getBoundingBox()[1][0];
@@ -73,20 +83,19 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
 
             //test restrictions
             int occurrenceCount = records.getRecordsSize();
-            int boundingboxcellcount = (int)
-                    ((bbox[2] - bbox[0])
+            int boundingboxcellcount = (int) ((bbox[2] - bbox[0])
                     * (bbox[3] - bbox[1])
                     / (gridsize * gridsize));
             System.out.println("SitesBySpecies for " + occurrenceCount + " occurrences in up to " + boundingboxcellcount + " grid cells.");
             String error = null;
-            if(boundingboxcellcount > TabulationSettings.sxs_max_grid_cells) {
+            if (boundingboxcellcount > TabulationSettings.sxs_max_grid_cells) {
                 error = "Too many potential output grid cells.  Decrease area or increase resolution.";
-            } else if(occurrenceCount > TabulationSettings.sxs_max_occurrences) {
+            } else if (occurrenceCount > TabulationSettings.sxs_max_occurrences) {
                 error = "Too many occurrences for the selected species.  " + occurrenceCount + " occurrences found, must be less than " + TabulationSettings.sxs_max_occurrences;
-            } else if(occurrenceCount == 0) {
+            } else if (occurrenceCount == 0) {
                 error = "No occurrences found";
             }
-            if(error != null) {
+            if (error != null) {
                 setProgress(1, "failed: " + error);
                 setCurrentState(FAILED);
                 System.out.println("SitesBySpecies ERROR: " + error);
@@ -98,18 +107,22 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
 
             setProgress(0, "building sites by species matrix for " + records.getSpeciesSize() + " species in " + records.getRecordsSize() + " occurrences");
 
-            if(sitesbyspecies) {
-                SitesBySpecies sbs = new SitesBySpecies(0,gridsize,bbox);
+            if (sitesbyspecies) {
+                SitesBySpecies sbs = new SitesBySpecies(0, gridsize, bbox);
                 sbs.write(records, currentPath + File.separator);
+                writeMetadata(currentPath + File.separator + "sxs_metadata.html", "Sites by Species", records, bbox, false, false);
             }
 
             Legend occurrencesLegend = null;
-            if(occurrencedensity) {
+            if (occurrencedensity) {
                 setProgress(0.3, "building occurrence density layer");
-                OccurrenceDensity od = new OccurrenceDensity(9,gridsize,bbox);
-                od.write(records, currentPath + File.separator, "occurrence_density");
+                OccurrenceDensity od = new OccurrenceDensity(movingAverageSize, gridsize, bbox);
+                od.write(records, currentPath + File.separator, "occurrence_density", TabulationSettings.analysis_threads, true, true);
 
                 writeProjectionFile(currentPath + File.separator + "occurrence_density.prj");
+
+//                CoordinateTransformer.transformAscToGeotif(currentPath + File.separator + "occurrence_density.asc");
+
                 Hashtable htGeoserver = ssets.getGeoserverSettings();
                 // if generated successfully, then add it to geoserver
                 String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/odensity_" + getName() + "/file.arcgrid?coverageName=odensity_" + getName();
@@ -124,7 +137,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                 // Upload the file to GeoServer using REST calls
                 System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
                 UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
-                
+
                 //sld
                 occurrencesLegend = produceSld(currentPath + File.separator + "occurrence_density");
                 UploadSpatialResource.loadSld(url, extra, username, password, currentPath + File.separator + "occurrence_density.sld");
@@ -139,29 +152,35 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                 UploadSpatialResource.assignSld(url, extra, username, password, data);
 
                 occurrencesLegend.generateLegend(currentPath + File.separator + "occurrence_density_legend.png");
+
+                writeMetadata(currentPath + File.separator + "odensity_metadata.html", "Occurrence Density", records, bbox, occurrencedensity, false);
             }
 
             Legend speciesLegend = null;
-            if(speciesdensity) {
+            if (speciesdensity) {
                 setProgress(0.6, "building species richness layer");
-                SpeciesDensity sd = new SpeciesDensity(9,gridsize,bbox);
-                sd.write(records, currentPath + File.separator, "species_richness");
+                SpeciesDensity sd = new SpeciesDensity(movingAverageSize, gridsize, bbox);
+                sd.write(records, currentPath + File.separator, "species_richness", TabulationSettings.analysis_threads, true, true);
 
                 writeProjectionFile(currentPath + File.separator + "species_richness.prj");
+
+//                CoordinateTransformer.transformAscToGeotif(currentPath + File.separator + "species_richness.asc");
+
                 Hashtable htGeoserver = ssets.getGeoserverSettings();
                 // if generated successfully, then add it to geoserver
                 String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/srichness_" + getName() + "/file.arcgrid?coverageName=srichness_" + getName();
+//                String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/srichness_" + getName() + "/external.geotiff?coverageName=srichness_" + getName();
                 String extra = "";
                 String username = (String) htGeoserver.get("geoserver_username");
                 String password = (String) htGeoserver.get("geoserver_password");
                 // first zip up the file as it's going to be sent as binary
-                //String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
                 String[] infiles = {currentPath + "species_richness.asc", currentPath + "species_richness.prj"};
                 String ascZipFile = currentPath + "species_richness.zip";
                 Zipper.zipFiles(infiles, ascZipFile);
                 // Upload the file to GeoServer using REST calls
                 System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
                 UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
+//                UploadSpatialResource.loadResource(url, extra, username, password, currentPath + File.separator + "species_richness.tif");
 
                 //sld
                 speciesLegend = produceSld(currentPath + File.separator + "species_richness");
@@ -176,10 +195,10 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                 UploadSpatialResource.assignSld(url, extra, username, password, data);
 
                 speciesLegend.generateLegend(currentPath + File.separator + "species_richness_legend.png");
+
+                writeMetadata(currentPath + File.separator + "srichness_metadata.html", "Species Richness", records, bbox, false, speciesdensity);
             }
 
-            writeMetadata(currentPath + File.separator + "metadata.html", records, bbox);
-            
             setProgress(1, "finished");
 
             setCurrentState(SUCCESSFUL);
@@ -305,7 +324,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
             stageTimes[i] = System.currentTimeMillis();
         }
     }
-    
+
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
@@ -328,7 +347,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
     AnalysisJob copy() {
         return new AnalysisJobSitesBySpecies(String.valueOf(System.currentTimeMillis()),
                 currentPath, qname, speciesq, gridsize, region, envelope,
-                sitesbyspecies, occurrencedensity, speciesdensity);
+                sitesbyspecies, occurrencedensity, speciesdensity, movingAverageSize);
     }
 
     private void writeProjectionFile(String outputpath_prj) {
@@ -358,7 +377,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         Grid g = new Grid(gridfilename);
         float[] d = g.getGrid();
         java.util.Arrays.sort(d);
-        
+
         Legend legend = new LegendEqualArea();
         legend.generate(d);
         legend.determineGroupSizes(d);
@@ -370,16 +389,16 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         System.gc();
         g = new Grid(gridfilename);
         d = g.getGrid();
-        legend.exportImage(d, g.ncols, gridfilename + ".jpg", 1);
-        legend.exportSLD(g, gridfilename + ".sld","", false, true);
+        legend.exportImage(d, g.ncols, gridfilename + ".png", 1, true);
+        legend.exportSLD(g, gridfilename + ".sld", "", false, true);
 
         return legend;
     }
 
-    void writeMetadata(String filename, Records records, double [] bbox) throws IOException {
+    void writeMetadata(String filename, String title, Records records, double[] bbox, boolean odensity, boolean sdensity) throws IOException {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
         FileWriter fw = new FileWriter(filename);
-        fw.append("<html><h1>Sites by species</h1>");
+        fw.append("<html><h1>").append(title).append("</h1>");
         fw.append("<table>");
         fw.append("<tr><td>Species selection " + qname + "</td></tr>");
         fw.append("<tr><td>Grid resolution " + gridsize + " degrees</td></tr>");
@@ -387,13 +406,13 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         fw.append("<tr><td>" + records.getRecordsSize() + " occurrences</td></tr>");
         fw.append("<tr><td>bounding box of the selected area " + bbox[0] + "," + bbox[1] + "," + bbox[2] + "," + bbox[3] + "</td></tr>");
         fw.append("<tr><td>Date/time " + sdf.format(new Date()) + "</td></tr>");
-        if(occurrencedensity) {
-            fw.append("<tr><td><br>Occurrence Density (9x9 moving average)</td></tr>");
-            fw.append("<tr><td><img src='occurrence_density.jpg' width='300px' height='300px'></td><td><img src='occurrence_density_legend.png'></td></tr>");
+        if (odensity) {
+            fw.append("<tr><td><br>Occurrence Density (" + movingAverageSize + "x" + movingAverageSize + " moving average)</td></tr>");
+            fw.append("<tr><td><img src='occurrence_density.png' width='300px' height='300px'><img src='occurrence_density_legend.png'></td></tr>");
         }
-        if(speciesdensity) {
-            fw.append("<tr><td><br>Species Richness (9x9 moving average)</td></tr>");
-            fw.append("<tr><td><img src='species_richness.jpg' width='300px' height='300px'></td><td><img src='species_richness_legend.png'></td></tr>");
+        if (sdensity) {
+            fw.append("<tr><td><br>Species Richness (" + movingAverageSize + "x" + movingAverageSize + " moving average)</td></tr>");
+            fw.append("<tr><td><img src='species_richness.png' width='300px' height='300px'><img src='species_richness_legend.png'></td></tr>");
         }
         fw.append("</table>");
         fw.append("</html>");

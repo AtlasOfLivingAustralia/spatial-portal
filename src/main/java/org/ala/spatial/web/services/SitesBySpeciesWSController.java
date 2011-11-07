@@ -34,12 +34,14 @@ public class SitesBySpeciesWSController {
             long currTime = System.currentTimeMillis();
 
             String currentPath = TabulationSettings.base_output_dir + "output" + File.separator + "sitesbyspecies";
-            String qname = URLDecoder.decode(req.getParameter("qname"), "UTF-8").replace("__",".");
-            String speciesq = URLDecoder.decode(req.getParameter("speciesq"), "UTF-8").replace("__",".");
+            String qname = URLDecoder.decode(req.getParameter("qname"), "UTF-8").replace("__", ".");
+            String speciesq = URLDecoder.decode(req.getParameter("speciesq"), "UTF-8").replace("__", ".");
             String area = req.getParameter("area");
             double gridsize = Double.parseDouble(req.getParameter("gridsize"));
+            int movingAverageSize = Integer.parseInt(req.getParameter("movingaveragesize"));
             boolean occurrencedensity = req.getParameter("occurrencedensity") != null;
             boolean speciesdensity = req.getParameter("speciesdensity") != null;
+            boolean sitesbyspecies = req.getParameter("sitesbyspecies") != null;
 
             LayerFilter[] filter = null;
             SimpleRegion region = null;
@@ -51,7 +53,7 @@ public class SitesBySpeciesWSController {
 
             String pid = Long.toString(currTime);
 
-            AnalysisJobSitesBySpecies sbs = new AnalysisJobSitesBySpecies(pid, currentPath, qname, speciesq, gridsize, region, filter, true, occurrencedensity, speciesdensity);
+            AnalysisJobSitesBySpecies sbs = new AnalysisJobSitesBySpecies(pid, currentPath, qname, speciesq, gridsize, region, filter, sitesbyspecies, occurrencedensity, speciesdensity, movingAverageSize);
 
             StringBuffer inputs = new StringBuffer();
             inputs.append("pid:").append(pid);

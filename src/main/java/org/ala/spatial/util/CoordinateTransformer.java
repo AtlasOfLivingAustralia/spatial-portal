@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ala.spatial.util;
 
 import java.io.BufferedReader;
@@ -17,13 +16,14 @@ import java.io.PrintWriter;
  * @author ajay
  */
 public class CoordinateTransformer {
+
     public static String transformToGoogleMercator(String imgfilepath) {
         Runtime runtime = Runtime.getRuntime();
         try {
 
             String gdal_path = TabulationSettings.gdal_apps_dir;
             //if (!gdal_path.endsWith("/")) gdal_path += "/";
-            
+
             System.out.println("Got gdal_path: " + gdal_path);
 
 
@@ -32,7 +32,7 @@ public class CoordinateTransformer {
             File oImg = new File(imgfilepath);
 
 
-            String filenamepart = oImg.getName().substring(0,oImg.getName().lastIndexOf("."));
+            String filenamepart = oImg.getName().substring(0, oImg.getName().lastIndexOf("."));
             String command = base_command + imgfilepath + " " + oImg.getParent() + File.separator + "t_" + filenamepart + ".tif";
 
             System.out.println("Exec'ing " + command);
@@ -72,9 +72,60 @@ public class CoordinateTransformer {
                 // now let's convert the image
                 int cExitVal = convertImageType(oImg.getParent() + File.separator + "t_" + filenamepart + ".tif", oImg.getParent() + File.separator + "t_" + oImg.getName());
 
-                System.out.println("Convert Image Type: " + cExitVal); 
+                System.out.println("Convert Image Type: " + cExitVal);
 
                 return oImg.getParent() + File.separator + "t_" + oImg.getName();
+            }
+        } catch (Exception e) {
+            System.out.println("OOOOPPPSSS: " + e.toString());
+            System.out.println("{success: false , responseText: 'Error occurred' + " + e.toString() + "}");
+            e.printStackTrace(System.out);
+        }
+
+        return null;
+    }
+
+    public static String transformAscToGeotif(String ascFile) {
+        Runtime runtime = Runtime.getRuntime();
+        try {
+
+            String gdal_path = TabulationSettings.gdal_apps_dir;
+
+            System.out.println("Got gdal_path: " + gdal_path);
+
+            String base_command = gdal_path + "gdal_translate -of GTiff -ot Float32 ";
+
+            File oImg = new File(ascFile);
+
+            String filenamepart = oImg.getName().substring(0, oImg.getName().lastIndexOf("."));
+            String command = base_command + ascFile + " " + oImg.getParent() + File.separator + filenamepart + ".tif";
+
+            System.out.println("Exec'ing " + command);
+            Process proc = runtime.exec(command);
+
+            System.out.println("Setting up output stream readers");
+            InputStreamReader isr = new InputStreamReader(proc.getInputStream());
+            InputStreamReader eisr = new InputStreamReader(proc.getErrorStream());
+            BufferedReader br = new BufferedReader(isr);
+            BufferedReader ebr = new BufferedReader(eisr);
+            String line;
+
+            System.out.printf("Output of running %s is:", command);
+
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            while ((line = ebr.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            int exitVal = proc.waitFor();
+
+            System.out.println(exitVal);
+
+            if (exitVal == 0) {
+                return oImg.getParent() + File.separator + oImg.getName() + ".tif";
             }
         } catch (Exception e) {
             System.out.println("OOOOPPPSSS: " + e.toString());
@@ -118,7 +169,7 @@ public class CoordinateTransformer {
 
             System.out.println(exitVal);
 
-            return exitVal; 
+            return exitVal;
 
         } catch (Exception e) {
             System.out.println("Unable to convert image: ");
@@ -131,9 +182,11 @@ public class CoordinateTransformer {
     public static void generateWorldFiles(String outputpath, String baseFilename, String xRes, String yRes, String xMin, String yMin) {
         try {
 
-            if (!outputpath.endsWith(File.separator)) outputpath += File.separator;
+            if (!outputpath.endsWith(File.separator)) {
+                outputpath += File.separator;
+            }
 
-            System.out.println("Generating world files for " + baseFilename + " under " + outputpath); 
+            System.out.println("Generating world files for " + baseFilename + " under " + outputpath);
 
             StringBuffer sbWorldFile = new StringBuffer();
             //  pixel X size
@@ -180,7 +233,6 @@ public class CoordinateTransformer {
         }
 
     }
-
 
     public static String transformAscToGeotiff(String src) {
         Runtime runtime = Runtime.getRuntime();

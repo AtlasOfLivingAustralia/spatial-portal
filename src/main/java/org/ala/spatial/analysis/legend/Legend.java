@@ -25,7 +25,7 @@ public abstract class Legend {
      *
      * There are groups+1 colours
      */
-    final public static int[] colours = {0x00002DD0,0x00005BA2,0x00008C73,0x0000B944,0x0000E716,0x00A0FF00,0x00FFFF00,0x00FFC814,0x00FFA000,0x00FF5B00,0x00FF0000};
+    final public static int[] colours = {0x00002DD0, 0x00005BA2, 0x00008C73, 0x0000B944, 0x0000E716, 0x00A0FF00, 0x00FFFF00, 0x00FFC814, 0x00FFA000, 0x00FF5B00, 0x00FF0000};
 
     /*
      * for determining the records that are equal to the maximum value
@@ -35,8 +35,7 @@ public abstract class Legend {
     /*
      * cutoffs.length may not match colours.length, this a translation
      */
-    float [] cutoffsColours;
-
+    float[] cutoffsColours;
     /**
      * number of group members by Unique Value
      */
@@ -121,7 +120,7 @@ public abstract class Legend {
         }
 
         lastValue = numberOfRecords;
-        if(numberOfRecords == 0) {
+        if (numberOfRecords == 0) {
             max = Float.NaN;
         } else {
             max = d[numberOfRecords - 1];
@@ -136,15 +135,15 @@ public abstract class Legend {
      * @param d float [] sorted in ascending order
      */
     public void determineGroupSizes(float[] d) {
-        if(cutoffs == null) {
+        if (cutoffs == null) {
             return;
         }
 
         //fix cutoffs
-        for(int i=1;i<cutoffs.length;i++) {
-            if(cutoffs[i] < cutoffs[i-1]) {
-                for(int j=i;j<cutoffs.length;j++) {
-                    cutoffs[j] = cutoffs[i-1];
+        for (int i = 1; i < cutoffs.length; i++) {
+            if (cutoffs[i] < cutoffs[i - 1]) {
+                for (int j = i; j < cutoffs.length; j++) {
+                    cutoffs[j] = cutoffs[i - 1];
                 }
                 break;
             }
@@ -157,7 +156,7 @@ public abstract class Legend {
             if (Float.isNaN(d[i])) {
                 continue;
             } else if (d[i] > cutoffs[cutoffPos]) {
-                while(d[i] > cutoffs[cutoffPos]) {
+                while (d[i] > cutoffs[cutoffPos]) {
                     cutoffPos++;
                 }
             }
@@ -178,7 +177,7 @@ public abstract class Legend {
      * @return
      */
     public double evaluateStdDev(float[] d) {
-        if(Float.isNaN(max)) {
+        if (Float.isNaN(max)) {
             return Double.NaN;
         }
         determineGroupSizes(d);
@@ -193,18 +192,18 @@ public abstract class Legend {
 
         return stdev;
     }
-    
+
     /**
      * size is represented by number of unique values.
      *
      * @param d float [] sorted in ascending order
      */
     int[] determineGroupSizesArea(float[] d) {
-        if(cutoffs == null) {
+        if (cutoffs == null) {
             return null;
         }
 
-        int [] grpSizes = new int[cutoffs.length];
+        int[] grpSizes = new int[cutoffs.length];
 
         int cutoffPos = 0;
         for (int i = 0; i < d.length; i++) {
@@ -212,13 +211,13 @@ public abstract class Legend {
                 continue;
             }
             while (d[i] > cutoffs[cutoffPos]) {
-                while(d[i] > cutoffs[cutoffPos]) {
+                while (d[i] > cutoffs[cutoffPos]) {
                     cutoffPos++;
                 }
             }
             grpSizes[cutoffPos]++;
         }
-        
+
         return grpSizes;
     }
 
@@ -231,13 +230,13 @@ public abstract class Legend {
      * @return
      */
     public double evaluateStdDevArea(float[] d) {
-        if(Float.isNaN(max)) {
+        if (Float.isNaN(max)) {
             return Double.NaN;
         }
 
-        int [] grpSizes = determineGroupSizesArea(d);
+        int[] grpSizes = determineGroupSizesArea(d);
         int sum = 0;
-        for(int i=0;i<grpSizes.length;i++) {
+        for (int i = 0; i < grpSizes.length; i++) {
             sum += grpSizes[i];
         }
 
@@ -261,11 +260,17 @@ public abstract class Legend {
      * @param width row width
      * @param filename output filename
      */
-    public void exportImage(float[] d, int width, String filename, int scaleDownBy) {
+    public void exportImage(float[] d, int width, String filename, int scaleDownBy, boolean minValueTransparent) {
         try {
             /* make image */
-            BufferedImage image = new BufferedImage(width / scaleDownBy, d.length / width / scaleDownBy,
-                    BufferedImage.TYPE_INT_BGR);
+            BufferedImage image = null;
+            if (minValueTransparent) {
+                image = new BufferedImage(width / scaleDownBy, d.length / width / scaleDownBy,
+                        BufferedImage.TYPE_4BYTE_ABGR);
+            } else {
+                image = new BufferedImage(width / scaleDownBy, d.length / width / scaleDownBy,
+                        BufferedImage.TYPE_INT_BGR);
+            }
 
             /* get bytes structure */
             int[] image_bytes = image.getRGB(0, 0, image.getWidth(), image.getHeight(),
@@ -281,7 +286,11 @@ public abstract class Legend {
 
                 int dataI = dataX + dataY * width;
 
-                image_bytes[i] = getColour(d[dataI]);
+                if (minValueTransparent && d[dataI] == min) {
+                    image_bytes[i] = 0x00000000;
+                } else {
+                    image_bytes[i] = getColour(d[dataI]);
+                }
             }
 
             /* write back image bytes */
@@ -312,7 +321,7 @@ public abstract class Legend {
             pos = (pos * -1) - 1;
         } else {
             //get first instance of this cutoff value
-            while(pos > 0 && cutoffs[pos] == cutoffs[pos-1]) {
+            while (pos > 0 && cutoffs[pos] == cutoffs[pos - 1]) {
                 pos--;
             }
         }
@@ -335,8 +344,8 @@ public abstract class Legend {
             }
 
             //translate value to 0-1 position between the colours
-            if(upper == lower) {
-                while(pos > 0 && cutoffs[pos - 1] == lower) {
+            if (upper == lower) {
+                while (pos > 0 && cutoffs[pos - 1] == lower) {
                     pos--;
                 }
                 return colours[pos];
@@ -451,7 +460,7 @@ public abstract class Legend {
      * @return float[] of [min, max] 
      */
     public float[] getMinMax() {
-        float [] f = {min, max};
+        float[] f = {min, max};
         return f;
     }
 
@@ -486,16 +495,16 @@ public abstract class Legend {
 
         sb.append(header);
 
-        if(hasNoDataValue) {
+        if (hasNoDataValue) {
             sb.append("\n<sld:ColorMapEntry color=\"#ffffff\" opacity=\"0\" quantity=\""
                     + g.nodatavalue + "\"/>\n");
         }
 
         String c = String.format("%6s", Integer.toHexString(colours[0])).replace(" ", "0");
-        if(minAsTransparent) {
-            sb.append("<sld:ColorMapEntry color=\"#" + c + "\" opacity=\"0\" quantity=\"" + min + "\" label=\"" + min + " " + units+ "\"/>\n");
+        if (minAsTransparent) {
+            sb.append("<sld:ColorMapEntry color=\"#" + c + "\" opacity=\"0\" quantity=\"" + min + "\" label=\"" + min + " " + units + "\"/>\n");
         } else {
-            sb.append("<sld:ColorMapEntry color=\"#" + c + "\" quantity=\"" + min + "\" label=\"" + min + " " + units+ "\"/>\n");
+            sb.append("<sld:ColorMapEntry color=\"#" + c + "\" quantity=\"" + min + "\" label=\"" + min + " " + units + "\"/>\n");
         }
 
         for (int i = 0; i < cutoffs.length - 1; i++) {
@@ -548,7 +557,7 @@ public abstract class Legend {
             int top = padding + (keyHeight / 2);
             int left = padding * 2 + keyWidth;
 
-            for(int i=0;i<cutoffs.length;i++) {
+            for (int i = 0; i < cutoffs.length; i++) {
                 String value = "<= " + cutoffs[i];
                 cg.drawString(value, left, top);
 
@@ -562,5 +571,4 @@ public abstract class Legend {
         }
 
     }
-
 }

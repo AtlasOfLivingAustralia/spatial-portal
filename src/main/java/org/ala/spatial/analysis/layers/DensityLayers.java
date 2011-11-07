@@ -18,12 +18,12 @@ public class DensityLayers {
 //        args = new String[] {
 //            //"http://localhost:8083/biocache-service",
 //            "http://biocache.ala.org.au/ws",
-//            "e:\\grid_ala",
+//            "e:\\records\\e_\\grid_ala2",
 //            "9",
 //            "-180,-90,180,90",
 //            //"112,-42,155,-9",
-//            "0.5",
-//            "1"
+//            "0.01",
+//            "6"
 //        };
 
         if (args.length < 3) {
@@ -51,23 +51,16 @@ public class DensityLayers {
                 records = new Records(args[0], "*:*",bbox,recordsFile);
             }
 
-//            OccurrenceDensity occurrenceDensity = new OccurrenceDensity(gridSize, resolution, bbox);
-//            occurrenceDensity.write(records, args[1]);
-//
-//            occurrenceDensity.setResolution(0.01);
-//            occurrenceDensity.write(records, args[1]);
+            //do not need species identifier
+            records.removeSpeciesNames();
+            System.gc();
 
+            OccurrenceDensity occurrenceDensity = new OccurrenceDensity(gridSize, resolution, bbox);
+            occurrenceDensity.write(records, args[1], null, maxThreads, true, true);
+
+            System.gc();
             SpeciesDensity speciesDensity = new SpeciesDensity(gridSize, resolution, bbox);
-            speciesDensity.write(records, args[1], null);
-
-            speciesDensity.setResolution(0.01);
-            speciesDensity.write(records, args[1], null);
-
-            OccurrenceDensity occurrenceDensity2 = new OccurrenceDensity(gridSize, resolution, bbox);
-            occurrenceDensity2.write(records, args[1], null);
-
-            occurrenceDensity2.setResolution(0.01);
-            occurrenceDensity2.write(records, args[1], null);
+            speciesDensity.write(records, args[1], null, maxThreads, true, true);
 
         } catch (Exception e) {
             printUsage();
