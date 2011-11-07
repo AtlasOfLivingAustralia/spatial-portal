@@ -75,7 +75,7 @@
                     <separator />
                     <hbox>
                         <label value="Add set a of layers:" />
-                        <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="320px" />
+                        <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="320px" readonly="true"/>
                         <fileupload sclass="fUploadButton" id="uploadLayerList" label="Upload set" upload="true" />
                     </hbox>
                     <separator />

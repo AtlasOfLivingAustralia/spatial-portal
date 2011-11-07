@@ -27,14 +27,18 @@ import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Combobox;
 
 /**
  *
  * @author ajay
  */
 public class AddToolSitesBySpeciesComposer extends AddToolComposer {
+
     Checkbox chkOccurrenceDensity;
     Checkbox chkSpeciesDensity;
+    Checkbox chkSitesBySpecies;
+    Combobox cbMovingAverageSize;
 
     @Override
     public void afterCompose() {
@@ -49,7 +53,6 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
 
     }
 
-
     @Override
     public void onLastPanel() {
         System.out.println("**** On last step ****");
@@ -62,51 +65,80 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
     public boolean onFinish() {
         //super.onFinish();
 
-//        if (searchSpeciesAuto.getSelectedItem() != null) {
-//            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea());
-//        }
+        if (searchSpeciesAuto.getSelectedItem() != null) {
+            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea());
+        }
 
         return runsitesbyspecies();
     }
 
     public boolean runsitesbyspecies() {
         try {
+            String ma = "9";
+            if (cbMovingAverageSize.getSelectedItem() == null) {
+                String txt = cbMovingAverageSize.getValue();
+                for (int i = 0; i < cbMovingAverageSize.getItemCount(); i++) {
+                    if (txt != null && txt.equalsIgnoreCase(cbMovingAverageSize.getItemAtIndex(i).getLabel())) {
+                        ma = (String) cbMovingAverageSize.getItemAtIndex(i).getValue();
+                        break;
+                    }
+                }
+            } else {
+                ma = (String) cbMovingAverageSize.getSelectedItem().getValue();
+            }
+            int movingAverageSize = Integer.parseInt(ma);
+            if (movingAverageSize % 2 == 0 || movingAverageSize <= 1 || movingAverageSize >= 16) {
+                getMapComposer().showMessage("Moving average size " + movingAverageSize + " is not valid.  Must be odd and between 1 and 15.", this);
+                return false;
+            }
+
+            if (!chkOccurrenceDensity.isChecked()
+                    && !chkSitesBySpecies.isChecked()
+                    && !chkSpeciesDensity.isChecked()) {
+                getMapComposer().showMessage("Must select at least one output; Sites by species, Occurrence density or Species richness.", this);
+                return false;
+            }
+
             Double gridResolution = dResolution.getValue();
             SelectedArea sa = getSelectedArea();
             SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
             Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
             int occurrenceCount = query.getOccurrenceCount();
-            int boundingboxcellcount = (int)
-                    ((sr.getBoundingBox()[1][0] - sr.getBoundingBox()[0][0])
+            int boundingboxcellcount = (int) ((sr.getBoundingBox()[1][0] - sr.getBoundingBox()[0][0])
                     * (sr.getBoundingBox()[1][1] - sr.getBoundingBox()[0][1])
                     / (gridResolution * gridResolution));
 
             System.out.println("SitesBySpecies for " + occurrenceCount + " occurrences in up to " + boundingboxcellcount + " grid cells.");
-            
-            if(boundingboxcellcount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells")) {
+
+            if (boundingboxcellcount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells")) {
                 //getMapComposer().showMessage("Too many potential output grid cells.  Reduce by at least " + String.format("%.2f",100* (1-boundingboxcellcount / (double)settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells"))) + "% by decreasing area or increasing resolution.", this);
                 getMapComposer().showMessage("Too many potential output grid cells.  Decrease area or increase resolution.", this);
                 return false;
             }
-            
-            if(occurrenceCount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxoccurrences")) {
+
+            if (occurrenceCount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxoccurrences")) {
                 getMapComposer().showMessage("Too many occurrences for the selected species in this area.  " + occurrenceCount + " occurrences found, must be less than " + settingsSupplementary.getValueAsInt("sitesbyspecies_maxoccurrences"), this);
                 return false;
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/sitesbyspecies/processgeoq?");
-            
+
             sbProcessUrl.append("speciesq=" + URLEncoder.encode(query.getQ(), "UTF-8"));
-            
+
             sbProcessUrl.append("&gridsize=" + URLEncoder.encode(String.valueOf(gridResolution), "UTF-8"));
 
-            if(chkOccurrenceDensity.isChecked()) {
+            if (chkOccurrenceDensity.isChecked()) {
                 sbProcessUrl.append("&occurrencedensity=1");
             }
-            if(chkSpeciesDensity.isChecked()) {
+            if (chkSpeciesDensity.isChecked()) {
                 sbProcessUrl.append("&speciesdensity=1");
             }
+            if (chkSitesBySpecies.isChecked()) {
+                sbProcessUrl.append("&sitesbyspecies=1");
+            }
+
+            sbProcessUrl.append("&movingaveragesize=" + ma);
 
 
             HttpClient client = new HttpClient();
@@ -142,10 +174,10 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
         }
         return false;
     }
-    
+
     public void loadMap(Event event) {
         try {
-            if(chkOccurrenceDensity.isChecked()) {
+            if (chkOccurrenceDensity.isChecked()) {
                 String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:odensity_" + pid + "&styles=odensity_" + pid + "&FORMAT=image%2Fpng";
                 String legendurl = CommonData.geoServer
                         + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
@@ -158,7 +190,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                 String layername = getMapComposer().getNextAreaLayerName("Occurrence Density");
                 getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.WMS_1_3_0, null, null);
                 MapLayer ml = getMapComposer().getMapLayer(layername);
-                String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/metadata.html";
+                String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/odensity_metadata.html";
                 MapLayerMetadata md = ml.getMapLayerMetadata();
                 if (md == null) {
                     md = new MapLayerMetadata();
@@ -167,8 +199,8 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                 md.setMoreInfo(infoUrl + "\nSites by species\npid:" + pid);
                 md.setId(Long.valueOf(pid));
             }
-            
-            if(chkSpeciesDensity.isChecked()) {
+
+            if (chkSpeciesDensity.isChecked()) {
                 String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:srichness_" + pid + "&styles=srichness_" + pid + "&FORMAT=image%2Fpng";
                 String legendurl = CommonData.geoServer
                         + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
@@ -181,7 +213,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                 String layername = getMapComposer().getNextAreaLayerName("Species Richness");
                 getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.WMS_1_3_0, null, null);
                 MapLayer ml = getMapComposer().getMapLayer(layername);
-                String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/metadata.html";
+                String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/srichness_metadata.html";
                 MapLayerMetadata md = ml.getMapLayerMetadata();
                 if (md == null) {
                     md = new MapLayerMetadata();
@@ -350,7 +382,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                 rgArea.setFocus(true);
                 break;
             case 2:
-                if(rSpeciesSearch.isChecked()) {
+                if (rSpeciesSearch.isChecked()) {
                     searchSpeciesAuto.setFocus(true);
                 } else {
                     rgSpecies.setFocus(true);

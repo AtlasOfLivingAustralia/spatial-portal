@@ -34,10 +34,8 @@
                         </row>
                         <row>
                             <label id="lblStep3" value="3. Select environmental grid size"/>
-                            <image id="imgCompletedStep3" visible="false" src="img/accept.png"/>
-            
-                        </row>
-                    
+                            <image id="imgCompletedStep3" visible="false" src="img/accept.png"/>            
+                        </row>                    
                     </rows>
         
                 </grid>
@@ -103,9 +101,24 @@
                         <label value="Enter resolution in degrees" />
                         <doublebox id="dResolution" constraint="no negative,no empty" value="0.01"/>
                     </hbox>
+                    <separator height="15px" />
+                        <label value="Enter moving average grid size (for occurrence density and species richness layers)" />
+                        <combobox id="cbMovingAverageSize" readonly="true" width="200px" constraint="no empty"
+                            value="9x9">
+                            <comboitem label="1x1 (no moving average)" value="1" />
+                            <comboitem label="3x3" value="3" />
+                            <comboitem label="5x5" value="5" />
+                            <comboitem label="7x7" value="7" />
+                            <comboitem label="9x9" value="9" />
+                            <comboitem label="11x11" value="11" />
+                            <comboitem label="13x13" value="13" />
+                            <comboitem label="15x15" value="15" />
+                        </combobox>
+                    <separator height="15px" />
                     <div visible="true">
                         <vbox>
                             <separator />
+                            <checkbox id="chkSitesBySpecies" label="Produce sites by species list" checked="true" />
                             <checkbox id="chkOccurrenceDensity" label="Produce occurrence density layer" />
                             <checkbox id="chkSpeciesDensity" label="Produce species richness layer" />
                         </vbox>
