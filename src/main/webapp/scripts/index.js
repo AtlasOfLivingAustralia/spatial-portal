@@ -1,4 +1,9 @@
-zk.Widget.$(jq('$westContent')[0]).firstChild.lastChild.listen({onMouseUp: function () { setTimeout("map.pan(1,1);",300); }});
+//zk.Widget.$(jq('$westContent')[0]).firstChild.lastChild.listen({onMouseUp: function () { setTimeout("map.pan(1,1);",300); }});
+
+$(window.mapFrame).resize(function() {
+  setTimeout("map.pan(1,1);",500);
+});
+
 
 function updateSafeToLoadMap(status) {                        
     try {
@@ -147,8 +152,11 @@ function roundNumber(num, dec) {
 
 jQuery('.hidden_image :hidden').show();
 
-if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.location.href.indexOf("spatial.ala.org.au") > -1 || parent.location.href.indexOf("spatial-test.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
-    jQuery('.z-north').show();
+//if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.location.href.indexOf("spatial.ala.org.au") > -1 || parent.location.href.indexOf("spatial-test.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
+//    jQuery('.z-north').show();
+//}
+if (parent.location.href.indexOf("explore") > -1 && parent.location.href.indexOf("species-maps") > -1) {
+    jQuery('.nav-home').hide();
 }
 
 function printHack(o) {
