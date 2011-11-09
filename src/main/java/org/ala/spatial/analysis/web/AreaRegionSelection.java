@@ -74,7 +74,9 @@ public class AreaRegionSelection extends AreaToolComposer {
         this.layerName = mapLayer.getName();
 
         //if the layer is a point create a radius
+        boolean point = false;
         if (mapLayer.getWKT().startsWith("POINT")) {
+            point = true;
             String coords = mapLayer.getWKT().replace("POINT(", "").replace(")","");
 
             double radius = dRadius.getValue() * 1000.0;
@@ -97,7 +99,7 @@ public class AreaRegionSelection extends AreaToolComposer {
             }
             try {
                 double[][] bb = null;
-                if(mapLayer.getWKT().startsWith("POINT")) {
+                if(point) {
                     bb = SimpleShapeFile.parseWKT(mapLayer.getWKT()).getBoundingBox();
                 } else {
                     bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
@@ -115,7 +117,7 @@ public class AreaRegionSelection extends AreaToolComposer {
             md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
 
             Facet facet = null;
-            if(!mapLayer.getWKT().startsWith("POINT")) {
+            if(!point) {
                 facet = getFacetForObject(link.substring(link.lastIndexOf('/') + 1), label);
             }
             if (facet != null) {
