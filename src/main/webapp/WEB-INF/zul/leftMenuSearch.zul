@@ -23,12 +23,18 @@
                     document.getElementById('${west.uuid}').value = roundNumber(extent[0],3);
                     document.getElementById('${zoom.uuid}').value = mapObj.getZoom();
 
+                var zoom = 5;
+                if (mapObj != null) {
+                    if (mapObj.getZoom() != null) {
+                        zoom = mapObj.getZoom();
+                    }
+                }
                 zAu.send(new zk.Event(zk.Widget.$(jq('$leftSearch')[0]), 'setExtents',
                         roundNumber(extent[0],3) + "," +
                         roundNumber(extent[3],3) + "," +
                         roundNumber(extent[2],3) + "," +
                         roundNumber(extent[1],3) + "," +
-                        mapObj.getZoom()));
+                        zoom));
             }
         </script>
         </div>
