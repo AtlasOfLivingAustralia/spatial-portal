@@ -1,21 +1,5 @@
 package org.ala.spatial.analysis.web;
 
-import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.settings.SettingsSupplementary;
-import java.util.List;
-import java.util.Map;
-import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.LayersUtil;
-import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.util.Clients;
-import org.zkoss.zul.Radio;
-import org.zkoss.zul.Radiogroup;
-import org.zkoss.zul.Textbox;
-import org.zkoss.zul.Window;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
@@ -24,25 +8,16 @@ import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.wms.WMSStyle;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import org.ala.spatial.util.LayersUtil;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.event.Events;
-import org.zkoss.zul.Button;
 import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Textbox;
-import org.zkoss.zul.Intbox;
-import org.zkoss.zul.Tabbox;
-import org.zkoss.zul.Window;
 
 /**
  *
@@ -55,6 +30,10 @@ public class ImportAnalysisController extends UtilityComposer {
     String pid;
     boolean isAloc = false;
     boolean isMaxent = false;
+    boolean isSxS = false;
+    boolean sxsSitesBySpecies = false;
+    boolean sxsOccurrenceDensity = false;
+    boolean sxsSpeciesDensity = false;
 
     @Override
     public void afterCompose() {
@@ -71,6 +50,9 @@ public class ImportAnalysisController extends UtilityComposer {
         } else if(getParametersMaxent()) {
             isMaxent = true;
             openProgressBarMaxent();
+        } else if(getParametersSxS()){
+            isSxS = true;
+            openProgressBarSxS();
         } else {
             getMapComposer().showMessage("Invalid reference number.");
         }
@@ -168,6 +150,8 @@ public class ImportAnalysisController extends UtilityComposer {
             loadMapAloc(event);
         } else if (isMaxent) {
             loadMapMaxent(event);
+        } else if(isSxS) {
+            loadMapSxS(event);
         }
     }
 
@@ -319,6 +303,48 @@ public class ImportAnalysisController extends UtilityComposer {
         return false;
     }
 
+    boolean getParametersSxS() {
+        String txt = get("inputs");
+        try {
+            int pos = 0;
+            int p1 = txt.indexOf("pid:", pos);
+            if (p1 < 0) {
+                return false;
+            }
+            int p2 = txt.indexOf("gridsize:", pos);
+            if(p2 < 0) {
+                return false;
+            }
+
+            if(txt.indexOf("sitesbyspecies") > 0) {
+                sxsSitesBySpecies = true;
+            }
+            if(txt.indexOf("occurrencedensity") > 0) {
+                sxsOccurrenceDensity = true;
+            }
+            if(txt.indexOf("speciesdensity") > 0) {
+                sxsSpeciesDensity = true;
+            }
+
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    void openProgressBarSxS() {
+        SitesBySpeciesProgressWCController window = (SitesBySpeciesProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisSitesBySpeciesProgress.zul", this, null);
+        //window.parent = this;
+        window.start(pid);
+        try {
+            window.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void loadMapMaxent(Event event) {
 
         String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
@@ -375,5 +401,64 @@ public class ImportAnalysisController extends UtilityComposer {
         //getMapComposer().showMessage("Reference number to retrieve results: " + pid);
 
         //showInfoWindow("/output/maxent/" + pid + "/species.html");
+    }
+
+    private void loadMapSxS(Event event) {
+        try {
+            if (sxsOccurrenceDensity) {
+                String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:odensity_" + pid + "&styles=odensity_" + pid + "&FORMAT=image%2Fpng";
+                String legendurl = CommonData.geoServer
+                        + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
+                        + "&LAYER=ALA:odensity_" + pid
+                        + "&STYLE=odensity_" + pid;
+
+                System.out.println(legendurl);
+
+//                String layername = tToolName.getValue();
+                String layername = getMapComposer().getNextAreaLayerName("Occurrence Density");
+                getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.WMS_1_3_0, null, null);
+                MapLayer ml = getMapComposer().getMapLayer(layername);
+                String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/odensity_metadata.html";
+                MapLayerMetadata md = ml.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    ml.setMapLayerMetadata(md);
+                }
+                md.setMoreInfo(infoUrl + "\nSites by species\npid:" + pid);
+                md.setId(Long.valueOf(pid));
+            }
+
+            if (sxsSpeciesDensity) {
+                String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:srichness_" + pid + "&styles=srichness_" + pid + "&FORMAT=image%2Fpng";
+                String legendurl = CommonData.geoServer
+                        + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
+                        + "&LAYER=ALA:srichness_" + pid
+                        + "&STYLE=srichness_" + pid;
+
+                System.out.println(legendurl);
+
+//                String layername = tToolName.getValue();
+                String layername = getMapComposer().getNextAreaLayerName("Species Richness");
+                getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.WMS_1_3_0, null, null);
+                MapLayer ml = getMapComposer().getMapLayer(layername);
+                String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/srichness_metadata.html";
+                MapLayerMetadata md = ml.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    ml.setMapLayerMetadata(md);
+                }
+                md.setMoreInfo(infoUrl + "\nSites by species\npid:" + pid);
+                md.setId(Long.valueOf(pid));
+            }
+
+            // set off the download as well
+            String fileUrl = CommonData.satServer + "/ws/download/" + pid;
+            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", "sites_by_species.zip");
+        } catch (Exception ex) {
+            System.out.println("Error generating download for prediction model:");
+            ex.printStackTrace(System.out);
+        }
+
+        this.detach();
     }
 }
