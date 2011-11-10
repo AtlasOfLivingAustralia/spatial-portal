@@ -1320,6 +1320,10 @@ div.z-window-modal-header, div.z-window-overlapped-header {
  background: #22aa22;
  }
 
+ .xRemove {
+ text-decoration: underline;
+ }
+
  .underline {
      text-decoration: underline;
      cursor: pointer; 

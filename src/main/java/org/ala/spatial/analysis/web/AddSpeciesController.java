@@ -4,21 +4,23 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Comboitem;
@@ -63,6 +65,7 @@ public class AddSpeciesController extends UtilityComposer {
         super.afterCompose();
         rSearch.setSelected(true);
         chkArea.setChecked(true);
+        mSearchSpeciesAuto.setBiocacheOnly(true);
     }
 
     public void onClick$btnOk(Event event) {
@@ -94,6 +97,19 @@ public class AddSpeciesController extends UtilityComposer {
                 } catch (SuspendNotAllowedException ex) {
                     Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            } else if(rMultiple.isSelected()){
+                AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
+                String lsids = getMultipleLsids();
+                query = new BiocacheQuery(lsids, null, null, null, false);
+                window.setSpeciesParams(query, rank, taxon);
+                window.loadAreaLayers();
+                try {
+                    window.doModal();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SuspendNotAllowedException ex) {
+                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+                }
             } else {
                 onClick$btnUpload(event);
             }
@@ -116,6 +132,36 @@ public class AddSpeciesController extends UtilityComposer {
 
         refreshBtnOkDisabled();
     }
+
+    public void onChange$mSearchSpeciesAuto(Event event) {
+        //add to lMultiple
+        Comboitem ci = mSearchSpeciesAuto.getSelectedItem();
+        if(ci != null && ci.getAnnotatedProperties() != null
+                && ((String) ci.getAnnotatedProperties().get(0)) != null) {
+            String lsid = ((String) ci.getAnnotatedProperties().get(0));
+
+            try {
+                Map<String, String> searchResult = BiocacheQuery.getClassification(lsid);
+
+                String sciname= searchResult.get("scientificName");
+                String family = searchResult.get("family");
+                String kingdom = searchResult.get("kingdom");
+                if(sciname == null) sciname = "";
+                if(family == null) family = "";
+                if(kingdom == null) kingdom = "";
+
+                if(sciname != null && sciname.length() > 0) {
+                    addTolMultiple(lsid, sciname, family, kingdom);
+
+                    mSearchSpeciesAuto.setText("");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        refreshBtnOkDisabled();
+    }
+
 
     public void onClick$btnUpload(Event event) {
         try {
@@ -250,25 +296,10 @@ public class AddSpeciesController extends UtilityComposer {
                     }
 
                     if(lsid != null && lsid.length() > 0) {
-                        Listitem li = new Listitem();
-
-                        //sci name
-                        Listcell lc = new Listcell(sciname);
-                        lc.setParent(li);
-
-                        //family
-                        lc = new Listcell(family);
-                        lc.setParent(li);
-
-                        //kingdom
-                        lc = new Listcell(kingdom);
-                        lc.setParent(li);
-
-                        //lsid
-                        lc = new Listcell(lsid);
-                        lc.setParent(li);
-
-                        li.setParent(lMultiple);
+                        addTolMultiple(lsid,sciname,family,kingdom);
+                    } else {
+                        notFound.add(s);
+                        notFoundSb.append(s + "\n");
                     }
                 } catch (Exception e) {
                     notFound.add(s);
@@ -280,6 +311,8 @@ public class AddSpeciesController extends UtilityComposer {
         if(notFound.size() > 0) {
             getMapComposer().showMessage("Cannot identify these scientific names:\n" + notFoundSb.toString(), this);
         }
+
+        refreshBtnOkDisabled();
     }
 
     JSONObject processAdhoc(String scientificName) {
@@ -296,5 +329,60 @@ public class AddSpeciesController extends UtilityComposer {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void addTolMultiple(String lsid, String sciname, String family, String kingdom) {
+        for(Listitem li : (List<Listitem>)lMultiple.getItems()) {
+            Listcell lc = (Listcell) li.getLastChild();
+            if(lc.getLabel().equals(lsid)) {
+                return;
+            }
+        }
+        
+        Listitem li = new Listitem();
+
+        //remove button
+        Listcell lc = new Listcell("x");
+        lc.setSclass("xRemove");
+        lc.addEventListener("onClick", new EventListener() {
+
+            @Override
+            public void onEvent(Event event) throws Exception {
+                Listitem li = (Listitem) event.getTarget().getParent();
+                li.detach();
+                refreshBtnOkDisabled();
+            }
+        });
+        lc.setParent(li);
+
+        //sci name
+        lc = new Listcell(sciname);
+        lc.setParent(li);
+
+        //family
+        lc = new Listcell(family);
+        lc.setParent(li);
+
+        //kingdom
+        lc = new Listcell(kingdom);
+        lc.setParent(li);
+
+        //lsid
+        lc = new Listcell(lsid);
+        lc.setParent(li);
+
+        li.setParent(lMultiple);
+    }
+
+    private String getMultipleLsids() {
+        StringBuilder sb = new StringBuilder();
+        for(Listitem li : (List<Listitem>)lMultiple.getItems()) {
+            Listcell lc = (Listcell) li.getLastChild();
+            if(sb.length() > 0) {
+                sb.append(",");
+            }
+            sb.append(lc.getLabel());
+        }
+        return sb.toString();
     }
 }

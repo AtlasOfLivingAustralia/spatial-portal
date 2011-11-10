@@ -1074,6 +1074,37 @@ public class BiocacheQuery implements Query, Serializable {
         return classification;
     }
 
+    public static Map<String, String> getClassification(String lsid) {
+
+        String[] classificationList = {"kingdom", "phylum", "class", "order", "family", "genus", "species", "subspecies", "scientificName"};
+        Map<String, String> classification = new LinkedHashMap<String, String>();
+
+        String snUrl = CommonData.bieServer + BIE_SPECIES + lsid + ".json";
+        System.out.println(snUrl);
+
+        try {
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(snUrl);
+            get.addRequestHeader("Content-type", "application/json");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            JSONObject jo = JSONObject.fromObject(slist);
+
+            JSONObject joOcc = jo.getJSONObject("classification");
+            for (String c : classificationList) {
+                classification.put(c.replace("ss", "zz"), joOcc.getString(c.replace("ss", "zz")));
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error getting scientific name");
+            e.printStackTrace(System.out);
+        }
+
+        return classification;
+    }
+
     @Override
     public String getDownloadUrl(String[] extraFields) {
         StringBuilder sb = new StringBuilder();

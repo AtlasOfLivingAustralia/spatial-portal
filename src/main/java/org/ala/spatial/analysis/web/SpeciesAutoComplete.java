@@ -30,6 +30,7 @@ public class SpeciesAutoComplete extends Combobox {
 
     private boolean bSearchCommon = false;
     private SettingsSupplementary settingsSupplementary = null;
+    boolean biocacheOnly = false;
 
     public boolean isSearchCommon() {
         return bSearchCommon;
@@ -103,7 +104,9 @@ public class SpeciesAutoComplete extends Combobox {
 
                 //sb.append(searchService(val));
                 sb.append(autoService(val));
-                sb.append(loadUserPoints(val));
+                if (!biocacheOnly) {
+                    sb.append(loadUserPoints(val));
+                }
 
                 String sslist = sb.toString();
                 System.out.println("SpeciesAutoComplete: \n" + sslist);
@@ -359,5 +362,9 @@ public class SpeciesAutoComplete extends Combobox {
         }
 
         return slist.toString();
+    }
+
+    void setBiocacheOnly(boolean biocacheOnly) {
+        this.biocacheOnly = biocacheOnly;
     }
 }
