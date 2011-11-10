@@ -61,6 +61,15 @@ public class SitesBySpeciesWSController {
             inputs.append(";speciesq:").append(speciesq);
             inputs.append(";gridsize:").append(gridsize);
             inputs.append(";area:").append(area);
+            if(occurrencedensity) {
+                inputs.append(";occurrencedensity:true").append(area);
+            }
+            if(speciesdensity) {
+                inputs.append(";speciesdensity:true").append(area);
+            }
+            if(sitesbyspecies) {
+                inputs.append(";sitesbyspecies:true").append(area);
+            }
             sbs.setInputs(inputs.toString());
             AnalysisQueue.addJob(sbs);
 

@@ -17,6 +17,7 @@ import org.ala.spatial.analysis.layers.SitesBySpecies;
 import org.ala.spatial.analysis.layers.SpeciesDensity;
 import org.ala.spatial.analysis.legend.Legend;
 import org.ala.spatial.analysis.legend.LegendEqualArea;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -79,7 +80,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
 
             // dump the species data to a file
             setProgress(0, "getting species data");
-            Records records = new Records(TabulationSettings.biocache_service, speciesq + "%20AND%20geospatial_kosher:true", bbox, /*currentPath + File.separator + "raw_data.csv"*/ null);
+            Records records = new Records(TabulationSettings.biocache_service, speciesq, bbox, /*currentPath + File.separator + "raw_data.csv"*/ null);
 
             //test restrictions
             int occurrenceCount = records.getRecordsSize();
@@ -150,10 +151,16 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                 String data = "<layer><enabled>true</enabled><defaultStyle><name>odensity_" + getName() + "</name></defaultStyle></layer>";
                 url = (String) htGeoserver.get("geoserver_url") + "/rest/layers/ALA:odensity_" + getName();
                 UploadSpatialResource.assignSld(url, extra, username, password, data);
+                //Enable browser caching, FIX for zoom to extent required.
+//                data = "<coverage><metadata><entry key=\"cacheAgeMax\">3600</entry><entry key=\"cachingEnabled\">true</entry><entry key=\"dirName\">odensity_" + getName() + "_occurrence_density</entry></metadata></coverage>";
+//                url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/odensity_" + getName() + "/coverages/odensity_" + getName() + ".xml";
+//                UploadSpatialResource.assignSld(url, extra, username, password, data);
 
                 occurrencesLegend.generateLegend(currentPath + File.separator + "occurrence_density_legend.png");
 
                 writeMetadata(currentPath + File.separator + "odensity_metadata.html", "Occurrence Density", records, bbox, occurrencedensity, false);
+
+                new File(ascZipFile).delete();
             }
 
             Legend speciesLegend = null;
@@ -193,10 +200,16 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                 String data = "<layer><enabled>true</enabled><defaultStyle><name>srichness_" + getName() + "</name></defaultStyle></layer>";
                 url = (String) htGeoserver.get("geoserver_url") + "/rest/layers/ALA:srichness_" + getName();
                 UploadSpatialResource.assignSld(url, extra, username, password, data);
+                ///Enable browser caching, FIX for zoom to extent required.
+//                data = "<coverage><metadata><entry key=\"cacheAgeMax\">3600</entry><entry key=\"cachingEnabled\">true</entry><entry key=\"dirName\">srichness_" + getName() + "_species_richness</entry></metadata></coverage>";
+//                url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/srichness_" + getName() + "/coverages/srichness_" + getName()+ ".xml";
+//                UploadSpatialResource.assignSld(url, extra, username, password, data);
 
                 speciesLegend.generateLegend(currentPath + File.separator + "species_richness_legend.png");
 
                 writeMetadata(currentPath + File.separator + "srichness_metadata.html", "Species Richness", records, bbox, false, speciesdensity);
+
+                new File(ascZipFile).delete();
             }
 
             setProgress(1, "finished");
@@ -400,6 +413,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         FileWriter fw = new FileWriter(filename);
         fw.append("<html><h1>").append(title).append("</h1>");
         fw.append("<table>");
+        fw.append("<tr><td>Analysis id: " + getName() + "</td></tr>");
         fw.append("<tr><td>Species selection " + qname + "</td></tr>");
         fw.append("<tr><td>Grid resolution " + gridsize + " degrees</td></tr>");
         fw.append("<tr><td>" + records.getSpeciesSize() + " species</td></tr>");

@@ -46,28 +46,36 @@ public class SitesBySpecies {
     public void write(Records records, String outputDirectory) throws IOException {
         FileWriter fw = new FileWriter(outputDirectory + "fullSitesBySpecies.csv");
 
-        for (int j = 0; j < 4; j++) {
-            fw.append(",,");
+        for (int j = 0; j < 5; j++) {
+            if(j > 0) {
+                fw.append("\n");
+            }
+            if(j == 0) {
+                 fw.append("LSID,Longitude,Latitude");
+            } else if(j == 1) {
+                fw.append("Common Name,,");
+            } else if(j == 2) {
+                fw.append("Kingdom,,");
+            } else if(j == 3) {
+                fw.append("Family,,");
+            } else if(j == 4) {
+                fw.append("Species,,");
+            }
             for (int i = 0; i < records.lsids.length; i++) {
                 fw.append(",\"");
                 String[] split = records.lsids[i].split("\\|");
-                if (split.length > j + 1) {
-                    fw.append(split[j + 1].replace("\"", "\"\""));
+                if(j == 4) {
+                    if (split.length > 0) {
+                        fw.append(split[0].replace("\"", "\"\""));
+                    }
+                } else {
+                    if (split.length > j + 1) {
+                        fw.append(split[j + 1].replace("\"", "\"\""));
+                    }
                 }
                 fw.append("\"");
-            }
-            fw.append("\n");
-        }
-
-        fw.append("label,lr longitude, lr latitude");
-        for (int i = 0; i < records.lsids.length; i++) {
-            fw.append(",\"");
-            String[] split = records.lsids[i].split("\\|");
-            if (split.length > 0) {
-                fw.append(split[0].replace("\"", "\"\""));
-            }
-            fw.append("\"");
-        }
+            }            
+        }        
 
         int uniqueSpeciesCount = records.getSpeciesSize();
 

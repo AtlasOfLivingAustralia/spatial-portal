@@ -494,6 +494,11 @@ public class AlocService {
         url = (String) htGeoserver.get("geoserver_url") + "/rest/layers/ALA:aloc_" + name;
         UploadSpatialResource.assignSld(url, extra, username, password, data);
 
+         //Enable browser caching, FIX for zoom to extent required.
+//        data = "<coverage><metadata><entry key=\"cacheAgeMax\">3600</entry><entry key=\"cachingEnabled\">true</entry><entry key=\"dirName\">aloc_" + name + "_" + name + "</entry></metadata></coverage>";
+//        url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/aloc_" + name + "/coverages/aloc_" + name + ".xml";
+//        UploadSpatialResource.assignSld(url, extra, username, password, data);
+
         return groups;
     }
 

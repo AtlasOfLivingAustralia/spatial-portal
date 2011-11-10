@@ -64,10 +64,14 @@ public class SpeciesDensity {
         }
 
 //        RandomAccessFile raf = new RandomAccessFile(outputDirectory + filename + ".gri", "rw");
-        byte[] bytes = new byte[4 * width];
-        ByteBuffer bb = ByteBuffer.wrap(bytes);
-        bb.order(ByteOrder.LITTLE_ENDIAN);
-        bb.mark();
+        byte[] bytes = null;
+        ByteBuffer bb = null;
+        if (outputDivaGrid) {
+            bytes = new byte[4 * width];
+            bb = ByteBuffer.wrap(bytes);
+            bb.order(ByteOrder.LITTLE_ENDIAN);
+            bb.mark();
+        }
 
 //        FileWriter fw = new FileWriter(outputDirectory + filename + ".asc");
         bw.append("ncols " + width + "\n"

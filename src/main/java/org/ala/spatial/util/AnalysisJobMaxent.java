@@ -290,6 +290,11 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
                     UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
 
+                    //Enable browser caching, FIX for zoom to extent required.
+//                    String data = "<coverage><metadata><entry key=\"cacheAgeMax\">3600</entry><entry key=\"cachingEnabled\">true</entry><entry key=\"dirName\">maxent_" + getName() + "_species</entry></metadata></coverage>";
+//                    url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/maxent_" + getName() + "/coverages/maxent_" + getName() + ".xml";
+//                    UploadSpatialResource.assignSld(url, extra, username, password, data);
+
                     htProcess.put("status", "success"); ///
                     htProcess.put("pid", getName());
                     htProcess.put("info", "/output/maxent/" + getName() + "/species.html");
