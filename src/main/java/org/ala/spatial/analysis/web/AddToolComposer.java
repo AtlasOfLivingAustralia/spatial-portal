@@ -11,6 +11,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -21,12 +22,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.SelectedArea;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Executions;
@@ -44,12 +49,16 @@ import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Listbox;
+import org.zkoss.zul.Listcell;
+import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Menuitem;
 import org.zkoss.zul.Menupopup;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Textbox;
+import org.zkoss.zul.Vbox;
 import org.zkoss.zul.Window;
 
 /**
@@ -65,8 +74,8 @@ public class AddToolComposer extends UtilityComposer {
     String pid = "";
     Radiogroup rgArea, rgAreaHighlight, rgSpecies, rgSpeciesBk;
     Radio rMaxent, rAloc, rScatterplot, rGdm, rTabulation;
-    Radio rSpeciesAll, rSpeciesMapped, rSpeciesSearch, rSpeciesUploadLSID, rSpeciesUploadSpecies;
-    Radio rSpeciesNoneBk, rSpeciesAllBk, rSpeciesMappedBk, rSpeciesSearchBk, rSpeciesUploadLSIDBk, rSpeciesUploadSpeciesBk;
+    Radio rSpeciesAll, rSpeciesMapped, rSpeciesSearch, rSpeciesUploadLSID, rSpeciesUploadSpecies, rMultiple;
+    Radio rSpeciesNoneBk, rSpeciesAllBk, rSpeciesMappedBk, rSpeciesSearchBk, rSpeciesUploadLSIDBk, rSpeciesUploadSpeciesBk, rMultipleBk;
     Radio rAreaWorld, rAreaCustom, rAreaWorldHighlight, rAreaSelected;
     Button btnCancel, btnOk, btnBack, btnHelp;
     Textbox tToolName;
@@ -92,6 +101,10 @@ public class AddToolComposer extends UtilityComposer {
     Button btnClearSelection;
     Menupopup mpLayer2, mpLayer1;
     Doublebox dResolution;
+    Vbox vboxMultiple,vboxMultipleBk;
+    SpeciesAutoComplete mSearchSpeciesAuto, mSearchSpeciesAutoBk;
+    Textbox tMultiple, tMultipleBk;
+    Listbox lMultiple, lMultipleBk;
 
     @Override
     public void afterCompose() {
@@ -172,6 +185,13 @@ public class AddToolComposer extends UtilityComposer {
                 });
                 mi.setParent(mpLayer2);
             }
+        }
+
+        if(mSearchSpeciesAuto != null) {
+            mSearchSpeciesAuto.setBiocacheOnly(true);
+        }
+        if(mSearchSpeciesAutoBk != null) {
+            mSearchSpeciesAutoBk.setBiocacheOnly(true);
         }
     }
 
@@ -627,6 +647,7 @@ public class AddToolComposer extends UtilityComposer {
             if (rgSpecies != null && selectedItem == rSpeciesSearch) {
                 if (divSpeciesSearch != null) {
                     divSpeciesSearch.setVisible(true);
+                    vboxMultiple.setVisible(false);
                     if (event != null) {
                         toggles();
                     }
@@ -641,6 +662,12 @@ public class AddToolComposer extends UtilityComposer {
                     || selectedItem == rSpeciesUploadLSID) {
                 btnOk.setVisible(false);
                 fileUpload.setVisible(true);
+            }
+
+            if(rMultiple != null && rMultiple.isSelected()) {
+                vboxMultiple.setVisible(true);
+            } else {
+                vboxMultiple.setVisible(false);
             }
 
             if (event != null) {
@@ -659,10 +686,11 @@ public class AddToolComposer extends UtilityComposer {
             selectedItem = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
         } catch (Exception e) {
         }
-        try {
+        try {            
             if (rgSpeciesBk != null && selectedItem == rSpeciesSearchBk) {
                 if (divSpeciesSearchBk != null) {
                     divSpeciesSearchBk.setVisible(true);
+                    vboxMultipleBk.setVisible(false);
                     if (event != null) {
                         toggles();
                     }
@@ -677,6 +705,12 @@ public class AddToolComposer extends UtilityComposer {
             if (selectedItem == rSpeciesUploadSpeciesBk || selectedItem == rSpeciesUploadLSIDBk) {
                 btnOk.setVisible(false);
                 fileUpload.setVisible(true);
+            }
+
+            if(rMultipleBk != null && rMultipleBk.isSelected()) {
+                vboxMultipleBk.setVisible(true);
+            } else {
+                vboxMultipleBk.setVisible(false);
             }
 
             if (event != null) {
@@ -1063,7 +1097,11 @@ public class AddToolComposer extends UtilityComposer {
                     //
                     //                species = sq.getShortQuery();
                     throw new UnsupportedOperationException("Not yet implemented");
-
+                } else if(species.equals("multiple")) {
+                    String lsids = getMultipleLsids();
+                    if(lsids != null && lsids.length() > 0) {
+                        q = new BiocacheQuery(lsids,null,null,null,false);
+                    }
                 } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                     if (searchSpeciesAuto.getSelectedItem() != null) {
                         species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
@@ -1107,7 +1145,11 @@ public class AddToolComposer extends UtilityComposer {
                     //
                     //                species = sq.getShortQuery();
                     throw new UnsupportedOperationException("Not yet implemented");
-
+                } else if(species.equals("multiple")) {
+                    String lsids = getMultipleLsidsBk();
+                    if(lsids != null && lsids.length() > 0) {
+                        q = new BiocacheQuery(lsids,null,null,null,false);
+                    }
                 } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                     if (bgSearchSpeciesAuto == null) {
                         bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
@@ -1301,12 +1343,14 @@ public class AddToolComposer extends UtilityComposer {
 
         if (currentDiv.getZclass().contains("species")) {
             //if (divSpeciesSearch != null && divSpeciesSearch.isVisible()){
-            btnOk.setDisabled(
-                    divSpeciesSearch.isVisible()
-                    && searchSpeciesAuto.getSelectedItem() != null
+            if(divSpeciesSearch.isVisible()) {
+                btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() != null
                     && (searchSpeciesAuto.getSelectedItem().getValue() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));
+            } else if(vboxMultiple.isVisible() ) {
+                btnOk.setDisabled(getMultipleLsids().length() == 0);
+            }
         }
         
         if(lbListLayers != null) {
@@ -1623,5 +1667,379 @@ public class AddToolComposer extends UtilityComposer {
         reader.close();
         selectLayerFromList(sb.toString());
         updateLayerSelectionCount();
+    }
+
+    public void onChange$mSearchSpeciesAuto(Event event) {
+        //add to lMultiple
+        Comboitem ci = mSearchSpeciesAuto.getSelectedItem();
+        if(ci != null && ci.getAnnotatedProperties() != null
+                && ((String) ci.getAnnotatedProperties().get(0)) != null) {
+            String lsid = ((String) ci.getAnnotatedProperties().get(0));
+
+            try {
+                Map<String, String> searchResult = BiocacheQuery.getClassification(lsid);
+
+                String sciname= searchResult.get("scientificName");
+                String family = searchResult.get("family");
+                String kingdom = searchResult.get("kingdom");
+                if(sciname == null) sciname = "";
+                if(family == null) family = "";
+                if(kingdom == null) kingdom = "";
+
+                if(sciname != null && sciname.length() > 0) {
+                    addTolMultiple(lsid, sciname, family, kingdom, true);
+
+                    mSearchSpeciesAuto.setText("");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        toggles();
+    }
+    
+    public void onChange$mSearchSpeciesAutoBk(Event event) {
+        //add to lMultiple
+        Comboitem ci = mSearchSpeciesAutoBk.getSelectedItem();
+        if(ci != null && ci.getAnnotatedProperties() != null
+                && ((String) ci.getAnnotatedProperties().get(0)) != null) {
+            String lsid = ((String) ci.getAnnotatedProperties().get(0));
+
+            try {
+                Map<String, String> searchResult = BiocacheQuery.getClassification(lsid);
+
+                String sciname= searchResult.get("scientificName");
+                String family = searchResult.get("family");
+                String kingdom = searchResult.get("kingdom");
+                if(sciname == null) sciname = "";
+                if(family == null) family = "";
+                if(kingdom == null) kingdom = "";
+
+                if(sciname != null && sciname.length() > 0) {
+                    addTolMultipleBk(lsid, sciname, family, kingdom, true);
+
+                    mSearchSpeciesAutoBk.setText("");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        toggles();
+    }
+
+    public void onClick$bMultiple(Event event) {
+        String [] speciesNames = tMultiple.getText().replace("\n", ",").split(",");
+        ArrayList<String> notFound = new ArrayList<String>();
+        StringBuilder notFoundSb = new StringBuilder();
+        for(int i=0;i<speciesNames.length;i++) {
+            String s = speciesNames[i].trim();
+            if(s.length() > 0) {
+                JSONObject searchResult = processAdhoc(s);
+                try {
+                    JSONArray ja = searchResult.getJSONArray("values");
+
+                    String sciname= "", family="", kingdom="", lsid = null;
+                    for(int j=0;j<ja.size();j++) {
+                        if(ja.getJSONObject(j).getString("name").equals("scientificName")) {
+                            sciname = ja.getJSONObject(j).getString("processed");
+                        }
+                        if(ja.getJSONObject(j).getString("name").equals("family")) {
+                            family = ja.getJSONObject(j).getString("processed");
+                        }
+                        if(ja.getJSONObject(j).getString("name").equals("kingdom")) {
+                            kingdom = ja.getJSONObject(j).getString("processed");
+                        }
+                        if(ja.getJSONObject(j).getString("name").equals("taxonConceptID")) {
+                            lsid = ja.getJSONObject(j).getString("processed");
+                        }
+                    }
+
+                    if(lsid != null && lsid.length() > 0) {
+                        addTolMultiple(lsid,sciname,family,kingdom, false);
+                    } else {
+                        addTolMultiple(null,s,"","", false);
+                    }
+
+                    if(lsid == null || lsid.length() == 0) {
+                        notFound.add(s);
+                        notFoundSb.append(s + "\n");
+                    }
+                } catch (Exception e) {
+                    notFound.add(s);
+                    notFoundSb.append(s + "\n");
+                }
+            }
+        }
+
+        if(notFound.size() > 0) {
+            getMapComposer().showMessage("Cannot identify these scientific names:\n" + notFoundSb.toString(), this);
+        }
+
+        toggles();
+    }
+
+    public void onClick$bMultipleBk(Event event) {
+        String [] speciesNames = tMultipleBk.getText().replace("\n", ",").split(",");
+        ArrayList<String> notFound = new ArrayList<String>();
+        StringBuilder notFoundSb = new StringBuilder();
+        for(int i=0;i<speciesNames.length;i++) {
+            String s = speciesNames[i].trim();
+            if(s.length() > 0) {
+                JSONObject searchResult = processAdhoc(s);
+                try {
+                    JSONArray ja = searchResult.getJSONArray("values");
+
+                    String sciname= "", family="", kingdom="", lsid = null;
+                    for(int j=0;j<ja.size();j++) {
+                        if(ja.getJSONObject(j).getString("name").equals("scientificName")) {
+                            sciname = ja.getJSONObject(j).getString("processed");
+                        }
+                        if(ja.getJSONObject(j).getString("name").equals("family")) {
+                            family = ja.getJSONObject(j).getString("processed");
+                        }
+                        if(ja.getJSONObject(j).getString("name").equals("kingdom")) {
+                            kingdom = ja.getJSONObject(j).getString("processed");
+                        }
+                        if(ja.getJSONObject(j).getString("name").equals("taxonConceptID")) {
+                            lsid = ja.getJSONObject(j).getString("processed");
+                        }
+                    }
+
+                    if(lsid != null && lsid.length() > 0) {
+                        addTolMultipleBk(lsid,sciname,family,kingdom, false);
+                    } else {
+                        addTolMultipleBk(null,s,"","", false);
+                    }
+
+                    if(lsid == null || lsid.length() == 0) {
+                        notFound.add(s);
+                        notFoundSb.append(s + "\n");
+                    }
+                } catch (Exception e) {
+                    notFound.add(s);
+                    notFoundSb.append(s + "\n");
+                }
+            }
+        }
+
+        if(notFound.size() > 0) {
+            getMapComposer().showMessage("Cannot identify these scientific names:\n" + notFoundSb.toString(), this);
+        }
+
+        toggles();
+    }
+
+    JSONObject processAdhoc(String scientificName) {
+        try {
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(CommonData.biocacheServer + "/process/adhoc");
+            StringRequestEntity sre = new StringRequestEntity("{ \"scientificName\": \"" + scientificName.replace("\"","'") + "\" } ", "application/json", "UTF-8");
+            post.setRequestEntity(sre);
+            int result = client.executeMethod(post);
+            if(result == 200) {
+                return JSONObject.fromObject(post.getResponseBodyAsString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private void addTolMultiple(String lsid, String sciname, String family, String kingdom, boolean insertAtBeginning) {
+        for(Listitem li : (List<Listitem>)lMultiple.getItems()) {
+            Listcell lsidCell = (Listcell) li.getLastChild();
+            Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
+            if((lsid != null && lsidCell.getLabel().equals(lsid))
+                    || (sciname != null && scinameCell.getLabel().replace("(not found)","").trim().equals(sciname))) {
+                return;
+            }
+        }
+
+        Listitem li = new Listitem();
+
+        //remove button
+        Listcell lc = new Listcell("x");
+        lc.setSclass("xRemove");
+        lc.addEventListener("onClick", new EventListener() {
+
+            @Override
+            public void onEvent(Event event) throws Exception {
+                Listitem li = (Listitem) event.getTarget().getParent();
+                li.detach();
+                toggles();
+            }
+        });
+        lc.setParent(li);
+
+        //sci name
+        if(lsid == null) {
+            lc = new Listcell(sciname + " (not found)");
+            lc.setSclass("notFoundSciname");
+        } else {
+            lc = new Listcell(sciname);
+        }
+        lc.setParent(li);
+
+        //family
+        if(lsid == null) {
+            lc = new Listcell("click to search");
+            lc.setSclass("notFoundFamily");
+            lc.addEventListener("onClick", new EventListener() {
+
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    Listitem li = (Listitem) event.getTarget().getParent();
+                    Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
+                    String sciname = scinameCell.getLabel().replace("(not found)","").trim();
+                    mSearchSpeciesAuto.setText(sciname);
+                    mSearchSpeciesAuto.refresh(sciname);
+                    mSearchSpeciesAuto.open();
+                    li.detach();
+                }
+            });
+        } else {
+            lc = new Listcell(family);
+        }
+        lc.setParent(li);
+
+        //kingdom
+        lc = new Listcell(kingdom);
+        lc.setParent(li);
+
+        //count
+        if(lsid != null) {
+            int count = new BiocacheQuery(lsid,null,null,null,false).getOccurrenceCount();
+            if(count > 0) {
+                lc = new Listcell(String.valueOf(count));
+            } else {
+                lc = new Listcell(kingdom);
+            }
+        } else {
+            lc = new Listcell(kingdom);
+        }
+        lc.setParent(li);
+
+        //lsid
+        lc = new Listcell(lsid);
+        lc.setParent(li);
+
+        if(insertAtBeginning && lMultiple.getChildren().size() > 0) {
+            lMultiple.insertBefore(li, lMultiple.getFirstChild());
+        } else {
+            li.setParent(lMultiple);
+        }
+    }
+
+    private void addTolMultipleBk(String lsid, String sciname, String family, String kingdom, boolean insertAtBeginning) {
+        for(Listitem li : (List<Listitem>)lMultipleBk.getItems()) {
+            Listcell lsidCell = (Listcell) li.getLastChild();
+            Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
+            if((lsid != null && lsidCell.getLabel().equals(lsid))
+                    || (sciname != null && scinameCell.getLabel().replace("(not found)","").trim().equals(sciname))) {
+                return;
+            }
+        }
+
+        Listitem li = new Listitem();
+
+        //remove button
+        Listcell lc = new Listcell("x");
+        lc.setSclass("xRemove");
+        lc.addEventListener("onClick", new EventListener() {
+
+            @Override
+            public void onEvent(Event event) throws Exception {
+                Listitem li = (Listitem) event.getTarget().getParent();
+                li.detach();
+                toggles();
+            }
+        });
+        lc.setParent(li);
+
+        //sci name
+        if(lsid == null) {
+            lc = new Listcell(sciname + " (not found)");
+            lc.setSclass("notFoundSciname");
+        } else {
+            lc = new Listcell(sciname);
+        }
+        lc.setParent(li);
+
+        //family
+        if(lsid == null) {
+            lc = new Listcell("click to search");
+            lc.setSclass("notFoundFamily");
+            lc.addEventListener("onClick", new EventListener() {
+
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    Listitem li = (Listitem) event.getTarget().getParent();
+                    Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
+                    String sciname = scinameCell.getLabel().replace("(not found)","").trim();
+                    mSearchSpeciesAutoBk.setText(sciname);
+                    mSearchSpeciesAutoBk.refresh(sciname);
+                    mSearchSpeciesAutoBk.open();
+                    li.detach();
+                }
+            });
+        } else {
+            lc = new Listcell(family);
+        }
+        lc.setParent(li);
+
+        //kingdom
+        lc = new Listcell(kingdom);
+        lc.setParent(li);
+
+        //count
+        if(lsid != null) {
+            int count = new BiocacheQuery(lsid,null,null,null,false).getOccurrenceCount();
+            if(count > 0) {
+                lc = new Listcell(String.valueOf(count));
+            } else {
+                lc = new Listcell(kingdom);
+            }
+        } else {
+            lc = new Listcell(kingdom);
+        }
+        lc.setParent(li);
+
+        //lsid
+        lc = new Listcell(lsid);
+        lc.setParent(li);
+
+        if(insertAtBeginning && lMultipleBk.getChildren().size() > 0) {
+            lMultipleBk.insertBefore(li, lMultipleBk.getFirstChild());
+        } else {
+            li.setParent(lMultipleBk);
+        }
+    }
+
+    private String getMultipleLsids() {
+        StringBuilder sb = new StringBuilder();
+        for(Listitem li : (List<Listitem>)lMultiple.getItems()) {
+            Listcell lc = (Listcell) li.getLastChild();
+            if(lc.getLabel() != null && lc.getLabel().length() > 0) {
+                if(sb.length() > 0) {
+                    sb.append(",");
+                }
+                sb.append(lc.getLabel());
+            }
+        }
+        return sb.toString();
+    }
+
+    private String getMultipleLsidsBk() {
+        StringBuilder sb = new StringBuilder();
+        for(Listitem li : (List<Listitem>)lMultipleBk.getItems()) {
+            Listcell lc = (Listcell) li.getLastChild();
+            if(lc.getLabel() != null && lc.getLabel().length() > 0) {
+                if(sb.length() > 0) {
+                    sb.append(",");
+                }
+                sb.append(lc.getLabel());
+            }
+        }
+        return sb.toString();
     }
 }

@@ -151,7 +151,7 @@ public class AddSpeciesController extends UtilityComposer {
                 if(kingdom == null) kingdom = "";
 
                 if(sciname != null && sciname.length() > 0) {
-                    addTolMultiple(lsid, sciname, family, kingdom);
+                    addTolMultiple(lsid, sciname, family, kingdom, true);
 
                     mSearchSpeciesAuto.setText("");
                 }
@@ -232,7 +232,7 @@ public class AddSpeciesController extends UtilityComposer {
         if (rSearch.isSelected()) {
             btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null || searchSpeciesAuto.getSelectedItem().getValue() == null);
         } else if(rMultiple.isSelected()) {
-            btnOk.setDisabled(lMultiple.getItems() == null || lMultiple.getItems().isEmpty());
+            btnOk.setDisabled(getMultipleLsids().length() == 0);
         } else {
             btnOk.setDisabled(false);
         }
@@ -296,8 +296,12 @@ public class AddSpeciesController extends UtilityComposer {
                     }
 
                     if(lsid != null && lsid.length() > 0) {
-                        addTolMultiple(lsid,sciname,family,kingdom);
+                        addTolMultiple(lsid,sciname,family,kingdom, false);
                     } else {
+                        addTolMultiple(null,s,"","", false);
+                    }
+
+                    if(lsid == null || lsid.length() == 0) {
                         notFound.add(s);
                         notFoundSb.append(s + "\n");
                     }
@@ -331,10 +335,12 @@ public class AddSpeciesController extends UtilityComposer {
         return null;
     }
 
-    private void addTolMultiple(String lsid, String sciname, String family, String kingdom) {
+    private void addTolMultiple(String lsid, String sciname, String family, String kingdom, boolean insertAtBeginning) {
         for(Listitem li : (List<Listitem>)lMultiple.getItems()) {
-            Listcell lc = (Listcell) li.getLastChild();
-            if(lc.getLabel().equals(lsid)) {
+            Listcell lsidCell = (Listcell) li.getLastChild();
+            Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
+            if((lsid != null && lsidCell.getLabel().equals(lsid))
+                    || (sciname != null && scinameCell.getLabel().replace("(not found)","").trim().equals(sciname))) {
                 return;
             }
         }
@@ -356,32 +362,74 @@ public class AddSpeciesController extends UtilityComposer {
         lc.setParent(li);
 
         //sci name
-        lc = new Listcell(sciname);
+        if(lsid == null) {
+            lc = new Listcell(sciname + " (not found)");
+            lc.setSclass("notFoundSciname");
+        } else {
+            lc = new Listcell(sciname);
+        }
         lc.setParent(li);
 
         //family
-        lc = new Listcell(family);
+        if(lsid == null) {
+            lc = new Listcell("click to search");
+            lc.setSclass("notFoundFamily");
+            lc.addEventListener("onClick", new EventListener() {
+
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    Listitem li = (Listitem) event.getTarget().getParent();
+                    Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
+                    String sciname = scinameCell.getLabel().replace("(not found)","").trim();
+                    mSearchSpeciesAuto.setText(sciname);
+                    mSearchSpeciesAuto.refresh(sciname);
+                    mSearchSpeciesAuto.open();
+                    li.detach();
+                }
+            });
+        } else {
+            lc = new Listcell(family);
+        }
         lc.setParent(li);
 
         //kingdom
         lc = new Listcell(kingdom);
         lc.setParent(li);
 
+        //count
+        if(lsid != null) {
+            int count = new BiocacheQuery(lsid,null,null,null,false).getOccurrenceCount();
+            if(count > 0) {
+                lc = new Listcell(String.valueOf(count));
+            } else {
+                lc = new Listcell(kingdom);
+            }
+        } else {
+            lc = new Listcell(kingdom);
+        }
+        lc.setParent(li);
+
         //lsid
         lc = new Listcell(lsid);
         lc.setParent(li);
 
-        li.setParent(lMultiple);
+        if(insertAtBeginning && lMultiple.getChildren().size() > 0) {
+            lMultiple.insertBefore(li, lMultiple.getFirstChild());
+        } else {
+            li.setParent(lMultiple);
+        }
     }
 
     private String getMultipleLsids() {
         StringBuilder sb = new StringBuilder();
         for(Listitem li : (List<Listitem>)lMultiple.getItems()) {
             Listcell lc = (Listcell) li.getLastChild();
-            if(sb.length() > 0) {
-                sb.append(",");
+            if(lc.getLabel() != null && lc.getLabel().length() > 0) {
+                if(sb.length() > 0) {
+                    sb.append(",");
+                }
+                sb.append(lc.getLabel());
             }
-            sb.append(lc.getLabel());
         }
         return sb.toString();
     }

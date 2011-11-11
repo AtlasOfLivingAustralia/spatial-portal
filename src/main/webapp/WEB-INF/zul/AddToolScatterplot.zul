@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul" xmlns:n="http://www.zkoss.org/2005/zk/native">
     <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolScatterplotComposer"
-    apply="org.ala.spatial.analysis.web.AddToolScatterplotComposer" width="650px" height="450px"
+    apply="org.ala.spatial.analysis.web.AddToolScatterplotComposer" width="750px" height="700px"
    xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -52,7 +52,7 @@
               </grid>
         </vbox>
 
-        <vbox style="padding-left: 10px" >
+        <vbox style="padding-left: 10px">
             <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
                 <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                 <label id="atstep1_label" value="" />
@@ -65,7 +65,7 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep">
+            <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep"  width="550px" height="600px">
                 <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
                 <label id="atstep2_label" value="" />
                 <separator />
@@ -92,6 +92,36 @@
                                 <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
                         </vbox>
+                    <radio id="rMultiple" label="Search for multiple species by scientific or common name"  value="multiple" />
+                    <vbox id="vboxMultiple" visible="false">
+                        <separator />
+                        <label value="Enter scientific names separated by a comma or new line." />
+                        <label value="Use 'Add from search box' to find and add additional species." />
+                        <hbox>
+                            <textbox id="tMultiple" width="380px" height="100px" multiline="true" />
+                            <button id="bMultiple" label="Add"/>
+                        </hbox>
+                        <separator height="15px"/>
+                        <hbox>
+                            <label value="Add from search" />
+                            <separator orient="vertical" />
+                            <combobox id="mSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="330px" />
+                        </hbox>
+                        <separator />
+                        <separator />
+                        <listbox id="lMultiple" width="500px" height="200px" >
+                            <listhead>
+                                <listheader label="" width="20px" />
+                                <listheader label="scientific name" id="lhSciName" width="220px"/>
+                                <listheader label="family" id="lhFamily" width="100px"></listheader>
+                                <listheader label="kingdom" id="lhKingdom" width="100px" ></listheader>
+                                <listheader label="count" id="lhCount" width="60px" ></listheader>
+                                <listheader label="lsid" id="lhLSID" visible="false" width="0px"></listheader>
+                                <listheader />
+                            </listhead>
+                        </listbox>
+                        <separator height="20px"/>
+                    </vbox>
                     <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Upload coordinates" />
                     <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Upload LSIDs" />
                 </radiogroup>
@@ -137,7 +167,7 @@
                 <checkbox id="chkShowEnvIntersection" label="Display possible environments in area" />
             </div>
             
-            <div id="atstep5" visible="false" zclass="step5 optional" sclass="atstep">
+            <div id="atstep5" visible="false" zclass="step5 optional" sclass="atstep" width="550px" height="600px">
                 <label id="atstep5_desc" value="Select background species" sclass="wSubLabel"/>
                 <label id="atstep5_label" value="" />
                 <separator />
@@ -165,6 +195,35 @@
                                 <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
                         </vbox>
+                    <radio id="rMultipleBk" label="Search for multiple species by scientific or common name" value="multiple" />
+                    <vbox id="vboxMultipleBk" visible="false">
+                        <separator />
+                        <label value="Enter scientific names separated by a comma or new line. Use 'Add from search box' to find and add additional species." />
+                        <hbox>
+                            <textbox id="tMultipleBk" width="380px" height="100px" multiline="true" />
+                            <button id="bMultipleBk" label="Add"/>
+                        </hbox>
+                        <separator height="15px"/>
+                        <hbox>
+                            <label value="Add from search" />
+                            <separator orient="vertical" />
+                            <combobox id="mSearchSpeciesAutoBk" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="330px" />
+                        </hbox>
+                        <separator />
+                        <separator />
+                        <listbox id="lMultiplBke" width="500px" height="200px" >
+                            <listhead>
+                                <listheader label="" width="20px" />
+                                <listheader label="scientific name" id="lhSciNameBk" width="220px"/>
+                                <listheader label="family" id="lhFamilyBk" width="100px"></listheader>
+                                <listheader label="kingdom" id="lhKingdomBk" width="100px" ></listheader>
+                                <listheader label="count" id="lhCountBk" width="60px" ></listheader>
+                                <listheader label="lsid" id="lhLSIDBk" visible="false" width="0px"></listheader>
+                                <listheader />
+                            </listhead>
+                        </listbox>
+                        <separator height="20px"/>
+                    </vbox>
                     <radio id="rSpeciesUploadSpeciesBk" value="uploadSpecies" label="Upload coordinates" />
                     <radio id="rSpeciesUploadLSIDBk" value="uploadLsid" label="Upload LSIDs" />
                 </radiogroup>

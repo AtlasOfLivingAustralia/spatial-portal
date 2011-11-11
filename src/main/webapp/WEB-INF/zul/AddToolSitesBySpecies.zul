@@ -61,7 +61,7 @@
                     </radiogroup>
                 </div>
 
-                <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep">
+                <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep" width="550px" height="600px">
                     <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
                     <label id="atstep2_label" value="" />
                     <separator />
@@ -88,6 +88,36 @@
                                 <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
                         </vbox>
+                        <radio id="rMultiple" label="Search for multiple species by scientific or common name" />
+                        <vbox id="vboxMultiple" visible="false">
+                            <separator />
+                            <label value="Enter scientific names separated by a comma or new line." />
+                           <label value="Use 'Add from search box' to find and add additional species." />
+                            <hbox>
+                                <textbox id="tMultiple" width="380px" height="100px" multiline="true" />
+                                <button id="bMultiple" label="Add"/>
+                            </hbox>
+                            <separator height="15px"/>
+                            <hbox>
+                                <label value="Add from search" />
+                                <separator orient="vertical" />
+                                <combobox id="mSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="330px" />
+                            </hbox>
+                            <separator />
+                            <separator />
+                            <listbox id="lMultiple" width="500px" height="200px" >
+                            <listhead>
+                                <listheader label="" width="20px" />
+                                <listheader label="scientific name" id="lhSciName" width="220px"/>
+                                <listheader label="family" id="lhFamily" width="100px"></listheader>
+                                <listheader label="kingdom" id="lhKingdom" width="100px" ></listheader>
+                                <listheader label="count" id="lhCount" width="60px" ></listheader>
+                                <listheader label="lsid" id="lhLSID" visible="false" width="0px"></listheader>
+                                <listheader />
+                            </listhead>
+                        </listbox>
+                            <separator height="20px"/>
+                        </vbox>
                         <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Upload coordinates" visible="false" />
                         <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Upload LSIDs" />
                     </radiogroup>
@@ -99,7 +129,7 @@
                     <separator height="15px" />
                     <hbox>
                         <label value="Enter resolution in degrees" />
-                        <doublebox id="dResolution" constraint="no negative,no empty" value="0.01"/>
+                        <doublebox id="dResolution" constraint="no negative,no empty" value="0.05"/>
                     </hbox>
                     <separator height="15px" />
                         <label value="Enter moving average grid size (for occurrence density and species richness layers)" />

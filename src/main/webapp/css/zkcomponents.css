@@ -1324,6 +1324,15 @@ div.z-window-modal-header, div.z-window-overlapped-header {
  text-decoration: underline;
  }
 
+ .notFoundSciname div.z-listcell-cnt {
+ color: red;
+}
+
+ .notFoundFamily div.z-listcell-cnt {
+ color: red;
+ text-decoration: underline;
+}
+
  .underline {
      text-decoration: underline;
      cursor: pointer; 
