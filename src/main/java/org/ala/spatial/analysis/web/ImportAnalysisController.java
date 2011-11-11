@@ -424,7 +424,7 @@ public class ImportAnalysisController extends UtilityComposer {
                     md = new MapLayerMetadata();
                     ml.setMapLayerMetadata(md);
                 }
-                md.setMoreInfo(infoUrl + "\nSites by species\npid:" + pid);
+                md.setMoreInfo(infoUrl + "\nOccurrence Density\npid:" + pid);
                 md.setId(Long.valueOf(pid));
             }
 
@@ -447,7 +447,7 @@ public class ImportAnalysisController extends UtilityComposer {
                     md = new MapLayerMetadata();
                     ml.setMapLayerMetadata(md);
                 }
-                md.setMoreInfo(infoUrl + "\nSites by species\npid:" + pid);
+                md.setMoreInfo(infoUrl + "\nSpecies Richness\npid:" + pid);
                 md.setId(Long.valueOf(pid));
             }
 

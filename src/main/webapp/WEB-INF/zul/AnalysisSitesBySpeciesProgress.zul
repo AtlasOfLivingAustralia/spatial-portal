@@ -1,7 +1,7 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
-<window id="sitesbyspeciesprogress" title="Sites By Species" border="normal"
+<window id="sitesbyspeciesprogress" title="Species To Grid" border="normal"
     use="org.ala.spatial.analysis.web.SitesBySpeciesProgressWCController"
             apply="org.ala.spatial.analysis.web.SitesBySpeciesProgressWCController"
             closable="false" mode="embedded" width="320px">

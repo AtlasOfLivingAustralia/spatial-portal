@@ -8,10 +8,10 @@ import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.SelectedArea;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
-import org.zkoss.zul.Messagebox;
 
 /**
  *
@@ -70,7 +70,11 @@ public class AddToolSamplingComposer extends AddToolComposer {
             if (envlayers.length() > 0) {
                 layers = envlayers.split(":");
                 for (int i = 0; i < layers.length; i++) {
+                    String l = layers[i];
                     layers[i] = CommonData.getLayerFacetName(layers[i]);
+                    if(layers[i] == null) {
+                        System.out.println("failed to getLayerFacetName for " + l);
+                    }
                 }
             }
 
@@ -99,6 +103,10 @@ public class AddToolSamplingComposer extends AddToolComposer {
 //                }
 
                 //download byte data.  Requires a progress bar to prevent timeout issues.
+                Component c = getMapComposer().getFellowIfAny("samplingprogress");
+                if(c != null) {
+                    c.detach();
+                }
                 SamplingProgressWCController window = (SamplingProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingProgress.zul", getMapComposer(), null);
                 window.parent = this;
                 window.start(query, layers);

@@ -101,6 +101,9 @@ public class SamplingProgressWCController extends UtilityComposer {
         int threadCount = getMapComposer().getSettingsSupplementary().getValueAsInt("sampling_thread_count");
         estimate = 0;
         for(int i=0;i<l.length;i++) {
+            if(l[i] == null) {
+                continue;
+            }
             if(l[i].startsWith("cl")) {
                 estimate += perShapeFile * 1000 / threadCount;
             } else {

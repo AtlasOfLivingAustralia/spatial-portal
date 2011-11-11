@@ -136,7 +136,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </n:li>
                                             <n:li>
                                                 <n:a href='#' n:onClick="runSitesBySpecies();">
-                                                    <n:span>Download Sites by Species</n:span>
+                                                    <n:span>Species to Grid</n:span>
                                                 </n:a>
                                             </n:li>
                                             <n:li>

@@ -44,7 +44,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
     public void afterCompose() {
         super.afterCompose();
 
-        this.selectedMethod = "Sites By Species";
+        this.selectedMethod = "Species To Grid";
         this.totalSteps = 3;
 
         this.loadAreaLayers();
@@ -196,7 +196,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                     md = new MapLayerMetadata();
                     ml.setMapLayerMetadata(md);
                 }
-                md.setMoreInfo(infoUrl + "\nSites by species\npid:" + pid);
+                md.setMoreInfo(infoUrl + "\nOccurrence Density\npid:" + pid);
                 md.setId(Long.valueOf(pid));
             }
 
@@ -219,7 +219,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                     md = new MapLayerMetadata();
                     ml.setMapLayerMetadata(md);
                 }
-                md.setMoreInfo(infoUrl + "\nSites by species\npid:" + pid);
+                md.setMoreInfo(infoUrl + "\nSpecies Richness\npid:" + pid);
                 md.setId(Long.valueOf(pid));
             }
 

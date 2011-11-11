@@ -62,7 +62,7 @@ public class SitesBySpeciesProgressWCController extends UtilityComposer {
         String s = get("state");
         if (s.equals("job does not exist")) {
             timer.stop();
-            getMapComposer().showMessage("Sites By Species request does not exist", "");//get("error"));
+            getMapComposer().showMessage("Species to grid request does not exist", "");//get("error"));
             this.detach();
             return;
         }
@@ -92,12 +92,12 @@ public class SitesBySpeciesProgressWCController extends UtilityComposer {
             } else {
                 error_info = "";
             }
-            getMapComposer().showMessage("Sites by species failed" + error_info);
+            getMapComposer().showMessage("Species to grid failed" + error_info);
             this.detach();
             this.parent.detach();
         } else if (s.equals("CANCELLED")) {
             timer.stop();
-            getMapComposer().showMessage("Sites by species cancelled by user");
+            getMapComposer().showMessage("Species to grid cancelled by user");
             this.detach();
         }
     }
