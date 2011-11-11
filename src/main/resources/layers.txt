@@ -321,7 +321,7 @@
 906,ger_hunter_analysis_mask,Contextual,Hunter Analysis Mask,ala_id
 907,ger_hunter_areas_of_interest,Contextual,Hunter Areas Of Interest,elem_text
 908,ger_k2c_management_regions_oct2009,Contextual,GER Kosciuszko to Coast (K2C) Partnership Area,name
-909,ger_kosciuszko_to_coast,Contextual,Kosciuszko to coast,ala_id
+909,ger_kosciuszko_to_coast,Contextual,Kosciuszko to coast,merge
 910,ger_s2s_priority_area_billabong_creek_v01,Contextual,GER Slopes to Summit Partnership priority area (Billabong Creek),label
 911,ger_s2s_priority_areas_v05,Contextual,GER Slopes to Summit Partnership priority areas,label
 912,ger_slopes_to_summit,Contextual,Slopes to summit,location
