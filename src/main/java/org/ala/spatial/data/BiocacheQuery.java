@@ -1023,6 +1023,7 @@ public class BiocacheQuery implements Query, Serializable {
                 html += "<br />";
                 html += "More information for <a href='" + CommonData.bieServer + BIE_SPECIES + s + "' target='_blank'>" + getScientificNameRank(s).split(",")[0] + "</a>";
                 html += "<br />";
+                html += "<br />";
             }
         }
 
@@ -1032,7 +1033,13 @@ public class BiocacheQuery implements Query, Serializable {
 //            html += "<tr class='md_grey-bg'><td class='md_value' colspan='3'>More information for <a href='" + CommonData.bieServer + BIE_SPECIES + lsids + "' target='_blank'>"+ spname +"</a></td></tr>";
 //        }
 
-        html += "<tr class='md_grey-bg'><td class='md_th' span=3><a href='" + biocacheWebServer + "/occurrences/search?q=" + getQ() + "' target='_blank'>view records in biocache</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
+        String lastClass = "md_grey-bg";
+        if(lsids != null && lsids.length() > 0) {
+            html += "<tr class='md_grey-bg'><td class='md_th'>List of LSIDs: </td><td class='md_spacer'/><td class='md_value'>" + lsids + "</td></tr>";
+            lastClass = "";
+        }
+
+        html += "<tr class='" + lastClass + "'><td class='md_th' span=3><a href='" + biocacheWebServer + "/occurrences/search?q=" + getQ() + "' target='_blank'>view records in biocache</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
         html += "</table>";
 
         return html;
@@ -1098,7 +1105,7 @@ public class BiocacheQuery implements Query, Serializable {
             }
 
         } catch (Exception e) {
-            System.out.println("Error getting scientific name");
+            System.out.println("Error getting scientific name for: " + lsid);
             e.printStackTrace(System.out);
         }
 
@@ -1204,10 +1211,13 @@ public class BiocacheQuery implements Query, Serializable {
 
                     //clean spans
                     int p1 = title.indexOf("<span");
-                    if (p1 >= 0) {
+                    while(p1 >= 0) {
                         int p2 = title.indexOf(">", p1);
-                        title = title.substring(0, p1) + title.substring(p2 + 1, title.length());
-                        title = title.replace("</span>", "");
+                        int p3 = title.indexOf("</span>",p2);
+                        title = title.substring(0, p1) + title.substring(p2 + 1, p3) 
+                                + (p3+7 < title.length()?title.substring(p3 + 7, title.length()):"");
+                        
+                        p1 = title.indexOf("<span");
                     }
 
                     solrName = title;

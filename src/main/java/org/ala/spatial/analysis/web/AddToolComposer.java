@@ -1754,6 +1754,22 @@ public class AddToolComposer extends UtilityComposer {
                         }
                     }
 
+                    //is 's' an LSID?
+                    if(lsid == null || lsid.length() == 0) {
+                        Map<String, String> sr = BiocacheQuery.getClassification(s);
+                        if(sr.size() > 0
+                                && sr.get("scientificName") != null
+                                && sr.get("scientificName").length() > 0) {
+                            lsid = s;
+                            sciname= sr.get("scientificName");
+                            family = sr.get("family");
+                            kingdom = sr.get("kingdom");
+                            if(sciname == null) sciname = "";
+                            if(family == null) family = "";
+                            if(kingdom == null) kingdom = "";
+                        }
+                    }
+
                     if(lsid != null && lsid.length() > 0) {
                         addTolMultiple(lsid,sciname,family,kingdom, false);
                     } else {
@@ -1802,6 +1818,22 @@ public class AddToolComposer extends UtilityComposer {
                         }
                         if(ja.getJSONObject(j).getString("name").equals("taxonConceptID")) {
                             lsid = ja.getJSONObject(j).getString("processed");
+                        }
+                    }
+
+                    //is 's' an LSID?
+                    if(lsid == null || lsid.length() == 0) {
+                        Map<String, String> sr = BiocacheQuery.getClassification(s);
+                        if(sr.size() > 0
+                                && sr.get("scientificName") != null
+                                && sr.get("scientificName").length() > 0) {
+                            lsid = s;
+                            sciname= sr.get("scientificName");
+                            family = sr.get("family");
+                            kingdom = sr.get("kingdom");
+                            if(sciname == null) sciname = "";
+                            if(family == null) family = "";
+                            if(kingdom == null) kingdom = "";
                         }
                     }
 

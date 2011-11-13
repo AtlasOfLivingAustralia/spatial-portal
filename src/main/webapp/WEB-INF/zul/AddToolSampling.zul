@@ -90,7 +90,7 @@
                     <vbox id="vboxMultiple" visible="false">
                         <separator />
                         <label value="Enter scientific names separated by a comma or new line." />
-                        <label value="Use 'Add from search box' to find and add additional species." />
+                        <label value="Use 'Add from search' box to find and add additional species." />
                         <hbox>
                             <textbox id="tMultiple" width="380px" height="100px" multiline="true" />
                             <button id="bMultiple" label="Add"/>

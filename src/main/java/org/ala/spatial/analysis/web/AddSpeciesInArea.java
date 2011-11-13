@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
@@ -183,7 +184,16 @@ public class AddSpeciesInArea extends UtilityComposer {
                         && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
 
                     String activeAreaLayerName = getSelectedAreaDisplayName();
-                    ml = getMapComposer().mapSpecies(q, "Occurrences in " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, sa.getWkt(), -1);
+                    String layerName = "Occurrences in " + activeAreaLayerName;
+
+                    if(q instanceof BiocacheQuery) {
+                        String lsids = ((BiocacheQuery) q).getLsids();
+                        if (lsids != null && lsids.length() > 0 &&
+                                lsids.split(",").length > 1) {
+                            layerName = "Species assemblage";
+                        }
+                    }
+                    ml = getMapComposer().mapSpecies(q, layerName, "species", results_count_occurrences, LayerUtilities.SPECIES, sa.getWkt(), -1);
 
                     //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/" + sbProcessUrl.toString(), pid, "map species in area");
                 } else {
