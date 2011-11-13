@@ -33,7 +33,7 @@
                             <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
                         </row>
                         <row>
-                            <label id="lblStep3" value="3. Select environmental grid size"/>
+                            <label id="lblStep3" value="3. Species to Grid options"/>
                             <image id="imgCompletedStep3" visible="false" src="img/accept.png"/>            
                         </row>                    
                     </rows>
@@ -124,15 +124,15 @@
                 </div>
 
                 <div id="atstep3" visible="false" zclass="last optional">
-                    <label id="atstep3_desc" value="Enter grid resolution." sclass="wSubLabel"/>                    
+                    <label id="atstep3_desc" value="Species to Grid options." sclass="wSubLabel"/>
                     <label id="atstep3_label" value="" />
                     <separator height="15px" />
                     <hbox>
-                        <label value="Enter resolution in degrees" />
+                        <label value="Enter grid cell size in decimal degrees" />
                         <doublebox id="dResolution" constraint="no negative,no empty" value="0.05"/>
                     </hbox>
                     <separator height="15px" />
-                        <label value="Enter moving average grid size (for occurrence density and species richness layers)" />
+                        <label value="Enter number of cells in the moving average window (for occurrence density and species richness layers)" />
                         <combobox id="cbMovingAverageSize" readonly="true" width="200px" constraint="no empty"
                             value="9x9">
                             <comboitem label="1x1 (no moving average)" value="1" />

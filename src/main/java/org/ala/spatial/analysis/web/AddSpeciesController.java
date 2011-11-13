@@ -397,9 +397,9 @@ public class AddSpeciesController extends UtilityComposer {
                     Listitem li = (Listitem) event.getTarget().getParent();
                     Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
                     String sciname = scinameCell.getLabel().replace("(not found)","").trim();
-                    mSearchSpeciesAuto.setText(sciname);
                     mSearchSpeciesAuto.refresh(sciname);
                     mSearchSpeciesAuto.open();
+                    mSearchSpeciesAuto.setText(sciname + " ");
                     li.detach();
                 }
             });

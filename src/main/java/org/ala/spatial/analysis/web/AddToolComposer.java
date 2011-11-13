@@ -662,11 +662,11 @@ public class AddToolComposer extends UtilityComposer {
                     || selectedItem == rSpeciesUploadLSID) {
                 btnOk.setVisible(false);
                 fileUpload.setVisible(true);
-            }
-
-            if(rMultiple != null && rMultiple.isSelected()) {
+                vboxMultiple.setVisible(false);
+            } else if(rMultiple != null && rMultiple.isSelected()) {
                 vboxMultiple.setVisible(true);
             } else {
+                btnOk.setDisabled(false);
                 vboxMultiple.setVisible(false);
             }
 
@@ -1922,10 +1922,10 @@ public class AddToolComposer extends UtilityComposer {
                 public void onEvent(Event event) throws Exception {
                     Listitem li = (Listitem) event.getTarget().getParent();
                     Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
-                    String sciname = scinameCell.getLabel().replace("(not found)","").trim();
-                    mSearchSpeciesAuto.setText(sciname);
-                    mSearchSpeciesAuto.refresh(sciname);
+                    String sciname = scinameCell.getLabel().replace("(not found)","").trim();                    
+                    mSearchSpeciesAuto.refresh(sciname);                    
                     mSearchSpeciesAuto.open();
+                    mSearchSpeciesAuto.setText(sciname + " ");
                     li.detach();
                 }
             });
@@ -2007,10 +2007,10 @@ public class AddToolComposer extends UtilityComposer {
                 public void onEvent(Event event) throws Exception {
                     Listitem li = (Listitem) event.getTarget().getParent();
                     Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
-                    String sciname = scinameCell.getLabel().replace("(not found)","").trim();
-                    mSearchSpeciesAutoBk.setText(sciname);
-                    mSearchSpeciesAutoBk.refresh(sciname);
+                    String sciname = scinameCell.getLabel().replace("(not found)","").trim();                    
+                    mSearchSpeciesAutoBk.refresh(sciname);                    
                     mSearchSpeciesAutoBk.open();
+                    mSearchSpeciesAutoBk.setText(sciname + " ");
                     li.detach();
                 }
             });
