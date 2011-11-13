@@ -72,15 +72,14 @@ public class LsidCounts {
         }
         int pos = java.util.Arrays.binarySearch(lft, left);
         if(pos < 0) {
-            //System.out.println("cannot find lft: " + left);
-            return 0; //this should occur
-        } else {
-            long sum = count[pos++];
-            while(lft[pos] < right) {
-                sum += count[pos++];
-            }
-            return sum;
+            pos = -1*pos -1;
         }
+
+        long sum = 0;
+        while(lft[pos] < right) {
+            sum += count[pos++];
+        }
+        return sum;
     }
 
     public int getSize() {
