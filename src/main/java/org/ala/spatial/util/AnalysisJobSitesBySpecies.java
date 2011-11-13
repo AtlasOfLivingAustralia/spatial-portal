@@ -141,7 +141,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
 
                 //sld
                 occurrencesLegend = produceSld(currentPath + File.separator + "occurrence_density");
-                UploadSpatialResource.loadSld(url, extra, username, password, currentPath + File.separator + "occurrence_density.sld");
+                //UploadSpatialResource.loadSld(url, extra, username, password, currentPath + File.separator + "occurrence_density.sld");
                 //geoserver/rest/styles/add_nrm_style
                 url = (String) htGeoserver.get("geoserver_url") + "/rest/styles/";
                 UploadSpatialResource.loadCreateStyle(url, extra, username, password, "odensity_" + getName());
