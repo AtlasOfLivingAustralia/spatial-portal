@@ -333,8 +333,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             n.style.height = val2 + "px";
 
                             mapFrame.document.getElementById("zoomtolocation").style.display="none";
-                            mapFrame.document.getElementById("hoverTool").style.display="none";
-                            mapFrame.document.getElementById("nearestTool").style.display="none";
+                            if(mapFrame.document.getElementById("hoverTool") != null)
+                                mapFrame.document.getElementById("hoverTool").style.display="none";
+                            if(mapFrame.document.getElementById("nearestTool") != null)
+                                mapFrame.document.getElementById("nearestTool").style.display="none";
 
                             jQuery('.z-center')[0].style.border = "0px";
                         }
