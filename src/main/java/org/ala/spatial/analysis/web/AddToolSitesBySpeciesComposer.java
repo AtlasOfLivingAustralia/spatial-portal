@@ -176,11 +176,11 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             if (query instanceof BiocacheQuery) {
                 BiocacheQuery bq = (BiocacheQuery) query;
                 extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - site by species", area, bq.getLsids(), "", pid, extras, "STARTED");
+                remoteLogger.logMapAnalysis("species to grid", "analysis - site by species", area, bq.getLsids(), "", pid, extras, "STARTED");
             } else if (query instanceof UploadQuery) {
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - site by species", area, ((UploadQuery) query).getQ(), "", pid, extras, "STARTED");
+                remoteLogger.logMapAnalysis("species to grid", "analysis - site by species", area, ((UploadQuery) query).getQ(), "", pid, extras, "STARTED");
             } else {
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - site by species", area, "", "", pid, extras, "STARTED");
+                remoteLogger.logMapAnalysis("species to grid", "analysis - site by species", area, "", "", pid, extras, "STARTED");
             }
 
 

@@ -64,12 +64,19 @@ public class AreaRegionSelection extends AreaToolComposer {
             String url = CommonData.geoServer
                     + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
                     + link.substring(link.lastIndexOf('/') + 1);
+            logger.info(label + " | " + url);
             mapLayer = getMapComposer().addWMSLayer(label, url, 0.8f, /*metadata url*/ null,
                     null, LayerUtilities.WKT, null, null);
+            if(mapLayer == null) {
+                return;
+            }
             mapLayer.setWKT(readUrl(CommonData.layersServer + link.replace("/geojson/", "/wkt/")));
             mapLayer.setPolygonLayer(true);
         } else {
             mapLayer = getMapComposer().addGeoJSON(label, CommonData.layersServer + link);
+            if(mapLayer == null) {
+                return;
+            }
         }
         this.layerName = mapLayer.getName();
 

@@ -295,7 +295,7 @@ public class AddToolComposer extends UtilityComposer {
 
                 Radio rSp = new Radio(lyr.getDisplayName());
                 rSp.setValue(lyr.getName());
-                rSp.setId(lyr.getDisplayName().replaceAll(" ", ""));
+                rSp.setId(lyr.getName().replaceAll(" ", ""));
                 rgSpecies.insertBefore(rSp, rSpeciesMapped);
 
                 if (selectedSpeciesLayer != null && rSp.getValue().equals(selectedSpeciesLayer)) {
@@ -345,14 +345,14 @@ public class AddToolComposer extends UtilityComposer {
 
                 Radio rSp = new Radio(lyr.getDisplayName());
                 rSp.setValue(lyr.getName());
-                rSp.setId(lyr.getDisplayName().replaceAll(" ", ""));
-                rgSpecies.insertBefore(rSp, rSpeciesMapped);
+                rSp.setId(lyr.getName().replaceAll(" ", ""));
+                rgSpecies.insertBefore(rSp, rSpeciesMappedBk);
             }
 
             if (speciesLayersCount > 1) {
-                rSpeciesMapped.setLabel("All " + speciesLayersCount + " species currently mapped (excludes coordinate uploads)");
+                rSpeciesMappedBk.setLabel("All " + speciesLayersCount + " species currently mapped (excludes coordinate uploads)");
             } else {
-                rSpeciesMapped.setVisible(false);
+                rSpeciesMappedBk.setVisible(false);
             }
         } catch (Exception e) {
             System.out.println("Unable to load species layers:");
@@ -388,7 +388,6 @@ public class AddToolComposer extends UtilityComposer {
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
-                //rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
 
                 if (!lyr.getWKT().contains("ENVELOPE")) {
@@ -415,7 +414,6 @@ public class AddToolComposer extends UtilityComposer {
             if (!layers.isEmpty() && count_not_envelopes > 1) {
                 Radio rAr = new Radio("All area layers"
                         + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
-                //rAr.setId("AllActiveAreas");
                 rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
@@ -479,7 +477,6 @@ public class AddToolComposer extends UtilityComposer {
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
-                //rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
 
                 if (!lyr.getWKT().contains("ENVELOPE")) {
@@ -507,7 +504,6 @@ public class AddToolComposer extends UtilityComposer {
             if (!layers.isEmpty() && count_not_envelopes > 1) {
                 Radio rAr = new Radio("All area layers"
                         + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
-                //rAr.setId("AllActiveAreas");
                 rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrentHighlight);
@@ -561,7 +557,7 @@ public class AddToolComposer extends UtilityComposer {
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
-                rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
+                rAr.setId(lyr.getName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
@@ -1757,7 +1753,7 @@ public class AddToolComposer extends UtilityComposer {
                     }
 
                     //is 's' an LSID?
-                    if(lsid == null || lsid.length() == 0) {
+                    if((lsid == null || lsid.length() == 0) && s.matches(".*[0-9].*")) {
                         Map<String, String> sr = BiocacheQuery.getClassification(s);
                         if(sr.size() > 0
                                 && sr.get("scientificName") != null

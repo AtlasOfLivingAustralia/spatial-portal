@@ -296,7 +296,7 @@ public class AddSpeciesController extends UtilityComposer {
                     }
 
                     //is 's' an LSID?
-                    if(lsid == null || lsid.length() == 0) {
+                     if((lsid == null || lsid.length() == 0) && s.matches(".*[0-9].*")) {
                         Map<String, String> sr = BiocacheQuery.getClassification(s);
                         if(sr.size() > 0 
                                 && sr.get("scientificName") != null

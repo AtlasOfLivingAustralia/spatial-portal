@@ -1743,6 +1743,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      *
      */
     public void onClick$onPrint(Event event) {
+        if(getFellowIfAny("printingwindow") != null) {
+            getFellowIfAny("printingwindow").detach();
+        }
         tbxPrintHack = (String) event.getData();
         PrintingComposer composer = (PrintingComposer) Executions.createComponents("/WEB-INF/zul/Printing.zul", this, null);
         try {
@@ -2616,35 +2619,35 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onClick$btnAddSpecies(Event event) {
-        openModal("WEB-INF/zul/AddSpecies.zul", null);
+        openModal("WEB-INF/zul/AddSpecies.zul", null, "addspecieswindow");
     }
 
     public void onClick$btnAddArea(Event event) {
-        openModal("WEB-INF/zul/AddArea.zul", null);
+        openModal("WEB-INF/zul/AddArea.zul", null, "addareawindow");
     }
 
     public void onClick$btnAddLayer(Event event) {
-        openModal("WEB-INF/zul/AddLayer.zul", null);
+        openModal("WEB-INF/zul/AddLayer.zul", null, "addlayerwindow");
     }
 
     public void onClick$btnAddMaxent(Event event) {
-        openModal("WEB-INF/zul/AddToolMaxent.zul", null);
+        openModal("WEB-INF/zul/AddToolMaxent.zul", null, "addtoolwindow");
     }
 
     public void onClick$btnAddSampling(Event event) {
-        openModal("WEB-INF/zul/AddToolSampling.zul", null);
+        openModal("WEB-INF/zul/AddToolSampling.zul", null, "addtoolwindow");
     }
 
     public void onClick$btnAddAloc(Event event) {
-        openModal("WEB-INF/zul/AddToolALOC.zul", null);
+        openModal("WEB-INF/zul/AddToolALOC.zul", null, "addtoolwindow");
     }
 
     public void onClick$btnAddScatterplot(Event event) {
-        openModal("WEB-INF/zul/AddToolScatterplot.zul", null);
+        openModal("WEB-INF/zul/AddToolScatterplot.zul", null, "addtoolwindow");
     }
 
     public void onClick$btnAreaReport(Event event) {
-        openModal("WEB-INF/zul/AddToolAreaReport.zul", null);
+        openModal("WEB-INF/zul/AddToolAreaReport.zul", null, "addtoolwindow");
     }
 
     public void runNearestLocalityAction(Event event) {
@@ -2652,14 +2655,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onClick$btnSpeciesList(Event event) {
-        openModal("WEB-INF/zul/AddToolSpeciesList.zul", null);
+        openModal("WEB-INF/zul/AddToolSpeciesList.zul", null, "addtoolwindow");
     }
     
     public void onClick$btnSitesBySpecies(Event event) {
-        openModal("WEB-INF/zul/AddToolSitesBySpecies.zul", null);
+        openModal("WEB-INF/zul/AddToolSitesBySpecies.zul", null, "addtoolwindow");
     }
 
-    public Window openModal(String page, Hashtable<String, Object> params) {
+    public Window openModal(String page, Hashtable<String, Object> params, String windowname) {
+        //remove any existing window with the same name (bug somewhere?)
+        if(windowname != null) {
+            if(getFellowIfAny(windowname) != null) {
+                getFellowIfAny(windowname).detach();
+            }
+        }
+
         Window window = (Window) Executions.createComponents(page, this, params);
 
         try {
@@ -2905,7 +2915,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //    public void onSearchSpeciesPoint(Event event) {
 //    }
     public void exportArea(Event event) {
-        openModal("WEB-INF/zul/ExportLayer.zul", null);
+        openModal("WEB-INF/zul/ExportLayer.zul", null, "addtoolwindow");
     }
 
 //    public void exportAreaAs(String type) {
@@ -3026,7 +3036,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void importAnalysis(Event event) {
-        openModal("WEB-INF/zul/ImportAnalysis.zul", null);
+        openModal("WEB-INF/zul/ImportAnalysis.zul", null, "importanalysis");
     }
     static int currentColourIdx = 0;
 

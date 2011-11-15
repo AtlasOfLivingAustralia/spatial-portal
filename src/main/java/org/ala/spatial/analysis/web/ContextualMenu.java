@@ -215,7 +215,7 @@ class SamplingEvent implements EventListener {
         } else {
             params.put("environmentalLayerName", "none");
         }
-        AddToolSamplingComposer window = (AddToolSamplingComposer) mc.openModal("WEB-INF/zul/AddToolSampling.zul", params);
+        AddToolSamplingComposer window = (AddToolSamplingComposer) mc.openModal("WEB-INF/zul/AddToolSampling.zul", params, "addtoolwindow");
 
         int skip = steps_to_skip;
         while(skip > 0) {
@@ -259,7 +259,7 @@ class PredictionEvent implements EventListener {
         } else {
             params.put("environmentalLayerName", "none");
         }
-        AddToolMaxentComposer window = (AddToolMaxentComposer) mc.openModal("WEB-INF/zul/AddToolMaxent.zul", params);
+        AddToolMaxentComposer window = (AddToolMaxentComposer) mc.openModal("WEB-INF/zul/AddToolMaxent.zul", params, "addtoolwindow");
         //window.onClick$btnOk(event);
         //window.onClick$btnOk(event);
     }
@@ -290,7 +290,7 @@ class ClassificationEvent implements EventListener {
         } else {
             params.put("environmentalLayerName", "none");
         }
-        AddToolALOCComposer window = (AddToolALOCComposer) mc.openModal("WEB-INF/zul/AddToolALOC.zul", params);
+        AddToolALOCComposer window = (AddToolALOCComposer) mc.openModal("WEB-INF/zul/AddToolALOC.zul", params, "addtoolwindow");
         //window.onClick$btnOk(event);
     }
 }
@@ -327,7 +327,7 @@ class ScatterplotEvent implements EventListener {
         } else {
             params.put("environmentalLayerName", "default");
         }
-        AddToolComposer window = (AddToolComposer) mc.openModal("WEB-INF/zul/AddToolScatterplot.zul", params);
+        AddToolComposer window = (AddToolComposer) mc.openModal("WEB-INF/zul/AddToolScatterplot.zul", params, "addtoolwindow");
         //window.onClick$btnOk(event);
         //window.onClick$btnOk(event);
     }
@@ -359,7 +359,7 @@ class SpeciesListEvent implements EventListener {
         } else {
             params.put("polygonLayerName", "none");
         }
-        AddToolSpeciesListComposer window = (AddToolSpeciesListComposer) mc.openModal("WEB-INF/zul/AddToolSpeciesList.zul", params);
+        AddToolSpeciesListComposer window = (AddToolSpeciesListComposer) mc.openModal("WEB-INF/zul/AddToolSpeciesList.zul", params, "addtoolwindow");
 
         int skip = steps_to_skip;
         while(skip > 0) {
@@ -445,7 +445,7 @@ class AreaReportEvent implements EventListener {
         } else {
             params.put("polygonLayerName", "none");
         }
-        AddToolAreaReportComposer window = (AddToolAreaReportComposer) mc.openModal("WEB-INF/zul/AddToolAreaReport.zul", params);
+        AddToolAreaReportComposer window = (AddToolAreaReportComposer) mc.openModal("WEB-INF/zul/AddToolAreaReport.zul", params, "addtoolwindow");
 
 //        MapLayer ml = mc.getMapLayer(polygonLayerName);
 //        Window w = (Window) mc.getPage().getFellowIfAny("popup_results");

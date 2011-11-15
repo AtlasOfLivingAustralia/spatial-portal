@@ -129,7 +129,7 @@ hr {
 }
 
 #mapinfo {
-    bottom: 0em;
+    bottom: 20px;
     right: 0px; /* changing to right as it is over the google logo we can have anything over it */
     padding: 10px 2px 10px 10px ;
     display: block;

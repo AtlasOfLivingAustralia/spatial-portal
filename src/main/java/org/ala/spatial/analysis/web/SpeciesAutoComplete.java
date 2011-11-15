@@ -135,9 +135,9 @@ public class SpeciesAutoComplete extends Combobox {
                         String[] wmsNames = CommonData.getSpeciesDistributionWMS(spVal[1]);
                         if (wmsNames != null && wmsNames.length > 0) {
                             if (wmsNames.length == 1) {
-                                myci.setDescription(spVal[2] + " - " + spVal[3] + " records + map");
+                                myci.setDescription(spVal[2] + " - " + spVal[3] + " records + 1 area");
                             } else {
-                                myci.setDescription(spVal[2] + " - " + spVal[3] + " records + " + wmsNames.length + " maps");
+                                myci.setDescription(spVal[2] + " - " + spVal[3] + " records + " + wmsNames.length + " areas");
                             }
                         } else {
                             myci.setDescription(spVal[2] + " - " + spVal[3] + " records");
