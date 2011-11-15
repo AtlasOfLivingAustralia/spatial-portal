@@ -50,6 +50,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.ContextualMenu;
 import org.ala.spatial.analysis.web.HasMapLayer;
@@ -150,6 +151,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     String tbxLayerLoaded;
     HashMap<String, EventListener> layerLoadedChangeEvents = new HashMap<String, EventListener>();
+
+    RemoteLogger remoteLogger;
 
     void motd() {
         if (motd.isMotdEnabled()) {
@@ -1836,6 +1839,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             md.setOccurrencesCount(count);  //for Active Area mapping
 
             updateUserLogMapSpecies(sq.toString());
+            if (sq instanceof BiocacheQuery) {
+            BiocacheQuery bq = (BiocacheQuery) sq;
+            String extra = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false);
+            remoteLogger.logMapSpecies(sq.getName(), bq.getLsids(), wkt, extra);
+        } else if (sq instanceof UploadQuery) {
+            remoteLogger.logMapSpecies(sq.getName(), "user-" + ((UploadQuery) sq).getSpeciesCount() + " records", wkt, "user upload", sq.getMetadataHtml());
+        } else {
+            remoteLogger.logMapSpecies(ml.getDisplayName(), species, wkt, sq.getMetadataHtml());
+        }
 
             updateLayerControls();
         }
@@ -2635,6 +2647,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/AddToolAreaReport.zul", null);
     }
 
+    public void runNearestLocalityAction(Event event) {
+        remoteLogger.logMapAnalysis("Nearest locality", "analysis - Nearest locality", "", "", "", "", "", "");
+    }
+
     public void onClick$btnSpeciesList(Event event) {
         openModal("WEB-INF/zul/AddToolSpeciesList.zul", null);
     }
@@ -2972,6 +2988,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String downloadUrl = CommonData.satServer;
             downloadUrl += "/ws/download/" + id;
             Filedownload.save(new URL(downloadUrl).openStream(), contentType, outfile);
+
+            remoteLogger.logMapAnalysis(name, "analysis - export area", sa.getWkt(), "", "", "", downloadUrl, "download");
+
         } catch (Exception e) {
             System.out.println("Unable to export user area");
             e.printStackTrace(System.out);

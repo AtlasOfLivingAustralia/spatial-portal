@@ -11,6 +11,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -26,6 +27,7 @@ import org.zkoss.zul.Textbox;
 public class ImportAnalysisController extends UtilityComposer {
 
     SettingsSupplementary settingsSupplementary;
+    RemoteLogger remoteLogger;
     Textbox refNum;
     String pid;
     boolean isAloc = false;
@@ -47,12 +49,15 @@ public class ImportAnalysisController extends UtilityComposer {
         if(getParametersAloc()) {
             isAloc = true;
             openProgressBarAloc();
+            remoteLogger.logMapAnalysis("Import Classification", "analysis - import", "", "", "", pid, "classification", "imported");
         } else if(getParametersMaxent()) {
             isMaxent = true;
             openProgressBarMaxent();
+            remoteLogger.logMapAnalysis("Import Prediction", "analysis - import", "", "", "", pid, "prediction", "imported");
         } else if(getParametersSxS()){
             isSxS = true;
             openProgressBarSxS();
+            remoteLogger.logMapAnalysis("Import Species to Grid", "analysis - import", "", "", "", pid, "species to grid", "imported");
         } else {
             getMapComposer().showMessage("Invalid reference number.");
         }

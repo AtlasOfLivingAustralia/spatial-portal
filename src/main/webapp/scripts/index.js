@@ -286,6 +286,11 @@ function runAreaReport(){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAreaReport', null));
 }
 
+function runNearestLocality(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'runNearestLocalityAction', null));
+    mapFrame.toggleActiveNearest();
+}
+
 function runSamplingAction(){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddSampling', null));
 }

@@ -166,6 +166,24 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
 
             this.setVisible(false);
 
+            String extras = "";
+            extras += "gridsize=" + String.valueOf(gridResolution);
+            extras += "|occurrencedensity=1";
+            extras += "|speciesdensity=1";
+            extras += "|sitesbyspecies=1";
+            extras += "|movingaveragesize="+ma;
+
+            if (query instanceof BiocacheQuery) {
+                BiocacheQuery bq = (BiocacheQuery) query;
+                extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - site by species", area, bq.getLsids(), "", pid, extras, "STARTED");
+            } else if (query instanceof UploadQuery) {
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - site by species", area, ((UploadQuery) query).getQ(), "", pid, extras, "STARTED");
+            } else {
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - site by species", area, "", "", pid, extras, "STARTED");
+            }
+
+
             return true;
         } catch (Exception e) {
             System.out.println("SitesBySpecies error: ");

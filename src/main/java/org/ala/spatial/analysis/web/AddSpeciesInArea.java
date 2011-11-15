@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
@@ -32,6 +33,7 @@ import org.zkoss.zul.Window;
 public class AddSpeciesInArea extends UtilityComposer {
 
     SettingsSupplementary settingsSupplementary;
+    RemoteLogger remoteLogger;
     String selectedMethod = "";
     String pid = "";
     Radiogroup rgArea;
@@ -216,6 +218,18 @@ public class AddSpeciesInArea extends UtilityComposer {
                 //md.setSpeciesDisplayLsid(lsid);
                 //md.setSpeciesRank(rank);
             }
+            //RemoteLogger rm = new RemoteLogger();
+            System.out.println("metadata: " + metadata);
+            if (q instanceof BiocacheQuery) {
+                BiocacheQuery bq = (BiocacheQuery) q;
+                String extra = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false);
+                remoteLogger.logMapSpecies(q.getName(), ((BiocacheQuery)q).getLsids(), sa.getWkt(), extra);
+            } else if (q instanceof UploadQuery) {
+                remoteLogger.logMapSpecies(q.getName(), "user-"+((UploadQuery)q).getSpeciesCount()+" records", sa.getWkt(), q.getMetadataHtml());
+            } else {
+                remoteLogger.logMapSpecies(ml.getMapLayerMetadata().getSpeciesDisplayName(), s, sa.getWkt(), "");
+            }
+            
         } catch (Exception e) {
             e.printStackTrace();
         }

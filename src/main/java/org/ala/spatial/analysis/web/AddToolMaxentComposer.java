@@ -221,7 +221,18 @@ public class AddToolMaxentComposer extends AddToolComposer {
             attrs.put("params", sbParams.toString());
             attrs.put("downloadfile", "");
             getMapComposer().updateUserLog(attrs, "analysis result: " + CommonData.satServer + "/output/maxent/" + pid + "/species.html");
-
+            String options = "";
+            options += "Jackknife: " + chkJackknife.isChecked();
+            options += ";Response curves: " + chkRCurves.isChecked();
+            options += ";Test per: " + txtTestPercentage.getValue();
+            if (query instanceof BiocacheQuery) {
+                BiocacheQuery bq = (BiocacheQuery) query;
+                options = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + options;
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "maxent", area, bq.getLsids(), sbenvsel.toString(), pid, options, "STARTED");
+            } else {
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "maxent", area, query.getName()+"__"+query.getQ(), sbenvsel.toString(), pid, options, "STARTED");
+            }
+            
             this.setVisible(false);
 
             return true;

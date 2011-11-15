@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.SelectedArea;
@@ -28,6 +29,7 @@ import org.zkoss.zul.Row;
  */
 public class SpeciesListResults extends UtilityComposer {
 
+    RemoteLogger remoteLogger;
     public String pid;
     String shape;
     public String[] results;
@@ -162,6 +164,7 @@ public class SpeciesListResults extends UtilityComposer {
             selectedArea = new SelectedArea(null, getMapComposer().getViewArea());
         }
         getMapComposer().updateUserLogAnalysis("species list", selectedArea.getWkt(), "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
+        remoteLogger.logMapAnalysis("species list", "analysis - species list", selectedArea.getWkt(), "", "", pid, "Species_list_" + sdate + "_" + spid + ".csv", "");
 
         detach();
     }

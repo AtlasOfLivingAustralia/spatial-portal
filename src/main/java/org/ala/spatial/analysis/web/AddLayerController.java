@@ -11,6 +11,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import net.sf.json.JSONObject;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.Facet;
 import org.ala.spatial.sampling.SimpleShapeFile;
@@ -27,6 +28,7 @@ import org.zkoss.zul.Radio;
 public class AddLayerController extends UtilityComposer {
 
     LayersAutoComplete lac;
+    RemoteLogger remoteLogger;
     String treeName, treePath, treeMetadata, treePid;
     int treeSubType;
     String searchName, searchPath, searchMetadata;
@@ -88,20 +90,24 @@ public class AddLayerController extends UtilityComposer {
                     }
 
                     getMapComposer().updateUserLogMapLayer("gaz", treeName + "|" + treePath);
+                    remoteLogger.logMapArea(treeName, "layers", CommonData.layersServer + "/object/" + treePid, treeName + "|" + treePath);
                 }
             } else {
                 getMapComposer().addWMSLayer(treeName,
                         treePath,
                         (float) 0.75, treeMetadata, null, treeSubType, null, null, null);
+                remoteLogger.logMapArea(treeName, "layers", treePath, treeMetadata );
             }
 
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/ "|" + treeName);
+            //remoteLogger.logMapArea(treeName, "env - tree - add", "");
         } else if (searchName != null) {
             getMapComposer().addWMSLayer(searchName,
                     searchPath,
                     (float) 0.75, searchMetadata, null, searchSubType, null, null);
 
             getMapComposer().updateUserLogMapLayer("env - search - add", /*joLayer.getString("uid")+*/ "|" + searchName);
+            remoteLogger.logMapArea(searchName, "layers", searchMetadata);
         }
 
         this.detach();

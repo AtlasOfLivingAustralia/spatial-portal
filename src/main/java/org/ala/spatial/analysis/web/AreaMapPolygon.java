@@ -58,10 +58,20 @@ public class AreaMapPolygon extends AreaToolComposer {
     }
 
     public void onClick$btnOk(Event event) {
-        getMapComposer().getMapLayer(layerName).setDisplayName(txtLayerName.getValue());
+        MapLayer ml = getMapComposer().getMapLayer(layerName);
+        ml.setDisplayName(txtLayerName.getValue());
         getMapComposer().redrawLayersList();
         ok = true;
         Clients.evalJavaScript("mapFrame.toggleClickHandler(true);");
+
+        
+        String activeLayerName = "none";
+        if (ml.getUri() != null) {
+            activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
+        }
+        getMapComposer().setAttribute("activeLayerName", activeLayerName);
+        getMapComposer().setAttribute("mappolygonlayer", rgPolygonLayers.getSelectedItem().getValue());
+
         this.detach();
     }
 
@@ -200,7 +210,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                             //  break;
                         } else {
                             searchComplete = true;
-                            if(wkt.length() > 200) {
+                            if (wkt.length() > 200) {
                                 displayGeom.setValue(wkt.substring(0, 200) + "...");
                             } else {
                                 displayGeom.setValue(wkt);
@@ -238,7 +248,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                                 mapLayer.setMapLayerMetadata(md);
                             }
                             try {
-                                double [][] bb = SimpleShapeFile.parseWKT(wkt).getBoundingBox();
+                                double[][] bb = SimpleShapeFile.parseWKT(wkt).getBoundingBox();
                                 ArrayList<Double> bbox = new ArrayList<Double>();
                                 bbox.add(bb[0][0]);
                                 bbox.add(bb[0][1]);
@@ -336,7 +346,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                 //test if this facet is in solr
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(f);
-                if(new BiocacheQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
+                if (new BiocacheQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
                     return f;
                 }
             }

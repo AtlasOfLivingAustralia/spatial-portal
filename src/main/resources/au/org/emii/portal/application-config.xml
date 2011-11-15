@@ -43,6 +43,9 @@
     Additional key/value pair values from config file
     -->
     <bean id="settingsSupplementary" class="au.org.emii.portal.settings.SettingsSupplementaryImpl" />
+    <bean id="remoteLogger" class="org.ala.logger.client.RemoteLogger">
+        <property name="settingsSupplementary" ref="settingsSupplementary" />
+    </bean>
 
     <!--
     Class for resolving hostname

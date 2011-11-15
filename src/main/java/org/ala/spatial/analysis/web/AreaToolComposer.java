@@ -10,8 +10,10 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.BiocacheQuery;
@@ -28,6 +30,7 @@ public class AreaToolComposer extends UtilityComposer {
 
     String layerName;
     SettingsSupplementary settingsSupplementary;
+    RemoteLogger remoteLogger;
     boolean isAnalysisChild = false;
     AddToolComposer analysisParent = null;
     Map winProps = null;
@@ -55,9 +58,19 @@ public class AreaToolComposer extends UtilityComposer {
     public void detach() {
         super.detach();
         String parentname = (String) winProps.get("parentname");
+        String areatype = (String) getMapComposer().getAttribute("addareawindow");        
+        if (areatype == null) {
+            areatype = "";
+        } else {
+            if (areatype.startsWith("ci")) {
+                areatype = areatype.substring(2);
+            }
+        }
+
         if (isAnalysisChild) {
             //analysisParent.hasCustomArea = true;
             analysisParent.resetWindow(ok?layerName:null);
+            remoteLogger.logMapArea(layerName, areatype, getMapComposer().getMapLayer(layerName).getWKT());
         } else if (parentname != null && parentname.equals("AddSpeciesInArea")) {
             //was OK clicked?
             if (ok) {
@@ -101,6 +114,7 @@ public class AreaToolComposer extends UtilityComposer {
                     }
                     md.setMoreInfo((String) winProps.get("metadata"));
                     md.setSpeciesRank((String) winProps.get("rank"));
+                    //doRemoteLog(q, wkt);
                 } else if (winProps.get("filterGrid") != null && (Boolean) winProps.get("filterGrid")) {                    
                     MapLayer ml = getMapComposer().mapSpecies(
                             q
@@ -116,6 +130,7 @@ public class AreaToolComposer extends UtilityComposer {
                     }
                     md.setMoreInfo((String) winProps.get("metadata"));
                     md.setSpeciesRank((String) winProps.get("rank"));
+                    //doRemoteLog(q, wkt);
                 } else if (winProps.get("byLsid") != null && (Boolean) winProps.get("byLsid")) {
                     MapLayer ml = getMapComposer().mapSpecies(
                             q
@@ -130,15 +145,36 @@ public class AreaToolComposer extends UtilityComposer {
                         ml.setMapLayerMetadata(md);
                     }
                     md.setMoreInfo((String) winProps.get("metadata"));
+                    //doRemoteLog(q, wkt);
                 } else {              
-                    getMapComposer().mapSpecies(
+                    MapLayer ml = getMapComposer().mapSpecies(
                             q,
                             (String) winProps.get("taxon"),
                             (String) winProps.get("rank"),
                             0, LayerUtilities.SPECIES
                             , wkt, -1);
+                    //remoteLogger.logMapSpecies((String) winProps.get("taxon"), ml.getMapLayerMetadata().getSpeciesDisplayLsid(), layerName + "__" + wkt, "");
                 }
+                String displayName = getMapComposer().getMapLayer(layerName).getDisplayName();
+                remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName))?" ("+displayName+")":""), areatype, wkt);
             } //else cancel clicked, don't return to mapspeciesinarea popup
+        } else {
+            if (ok) {
+                String displayName = getMapComposer().getMapLayer(layerName).getDisplayName();
+                String fromLayer = (String)getMapComposer().getAttribute("mappolygonlayer");
+                String activeLayerName = (String)getMapComposer().getAttribute("activeLayerName");
+                if (fromLayer == null) {
+                    fromLayer = "";
+                } else {
+                    getMapComposer().removeAttribute("mappolygonlayer"); 
+                }
+                if (activeLayerName == null) {
+                    activeLayerName = "";
+                } else {
+                    getMapComposer().removeAttribute("activeLayerName");
+                }
+                remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName))?" ("+displayName+")":""), areatype, getMapComposer().getMapLayer(layerName).getWKT(), activeLayerName, fromLayer);
+            }
         }
     }
 
@@ -167,6 +203,8 @@ public class AreaToolComposer extends UtilityComposer {
                         , wkt, -1);
 
                 //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/" + sbProcessUrl.toString(), pid, "map species in area");
+                //String extra = sq.getWS() + "|" + sq.getBS() + "|" + sq.getFullQ(false);
+                //remoteLogger.logMapSpecies("Occurrences in " + activeAreaLayerName, sq.getLsids(), wkt, extra);
             } else {
                 getMapComposer().showMessage(results_count_occurrences
                         + " occurrences in this area.\r\nSelect an area with fewer than "
@@ -177,4 +215,16 @@ public class AreaToolComposer extends UtilityComposer {
             e.printStackTrace();
         }
     }
+
+//    private void doRemoteLog(Query q, String wkt) {
+//        if (q instanceof BiocacheQuery) {
+//            BiocacheQuery bq = (BiocacheQuery) q;
+//            String extra = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false);
+//            remoteLogger.logMapSpecies(q.getName(), ((BiocacheQuery) q).getLsids(), wkt, extra);
+//        } else if (q instanceof UploadQuery) {
+//            remoteLogger.logMapSpecies(q.getName(), "user-" + ((UploadQuery) q).getSpeciesCount() + " records", wkt, q.getMetadataHtml());
+//        } else {
+//            remoteLogger.logMapSpecies((String) winProps.get("name"), (String) winProps.get("s"), layerName + "__" + wkt, "");
+//        }
+//    }
 }

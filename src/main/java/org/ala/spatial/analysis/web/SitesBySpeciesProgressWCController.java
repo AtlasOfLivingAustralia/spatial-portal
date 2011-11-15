@@ -6,6 +6,7 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import java.io.ByteArrayInputStream;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -25,6 +26,7 @@ import org.zkoss.zul.Window;
  */
 public class SitesBySpeciesProgressWCController extends UtilityComposer {
 
+    RemoteLogger remoteLogger;
     Label jobstatus;
     Progressmeter jobprogress;
     Timer timer;
@@ -68,6 +70,7 @@ public class SitesBySpeciesProgressWCController extends UtilityComposer {
         }
 
         System.out.println("**************** STATE: " + s);
+        remoteLogger.logMapAnalysisUpdateStatus(pid, s); 
 
         String p = get("progress");
 

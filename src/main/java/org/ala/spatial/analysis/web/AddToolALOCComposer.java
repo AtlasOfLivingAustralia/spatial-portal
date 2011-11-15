@@ -288,6 +288,7 @@ public class AddToolALOCComposer extends AddToolComposer {
             legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
 
             getMapComposer().updateUserLogAnalysis("Classification", "gc: " + groupCount.getValue() + ";area: " + area, sbenvsel.toString(), slist, pid, layerLabel);
+            remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - classification", area, "", sbenvsel.toString(), pid, "gc: " + groupCount.getValue(), "STARTED");
 
             ALOCProgressWCController window = (ALOCProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisALOCProgress.zul", null, null);
             window.parent = this;

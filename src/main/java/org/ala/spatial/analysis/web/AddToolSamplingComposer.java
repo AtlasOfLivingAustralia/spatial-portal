@@ -93,6 +93,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 //TODO: fix logging
                 //getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + slist, pid, "Sampling results for species: " + taxon);
 
+                remoteLogger.logMapAnalysis("species sampling", "analysis - species sampling", sa.getWkt(), query.getName(), envlayers, pid, "", "download");
                 this.detach();
             } else {
 //                byte [] b = query.getDownloadBytes(layers);
@@ -115,6 +116,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                remoteLogger.logMapAnalysis("species sampling", "analysis - species sampling", sa.getWkt(), query.getName(), envlayers, pid, "", ""); 
                 this.detach();
             }
 

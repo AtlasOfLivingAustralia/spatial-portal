@@ -24,6 +24,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.BiocacheQuery;
@@ -68,6 +69,7 @@ import org.zkoss.zul.Window;
 public class AddToolComposer extends UtilityComposer {
 
     SettingsSupplementary settingsSupplementary;
+    RemoteLogger remoteLogger;
     int currentStep = 1, totalSteps = 5;
     Map<String, Object> params;
     String selectedMethod = "";

@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
@@ -43,6 +44,7 @@ import org.zkoss.zul.Window;
 public class FilteringResultsWCController extends UtilityComposer {
 
     private static Logger logger = Logger.getLogger(FilteringResultsWCController.class);
+    RemoteLogger remoteLogger;
     public Button mapspecies;
     public Label results_label2_occurrences;
     public Label results_label2_species;
@@ -83,6 +85,12 @@ public class FilteringResultsWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        String extras = "";
+        extras += "areaSqKm: " + areaSqKm;
+        extras += ";boundingBox: " + boundingBox;
+        remoteLogger.logMapAnalysis(displayname, "analysis - area report", areaName + "__" + sa.getWkt(), "", "", pid, extras, "0");
+
     }
 
     @Override

@@ -119,7 +119,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </n:a>
                                             </n:li>
                                             <n:li>
-                                                <n:a href='#' n:onClick="mapFrame.toggleActiveNearest();">
+                                                <n:a href='#' n:onClick="runNearestLocality();">
                                                     <n:span>Nearest locality</n:span>
                                                 </n:a>
                                             </n:li>                                           

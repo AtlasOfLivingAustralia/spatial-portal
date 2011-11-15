@@ -7,6 +7,7 @@ import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.List;
 import java.util.Map;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.util.LayersUtil;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -22,6 +23,7 @@ import org.zkoss.zul.Window;
 public class AddAreaController extends UtilityComposer {
 
     SettingsSupplementary settingsSupplementary;
+    RemoteLogger remoteLogger;
     Radiogroup cbAreaSelection;
     Radio ciWKT, ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView, ciRadiusManualSelection;
     Button btnOk;
@@ -34,7 +36,7 @@ public class AddAreaController extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
-        if(btnOk.isDisabled()) {
+        if (btnOk.isDisabled()) {
             return;
         }
         String windowName = "";
@@ -88,6 +90,7 @@ public class AddAreaController extends UtilityComposer {
                 mapLayer.setMapLayerMetadata(md);
             }
             md.setMoreInfo(LayersUtil.getMetadata("Australia " + wkt));
+            remoteLogger.logMapArea(layerName, "BoxAustralia", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
             //String wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
             String wkt = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 89.999,179.999 -89.999,-179.999 -89.999))";
@@ -99,6 +102,7 @@ public class AddAreaController extends UtilityComposer {
                 mapLayer.setMapLayerMetadata(md);
             }
             md.setMoreInfo(LayersUtil.getMetadata("World " + wkt));
+            remoteLogger.logMapArea(layerName, "BoxWorld", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxCurrentView) {
             String wkt = mc.getMapComposer().getViewArea();
             String layerName = mc.getNextAreaLayerName("View Area");
@@ -109,6 +113,7 @@ public class AddAreaController extends UtilityComposer {
                 mapLayer.setMapLayerMetadata(md);
             }
             md.setMoreInfo(LayersUtil.getMetadata("Current view " + wkt));
+            remoteLogger.logMapArea(layerName, "BoxCurrentView", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciWKT) {
             windowName = "WEB-INF/zul/AreaWKT.zul";
         }
@@ -131,6 +136,7 @@ public class AddAreaController extends UtilityComposer {
             //analysisParent.hasCustomArea = true;
             analysisParent.resetWindow(getMapComposer().getNextAreaLayerName("My Area"));
         }
+        mc.setAttribute("addareawindow", cbAreaSelection.getSelectedItem().getId());
         this.detach();
     }
 

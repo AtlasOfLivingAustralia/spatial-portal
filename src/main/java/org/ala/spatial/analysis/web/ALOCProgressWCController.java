@@ -5,6 +5,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
@@ -23,6 +24,7 @@ import org.zkoss.zul.Window;
  */
 public class ALOCProgressWCController extends UtilityComposer {
 
+    RemoteLogger remoteLogger;
     Label jobstatus;
     Progressmeter jobprogress;
     Timer timer;
@@ -71,6 +73,8 @@ public class ALOCProgressWCController extends UtilityComposer {
             jobprogress.setValue((int) (d * 100));
         } catch (Exception ex) {
         }
+
+        remoteLogger.logMapAnalysisUpdateStatus(pid, s);
 
         if (s.equals("SUCCESSFUL")) {
             timer.stop();

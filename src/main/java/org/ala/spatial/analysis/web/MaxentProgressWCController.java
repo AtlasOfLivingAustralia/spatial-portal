@@ -5,7 +5,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
+import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -23,6 +23,7 @@ import org.zkoss.zul.Window;
  */
 public class MaxentProgressWCController extends UtilityComposer {
 
+    RemoteLogger remoteLogger;
     Label jobstatus;
     Progressmeter jobprogress;
     Timer timer;
@@ -66,6 +67,7 @@ public class MaxentProgressWCController extends UtilityComposer {
         }
 
         System.out.println("**************** STATE: " + s);
+        remoteLogger.logMapAnalysisUpdateStatus(pid, s); 
 
         String p = get("progress");
 
