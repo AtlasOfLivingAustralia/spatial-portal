@@ -1106,7 +1106,7 @@ public class BiocacheQuery implements Query, Serializable {
 
         } catch (Exception e) {
             System.out.println("Error getting scientific name for: " + lsid);
-            e.printStackTrace(System.out);
+            //e.printStackTrace(System.out);
         }
 
         return classification;

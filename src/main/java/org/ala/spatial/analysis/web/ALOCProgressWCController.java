@@ -5,6 +5,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
+import java.net.SocketTimeoutException;
 import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.Util;
@@ -119,6 +120,7 @@ public class ALOCProgressWCController extends UtilityComposer {
             String slist = get.getResponseBodyAsString();
             
             return slist;
+        } catch (SocketTimeoutException e) {
         } catch (Exception e) {
             e.printStackTrace();
         }
