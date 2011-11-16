@@ -61,6 +61,7 @@ public class DensityLayers {
                         ex.printStackTrace();
                     }
                 }
+                records = new Records(recordsFile);
             }
 
             //do not need species identifier

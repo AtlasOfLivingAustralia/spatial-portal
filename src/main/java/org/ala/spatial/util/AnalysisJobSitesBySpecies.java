@@ -214,6 +214,9 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
 
             setProgress(1, "finished");
 
+            // generate the readme.txt file
+            CitationService.generateSitesBySpeciesReadme(currentPath + File.separator, sitesbyspecies,occurrencedensity,speciesdensity);
+
             setCurrentState(SUCCESSFUL);
 
             System.out.println("finished building sites by species matrix");

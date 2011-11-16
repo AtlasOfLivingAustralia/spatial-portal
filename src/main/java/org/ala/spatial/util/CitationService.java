@@ -237,4 +237,51 @@ public class CitationService {
             e.printStackTrace(System.out);
         }
     }
+
+    public static void generateSitesBySpeciesReadme(String outputdir, boolean sitesBySpecies, boolean occurrenceDensity, boolean speciesRichness) {
+        generateClassificationReadme(new File(outputdir));
+    }
+    public static void generateSitesBySpeciesReadme(File fDir, boolean sitesBySpecies, boolean occurrenceDensity, boolean speciesRichness) {
+        try {
+            StringBuilder sbReadme = new StringBuilder();
+
+            if(sitesBySpecies) {
+                sbReadme.append("SitesBySpecies.csv             Sites by species output csv.").append(NEW_LINE);
+                sbReadme.append("sxs_metadata.html              Sites by species metadata").append(NEW_LINE);
+                sbReadme.append(NEW_LINE);
+            }
+
+            if(occurrenceDensity) {
+                sbReadme.append("occurrence_density.asc         Occurrence density layer as ESRI ASCII").append(NEW_LINE);
+                sbReadme.append("occurrence_density.grd         Occurrence density layer as Diva grid file header").append(NEW_LINE);
+                sbReadme.append("occurrence_density.gri         Occurrence density layer as Diva grid file").append(NEW_LINE);
+                sbReadme.append("occurrence_density.png         Occurrence density layer image").append(NEW_LINE);
+                sbReadme.append("occurrence_density.prj         Occurrence density layer projection file").append(NEW_LINE);
+                sbReadme.append("occurrence_density.sld         Occurrence density layer Geoserver style").append(NEW_LINE);
+                sbReadme.append("occurrence_density_legend.png  Occurrence density layer image legend").append(NEW_LINE);
+                sbReadme.append("odensity_metadata.html         Occurrence density layer metadata").append(NEW_LINE);
+                sbReadme.append(NEW_LINE);
+            }
+            if(speciesRichness) {
+                sbReadme.append("species_richness.asc           Species richness layer as ESRI ASCII").append(NEW_LINE);
+                sbReadme.append("species_richness.grd           Species richness layer as Diva grid file header").append(NEW_LINE);
+                sbReadme.append("species_richness.gri           Species richness layer as Diva grid file").append(NEW_LINE);
+                sbReadme.append("species_richness.png           Species richness layer image").append(NEW_LINE);
+                sbReadme.append("species_richness.prj           Species richness layer projection file").append(NEW_LINE);
+                sbReadme.append("species_richness.sld           Species richness layer Geoserver style").append(NEW_LINE);
+                sbReadme.append("species_richness_legend.png    Species richness layer image legend").append(NEW_LINE);
+                sbReadme.append("srichness_metadata.html        Species richness layer metadata").append(NEW_LINE);
+                sbReadme.append(NEW_LINE);
+            }
+
+            File temporary_file = new File(fDir, "readme.txt");
+            FileWriter fw = new FileWriter(temporary_file);
+            fw.write(sbReadme.toString());
+            fw.close();
+
+        } catch (Exception e) {
+            System.out.println("Error generating Prediction readme");
+            e.printStackTrace(System.out);
+        }
+    }
 }
