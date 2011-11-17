@@ -1933,8 +1933,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String spcode = mapLayer.getUri().substring(p1, p2);
             String url = CommonData.layersServer + "/distribution/" + spcode;
             String jsontxt = Util.readUrl(url);
-            if(jsontxt == null) {
-                url = CommonData.layersServer + "/checklist/" + spcode;
+            if(jsontxt == null || jsontxt.length() == 0) {
+                url = CommonData.layersServer + "/checklists/" + spcode;
                 jsontxt = Util.readUrl(url);
             }
             if(jsontxt == null) {
