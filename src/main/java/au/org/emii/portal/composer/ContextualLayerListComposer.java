@@ -90,11 +90,12 @@ public class ContextualLayerListComposer extends UtilityComposer {
                     classNodes = getContextualClasses(jo);
 
                     SimpleTreeNode stn;
-                    if (classNodes.isEmpty()) {
-                        stn = new SimpleTreeNode(jo, empty);
-                    } else {
-                        stn = new SimpleTreeNode(jo, classNodes);
-                    }
+//                    if (classNodes.isEmpty()) {
+//                        stn = new SimpleTreeNode(jo, empty);
+//                    } else {
+//                        stn = new SimpleTreeNode(jo, classNodes);
+//                    }
+                    stn = new SimpleTreeNode(jo, empty);
                     addToMap(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
                 }
             }
@@ -180,9 +181,9 @@ public class ContextualLayerListComposer extends UtilityComposer {
                 alCat1 = new ArrayList();
             }
             //System.out.println("\tAdding new cat2");
-            String subtype = ((JSONObject)treeNode.getData()).getString("type");
-            JSONObject joCat2 = JSONObject.fromObject("{displayname:'" + cat2_full + "',type:'node',subtype:" 
-                    +((subtype.equalsIgnoreCase("environmental"))?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL)
+            String subtype = ((JSONObject) treeNode.getData()).getString("type");
+            JSONObject joCat2 = JSONObject.fromObject("{displayname:'" + cat2_full + "',type:'node',subtype:"
+                    + ((subtype.equalsIgnoreCase("environmental")) ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL)
                     + "}");
             SimpleTreeNode stnCat2 = new SimpleTreeNode(joCat2, alCat2);
             //System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
@@ -214,7 +215,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
     }
 
     void initALC() {
-        if(contextualLayerSelection == null) {
+        if (contextualLayerSelection == null) {
             try {
                 contextualLayerSelection = (ContextualLayerSelection) getMapComposer().getFellow("contextuallayerselectionwindow");
             } catch (Exception e) {
@@ -257,7 +258,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                     img.addEventListener("onClick", new EventListener() {
 
                         @Override
-                        public void onEvent(Event event) throws Exception {                            
+                        public void onEvent(Event event) throws Exception {
                             JSONObject jo = JSONObject.fromObject(event.getTarget().getParent().getParent().getAttribute("lyr"));
                             String s = jo.getString("uid");
                             String metadata = CommonData.satServer + "/layers/" + s;
@@ -340,7 +341,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
 
                                 initALC();
                                 contextualLayerSelection.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
-                                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
+                                        joLayer.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
 
 //                                mc.addWMSLayer(joLayer.getString("displayname"),
 //                                        joLayer.getString("displaypath"),
@@ -349,13 +350,16 @@ public class ContextualLayerListComposer extends UtilityComposer {
                                 String classAttribute = joLayer.getString("classname");
                                 String classValue = joLayer.getString("displayname");
                                 String layer = joLayer.getString("layername");
-                                String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
+                                //String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
+                                String displaypath = CommonData.geoServer
+                                        + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
+                                        + joLayer.getString("displaypath");
                                 //Filtered requests don't work on
                                 displaypath = displaypath.replace("gwc/service/", "");
                                 // Messagebox.show(displaypath);
                                 String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
                                 initALC();
-                                contextualLayerSelection.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
+                                contextualLayerSelection.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
 
 //                                mc.addWMSLayer(layer + " - " + classValue,
 //                                        displaypath,
@@ -385,7 +389,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
 
                             mc.activateLink(metadata, "Metadata", false);
 
-                            mc.updateUserLogMapLayer("env - tree - info", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
+                            mc.updateUserLogMapLayer("env - tree - info", joLayer.getString("uid") + "|" + joLayer.getString("displayname"));
 
                         }
                     });

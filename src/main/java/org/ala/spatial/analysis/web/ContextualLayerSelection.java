@@ -28,6 +28,8 @@ public class ContextualLayerSelection extends AreaToolComposer {
     public void afterCompose() {
         super.afterCompose();
 
+        btnNext.setDisabled(true);
+
     }
 
     public void onClick$btnCancel(Event event) {
@@ -77,6 +79,14 @@ public class ContextualLayerSelection extends AreaToolComposer {
             setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata,
                     jo.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
         } else {
+            
+            // if the autocomplete has been type, but before selecting an option,
+            // the focus is lost (eg, clicking on the next button or on tree)
+            // it generates an error. This should fix it. 
+            if (llc.tree.getSelectedItem() == null) {
+                return; 
+            }
+
             JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
             if (!joLayer.getString("type").contentEquals("class")) {
 
@@ -88,7 +98,10 @@ public class ContextualLayerSelection extends AreaToolComposer {
                 String classAttribute = joLayer.getString("classname");
                 String classValue = joLayer.getString("displayname");
                 String layer = joLayer.getString("layername");
-                String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
+                //String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
+                String displaypath = CommonData.geoServer
+                        + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
+                        + joLayer.getString("displaypath");
                 //Filtered requests don't work on
                 displaypath = displaypath.replace("gwc/service/", "");
                 // Messagebox.show(displaypath);
@@ -120,5 +133,6 @@ public class ContextualLayerSelection extends AreaToolComposer {
         llc.tree.clearSelection();
 
         // btnOk.setDisabled(false);
+        btnNext.setDisabled(false);
     }
 }
