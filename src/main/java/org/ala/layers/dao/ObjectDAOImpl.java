@@ -57,7 +57,7 @@ import org.springframework.stereotype.Service;
 public class ObjectDAOImpl implements ObjectDAO {
 
     /** log4j logger */
-    private static final Logger logger = Logger.getLogger(FieldDAOImpl.class);
+    private static final Logger logger = Logger.getLogger(ObjectDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
     @Resource(name = "layerIntersectDao")
     private LayerIntersectDAO layerIntersectDao;

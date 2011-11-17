@@ -27,6 +27,9 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 //@XStreamAlias("distribution")
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class Distribution {
+    public static final String EXPERT_DISTRIBUTION = "e";
+    public static final String SPECIES_CHECKLIST = "c";
+
     Long gid;
     Long spcode;
     String scientific;
@@ -42,6 +45,9 @@ public class Distribution {
     String geometry;
     String wmsurl;
     String lsid;
+    String type;
+    String area_name;
+    String pid;
 
     public void setGid(Long gid) {
         this.gid = gid;
@@ -168,5 +174,29 @@ public class Distribution {
 
     public String getLsid() {
         return lsid;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setArea_name(String area_name) {
+        this.area_name = area_name;
+    }
+
+    public String getArea_name() {
+        return area_name;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
+    }
+
+    public String getPid() {
+        return pid;
     }
 }

@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 public class TabulationDAOImpl implements TabulationDAO {
 
     /** log4j logger */
-    private static final Logger logger = Logger.getLogger(FieldDAOImpl.class);
+    private static final Logger logger = Logger.getLogger(TabulationDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
 
     @Resource(name = "dataSource")
@@ -87,6 +87,8 @@ public class TabulationDAOImpl implements TabulationDAO {
         String sql = "SELECT fid1, fid2, f1.name as name1, f2.name as name2 "
                 + "FROM tabulation, fields f1, fields f2 "
                 + "WHERE f1.id = fid1 AND f2.id = fid2 AND the_geom is not null "
+                + "AND area is not null "
+                + "AND f1.intersect=true AND f2.intersect=true "
                 + "GROUP BY fid1, fid2, name1, name2;";
 
         return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Tabulation.class));

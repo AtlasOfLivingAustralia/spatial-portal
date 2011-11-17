@@ -239,14 +239,24 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
                 if (id.startsWith("species_")) {
                     //maxent layer
-                    gid = id.substring(8);
+                    gid = id.substring("species_".length());
                     filename = getConfig().getAlaspatialOutputPath() + File.separator + "maxent" + File.separator + gid + File.separator + gid;
                     name = "Prediction";
                 } else if (id.startsWith("aloc_")) {
                     //aloc layer
-                    gid = id.substring(8);
+                    gid = id.substring("aloc_".length());
                     filename = getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + gid;
                     name = "Classification";
+                } else if (id.startsWith("odensity_")) {
+                    //aloc layer
+                    gid = id.substring("odensity_".length());
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "occurrence_density";
+                    name = "Occurrence Density";
+                } else if (id.startsWith("srichness_")) {
+                    //aloc layer
+                    gid = id.substring("srichness_".length());
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
+                    name = "Species Richness";
                 }
 
                 if (filename != null) {
@@ -386,12 +396,20 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
                 if (fid.startsWith("species_")) {
                     //maxent layer
-                    gid = fid.substring(8);
+                    gid = fid.substring("species_".length());
                     filename = getConfig().getAlaspatialOutputPath() + File.separator + "maxent" + File.separator + gid + File.separator + gid;
                 } else if (fid.startsWith("aloc_")) {
                     //aloc layer
-                    gid = fid.substring(8);
+                    gid = fid.substring("aloc_".length());
                     filename = getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + gid;
+                } else if (fid.startsWith("odensity_")) {
+                    //aloc layer
+                    gid = fid.substring("odensity_".length());
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "occurrence_density";
+                } else if (fid.startsWith("srichness_")) {
+                    //aloc layer
+                    gid = fid.substring("srichness_".length());
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
                 }
 
                 if (filename != null) {
