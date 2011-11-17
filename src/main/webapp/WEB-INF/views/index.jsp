@@ -153,7 +153,7 @@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"
 
                                 <li>Intersect<ul>
                                         <li><strong>Intersect a layer(s) at a given set of coordinates. Multiple field ids or layer names can be specified separated by a comma (e.g. cl22,cl23):</strong> /layers-service/intersect/{id}/{latitude}/{longitude} e.g. <a href="/layers-service/intersect/cl22/-29.911/132.769">/layers-service/intersect/cl22/-29.911/132.769</a></li>
-                                        <li><strong>Batch intersect a layer(s) at given coordinates. Multiple field ids or layer names can be specified separated by a comma (e.g. cl22,cl23):</strong> /layers-service/intersect/batch e.g. <a href="/layers-service/intersect/batch?fids=cl22&points=-29.911,132.769">/layers-service/intersect/batch?fids=cl22&points=-29.911,132.769</a></li>
+                                        <li><strong>Batch intersect a layer(s) at given coordinates. Multiple field ids or layer names can be specified separated by a comma (e.g. cl22,cl23).  Limited to 1000 coordinates.:</strong> /layers-service/intersect/batch e.g. <a href="/layers-service/intersect/batch?fids=cl22&points=-29.911,132.769,-20.911,122.769">/layers-service/intersect/batch?fids=cl22&points=-29.911,132.769,-20.911,122.769</a></li>
                                         <li><strong>Check batch intersect status with a batchId:</strong> /layers-service/intersect/batch/{batchId} e.g. /layers-service/intersect/batch/1234</li>
                                         <li><strong>Download a finished batch intersect with a batchId as zipped file 'sample.csv':</strong> /layers-service/intersect/batch/download/{batchId} e.g. /layers-service/intersect/batch/download/1234</li>
                                     </ul></li>
@@ -316,6 +316,23 @@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"
                                     <br>
                                     <p>Returns: analysis id.  E.g. “123”.</p>
                                 </li>
+                                <li><strong>Sites by Species, Occurrence density, Species richness</strong>
+                                    <p>Start with /ws/sitesbyspecies/processgeoq, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/sitesbyspecies/processgeoq</p>
+                                    Parameters, must include at least one of the optional parameters:
+                                    <ul>
+                                        <li>speciesq - Data name that appears in the output.  E.g. “genus:Macropus”.</li>
+                                        <li>qname - Data name that appears in the output.  E.g. “Macropus”.</li>
+                                        <li>area - Bounding area in Well Known Text (WKT) format.  E.g.  “POLYGON((118 -30,146 -30,146 -11,118 -11,118 -30))”.</li>
+                                        <li>gridsize - Size of output grid cells in decimal degrees.  E.g. "0.1"</li>
+                                        <li>movingaveragesize - Size of output moving average window for occurrence density and species density layers.  E.g. for a 9x9 grid cell window use "&movingaveragesize=9"</li>
+                                        <li>sitesbyspecies - (optional) Include this parameter to produce a sites by species list.  E.g. "&sitesbyspecies=1"</li>
+                                        <li>occurrencedensity - (optional) Include this parameter to produce an occurrence density layer.  E.g. "&occurrencedensity=1"</li>
+                                        <li>speciesdensity - (optional) Include this parameter to produce a species richness layer.  E.g. "&speciesdensity=1"</li>
+
+                                    </ul>
+                                    <br>
+                                    <p>Returns: analysis id.  E.g. “123”.</p>
+                                </li>
                                 <li><strong>Monitor Analysis</strong>
                                     <ul>
                                         <li>/ws/jobs/state?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/state?pid=123
@@ -339,9 +356,15 @@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"
                                             <br>downloads the zipped output of "SUCCESSFUL" analysis.</li>
                                         <li>ALOC WMS service for the layer is /geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_&lt;analysis id&gt;&styles=alastyles&FORMAT=image%2Fpng.
                                             <br> E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:aloc_123&height=200&width=200
-                                            <li>Maxent WMS service for the layer is /geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_&lt;analysis id&gt;&styles=alastyles&FORMAT=image%2Fpng.  
-                                                <br>E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:species_123&height=200&width=200
-                                             </li>
+                                        <li>Maxent WMS service for the layer is /geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_&lt;analysis id&gt;&styles=alastyles&FORMAT=image%2Fpng.
+                                            <br>E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:species_123&height=200&width=200
+                                         </li>
+                                         <li>Occurrence Density WMS service for the layer is /geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:odensity_&lt;analysis id&gt;&styles=alastyles&FORMAT=image%2Fpng.
+                                            <br>E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:odensity_123&height=200&width=200
+                                         </li>
+                                         <li>Species Richness WMS service for the layer is /geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:srichness_&lt;analysis id&gt;&styles=alastyles&FORMAT=image%2Fpng.
+                                            <br>E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:srichness_123&height=200&width=200
+                                         </li>
                                     </ul>
                                 </li>
                             </ul>

@@ -19,8 +19,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.dao.DistributionDAO;
 import org.ala.layers.dto.Distribution;
-import org.ala.layers.dto.Field;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,11 +32,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Adam
  */
 @Controller
-public class DistributionsService {
+public class ChecklistService {
 
-    private final String WS_DISTRIBUTIONS = "/distributions";
-    private final String WS_DISTRIBUTIONS_POST = "/distributions/post";
-    private final String WS_DISTRIBUTION_ID = "/distribution/{spcode}";
+    private final String WS_CHECKLISTS = "/checklists";
+    private final String WS_CHECKLISTS_ID = "/checklists/{spcode}";
 
     /**
      * Log4j instance
@@ -51,7 +48,7 @@ public class DistributionsService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = WS_DISTRIBUTIONS, method = {RequestMethod.GET, RequestMethod.POST} )
+    @RequestMapping(value = WS_CHECKLISTS, method = {RequestMethod.GET, RequestMethod.POST} )
     public @ResponseBody List<Distribution> listDistributionsGet(
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             @RequestParam(value = "min_depth", required = false, defaultValue = "-1") Double min_depth,
@@ -59,16 +56,16 @@ public class DistributionsService {
             @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids,
             HttpServletRequest req) {
 
-        return distributionDao.queryDistributions(wkt, min_depth, max_depth, lsids, Distribution.EXPERT_DISTRIBUTION);
+        return distributionDao.queryDistributions(wkt, min_depth, max_depth, lsids, Distribution.SPECIES_CHECKLIST);
     }
 
     /*
      * get distribution by id
      */
-    @RequestMapping(value = WS_DISTRIBUTION_ID, method = RequestMethod.GET)
+    @RequestMapping(value = WS_CHECKLISTS_ID, method = RequestMethod.GET)
     public @ResponseBody Distribution getDistribution(@PathVariable Long spcode,
             HttpServletRequest req) {
 
-        return distributionDao.getDistributionBySpcode(spcode, Distribution.EXPERT_DISTRIBUTION);
+        return distributionDao.getDistributionBySpcode(spcode, Distribution.SPECIES_CHECKLIST);
     }
 }
