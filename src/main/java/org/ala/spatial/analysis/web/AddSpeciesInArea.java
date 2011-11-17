@@ -226,7 +226,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 remoteLogger.logMapSpecies(q.getName(), ((BiocacheQuery)q).getLsids(), sa.getWkt(), extra);
             } else if (q instanceof UploadQuery) {
                 remoteLogger.logMapSpecies(q.getName(), "user-"+((UploadQuery)q).getSpeciesCount()+" records", sa.getWkt(), q.getMetadataHtml());
-            } else {
+            } else if(ml.getMapLayerMetadata() != null) {
                 remoteLogger.logMapSpecies(ml.getMapLayerMetadata().getSpeciesDisplayName(), s, sa.getWkt(), "");
             }
             

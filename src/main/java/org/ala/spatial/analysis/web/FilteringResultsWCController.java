@@ -4,7 +4,6 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import java.io.Writer;
-import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,7 +18,6 @@ import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
@@ -49,7 +47,9 @@ public class FilteringResultsWCController extends UtilityComposer {
     public Label results_label2_occurrences;
     public Label results_label2_species;
     public Label sdLabel;
+    public Label clLabel;
     String[] speciesDistributionText = null;
+    String [] speciesChecklistText = null;
     Window window = null;
     public String[] results = null;
     public String pid;
@@ -86,10 +86,14 @@ public class FilteringResultsWCController extends UtilityComposer {
             e.printStackTrace();
         }
 
-        String extras = "";
-        extras += "areaSqKm: " + areaSqKm;
-        extras += ";boundingBox: " + boundingBox;
-        remoteLogger.logMapAnalysis(displayname, "analysis - area report", areaName + "__" + sa.getWkt(), "", "", pid, extras, "0");
+        try {
+            String extras = "";
+            extras += "areaSqKm: " + areaSqKm;
+            extras += ";boundingBox: " + boundingBox;
+            remoteLogger.logMapAnalysis(displayname, "analysis - area report", areaName + "__" + sa.getWkt(), "", "", pid, extras, "0");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -140,6 +144,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             results_label2_occurrences.setValue("updating...");
             results_label2_species.setValue("updating...");
             sdLabel.setValue("updating...");
+            clLabel.setValue("updating...");
             lblArea.setValue("updating...");
             lblBiostor.setValue("updating...");
         }
@@ -196,7 +201,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     void startRefreshCount() {
         //countdown includes; intersectWithSpecies, calcuateArea, counts
-        counter = new CountDownLatch(3);
+        counter = new CountDownLatch(4);
 
         Thread t1 = new Thread() {
 
@@ -237,10 +242,21 @@ public class FilteringResultsWCController extends UtilityComposer {
             }
         };
 
+        Thread t5 = new Thread() {
+
+            @Override
+            public void run() {
+                setPriority(Thread.MIN_PRIORITY);
+                intersectWithSpeciesChecklists();
+                decCounter();
+            }
+        };
+
         t1.start();
         t2.start();
         biostorThread.start();
         t4.start();
+        t5.start();
 
         long start = System.currentTimeMillis();
 
@@ -267,6 +283,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         //set labels
         sdLabel.setValue(data.get("intersectWithSpeciesDistributions"));
+        clLabel.setValue(data.get("intersectWithSpeciesChecklists"));
         lblBiostor.setValue(data.get("biostor"));
         lblArea.setValue(data.get("area"));
         results_label2_species.setValue(data.get("speciesCount"));
@@ -282,6 +299,11 @@ public class FilteringResultsWCController extends UtilityComposer {
             sdLabel.setSclass("underline");
         } else {
             sdLabel.setSclass("");
+        }
+        if (isNumberGreaterThanZero(clLabel.getValue())) {
+            clLabel.setSclass("underline");
+        } else {
+            clLabel.setSclass("");
         }
         if (isNumberGreaterThanZero(results_label2_species.getValue())) {
             results_label2_species.setSclass("underline");
@@ -542,6 +564,72 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
+    public void intersectWithSpeciesChecklists() {
+        try {
+            String area = selectedArea.getWkt();
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append("/checklists");
+
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(CommonData.layersServer + sbProcessUrl.toString()); // testurl
+            post.addParameter("wkt", area);
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(post);
+            if (result == 200) {
+                String txt = post.getResponseBodyAsString();
+                JSONArray ja = JSONArray.fromObject(txt);
+                if (ja == null || ja.size() == 0) {
+                    data.put("intersectWithSpeciesChecklists", "0");
+                    speciesChecklistText = null;
+                } else {
+                    String[] lines = new String[ja.size() + 1];
+                    lines[0] = "SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,AREA_NAMELSID";
+                    HashMap<String,Object> checklists = new HashMap<String, Object>();
+                    for (int i = 0; i < ja.size(); i++) {
+                        JSONObject jo = ja.getJSONObject(i);
+                        String spcode = jo.containsKey("spcode") ? jo.getString("spcode") : "";
+                        String scientific = jo.containsKey("scientific") ? jo.getString("scientific") : "";
+                        String auth = jo.containsKey("authority_") ? jo.getString("authority_") : "";
+                        String common = jo.containsKey("common_nam") ? jo.getString("common_nam") : "";
+                        String family = jo.containsKey("family") ? jo.getString("family") : "";
+                        String genus = jo.containsKey("genus") ? jo.getString("genus") : "";
+                        String name = jo.containsKey("specific_n") ? jo.getString("specific_n") : "";
+                        String min = jo.containsKey("min_depth") ? jo.getString("min_depth") : "";
+                        String max = jo.containsKey("max_depth") ? jo.getString("max_depth") : "";
+                        //String p = jo.containsKey("pelagic_fl")?jo.getString("pelagic_fl"):"";
+                        String md = jo.containsKey("metadata_u") ? jo.getString("metadata_u") : "";
+                        String areaname = jo.containsKey("area_name") ? jo.getString("area_name") : "";
+                        String lsid = jo.containsKey("lsid") ? jo.getString("lsid") : "";
+
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(spcode).append(",");
+                        sb.append(wrap(scientific)).append(",");
+                        sb.append(wrap(auth)).append(",");
+                        sb.append(wrap(common)).append(",");
+                        sb.append(wrap(family)).append(",");
+                        sb.append(wrap(genus)).append(",");
+                        sb.append(wrap(name)).append(",");
+                        sb.append(min).append(",");
+                        sb.append(max).append(",");
+                        sb.append(wrap(md)).append(",");
+                        sb.append(wrap(areaname)).append(",");
+                        sb.append(wrap(lsid));
+
+                        lines[i + 1] = sb.toString();
+
+                        //Object o = checklists.get
+                    }
+
+                    data.put("intersectWithSpeciesChecklists", String.format("%,d", lines.length - 1));
+                    speciesChecklistText = lines;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     String wrap(String s) {
         return "\"" + s.replace("\"", "\"\"") + "\"";
     }
@@ -557,7 +645,35 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             try {
                 window.doModal();
-                window.init(this);
+                window.init(speciesDistributionText, "Expert Distributions", sdLabel.getValue(), new EventListener() {
+                    @Override
+                    public void onEvent(Event event) throws Exception {
+                        onClick$sdDownload(event);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void onClick$clLabel(Event event) {
+        int c = 0;
+        try {
+            c = Integer.parseInt(sdLabel.getValue().replace(",",""));
+        } catch (Exception e) {
+        }
+        if (c > 0 && speciesChecklistText != null) {
+            DistributionsWCController window = (DistributionsWCController) Executions.createComponents("WEB-INF/zul/AnalysisDistributionResults.zul", this, null);
+
+            try {
+                window.doModal();
+                window.init(speciesChecklistText, "Species Checklists", clLabel.getValue(), new EventListener() {
+                    @Override
+                    public void onEvent(Event event) throws Exception {
+                        onClick$clDownload(event);
+                    }
+                });
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -581,6 +697,25 @@ public class FilteringResultsWCController extends UtilityComposer {
             sb.append(s);
         }
         Filedownload.save(sb.toString(), "text/plain", "Species_distributions_" + sdate + "_" + spid + ".csv");
+    }
+
+    public void onClick$clDownload(Event event) {
+        String spid = pid;
+        if (spid == null || spid.equals("none")) {
+            spid = String.valueOf(System.currentTimeMillis());
+        }
+
+        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+        String sdate = date.format(new Date());
+
+        StringBuilder sb = new StringBuilder();
+        for (String s : speciesChecklistText) {
+            if (sb.length() > 0) {
+                sb.append("\n");
+            }
+            sb.append(s);
+        }
+        Filedownload.save(sb.toString(), "text/plain", "Species_checklists_" + sdate + "_" + spid + ".csv");
     }
 
     private void calculateArea() {

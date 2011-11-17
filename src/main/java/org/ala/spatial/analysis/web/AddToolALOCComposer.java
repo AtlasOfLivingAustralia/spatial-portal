@@ -126,11 +126,11 @@ public class AddToolALOCComposer extends AddToolComposer {
                 + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:aloc_" + pid;
         System.out.println(legendurl);
-        getMapComposer().addWMSLayer(layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
-
-        //getMapComposer().addImageLayer(pid, layerLabel, uri, opacity, bbox, LayerUtilities.ALOC);
-        MapLayer mapLayer = getMapComposer().getMapLayer(layerLabel);
+        getMapComposer().addWMSLayer(pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
+        
+        MapLayer mapLayer = getMapComposer().getMapLayer(pid);
         if (mapLayer != null) {
+            mapLayer.setData("pid", pid);
             WMSStyle style = new WMSStyle();
             style.setName("Default");
             style.setDescription("Default style");
@@ -288,7 +288,12 @@ public class AddToolALOCComposer extends AddToolComposer {
             legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
 
             getMapComposer().updateUserLogAnalysis("Classification", "gc: " + groupCount.getValue() + ";area: " + area, sbenvsel.toString(), slist, pid, layerLabel);
-            remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - classification", area, "", sbenvsel.toString(), pid, "gc: " + groupCount.getValue(), "STARTED");
+            
+            try {
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - classification", area, "", sbenvsel.toString(), pid, "gc: " + groupCount.getValue(), "STARTED");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             ALOCProgressWCController window = (ALOCProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisALOCProgress.zul", null, null);
             window.parent = this;

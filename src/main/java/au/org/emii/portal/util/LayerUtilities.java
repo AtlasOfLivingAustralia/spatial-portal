@@ -40,6 +40,8 @@ public interface LayerUtilities {
     public int SPECIES = 21;
     public int ENVIRONMENTAL_ENVELOPE = 22;
     public int SPECIES_UPLOAD = 23;
+    public int ODENSITY = 24;
+    public int SRICHNESS = 25;
     /**
      * Constants used to indicate layer type.  Do not hard code these
      * value into other applications - they may change.  Instead, for

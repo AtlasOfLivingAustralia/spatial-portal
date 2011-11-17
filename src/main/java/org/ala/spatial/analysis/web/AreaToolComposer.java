@@ -70,7 +70,11 @@ public class AreaToolComposer extends UtilityComposer {
         if (isAnalysisChild) {
             //analysisParent.hasCustomArea = true;
             analysisParent.resetWindow(ok?layerName:null);
-            remoteLogger.logMapArea(layerName, areatype, getMapComposer().getMapLayer(layerName).getWKT());
+            try {
+                remoteLogger.logMapArea(layerName, areatype, getMapComposer().getMapLayer(layerName).getWKT());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else if (parentname != null && parentname.equals("AddSpeciesInArea")) {
             //was OK clicked?
             if (ok) {
@@ -155,11 +159,13 @@ public class AreaToolComposer extends UtilityComposer {
                             , wkt, -1);
                     //remoteLogger.logMapSpecies((String) winProps.get("taxon"), ml.getMapLayerMetadata().getSpeciesDisplayLsid(), layerName + "__" + wkt, "");
                 }
-                String displayName = getMapComposer().getMapLayer(layerName).getDisplayName();
-                remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName))?" ("+displayName+")":""), areatype, wkt);
+                if(getMapComposer().getMapLayer(layerName) != null) {
+                    String displayName = getMapComposer().getMapLayer(layerName).getDisplayName();
+                    remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName))?" ("+displayName+")":""), areatype, wkt);
+                }
             } //else cancel clicked, don't return to mapspeciesinarea popup
         } else {
-            if (ok) {
+            if (ok && getMapComposer().getMapLayer(layerName) != null) {
                 String displayName = getMapComposer().getMapLayer(layerName).getDisplayName();
                 String fromLayer = (String)getMapComposer().getAttribute("mappolygonlayer");
                 String activeLayerName = (String)getMapComposer().getAttribute("activeLayerName");

@@ -5,7 +5,8 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.util.LayerUtilities;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import net.sf.json.JSONArray;
@@ -13,6 +14,7 @@ import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.WrongValueException;
@@ -28,6 +30,7 @@ import org.zkoss.zul.Comboitem;
 public class EnvLayersCombobox extends Combobox {
 
     String[] validLayers = null;
+    boolean includeAnalysisLayers = false;
 
     public EnvLayersCombobox() {
         refresh(""); //init the child comboitems
@@ -123,6 +126,57 @@ public class EnvLayersCombobox extends Combobox {
                 }
             }
 
+            if(includeAnalysisLayers) {
+                for(MapLayer ml : getMapComposer().getAnalysisLayers()) {
+                    String displayName = ml.getDisplayName();
+                    String type = null;
+                    String name = null;
+                    String classification1 = null;
+                    String classification2 = null;
+                    if(ml.getSubType() == LayerUtilities.ALOC) {
+                        type = "contextual";
+                        name = (String)ml.getData("pid");
+                        classification1 = "Analysis";
+                        classification2 = "Classification";
+                        continue;   //no contextuals
+                    } else if(ml.getSubType() == LayerUtilities.MAXENT) {
+                        type = "environmental";
+                        classification1 = "Analysis";
+                        classification2 = "Prediction";
+                        name = (String)ml.getData("pid");
+                    } else if(ml.getSubType() == LayerUtilities.ODENSITY) {
+                        type = "environmental";
+                        classification1 = "Analysis";
+                        classification2 = "Occurrence Density";
+                        name = (String)ml.getData("pid");
+                    } else if(ml.getSubType() == LayerUtilities.SRICHNESS) {
+                        type = "environmental";
+                        classification1 = "Analysis";
+                        classification2 = "Species Richness";
+                        name = (String)ml.getData("pid");
+                    } else {
+                        continue;
+                    }
+
+                    Comboitem myci = null;
+                    if (it != null && it.hasNext()) {
+                        myci = ((Comboitem) it.next());
+                        myci.setLabel(displayName);
+                    } else {
+                        it = null;
+                        myci = new Comboitem(displayName);
+                        myci.setParent(this);
+                    }
+
+                    myci.setDescription(classification1 + ": " + classification2 + " " + type);
+                    myci.setDisabled(false);
+
+                    JSONObject jo = new JSONObject();
+                    jo.put("name", name);
+                    myci.setValue(jo);
+                }
+            }
+
             while (it != null && it.hasNext()) {
                 it.next();
                 it.remove();
@@ -160,5 +214,20 @@ public class EnvLayersCombobox extends Combobox {
     boolean isValidLayer(String name) {
         int pos = java.util.Arrays.binarySearch(validLayers, name.toLowerCase());
         return (pos >= 0 && pos < validLayers.length);
+    }
+
+    public boolean getIncludeAnalysisLayers() {
+        return includeAnalysisLayers;
+    }
+
+    public void setIncludeAnalysisLayers(boolean includeAnalysisLayers) {
+        this.includeAnalysisLayers = includeAnalysisLayers;
+    }
+
+    public MapComposer getMapComposer() {
+            return (MapComposer) Executions.getCurrent()
+                            .getDesktop()
+                                    .getPage("MapZul")
+                                            .getFellow("mapPortalPage");
     }
 }

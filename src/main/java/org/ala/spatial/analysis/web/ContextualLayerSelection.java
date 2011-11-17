@@ -38,7 +38,7 @@ public class ContextualLayerSelection extends AreaToolComposer {
 
     public void onClick$btnNext(Event event) {
         if (treeName != null) {
-            getMapComposer().addWMSLayer(treeName,
+            getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(treeName), treeName,
                     treePath,
                     (float) 0.75, treeMetadata, null, treeSubType, null, null);
 

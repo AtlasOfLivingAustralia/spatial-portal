@@ -93,6 +93,9 @@ public class BiocacheQuery implements Query, Serializable {
     HashMap<String, LegendObject> legends = new HashMap<String, LegendObject>();
 
     static String translateFieldForSolr(String facetName) {
+        if(facetName == null) {
+            return facetName;
+        }
         for (String[] s : facetNameExceptions) {
             if (facetName.equals(s[0])) {
                 facetName = s[1];
@@ -1121,7 +1124,8 @@ public class BiocacheQuery implements Query, Serializable {
                 //Solr download has some default fields
                 // these include the 'translate' fields
                 // remove them from extraFields
-                if (!extraFields[i].equals(translateFieldForSolr(extraFields[i]))) {
+                if (translateFieldForSolr(extraFields[i]) != null
+                        && !extraFields[i].equals(translateFieldForSolr(extraFields[i]))) {
                     continue;
                 }
 
@@ -1136,7 +1140,7 @@ public class BiocacheQuery implements Query, Serializable {
     }
 
     @Override
-    public byte[] getDownloadBytes(String[] extraFields) {
+    public byte[] getDownloadBytes(String[] extraFields, String [] displayNames) {
         return null;
     }
 

@@ -7,11 +7,36 @@
                 
             <separator />
             <label id="distributionLabel" value=""/>
+            <separator height="20px"/>
+            <hbox>
+                <label value="min depth" />
+                <doublebox id="minDepth" />
+                <separator orient="vertical" />
+                <label value="max depth" />
+                <doublebox id="maxDepth" />
+                <button id="btnApplyDepthFilter" label="Apply" />
+                <button id="btnClearDepthFilter" label="Clear" />
+            </hbox>
             <separator />
-            <separator />
-            <listbox id="distributionListbox" height="400px">
-            </listbox>
-
+            <div height="500px">
+                <listbox id="distributionListbox" mold="paging" vflex="true" autopaging="true">
+                    <listhead>
+                        <listheader width="50px" />
+                        <listheader label="SPCODE" sort="auto" />
+                        <listheader label="Scientific name" sort="auto" />
+                        <listheader label="Authority full" sort="auto" />
+                        <listheader label="Common name" sort="auto" />
+                        <listheader label="Family name" sort="auto" />
+                        <listheader label="Genus name" sort="auto" />
+                        <listheader label="Specific name" sort="auto" />
+                        <listheader label="Min depth" sort="auto" />
+                        <listheader label="Max depth" sort="auto" />
+                        <listheader label="Metadata" />
+                        <listheader label="LSID" width="0px" />
+                    </listhead>
+                </listbox>
+            </div>            
+            <separator/>
             <hbox>
                 <hbox>
                     <separator/>

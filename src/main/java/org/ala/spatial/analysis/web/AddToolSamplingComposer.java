@@ -28,6 +28,8 @@ public class AddToolSamplingComposer extends AddToolComposer {
         this.selectedMethod = "Sampling";
         this.totalSteps = 3;
 
+        this.setIncludeAnalysisLayersForUploadQuery(true);
+
         this.loadAreaLayers();
         this.loadSpeciesLayers();
         this.loadGridLayers(false, true);
@@ -71,9 +73,11 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 layers = envlayers.split(":");
                 for (int i = 0; i < layers.length; i++) {
                     String l = layers[i];
-                    layers[i] = CommonData.getLayerFacetName(layers[i]);
-                    if(layers[i] == null) {
+                    String new_name = CommonData.getLayerFacetName(layers[i]);
+                    if(layers[i] == null || new_name == null || layers[i].equals(new_name)) {
                         System.out.println("failed to getLayerFacetName for " + l);
+                    } else {
+                        layers[i] = new_name;
                     }
                 }
             }
@@ -93,7 +97,11 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 //TODO: fix logging
                 //getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + slist, pid, "Sampling results for species: " + taxon);
 
-                remoteLogger.logMapAnalysis("species sampling", "analysis - species sampling", sa.getWkt(), query.getName(), envlayers, pid, "", "download");
+                try {
+                    remoteLogger.logMapAnalysis("species sampling", "analysis - species sampling", sa.getWkt(), query.getName(), envlayers, pid, "", "download");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 this.detach();
             } else {
 //                byte [] b = query.getDownloadBytes(layers);
@@ -116,7 +124,11 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                remoteLogger.logMapAnalysis("species sampling", "analysis - species sampling", sa.getWkt(), query.getName(), envlayers, pid, "", ""); 
+                try {
+                    remoteLogger.logMapAnalysis("species sampling", "analysis - species sampling", sa.getWkt(), query.getName(), envlayers, pid, "", "");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 this.detach();
             }
 

@@ -57,7 +57,23 @@
                 <n:td>
                     <label id="sdLabel" style="cursor:pointer;" />
                 </n:td>
-            </n:tr>            
+            </n:tr>
+            <n:tr height="18px" >
+                <n:td>
+                    <label value="Species Checklists" />
+                </n:td>
+                <n:td>
+                    <label id="sclLabel" style="cursor:pointer;" />
+                </n:td>
+            </n:tr>
+            <n:tr height="18px" >
+                <n:td>
+                    <label value="Checklist Species" />
+                </n:td>
+                <n:td>
+                    <label id="clLabel" style="cursor:pointer;" />
+                </n:td>
+            </n:tr>
             <n:tr height="18px" id="biostorrow" >
                 <n:td width="130px">
                    <html><![CDATA[ <u><div style="cursor:pointer;" class="z-label"

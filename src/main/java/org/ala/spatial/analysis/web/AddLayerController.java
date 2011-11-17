@@ -52,7 +52,7 @@ public class AddLayerController extends UtilityComposer {
             if (treePid != null) {
                 //map layerbranch as polygon layer
                 MapLayer mapLayer;
-                mapLayer = getMapComposer().addWMSLayer(treeName, treePath, 0.8f, /*metadata url*/ null,
+                mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(treeName), treeName, treePath, 0.8f, /*metadata url*/ null,
                         null, LayerUtilities.WKT, null, null);
                 if (mapLayer != null) {
                     mapLayer.setWKT(readUrl(CommonData.layersServer + "/shape/wkt/" + treePid));
@@ -93,7 +93,7 @@ public class AddLayerController extends UtilityComposer {
                     remoteLogger.logMapArea(treeName, "layers", CommonData.layersServer + "/object/" + treePid, treeName + "|" + treePath);
                 }
             } else {
-                getMapComposer().addWMSLayer(treeName,
+                getMapComposer().addWMSLayer(treeName, treeName,
                         treePath,
                         (float) 0.75, treeMetadata, null, treeSubType, null, null, null);
                 remoteLogger.logMapArea(treeName, "layers", treePath, treeMetadata );
@@ -102,7 +102,7 @@ public class AddLayerController extends UtilityComposer {
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/ "|" + treeName);
             //remoteLogger.logMapArea(treeName, "env - tree - add", "");
         } else if (searchName != null) {
-            getMapComposer().addWMSLayer(searchName,
+            getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(searchName),searchName,
                     searchPath,
                     (float) 0.75, searchMetadata, null, searchSubType, null, null);
 

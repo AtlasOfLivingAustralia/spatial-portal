@@ -62,7 +62,9 @@ import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.data.BiocacheQuery;
+import org.ala.spatial.data.Facet;
 import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.UserData;
 import org.ala.spatial.util.Util;
@@ -933,15 +935,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @param filter filter
      * @param legend URI for map layer legend
      */
-    public MapLayer addWMSLayer(String label, String uri, float opacity, String metadata, String legendUri, int subType, String cqlfilter, String envParams) {
-        return addWMSLayer(label, uri, opacity, metadata, legendUri, subType, cqlfilter, envParams, null);
+    public MapLayer addWMSLayer(String name, String displayName, String uri, float opacity, String metadata, String legendUri, int subType, String cqlfilter, String envParams) {
+        return addWMSLayer(name, displayName, uri, opacity, metadata, legendUri, subType, cqlfilter, envParams, null);
     }
 
-    public MapLayer addWMSLayer(String label, String uri, float opacity, String metadata, String legendUri, int subType, String cqlfilter, String envParams, Query q) {
+    public MapLayer addWMSLayer(String name, String displayName, String uri, float opacity, String metadata, String legendUri, int subType, String cqlfilter, String envParams, Query q) {
         MapLayer mapLayer = null;
         if (safeToPerformMapAction()) {
             if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
-                mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
+                mapLayer = remoteMap.createAndTestWMSLayer(name, uri, opacity);
+                mapLayer.setDisplayName(displayName);
                 if (q != null) {
                     mapLayer.setData("query", q);
                 }
@@ -960,7 +963,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         if (mapLayer.getMapLayerMetadata() == null) {
                             mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                         }
-                        mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + label);
+                        mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + displayName);
                     }
                     if (legendUri != null) {
                         WMSStyle style = new WMSStyle();
@@ -1841,16 +1844,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             md.setSpeciesRank(rank);
             md.setOccurrencesCount(count);  //for Active Area mapping
 
-            updateUserLogMapSpecies(sq.toString());
-            if (sq instanceof BiocacheQuery) {
-            BiocacheQuery bq = (BiocacheQuery) sq;
-            String extra = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false);
-            remoteLogger.logMapSpecies(sq.getName(), bq.getLsids(), wkt, extra);
-        } else if (sq instanceof UploadQuery) {
-            remoteLogger.logMapSpecies(sq.getName(), "user-" + ((UploadQuery) sq).getSpeciesCount() + " records", wkt, "user upload", sq.getMetadataHtml());
-        } else {
-            remoteLogger.logMapSpecies(ml.getDisplayName(), species, wkt, sq.getMetadataHtml());
-        }
+            try {
+                updateUserLogMapSpecies(sq.toString());
+                if (sq instanceof BiocacheQuery) {
+                    BiocacheQuery bq = (BiocacheQuery) sq;
+                    String extra = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false);
+                    remoteLogger.logMapSpecies(sq.getName(), bq.getLsids(), wkt, extra);
+                } else if (sq instanceof UploadQuery) {
+                    remoteLogger.logMapSpecies(sq.getName(), "user-" + ((UploadQuery) sq).getSpeciesCount() + " records", wkt, "user upload", sq.getMetadataHtml());
+                } else {
+                    remoteLogger.logMapSpecies(ml.getDisplayName(), species, wkt, sq.getMetadataHtml());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             updateLayerControls();
         }
@@ -1869,14 +1876,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //test for a valid lsid match
         String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsids);
         String[] metadata = CommonData.getSpeciesDistributionMetadata(lsids);
+        MapLayer ml = null;
         if (wmsNames != null && wmsNames.length > 0 && (wkt == null || wkt.equals(CommonData.WORLD_WKT))) {
             //add all
             if (wmsNames.length > 1) {
                 for (int i = 0; i < wmsNames.length; i++) {
-                    addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.35f, metadata[i], null, LayerUtilities.SPECIES, null, null);
+                    ml = addWMSLayer(getMapComposer().getNextAreaLayerName(taxon + " area " + (i + 1)), taxon + " area " + (i + 1), wmsNames[i], 0.35f, metadata[i], null, LayerUtilities.WKT, null, null);
+                    setupMapLayerAsDistributionArea(ml);
                 }
             } else if (wmsNames.length == 1) {
-                addWMSLayer(taxon + " map", wmsNames[0], 0.35f, metadata[0], null, LayerUtilities.SPECIES, null, null);
+                ml = addWMSLayer(getMapComposer().getNextAreaLayerName(taxon + " area"), taxon + " area", wmsNames[0], 0.35f, metadata[0], null, LayerUtilities.WKT, null, null);
+                setupMapLayerAsDistributionArea(ml);
             }
         } else if (wmsNames != null && wmsNames.length > 0 && wkt != null && !wkt.equals(CommonData.WORLD_WKT)) {
             try {
@@ -1898,14 +1908,83 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
                     if (found.size() > 1) {
                         for (int i = 0; i < wmsNames.length; i++) {
-                            addWMSLayer(taxon + " map " + (i + 1), found.get(i), 0.35f, "", null, LayerUtilities.SPECIES, null, null);
+                            ml = addWMSLayer(taxon + " area " + (i + 1),taxon + " area " + (i + 1), found.get(i), 0.35f, "", null, LayerUtilities.WKT, null, null);
+                            setupMapLayerAsDistributionArea(ml);
                         }
                     } else if (found.size() == 1) {
-                        addWMSLayer(taxon + " map", found.get(0), 0.35f, "", null, LayerUtilities.SPECIES, null, null);
+                        ml = addWMSLayer(taxon + " area",taxon + " area", found.get(0), 0.35f, "", null, LayerUtilities.WKT, null, null);
+                        setupMapLayerAsDistributionArea(ml);
                     }
                 }
             } catch (Exception e) {
             }
+        }
+    }
+
+    public static void setupMapLayerAsDistributionArea(MapLayer mapLayer) {
+        try {
+            //identify the spcode from the url
+            String str = "&viewparams=s:";
+            int p1 = mapLayer.getUri().indexOf(str) + str.length();
+            int p2 = mapLayer.getUri().indexOf("&", p1);
+            if(p2 <= 0) {
+                p2 = mapLayer.getUri().length();
+            }
+            String spcode = mapLayer.getUri().substring(p1, p2);
+            String url = CommonData.layersServer + "/distribution/" + spcode;
+            String jsontxt = Util.readUrl(url);
+            if(jsontxt == null) {
+                url = CommonData.layersServer + "/checklist/" + spcode;
+                jsontxt = Util.readUrl(url);
+            }
+            if(jsontxt == null) {
+                System.out.println("******** failed to find wkt for " + mapLayer.getUri() + " > " + spcode);
+                return;
+            }
+            JSONObject jo = JSONObject.fromObject(jsontxt);
+            if(!jo.containsKey("geometry")) {
+                return;
+            }
+            mapLayer.setWKT(jo.getString("geometry"));
+            mapLayer.setPolygonLayer(true);
+
+            Facet facet = null;
+            if (jo.containsKey("pid") && jo.containsKey("area_name")) {
+                facet = Util.getFacetForObject(jo.getString("pid"), jo.getString("area_name"));
+            }
+            if (facet != null) {
+                ArrayList<Facet> facets = new ArrayList<Facet>();
+                facets.add(facet);
+                mapLayer.setData("facets", facets);
+            }
+            MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                mapLayer.setMapLayerMetadata(md);
+            }
+            try {
+                double[][] bb = SimpleShapeFile.parseWKT(jo.getString("geometry")).getBoundingBox();
+                ArrayList<Double> bbox = new ArrayList<Double>();
+                bbox.add(bb[0][0]);
+                bbox.add(bb[0][1]);
+                bbox.add(bb[1][0]);
+                bbox.add(bb[1][1]);
+                md.setBbox(bbox);
+            } catch (Exception e) {
+                System.out.println("failed to parse wkt in : " + url);
+                e.printStackTrace();
+            }
+            try {
+                if (jo.containsKey("pid") && jo.containsKey("area_name")) {
+                    String fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
+                    String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
+                    md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -1923,17 +2002,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (ml != null) {
             addToSession(ml.getName(), filter);
-
-//            String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", q.getSingleLsid());
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
                 md = new MapLayerMetadata();
                 ml.setMapLayerMetadata(md);
             }
-//            md.setMoreInfo(infoUrl + "\n" + species);
-//            md.setSpeciesLsid(sq.getShortQuery());
             md.setSpeciesDisplayName(species);
-//            md.setSpeciesDisplayLsid(sq.getShortQuery());
             md.setSpeciesRank(rank);
             md.setOccurrencesCount(count);
 
@@ -2012,7 +2086,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         try {
             if (safeToPerformMapAction()) {
                 if (getMapLayer(label) == null) {
-                    MapLayer ml = addWMSLayer(label, uri + filter, opacity, null, null, subType, "", envString, query);
+                    MapLayer ml = addWMSLayer(label, label, uri + filter, opacity, null, null, subType, "", envString, query);
                     if (ml != null) {
                         ml.setDynamicStyle(true);
                         ml.setEnvParams(envString);
@@ -2885,6 +2959,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return list;
     }
 
+    public List<MapLayer> getAnalysisLayers() {
+        ArrayList<MapLayer> list = new ArrayList<MapLayer>();
+        List<MapLayer> allLayers = getPortalSession().getActiveLayers();
+        for (int i = 0; i < allLayers.size(); i++) {
+            if (allLayers.get(i).getSubType() == LayerUtilities.MAXENT
+                    || allLayers.get(i).getSubType() == LayerUtilities.ALOC
+                    || allLayers.get(i).getSubType() == LayerUtilities.ODENSITY
+                    || allLayers.get(i).getSubType() == LayerUtilities.SRICHNESS) {
+                list.add(allLayers.get(i));
+            }
+        }
+
+        return list;
+    }
+
     public List<MapLayer> getContextualLayers() {
         ArrayList<MapLayer> list = new ArrayList<MapLayer>();
         List<MapLayer> allLayers = getPortalSession().getActiveLayers();
@@ -2999,7 +3088,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             downloadUrl += "/ws/download/" + id;
             Filedownload.save(new URL(downloadUrl).openStream(), contentType, outfile);
 
-            remoteLogger.logMapAnalysis(name, "analysis - export area", sa.getWkt(), "", "", "", downloadUrl, "download");
+            try {
+                remoteLogger.logMapAnalysis(name, "analysis - export area", sa.getWkt(), "", "", "", downloadUrl, "download");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         } catch (Exception e) {
             System.out.println("Unable to export user area");

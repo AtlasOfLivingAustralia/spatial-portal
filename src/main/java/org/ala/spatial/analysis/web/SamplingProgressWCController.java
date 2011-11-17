@@ -5,6 +5,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class SamplingProgressWCController extends UtilityComposer {
     byte [] download;
     Query query;
     String [] layers;
+    String [] displayNames;
 
     long start;
     long estimate;
@@ -87,7 +89,7 @@ public class SamplingProgressWCController extends UtilityComposer {
 
     void start(Query q, String[] l) {
         if(l == null || l.length == 0) {
-            download = query.getDownloadBytes(layers);
+            download = query.getDownloadBytes(layers, null);
             finish();
             return;
         }
@@ -110,12 +112,29 @@ public class SamplingProgressWCController extends UtilityComposer {
                 estimate += perGrid * 1000 / threadCount;
             }
         }
+
+        if(layers != null && layers.length> 0) {
+            displayNames = new String[layers.length];
+            for(int i=0;i<layers.length;i++) {
+                displayNames[i] = CommonData.getFacetLayerDisplayName(layers[i]);
+                if(displayNames[i] == null || displayNames[i].equals(layers[i])) {
+                    //attempt to get the name from a mapLayer, for analysis layers
+                    MapLayer ml = getMapComposer().getMapLayer(layers[i]);
+                    if(ml != null) {
+                        displayNames[i] = ml.getDisplayName();
+                    }
+                }
+                if(displayNames[i] == null || displayNames[i].equals(layers[i])) {
+                    displayNames[i] = layers[i];
+                }
+            }
+        }
         
         samplingThread = new Thread() {
 
             @Override
-            public void run() {
-                download = query.getDownloadBytes(layers);
+            public void run() {                
+                download = query.getDownloadBytes(layers, displayNames);
             }
         };
 

@@ -6,25 +6,12 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerSelection;
-import java.net.URLEncoder;
+import au.org.emii.portal.util.LayerUtilities;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.Page;
-import org.zkoss.zk.ui.Sessions;
-import org.zkoss.zk.ui.WrongValueException;
-import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
-import org.zkoss.zul.Window;
 
 /**
  * same as LayersAutoComplete with type="environmental" layers only
@@ -32,8 +19,15 @@ import org.zkoss.zul.Window;
  * @author ajay
  */
 public class SelectedLayersCombobox extends Combobox {
+    boolean includeAnalysisLayers = false;
 
-    public void init(ArrayList<LayerSelection> layerSelections, MapComposer mc) {
+    public void init(ArrayList<LayerSelection> layerSelections, MapComposer mc, boolean includeAnalysisLayers) {
+        this.includeAnalysisLayers = includeAnalysisLayers;
+
+        while(getItemCount() > 0) {
+            removeItemAt(0);
+        }
+
         Comboitem ci = new Comboitem("paste a layer set");
         ci.setParent(this);
 //        ci = new Comboitem("upload a layer list");
@@ -66,5 +60,30 @@ public class SelectedLayersCombobox extends Combobox {
                 ci.setParent(this);
             }
         }
+
+        if(includeAnalysisLayers) {
+            //add on map layers, active and inactive
+            for(MapLayer ml : mc.getAnalysisLayers()) {
+                String name = null;
+                if(ml.getSubType() == LayerUtilities.ALOC) {
+                    name = (String)ml.getData("pid");
+                } else if(ml.getSubType() == LayerUtilities.MAXENT) {
+                    name = (String)ml.getData("pid");
+                } else if(ml.getSubType() == LayerUtilities.ODENSITY) {
+                    name = (String)ml.getData("pid");
+                } else if(ml.getSubType() == LayerUtilities.SRICHNESS) {
+                    name = (String)ml.getData("pid");
+                }
+                if(name != null) {
+                    ci = new Comboitem(ml.getDisplayName());
+                    ci.setValue(new LayerSelection(ml.getDisplayName(), name));
+                    ci.setParent(this);
+                }
+            }
+        }
+    }
+
+    public boolean getIncludeAnalysisLayers() {
+        return includeAnalysisLayers;
     }
 }

@@ -186,10 +186,9 @@ public class ImportAnalysisController extends UtilityComposer {
                 + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:aloc_" + pid;
         System.out.println(legendurl);
-        getMapComposer().addWMSLayer(layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
-
-        //getMapComposer().addImageLayer(pid, layerLabel, uri, opacity, bbox, LayerUtilities.ALOC);
-        MapLayer mapLayer = getMapComposer().getMapLayer(layerLabel);
+        getMapComposer().addWMSLayer(pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
+        MapLayer mapLayer = getMapComposer().getMapLayer(pid);
+        mapLayer.setData("pid", pid);
         if (mapLayer != null) {
             WMSStyle style = new WMSStyle();
             style.setName("Default");
@@ -220,9 +219,6 @@ public class ImportAnalysisController extends UtilityComposer {
                 System.out.println("Error generating download for classification model:");
                 ex.printStackTrace(System.out);
             }
-
-
-            //Events.echoEvent("openUrl", this.getMapComposer(), infoUrl);
         }
 
         this.detach();
@@ -381,8 +377,9 @@ public class ImportAnalysisController extends UtilityComposer {
 
 
         String layername = "Maxent - " + pid;
-        getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
-        MapLayer ml = getMapComposer().getMapLayer(layername);
+        getMapComposer().addWMSLayer(pid, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
+        MapLayer ml = getMapComposer().getMapLayer(pid);
+        ml.setData("pid", pid);
         String infoUrl = CommonData.satServer + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();
         if (md == null) {
@@ -419,10 +416,10 @@ public class ImportAnalysisController extends UtilityComposer {
 
                 System.out.println(legendurl);
 
-//                String layername = tToolName.getValue();
                 String layername = getMapComposer().getNextAreaLayerName("Occurrence Density");
-                getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.WMS_1_3_0, null, null);
-                MapLayer ml = getMapComposer().getMapLayer(layername);
+                getMapComposer().addWMSLayer(pid + "_odensity", layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ODENSITY, null, null);
+                MapLayer ml = getMapComposer().getMapLayer(pid + "_odensity");
+                ml.setData("pid", pid + "_odensity");
                 String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/odensity_metadata.html";
                 MapLayerMetadata md = ml.getMapLayerMetadata();
                 if (md == null) {
@@ -444,8 +441,9 @@ public class ImportAnalysisController extends UtilityComposer {
 
 //                String layername = tToolName.getValue();
                 String layername = getMapComposer().getNextAreaLayerName("Species Richness");
-                getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.WMS_1_3_0, null, null);
-                MapLayer ml = getMapComposer().getMapLayer(layername);
+                getMapComposer().addWMSLayer(pid + "_srichness", layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.SRICHNESS, null, null);
+                MapLayer ml = getMapComposer().getMapLayer(pid + "_srichness");
+                ml.setData("pid", pid + "_srichness");
                 String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/srichness_metadata.html";
                 MapLayerMetadata md = ml.getMapLayerMetadata();
                 if (md == null) {

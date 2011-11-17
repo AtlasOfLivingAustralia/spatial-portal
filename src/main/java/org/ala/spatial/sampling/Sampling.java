@@ -1,5 +1,6 @@
 package org.ala.spatial.sampling;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,8 +27,47 @@ public class Sampling {
         System.out.println("start sampling " + points.length + " points in " + facetName + ":" + layerName);
         if(shapeFieldName != null) {
             intersectShape(CommonData.settings.get("sampling_files_path") + "shape/" + layerName, shapeFieldName, points, output);
-        } else {
+        } else if (facetName.startsWith("el")) {
             intersectGrid(CommonData.settings.get("sampling_files_path") + "diva/" + layerName, points, output);
+        } else {
+            //look for an analysis layer
+            File maxent = new File(CommonData.settings.get("analysis_output_dir") + "maxent/" + facetName + "/" + facetName + ".grd");
+            File aloc = new File(CommonData.settings.get("analysis_output_dir") + "aloc/" + facetName + "/" + facetName + ".grd");
+            String [] split = facetName.split("_");
+            File sxsSRichness = null;
+            File sxsODensity = null;
+            if(split.length > 1) {
+                if(split[1].equals("srichness")) {
+                    sxsSRichness = new File(CommonData.settings.get("analysis_output_dir") + "sitesbyspecies/" + split[0] + "/species_richness.grd");
+                } else {
+                    sxsODensity = new File(CommonData.settings.get("analysis_output_dir") + "sitesbyspecies/" + split[0] + "/occurrence_density.grd");
+                }
+            }
+
+            System.out.println("Analysis layer: " + facetName);
+            System.out.println(maxent.getPath() + ", " + maxent.exists());
+            System.out.println(aloc.getPath() + ", " + aloc.exists());
+            if(sxsSRichness != null) {
+                System.out.println(sxsSRichness.getPath() + ", " + sxsSRichness.exists());                
+            }
+            if(sxsODensity != null) {
+                System.out.println(sxsODensity.getPath() + ", " + sxsODensity.exists());
+            }
+
+            File file = null;
+            if(maxent.exists()) {
+                file = maxent;
+            } else if(aloc.exists()) {
+                file = aloc;
+            } else if(sxsSRichness != null && sxsSRichness.exists()) {
+                file = sxsSRichness;
+            } else if(sxsODensity != null && sxsODensity.exists()) {
+                file = sxsODensity;
+            }
+            if(file != null) {
+                System.out.println("found file for sampling: "+ file.getPath().substring(0, file.getPath().length() -4));
+                intersectGrid(file.getPath().substring(0, file.getPath().length() -4), points, output);
+            }
         }
         System.out.println("finished sampling " + points.length + " points in " + facetName + ":" + layerName + " in " + (System.currentTimeMillis() - start) + "ms");
     }

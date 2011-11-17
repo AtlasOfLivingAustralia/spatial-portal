@@ -536,15 +536,20 @@ public class UploadQuery implements Query, Serializable {
     }
 
     @Override
-    public byte[] getDownloadBytes(String[] extraFields) {
+    public byte[] getDownloadBytes(String[] extraFields, String [] displayNames) {
         ArrayList<QueryField> fields = new ArrayList<QueryField>();
         if (getFacetFieldList() != null) {
             fields.add(data.get(0));    //id column (1st) is not in getFacetFieldList()
             fields.addAll(getFacetFieldList());
         }
         if (extraFields != null && extraFields.length > 0) {
-            for (String s : extraFields) {
-                fields.add(new QueryField(s, CommonData.getFacetLayerDisplayName(s), QueryField.FieldType.AUTO));
+            for (int i=0;i<extraFields.length;i++) {
+                String s = extraFields[i];
+                if(displayNames == null) {
+                    fields.add(new QueryField(s, CommonData.getFacetLayerDisplayName(s), QueryField.FieldType.AUTO));
+                } else {
+                    fields.add(new QueryField(s, displayNames[i], QueryField.FieldType.AUTO));
+                }
             }
         }
         try {

@@ -166,23 +166,26 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
 
             this.setVisible(false);
 
-            String extras = "";
-            extras += "gridsize=" + String.valueOf(gridResolution);
-            extras += "|occurrencedensity=1";
-            extras += "|speciesdensity=1";
-            extras += "|sitesbyspecies=1";
-            extras += "|movingaveragesize="+ma;
+            try {
+                String extras = "";
+                extras += "gridsize=" + String.valueOf(gridResolution);
+                extras += "|occurrencedensity=1";
+                extras += "|speciesdensity=1";
+                extras += "|sitesbyspecies=1";
+                extras += "|movingaveragesize="+ma;
 
-            if (query instanceof BiocacheQuery) {
-                BiocacheQuery bq = (BiocacheQuery) query;
-                extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
-                remoteLogger.logMapAnalysis("species to grid", "analysis - site by species", area, bq.getLsids(), "", pid, extras, "STARTED");
-            } else if (query instanceof UploadQuery) {
-                remoteLogger.logMapAnalysis("species to grid", "analysis - site by species", area, ((UploadQuery) query).getQ(), "", pid, extras, "STARTED");
-            } else {
-                remoteLogger.logMapAnalysis("species to grid", "analysis - site by species", area, "", "", pid, extras, "STARTED");
+                if (query instanceof BiocacheQuery) {
+                    BiocacheQuery bq = (BiocacheQuery) query;
+                    extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
+                    remoteLogger.logMapAnalysis("species to grid", "analysis - site by species", area, bq.getLsids(), "", pid, extras, "STARTED");
+                } else if (query instanceof UploadQuery) {
+                    remoteLogger.logMapAnalysis("species to grid", "analysis - site by species", area, ((UploadQuery) query).getQ(), "", pid, extras, "STARTED");
+                } else {
+                    remoteLogger.logMapAnalysis("species to grid", "analysis - site by species", area, "", "", pid, extras, "STARTED");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
 
             return true;
         } catch (Exception e) {
@@ -206,8 +209,9 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
 
 //                String layername = tToolName.getValue();
                 String layername = getMapComposer().getNextAreaLayerName("Occurrence Density");
-                getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.WMS_1_3_0, null, null);
-                MapLayer ml = getMapComposer().getMapLayer(layername);
+                getMapComposer().addWMSLayer(pid + "_odensity", layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ODENSITY, null, null);
+                MapLayer ml = getMapComposer().getMapLayer(pid + "_odensity");
+                 ml.setData("pid", pid + "_odensity");
                 String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/odensity_metadata.html";
                 MapLayerMetadata md = ml.getMapLayerMetadata();
                 if (md == null) {
@@ -229,8 +233,9 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
 
 //                String layername = tToolName.getValue();
                 String layername = getMapComposer().getNextAreaLayerName("Species Richness");
-                getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.WMS_1_3_0, null, null);
-                MapLayer ml = getMapComposer().getMapLayer(layername);
+                getMapComposer().addWMSLayer( pid + "_srichness", layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.SRICHNESS, null, null);
+                MapLayer ml = getMapComposer().getMapLayer( pid + "_srichness");
+                ml.setData("pid", pid + "_srichness");
                 String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/srichness_metadata.html";
                 MapLayerMetadata md = ml.getMapLayerMetadata();
                 if (md == null) {

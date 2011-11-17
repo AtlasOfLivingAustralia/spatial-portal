@@ -1,6 +1,8 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.util.LayerUtilities;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,12 +31,13 @@ public class EnvironmentalList extends Listbox {
     MapComposer mapComposer;
     String satServer;
     boolean environmentalOnly;
+    boolean includeAnalysisLayers;
 
-    public void init(MapComposer mc, String sat_url, boolean environmental_only) {
+    public void init(MapComposer mc, String sat_url, boolean environmental_only, boolean includeAnalysisLayers) {
         mapComposer = mc;
         satServer = sat_url;
         environmentalOnly = environmental_only;
-
+        
         try {
 
             if (environmentalOnly) {
@@ -46,6 +49,36 @@ public class EnvironmentalList extends Listbox {
                 listEntries = CommonData.getListEntriesAll();
                 layerNames = CommonData.getLayerNamesAll();
             }
+
+            if(includeAnalysisLayers != this.includeAnalysisLayers) {
+                //remove
+                for(int i=0;i<listEntries.size();i++) {
+                    if(listEntries.get(i).catagory1.equals("Analysis")) {
+                        listEntries.remove(i);
+                        i--;
+                    }
+                }
+
+                //add
+                if(includeAnalysisLayers) {         //add
+                    for(MapLayer ml : mc.getAnalysisLayers()) {
+                        ListEntry le = null;
+                        if(ml.getSubType() == LayerUtilities.ALOC) {
+                            le = new ListEntry((String)ml.getData("pid"), ml.getDisplayName(), "Analysis", "Classification", "Contextual", 0, -1, -1, null);
+                        } else if(ml.getSubType() == LayerUtilities.MAXENT) {
+                            le = new ListEntry((String)ml.getData("pid"), ml.getDisplayName(), "Analysis", "Prediction", "Environmental", 0, -1, -1, null);
+                        } else if(ml.getSubType() == LayerUtilities.ODENSITY) {
+                            le = new ListEntry((String)ml.getData("pid"), ml.getDisplayName(), "Analysis", "Occurrence Density", "Environmental", 0, -1, -1, null);
+                        } else if(ml.getSubType() == LayerUtilities.SRICHNESS) {
+                            le = new ListEntry((String)ml.getData("pid"), ml.getDisplayName(), "Analysis", "Species Richness", "Environmental", 0, -1, -1, null);
+                        }
+                        if(le != null) {
+                            listEntries.add(le);
+                        }
+                    }
+                } 
+            }
+            this.includeAnalysisLayers = includeAnalysisLayers;
 
             setupEnvironmentalLayers(layerNames, distances);
 
@@ -190,7 +223,7 @@ public class EnvironmentalList extends Listbox {
         for (Object o : selectedItems) {
             selected[i] = listEntries.get(((Listitem) o).getIndex()).name;
             i++;
-            System.out.print(listEntries.get(((Listitem) o).getIndex()).displayname + ", ");
+            System.out.print(listEntries.get(((Listitem) o).getIndex()).displayname + ", " + listEntries.get(((Listitem) o).getIndex()).name);
         }
         System.out.println("");
         return selected;
@@ -220,5 +253,9 @@ public class EnvironmentalList extends Listbox {
     public void clearSelection() {
         updateDistances();
         super.clearSelection();        
+    }
+
+    public boolean getIncludeAnalysisLayers() {
+        return includeAnalysisLayers;
     }
 }

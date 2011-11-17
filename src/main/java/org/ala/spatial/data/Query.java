@@ -179,7 +179,7 @@ public interface Query {
 
     public String getDownloadUrl(String[] extraFields);
 
-    public byte[] getDownloadBytes(String[] extraFields);
+    public byte[] getDownloadBytes(String[] extraFields, String [] displayNames);
 
     /**
      * Get parameter to add into WMS requests

@@ -88,6 +88,8 @@ public class CommonData {
     static HashMap<String, String[]> copy_species_wms_layers = null;
     static HashMap<String, String[]> species_metadata_layers = null;
     static HashMap<String, String[]> copy_species_metadata_layers = null;
+    static HashMap<String, String[]> species_wms_layers_by_spcode = null;
+    static HashMap<String, String[]> copy_species_wms_layers_by_spcode = null;
     //Common
     static public String satServer;
     static public String geoServer;
@@ -197,6 +199,9 @@ public class CommonData {
         }
         if (copy_species_metadata_layers != null) {
             species_metadata_layers = copy_species_metadata_layers;
+        }
+        if (copy_species_wms_layers_by_spcode != null) {
+            species_wms_layers_by_spcode = copy_species_wms_layers_by_spcode;
         }
     }
 
@@ -601,6 +606,7 @@ public class CommonData {
 
             copy_species_wms_layers = new HashMap<String, String[]>();
             copy_species_metadata_layers = new HashMap<String, String[]>();
+            copy_species_wms_layers_by_spcode = new HashMap<String, String[]>();
 
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
@@ -642,6 +648,78 @@ public class CommonData {
                         md = new String[]{m};
                     }
                     copy_species_metadata_layers.put(lsid, md);
+
+                    //others
+                    String spcode = null;
+                    if(jo.containsKey("spcode")) {
+                        spcode = jo.getString("spcode");
+                    }
+                    lsid = null;
+                    if(jo.containsKey("lsid")) {
+                        lsid = jo.getString("lsid");
+                    }
+                    String pid = null;
+                    if(jo.containsKey("pid")) {
+                        pid = jo.getString("pid");
+                    }
+                    String type = null;
+                    if(jo.containsKey("type")) {
+                        type = jo.getString("type");
+                    }
+                    copy_species_wms_layers_by_spcode.put(spcode, new String[]{jo.getString("scientific"),jo.getString("wmsurl"), m, lsid,pid,type});
+                }
+            }
+
+            //repeat to append checklists
+            layersListURL = layersServer + "/checklists";
+            client = new HttpClient();
+            get = new GetMethod(layersListURL);
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            result = client.executeMethod(get);
+
+            if(result == 200) {
+                slist = get.getResponseBodyAsString();
+                ja = JSONArray.fromObject(slist);
+                System.out.println(ja.size() + " species wms checklists");
+
+                for (int i = 0; i < ja.size(); i++) {
+                    JSONObject jo = ja.getJSONObject(i);
+                    if (jo.containsKey("lsid") && jo.containsKey("wmsurl")) {
+                        //manage lsids with multiple wmsurls
+                        String lsid = jo.getString("lsid");
+
+                        //wms
+                        String[] urls = copy_species_wms_layers.get(lsid);
+                        if (urls != null) {
+                            String[] newUrls = new String[urls.length + 1];
+                            System.arraycopy(urls, 0, newUrls, 0, urls.length);
+                            newUrls[newUrls.length - 1] = jo.getString("wmsurl");
+                            urls = newUrls;
+                        } else {
+                            urls = new String[]{jo.getString("wmsurl")};
+                        }
+                        copy_species_wms_layers.put(lsid, urls);
+
+                        //metadata
+                        String m = "";
+                        if (jo.containsKey("metadata_u")) {
+                            m = jo.getString("metadata_u");
+                        }
+                        String[] md = copy_species_metadata_layers.get(lsid);
+                        if (md != null) {
+                            String[] newMd = new String[md.length + 1];
+                            System.arraycopy(md, 0, newMd, 0, md.length);
+                            newMd[newMd.length - 1] = m;
+                            md = newMd;
+                        } else {
+                            md = new String[]{m};
+                        }
+                        copy_species_metadata_layers.put(lsid, md);
+
+                        //by spcode
+                        String spcode = jo.getString("spcode");
+                        copy_species_wms_layers_by_spcode.put(spcode, new String[]{jo.getString("scientific"),jo.getString("wmsurl"), m});
+                    }
                 }
             }
         } catch (Exception e) {
@@ -712,7 +790,11 @@ public class CommonData {
     static HashMap<String, String> facetToLayerDisplayName;
 
     public static String getLayerFacetName(String layer) {
-        return layerToFacet.get(layer.toLowerCase());
+        String facetName = layerToFacet.get(layer.toLowerCase());
+        if(facetName == null) {
+            facetName = layer;
+        }
+        return facetName;
     }
 
     public static String getFacetLayerName(String facet) {
@@ -724,7 +806,11 @@ public class CommonData {
     }
 
     public static String getFacetLayerDisplayName(String facet) {
-        return facetToLayerDisplayName.get(facet);
+        String displayName = facetToLayerDisplayName.get(facet);
+        if(displayName == null) {
+            displayName = facet;
+        }
+        return displayName;
     }
 
     private static void readLayerInfo() {
@@ -837,5 +923,13 @@ public class CommonData {
             e.printStackTrace();
         }
         analysisLayerSets = a;
+    }
+
+    public static String [] getSpeciesDistributionWMSFromSpcode(String spcode) {
+        if(species_wms_layers_by_spcode == null) {
+            return null;
+        }
+
+        return species_wms_layers_by_spcode.get(spcode);
     }
 }

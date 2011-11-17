@@ -202,35 +202,39 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
             openProgressBar();
 
-            StringBuffer sbParams = new StringBuffer();
-            sbParams.append("Species: " + query.getName());
-            sbParams.append(";Query: " + query.getFullQ(false));
-            sbParams.append(";Jackknife: " + chkJackknife.isChecked());
-            sbParams.append(";Response curves: " + chkRCurves.isChecked());
-            sbParams.append(";Test per: " + txtTestPercentage.getValue());
+            try {
+                StringBuffer sbParams = new StringBuffer();
+                sbParams.append("Species: " + query.getName());
+                sbParams.append(";Query: " + query.getFullQ(false));
+                sbParams.append(";Jackknife: " + chkJackknife.isChecked());
+                sbParams.append(";Response curves: " + chkRCurves.isChecked());
+                sbParams.append(";Test per: " + txtTestPercentage.getValue());
 
-            Map attrs = new HashMap();
-            attrs.put("actionby", "user");
-            attrs.put("actiontype", "analysis");
-            //attrs.put("lsid", taxonlsid);
-            attrs.put("useremail", "spatialuser");
-            attrs.put("processid", pid);
-            attrs.put("sessionid", "");
-            attrs.put("layers", sbenvsel.toString());
-            attrs.put("method", "maxent");
-            attrs.put("params", sbParams.toString());
-            attrs.put("downloadfile", "");
-            getMapComposer().updateUserLog(attrs, "analysis result: " + CommonData.satServer + "/output/maxent/" + pid + "/species.html");
-            String options = "";
-            options += "Jackknife: " + chkJackknife.isChecked();
-            options += ";Response curves: " + chkRCurves.isChecked();
-            options += ";Test per: " + txtTestPercentage.getValue();
-            if (query instanceof BiocacheQuery) {
-                BiocacheQuery bq = (BiocacheQuery) query;
-                options = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + options;
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "maxent", area, bq.getLsids(), sbenvsel.toString(), pid, options, "STARTED");
-            } else {
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "maxent", area, query.getName()+"__"+query.getQ(), sbenvsel.toString(), pid, options, "STARTED");
+                Map attrs = new HashMap();
+                attrs.put("actionby", "user");
+                attrs.put("actiontype", "analysis");
+                //attrs.put("lsid", taxonlsid);
+                attrs.put("useremail", "spatialuser");
+                attrs.put("processid", pid);
+                attrs.put("sessionid", "");
+                attrs.put("layers", sbenvsel.toString());
+                attrs.put("method", "maxent");
+                attrs.put("params", sbParams.toString());
+                attrs.put("downloadfile", "");
+                getMapComposer().updateUserLog(attrs, "analysis result: " + CommonData.satServer + "/output/maxent/" + pid + "/species.html");
+                String options = "";
+                options += "Jackknife: " + chkJackknife.isChecked();
+                options += ";Response curves: " + chkRCurves.isChecked();
+                options += ";Test per: " + txtTestPercentage.getValue();
+                if (query instanceof BiocacheQuery) {
+                    BiocacheQuery bq = (BiocacheQuery) query;
+                    options = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + options;
+                    remoteLogger.logMapAnalysis(tToolName.getValue(), "maxent", area, bq.getLsids(), sbenvsel.toString(), pid, options, "STARTED");
+                } else {
+                    remoteLogger.logMapAnalysis(tToolName.getValue(), "maxent", area, query.getName()+"__"+query.getQ(), sbenvsel.toString(), pid, options, "STARTED");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             
             this.setVisible(false);
@@ -283,8 +287,9 @@ public class AddToolMaxentComposer extends AddToolComposer {
         }
 
         String layername = tToolName.getValue();
-        getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
-        MapLayer ml = getMapComposer().getMapLayer(layername);
+        getMapComposer().addWMSLayer(pid, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
+        MapLayer ml = getMapComposer().getMapLayer(pid);
+        ml.setData("pid", pid);
         String infoUrl = CommonData.satServer + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();
         if (md == null) {

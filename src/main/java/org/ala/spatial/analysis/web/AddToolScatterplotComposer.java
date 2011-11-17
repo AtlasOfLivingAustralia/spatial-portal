@@ -31,6 +31,9 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         this.selectedMethod = "Scatterplot";
         this.totalSteps = 6;
 
+        //this.setIncludeAnalysisLayersForAnyQuery(true);
+        this.setIncludeAnalysisLayersForUploadQuery(true);
+        
         this.loadAreaLayers("World");
         this.loadSpeciesLayers();
         this.loadAreaLayersHighlight();
@@ -48,13 +51,8 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
     @Override
     public boolean onFinish() {
-        //super.onFinish();
-
         System.out.println("Area: " + getSelectedArea());
         System.out.println("Species: " + getSelectedSpecies());
-        //System.out.println("Layers: " + getSelectedLayers());
-
-        //this.detach();
 
         Query lsid = getSelectedSpecies();
         String name = getSelectedSpeciesName();
@@ -96,24 +94,30 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
         this.detach();
 
-        String extras = "";
-        extras += "highlight="+highlightSa.getWkt();
-        if (lsidQuery instanceof BiocacheQuery) {
-            extras += "background="+((BiocacheQuery) backgroundLsid).getLsids();
-        } else if (lsidQuery instanceof UploadQuery) {
-            extras += "background="+((UploadQuery) backgroundLsid).getQ();
-        } else {
-            extras += "background=none";
-        }
+        try {
+            String extras = "";
+            if(highlightSa != null) {
+                extras += "highlight="+highlightSa.getWkt();
+            }
+            if (backgroundLsid != null && backgroundLsid instanceof BiocacheQuery) {
+                extras += "background="+((BiocacheQuery) backgroundLsid).getLsids();
+            } else if (backgroundLsid != null && backgroundLsid instanceof UploadQuery) {
+                extras += "background="+((UploadQuery) backgroundLsid).getQ();
+            } else {
+                extras += "background=none";
+            }
 
-        if (lsidQuery instanceof BiocacheQuery) {
-            BiocacheQuery bq = (BiocacheQuery) lsidQuery;
-            extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
-            remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - scatterplot", filterSa.getWkt(), bq.getLsids(), lyr1value+":"+lyr2value, pid, extras, "SUCCESSFUL");
-        } else if (lsidQuery instanceof UploadQuery) {
-            remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - scatterplot", filterSa.getWkt(), ((UploadQuery) lsidQuery).getQ(), "", pid, extras, "SUCCESSFUL");
-        } else {
-            remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - scatterplot", filterSa.getWkt(), "", "", pid, extras, "SUCCESSFUL");
+            if (lsidQuery instanceof BiocacheQuery) {
+                BiocacheQuery bq = (BiocacheQuery) lsidQuery;
+                extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - scatterplot", filterSa.getWkt(), bq.getLsids(), lyr1value+":"+lyr2value, pid, extras, "SUCCESSFUL");
+            } else if (lsidQuery instanceof UploadQuery) {
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - scatterplot", filterSa.getWkt(), ((UploadQuery) lsidQuery).getQ(), "", pid, extras, "SUCCESSFUL");
+            } else {
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - scatterplot", filterSa.getWkt(), "", "", pid, extras, "SUCCESSFUL");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return true;
