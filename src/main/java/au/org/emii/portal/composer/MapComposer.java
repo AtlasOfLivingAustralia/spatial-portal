@@ -1949,14 +1949,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public static void setupMapLayerAsDistributionArea(MapLayer mapLayer) {
         try {
-            //identify the spcode from the url
-            String str = "&viewparams=s:";
-            int p1 = mapLayer.getUri().indexOf(str) + str.length();
-            int p2 = mapLayer.getUri().indexOf("&", p1);
-            if(p2 <= 0) {
-                p2 = mapLayer.getUri().length();
-            }
-            String spcode = mapLayer.getUri().substring(p1, p2);
+            //identify the spcode from the url     
+            String spcode = (String) mapLayer.getData("spcode");
             String url = CommonData.layersServer + "/distribution/" + spcode;
             String jsontxt = Util.readUrl(url);
             if(jsontxt == null || jsontxt.length() == 0) {
@@ -3246,7 +3240,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Iterator iudl = udl.iterator();
         while (iudl.hasNext()) {
             MapLayer ml = (MapLayer) iudl.next();
-            if (ml.getUri().equals(wmsurl)) {
+            if (ml.getUri() != null && ml.getUri().equals(wmsurl)) {
                 return ml;
             }
         }

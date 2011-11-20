@@ -8,13 +8,11 @@ import au.org.emii.portal.util.LayerUtilities;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Date;
 import org.ala.spatial.util.CommonData;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.metainfo.EventHandler;
 import org.zkoss.zul.A;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Doublebox;
@@ -33,7 +31,8 @@ import org.zkoss.zul.ListitemRenderer;
  * @author ajay
  */
 public class DistributionsWCController extends UtilityComposer {
-    
+    final static String EXPERT_DISTRIBUTION_AREA_NAME = "Expert distribution";
+
     Label distributionLabel;
     Listbox distributionListbox;
     EventListener el;
@@ -116,10 +115,10 @@ public class DistributionsWCController extends UtilityComposer {
 
                         //last row indicates if it is mapped or not
                         String [] row = reader.readNext();
-                        String [] newrow = java.util.Arrays.copyOf(row, 13);
+                        String [] newrow = java.util.Arrays.copyOf(row, 14);
                         try {
-                            String niceAreaSqKm = String.format("%.2f",(float)Double.parseDouble(row[11]));
-                            newrow[11] = niceAreaSqKm;
+                            String niceAreaSqKm = String.format("%.1f",(float)Double.parseDouble(row[12]));
+                            newrow[12] = niceAreaSqKm;
                         } catch (Exception e) {
                         }
                         data.add(newrow);
@@ -155,7 +154,7 @@ public class DistributionsWCController extends UtilityComposer {
                         if (!cells[0].equals("SPCODE")) {
                             Button b = new Button("map");
                             b.setSclass("goButton");
-                            if((cells[12] != null && cells[12].length() > 0)
+                            if((cells[13] != null && cells[13].length() > 0)
                                     || getMapComposer().getMapLayerWMS(CommonData.getSpeciesDistributionWMSFromSpcode(cells[0])[1]) != null) {
                                 b.setDisabled(true);
                             } else {
@@ -170,7 +169,6 @@ public class DistributionsWCController extends UtilityComposer {
                                         //row as metadata
                                         Listitem li = (Listitem) lc.getParent();
                                         String [] row = (String []) li.getValue();
-                                        StringBuilder sb = new StringBuilder();
                                         String html = "Species area\n";
                                         html += "<table class='md_table'>";
                                         html += "<tr class='md_grey-bg'><td class='md_th'>spcode: </td><td class='md_spacer'/><td class='md_value'>" + row[0] + "</td></tr>";
@@ -203,8 +201,15 @@ public class DistributionsWCController extends UtilityComposer {
 
                                         //map it
                                         String[] mapping = CommonData.getSpeciesDistributionWMSFromSpcode(spcode);
-                                        MapLayer ml = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(row[0] + " area"),mapping[0] + " area", mapping[1], 0.8f, html, null, LayerUtilities.WKT, null, null);
+                                        String displayName = mapping[0] + " area";
+                                        if(row[11] != null && row[11].length() > 0
+                                                && !row[11].equals(EXPERT_DISTRIBUTION_AREA_NAME)) {
+                                            displayName = row[11];
+                                        }
+                                        MapLayer ml = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(row[0] + " area"),displayName, mapping[1], 0.8f, html, null, LayerUtilities.WKT, null, null);
+                                        ml.setData("spcode", row[0]);
                                         MapComposer.setupMapLayerAsDistributionArea(ml);
+                                        getMapComposer().updateLayerControls();
 
                                         //disable this button
                                         ((Button) event.getTarget()).setDisabled(true);
@@ -215,8 +220,9 @@ public class DistributionsWCController extends UtilityComposer {
                                                     (original_data.get(i)[0].equals(row[0])
                                                     || (original_data.get(i)[11] != null
                                                         && original_data.get(i)[11].length() > 0
+                                                        && !original_data.get(i)[11].equals(EXPERT_DISTRIBUTION_AREA_NAME)
                                                         && original_data.get(i)[11].equals(row[11])))) {
-                                                original_data.get(i)[12] = "1";
+                                                original_data.get(i)[13] = "1";
                                             }
                                         }
                                         for(int i=0;i<current_data.size();i++) {
@@ -224,18 +230,14 @@ public class DistributionsWCController extends UtilityComposer {
                                                     (current_data.get(i)[0].equals(row[0])
                                                     || (current_data.get(i)[11] != null
                                                         && current_data.get(i)[11].length() > 0
+                                                        && !current_data.get(i)[11].equals(EXPERT_DISTRIBUTION_AREA_NAME)
                                                         && current_data.get(i)[11].equals(row[11])))) {
-                                                current_data.get(i)[12] = "1";
+                                                current_data.get(i)[13] = "1";
                                             }
                                         }
                                         for(int i=0;i<distributionListbox.getItemCount();i++) {
                                             String [] data = (String[]) distributionListbox.getItemAtIndex(i).getValue();
-                                            if(data != null && data[12] == null
-                                                    && (data[0].equals(row[0])
-                                                        || (data[11] != null
-                                                            && data[11].length() > 0
-                                                            && data[11].equals(row[11])))) {
-                                                data[0] = "";
+                                            if(data != null && data[13] != null && data[13].length() > 0) {
                                                 ((Button)distributionListbox.getItemAtIndex(i).getFirstChild().getFirstChild()).setDisabled(true);
                                             }
                                         }
@@ -286,10 +288,10 @@ public class DistributionsWCController extends UtilityComposer {
             Listheader lh = (Listheader) head.getChildren().get(i);
 
             //-1 for first column containing buttons.
-            if (i == 8 || i == 9) {       //min depth, max depth
+            if (i == 8 || i == 9 || i == 12) {       //min depth, max depth, area_km
                 lh.setSortAscending(new DListComparator(true, true, i - 1));
                 lh.setSortDescending(new DListComparator(false, true, i - 1));
-            } else if (i > 0 && i < 9) { //exclude 'metadata link' and 'map button' headers
+            } else if (i > 0 && i != 10 && i != 11) { //exclude 'map button', 'metadata link', 'BIE link'
                 lh.setSortAscending(new DListComparator(true, false, i - 1));
                 lh.setSortDescending(new DListComparator(false, false, i - 1));
             }
