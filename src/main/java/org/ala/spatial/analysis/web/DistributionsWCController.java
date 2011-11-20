@@ -288,7 +288,7 @@ public class DistributionsWCController extends UtilityComposer {
             Listheader lh = (Listheader) head.getChildren().get(i);
 
             //-1 for first column containing buttons.
-            if (i == 8 || i == 9 || i == 12) {       //min depth, max depth, area_km
+            if (i == 8 || i == 9 || i == 13) {       //min depth, max depth, area_km
                 lh.setSortAscending(new DListComparator(true, true, i - 1));
                 lh.setSortDescending(new DListComparator(false, true, i - 1));
             } else if (i > 0 && i != 10 && i != 11) { //exclude 'map button', 'metadata link', 'BIE link'
