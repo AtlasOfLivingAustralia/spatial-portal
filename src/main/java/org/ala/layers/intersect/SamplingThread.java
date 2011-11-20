@@ -106,6 +106,8 @@ public class SamplingThread extends Thread {
                     }
                     if (!Float.isNaN(values[i])) {
                         sb.append(values[i]);
+                    } else {
+                        sb.append("n/a");
                     }
                 }
             } else {
@@ -136,6 +138,8 @@ public class SamplingThread extends Thread {
                     gc = classes.get(values[i]);
                     if (gc != null) {
                         sb.append(gc.getName());
+                    } else {
+                        sb.append("n/a");
                     }
                 }
             } else {
@@ -176,6 +180,8 @@ public class SamplingThread extends Thread {
                     }
                     if (values[i] >= 0) {
                         sb.append(catagories[values[i]]);
+                    } else {
+                        sb.append("n/a");
                     }
                 }
             } else {

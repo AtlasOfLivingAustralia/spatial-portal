@@ -48,6 +48,9 @@ public class Distribution {
     String type;
     String area_name;
     String pid;
+    String checklist_name;
+    Double area_km;
+    String notes;
 
     public void setGid(Long gid) {
         this.gid = gid;
@@ -198,5 +201,29 @@ public class Distribution {
 
     public String getPid() {
         return pid;
+    }
+    
+    public void setChecklist_name(String checklist_name) {
+        this.checklist_name = checklist_name;
+    }
+
+    public String getChecklist_name() {
+        return checklist_name;
+    }
+
+    public void setArea_km(Double area_km) {
+        this.area_km = area_km;
+    }
+
+    public Double getArea_km() {
+        return area_km;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public String getNotes() {
+        return notes;
     }
 }

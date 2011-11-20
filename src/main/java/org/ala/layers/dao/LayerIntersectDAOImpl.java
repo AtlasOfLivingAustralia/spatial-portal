@@ -188,7 +188,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                     } else {
                         Map m = new HashMap();
                         m.put("field", id);
-                        m.put("value", "");
+                        m.put("value", "n/a");
                         m.put("layername", layer.getDisplayname());   //close enough
 
                         out.add(m);
@@ -205,7 +205,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                         if (f != null && f.getClasses() != null) {
                             GridClass gc = f.getClasses().get((int) v[0]);
                             if (gc != null) {
-                                m.put("value", (gc == null ? "" : gc.getName()));
+                                m.put("value", (gc == null ? "n/a" : gc.getName()));
                                 if (f.getType().equals("a")) {           //class pid
                                     m.put("pid", f.getLayerPid() + ":" + ((int) v[0]));
                                 } else { // if(f.getType().equals("b")) {//polygon pid
@@ -219,14 +219,14 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                             }
                         }
                         if (!m.containsKey("value")) {
-                            m.put("value", (Float.isNaN(v[0]) ? "" : v[0]));
+                            m.put("value", (Float.isNaN(v[0]) ? "n/a" : v[0]));
                         }
                         out.add(m);
                     } else {
                         logger.error("Cannot find grid file: " + getConfig().getLayerFilesPath() + layer.getPath_orig());
                         Map m = new HashMap();
                         m.put("field", id);
-                        m.put("value", "");
+                        m.put("value", "n/a");
                         m.put("layername", layer.getDisplayname());   //close enough
 
                         out.add(m);
@@ -270,10 +270,10 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                             m.put("layername", name + "(" + gid + ")");
                             if (Float.isNaN(v[0])) {
                                 //s = "{\"value\":\"no data\",\"layername\":\"" + name + " (" + gid + ")\"}";                                
-                                m.put("value", "");
+                                m.put("value", "n/a");
                             } else {
                                 //s = "{\"value\":" + v[0] + ",\"layername\":\"" + name + " (" + gid + ")\"}";
-                                m.put("value", (Float.isNaN(v[0]) ? "" : v[0]));
+                                m.put("value", (Float.isNaN(v[0]) ? "n/a" : v[0]));
                             }
                             out.add(m);
                         }
@@ -435,7 +435,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
         for (Entry<String, SimpleShapeFile> entry : ssfs.entrySet()) {
             String s = entry.getValue().intersect(longitude, latitude);
             if (s == null) {
-                s = "";
+                s = "n/a";
             }
             output.put(entry.getKey(), s);
         }
@@ -460,7 +460,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
             if (gridValues != null) {
                 for (Entry<String, Float> entry : gridValues.entrySet()) {
                     if (entry.getValue() == null || entry.getValue().isNaN()) {
-                        output.put(entry.getKey(), "");
+                        output.put(entry.getKey(), "n/a");
                     } else {
                         output.put(entry.getKey(), entry.getValue().toString());
                     }
@@ -537,7 +537,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
         CountDownLatch cdl = new CountDownLatch(intersectionFiles.length);
         ArrayList<String> output = new ArrayList<String>();
         for (int i = 0; i < intersectionFiles.length; i++) {
-            output.add("");
+            output.add("n/a");
             lbq.add(i);
         }
 

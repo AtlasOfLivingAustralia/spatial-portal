@@ -33,7 +33,6 @@ public class DistributionDAOImpl implements DistributionDAO {
 
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(DistributionDAOImpl.class);
-
     private SimpleJdbcTemplate jdbcTemplate;
 
     @Resource(name = "dataSource")
@@ -42,48 +41,48 @@ public class DistributionDAOImpl implements DistributionDAO {
     }
 
     @Override
-    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, String lsids, String type){
+    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, String lsids, String type) {
         logger.info("Getting distributions list");
 
         ArrayList<Object> params = new ArrayList<Object>();
         StringBuilder where = new StringBuilder();
 
-        if(lsids != null && lsids.length() > 0) {
+        if (lsids != null && lsids.length() > 0) {
             where.append(" ? LIKE '% '||lsid||' %'  ");
-            params.add(" " + lsids.replace(","," ") + " ");
+            params.add(" " + lsids.replace(",", " ") + " ");
         }
 
-        if(min_depth != -1 && max_depth != -1) {
-            if(where.length() > 0) {
+        if (min_depth != -1 && max_depth != -1) {
+            if (where.length() > 0) {
                 where.append(" AND ");
             }
             where.append("min_depth<= ? AND max_depth>= ? ");
             params.add(new Double(max_depth));
             params.add(new Double(min_depth));
-        } else if(min_depth != -1) {
-            if(where.length() > 0) {
+        } else if (min_depth != -1) {
+            if (where.length() > 0) {
                 where.append(" AND ");
             }
             where.append("max_depth>= ? ");
             params.add(new Double(min_depth));
-        } else if(max_depth != -1) {
-            if(where.length() > 0) {
+        } else if (max_depth != -1) {
+            if (where.length() > 0) {
                 where.append(" AND ");
             }
             where.append("min_depth<= ? ");
             params.add(new Double(max_depth));
         }
 
-        if(wkt != null && wkt.length() > 0) {
-            if(where.length() > 0) {
+        if (wkt != null && wkt.length() > 0) {
+            if (where.length() > 0) {
                 where.append(" AND ");
             }
             where.append("ST_INTERSECTS(the_geom, ST_GEOMFROMTEXT( ? ))");
             params.add(wkt);
         }
 
-        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid from distributions ";
-        if(where.length() > 0) {
+        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid,checklist_name,area_km, notes from distributions ";
+        if (where.length() > 0) {
             sql += " WHERE " + where.toString() + " AND type = ? ";
         } else {
             sql += " WHERE type= ? ";
@@ -91,30 +90,30 @@ public class DistributionDAOImpl implements DistributionDAO {
 
         List<Distribution> distributions = null;
 
-        if(params.size() == 0) {
+        if (params.size() == 0) {
             distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), type);
-        } else if(params.size() == 1) {
+        } else if (params.size() == 1) {
             distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), type);
-        } else if(params.size() == 2) {
+        } else if (params.size() == 2) {
             distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), params.get(1), type);
-        } else if(params.size() == 3) {
+        } else if (params.size() == 3) {
             distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), params.get(1), params.get(2), type);
-        } else if(params.size() == 4) {
+        } else if (params.size() == 4) {
             distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), params.get(1), params.get(2), params.get(3), type);
         }
-        
+
         return distributions;
     }
 
     @Override
     public Distribution getDistributionBySpcode(long spcode, String type) {
-        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid, ST_AsText(the_geom) as geometry from distributions where spcode= ? and type= ? ";
+        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid, ST_AsText(the_geom) as geometry, checklist_name, area_km, notes from distributions where spcode= ? and type= ? ";
         List<Distribution> d = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), (double) spcode, type);
 
-        if(d.size() > 0) {
+        if (d.size() > 0) {
             return d.get(0);
         }
-        
+
         return null;
     }
 }
