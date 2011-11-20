@@ -48,6 +48,12 @@ public class AddToolSamplingComposer extends AddToolComposer {
     public boolean onFinish() {
         //super.onFinish();
 
+        Query query = getSelectedSpecies();
+        if(query == null) {
+            getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
+            return false;
+        }
+
         System.out.println("Area: " + getSelectedArea());
         System.out.println("Species: " + getSelectedSpecies());
         System.out.println("Layers: " + getSelectedLayers());

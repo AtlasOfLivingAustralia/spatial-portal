@@ -54,6 +54,12 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         System.out.println("Area: " + getSelectedArea());
         System.out.println("Species: " + getSelectedSpecies());
 
+        Query query = getSelectedSpecies();
+        if(query == null) {
+            getMapComposer().showMessage("There was a problem selecting the species.  Try to select the species again", this);
+            return false;
+        }
+
         Query lsid = getSelectedSpecies();
         String name = getSelectedSpeciesName();
 

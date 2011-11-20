@@ -40,6 +40,7 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zk.ui.util.Clients;
@@ -712,7 +713,7 @@ public class AddToolComposer extends UtilityComposer {
         }
     }
 
-    public void onChange$searchSpeciesAuto(Event event) {
+    public void onSelect$searchSpeciesAuto(Event event) {
         toggles();
     }
 
@@ -935,58 +936,60 @@ public class AddToolComposer extends UtilityComposer {
                 if(nextDiv != null && rgSpecies != null
                         && (includeAnalysisLayersForUploadQuery || includeAnalysisLayersForAnyQuery)) {
                     Query q = getSelectedSpecies();
-                    boolean test = (includeAnalysisLayersForAnyQuery || (q instanceof UploadQuery));
+                    if(q != null) {
+                        boolean test = (includeAnalysisLayersForAnyQuery || (q instanceof UploadQuery));
 
-                    if (selectedLayersCombobox != null) {
-                        if((selectedLayersCombobox.getIncludeAnalysisLayers()) != test) {
-                            selectedLayersCombobox.init(getMapComposer().getLayerSelections(), getMapComposer(), test);
-                        }
-                    }
-                    if(lbListLayers != null) {
-                        if((lbListLayers.getIncludeAnalysisLayers()) != test) {
-                            String [] selectedLayers = lbListLayers.getSelectedLayers();
-                            lbListLayers.init(getMapComposer(), CommonData.satServer, environmentalOnly, test);
-
-                            if (selectedLayers != null && selectedLayers.length > 0) {
-                                lbListLayers.selectLayers(selectedLayers);
+                        if (selectedLayersCombobox != null) {
+                            if((selectedLayersCombobox.getIncludeAnalysisLayers()) != test) {
+                                selectedLayersCombobox.init(getMapComposer().getLayerSelections(), getMapComposer(), test);
                             }
+                        }
+                        if(lbListLayers != null) {
+                            if((lbListLayers.getIncludeAnalysisLayers()) != test) {
+                                String [] selectedLayers = lbListLayers.getSelectedLayers();
+                                lbListLayers.init(getMapComposer(), CommonData.satServer, environmentalOnly, test);
 
-                            lbListLayers.renderAll();
+                                if (selectedLayers != null && selectedLayers.length > 0) {
+                                    lbListLayers.selectLayers(selectedLayers);
+                                }
+
+                                lbListLayers.renderAll();
+                            }
                         }
-                    }
-                    if (cbLayer != null) {
-                        if((cbLayer.getIncludeAnalysisLayers()) != test) {
-                            cbLayer.setIncludeAnalysisLayers(test);
+                        if (cbLayer != null) {
+                            if((cbLayer.getIncludeAnalysisLayers()) != test) {
+                                cbLayer.setIncludeAnalysisLayers(test);
+                            }
                         }
-                    }
-                    if (cbLayer1 != null) {
-                        if((cbLayer1.getIncludeAnalysisLayers()) != test) {
-                            cbLayer1.setIncludeAnalysisLayers(test);
+                        if (cbLayer1 != null) {
+                            if((cbLayer1.getIncludeAnalysisLayers()) != test) {
+                                cbLayer1.setIncludeAnalysisLayers(test);
+                            }
                         }
-                    }
-                    if (cbLayer2 != null) {
-                        if((cbLayer2.getIncludeAnalysisLayers()) != test) {
-                            cbLayer2.setIncludeAnalysisLayers(test);
+                        if (cbLayer2 != null) {
+                            if((cbLayer2.getIncludeAnalysisLayers()) != test) {
+                                cbLayer2.setIncludeAnalysisLayers(test);
+                            }
                         }
-                    }
-                    if(mpLayer1 != null && mpLayer2 != null &&
-                            mpLayersIncludeAnalysisLayers != test) {
-                        //remove
-                        while(mpLayer1.getChildren().size() > 0) {
-                            mpLayer1.removeChild(mpLayer1.getFirstChild());
-                        }
-                        while(mpLayer2.getChildren().size() > 0) {
-                            mpLayer2.removeChild(mpLayer1.getFirstChild());
-                        }
-                        //add
-                        for(MapLayer ml : getMapComposer().getGridLayers()) {
-                            addToMpLayers(ml, false);
-                        }
-                        mpLayersIncludeAnalysisLayers = test;
-                        if(mpLayersIncludeAnalysisLayers) {
-                            for(MapLayer ml : getMapComposer().getAnalysisLayers()) {
-                                if(ml.getSubType() != LayerUtilities.ALOC) {
-                                    addToMpLayers(ml, true);
+                        if(mpLayer1 != null && mpLayer2 != null &&
+                                mpLayersIncludeAnalysisLayers != test) {
+                            //remove
+                            while(mpLayer1.getChildren().size() > 0) {
+                                mpLayer1.removeChild(mpLayer1.getFirstChild());
+                            }
+                            while(mpLayer2.getChildren().size() > 0) {
+                                mpLayer2.removeChild(mpLayer1.getFirstChild());
+                            }
+                            //add
+                            for(MapLayer ml : getMapComposer().getGridLayers()) {
+                                addToMpLayers(ml, false);
+                            }
+                            mpLayersIncludeAnalysisLayers = test;
+                            if(mpLayersIncludeAnalysisLayers) {
+                                for(MapLayer ml : getMapComposer().getAnalysisLayers()) {
+                                    if(ml.getSubType() != LayerUtilities.ALOC) {
+                                        addToMpLayers(ml, true);
+                                    }
                                 }
                             }
                         }
@@ -1696,8 +1699,11 @@ public class AddToolComposer extends UtilityComposer {
         updateLayerSelectionCount();
     }
 
-    public void onChange$mSearchSpeciesAuto(Event event) {
-        //add to lMultiple
+    public void onSelect$mSearchSpeciesAuto(Event event) {
+        Events.echoEvent("mChooseSelected", this, null);
+    }
+
+    public void mChooseSelected(Event event) {
         Comboitem ci = mSearchSpeciesAuto.getSelectedItem();
         if(ci != null && ci.getAnnotatedProperties() != null
                 && ((String) ci.getAnnotatedProperties().get(0)) != null) {
@@ -1725,8 +1731,11 @@ public class AddToolComposer extends UtilityComposer {
         toggles();
     }
     
-    public void onChange$mSearchSpeciesAutoBk(Event event) {
-        //add to lMultiple
+    public void onSelect$mSearchSpeciesAutoBk(Event event) {
+        Events.echoEvent("mChooseSelectedBk", this, null);
+    }
+
+    public void mChooseSelectedBk(Event event) {
         Comboitem ci = mSearchSpeciesAutoBk.getSelectedItem();
         if(ci != null && ci.getAnnotatedProperties() != null
                 && ((String) ci.getAnnotatedProperties().get(0)) != null) {
@@ -1954,6 +1963,7 @@ public class AddToolComposer extends UtilityComposer {
                     mSearchSpeciesAuto.open();
                     mSearchSpeciesAuto.setText(sciname + " ");
                     li.detach();
+                    toggles();
                 }
             });
         } else {
@@ -2039,6 +2049,7 @@ public class AddToolComposer extends UtilityComposer {
                     mSearchSpeciesAutoBk.open();
                     mSearchSpeciesAutoBk.setText(sciname + " ");
                     li.detach();
+                    toggles();
                 }
             });
         } else {

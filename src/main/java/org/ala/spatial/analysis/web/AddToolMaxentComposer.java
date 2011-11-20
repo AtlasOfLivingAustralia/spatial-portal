@@ -90,6 +90,10 @@ public class AddToolMaxentComposer extends AddToolComposer {
         //super.onFinish();
 
         Query query = getSelectedSpecies();
+        if(query == null) {
+            getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
+            return false;
+        }
         if (searchSpeciesAuto.getSelectedItem() != null) {
             getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea());
         } else if(query != null && rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue().equals("multiple")) {
