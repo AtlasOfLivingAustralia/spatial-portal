@@ -87,7 +87,7 @@ public class LegendObject implements Serializable {
 
                 //unknown
                 if (numericLegend.countOfNaN > 0) {
-                    sb.append("\nUnknown,0,0,0,").append(numericLegend.countOfNaN);
+                    sb.append("\nn/a,0,0,0,").append(numericLegend.countOfNaN);
                 }
 
                 if (minmax[0] == minmax[1]) {

@@ -28,17 +28,14 @@
                     <radio id="rAreaCustom" label="Define new area" value="custom" />
                 </radiogroup>
             </div>
-
-            <div sclass="wizButtonContainer">
-                <hbox>
-                    <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
-                    <button sclass="goButton" label="Cancel" id="btnCancel" />
-                    <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
-                    <button sclass="goButton" label="Next &gt;" id="btnOk" />
-                </hbox>
-            </div>
-
         </vbox>
-
+        <div sclass="wizButtonContainer">
+            <hbox>
+                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
+                <button sclass="goButton" label="Cancel" id="btnCancel" />
+                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
+                <button sclass="goButton" label="Next &gt;" id="btnOk" />
+            </hbox>
+        </div>
     </window>
 </zk>

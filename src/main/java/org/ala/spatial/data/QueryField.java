@@ -203,6 +203,12 @@ public class QueryField implements Serializable {
         int stringCount = 0;
         for (int i = 0; i < tmpData.size(); i++) {
             String s = tmpData.get(i);
+
+            //substitution for sampling nulls
+            if(s.equals("n/a")) {
+                s = null;
+            }
+
             if (s != null && s.length() > 0) {
                 try {
                     Long.parseLong(s);

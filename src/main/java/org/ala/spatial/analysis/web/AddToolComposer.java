@@ -349,7 +349,7 @@ public class AddToolComposer extends UtilityComposer {
 
                 Radio rSp = new Radio(lyr.getDisplayName());
                 rSp.setValue(lyr.getName());
-                rSp.setId(lyr.getName().replaceAll(" ", ""));
+                rSp.setId(lyr.getName().replaceAll(" ", "") + "__bk");
                 rgSpecies.insertBefore(rSp, rSpeciesMappedBk);
             }
 
@@ -1134,6 +1134,10 @@ public class AddToolComposer extends UtilityComposer {
                     }
                 } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                     if (searchSpeciesAuto.getSelectedItem() != null) {
+                        if(searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
+                                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
+                            System.out.println("error in getSelectedSpecies value=" + searchSpeciesAuto.getSelectedItem().getValue() + " text=" + searchSpeciesAuto.getText());
+                        }
                         species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
                         q = QueryUtil.get(species, getMapComposer(), false);
                     }

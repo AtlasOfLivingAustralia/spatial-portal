@@ -532,7 +532,6 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <window id="nearesttool" border="normal" sizable="true"
                  xmlns:n="http://www.zkoss.org/2005/zk/native" mode="overlapped" width="400px" height="120px" position="center,top">
                     <n:a class="fancybox-close" n:onClick="clearNearestMarkerLayer();mapFrame.toggleActiveNearest();" style="display: inline" />
-                    <n:a class="fancybox-help" n:onClick="loadHelp('layers-add-to-map')" style="display: inline" />
                 <caption label="Nearest feature tool" >
                     <n:a href='#' n:onClick="clearNearestMarkerLayer();">
                         <n:span style="color:black">remove all markers</n:span>

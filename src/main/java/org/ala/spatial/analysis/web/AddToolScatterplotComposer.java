@@ -31,8 +31,8 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         this.selectedMethod = "Scatterplot";
         this.totalSteps = 6;
 
-        //this.setIncludeAnalysisLayersForAnyQuery(true);
-        this.setIncludeAnalysisLayersForUploadQuery(true);
+        this.setIncludeAnalysisLayersForAnyQuery(true);
+        //this.setIncludeAnalysisLayersForUploadQuery(true);
         
         this.loadAreaLayers("World");
         this.loadSpeciesLayers();

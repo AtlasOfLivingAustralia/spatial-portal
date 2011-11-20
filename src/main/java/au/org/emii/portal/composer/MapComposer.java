@@ -53,6 +53,8 @@ import net.sf.json.JSONObject;
 import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.ContextualMenu;
+import org.ala.spatial.analysis.web.DistributionsWCController;
+import org.ala.spatial.analysis.web.FilteringResultsWCController;
 import org.ala.spatial.analysis.web.HasMapLayer;
 import org.ala.spatial.data.LegendObject;
 import org.ala.spatial.data.Query;
@@ -403,17 +405,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void activateLink(String uri, String label, boolean isExternal, String downloadPid) {
-        //close any prevously opened externalcontentwindow
-        try {
-            Component c = getFellowIfAny("externalContentWindow");
-            if (c != null) {
-                System.out.println("found externalContentWindow, closing");
-                c.detach();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        closeExternalContentWindow();
 
         Window externalContentWindow = (Window) Executions.createComponents("WEB-INF/zul/ExternalContent.zul", layerControls, null);
 
@@ -1872,53 +1864,87 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         md.setBbox(bb);
     }
 
-    private void loadDistributionMap(String lsids, String taxon, String wkt) {
-        //test for a valid lsid match
-        String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsids);
-        String[] metadata = CommonData.getSpeciesDistributionMetadata(lsids);
-        MapLayer ml = null;
-        if (wmsNames != null && wmsNames.length > 0 && (wkt == null || wkt.equals(CommonData.WORLD_WKT))) {
-            //add all
-            if (wmsNames.length > 1) {
-                for (int i = 0; i < wmsNames.length; i++) {
-                    ml = addWMSLayer(getMapComposer().getNextAreaLayerName(taxon + " area " + (i + 1)), taxon + " area " + (i + 1), wmsNames[i], 0.35f, metadata[i], null, LayerUtilities.WKT, null, null);
-                    setupMapLayerAsDistributionArea(ml);
+    private void loadDistributionMap(String lsids, String wkt) {
+        try {
+            //expert distributions
+            String [] distributions = FilteringResultsWCController.getDistributionsOrChecklists("distributions", wkt,lsids);
+
+            //species checklists
+            String [] checklists = FilteringResultsWCController.getDistributionsOrChecklists("checklists", wkt,lsids);
+
+            String [] finallist = distributions;
+            if(checklists != null) {
+                if(finallist != null) {
+                    finallist = new String [distributions.length + checklists.length];
+                    System.arraycopy(distributions,0,finallist,0,distributions.length);
+                    System.arraycopy(checklists,0,finallist,distributions.length,checklists.length);
+                } else {
+                    finallist = checklists;
                 }
-            } else if (wmsNames.length == 1) {
-                ml = addWMSLayer(getMapComposer().getNextAreaLayerName(taxon + " area"), taxon + " area", wmsNames[0], 0.35f, metadata[0], null, LayerUtilities.WKT, null, null);
-                setupMapLayerAsDistributionArea(ml);
             }
-        } else if (wmsNames != null && wmsNames.length > 0 && wkt != null && !wkt.equals(CommonData.WORLD_WKT)) {
-            try {
-                HttpClient client = new HttpClient();
-                PostMethod post = new PostMethod(CommonData.layersServer + "/distributions"); // testurl
-                post.addParameter("wkt", wkt);
-                post.addParameter("lsids", lsids);
-                post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-                int result = client.executeMethod(post);
-                if (result == 200) {
-                    String txt = post.getResponseBodyAsString();
-                    JSONArray ja = JSONArray.fromObject(txt);
-                    ArrayList<String> found = new ArrayList();
-                    for (int i = 0; i < ja.size(); i++) {
-                        JSONObject jo = ja.getJSONObject((i));
-                        if (jo.containsKey("wmsurl")) {
-                            found.add(jo.getString("wmsurl"));
-                        }
-                    }
-                    if (found.size() > 1) {
-                        for (int i = 0; i < wmsNames.length; i++) {
-                            ml = addWMSLayer(taxon + " area " + (i + 1),taxon + " area " + (i + 1), found.get(i), 0.35f, "", null, LayerUtilities.WKT, null, null);
-                            setupMapLayerAsDistributionArea(ml);
-                        }
-                    } else if (found.size() == 1) {
-                        ml = addWMSLayer(taxon + " area",taxon + " area", found.get(0), 0.35f, "", null, LayerUtilities.WKT, null, null);
-                        setupMapLayerAsDistributionArea(ml);
-                    }
+
+            //open for optional mapping of areas
+            if(finallist != null) {
+                DistributionsWCController window = (DistributionsWCController) Executions.createComponents("WEB-INF/zul/AnalysisDistributionResults.zul", this, null);
+
+                try {
+                    window.doModal();
+                    window.init(finallist, "Expert Distributions and Checklist Species", String.valueOf(finallist.length), null);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        //test for a valid lsid match
+//        String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsids);
+//        String[] metadata = CommonData.getSpeciesDistributionMetadata(lsids);
+//        MapLayer ml = null;
+//        if (wmsNames != null && wmsNames.length > 0 && (wkt == null || wkt.equals(CommonData.WORLD_WKT))) {
+//            //add all
+//            if (wmsNames.length > 1) {
+//                for (int i = 0; i < wmsNames.length; i++) {
+//                    ml = addWMSLayer(getMapComposer().getNextAreaLayerName(taxon + " area " + (i + 1)), taxon + " area " + (i + 1), wmsNames[i], 0.35f, metadata[i], null, LayerUtilities.WKT, null, null);
+//                    setupMapLayerAsDistributionArea(ml);
+//                }
+//            } else if (wmsNames.length == 1) {
+//                ml = addWMSLayer(getMapComposer().getNextAreaLayerName(taxon + " area"), taxon + " area", wmsNames[0], 0.35f, metadata[0], null, LayerUtilities.WKT, null, null);
+//                setupMapLayerAsDistributionArea(ml);
+//            }
+//        } else if (wmsNames != null && wmsNames.length > 0 && wkt != null && !wkt.equals(CommonData.WORLD_WKT)) {
+//            try {
+//                HttpClient client = new HttpClient();
+//                PostMethod post = new PostMethod(CommonData.layersServer + "/distributions"); // testurl
+//                post.addParameter("wkt", wkt);
+//                post.addParameter("lsids", lsids);
+//                post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+//                int result = client.executeMethod(post);
+//                if (result == 200) {
+//                    String txt = post.getResponseBodyAsString();
+//                    JSONArray ja = JSONArray.fromObject(txt);
+//                    ArrayList<String> found = new ArrayList();
+//                    for (int i = 0; i < ja.size(); i++) {
+//                        JSONObject jo = ja.getJSONObject((i));
+//                        if (jo.containsKey("wmsurl")) {
+//                            found.add(jo.getString("wmsurl"));
+//                        }
+//                    }
+//                    if (found.size() > 1) {
+//                        for (int i = 0; i < wmsNames.length; i++) {
+//                            ml = addWMSLayer(taxon + " area " + (i + 1),taxon + " area " + (i + 1), found.get(i), 0.35f, "", null, LayerUtilities.WKT, null, null);
+//                            setupMapLayerAsDistributionArea(ml);
+//                        }
+//                    } else if (found.size() == 1) {
+//                        ml = addWMSLayer(taxon + " area",taxon + " area", found.get(0), 0.35f, "", null, LayerUtilities.WKT, null, null);
+//                        setupMapLayerAsDistributionArea(ml);
+//                    }
+//                }
+//            } catch (Exception e) {
+//            }
+//        }
     }
 
     public static void setupMapLayerAsDistributionArea(MapLayer mapLayer) {
@@ -1937,7 +1963,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 url = CommonData.layersServer + "/checklists/" + spcode;
                 jsontxt = Util.readUrl(url);
             }
-            if(jsontxt == null) {
+            if(jsontxt == null || jsontxt.length() == 0) {
                 System.out.println("******** failed to find wkt for " + mapLayer.getUri() + " > " + spcode);
                 return;
             }
@@ -1994,7 +2020,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (q instanceof BiocacheQuery) {
             String lsids = ((BiocacheQuery) q).getLsids();
             if (lsids != null && lsids.length() > 0) {
-                loadDistributionMap(lsids, species, wkt);
+                loadDistributionMap(lsids, wkt);
             }
         }
 
@@ -3191,5 +3217,40 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             selectedLayers.remove(oldestIdx);
         }
+    }
+
+    public void onClick$openDistributionsChecklists(Event event) {
+        String lsids = (String) event.getData();
+        if(lsids != null && lsids.length() > 0) {
+            closeExternalContentWindow();
+            loadDistributionMap(lsids, null);
+        }
+    }
+
+    void closeExternalContentWindow() {
+        //close any prevously opened externalcontentwindow
+        try {
+            Component c = getFellowIfAny("externalContentWindow");
+            if (c != null) {
+                System.out.println("found externalContentWindow, closing");
+                c.detach();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Object getMapLayerWMS(String wmsurl) {
+        // check if layer already present
+        List udl = getPortalSession().getActiveLayers();
+        Iterator iudl = udl.iterator();
+        while (iudl.hasNext()) {
+            MapLayer ml = (MapLayer) iudl.next();
+            if (ml.getUri().equals(wmsurl)) {
+                return ml;
+            }
+        }
+
+        return null;
     }
 }

@@ -347,3 +347,7 @@ function clearNearestMarkerLayer(){
         mapFrame.markers = null;
     }
 }
+
+function openDistributionsChecklists(lsids){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$openDistributionsChecklists', lsids));
+}

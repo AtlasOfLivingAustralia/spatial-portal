@@ -88,7 +88,7 @@ public class Sampling {
             if(values != null) {
                 for(int i=0;i<output.length;i++) {
                     if(Float.isNaN(values[i])) {
-                        output[i] = "";
+                        output[i] = "n/a";
                     } else {
                         output[i] = String.valueOf(values[i]);
                     }
@@ -117,6 +117,8 @@ public class Sampling {
                 for(int i=0;i<output.length;i++) {
                     if(values[i] >= 0) {
                         output[i] = catagories[values[i]];
+                    } else {
+                        output[i] = "n/a";
                     }
                 }
             }

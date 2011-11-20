@@ -132,17 +132,15 @@
                         <button id="bLayerListDownload2" label="Download selection" visible="false" sclass="goButton" />
                     </vbox>
                 </div>
-
-                <div sclass="wizButtonContainer">
-                    <hbox>
-                        <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
-                        <button sclass="goButton" label="Cancel" id="btnCancel" />
-                        <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
-                        <button sclass="goButton" label="Next &gt;" id="btnOk" autodisable="self" />
-                    </hbox>
-                </div>
-
             </vbox>
         </hbox>
+        <div sclass="wizButtonContainer">
+            <hbox>
+                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
+                <button sclass="goButton" label="Cancel" id="btnCancel" />
+                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
+                <button sclass="goButton" label="Next &gt;" id="btnOk" autodisable="self" />
+            </hbox>
+        </div>
     </window>
 </zk>

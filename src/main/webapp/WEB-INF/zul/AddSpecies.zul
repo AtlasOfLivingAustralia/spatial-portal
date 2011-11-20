@@ -1,7 +1,7 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="addspecieswindow" use="org.ala.spatial.analysis.web.AddSpeciesController"
-    apply="org.ala.spatial.analysis.web.AddSpeciesController" width="560px" height="630px" xmlns:n="http://www.zkoss.org/2005/zk/native">
+    apply="org.ala.spatial.analysis.web.AddSpeciesController" width="620px" height="670px" xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />

@@ -19,6 +19,8 @@
             </hbox>
             <separator />
             <div height="500px">
+                <separator/>
+                <label value="Click on headers to sort columns" />
                 <listbox id="distributionListbox" mold="paging" vflex="true" autopaging="true">
                     <listhead>
                         <listheader width="50px" />
@@ -32,7 +34,9 @@
                         <listheader label="Min depth" sort="auto" />
                         <listheader label="Max depth" sort="auto" />
                         <listheader label="Metadata" />
-                        <listheader label="LSID" width="0px" />
+                        <listheader label="BIE" />
+                        <listheader label="Area name" sort="auto"/>
+                        <listheader label="Area sq km" sort="auto"/>
                     </listhead>
                 </listbox>
             </div>            

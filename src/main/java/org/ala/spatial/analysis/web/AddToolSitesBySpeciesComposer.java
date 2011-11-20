@@ -65,8 +65,11 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
     public boolean onFinish() {
         //super.onFinish();
 
+        Query query = getSelectedSpecies();
         if (searchSpeciesAuto.getSelectedItem() != null) {
             getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea());
+        } else if(query != null && rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue().equals("multiple")) {
+            getMapComposer().mapSpecies(query, "Species assemblage", "species", 0, LayerUtilities.SPECIES, null, -1);
         }
 
         return runsitesbyspecies();

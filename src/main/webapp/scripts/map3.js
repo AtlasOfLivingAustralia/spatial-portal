@@ -1451,7 +1451,11 @@ function envLayerNearest(e) {
                 var point = new OpenLayers.Geometry.Point(c.lon, c.lat);
                 var pointFeature = new OpenLayers.Feature.Vector(point);
                 pointFeature.attributes = {name: ret[i].name};
-                markers.addFeatures([pointFeature]);
+                try {
+                    markers.addFeatures([pointFeature]);
+                } catch (err) {
+                    //Catch IE9 error.  pointFeature is still mapping.
+                }
             }           
             last_nearest_data = body;
             return body;
@@ -1522,14 +1526,20 @@ function initHover() {
 function toggleActiveHover() {
     if(hovercontrol != null) {
         hovercontrol.deactivate();
-        hovercontrol = null;
-        parent.jq('$hovertool')[0].style.display="none"
+        hovercontrol = null;        
         document.getElementById("hoverTool").style.backgroundImage = "url('img/overview_replacement_off.gif')";
+
+        setTimeout(function() { //for IE9
+            parent.jq('$hovertool')[0].style.display="none"
+        }, 100)
     } else {
         initHover();
-        parent.document.getElementById('hoverOutput').innerHTML = "Hover cursor over map to view layer values";
-        parent.jq('$hovertool')[0].style.display=""
+        parent.document.getElementById('hoverOutput').innerHTML = "Hover cursor over map to view layer values";                
         document.getElementById("hoverTool").style.backgroundImage = "url('img/overview_replacement.gif')";
+
+        setTimeout(function() { //for IE9
+            parent.jq('$hovertool')[0].style.display=""
+        }, 100)
     }
 }
 var nearestcontrol = null;
@@ -1550,15 +1560,21 @@ function initNearest() {
             }
             nearestcontrolprevpos = this_pos;
 
-            var output = parent.document.getElementById('nearestOutput');
-            output.innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr><tr><td>&nbsp;</td></tr><tr><td>Retrieving...</td></tr></table>"
+            setTimeout(function(){ //fix for some browsers
+                parent.document.getElementById('nearestOutput').innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr><tr><td>&nbsp;</td></tr><tr><td>Retrieving...</td></tr></table>"
+            },100)
 
             setTimeout(function(){
                 var data = envLayerNearest(e);
+                alert(data)
                 if(data != null) {
-                    output.innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>";
+                    setTimeout(function(){ //fix for some browsers
+                        parent.document.getElementById('nearestOutput').innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>";
+                    },200)
                 } else {
-                    output.innerHTML = "No values to display";
+                    setTimeout(function(){ //fix for some browsers
+                        parent.document.getElementById('nearestOutput').innerHTML = "No values to display";
+                    },200)
                 }
             }, 2);
         }
@@ -1570,11 +1586,15 @@ function toggleActiveNearest() {
     if(nearestcontrol != null) {
         nearestcontrol.deactivate();
         nearestcontrol = null;
-        parent.jq('$nearesttool')[0].style.display="none"
+        setTimeout(function() {
+            parent.jq('$nearesttool')[0].style.display="none"
+        }, 100)
     } else {
         initNearest();
         parent.document.getElementById('nearestOutput').innerHTML = "Click on the map for the nearest localities.";
-        parent.jq('$nearesttool')[0].style.display=""
+        setTimeout(function() {
+            parent.jq('$nearesttool')[0].style.display=""
+        }, 100)
     }
 }
 

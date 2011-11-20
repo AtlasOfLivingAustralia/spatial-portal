@@ -505,25 +505,43 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void intersectWithSpeciesDistributions() {
         try {
-            String area = selectedArea.getWkt();
-            
+            String [] lines = getDistributionsOrChecklists("distributions", selectedArea.getWkt(), null);
+
+            if (lines == null || lines.length == 0) {
+                data.put("intersectWithSpeciesDistributions", "0");
+                speciesDistributionText = null;
+            } else {
+                data.put("intersectWithSpeciesDistributions", String.format("%,d", lines.length - 1));
+                speciesDistributionText = lines;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String [] getDistributionsOrChecklists(String type, String wkt, String lsids) {
+        try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/distributions");
+            sbProcessUrl.append("/" + type);
 
             HttpClient client = new HttpClient();
             PostMethod post = new PostMethod(CommonData.layersServer + sbProcessUrl.toString()); // testurl
-            post.addParameter("wkt", area);
+            if(wkt != null) {
+                post.addParameter("wkt", wkt);
+            }
+            if(lsids != null) {
+                post.addParameter("lsids", lsids);
+            }
             post.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(post);
             if (result == 200) {
                 String txt = post.getResponseBodyAsString();
                 JSONArray ja = JSONArray.fromObject(txt);
                 if (ja == null || ja.size() == 0) {
-                    data.put("intersectWithSpeciesDistributions", "0");
-                    speciesDistributionText = null;
+                    return null;
                 } else {
                     String[] lines = new String[ja.size() + 1];
-                    lines[0] = "SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,LSID";
+                    lines[0] = "SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,LSID,AREA_NAME,AREA_SQ_KM";
                     for (int i = 0; i < ja.size(); i++) {
                         JSONObject jo = ja.getJSONObject(i);
                         String spcode = jo.containsKey("spcode") ? jo.getString("spcode") : "";
@@ -538,6 +556,8 @@ public class FilteringResultsWCController extends UtilityComposer {
                         //String p = jo.containsKey("pelagic_fl")?jo.getString("pelagic_fl"):"";
                         String md = jo.containsKey("metadata_u") ? jo.getString("metadata_u") : "";
                         String lsid = jo.containsKey("lsid") ? jo.getString("lsid") : "";
+                        String area_name = jo.containsKey("area_name") ? jo.getString("area_name") : "";
+                        String area_km = jo.containsKey("area_km") ? jo.getString("area_km") : "";
 
                         StringBuilder sb = new StringBuilder();
                         sb.append(spcode).append(",");
@@ -550,87 +570,39 @@ public class FilteringResultsWCController extends UtilityComposer {
                         sb.append(min).append(",");
                         sb.append(max).append(",");
                         sb.append(wrap(md)).append(",");
-                        sb.append(wrap(lsid));
+                        sb.append(wrap(lsid)).append(",");
+                        sb.append(wrap(area_name)).append(",");
+                        sb.append(wrap(area_km));
 
                         lines[i + 1] = sb.toString();
                     }
 
-                    data.put("intersectWithSpeciesDistributions", String.format("%,d", lines.length - 1));
-                    speciesDistributionText = lines;
+                    return lines;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public void intersectWithSpeciesChecklists() {
         try {
-            String area = selectedArea.getWkt();
+            String [] lines = getDistributionsOrChecklists("checklists", selectedArea.getWkt(), null);
 
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/checklists");
-
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.layersServer + sbProcessUrl.toString()); // testurl
-            post.addParameter("wkt", area);
-            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(post);
-            if (result == 200) {
-                String txt = post.getResponseBodyAsString();
-                JSONArray ja = JSONArray.fromObject(txt);
-                if (ja == null || ja.size() == 0) {
-                    data.put("intersectWithSpeciesChecklists", "0");
-                    speciesChecklistText = null;
-                } else {
-                    String[] lines = new String[ja.size() + 1];
-                    lines[0] = "SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,AREA_NAMELSID";
-                    HashMap<String,Object> checklists = new HashMap<String, Object>();
-                    for (int i = 0; i < ja.size(); i++) {
-                        JSONObject jo = ja.getJSONObject(i);
-                        String spcode = jo.containsKey("spcode") ? jo.getString("spcode") : "";
-                        String scientific = jo.containsKey("scientific") ? jo.getString("scientific") : "";
-                        String auth = jo.containsKey("authority_") ? jo.getString("authority_") : "";
-                        String common = jo.containsKey("common_nam") ? jo.getString("common_nam") : "";
-                        String family = jo.containsKey("family") ? jo.getString("family") : "";
-                        String genus = jo.containsKey("genus") ? jo.getString("genus") : "";
-                        String name = jo.containsKey("specific_n") ? jo.getString("specific_n") : "";
-                        String min = jo.containsKey("min_depth") ? jo.getString("min_depth") : "";
-                        String max = jo.containsKey("max_depth") ? jo.getString("max_depth") : "";
-                        //String p = jo.containsKey("pelagic_fl")?jo.getString("pelagic_fl"):"";
-                        String md = jo.containsKey("metadata_u") ? jo.getString("metadata_u") : "";
-                        String areaname = jo.containsKey("area_name") ? jo.getString("area_name") : "";
-                        String lsid = jo.containsKey("lsid") ? jo.getString("lsid") : "";
-
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(spcode).append(",");
-                        sb.append(wrap(scientific)).append(",");
-                        sb.append(wrap(auth)).append(",");
-                        sb.append(wrap(common)).append(",");
-                        sb.append(wrap(family)).append(",");
-                        sb.append(wrap(genus)).append(",");
-                        sb.append(wrap(name)).append(",");
-                        sb.append(min).append(",");
-                        sb.append(max).append(",");
-                        sb.append(wrap(md)).append(",");
-                        sb.append(wrap(areaname)).append(",");
-                        sb.append(wrap(lsid));
-
-                        lines[i + 1] = sb.toString();
-
-                        //Object o = checklists.get
-                    }
-
-                    data.put("intersectWithSpeciesChecklists", String.format("%,d", lines.length - 1));
-                    speciesChecklistText = lines;
-                }
+            if (lines == null || lines.length == 0) {
+                data.put("intersectWithSpeciesChecklists", "0");
+                speciesChecklistText = null;
+            } else {
+                data.put("intersectWithSpeciesChecklists", String.format("%,d", lines.length - 1));
+                speciesChecklistText = lines;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    String wrap(String s) {
+    static String wrap(String s) {
         return "\"" + s.replace("\"", "\"\"") + "\"";
     }
 

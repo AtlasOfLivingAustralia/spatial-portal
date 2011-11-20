@@ -6,14 +6,19 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.util.LayerUtilities;
 import java.io.StringReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Comparator;
+import java.util.Date;
 import org.ala.spatial.util.CommonData;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.metainfo.EventHandler;
 import org.zkoss.zul.A;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Doublebox;
+import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Listbox;
@@ -28,12 +33,13 @@ import org.zkoss.zul.ListitemRenderer;
  * @author ajay
  */
 public class DistributionsWCController extends UtilityComposer {
-
+    
     Label distributionLabel;
     Listbox distributionListbox;
     EventListener el;
     String[] text;
     ArrayList<String[]> original_data;
+    ArrayList<String[]> current_data;
     String type;
     String original_count;
     Doublebox minDepth;
@@ -63,14 +69,39 @@ public class DistributionsWCController extends UtilityComposer {
     }
 
     public void onClick$btnDownload(Event event) {
+//        try {
+//            el.onEvent(event);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         try {
-            el.onEvent(event);
+            String spid = String.valueOf(System.currentTimeMillis());
+
+            SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+            String sdate = date.format(new Date());
+
+            StringBuilder sb = new StringBuilder();
+            for (String s : text) {
+                if (sb.length() > 0) {
+                    sb.append("\n");
+                }
+                sb.append(s);
+            }
+
+//            File f = new File(System.getProperty("java.io.tmpdir") + File.separator + type + "_" + sdate + "_" + spid + ".csv");
+//            FileOutputStream fos = new FileOutputStream(f);
+//            fos.write(sb.toString().getBytes("UTF-8"));
+//            Filedownload.save(f, "text/html;charset=UTF-8");
+
+            Filedownload.save(sb.toString(), "text/plain;charset=UTF-8", type + "_" + sdate + "_" + spid + ".csv");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public void init(String[] text, String type, String count, EventListener el) {
+        this.setTitle(type);
+
         this.el = el;
         this.original_count = count;
         this.type = type;
@@ -82,7 +113,17 @@ public class DistributionsWCController extends UtilityComposer {
                     try {
                         StringReader sreader = new StringReader(text[i]);
                         CSVReader reader = new CSVReader(sreader);
-                        data.add(reader.readNext());
+
+                        //last row indicates if it is mapped or not
+                        String [] row = reader.readNext();
+                        String [] newrow = java.util.Arrays.copyOf(row, 13);
+                        try {
+                            String niceAreaSqKm = String.format("%.2f",(float)Double.parseDouble(row[11]));
+                            newrow[11] = niceAreaSqKm;
+                        } catch (Exception e) {
+                        }
+                        data.add(newrow);
+                        
                         reader.close();
                         sreader.close();
                     } catch (Exception e) {
@@ -99,6 +140,8 @@ public class DistributionsWCController extends UtilityComposer {
     }
 
     void update(ArrayList<String[]> data, String count) {
+        current_data = data;
+        
         distributionLabel.setValue("found " + count + " " + type + " in the Area");
         distributionListbox.setItemRenderer(new ListitemRenderer() {
 
@@ -106,39 +149,119 @@ public class DistributionsWCController extends UtilityComposer {
             public void render(Listitem li, Object data) {
                 try {
                     String[] cells = (String[]) data;
+                    li.setValue(cells);
                     if (cells.length > 0) {
                         Listcell lc = new Listcell();
                         if (!cells[0].equals("SPCODE")) {
                             Button b = new Button("map");
                             b.setSclass("goButton");
-                            b.addEventListener("onClick", new EventListener() {
+                            if((cells[12] != null && cells[12].length() > 0)
+                                    || getMapComposer().getMapLayerWMS(CommonData.getSpeciesDistributionWMSFromSpcode(cells[0])[1]) != null) {
+                                b.setDisabled(true);
+                            } else {
+                                b.addEventListener("onClick", new EventListener() {
 
-                                @Override
-                                public void onEvent(Event event) throws Exception {
-                                    //get spcode
-                                    Listcell lc = (Listcell) event.getTarget().getParent().getNextSibling();
-                                    String spcode = lc.getLabel();
+                                    @Override
+                                    public void onEvent(Event event) throws Exception {
+                                        //get spcode
+                                        Listcell lc = (Listcell) event.getTarget().getParent().getNextSibling();
+                                        String spcode = lc.getLabel();
 
-                                    //map it
-                                    String[] mapping = CommonData.getSpeciesDistributionWMSFromSpcode(spcode);
-                                    MapLayer ml = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(mapping[0] + " area"),mapping[0] + " area", mapping[1], 0.8f, null, mapping[2], LayerUtilities.WKT, null, null);
-                                    MapComposer.setupMapLayerAsDistributionArea(ml);
+                                        //row as metadata
+                                        Listitem li = (Listitem) lc.getParent();
+                                        String [] row = (String []) li.getValue();
+                                        StringBuilder sb = new StringBuilder();
+                                        String html = "Species area\n";
+                                        html += "<table class='md_table'>";
+                                        html += "<tr class='md_grey-bg'><td class='md_th'>spcode: </td><td class='md_spacer'/><td class='md_value'>" + row[0] + "</td></tr>";
+                                        html += "<tr><td class='md_th'>Scientific name: </td><td class='md_spacer'/><td class='md_value'>" + row[1] + "</td></tr>";
+                                        html += "<tr class='md_grey-bg'><td class='md_th'>Authority full: </td><td class='md_spacer'/><td class='md_value'>" + row[2] + "</td></tr>";
+                                        html += "<tr><td class='md_th'>Common name: </td><td class='md_spacer'/><td class='md_value'>" + row[3] + "</td></tr>";
+                                        html += "<tr class='md_grey-bg'><td class='md_th'>Family name: </td><td class='md_spacer'/><td class='md_value'>" + row[4] + "</td></tr>";
+                                        html += "<tr><td class='md_th'>Genus name: </td><td class='md_spacer'/><td class='md_value'>" + row[5] + "</td></tr>";
+                                        html += "<tr class='md_grey-bg'><td class='md_th'>Specific name: </td><td class='md_spacer'/><td class='md_value'>" + row[6] + "</td></tr>";
+                                        html += "<tr><td class='md_th'>Min depth: </td><td class='md_spacer'/><td class='md_value'>" + row[7] + "</td></tr>";
+                                        html += "<tr class='md_grey-bg'><td class='md_th'>Max depth: </td><td class='md_spacer'/><td class='md_value'>" + row[8] + "</td></tr>";
+                                        String lastClass = "";
+                                        if(row[9] != null && row[9].length() > 0) {
+                                            html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + row[9] + "'>link</a></td></tr>";
+                                            lastClass = lastClass.length() == 0? "md_grey-bg": "";
+                                        }
+                                        if(row[10] != null && row[10].length() > 0) {
+                                            html += "<tr class='" + lastClass + "'><td class='md_th'>BIE link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + CommonData.bieServer + "/species/" + row[10] + "'>link</a></td></tr>";
+                                            lastClass = lastClass.length() == 0? "md_grey-bg": "";
+                                        }
+                                        if(row[11] != null && row[11].length() > 0) {
+                                            html += "<tr class='" + lastClass + "'><td class='md_th'>Area name: </td><td class='md_spacer'/><td class='md_value'>" + row[11] + "</td></tr>";
+                                            lastClass = lastClass.length() == 0? "md_grey-bg": "";
+                                        }
+                                        if(row[12] != null && row[12].length() > 0) {
+                                            html += "<tr class='" + lastClass + "'><td class='md_th'>Area sq km: </td><td class='md_spacer'/><td class='md_value'>" + row[12] + "</td></tr>";
+                                            lastClass = lastClass.length() == 0? "md_grey-bg": "";
+                                        }
+                                        html += "</table>";
 
-                                    //disable this button
-                                    ((Button) event.getTarget()).setDisabled(true);
-                                }
-                            });
+                                        //map it
+                                        String[] mapping = CommonData.getSpeciesDistributionWMSFromSpcode(spcode);
+                                        MapLayer ml = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(row[0] + " area"),mapping[0] + " area", mapping[1], 0.8f, html, null, LayerUtilities.WKT, null, null);
+                                        MapComposer.setupMapLayerAsDistributionArea(ml);
+
+                                        //disable this button
+                                        ((Button) event.getTarget()).setDisabled(true);
+
+                                        //flag as mapped by area_name or spcode
+                                        for(int i=0;i<original_data.size();i++) {
+                                            if(original_data.get(i)[0].length() > 0 &&
+                                                    (original_data.get(i)[0].equals(row[0])
+                                                    || (original_data.get(i)[11] != null
+                                                        && original_data.get(i)[11].length() > 0
+                                                        && original_data.get(i)[11].equals(row[11])))) {
+                                                original_data.get(i)[12] = "1";
+                                            }
+                                        }
+                                        for(int i=0;i<current_data.size();i++) {
+                                            if(current_data.get(i)[0].length() > 0 &&
+                                                    (current_data.get(i)[0].equals(row[0])
+                                                    || (current_data.get(i)[11] != null
+                                                        && current_data.get(i)[11].length() > 0
+                                                        && current_data.get(i)[11].equals(row[11])))) {
+                                                current_data.get(i)[12] = "1";
+                                            }
+                                        }
+                                        for(int i=0;i<distributionListbox.getItemCount();i++) {
+                                            String [] data = (String[]) distributionListbox.getItemAtIndex(i).getValue();
+                                            if(data != null && data[12] == null
+                                                    && (data[0].equals(row[0])
+                                                        || (data[11] != null
+                                                            && data[11].length() > 0
+                                                            && data[11].equals(row[11])))) {
+                                                data[0] = "";
+                                                ((Button)distributionListbox.getItemAtIndex(i).getFirstChild().getFirstChild()).setDisabled(true);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
                             b.setParent(lc);
                         }
 
                         lc.setParent(li);
 
-                        for (int i = 0; i < 10; i++) { //exclude LSID
-                            if (i == 9) { //metadata url
+                        for (int i = 0; i < 13; i++) {
+                            if (i == 9) {               //metadata url
                                 lc = new Listcell();
                                 if (cells[i] != null && cells[i].length() > 0) {
                                     A a = new A("link");
                                     a.setHref(cells[i]);
+                                    a.setTarget("_blank");
+                                    a.setParent(lc);
+                                }
+                                lc.setParent(li);
+                            } else if (i == 10) {       //lsid
+                                lc = new Listcell();
+                                if (cells[i] != null && cells[i].length() > 0) {
+                                    A a = new A("link");
+                                    a.setHref(CommonData.bieServer + "/species/" + cells[i]);
                                     a.setTarget("_blank");
                                     a.setParent(lc);
                                 }
