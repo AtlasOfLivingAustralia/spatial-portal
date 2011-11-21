@@ -280,13 +280,13 @@ public class QueryField implements Serializable {
     public String getAsString(int pos) {
         switch (fieldType) {
             case INT:
-                return String.valueOf((intData[pos] == Integer.MIN_VALUE) ? "" : intData[pos]);
+                return String.valueOf((intData[pos] == Integer.MIN_VALUE) ? "n/a" : intData[pos]);
             case LONG:
-                return String.valueOf((longData[pos] == Long.MIN_VALUE) ? "" : longData[pos]);
+                return String.valueOf((longData[pos] == Long.MIN_VALUE) ? "n/a" : longData[pos]);
             case FLOAT:
-                return String.valueOf((Float.isNaN(floatData[pos])) ? "" : floatData[pos]);
+                return String.valueOf((Float.isNaN(floatData[pos])) ? "n/a" : floatData[pos]);
             case DOUBLE:
-                return String.valueOf((Double.isNaN(doubleData[pos])) ? "" : doubleData[pos]);
+                return String.valueOf((Double.isNaN(doubleData[pos])) ? "n/a" : doubleData[pos]);
             case STRING:
                 return stringData[intData[pos]];
             default:

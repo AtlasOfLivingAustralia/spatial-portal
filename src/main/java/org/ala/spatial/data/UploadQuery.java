@@ -119,6 +119,8 @@ public class UploadQuery implements Query, Serializable {
                     sb.append("\"");
                     sb.append(String.valueOf(data.get(validFields[i]).getAsString(j)).replace("\"", "\"\""));
                     sb.append("\"");
+                } else {
+                    sb.append("n/a");
                 }
             }
         }
