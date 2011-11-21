@@ -71,7 +71,106 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <script defer="true" type="text/JavaScript" src="scripts/index.js" />
 
         <timer id="timerKeepAliveSession" repeats="true" delay="600000"/>
-                
+
+        <div id="menucontainer">
+        <div width="400px" id="menudiv" sclass="menudiv" height="39px" style="position:absolute">
+            <n:div id="nav-sp">
+                <n:ul class="sf">
+                    <n:li>
+                        <n:a href="http://www.ala.org.au/" target="_blank">Home</n:a>
+                    </n:li>
+                    <n:li>
+                        <n:a href="">Add to Map</n:a>
+                        <n:ul>
+                            <n:li>
+                                <n:a href="#" n:onClick="addSpeciesAction();">Species</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="addAreaAction();">Areas</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="addLayerAction();">Layers</n:a>
+                            </n:li>
+                        </n:ul>
+                    </n:li>
+                    <n:li>
+                        <n:a href="">Tools</n:a>
+                        <n:ul>
+                            <n:li>
+                                <n:a href="#" n:onClick="runAreaReport();">Area Report</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="runNearestLocality();">Nearest locality</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="runClassification();">Classify</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="runPrediction();">Predict</n:a>
+                            </n:li>
+			<!--<n:li><n:a href="#" n:onClick="runTabulation();">(Tabulate)</n:a></n:li>
+				<n:li><n:a href="#" n:onClick="runGDM();">(GDM)</n:a></n:li> -->
+                            <n:li>
+                                <n:a href="#" n:onClick="runSitesBySpecies();">Species to Grid</n:a>
+                            </n:li>
+                        </n:ul>
+                    </n:li>
+                    <n:li>
+                        <n:a href="">Import</n:a>
+                        <n:ul>
+                            <n:li>
+                                <n:a href="#" n:onClick="runImportSpecies();">Points</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="runImportSpecies();">Assemblage</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="runImportAnalysis();">Prior Analysis</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="runImportAreas();">Areas</n:a>
+                            </n:li>
+                        </n:ul>
+                    </n:li>
+                    <n:li>
+                        <n:a href="">Export</n:a>
+                        <n:ul>
+                            <n:li>
+                                <n:a href="#" n:onClick="runSpeciesList();">Species List</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="runSamplingAction();">Species Sample</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="runExport();">Areas</n:a>
+                            </n:li>
+                        </n:ul>
+                    </n:li>
+                    <n:li>
+                        <n:a href="">Help</n:a>
+                        <n:ul>
+                            <n:li>
+                                <n:a href="#" n:onClick="loadHelp('getting-started');">Getting Started</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="loadHelp('add-to-map');">Add To Map</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="loadHelp('tools');">Tools</n:a>
+                            </n:li>
+                        </n:ul>
+                    </n:li>
+                </n:ul>
+            </n:div>
+            <div onClick="menus.setOpen(false);menudiv.setParent(menucontainerwest);" sclass="z-west-colps z-borderlayout-icon"
+                style="position: absolute; z-index: 201; left: 380px; top: 3px;" >
+            </div>
+        </div>
+        </div>
+
         <borderlayout width="100%" height="100%">
             <north id="header" height="45" visible="false"></north>
             <west title=" " size="${settingsSupplementary.values.menu_default_width}"
@@ -89,59 +188,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             />
                         </div>
                     </div>
-
+                    <div id="menucontainerwest" />
                     <div id="westContent" class="westContent" visible="true" height="100%">
-                        <div width="100%" sclass="menudiv" height="39px" >
-<n:nav id="nav-sp">
-	<n:ul class="sf">
-		<n:li><n:a href="">Add to Map</n:a>
-			<n:ul>
-				<n:li><n:a href="#" n:onClick="addSpeciesAction();">Species</n:a></n:li>
-				<n:li><n:a href="#" n:onClick="addAreaAction();">Areas</n:a></n:li>
-				<n:li><n:a href="#" n:onClick="addLayerAction();">Layers</n:a></n:li>
-			</n:ul>
-		</n:li>
-		<n:li><n:a href="">Tools</n:a>
-			<n:ul>
-				<n:li><n:a href="#" n:onClick="runAreaReport();">Area Report</n:a></n:li>
-				<n:li><n:a href="#" n:onClick="runNearestLocality();">Nearest locality</n:a></n:li>
-				<n:li><n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a></n:li>
-				<n:li><n:a href="#" n:onClick="runClassification();">Classify</n:a></n:li>
-				<n:li><n:a href="#" n:onClick="runPrediction();">Predict</n:a></n:li>
-			<!--<n:li><n:a href="#" n:onClick="runTabulation();">(Tabulate)</n:a></n:li>
-				<n:li><n:a href="#" n:onClick="runGDM();">(GDM)</n:a></n:li> -->
-                                <n:li><n:a href="#" n:onClick="runSitesBySpecies();">Species to Grid</n:a></n:li>
-			</n:ul>
-		</n:li>
-		<n:li><n:a href="">Import</n:a>
-			 <n:ul>
-                                <n:li><n:a href="#" n:onClick="runImportSpecies();">Points</n:a></n:li>
-                                <n:li><n:a href="#" n:onClick="runImportSpecies();">Assemblage</n:a></n:li>
-                                <n:li><n:a href="#" n:onClick="runImportAnalysis();">Prior Analysis</n:a></n:li>
-                                <n:li><n:a href="#" n:onClick="runImportAreas();">Areas</n:a></n:li>
-                         </n:ul>
-		</n:li>
-		<n:li><n:a href="">Export</n:a>
-                         <n:ul>
-                                <n:li><n:a href="#" n:onClick="runSpeciesList();">Species List</n:a></n:li>
-                                <n:li><n:a href="#" n:onClick="runSamplingAction();">Species Sample</n:a></n:li>
-                                <n:li><n:a href="#" n:onClick="runExport();">Areas</n:a></n:li>
-                         </n:ul>
-                </n:li>
-		<n:li><n:a href="">Help</n:a>
-                         <n:ul>
-                                <n:li><n:a href="#" n:onClick="loadHelp('getting-started');">Getting Started</n:a></n:li>
-                                <n:li><n:a href="#" n:onClick="loadHelp('add-to-map');">Add To Map</n:a></n:li>
-                                <n:li><n:a href="#" n:onClick="loadHelp('tools');">Tools</n:a></n:li>
-                         </n:ul>
-                </n:li>
-	</n:ul>
-</n:nav>
-                            
-                            <div onClick="menus.setOpen(false);" sclass="z-west-colps z-borderlayout-icon"
-                            style="position: absolute; z-index: 201; left: 380px; top: 3px;" >
-                            </div>
-                        </div>
                         <borderlayout style="position:absolute;top:0px;left:0px">
                             <north height="219px">
                                 <div>

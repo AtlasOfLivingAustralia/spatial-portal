@@ -83,6 +83,7 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
+import org.zkoss.zk.ui.event.OpenEvent;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zk.ui.util.SessionInit;
 import org.zkoss.zul.Caption;
@@ -128,6 +129,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private West menus;
     private Div westContent;
     private Div westMinimised;
+    private Div menudiv;
+    private Div menucontainer;
     /*
      * User data object to allow for the saving of maps and searches
      */
@@ -1776,6 +1779,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void setWestWidth(String width) {
         menus.setWidth(width);
+    }
+    
+    public void onOpen$menus(Event event) {
+        boolean open = false;
+        if(event instanceof OpenEvent) {
+            open = ((OpenEvent) event).isOpen();
+        } else if(event instanceof ForwardEvent) {
+            if(((ForwardEvent)event).getOrigin() instanceof OpenEvent) {
+                open = ((OpenEvent) ((ForwardEvent)event).getOrigin()).isOpen();
+            }
+        }
+
+        if(open == true) {
+            menudiv.setParent(menucontainer);
+        } //close handled in index.zul
     }
 
     /**
