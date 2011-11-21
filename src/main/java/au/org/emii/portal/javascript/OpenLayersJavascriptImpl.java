@@ -672,7 +672,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             params += ", ";
         }
         if (!Validate.empty(layer.getEnvParams())) {
-            params += "env: '" + layer.getEnvParams() + "', ";
+            params += "env: '" + layer.getEnvParams().replace("'","\\'") + "', ";
         }
 
         //extend to add ogc filter
