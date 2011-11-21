@@ -110,6 +110,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 				<n:li><n:a href="#" n:onClick="runPrediction();">Predict</n:a></n:li>
 			<!--<n:li><n:a href="#" n:onClick="runTabulation();">(Tabulate)</n:a></n:li>
 				<n:li><n:a href="#" n:onClick="runGDM();">(GDM)</n:a></n:li> -->
+                                <n:li><n:a href="#" n:onClick="runSitesBySpecies();">Species to Grid</n:a></n:li>
 			</n:ul>
 		</n:li>
 		<n:li><n:a href="">Import</n:a>
@@ -117,13 +118,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <n:li><n:a href="#" n:onClick="runImportSpecies();">Points</n:a></n:li>
                                 <n:li><n:a href="#" n:onClick="runImportSpecies();">Assemblage</n:a></n:li>
                                 <n:li><n:a href="#" n:onClick="runImportAnalysis();">Prior Analysis</n:a></n:li>
+                                <n:li><n:a href="#">Areas</n:a></n:li>
                          </n:ul>
 		</n:li>
 		<n:li><n:a href="">Export</n:a>
                          <n:ul>
                                 <n:li><n:a href="#" n:onClick="runSpeciesList();">Species List</n:a></n:li>
                                 <n:li><n:a href="#" n:onClick="runSamplingAction();">Species Sample</n:a></n:li>
-                                <n:li><n:a href="#" n:onClick="runSitesBySpecies();">Sites By Species Matrix</n:a></n:li>
                                 <n:li><n:a href="#" n:onClick="runExport();">Areas</n:a></n:li>
                          </n:ul>
                 </n:li>
