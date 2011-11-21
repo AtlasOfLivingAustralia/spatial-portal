@@ -118,7 +118,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <n:li><n:a href="#" n:onClick="runImportSpecies();">Points</n:a></n:li>
                                 <n:li><n:a href="#" n:onClick="runImportSpecies();">Assemblage</n:a></n:li>
                                 <n:li><n:a href="#" n:onClick="runImportAnalysis();">Prior Analysis</n:a></n:li>
-                                <n:li><n:a href="#">Areas</n:a></n:li>
+                                <n:li><n:a href="#" n:onClick="runImportAreas();">Areas</n:a></n:li>
                          </n:ul>
 		</n:li>
 		<n:li><n:a href="">Export</n:a>
@@ -133,7 +133,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <n:li><n:a href="#" n:onClick="loadHelp('getting-started');">Getting Started</n:a></n:li>
                                 <n:li><n:a href="#" n:onClick="loadHelp('add-to-map');">Add To Map</n:a></n:li>
                                 <n:li><n:a href="#" n:onClick="loadHelp('tools');">Tools</n:a></n:li>
-                         </n:ul>A
+                         </n:ul>
                 </n:li>
 	</n:ul>
 </n:nav>

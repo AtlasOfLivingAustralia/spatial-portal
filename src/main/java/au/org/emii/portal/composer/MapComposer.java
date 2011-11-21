@@ -3247,4 +3247,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void importSpecies(Event event) {
         openModal("WEB-INF/zul/UploadSpecies.zul", null, "uploadspecieswindow");
     }
+
+    public void importAreas(Event event) {
+        openModal("WEB-INF/zul/ImportAreas.zul", null, "addareawindow");
+    }
 }

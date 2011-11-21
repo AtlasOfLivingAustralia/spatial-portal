@@ -321,6 +321,10 @@ function runImportSpecies(){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'importSpecies', null));
 }
 
+function runImportAreas(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'importAreas', null));
+}
+
 function runImportAnalysis() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'importAnalysis', null));
 }
