@@ -1,37 +1,55 @@
-/*
-original at http://www.ala.org.au/wp-content/themes/ala/css/sf.css
-*/
-#nav {
-	float:left;
-	position:relative;
-	height:36px;
-	display:inline;
-	padding-left:17px;
-	z-index:1000;
+/* nav bar styles*/
+nav#nav-sp {
+    z-index:100;
+    position:relative;
+    width:99.5%;
+    height:37px;
+    margin:0 auto;
+    -moz-border-radius: 0 0 3px 3px;
+    -webkit-border-radius: 0 0 3px 3px;
+    -o-border-radius: 0 0 3px 3px;
+    -icab-border-radius: 0 0 3px 3px;
+    -khtml-border-radius: 0 0 3px 3px;
+    border-radius: 0 0 3px 3px;
+
+    border:1px solid #bc2b03;
+    border-top:none;
+    background-color: #df4a21;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#df4a21), to(#d3421a));
+    background-image: -webkit-linear-gradient(top, #df4a21, #d3421a);
+    background-image:    -moz-linear-gradient(top, #df4a21, #d3421a);
+    background-image:     -ms-linear-gradient(top, #df4a21, #d3421a);
+    background-image:      -o-linear-gradient(top, #df4a21, #d3421a);
+    background-image:         linear-gradient(top, #df4a21, #d3421a);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#df4a21', EndColorStr='#d3421a');
+
 }
 
-#nav ul li {
-	display:inline;
+nav#nav-sp ul li {
+    display:inline;
 }
-#nav li a {
-	float: left;
-	padding: 36px 0 0 0;
-	overflow: hidden;
-	height: 0px !important;
-	border: none;
+nav#nav-sp li a {
+    float: left;
+    overflow: hidden;
+    border: none;
+    font-size:1.4em;
+    font-family:"Arial Narrow", Arial, Helvetica,sans-serif;
+    font-weight:narrow;
+    color:#fff;
+    padding:.5em 1em;
 }
 /*** ESSENTIAL STYLES ***/
 .sf, .sf * {
-	margin:0;
-	padding:0;
-	list-style:none;
+    margin:0;
+    padding:0;
+    list-style:none;
 }
 
 /*.sf ul {*/
 .sf li ul {
-	position:absolute;
-	top:-999em;
-	width:100%; /* left offset of submenus need to match (see below) */
+    position:absolute;
+    top:-999em;
+    width:100%; /* left offset of submenus need to match (see below) */
 }
 .sf ul li { width:100%; }
 .sf li:hover { visibility:inherit; /* fixes IE7 'sticky bug' */ }
@@ -40,127 +58,61 @@ original at http://www.ala.org.au/wp-content/themes/ala/css/sf.css
 
 .sf li:hover ul,
 .sf li.sfHover ul {
-	left:-15px;
-	top:31px;    /* where to start sub menu (match height of button image) */
-	width:16em;  /* how wide the sub-menus should be when javascript is disabled. don't forget left margin for level 3! */
-	z-index:50;
+    left:0;
+    top:3em;    /* where to start sub menu (match height of button image) */
+    width:16em;  /* how wide the sub-menus should be when javascript is disabled. don't forget left margin for level 3! */
+    z-index:50;
+    text-align:left;
 }
-.sf li:hover ul.log-in,
-.sf li.sfHover ul.log-in {
-	left:-.5em!important;
-}
+
 ul.sf li:hover li ul,
 ul.sf li.sfHover li ul {
-	top:-999em;
+    top:-999em;
 }
 
 /*** CUSTOM SKIN ***/
 
 /* top */
 .sf a {text-decoration:none}
-
-.nav-myprofile.nav-right a{position:absolute;right:-196px;}
-
-.nav-login.nav-right a, .nav-logout.nav-right a {position:absolute;right:-263px;}
-
-.nav-home a{width:56px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:0 0;}
-.nav-add a{width:92px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-56px 0;}
-.nav-tools a{width:52px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-148px 0;}
-.nav-help a{width:56px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-200px 0;}
-
-.nav-home a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:0px -51px;z-index:100;}
-.nav-add a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-56px -51px;z-index:100;}
-.nav-tools a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-148px -51px;z-index:100;}
-.nav-help a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-200px -51px;z-index:100;}
+.sf li:hover, .sf li.wpm-hover,
+.sf li:hover > a,
+.sf li.selected a,
+.sf a:focus, .sf a:hover, .sf a:active {
+    text-decoration: none;
+    background:		#3d464c;			/* color 3 */
+    outline:		0;
+}
 
 /* end of image replace */
 
 /* subs */
 .sf li li {
-	height:100%;
-	line-height:1.6em;
+    height:100%;
+    line-height:1;
 }
 
 .sf li li a, .sf li li a:visited {
-	padding:.4em .5em 2em .5em!important;
-	width:15.5em;
-	color:			#fff;
-	background-image:none
+    font-family:Arial, Helvetica, sans-serif!important;
+    padding:.5em 1em!important;
+    width:14em;
+    color:#fff;
+    font-size:1.2em!important;
+    cursor:pointer;
 }
 
 .sf li ul {
-	padding: 1em 0;
-	background-color:#f37e2c;
-	background-image: -moz-linear-gradient(top, #fc9f2a, #e8572f);
-	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #fc9f2a),color-stop(1, #e8572f));
-	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fc9f2a', EndColorStr='#e8572f');
-	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fc9f2a', EndColorStr='#e8572f')";
-	border:1px #e8572f solid;
-	-moz-border-radius: 7px; /* FF1+ */
-	-webkit-border-radius: 7px; /* Saf3+, Chrome */
-	-o-border-radius: 7px;
-	-icab-border-radius: 7px;
-	-khtml-border-radius: 7px;
-	border-radius: 7px; /* Opera 7.7, IE 9 */
-	z-index:50;
-	overflow:hidden;
+    padding: 0;
+    background-color:#3d464c;
+    border:1px #3d464c solid;
+    -moz-border-radius:  0 0 3px 3px; /* FF1+ */
+    -webkit-border-radius:  0 0 3px 3px; /* Saf3+, Chrome */
+    -o-border-radius:  0 0 3px 3px;
+    -icab-border-radius: 0 0 3px 3px;
+    -khtml-border-radius:  0 0 3px 3px;
+    border-radius:  0 0 3px 3px; /* Opera 7.7, IE 9 */
+    z-index:50;
+    overflow:hidden;
 }
 
 /* hover for subs */
-.sf li li:hover, .sf li li.sfHover,.sf li li a:focus, .sf li li a:hover, .sf li li a:active { background-color:#dd3102;color:#fff!important; outline:0;}
-
-/* species info table start */
-.md_heading {
-    font-family: Arial, Helvetica, Sans Serif;
-    font-size:22.1px;
-    color:#718804;
-	padding:5px;
-	margin:0px;
-}
-
-.md_th{
-	font-family:Arial,Helvetica,sans-serif;
-	font-size:11px;
-	font-weight:700;
-	font-style:normal;
-	color:#000000;
-	text-transform:none;
-	text-decoration:none;
-	letter-spacing:normal;
-	word-spacing:0;
-	line-height:20.8px;
-	text-align:left;
-	vertical-align:top;
-	direction:ltr;
-}
-
-.md_th, .md_td, .md_spacer{
-    padding: 0.5em 5px;
-}
-
-.md_spacer{
-	width:20px;
-}
-
-.md_table {
-    border-collapse: collapse;
-    border-spacing: 0px;
-    padding-left: 15px;
-    width: 100%;
-}
-.md_value{
-	text-align: left;
-	font-family: Arial,Helvetica,sans-serif;
-	font-size: 11px;
-	line-height: 20.8px;
-	padding:5px;
-        width: 80%;
-}
-
-.md_grey-bg{
-	background-color: #F0F0F0;
-    border-collapse: collapse;
-    border-spacing: 0;
-}
-/* species info table end */
-
+.sf li li:hover, .sf li li.sfHover,.sf li li a:focus, .sf li li a:hover, .sf li li a:active, .sf li li.selected a { background-color:#df4a21!important; outline:0;}

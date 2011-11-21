@@ -317,8 +317,8 @@ function runGDM(){
     alert("Run GDM");
 }
 
-function runImport(){
-    alert("Run Import");
+function runImportSpecies(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'importSpecies', null));
 }
 
 function runImportAnalysis() {

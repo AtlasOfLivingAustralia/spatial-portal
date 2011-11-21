@@ -48,7 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
@@ -70,8 +69,6 @@ import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.UserData;
 import org.ala.spatial.util.Util;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.MDC;
@@ -155,7 +152,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     String tbxLayerLoaded;
     HashMap<String, EventListener> layerLoadedChangeEvents = new HashMap<String, EventListener>();
-
     RemoteLogger remoteLogger;
 
     void motd() {
@@ -264,9 +260,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             highlightLayer.setOpacity(1);
                             if (selectedLayer.getHighlight() != null && selectedLayer.getHighlight().length() > 0
                                     && !selectedLayer.getColourMode().equals("grid")) {
-                                if(selectedLayer.getData("query") instanceof UploadQuery) {
+                                if (selectedLayer.getData("query") instanceof UploadQuery) {
                                     try {
-                                        highlightLayer.setEnvParams(highlightEnv + ";sel:" + URLEncoder.encode(selectedLayer.getHighlight().replace(";", "%3B"),"UTF-8"));
+                                        highlightLayer.setEnvParams(highlightEnv + ";sel:" + URLEncoder.encode(selectedLayer.getHighlight().replace(";", "%3B"), "UTF-8"));
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
@@ -1315,7 +1311,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         return null;
                     } else {
                         if (key.equals("q") || key.equals("fq")) {
-                            if(value.equals("*:*")) {
+                            if (value.equals("*:*")) {
                                 continue;
                             }
                             if (sb.length() > 0) {
@@ -1329,15 +1325,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             //Not key:... OR key:...
                             //Not key:.."..
                             int p = value.indexOf(':');
-                            if(p > 0 && p +1 < value.length()
-                                    && value.charAt(p+1) != '['
-                                    && value.charAt(p+1) != '*'
-                                    && value.charAt(p+1) != '"'
+                            if (p > 0 && p + 1 < value.length()
+                                    && value.charAt(p + 1) != '['
+                                    && value.charAt(p + 1) != '*'
+                                    && value.charAt(p + 1) != '"'
                                     && !value.contains(" AND ")
                                     && !value.contains(" OR ")
                                     && !value.contains("\"")) {
-                                value = value.substring(0,p+1) + "\""
-                                        + value.substring(p+1) + "\"";
+                                value = value.substring(0, p + 1) + "\""
+                                        + value.substring(p + 1) + "\"";
                             }
                             sb.append("(").append(value).append(")");
                         } else if (key.equals("qc")) {
@@ -1365,7 +1361,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
 
                     BiocacheQuery q = new BiocacheQuery(null, wkt, sb.toString(), null, true, bs, ws);
-                    
+
                     if (qc != null) {
                         q.setQc(qc);
                     }
@@ -1738,7 +1734,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      *
      */
     public void onClick$onPrint(Event event) {
-        if(getFellowIfAny("printingwindow") != null) {
+        if (getFellowIfAny("printingwindow") != null) {
             getFellowIfAny("printingwindow").detach();
         }
         tbxPrintHack = (String) event.getData();
@@ -1867,24 +1863,24 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private void loadDistributionMap(String lsids, String wkt) {
         try {
             //expert distributions
-            String [] distributions = FilteringResultsWCController.getDistributionsOrChecklists("distributions", wkt,lsids);
+            String[] distributions = FilteringResultsWCController.getDistributionsOrChecklists("distributions", wkt, lsids);
 
             //species checklists
-            String [] checklists = FilteringResultsWCController.getDistributionsOrChecklists("checklists", wkt,lsids);
+            String[] checklists = FilteringResultsWCController.getDistributionsOrChecklists("checklists", wkt, lsids);
 
-            String [] finallist = distributions;
-            if(checklists != null) {
-                if(finallist != null) {
-                    finallist = new String [distributions.length + checklists.length];
-                    System.arraycopy(distributions,0,finallist,0,distributions.length);
-                    System.arraycopy(checklists,0,finallist,distributions.length,checklists.length);
+            String[] finallist = distributions;
+            if (checklists != null) {
+                if (finallist != null) {
+                    finallist = new String[distributions.length + checklists.length];
+                    System.arraycopy(distributions, 0, finallist, 0, distributions.length);
+                    System.arraycopy(checklists, 0, finallist, distributions.length, checklists.length);
                 } else {
                     finallist = checklists;
                 }
             }
 
             //open for optional mapping of areas
-            if(finallist != null) {
+            if (finallist != null) {
                 DistributionsWCController window = (DistributionsWCController) Executions.createComponents("WEB-INF/zul/AnalysisDistributionResults.zul", this, null);
 
                 try {
@@ -1953,16 +1949,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String spcode = (String) mapLayer.getData("spcode");
             String url = CommonData.layersServer + "/distribution/" + spcode;
             String jsontxt = Util.readUrl(url);
-            if(jsontxt == null || jsontxt.length() == 0) {
+            if (jsontxt == null || jsontxt.length() == 0) {
                 url = CommonData.layersServer + "/checklists/" + spcode;
                 jsontxt = Util.readUrl(url);
             }
-            if(jsontxt == null || jsontxt.length() == 0) {
+            if (jsontxt == null || jsontxt.length() == 0) {
                 System.out.println("******** failed to find wkt for " + mapLayer.getUri() + " > " + spcode);
                 return;
             }
             JSONObject jo = JSONObject.fromObject(jsontxt);
-            if(!jo.containsKey("geometry")) {
+            if (!jo.containsKey("geometry")) {
                 return;
             }
             mapLayer.setWKT(jo.getString("geometry"));
@@ -2751,15 +2747,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onClick$btnSpeciesList(Event event) {
         openModal("WEB-INF/zul/AddToolSpeciesList.zul", null, "addtoolwindow");
     }
-    
+
     public void onClick$btnSitesBySpecies(Event event) {
         openModal("WEB-INF/zul/AddToolSitesBySpecies.zul", null, "addtoolwindow");
     }
 
     public Window openModal(String page, Hashtable<String, Object> params, String windowname) {
         //remove any existing window with the same name (bug somewhere?)
-        if(windowname != null) {
-            if(getFellowIfAny(windowname) != null) {
+        if (windowname != null) {
+            if (getFellowIfAny(windowname) != null) {
                 getFellowIfAny(windowname).detach();
             }
         }
@@ -2956,8 +2952,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         ArrayList<MapLayer> list = new ArrayList<MapLayer>();
         List<MapLayer> allLayers = getPortalSession().getActiveLayers();
         for (int i = 0; i < allLayers.size(); i++) {
-            if (allLayers.get(i).getData("query") != null){ 
-                    //&& allLayers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
+            if (allLayers.get(i).getData("query") != null) {
+                //&& allLayers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
                 list.add(allLayers.get(i));
             }
         }
@@ -3215,7 +3211,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void onClick$openDistributionsChecklists(Event event) {
         String lsids = (String) event.getData();
-        if(lsids != null && lsids.length() > 0) {
+        if (lsids != null && lsids.length() > 0) {
             closeExternalContentWindow();
             loadDistributionMap(lsids, null);
         }
@@ -3246,5 +3242,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         return null;
+    }
+
+    public void importSpecies(Event event) {
+        openModal("WEB-INF/zul/UploadSpecies.zul", null, "uploadspecieswindow");
     }
 }

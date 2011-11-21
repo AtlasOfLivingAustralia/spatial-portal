@@ -1338,7 +1338,6 @@ function envLayerInspection(e) {
             }
         }
     }catch(err){
-        alert(err);
     }
 }
 
@@ -1565,8 +1564,7 @@ function initNearest() {
             },100)
 
             setTimeout(function(){
-                var data = envLayerNearest(e);
-                alert(data)
+                var data = envLayerNearest(e);                
                 if(data != null) {
                     setTimeout(function(){ //fix for some browsers
                         parent.document.getElementById('nearestOutput').innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>";
