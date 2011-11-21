@@ -18,7 +18,22 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
     <style src="css/zkcomponents.css" media="screen" />
     <style src="css/zkprint.css" media="print" />
 
-    <style src="css/sf.css" />
+    <!-- <style src="css/sf.css" />-->
+    <style src="http://test.ala.org.au/wp-content/themes/ala2011/css/sp-sf.css" media="screen"/>
+
+<script type="text/javascript" src="http://test.ala.org.au/wp-content/themes/ala2011/scripts/html5.js"></script>
+<script type='text/javascript' src='http://test.ala.org.au/wp-content/plugins/menubar-templates/Superfish/superfish.js?ver=3.2.1'></script>
+<script type="text/javascript" src="http://test.ala.org.au/wp-content/themes/ala2011/scripts/hoverintent-min.js"></script>
+	<script type="text/javascript" src="http://test.ala.org.au/wp-content/themes/ala2011/scripts/superfish/superfish.js"></script>
+	<script type="text/javascript">
+		 $(document).ready(function() {
+			$('ul.sf').superfish( {
+				delay:500,
+				autoArrows:false,
+				dropShadows:false
+			});
+		});
+	</script>
 
   
     <script defer="false" type="text/javascript">
@@ -78,147 +93,50 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     <div id="westContent" class="westContent" visible="true" height="100%">
                         <div width="100%" sclass="menudiv" height="39px" >
                             <n:div id='nav' style="left: 50px;">
-                                <n:ul class='sf'>
-                                    <n:li class='nav-home'>
-                                        <n:a href="http://www.ala.org.au/" target="_blank">
-                                            <n:span>Home</n:span>
-                                        </n:a>
-                                    </n:li>
-                                    <n:li class='nav-add'>
-                                        <n:a href='#'>
-                                            <n:span>Add To Map</n:span>
-                                        </n:a>
-                                        <n:ul>
-                                            <n:li>
-                                                <n:a href='#' n:onClick="addSpeciesAction();">
-                                                    <n:span>Species</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li>
-                                                <n:a href='#' n:onClick="addAreaAction();">
-                                                    <n:span>Areas</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li>
-                                                <n:a href='#' n:onClick="addLayerAction();">
-                                                    <n:span>Layers</n:span>
-                                                </n:a>
-                                            </n:li>
-                                        </n:ul>
-                                    </n:li>
-                                    <n:li class='nav-tools'>
-                                        <n:a href='#'>
-                                            <n:span>Tools</n:span>
-                                        </n:a>
-                                        <n:ul>
-                                            <n:li>
-                                                <n:a href='#' n:onClick="runAreaReport();">
-                                                    <n:span>Area Report</n:span>
-                                                </n:a>
-                                            </n:li>
-                                            <n:li>
-                                                <n:a href='#' n:onClick="runNearestLocality();">
-                                                    <n:span>Nearest locality</n:span>
-                                                </n:a>
-                                            </n:li>                                           
-                                            <n:li>
-                                                <n:a href='#' n:onClick="runSpeciesList();">
-                                                    <n:span>Download Species List</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li>
-                                                <n:a href='#' n:onClick="runSamplingAction();">
-                                                    <n:span>Download Species Sample</n:span>
-                                                </n:a>
-                                            </n:li>
-                                            <n:li>
-                                                <n:a href='#' n:onClick="runSitesBySpecies();">
-                                                    <n:span>Species to Grid</n:span>
-                                                </n:a>
-                                            </n:li>
-                                            <n:li>
-                                                <n:a href='#' n:onClick="runScatterPlot();">
-                                                    <n:span>Scatterplot</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li style="display:none" >
-                                                <n:a href='#' n:onClick="runTabulation();">
-                                                    <n:span>(Tabulate)</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li>
-                                                <n:a href='#' n:onClick="runClassification();">
-                                                    <n:span>Classify</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li>
-                                                <n:a href='#' n:onClick="runPrediction();">
-                                                    <n:span>Predict</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li style="display:none" >
-                                                <n:a href='#' n:onClick="runGDM();">
-                                                    <n:span>(GDM)</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li>
-                                                <n:a href='#' n:onClick="runImportAnalysis();">
-                                                    <n:span>Restore prior analysis</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li style="display:none" >
-                                                <n:a href='#' n:onClick="runImport();">
-                                                    <n:span>Import</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li style="display:block" >
-                                                <n:a href='#' n:onClick="runExport();">
-                                                    <n:span>Export area</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li style="display:none" >
-                                                <n:a href='#' n:onClick="zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'saveSession', null));">
-                                                    <n:span>Save session</n:span>
-                                                </n:a>
-                                            </n:li>
-                                        </n:ul>
-                                    </n:li>
-                                    <n:li class='nav-help'>
-                                        <n:a href='#'>
-                                            <n:span>Help</n:span>
-                                        </n:a>
-                                        <n:ul>
-                                            <n:li>
-                                                <n:a href='#' n:onClick="loadHelp('getting-started');">
-                                                    <n:span>Getting Started</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li>
-                                                <n:a href='#' n:onClick="loadHelp('add-to-map');">
-                                                    <n:span>Add to map</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li>
-                                                <n:a href='#' n:onClick="loadHelp('tools');">
-                                                    <n:span>Tools</n:span>
-                                                </n:a>
-                                            </n:li>
-                                        </n:ul>
-                                    </n:li>
-                                </n:ul>
+<n:nav id="nav-sp">
+	<n:ul class="sf">
+		<n:li><n:a href="">Add to Map</n:a>
+			<n:ul>
+				<n:li><n:a href="#" n:onClick="addSpeciesAction();">Species</n:a></n:li>
+				<n:li><n:a href="#" n:onClick="addAreaAction();">Areas</n:a></n:li>
+				<n:li><n:a href="#" n:onClick="addLayerAction();">Layers</n:a></n:li>
+			</n:ul>
+		</n:li>
+		<n:li><n:a href="">Tools</n:a>
+			<n:ul>
+				<n:li><n:a href="#" n:onClick="runAreaReport();">Area Report</n:a></n:li>
+				<n:li><n:a href="#" n:onClick="runNearestLocality();">Nearest locality</n:a></n:li>
+				<n:li><n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a></n:li>
+				<n:li><n:a href="#" n:onClick="runClassification();">Classify</n:a></n:li>
+				<n:li><n:a href="#" n:onClick="runPrediction();">Predict</n:a></n:li>
+			<!--<n:li><n:a href="#" n:onClick="runTabulation();">(Tabulate)</n:a></n:li>
+				<n:li><n:a href="#" n:onClick="runGDM();">(GDM)</n:a></n:li> -->
+			</n:ul>
+		</n:li>
+		<n:li><n:a href="">Import</n:a>
+			 <n:ul>
+                                <n:li><n:a href="#">Points</n:a></n:li>
+                                <n:li><n:a href="#">Assemblage</n:a></n:li>
+                                <n:li><n:a href="#" n:onClick="runImportAnalysis();">Prior Analysis</n:a></n:li>
+                         </n:ul>
+		</n:li>
+		<n:li><n:a href="">Export</n:a>
+                         <n:ul>
+                                <n:li><n:a href="#" n:onClick="runSpeciesList();">Species List</n:a></n:li>
+                                <n:li><n:a href="#" n:onClick="runSamplingAction();">Species Sample</n:a></n:li>
+                                <n:li><n:a href="#" n:onClick="runSitesBySpecies();">Sites By Species Matrix</n:a></n:li>
+                                <n:li><n:a href="#" n:onClick="runExport();">Areas</n:a></n:li>
+                         </n:ul>
+                </n:li>
+		<n:li><n:a href="">Help</n:a>
+                         <n:ul>
+                                <n:li><n:a href="#" n:onClick="loadHelp('getting-started');">Getting Started</n:a></n:li>
+                                <n:li><n:a href="#" n:onClick="loadHelp('add-to-map');">Add To Map</n:a></n:li>
+                                <n:li><n:a href="#" n:onClick="loadHelp('tools');">Tools</n:a></n:li>
+                         </n:ul>A
+                </n:li>
+	</n:ul>
+</n:nav>
                             </n:div><!--close nav-->
                             <div onClick="menus.setOpen(false);" sclass="z-west-colps z-borderlayout-icon"
                             style="position: absolute; z-index: 201; left: 380px; top: 3px;" >
