@@ -107,6 +107,9 @@ public class RemoteLogger {
             if (StringUtils.isBlank(lsid)) {
                 lsid = ""; 
             }
+            if (StringUtils.isBlank(pid)) {
+                pid = "";
+            }
 
             post.addParameter("email", "guest@ala.org.au");
             post.addParameter("appid", appid);

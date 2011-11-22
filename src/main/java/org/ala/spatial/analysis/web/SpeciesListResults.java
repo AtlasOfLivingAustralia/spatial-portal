@@ -163,8 +163,8 @@ public class SpeciesListResults extends UtilityComposer {
         if (selectedArea == null) {
             selectedArea = new SelectedArea(null, getMapComposer().getViewArea());
         }
-        getMapComposer().updateUserLogAnalysis("species list", selectedArea.getWkt(), "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
-        remoteLogger.logMapAnalysis("species list", "Export - Species List", selectedArea.getWkt(), "", "", pid, "Species_list_" + sdate + "_" + spid + ".csv", "");
+        getMapComposer().updateUserLogAnalysis("Species List", selectedArea.getWkt(), "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
+        remoteLogger.logMapAnalysis("Species List", "Export - Species List", selectedArea.getWkt(), "", "", spid, "Species_list_" + sdate + "_" + spid + ".csv", "");
 
         detach();
     }

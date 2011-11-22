@@ -2441,11 +2441,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
 
             StringBuffer sbParams = new StringBuffer();
-            sbParams.append("header: " + header);
-            sbParams.append("grid: " + grid);
-            sbParams.append("format: " + format);
-            sbParams.append("resolution: " + resolution);
-            sbParams.append("preview: " + preview);
+            sbParams.append("header: " + header).append("|");
+            sbParams.append("grid: " + grid).append("|");
+            sbParams.append("format: " + format).append("|");
+            sbParams.append("resolution: " + resolution).append("|");
+            sbParams.append("preview: " + preview).append("|");
             Map attrs = new HashMap();
             attrs.put("actionby", "user");
             attrs.put("actiontype", "print");
@@ -2458,6 +2458,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             attrs.put("params", sbParams.toString());
             attrs.put("downloadfile", pp.getImageFilename());
             updateUserLog(attrs, "print");
+
+            sbParams.append("downloadfile: " + pp.getImageFilename());
+            remoteLogger.logMapAnalysis(header, "Export - Map", zoom, "", "", "", sbParams.toString(), "PRINTED");
 
             return pp;
         } catch (Exception e) {
