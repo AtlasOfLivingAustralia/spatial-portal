@@ -148,8 +148,6 @@
         <property name="httpConnection" ref="httpConnection" />
     </bean>
 
-    <bean id="userMachine" class="au.org.emii.portal.servlet.UserMachine" />
-
     <bean id="httpConnection" class="au.org.emii.portal.net.HttpConnectionImpl">
         <property name="settings" ref="settings" />
     </bean>

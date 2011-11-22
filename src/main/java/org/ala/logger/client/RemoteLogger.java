@@ -1,6 +1,7 @@
 package org.ala.logger.client;
 
 import au.org.emii.portal.settings.SettingsSupplementary;
+import javax.servlet.http.HttpSession;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -11,48 +12,21 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
 
 /**
- *
+ * Helper class to send logging information to the logger-service
+ * 
  * @author ajay
  */
 public class RemoteLogger {
 
     Logger logger = Logger.getLogger(this.getClass());
 
-    // http://localhost:8080/logger-service/log/action?appid=abc123&email=guest@ala.org.au&type=test&name=hello2&layers=a:b:c&status=started
     SettingsSupplementary settingsSupplementary;
     String logger_service = "";
     String appid = "";
-    String userip = "";
-
-//    public RemoteLogger() {
-//        logger_service = settingsSupplementary.getValue("logging_url");
-//
-//        appid = settingsSupplementary.getValue("app_id");
-//
-//        userip = Executions.getCurrent().getHeader("x-forwarded-for");
-//        if (StringUtils.isBlank(userip)) {
-//            userip = "";
-//        }
-//    }
 
     private void init() {
         logger_service = settingsSupplementary.getValue("logging_url");
-
         appid = settingsSupplementary.getValue("app_id");
-
-        userip = Executions.getCurrent().getHeader("x-forwarded-for");
-        System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        System.out.println("exec.userip: " + userip);
-        if (StringUtils.isBlank(userip)) {
-            String session_userip = (String)Sessions.getCurrent().getAttribute("userip");
-            System.out.println("sessions.userip: " + userip);
-            if (StringUtils.isBlank(userip)) {
-                userip = "";
-            }
-        }
-        System.out.println("final.userip: " + userip);
-        System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-
     }
 
     public SettingsSupplementary getSettingsSupplementary() {
@@ -65,19 +39,11 @@ public class RemoteLogger {
     }
 
     public void logMapSpecies(String name, String lsid, String area, String extra) {
-        logMapSpecies(name, lsid, area, "species", extra);
+        logMapSpecies(name, lsid, area, "Species", extra);
     }
 
     public void logMapSpecies(String name, String lsid, String area, String type, String extra) {
-//        System.out.println("*************************************************");
-//        System.out.println("logging species mapping ");
-//        System.out.println(type + " - " + name + " (" + lsid + ") in " + area);
-//        System.out.println("*************************************************");
-
-        logger.info("sending log to server");
-        int ret = sendToServer(type, name, lsid, area, "", extra, "mapped", "0", "");
-        System.out.println("((((((((((((((((( " + ret + " )))))))))))))))))");
-
+        sendToServer(type, name, lsid, area, "", extra, "mapped", "0", "");
     }
 
     public void logMapArea(String name, String type, String area) {
@@ -87,29 +53,15 @@ public class RemoteLogger {
         logMapArea(name, type, area, "", "");
     }
     public void logMapArea(String name, String type, String area, String layer, String extra) {
-        type = "area - " + type;
-//        System.out.println("*************************************************");
-//        System.out.println("logging area mapping ");
-//        System.out.println(type + " - " + name + " as " + area);
-//        System.out.println("*************************************************");
-
         sendToServer(type, name, "", area, layer, extra, "mapped", "0", "");
     }
 
     public void logMapAnalysis(String name, String type, String area, String species, String layers, String pid, String options, String status) {
-//        System.out.println("*************************************************");
-//        System.out.println("logging analysis ");
-//        System.out.println(type + " - " + name + " for " + species + " in " + area + " with " + status + " -- " + pid);
-//        System.out.println("*************************************************");
-
         sendToServer(type, name, species, area, layers, options, status, "0", pid);
     }
 
     public void logMapAnalysisUpdateStatus(String pid, String status) {
-//        System.out.println("*************************************************");
-//        System.out.println("logging analysis.status update ");
-//        System.out.println(pid + " - " + status);
-//        System.out.println("*************************************************");
+        sendToServer(pid, status);
     }
 
     private int sendToServer(String type, String name, String lsid, String area, String layers, String extra, String status, String privacy, String pid) {
@@ -131,14 +83,38 @@ public class RemoteLogger {
                 init(); 
             }
             
+            String sessionid = ((HttpSession) Sessions.getCurrent().getNativeSession()).getId();
+
+            String userip = Executions.getCurrent().getHeader("x-forwarded-for");
+            if (StringUtils.isBlank(userip)) {
+                userip = Sessions.getCurrent().getRemoteAddr();
+                if (StringUtils.isBlank(userip)) {
+                    userip = "";
+                }
+            }
+
             HttpClient client = new HttpClient();
             PostMethod post = new PostMethod(logger_service + "/log/action");
             post.addRequestHeader("Accept", "application/json");
 
+            String category1 = "", category2 = "";
+            String[] types = type.split("-");
+            category1 = StringUtils.capitalize(types[0].trim());
+            if (types.length>1) {
+                category2 = StringUtils.capitalize(types[1].trim());
+            }
+
+            if (StringUtils.isBlank(lsid)) {
+                lsid = ""; 
+            }
+
             post.addParameter("email", "guest@ala.org.au");
             post.addParameter("appid", appid);
             post.addParameter("userip", userip);
+            post.addParameter("sessionid", sessionid); 
             post.addParameter("type", type);
+            post.addParameter("category1", category1);
+            post.addParameter("category2", category2);
             post.addParameter("name", name);
             post.addParameter("processid", pid);
             post.addParameter("specieslsid", lsid);
@@ -146,12 +122,9 @@ public class RemoteLogger {
             post.addParameter("status", status);
             post.addParameter("privacy", privacy);
             post.addParameter("area", area);
+            post.addParameter("extra", extra);
 
-//            System.out.println("*************************************************");
-//            System.out.println("logging action to " + logger_service);
-//            System.out.println(type + " - " + name + " (" + lsid + ") in " + area);
-//            System.out.println("*************************************************");
-
+            logger.debug("logging " + type + " action for user session " + sessionid + " for user " + userip);
             return client.executeMethod(post);
 
         } catch (Exception e) {
@@ -169,6 +142,7 @@ public class RemoteLogger {
             GetMethod get = new GetMethod(logger_service + "/log/update/"+pid+"/"+status);
             get.addRequestHeader("Accept", "application/json");
 
+            logger.debug("logging status update on " + pid);
             return client.executeMethod(get);
 
         } catch (Exception e) {

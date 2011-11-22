@@ -610,13 +610,22 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
             //make the metadata?
             StringBuilder sb = new StringBuilder();
+            StringBuilder sbLayerList = new StringBuilder();
             sb.append("Environmental Envelope<br>");
             for (int i = 0; i < selectedLayers.size(); i++) {
                 String layername = (String) selectedLayers.get(i);
                 SPLFilter f = getSPLFilter(layername);
                 sb.append(f.layername).append(": ").append(f.getFilterString()).append("<br>");
+
+                sbLayerList.append(f.layername);
+                if (i < selectedLayers.size()-1) {
+                    sbLayerList.append(":"); 
+                }
             }
             activeAreaMetadata = LayersUtil.getMetadata(sb.toString());
+
+            getMapComposer().setAttribute("activeLayerName", sbLayerList.toString());
+            getMapComposer().setAttribute("mappolygonlayer", sb.toString());
 
             try {
                 final_wkt = getWkt(pid);
@@ -753,19 +762,19 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         //String strCount = postInfo("/filtering/apply/pid/" + pid + "/species/count?area=none");
         String strCount = speciescount + "";
         if (isDirtyCount) {
-            System.out.println("******************* is dirty count");
-            Clients.showBusy("Updating special count....");
+//            System.out.println("******************* is dirty count");
+            Clients.showBusy("Updating species count....");
             strCount = getSpeciesCount() + "";
             Clients.clearBusy();
             //applyFilter();
-            System.out.println("**********************************");
-            System.out.println("**********************************");
-            System.out.println("strCount: " + strCount);
-            System.out.println("**********************************");
-            System.out.println("**********************************");
+//            System.out.println("**********************************");
+//            System.out.println("**********************************");
+//            System.out.println("strCount: " + strCount);
+//            System.out.println("**********************************");
+//            System.out.println("**********************************");
 
         } else {
-            System.out.println("******************* is not dirty count");
+//            System.out.println("******************* is not dirty count");
         }
         //strCount = speciescount + "";
 

@@ -81,15 +81,6 @@
         <servlet-name>remoteRequestServlet</servlet-name>
         <url-pattern>/RemoteRequest</url-pattern>
     </servlet-mapping>
-    <servlet>
-        <display-name>UserMachine</display-name>
-        <servlet-name>userMachine</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>userMachine</servlet-name>
-        <url-pattern>/UserMachine</url-pattern>
-    </servlet-mapping>
 
     <servlet>
         <servlet-name>Spring MVC Dispatcher Servlet</servlet-name>

@@ -20,6 +20,7 @@ import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.SelectedArea;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 
 /**
@@ -64,6 +65,14 @@ public class AreaToolComposer extends UtilityComposer {
         } else {
             if (areatype.startsWith("ci")) {
                 areatype = areatype.substring(2);
+            }
+
+            if (areatype.startsWith("Upload")) {
+                areatype = "Import - Area " + areatype.substring(6);
+            } else if (areatype.startsWith("WKT")) {
+                areatype = "Import - Area WKT";
+            } else {
+                areatype = "Area - " + areatype; 
             }
         }
 

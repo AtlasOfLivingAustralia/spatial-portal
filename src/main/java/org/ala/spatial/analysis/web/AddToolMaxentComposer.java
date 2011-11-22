@@ -236,9 +236,9 @@ public class AddToolMaxentComposer extends AddToolComposer {
                 if (query instanceof BiocacheQuery) {
                     BiocacheQuery bq = (BiocacheQuery) query;
                     options = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + options;
-                    remoteLogger.logMapAnalysis(tToolName.getValue(), "maxent", area, bq.getLsids(), sbenvsel.toString(), pid, options, "STARTED");
+                    remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, bq.getLsids(), sbenvsel.toString(), pid, options, "STARTED");
                 } else {
-                    remoteLogger.logMapAnalysis(tToolName.getValue(), "maxent", area, query.getName()+"__"+query.getQ(), sbenvsel.toString(), pid, options, "STARTED");
+                    remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, query.getName()+"__"+query.getQ(), sbenvsel.toString(), pid, options, "STARTED");
                 }
             } catch (Exception e) {
                 e.printStackTrace();

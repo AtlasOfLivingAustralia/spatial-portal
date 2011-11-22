@@ -46,14 +46,14 @@ public class ContextualLayerSelection extends AreaToolComposer {
 
             String activeLayerName = treePath.replaceAll("^.*ALA:", "").replaceAll("&.*", "");
 
-            System.out.println("***************************");
-            System.out.println("CtxLyrSel");
-            System.out.println("treeName: " + treeName + " (" + activeLayerName + ") ");
-            System.out.println("treePath: " + treePath);
-            System.out.println("treeMetadata: " + treeMetadata);
-            System.out.println("***************************");
+            String lyrSubType = "";
+            if (treeSubType == LayerUtilities.CONTEXTUAL) {
+                lyrSubType = "Contextual";
+            } else if (treeSubType == LayerUtilities.GRID) {
+                lyrSubType = "Environmental";
+            }
 
-            remoteLogger.logMapArea(treeName, "layers", treePath, activeLayerName, treeMetadata);
+            remoteLogger.logMapArea(treeName, "Layer - " + lyrSubType, treePath, activeLayerName, treeMetadata);
         }
 
         Window window = (Window) Executions.createComponents("WEB-INF/zul/AreaMapPolygon.zul", this.getParent(), winProps);

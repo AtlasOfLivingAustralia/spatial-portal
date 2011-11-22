@@ -90,7 +90,7 @@ public class AddAreaController extends UtilityComposer {
                 mapLayer.setMapLayerMetadata(md);
             }
             md.setMoreInfo(LayersUtil.getMetadata("Australia " + wkt));
-            remoteLogger.logMapArea(layerName, "BoxAustralia", wkt);
+            remoteLogger.logMapArea(layerName, "Area - BoxAustralia", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
             //String wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
             String wkt = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 89.999,179.999 -89.999,-179.999 -89.999))";
@@ -102,7 +102,7 @@ public class AddAreaController extends UtilityComposer {
                 mapLayer.setMapLayerMetadata(md);
             }
             md.setMoreInfo(LayersUtil.getMetadata("World " + wkt));
-            remoteLogger.logMapArea(layerName, "BoxWorld", wkt);
+            remoteLogger.logMapArea(layerName, "Area - BoxWorld", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxCurrentView) {
             String wkt = mc.getMapComposer().getViewArea();
             String layerName = mc.getNextAreaLayerName("View Area");
@@ -113,7 +113,7 @@ public class AddAreaController extends UtilityComposer {
                 mapLayer.setMapLayerMetadata(md);
             }
             md.setMoreInfo(LayersUtil.getMetadata("Current view " + wkt));
-            remoteLogger.logMapArea(layerName, "BoxCurrentView", wkt);
+            remoteLogger.logMapArea(layerName, "Area - BoxCurrentView", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciWKT) {
             windowName = "WEB-INF/zul/AreaWKT.zul";
         }

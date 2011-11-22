@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.logger.client.RemoteLogger;
@@ -76,6 +77,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpRequest;
 import org.apache.log4j.MDC;
 import org.geotools.xml.Encoder;
 import org.zkoss.zk.ui.Component;
@@ -1871,11 +1873,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 if (sq instanceof BiocacheQuery) {
                     BiocacheQuery bq = (BiocacheQuery) sq;
                     String extra = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false);
-                    remoteLogger.logMapSpecies(sq.getName(), bq.getLsids(), wkt, extra);
+                    remoteLogger.logMapSpecies(sq.getName(), bq.getLsids(), wkt, "Species", extra);
                 } else if (sq instanceof UploadQuery) {
-                    remoteLogger.logMapSpecies(sq.getName(), "user-" + ((UploadQuery) sq).getSpeciesCount() + " records", wkt, "user upload", sq.getMetadataHtml());
+                    remoteLogger.logMapSpecies(sq.getName(), "user-" + ((UploadQuery) sq).getSpeciesCount() + " records", wkt, "Import - Species", sq.getMetadataHtml());
                 } else {
-                    remoteLogger.logMapSpecies(ml.getDisplayName(), species, wkt, sq.getMetadataHtml());
+                    remoteLogger.logMapSpecies(ml.getDisplayName(), species, wkt, "Species", sq.getMetadataHtml());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -2836,7 +2838,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void runNearestLocalityAction(Event event) {
-        remoteLogger.logMapAnalysis("Nearest locality", "analysis - Nearest locality", "", "", "", "", "", "");
+        remoteLogger.logMapAnalysis("Nearest locality", "Tool - Nearest locality", "", "", "", "", "", "");
     }
 
     public void onClick$btnSpeciesList(Event event) {
@@ -3200,7 +3202,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Filedownload.save(new URL(downloadUrl).openStream(), contentType, outfile);
 
             try {
-                remoteLogger.logMapAnalysis(name, "analysis - export area", sa.getWkt(), "", "", "", downloadUrl, "download");
+                remoteLogger.logMapAnalysis(name, "Export - " + StringUtils.capitalize(type) + " Area", sa.getWkt(), "", "", "", downloadUrl, "download");
             } catch (Exception e) {
                 e.printStackTrace();
             }

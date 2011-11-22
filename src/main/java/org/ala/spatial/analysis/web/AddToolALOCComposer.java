@@ -290,7 +290,7 @@ public class AddToolALOCComposer extends AddToolComposer {
             getMapComposer().updateUserLogAnalysis("Classification", "gc: " + groupCount.getValue() + ";area: " + area, sbenvsel.toString(), slist, pid, layerLabel);
             
             try {
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - classification", area, "", sbenvsel.toString(), pid, "gc: " + groupCount.getValue(), "STARTED");
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Classification", area, "", sbenvsel.toString(), pid, "gc: " + groupCount.getValue(), "STARTED");
             } catch (Exception e) {
                 e.printStackTrace();
             }

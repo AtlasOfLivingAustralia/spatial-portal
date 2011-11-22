@@ -90,7 +90,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             String extras = "";
             extras += "areaSqKm: " + areaSqKm;
             extras += ";boundingBox: " + boundingBox;
-            remoteLogger.logMapAnalysis(displayname, "analysis - area report", areaName + "__" + sa.getWkt(), "", "", pid, extras, "0");
+            remoteLogger.logMapAnalysis(displayname, "Tool - Area Report", areaName + "__" + sa.getWkt(), "", "", pid, extras, "0");
         } catch (Exception e) {
             e.printStackTrace();
         }

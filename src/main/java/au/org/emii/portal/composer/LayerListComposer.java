@@ -308,7 +308,7 @@ public class LayerListComposer extends UtilityComposer {
                                 String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
 
                                 initALC();
-                                alc.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata, 
+                                alc.setLayer(joLayer.getString("name"), joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
                                         joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
                              } else {
                                 String classAttribute = joLayer.getString("classname");
@@ -325,7 +325,7 @@ public class LayerListComposer extends UtilityComposer {
                                         + joLayer.getString("displaypath");
 
                                 initALC();
-                                alc.setLayer(classValue, joLayer.getString("displaypath"), displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
+                                alc.setLayer(layer, classValue, joLayer.getString("displaypath"), displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
                             }
                         }
                     });

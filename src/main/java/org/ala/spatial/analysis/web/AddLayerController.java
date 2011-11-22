@@ -29,7 +29,7 @@ public class AddLayerController extends UtilityComposer {
 
     LayersAutoComplete lac;
     RemoteLogger remoteLogger;
-    String treeName, treePath, treeMetadata, treePid;
+    String shortName, treeName, treePath, treeMetadata, treePid;
     int treeSubType;
     String searchName, searchPath, searchMetadata;
     int searchSubType;
@@ -49,6 +49,15 @@ public class AddLayerController extends UtilityComposer {
             return;
         }
         if (treeName != null) {
+
+            String lyrSubType = "";
+            if (treeSubType == LayerUtilities.CONTEXTUAL) {
+                lyrSubType = "Contextual";
+            } else if (treeSubType == LayerUtilities.GRID) {
+                lyrSubType = "Environmental";
+            }
+
+
             if (treePid != null) {
                 //map layerbranch as polygon layer
                 MapLayer mapLayer;
@@ -90,13 +99,13 @@ public class AddLayerController extends UtilityComposer {
                     }
 
                     getMapComposer().updateUserLogMapLayer("gaz", treeName + "|" + treePath);
-                    remoteLogger.logMapArea(treeName, "layers", CommonData.layersServer + "/object/" + treePid, treeName + "|" + treePath);
+                    remoteLogger.logMapArea(treeName, "Layer - " + lyrSubType, CommonData.layersServer + "/object/" + treePid, shortName, treeMetadata);
                 }
             } else {
                 getMapComposer().addWMSLayer(treeName, treeName,
                         treePath,
                         (float) 0.75, treeMetadata, null, treeSubType, null, null, null);
-                remoteLogger.logMapArea(treeName, "layers", treePath, treeMetadata );
+                remoteLogger.logMapArea(treeName, "Layer - " + lyrSubType, treePath, shortName, treeMetadata );
             }
 
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/ "|" + treeName);
@@ -107,7 +116,19 @@ public class AddLayerController extends UtilityComposer {
                     (float) 0.75, searchMetadata, null, searchSubType, null, null);
 
             getMapComposer().updateUserLogMapLayer("env - search - add", /*joLayer.getString("uid")+*/ "|" + searchName);
-            remoteLogger.logMapArea(searchName, "layers", searchMetadata);
+            if (!rTree.isChecked()) {
+                //JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
+                String lyrSubType = "";
+                if (searchSubType == LayerUtilities.CONTEXTUAL) {
+                    lyrSubType = "Contextual";
+                } else if (searchSubType == LayerUtilities.GRID) {
+                    lyrSubType = "Environmental";
+                }
+                remoteLogger.logMapArea(searchName, "Layer - " + lyrSubType, searchPath, shortName, searchMetadata);
+            } else {
+                remoteLogger.logMapArea(searchName, "Layer", searchMetadata);
+            }
+            
         }
 
         this.detach();
@@ -129,23 +150,25 @@ public class AddLayerController extends UtilityComposer {
 
             metadata = CommonData.satServer + "/layers/" + jo.getString("uid");
 
-            setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata,
+            setLayer(jo.getString("name"), jo.getString("displayname"), jo.getString("displaypath"), metadata,
                     jo.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
         }
     }
 
-    public void setLayer(String name, String displaypath, String metadata, int subType) {
-        setLayer(name, null, displaypath, metadata, subType);
+    public void setLayer(String shortName, String name, String displaypath, String metadata, int subType) {
+        setLayer(shortName, name, null, displaypath, metadata, subType);
     }
 
-    public void setLayer(String name, String pid, String displaypath, String metadata, int subType) {
+    public void setLayer(String shortName, String name, String pid, String displaypath, String metadata, int subType) {
         if (rTree.isChecked()) {
+            this.shortName = shortName;
             treeName = name;
             treePid = pid;
             treePath = displaypath;
             treeMetadata = metadata;
             treeSubType = subType;
         } else {
+            this.shortName = shortName; 
             searchName = name;
             searchPath = displaypath;
             searchMetadata = metadata;

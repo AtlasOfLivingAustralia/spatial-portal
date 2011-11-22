@@ -54,10 +54,6 @@ public class AddToolSamplingComposer extends AddToolComposer {
             return false;
         }
 
-        System.out.println("Area: " + getSelectedArea());
-        System.out.println("Species: " + getSelectedSpecies());
-        System.out.println("Layers: " + getSelectedLayers());
-
         return download(null);
     }
 
@@ -104,7 +100,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 //getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + slist, pid, "Sampling results for species: " + taxon);
 
                 try {
-                    remoteLogger.logMapAnalysis("species sampling", "analysis - species sampling", sa.getWkt(), query.getName(), envlayers, pid, "", "download");
+                    remoteLogger.logMapAnalysis("species sampling", "Export - Species Sampling", sa.getWkt(), query.getName(), envlayers, pid, "", "download");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -131,7 +127,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
                     e.printStackTrace();
                 }
                 try {
-                    remoteLogger.logMapAnalysis("species sampling", "analysis - species sampling", sa.getWkt(), query.getName(), envlayers, pid, "", "");
+                    remoteLogger.logMapAnalysis("species sampling", "Export - Species Sampling", sa.getWkt(), query.getName(), envlayers, pid, "", "");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

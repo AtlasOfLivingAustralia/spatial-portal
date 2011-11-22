@@ -116,11 +116,11 @@ public class AddToolScatterplotComposer extends AddToolComposer {
             if (lsidQuery instanceof BiocacheQuery) {
                 BiocacheQuery bq = (BiocacheQuery) lsidQuery;
                 extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - scatterplot", filterSa.getWkt(), bq.getLsids(), lyr1value+":"+lyr2value, pid, extras, "SUCCESSFUL");
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), bq.getLsids(), lyr1value+":"+lyr2value, pid, extras, "SUCCESSFUL");
             } else if (lsidQuery instanceof UploadQuery) {
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - scatterplot", filterSa.getWkt(), ((UploadQuery) lsidQuery).getQ(), "", pid, extras, "SUCCESSFUL");
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), ((UploadQuery) lsidQuery).getQ(), "", pid, extras, "SUCCESSFUL");
             } else {
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "analysis - scatterplot", filterSa.getWkt(), "", "", pid, extras, "SUCCESSFUL");
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), "", "", pid, extras, "SUCCESSFUL");
             }
         } catch (Exception e) {
             e.printStackTrace();
