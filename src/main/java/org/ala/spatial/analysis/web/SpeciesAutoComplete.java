@@ -132,16 +132,25 @@ public class SpeciesAutoComplete extends Combobox {
                             myci.setParent(this);
                         }
 
-                        String[] wmsNames = CommonData.getSpeciesDistributionWMS(spVal[1]);
-                        if (wmsNames != null && wmsNames.length > 0) {
-                            if (wmsNames.length == 1) {
-                                myci.setDescription(spVal[2] + " - " + spVal[3] + " records + 1 area");
+                        String desc = spVal[2] + " - " + spVal[3] + " records";
+                        String[] wmsDistributions = CommonData.getSpeciesDistributionWMS(spVal[1]);
+                        if (wmsDistributions != null && wmsDistributions.length > 0) {
+                            if (wmsDistributions.length == 1) {
+                                desc += " +1 expert distribution";
                             } else {
-                                myci.setDescription(spVal[2] + " - " + spVal[3] + " records + " + wmsNames.length + " areas");
+                                desc += " +" + wmsDistributions.length + " expert distributions";
                             }
-                        } else {
-                            myci.setDescription(spVal[2] + " - " + spVal[3] + " records");
                         }
+                        String[] wmsChecklists = CommonData.getSpeciesChecklistWMS(spVal[1]);
+                        if (wmsChecklists != null && wmsChecklists.length > 0) {
+                            if (wmsChecklists.length == 1) {
+                                desc += " +1 checklist area";
+                            } else {
+                                desc += " +" + wmsChecklists.length + " checklist areas";
+                            }
+                        }
+                        myci.setDescription(desc);
+                        
 
                         myci.setDisabled(false);
                         if(myci.getAnnotations() != null) {

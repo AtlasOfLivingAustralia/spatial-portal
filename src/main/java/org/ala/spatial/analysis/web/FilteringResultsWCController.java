@@ -507,7 +507,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         try {
             String [] lines = getDistributionsOrChecklists("distributions", selectedArea.getWkt(), null);
 
-            if (lines == null || lines.length == 0) {
+            if (lines == null || lines.length <= 1) {
                 data.put("intersectWithSpeciesDistributions", "0");
                 speciesDistributionText = null;
             } else {
@@ -526,6 +526,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             HttpClient client = new HttpClient();
             PostMethod post = new PostMethod(CommonData.layersServer + sbProcessUrl.toString()); // testurl
+            System.out.println(CommonData.layersServer + sbProcessUrl.toString());
             if(wkt != null) {
                 post.addParameter("wkt", wkt);
             }
@@ -590,7 +591,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         try {
             String [] lines = getDistributionsOrChecklists("checklists", selectedArea.getWkt(), null);
 
-            if (lines == null || lines.length == 0) {
+            if (lines == null || lines.length <= 1) {
                 data.put("intersectWithSpeciesChecklists", "0");
                 speciesChecklistText = null;
             } else {
@@ -613,6 +614,9 @@ public class FilteringResultsWCController extends UtilityComposer {
         } catch (Exception e) {
         }
         if (c > 0 && speciesDistributionText != null) {
+            try {
+                getMapComposer().getFellowIfAny("distributionresults").detach();
+            } catch (Exception e) {}
             DistributionsWCController window = (DistributionsWCController) Executions.createComponents("WEB-INF/zul/AnalysisDistributionResults.zul", this, null);
 
             try {

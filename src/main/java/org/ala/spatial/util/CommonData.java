@@ -88,8 +88,18 @@ public class CommonData {
     static HashMap<String, String[]> copy_species_wms_layers = null;
     static HashMap<String, String[]> species_metadata_layers = null;
     static HashMap<String, String[]> copy_species_metadata_layers = null;
+    static HashMap<String, String[]> species_spcode_layers = null;
+    static HashMap<String, String[]> copy_species_spcode_layers = null;
     static HashMap<String, String[]> species_wms_layers_by_spcode = null;
     static HashMap<String, String[]> copy_species_wms_layers_by_spcode = null;
+    static HashMap<String, String[]> checklistspecies_wms_layers = null;
+    static HashMap<String, String[]> copy_checklistspecies_wms_layers = null;
+    static HashMap<String, String[]> checklistspecies_metadata_layers = null;
+    static HashMap<String, String[]> copy_checklistspecies_metadata_layers = null;
+    static HashMap<String, String[]> checklistspecies_spcode_layers = null;
+    static HashMap<String, String[]> copy_checklistspecies_spcode_layers = null;
+    static HashMap<String, String[]> checklistspecies_wms_layers_by_spcode = null;
+    static HashMap<String, String[]> copy_checklistspecies_wms_layers_by_spcode = null;
     //Common
     static public String satServer;
     static public String geoServer;
@@ -193,15 +203,30 @@ public class CommonData {
             contextualClasses = copy_contextualClasses;
         }
 
-        //(4) for species wms distributions
+        //(4) for species wms distributions & checklists
         if (copy_species_wms_layers != null) {
             species_wms_layers = copy_species_wms_layers;
         }
         if (copy_species_metadata_layers != null) {
             species_metadata_layers = copy_species_metadata_layers;
         }
+        if (copy_species_spcode_layers != null) {
+            species_spcode_layers = copy_species_spcode_layers;
+        }
         if (copy_species_wms_layers_by_spcode != null) {
             species_wms_layers_by_spcode = copy_species_wms_layers_by_spcode;
+        }
+        if (copy_checklistspecies_wms_layers != null) {
+            checklistspecies_wms_layers = copy_checklistspecies_wms_layers;
+        }
+        if (copy_checklistspecies_metadata_layers != null) {
+            checklistspecies_metadata_layers = copy_checklistspecies_metadata_layers;
+        }
+        if (copy_checklistspecies_spcode_layers != null) {
+            checklistspecies_spcode_layers = copy_checklistspecies_spcode_layers;
+        }
+        if (copy_species_wms_layers_by_spcode != null) {
+            checklistspecies_wms_layers_by_spcode = copy_checklistspecies_wms_layers_by_spcode;
         }
     }
 
@@ -606,6 +631,7 @@ public class CommonData {
 
             copy_species_wms_layers = new HashMap<String, String[]>();
             copy_species_metadata_layers = new HashMap<String, String[]>();
+            copy_species_spcode_layers = new HashMap<String, String[]>();
             copy_species_wms_layers_by_spcode = new HashMap<String, String[]>();
 
             int result = client.executeMethod(get);
@@ -649,6 +675,22 @@ public class CommonData {
                     }
                     copy_species_metadata_layers.put(lsid, md);
 
+                    //spcode
+                    m = "";
+                    if (jo.containsKey("spcode")) {
+                        m = jo.getString("spcode");
+                    }
+                    md = copy_species_spcode_layers.get(lsid);
+                    if (md != null) {
+                        String[] newMd = new String[md.length + 1];
+                        System.arraycopy(md, 0, newMd, 0, md.length);
+                        newMd[newMd.length - 1] = m;
+                        md = newMd;
+                    } else {
+                        md = new String[]{m};
+                    }
+                    copy_species_spcode_layers.put(lsid, md);
+
                     //others
                     String spcode = null;
                     if(jo.containsKey("spcode")) {
@@ -677,6 +719,11 @@ public class CommonData {
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             result = client.executeMethod(get);
 
+            copy_checklistspecies_wms_layers = new HashMap<String, String[]>();
+            copy_checklistspecies_metadata_layers = new HashMap<String, String[]>();
+            copy_checklistspecies_spcode_layers = new HashMap<String, String[]>();
+            copy_checklistspecies_wms_layers_by_spcode = new HashMap<String, String[]>();
+
             if(result == 200) {
                 slist = get.getResponseBodyAsString();
                 ja = JSONArray.fromObject(slist);
@@ -689,7 +736,7 @@ public class CommonData {
                         String lsid = jo.getString("lsid");
 
                         //wms
-                        String[] urls = copy_species_wms_layers.get(lsid);
+                        String[] urls = copy_checklistspecies_wms_layers.get(lsid);
                         if (urls != null) {
                             String[] newUrls = new String[urls.length + 1];
                             System.arraycopy(urls, 0, newUrls, 0, urls.length);
@@ -698,14 +745,14 @@ public class CommonData {
                         } else {
                             urls = new String[]{jo.getString("wmsurl")};
                         }
-                        copy_species_wms_layers.put(lsid, urls);
+                        copy_checklistspecies_wms_layers.put(lsid, urls);
 
                         //metadata
                         String m = "";
                         if (jo.containsKey("metadata_u")) {
                             m = jo.getString("metadata_u");
                         }
-                        String[] md = copy_species_metadata_layers.get(lsid);
+                        String[] md = copy_checklistspecies_metadata_layers.get(lsid);
                         if (md != null) {
                             String[] newMd = new String[md.length + 1];
                             System.arraycopy(md, 0, newMd, 0, md.length);
@@ -714,17 +761,40 @@ public class CommonData {
                         } else {
                             md = new String[]{m};
                         }
-                        copy_species_metadata_layers.put(lsid, md);
+                        copy_checklistspecies_metadata_layers.put(lsid, md);
+
+                        //spcode
+                        m = "";
+                        if (jo.containsKey("spcode")) {
+                            m = jo.getString("spcode");
+                        }
+                        md = copy_checklistspecies_spcode_layers.get(lsid);
+                        if (md != null) {
+                            String[] newMd = new String[md.length + 1];
+                            System.arraycopy(md, 0, newMd, 0, md.length);
+                            newMd[newMd.length - 1] = m;
+                            md = newMd;
+                        } else {
+                            md = new String[]{m};
+                        }
+                        copy_checklistspecies_spcode_layers.put(lsid, md);
 
                         //by spcode
                         String spcode = jo.getString("spcode");
-                        copy_species_wms_layers_by_spcode.put(spcode, new String[]{jo.getString("scientific"),jo.getString("wmsurl"), m});
+                        copy_checklistspecies_wms_layers_by_spcode.put(spcode, new String[]{jo.getString("scientific"),jo.getString("wmsurl"), m});
                     }
                 }
             }
         } catch (Exception e) {
             copy_species_wms_layers = null;
             copy_species_metadata_layers = null;
+            copy_species_spcode_layers = null;
+            copy_species_wms_layers_by_spcode = null;
+
+            copy_checklistspecies_wms_layers = null;
+            copy_checklistspecies_metadata_layers = null;
+            copy_checklistspecies_spcode_layers = null;
+            copy_checklistspecies_wms_layers_by_spcode = null;
             e.printStackTrace();
         }
     }
@@ -733,7 +803,7 @@ public class CommonData {
      * returns array of WMS species requests
      */
     static public String[] getSpeciesDistributionWMS(String lsids) {
-        if (species_wms_layers == null) {
+        if (species_wms_layers == null || lsids == null) {
             return null;
         }
         String[] lsid = lsids.split(",");
@@ -758,7 +828,7 @@ public class CommonData {
     }
 
     /**
-     * returns array of WMS species requests
+     * returns array of metadata_u species requests
      */
     static public String[] getSpeciesDistributionMetadata(String lsids) {
         if (species_wms_layers == null) {
@@ -769,6 +839,115 @@ public class CommonData {
         int count = 0;
         for (String s : lsid) {
             String[] urls = species_metadata_layers.get(s);
+            if (urls != null) {
+                count += urls.length;
+                wmsurls.add(urls);
+            }
+        }
+        String[] wms = null;
+        if (count > 0) {
+            wms = new String[count];
+            int pos = 0;
+            for (String[] s : wmsurls) {
+                System.arraycopy(s, 0, wms, pos, s.length);
+            }
+        }
+        return wms;
+    }
+     /**
+     * returns array of spcode species requests
+     */
+    static public String[] getSpeciesDistributionSpcode(String lsids) {
+        if (species_wms_layers == null) {
+            return null;
+        }
+        String[] lsid = lsids.split(",");
+        ArrayList<String[]> wmsurls = new ArrayList<String[]>();
+        int count = 0;
+        for (String s : lsid) {
+            String[] urls = species_spcode_layers.get(s);
+            if (urls != null) {
+                count += urls.length;
+                wmsurls.add(urls);
+            }
+        }
+        String[] wms = null;
+        if (count > 0) {
+            wms = new String[count];
+            int pos = 0;
+            for (String[] s : wmsurls) {
+                System.arraycopy(s, 0, wms, pos, s.length);
+            }
+        }
+        return wms;
+    }
+    /**
+     * returns array of WMS species requests
+     */
+    static public String[] getSpeciesChecklistWMS(String lsids) {
+        if (checklistspecies_wms_layers == null || lsids == null) {
+            return null;
+        }
+        String[] lsid = lsids.split(",");
+        ArrayList<String[]> wmsurls = new ArrayList<String[]>();
+        int count = 0;
+        for (String s : lsid) {
+            String[] urls = checklistspecies_wms_layers.get(s);
+            if (urls != null) {
+                count += urls.length;
+                wmsurls.add(urls);
+            }
+        }
+        String[] wms = null;
+        if (count > 0) {
+            wms = new String[count];
+            int pos = 0;
+            for (String[] s : wmsurls) {
+                System.arraycopy(s, 0, wms, pos, s.length);
+            }
+        }
+        return wms;
+    }
+
+    /**
+     * returns array of metadata_u species requests
+     */
+    static public String[] getSpeciesChecklistMetadata(String lsids) {
+        if (checklistspecies_wms_layers == null) {
+            return null;
+        }
+        String[] lsid = lsids.split(",");
+        ArrayList<String[]> wmsurls = new ArrayList<String[]>();
+        int count = 0;
+        for (String s : lsid) {
+            String[] urls = checklistspecies_metadata_layers.get(s);
+            if (urls != null) {
+                count += urls.length;
+                wmsurls.add(urls);
+            }
+        }
+        String[] wms = null;
+        if (count > 0) {
+            wms = new String[count];
+            int pos = 0;
+            for (String[] s : wmsurls) {
+                System.arraycopy(s, 0, wms, pos, s.length);
+            }
+        }
+        return wms;
+    }
+     /**
+     * returns array of spcode species requests
+     */
+    static public String[] getSpeciesChecklistSpcode(String lsids) {
+        if (checklistspecies_wms_layers == null) {
+            return null;
+        }
+        String[] lsid = lsids.split(",");
+        ArrayList<String[]> wmsurls = new ArrayList<String[]>();
+        int count = 0;
+        for (String s : lsid) {
+            String[] urls = checklistspecies_spcode_layers.get(s);
             if (urls != null) {
                 count += urls.length;
                 wmsurls.add(urls);
@@ -931,5 +1110,13 @@ public class CommonData {
         }
 
         return species_wms_layers_by_spcode.get(spcode);
+    }
+
+    public static String [] getSpeciesChecklistWMSFromSpcode(String spcode) {
+        if(checklistspecies_wms_layers_by_spcode == null) {
+            return null;
+        }
+
+        return checklistspecies_wms_layers_by_spcode.get(spcode);
     }
 }

@@ -155,7 +155,8 @@ public class DistributionsWCController extends UtilityComposer {
                             Button b = new Button("map");
                             b.setSclass("goButton");
                             if((cells[13] != null && cells[13].length() > 0)
-                                    || getMapComposer().getMapLayerWMS(CommonData.getSpeciesDistributionWMSFromSpcode(cells[0])[1]) != null) {
+                                    || (CommonData.getSpeciesChecklistWMSFromSpcode(cells[0]) != null && getMapComposer().getMapLayerWMS(CommonData.getSpeciesChecklistWMSFromSpcode(cells[0])[1]) != null)
+                                    || (CommonData.getSpeciesDistributionWMSFromSpcode(cells[0]) != null && getMapComposer().getMapLayerWMS(CommonData.getSpeciesDistributionWMSFromSpcode(cells[0])[1]) != null)){
                                 b.setDisabled(true);
                             } else {
                                 b.addEventListener("onClick", new EventListener() {
@@ -169,41 +170,16 @@ public class DistributionsWCController extends UtilityComposer {
                                         //row as metadata
                                         Listitem li = (Listitem) lc.getParent();
                                         String [] row = (String []) li.getValue();
-                                        String html = "Species area\n";
-                                        html += "<table class='md_table'>";
-                                        html += "<tr class='md_grey-bg'><td class='md_th'>spcode: </td><td class='md_spacer'/><td class='md_value'>" + row[0] + "</td></tr>";
-                                        html += "<tr><td class='md_th'>Scientific name: </td><td class='md_spacer'/><td class='md_value'>" + row[1] + "</td></tr>";
-                                        html += "<tr class='md_grey-bg'><td class='md_th'>Authority full: </td><td class='md_spacer'/><td class='md_value'>" + row[2] + "</td></tr>";
-                                        html += "<tr><td class='md_th'>Common name: </td><td class='md_spacer'/><td class='md_value'>" + row[3] + "</td></tr>";
-                                        html += "<tr class='md_grey-bg'><td class='md_th'>Family name: </td><td class='md_spacer'/><td class='md_value'>" + row[4] + "</td></tr>";
-                                        html += "<tr><td class='md_th'>Genus name: </td><td class='md_spacer'/><td class='md_value'>" + row[5] + "</td></tr>";
-                                        html += "<tr class='md_grey-bg'><td class='md_th'>Specific name: </td><td class='md_spacer'/><td class='md_value'>" + row[6] + "</td></tr>";
-                                        html += "<tr><td class='md_th'>Min depth: </td><td class='md_spacer'/><td class='md_value'>" + row[7] + "</td></tr>";
-                                        html += "<tr class='md_grey-bg'><td class='md_th'>Max depth: </td><td class='md_spacer'/><td class='md_value'>" + row[8] + "</td></tr>";
-                                        String lastClass = "";
-                                        if(row[9] != null && row[9].length() > 0) {
-                                            html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + row[9] + "'>link</a></td></tr>";
-                                            lastClass = lastClass.length() == 0? "md_grey-bg": "";
-                                        }
-                                        if(row[10] != null && row[10].length() > 0) {
-                                            html += "<tr class='" + lastClass + "'><td class='md_th'>BIE link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + CommonData.bieServer + "/species/" + row[10] + "'>link</a></td></tr>";
-                                            lastClass = lastClass.length() == 0? "md_grey-bg": "";
-                                        }
-                                        if(row[11] != null && row[11].length() > 0) {
-                                            html += "<tr class='" + lastClass + "'><td class='md_th'>Area name: </td><td class='md_spacer'/><td class='md_value'>" + row[11] + "</td></tr>";
-                                            lastClass = lastClass.length() == 0? "md_grey-bg": "";
-                                        }
-                                        if(row[12] != null && row[12].length() > 0) {
-                                            html += "<tr class='" + lastClass + "'><td class='md_th'>Area sq km: </td><td class='md_spacer'/><td class='md_value'>" + row[12] + "</td></tr>";
-                                            lastClass = lastClass.length() == 0? "md_grey-bg": "";
-                                        }
-                                        html += "</table>";
+                                        String html = getMetadataHtmlFor(row);
 
                                         //map it
                                         String[] mapping = CommonData.getSpeciesDistributionWMSFromSpcode(spcode);
+                                        if(mapping == null) {
+                                            mapping = CommonData.getSpeciesChecklistWMSFromSpcode(spcode);
+                                        }
                                         String displayName = mapping[0] + " area";
                                         if(row[11] != null && row[11].length() > 0
-                                                && !row[11].equals(EXPERT_DISTRIBUTION_AREA_NAME)) {
+                                                ){//&& !row[11].startsWith(EXPERT_DISTRIBUTION_AREA_NAME)) {
                                             displayName = row[11];
                                         }
                                         MapLayer ml = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(row[0] + " area"),displayName, mapping[1], 0.8f, html, null, LayerUtilities.WKT, null, null);
@@ -220,7 +196,7 @@ public class DistributionsWCController extends UtilityComposer {
                                                     (original_data.get(i)[0].equals(row[0])
                                                     || (original_data.get(i)[11] != null
                                                         && original_data.get(i)[11].length() > 0
-                                                        && !original_data.get(i)[11].equals(EXPERT_DISTRIBUTION_AREA_NAME)
+                                                        && !original_data.get(i)[11].startsWith(EXPERT_DISTRIBUTION_AREA_NAME)
                                                         && original_data.get(i)[11].equals(row[11])))) {
                                                 original_data.get(i)[13] = "1";
                                             }
@@ -230,7 +206,7 @@ public class DistributionsWCController extends UtilityComposer {
                                                     (current_data.get(i)[0].equals(row[0])
                                                     || (current_data.get(i)[11] != null
                                                         && current_data.get(i)[11].length() > 0
-                                                        && !current_data.get(i)[11].equals(EXPERT_DISTRIBUTION_AREA_NAME)
+                                                        && !current_data.get(i)[11].startsWith(EXPERT_DISTRIBUTION_AREA_NAME)
                                                         && current_data.get(i)[11].equals(row[11])))) {
                                                 current_data.get(i)[13] = "1";
                                             }
@@ -262,7 +238,7 @@ public class DistributionsWCController extends UtilityComposer {
                             } else if (i == 10) {       //lsid
                                 lc = new Listcell();
                                 if (cells[i] != null && cells[i].length() > 0) {
-                                    A a = new A("link");
+                                    A a = new A("more...");
                                     a.setHref(CommonData.bieServer + "/species/" + cells[i]);
                                     a.setTarget("_blank");
                                     a.setParent(lc);
@@ -275,6 +251,7 @@ public class DistributionsWCController extends UtilityComposer {
                         }
                     }
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -296,6 +273,40 @@ public class DistributionsWCController extends UtilityComposer {
                 lh.setSortDescending(new DListComparator(false, false, i - 1));
             }
         }
+    }
+
+    public static String getMetadataHtmlFor(String[] row) {
+        String html = "Species area\n";
+        html += "<table class='md_table'>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>spcode: </td><td class='md_spacer'/><td class='md_value'>" + row[0] + "</td></tr>";
+        html += "<tr><td class='md_th'>Scientific name: </td><td class='md_spacer'/><td class='md_value'>" + row[1] + "</td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Authority full: </td><td class='md_spacer'/><td class='md_value'>" + row[2] + "</td></tr>";
+        html += "<tr><td class='md_th'>Common name: </td><td class='md_spacer'/><td class='md_value'>" + row[3] + "</td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Family name: </td><td class='md_spacer'/><td class='md_value'>" + row[4] + "</td></tr>";
+        html += "<tr><td class='md_th'>Genus name: </td><td class='md_spacer'/><td class='md_value'>" + row[5] + "</td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Specific name: </td><td class='md_spacer'/><td class='md_value'>" + row[6] + "</td></tr>";
+        html += "<tr><td class='md_th'>Min depth: </td><td class='md_spacer'/><td class='md_value'>" + row[7] + "</td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Max depth: </td><td class='md_spacer'/><td class='md_value'>" + row[8] + "</td></tr>";
+        String lastClass = "";
+        if(row[9] != null && row[9].length() > 0) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + row[9] + "'>link</a></td></tr>";
+            lastClass = lastClass.length() == 0? "md_grey-bg": "";
+        }
+        if(row[11] != null && row[11].length() > 0) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Area name: </td><td class='md_spacer'/><td class='md_value'>" + row[11] + "</td></tr>";
+            lastClass = lastClass.length() == 0? "md_grey-bg": "";
+        }
+        if(row[12] != null && row[12].length() > 0) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Area sq km: </td><td class='md_spacer'/><td class='md_value'>" + row[12] + "</td></tr>";
+            lastClass = lastClass.length() == 0? "md_grey-bg": "";
+        }
+        if(row[10] != null && row[10].length() > 0) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>More...: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + CommonData.bieServer + "/species/" + row[10] + "'>link.</a></td></tr>";
+            lastClass = lastClass.length() == 0? "md_grey-bg": "";
+        }
+        html += "</table>";
+
+        return html;
     }
 }
 

@@ -1040,15 +1040,21 @@ public class BiocacheQuery implements Query, Serializable {
         if(lsids != null && lsids.length() > 0) {
             html += "<tr class='md_grey-bg'><td class='md_th'>List of LSIDs: </td><td class='md_spacer'/><td class='md_value'>" + lsids + "</td></tr>";
             lastClass = "";
+
+            String [] wms = CommonData.getSpeciesDistributionWMS(lsids);
+            if(wms != null && wms.length > 0) {
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Expert distributions</td><td class='md_spacer'/><td class='md_value'><a href='#' onClick='openDistributions(\"" + lsids + "\")'>" + wms.length + "</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
+                lastClass = lastClass.length() == 0? "md_grey-bg": "";
+            }
+
+            wms = CommonData.getSpeciesChecklistWMS(lsids);
+            if(wms != null && wms.length > 0) {
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Checklist species</td><td class='md_spacer'/><td class='md_value'><a href='#' onClick='openChecklists(\"" + lsids + "\")'>" + wms.length + "</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
+                lastClass = lastClass.length() == 0? "md_grey-bg": "";
+            }
         }
 
-        String [] wms = CommonData.getSpeciesDistributionWMS(lsids);
-        if(wms != null && wms.length > 0) {
-            html += "<tr class='" + lastClass + "'><td class='md_th'>Expert distributions and checklist species</td><td class='md_spacer'/><td class='md_value'><a href='#' onClick='openDistributionsChecklists(\"" + lsids + "\")'>" + wms.length + "</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
-            lastClass = lastClass.length() == 0? "md_grey-bg": "";
-        }
-
-        html += "<tr class='" + lastClass + "'><td class='md_th' span=3><a href='" + biocacheWebServer + "/occurrences/search?q=" + getQ() + "' target='_blank'>view records in biocache</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
+        html += "<tr class='" + lastClass + "'><td class='md_th' colspan=3><a href='" + biocacheWebServer + "/occurrences/search?q=" + getQ() + "' target='_blank'>view records in biocache</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
         html += "</table>";
 
         return html;

@@ -21,7 +21,7 @@
             <div height="500px">
                 <separator/>
                 <label value="Click on headers to sort columns" />
-                <listbox id="distributionListbox" mold="paging" vflex="true" autopaging="true">
+                <listbox id="distributionListbox" mold="paging" vflex="true" autopaging="true" sizedByContent="true">
                     <listhead>
                         <listheader width="50px" />
                         <listheader label="SPCODE" sort="auto" />
@@ -33,8 +33,8 @@
                         <listheader label="Specific name" sort="auto" />
                         <listheader label="Min depth" sort="auto" />
                         <listheader label="Max depth" sort="auto" />
-                        <listheader label="Metadata" />
-                        <listheader label="BIE" />
+                        <listheader label="Metadata"/>
+                        <listheader label="LSID"/>
                         <listheader label="Area name" sort="auto"/>
                         <listheader label="Area sq km" sort="auto"/>
                     </listhead>

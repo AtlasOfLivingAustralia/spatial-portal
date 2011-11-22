@@ -70,7 +70,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
         <script defer="true" type="text/JavaScript" src="scripts/index.js" />
 
-        <timer id="timerKeepAliveSession" repeats="true" delay="600000"/>
+        <timer id="timerKeepAliveSession" repeats="true" delay="30000" onTimer="" />
 
         <div id="menucontainer">
         <div width="400px" id="menudiv" sclass="menudiv" height="39px" style="position:absolute">
@@ -260,6 +260,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             //hide map buttons
                             //var q = jq('$mapbuttons')[0];
                             //q.style.display="none";
+
+                            //hide menu
+                            q = document.getElementById(zk.Widget.$(jq('$menudiv')[0]).uuid);
+                            q.style.display="none";
 
                             //hide north
                             q = document.getElementById(zk.Widget.$(jq('$header')[0]).uuid + "-real");
