@@ -87,7 +87,7 @@ public class LayersController {
         mav.setViewName("layers/public_list");
         mav.addObject("GetCapabilities", "http://spatial.ala.org.au/geoserver/wms?request=getCapabilities");
         mav.addObject("layerList", l);
-        
+
         return mav;
     }
 
@@ -295,22 +295,26 @@ public class LayersController {
 
         LayerInfo layer = null;
         if (isUid) {
-            System.out.print("retriving layer list by id: " + uid);
             layer = layersDao.getLayerById(uid);
         } else {
-            System.out.print("retriving layer list by name: " + uid);
             List<LayerInfo> layers = layersDao.getLayersByName(uid);
-            if (layers != null) {
-                if (layers.size() > 0) {
+
+            if (layers != null && layers.size() > 0) {
                     layer = layers.get(0);
+            } else {
+                List<LayerInfo> layers2 = layersDao.getLayersByDisplayName(uid);
+                if (layers2 != null && layers2.size() > 0) {
+                        layer = layers2.get(0);
                 }
             }
         }
 
         // change the metadata separator.
-        String mdp = layer.getMetadatapath();
-        if (mdp != null) {
-            layer.setMetadatapath(mdp.replaceAll(", ", "|"));
+        if (layer != null) {
+            String mdp = layer.getMetadatapath();
+            if (mdp != null) {
+                layer.setMetadatapath(mdp.replaceAll(", ", "|"));
+            }
         }
 
         ModelMap m = new ModelMap();
