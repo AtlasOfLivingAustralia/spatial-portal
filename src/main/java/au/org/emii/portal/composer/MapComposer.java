@@ -1682,7 +1682,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         } else {
             // all good - put the portal user back in, then force a page reload
-            Executions.getCurrent().sendRedirect(CommonData.webportalServer);
+            Executions.getCurrent().sendRedirect(CommonData.webportalServer + "/");
         }
     }
 
