@@ -114,7 +114,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 			<!--<n:li><n:a href="#" n:onClick="runTabulation();">(Tabulate)</n:a></n:li>
 				<n:li><n:a href="#" n:onClick="runGDM();">(GDM)</n:a></n:li> -->
                             <n:li>
-                                <n:a href="#" n:onClick="runSitesBySpecies();">Species to Grid</n:a>
+                                <n:a href="#" n:onClick="runSitesBySpecies();">Points to Grid</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="runImportAnalysis();">Previous Analysis</n:a>
                             </n:li>
                         </n:ul>
                     </n:li>
@@ -128,9 +131,6 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <n:a href="#" n:onClick="runImportSpecies();">Assemblage</n:a>
                             </n:li>
                             <n:li>
-                                <n:a href="#" n:onClick="runImportAnalysis();">Prior Analysis</n:a>
-                            </n:li>
-                            <n:li>
                                 <n:a href="#" n:onClick="runImportAreas();">Areas</n:a>
                             </n:li>
                         </n:ul>
@@ -139,10 +139,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         <n:a href="">Export</n:a>
                         <n:ul>
                             <n:li>
-                                <n:a href="#" n:onClick="runSpeciesList();">Species List</n:a>
+                                <n:a href="#" n:onClick='printHack();'>Map</n:a>
                             </n:li>
                             <n:li>
-                                <n:a href="#" n:onClick="runSamplingAction();">Species Sample</n:a>
+                                <n:a href="#" n:onClick="runSpeciesList();">Checklist</n:a>
+                            </n:li>
+                            <n:li>
+                                <n:a href="#" n:onClick="runSamplingAction();">Point Sample</n:a>
                             </n:li>
                             <n:li>
                                 <n:a href="#" n:onClick="runExport();">Areas</n:a>
