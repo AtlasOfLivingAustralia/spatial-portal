@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class ChecklistService {
 
     private final String WS_CHECKLISTS = "/checklists";
-    private final String WS_CHECKLISTS_ID = "/checklists/{spcode}";
+    private final String WS_CHECKLISTS_ID = "/checklist/{spcode}";
 
     /**
      * Log4j instance
@@ -54,9 +54,10 @@ public class ChecklistService {
             @RequestParam(value = "min_depth", required = false, defaultValue = "-1") Double min_depth,
             @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth,
             @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids,
+            @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx,
             HttpServletRequest req) {
 
-        return distributionDao.queryDistributions(wkt, min_depth, max_depth, lsids, Distribution.SPECIES_CHECKLIST);
+        return distributionDao.queryDistributions(wkt, min_depth, max_depth, geom_idx, lsids, Distribution.SPECIES_CHECKLIST);
     }
 
     /*

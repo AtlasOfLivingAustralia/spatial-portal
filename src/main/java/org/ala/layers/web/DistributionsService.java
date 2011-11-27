@@ -57,9 +57,10 @@ public class DistributionsService {
             @RequestParam(value = "min_depth", required = false, defaultValue = "-1") Double min_depth,
             @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth,
             @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids,
+            @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx,
             HttpServletRequest req) {
 
-        return distributionDao.queryDistributions(wkt, min_depth, max_depth, lsids, Distribution.EXPERT_DISTRIBUTION);
+        return distributionDao.queryDistributions(wkt, min_depth, max_depth, geom_idx, lsids, Distribution.EXPERT_DISTRIBUTION);
     }
 
     /*
