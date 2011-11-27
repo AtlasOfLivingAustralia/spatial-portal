@@ -130,7 +130,7 @@
             <div id="divHighlightArea" >
                 <label value="Highlight occurrences on the scatterplot that are in an area" />
                 <hbox>
-                    <combobox id="cbHighlightArea" width="300px" />
+                    <combobox id="cbHighlightArea" width="300px" readonly="true" />
                     <button id="bClearHighlightArea" label="Clear" sclass="goButton" />
                 </hbox>
                 <separator />

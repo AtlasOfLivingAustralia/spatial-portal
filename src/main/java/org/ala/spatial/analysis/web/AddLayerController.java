@@ -61,7 +61,7 @@ public class AddLayerController extends UtilityComposer {
             if (treePid != null) {
                 //map layerbranch as polygon layer
                 MapLayer mapLayer;
-                mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(treeName), treeName, treePath, 0.8f, /*metadata url*/ null,
+                mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(treeName), treeName, treePath, 0.6f, /*metadata url*/ null,
                         null, LayerUtilities.WKT, null, null);
                 if (mapLayer != null) {
                     mapLayer.setWKT(readUrl(CommonData.layersServer + "/shape/wkt/" + treePid));

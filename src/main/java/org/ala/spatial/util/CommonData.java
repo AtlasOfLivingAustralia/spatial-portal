@@ -1119,4 +1119,18 @@ public class CommonData {
 
         return checklistspecies_wms_layers_by_spcode.get(spcode);
     }
+
+    public static int getSpeciesChecklistCountByWMS(String lookForWMS) {
+        int count = 0;
+        if(checklistspecies_wms_layers != null) {
+            for(String [] wms : checklistspecies_wms_layers.values()) {
+                for(int i=0;i<wms.length;i++) {
+                    if(wms[i].equals(lookForWMS)) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+    }
 }

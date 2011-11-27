@@ -1083,10 +1083,15 @@ public class AddToolComposer extends UtilityComposer {
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {
-                    if (area.equals(ml.getDisplayName())) {
+                    if (area.equals(ml.getWKT())) {
                         sa = new SelectedArea(ml, null);
                         break;
                     }
+                }
+
+                //for 'all areas'
+                if (sa == null) {
+                    sa = new SelectedArea(null, area);
                 }
             }
         } catch (Exception e) {

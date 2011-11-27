@@ -61,7 +61,7 @@ public class ClassificationLegend extends UtilityComposer {
     Button dbutton;
     boolean intContinous = false;
     boolean isMonth = false;
-    boolean isYear = false;
+    boolean isNumber = false;
     boolean disableselection = false;
     HashMap<String, String> legend_facets = null;
     Facet facet;
@@ -191,7 +191,9 @@ public class ClassificationLegend extends UtilityComposer {
                     setupForNumericalList(first, h);
                     //test for manual range (solr query)
                 } else if (colourmode.equals("year")) {
-                    setupForBiocacheYear(h);
+                    setupForBiocacheNumber(h,colourmode,true);
+                } else if (colourmode.equals("coordinate_uncertainty")) {
+                    setupForBiocacheNumber(h,colourmode,false);
                 } else if (colourmode.equals("month")) {
                     setupForBiocacheMonth();
                 }
@@ -557,10 +559,10 @@ public class ClassificationLegend extends UtilityComposer {
         }
     }
 
-    private void setupForBiocacheYear(String facetString) {
+    private void setupForBiocacheNumber(String facetString, String facetName, boolean integer) {
         String h = facetString;
-        isYear = true;
-        intContinous = true;
+        isNumber = true;
+        intContinous = integer;
         legend_facets = new HashMap<String, String>();
 
         //checkmarks = false;
@@ -577,7 +579,7 @@ public class ClassificationLegend extends UtilityComposer {
             try {
                 if (facet != null) {
                     //count OR and test for null
-                    boolean nulls = h.contains("-(year:") || h.contains("-year:");
+                    boolean nulls = h.contains("-(" + facetName + ":") || h.contains("-" + facetName + ":");
                     int countOr = h.split(" OR ").length;
                     if (countOr == 1 || (nulls && countOr == 2)) {
                         minValue = facet.getMin();
@@ -617,19 +619,34 @@ public class ClassificationLegend extends UtilityComposer {
                     if (ss.length > 1) {
                         if (ss[0].equals("*")) {
                             double v = Double.parseDouble(ss[1]);
-                            range = String.format(">= %d and <= %d", (int) cutoffMins[0], (int) cutoffs[0]);
-                            strFacet = "year:[" + (int) cutoffMins[0] + " TO " + (int) cutoffs[0] + "]";
+                            if(intContinous) {
+                                range = String.format(">= %d and <= %d", (int) cutoffMins[0], (int) cutoffs[0]);
+                                strFacet = "" + facetName + ":[" + (int) cutoffMins[0] + " TO " + (int) cutoffs[0] + "]";
+                            } else {
+                                range = String.format(">= %.2f and <= %.2f", cutoffMins[0], cutoffs[0]);
+                                strFacet = "" + facetName + ":[" + cutoffMins[0] + " TO " + cutoffs[0] + "]";
+                            }
                         } else if (ss[1].equals("*")) {
-                            range = String.format(">= %d and <= %d", (int) cutoffMins[cutoffMins.length - 1], (int) gMaxValue);
-                            strFacet = "year:[" + (int) cutoffMins[cutoffMins.length - 1] + " TO " + (int) gMaxValue + "]";
+                            if(intContinous) {
+                                range = String.format(">= %d and <= %d", (int) cutoffMins[cutoffMins.length - 1], (int) gMaxValue);
+                                strFacet = "" + facetName + ":[" + (int) cutoffMins[cutoffMins.length - 1] + " TO " + (int) gMaxValue + "]";
+                            } else {
+                                range = String.format(">= %.2f and <= %.2f", cutoffMins[cutoffMins.length - 1], gMaxValue);
+                                strFacet = "" + facetName + ":[" + cutoffMins[cutoffMins.length - 1] + " TO " + gMaxValue + "]";
+                            }
                         } else {
                             double v = Double.parseDouble(ss[1]);
                             int pos = 0;
                             while (v > cutoffs[pos]) {
                                 pos++;
                             }
-                            range = String.format(">= %d and <= %d", (int) (int) cutoffMins[pos], (int) cutoffs[pos]);
-                            strFacet = "year:[" + (int) cutoffMins[pos] + " TO " + (int) cutoffs[pos] + "]";
+                            if(intContinous) {
+                                range = String.format(">= %d and <= %d", (int) (int) cutoffMins[pos], (int) cutoffs[pos]);
+                                strFacet = "" + facetName + ":[" + (int) cutoffMins[pos] + " TO " + (int) cutoffs[pos] + "]";
+                            } else {
+                                range = String.format(">= %.2f and <= %.2f", cutoffMins[pos], cutoffs[pos]);
+                                strFacet = "" + facetName + ":[" + cutoffMins[pos] + " TO " + cutoffs[pos] + "]";
+                            }
                         }
                         legend_lines.set(j, range + back);
                         legend_facets.put(range, strFacet);

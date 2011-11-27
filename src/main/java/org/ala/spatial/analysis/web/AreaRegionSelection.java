@@ -65,7 +65,7 @@ public class AreaRegionSelection extends AreaToolComposer {
                     + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
                     + link.substring(link.lastIndexOf('/') + 1);
             logger.info(label + " | " + url);
-            mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, url, 0.8f, /*metadata url*/ null,
+            mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, url, 0.6f, /*metadata url*/ null,
                     null, LayerUtilities.WKT, null, null);
             if(mapLayer == null) {
                 return;

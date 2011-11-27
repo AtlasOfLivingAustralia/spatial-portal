@@ -24,6 +24,7 @@ public class LsidCounts {
     public LsidCounts() {
         HttpClient client = new HttpClient();
 
+        CSVReader csv = null;
         try {
             String url = CommonData.biocacheServer
                     + "/webportal/legend?cm=lft&q="
@@ -36,7 +37,7 @@ public class LsidCounts {
 
             int result = client.executeMethod(get);
 
-            CSVReader csv = new CSVReader(new InputStreamReader(get.getResponseBodyAsStream()));
+            csv = new CSVReader(new InputStreamReader(get.getResponseBodyAsStream()));
 
             String[] row;
             while ((row = csv.readNext()) != null) {
@@ -59,10 +60,14 @@ public class LsidCounts {
             for (int i = 0; i < lft.length; i++) {
                 count[i] = map.get(lft[i]);
             }
-
-            csv.close();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if(csv != null) {
+                    csv.close();
+                }
+            } catch (Exception e){}
         }
     }
 

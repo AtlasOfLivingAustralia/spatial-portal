@@ -318,7 +318,7 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
             for (int i = 0; i < fields.size(); i++) {
                 //TODO: make changes to support biocache year and month
                 if(q != null && fields.get(i).getFieldType() == QueryField.FieldType.STRING
-                        && (q instanceof UploadQuery || !(fields.get(i).getName().equalsIgnoreCase("year") || fields.get(i).getName().equalsIgnoreCase("month")))) {
+                        && (q instanceof UploadQuery || !(fields.get(i).getName().equalsIgnoreCase("year") || fields.get(i).getName().equalsIgnoreCase("coordinate_uncertainty") || fields.get(i).getName().equalsIgnoreCase("month")))) {
                     System.out.println("adding to combobox: '" + fields.get(i).getName() + "'");
                     Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
                     ci.setValue(fields.get(i).getName());

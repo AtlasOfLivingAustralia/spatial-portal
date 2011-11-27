@@ -83,6 +83,7 @@ import org.geotools.xml.Encoder;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
+import org.zkoss.zk.ui.IdSpace;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
@@ -91,6 +92,8 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.OpenEvent;
+import org.zkoss.zk.ui.ext.Scope;
+import org.zkoss.zk.ui.ext.ScopeListener;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zk.ui.util.SessionInit;
 import org.zkoss.zul.Caption;
@@ -961,7 +964,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         if (mapLayer.getMapLayerMetadata() == null) {
                             mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                         }
-                        mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + displayName);
+                        if(metadata != null && metadata.startsWith("http")) {
+                            mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + displayName);
+                        } else {
+                            mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
+                        }
                     }
                     if (legendUri != null) {
                         WMSStyle style = new WMSStyle();
@@ -1907,18 +1914,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         MapLayer ml = null;
         if (wmsNames != null && wmsNames.length > 0 && (wkt == null || wkt.equals(CommonData.WORLD_WKT))) {
             //add all
-            if (wmsNames.length > 1) {
-                for (int i = 0; i < wmsNames.length; i++) {
-                    if(getMapLayerWMS(wmsNames[i]) == null) {
-                        ml = addWMSLayer(getNextAreaLayerName(taxon), "Expert distribution: " + taxon, wmsNames[i], 0.35f, metadata[i], null, LayerUtilities.WKT, null, null);
-                        ml.setData("spcode", spcode[i]);
-                        setupMapLayerAsDistributionArea(ml);
-                    }
-                }
-            } else if (wmsNames.length == 1) {
-                if(getMapLayerWMS(wmsNames[0]) == null) {
-                    ml = addWMSLayer(getNextAreaLayerName(taxon), "Expert distribution: " + taxon, wmsNames[0], 0.35f, metadata[0], null, LayerUtilities.WKT, null, null);
-                    ml.setData("spcode", spcode[0]);
+            for (int i = 0; i < wmsNames.length; i++) {
+                if(getMapLayerWMS(wmsNames[i]) == null) {
+                    String layerName = getNextAreaLayerName(taxon);
+                    String html = DistributionsWCController.getMetadataHtmlFor(spcode[i], null, layerName);
+                    ml = addWMSLayer(layerName, "Expert distribution: " + taxon, wmsNames[i], 0.35f, html, null, LayerUtilities.WKT, null, null);
+                    ml.setData("spcode", spcode[i]);
                     setupMapLayerAsDistributionArea(ml);
                 }
             }
@@ -1940,18 +1941,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             found.add(jo.getString("wmsurl"));
                         }
                     }
-                    if (found.size() > 1) {
-                        for (int i = 0; i < wmsNames.length; i++) {
-                            if(getMapLayerWMS(wmsNames[i]) == null) {
-                                ml = addWMSLayer(taxon + " area " + (i + 1),"Expert distribution: " + taxon, found.get(i), 0.35f, "", null, LayerUtilities.WKT, null, null);
-                                ml.setData("spcode", spcode[i]);
-                                setupMapLayerAsDistributionArea(ml);
-                            }
-                        }
-                    } else if (found.size() == 1) {
-                        if(getMapLayerWMS(wmsNames[0]) == null) {
-                            ml = addWMSLayer(taxon + " area", "Expert distribution: " + taxon, found.get(0), 0.35f, "", null, LayerUtilities.WKT, null, null);
-                            ml.setData("spcode", spcode[0]);
+                    for (int i = 0; i < wmsNames.length; i++) {
+                        if(getMapLayerWMS(wmsNames[i]) == null) {
+                            String layerName = getNextAreaLayerName(taxon + " area " + (i + 1));
+                            String html = DistributionsWCController.getMetadataHtmlFor(spcode[i], null, layerName);
+                            ml = addWMSLayer(layerName,"Expert distribution: " + taxon, found.get(i), 0.35f, html, null, LayerUtilities.WKT, null, null);
+                            ml.setData("spcode", spcode[i]);
                             setupMapLayerAsDistributionArea(ml);
                         }
                     }
@@ -1966,7 +1961,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     void openChecklistSpecies(String lsids, String wkt, boolean mapIfOnlyOne) {
         try {
             //species checklists
-            String[] finallist = FilteringResultsWCController.getDistributionsOrChecklists("checklists", wkt, lsids);
+            String[] finallist = FilteringResultsWCController.getDistributionsOrChecklists("checklists", wkt, lsids, null);
 
             //open for optional mapping of areas
             if (finallist != null && finallist.length > 1) {
@@ -1984,10 +1979,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                                     ){//&& !row[11].startsWith(EXPERT_DISTRIBUTION_AREA_NAME)) {
                                 displayName = row[11];
                             }
-                            
-                            String html = DistributionsWCController.getMetadataHtmlFor(row);
+
+                            String layerName = getNextAreaLayerName(row[0] + " area");
+                            String html = DistributionsWCController.getMetadataHtmlFor(row[0], row, layerName);
                                         
-                            MapLayer ml = getMapComposer().addWMSLayer(getNextAreaLayerName(row[0] + " area"),displayName, mapping[1], 0.8f, html, null, LayerUtilities.WKT, null, null);
+                            MapLayer ml = getMapComposer().addWMSLayer(layerName,displayName, mapping[1], 0.6f, html, null, LayerUtilities.WKT, null, null);
                             ml.setData("spcode", row[0]);
                             MapComposer.setupMapLayerAsDistributionArea(ml);
                         }
@@ -2014,10 +2010,34 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
+    void openAreaChecklist(String geom_idx, String lsids, String wkt) {
+        try {
+            //area checklist
+            //String[] finallist = FilteringResultsWCController.getAreaChecklists(geom_idx, lsids, wkt);
+
+            //checklist species
+            String[] finallist = FilteringResultsWCController.getDistributionsOrChecklists("checklists",wkt,lsids,geom_idx);
+            
+            try {
+                getFellowIfAny("distributionresults").detach();
+            } catch (Exception e) {}
+            DistributionsWCController window = (DistributionsWCController) Executions.createComponents("WEB-INF/zul/AnalysisDistributionResults.zul", this, null);
+
+            try {
+                window.doModal();
+                window.init(finallist, "Checklist Species", String.valueOf(finallist.length - 1), null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     void openDistributionSpecies(String lsids, String wkt) {
         try {
             //expert distributions
-            String[] distributions = FilteringResultsWCController.getDistributionsOrChecklists("distributions", wkt, lsids);
+            String[] distributions = FilteringResultsWCController.getDistributionsOrChecklists("distributions", wkt, lsids, null);
 
             //open for optional mapping of areas
             if (distributions != null) {
@@ -2087,15 +2107,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 System.out.println("failed to parse wkt in : " + url);
                 e.printStackTrace();
             }
-            try {
-                if (jo.containsKey("pid") && jo.containsKey("area_name")) {
-                    String fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
-                    String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
-                    md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+//            try {
+//                if (jo.containsKey("pid") && jo.containsKey("area_name")) {
+//                    String fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
+//                    String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
+//                    md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -3322,6 +3342,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (lsids != null && lsids.length() > 0) {
             closeExternalContentWindow();
             openChecklistSpecies(lsids, null, false);
+        }
+    }
+
+    public void onClick$openAreaChecklist(Event event) {
+        String geom_idx = (String) event.getData();
+        if (geom_idx != null && geom_idx.length() > 0) {
+            closeExternalContentWindow();
+            openAreaChecklist(geom_idx, null, null);
         }
     }
 

@@ -60,10 +60,10 @@
             </n:tr>
             <n:tr height="18px" >
                 <n:td>
-                    <label value="Species Checklists" />
+                    <label value="Area Checklists" />
                 </n:td>
                 <n:td>
-                    <label id="sclLabel" style="cursor:pointer;" />
+                    <label id="aclLabel" style="cursor:pointer;" />
                 </n:td>
             </n:tr>
             <n:tr height="18px" >

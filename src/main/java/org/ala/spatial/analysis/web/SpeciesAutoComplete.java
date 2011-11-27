@@ -5,7 +5,9 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -294,80 +296,98 @@ public class SpeciesAutoComplete extends Combobox {
         return slist.toString();
     }
 
-    String autoService(String val) throws Exception {
-        //while there is inappropriate sorting use limit=50
-        String nsurl = CommonData.bieServer + "/search/auto.json?limit=50&q=" + URLEncoder.encode(val, "UTF-8");
-
-        HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(nsurl);
-        get.addRequestHeader("Content-type", "text/plain");
-
-        int result = client.executeMethod(get);
-        String rawJSON = get.getResponseBodyAsString();
-
-        //parse
-        JSONObject jo = JSONObject.fromObject(rawJSON);
+    String autoService(String val) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 
         StringBuilder slist = new StringBuilder();
-        JSONArray ja = jo.getJSONArray("autoCompleteList");
+        
+        long start = System.currentTimeMillis();
+        //while there is inappropriate sorting use limit=50
+        String nsurl = "";
+        try {
+            nsurl = CommonData.bieServer + "/search/auto.json?limit=50&q=" + URLEncoder.encode(val, "UTF-8");
 
-        HashSet<String> lsids = new HashSet<String>();
-        for(int i=0;i<ja.size();i++){
-            JSONObject o = ja.getJSONObject(i);
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(nsurl);
+            get.addRequestHeader("Content-type", "text/plain");
 
-            //count for guid
-            try {
-                long count = CommonData.lsidCounts.getCount(o.getLong("left"), o.getLong("right"));
+            int result = client.executeMethod(get);
 
-                if(count > 0 && o.containsKey("name") && o.containsKey("guid") && o.containsKey("rankString")) {
-                    if(lsids.contains(o.getString("guid"))) {
-                        continue;
-                    }
-                    lsids.add(o.getString("guid"));
-                    if(slist.length() > 0) {
-                        slist.append("\n");
-                    }
+            if(result != 200) {
+                System.out.println("SPECIES AUTOCOMPLETE ERROR|"  + sdf.format(new Date()) + "|" + (System.currentTimeMillis() - start) + "ms|" + nsurl + "|response code " + result);
+            } else {
+                String rawJSON = get.getResponseBodyAsString();
 
-                    String commonName = null;
-                    boolean commonNameMatch = true;
-                    if(o.containsKey("commonName") && !o.getString("commonName").equals("none") && !o.getString("commonName").equals("null")) {
-                        commonName = o.getString("commonName");
-                        commonName = commonName.trim().replace("/",",");
-                        String [] cns  = commonName.split(",");
-                        String st = val.toLowerCase();
-                        for(int j=0;j<cns.length;j++) {
-                            if(cns[j].toLowerCase().contains(val)) {
-                                commonName = cns[j];
-                                commonNameMatch = true;
-                                break;
+                System.out.println("SPECIES AUTOCOMPLETE SUCCESSFUL|" + sdf.format(new Date()) + "|" + (System.currentTimeMillis() - start) + "ms|" + nsurl);
+
+                //parse
+                JSONObject jo = JSONObject.fromObject(rawJSON);
+
+                JSONArray ja = jo.getJSONArray("autoCompleteList");
+
+                HashSet<String> lsids = new HashSet<String>();
+                for(int i=0;i<ja.size();i++){
+                    JSONObject o = ja.getJSONObject(i);
+
+                    //count for guid
+                    try {
+                        long count = CommonData.lsidCounts.getCount(o.getLong("left"), o.getLong("right"));
+
+                        if(count > 0 && o.containsKey("name") && o.containsKey("guid") && o.containsKey("rankString")) {
+                            if(lsids.contains(o.getString("guid"))) {
+                                continue;
+                            }
+                            lsids.add(o.getString("guid"));
+                            if(slist.length() > 0) {
+                                slist.append("\n");
+                            }
+
+                            String commonName = null;
+                            //boolean commonNameMatch = true;
+                            if(o.containsKey("commonName") && !o.getString("commonName").equals("none")
+                                    && !o.getString("commonName").equals("null")) {
+                                commonName = o.getString("commonName");
+                                commonName = commonName.trim().replace("/",",");
+                                String [] cns  = commonName.split(",");
+                                String st = val.toLowerCase();
+                                for(int j=0;j<cns.length;j++) {
+                                    if(cns[j].toLowerCase().contains(val)) {
+                                        commonName = cns[j];
+                                        //commonNameMatch = true;
+                                        break;
+                                    }
+                                }
+                                if(commonName.indexOf(',') > 1) {
+                                    commonName = commonName.substring(0, commonName.indexOf(','));
+                                }
+                            }
+
+                            //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
+                            //swap name and common name if it is a common name match
+                            if(o.containsKey("commonNameMatches") && !o.getString("commonNameMatches").equals("null")
+                                     && !o.getString("commonNameMatches").equals("[]")) {
+                                slist.append(commonName).append(" /");
+                                slist.append(o.getString("guid")).append("/");
+                                slist.append(o.getString("rankString"));
+                                slist.append(", ").append(o.getString("name").replace("/",","));
+                                slist.append("/found ");
+                                slist.append(count);
+                            } else {
+                                slist.append(o.getString("name").replace("/",",")).append(" /");
+                                slist.append(o.getString("guid")).append("/");
+                                slist.append(o.getString("rankString"));
+                                if(commonName != null) slist.append(", ").append(commonName);
+                                slist.append("/found ");
+                                slist.append(count);
                             }
                         }
-                        if(commonName.indexOf(',') > 1) {
-                            commonName = commonName.substring(0, commonName.indexOf(','));
-                        }
-                    }
-
-                    //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
-                    //swap name and common name if it is a common name match
-                    if(o.containsKey("commonNameMatches") && !o.getString("commonNameMatches").equals("null")) {
-                        slist.append(commonName).append(" /");
-                        slist.append(o.getString("guid")).append("/");
-                        slist.append(o.getString("rankString"));
-                        slist.append(", ").append(o.getString("name").replace("/",","));
-                        slist.append("/found ");
-                        slist.append(count);
-                    } else {
-                        slist.append(o.getString("name").replace("/",",")).append(" /");
-                        slist.append(o.getString("guid")).append("/");
-                        slist.append(o.getString("rankString"));
-                        if(commonName != null) slist.append(", ").append(commonName);
-                        slist.append("/found ");
-                        slist.append(count);
+                    } catch (Exception e) {
                     }
                 }
-            } catch (Exception e) {
-
             }
+        } catch (Exception e) {
+            System.out.println("SPECIES AUTOCOMPLETE ERROR|"  + sdf.format(new Date()) + "|" + (System.currentTimeMillis() - start) + "ms|" + nsurl + "|" + e.getMessage());
+            e.printStackTrace();
         }
 
         return slist.toString();

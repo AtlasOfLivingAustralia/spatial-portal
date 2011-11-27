@@ -359,3 +359,7 @@ function openDistributions(lsids){
 function openChecklists(lsids){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$openChecklists', lsids));
 }
+
+function openAreaChecklist(geom_idx){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$openAreaChecklist', geom_idx));
+}

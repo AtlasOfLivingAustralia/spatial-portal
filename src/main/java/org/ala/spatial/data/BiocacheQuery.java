@@ -739,16 +739,23 @@ public class BiocacheQuery implements Query, Serializable {
         return null;
     }
 
-    private String decompressGz(InputStream gziped) throws IOException {
-        GZIPInputStream gzip = new GZIPInputStream(gziped);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(1048576);
-        byte[] buffer = new byte[1048576];
-        int size;
-        while ((size = gzip.read(buffer)) >= 0) {
-            baos.write(buffer, 0, size);
+    private String decompressGz(InputStream gzipped) throws IOException {
+        String s = null;
+        try {
+            GZIPInputStream gzip = new GZIPInputStream(gzipped);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(1048576);
+            byte[] buffer = new byte[1048576];
+            int size;
+            while ((size = gzip.read(buffer)) >= 0) {
+                baos.write(buffer, 0, size);
+            }
+            s =  new String(baos.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        gzipped.close();
 
-        return new String(baos.toByteArray());
+        return s;
     }
 
     @Override
@@ -772,7 +779,7 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("phylum", "Phylum", QueryField.FieldType.STRING));
             fields.add(new QueryField("kingdom", "Kingdom", QueryField.FieldType.STRING));
 
-            //fields.add(new QueryField("coordinate_uncertainty", "Uncertainty", QueryField.FieldType.INT));
+            fields.add(new QueryField("coordinate_uncertainty", "Uncertainty", QueryField.FieldType.INT));
             fields.add(new QueryField("data_provider", "Data Provider", QueryField.FieldType.STRING));
             fields.add(new QueryField("institution_name", "Institution", QueryField.FieldType.STRING));
             fields.add(new QueryField("year", "Year", QueryField.FieldType.INT));
@@ -878,7 +885,7 @@ public class BiocacheQuery implements Query, Serializable {
                 lo = new BiocacheLegendObject(colourmode, s);
 
                 //test for exceptions
-                if (!colourmode.contains(",") && (colourmode.equals("year"))) {
+                if (!colourmode.contains(",") && (colourmode.equals("year") || colourmode.equals("coordinate_uncertainty"))) {
                     lo = ((BiocacheLegendObject) lo).getAsIntegerLegend();
 
                     //apply cutpoints to colourMode string
@@ -994,22 +1001,19 @@ public class BiocacheQuery implements Query, Serializable {
 
     @Override
     public String getMetadataHtml() {
-        //first line is the 'caption'
-//        return "biocache data\n"
-//                + "number of species=" + getSpeciesCount()
-//                + "<br>number of occurrences=" + getOccurrenceCount()
-//                + "<br>classification=" + lsids
-//                + "<br>data providers=" + getDataProviders();
-
         String spname = getSolrName();
 
-        String html = "Species information for " + spname + "\n";
-        //html += "<h2 class='md_heading'>Species information for " + spname + "</h2>";
-        html += "<table class='md_table'>";
-        html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>" + getSpeciesCount() + "</td></tr>";
-        html += "<tr><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCount() + "</td></tr>";
-        html += "<tr class='md_grey-bg'><td class='md_th'>Classification: </td><td class='md_spacer'/><td class='md_value'>";
+        String lastClass = "md_grey-bg";
 
+        String html = "Species layer\n";
+        html += "<table class='md_table'>";
+        html += "<tr class='" + lastClass + "'><td class='md_th'>Species name: </td><td class='md_spacer'/><td class='md_value'>" + spname + "</td></tr>";
+        lastClass = lastClass.length() == 0?"md_grey-bg":"";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>" + getSpeciesCount() + "</td></tr>";
+        lastClass = lastClass.length() == 0?"md_grey-bg":"";
+        html += "<tr class='" + lastClass + "'><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCount() + "</td></tr>";
+        lastClass = lastClass.length() == 0?"md_grey-bg":"";
+        html += "<tr class='" + lastClass + "'><td class='md_th'>Classification: </td><td class='md_spacer'/><td class='md_value'>";
         if (lsids != null) {
             for (String s : lsids.split(",")) {
                 Map<String, String> classification = getSpeciesClassification(s);
@@ -1029,17 +1033,14 @@ public class BiocacheQuery implements Query, Serializable {
                 html += "<br />";
             }
         }
-
         html += "</td></tr>";
-        html += "<tr><td class='md_th'>Data providers: </td><td class='md_spacer'/><td class='md_value'>" + getDataProviders() + "</td></tr>";
-//        if(lsids != null && lsids.length() > 0) {
-//            html += "<tr class='md_grey-bg'><td class='md_value' colspan='3'>More information for <a href='" + CommonData.bieServer + BIE_SPECIES + lsids + "' target='_blank'>"+ spname +"</a></td></tr>";
-//        }
-
-        String lastClass = "md_grey-bg";
+        lastClass = lastClass.length() == 0?"md_grey-bg":"";
+        html += "<tr class='" + lastClass + "'><td class='md_th'>Data providers: </td><td class='md_spacer'/><td class='md_value'>" + getDataProviders() + "</td></tr>";
+        lastClass = lastClass.length() == 0?"md_grey-bg":"";
+        
         if(lsids != null && lsids.length() > 0) {
-            html += "<tr class='md_grey-bg'><td class='md_th'>List of LSIDs: </td><td class='md_spacer'/><td class='md_value'>" + lsids + "</td></tr>";
-            lastClass = "";
+            html += "<tr class='" + lastClass + "'><td class='md_th'>List of LSIDs: </td><td class='md_spacer'/><td class='md_value'>" + lsids + "</td></tr>";
+            lastClass = lastClass.length() == 0?"md_grey-bg":"";
 
             String [] wms = CommonData.getSpeciesDistributionWMS(lsids);
             if(wms != null && wms.length > 0) {

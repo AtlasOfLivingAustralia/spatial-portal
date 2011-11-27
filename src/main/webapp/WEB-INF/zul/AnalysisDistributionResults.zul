@@ -37,6 +37,7 @@
                         <listheader label="LSID"/>
                         <listheader label="Area name" sort="auto"/>
                         <listheader label="Area sq km" sort="auto"/>
+                        <listheader label="Species" sort="auto"/>
                     </listhead>
                 </listbox>
             </div>            

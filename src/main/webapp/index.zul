@@ -450,7 +450,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
           <!-- script defer="false" type="text/javascript"><![CDATA[
             
        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-       document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js'<http://google-analytics.com/ga.js'> type='text/javascript'%3E%3C/script%3E"));       
+       document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js'<http://google-analytics.com/ga.js'> type='text/javascript'%3E%3C/script%3E"));
+        ]]></script>
+        <script defer="true" type="text/javascript"><![CDATA[
        var pageTracker = _gat._getTracker("UA-4355440-1");
        pageTracker._initData();
        pageTracker._trackPageview();

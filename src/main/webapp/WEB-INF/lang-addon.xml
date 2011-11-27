@@ -2,11 +2,11 @@
     <language-name>xul/html</language-name>
     <addon-name>myapp</addon-name>
     <component>
-        <component-name>window</component-name>
-        <extends>window</extends>
+        <component-name>button</component-name>
+        <extends>button</extends>
         <property>
-            <property-name>border</property-name>
-            <property-value>normal</property-value>
+            <property-name>autodisable</property-name>
+            <property-value>self</property-value>
         </property>
     </component>
 </language-addon>

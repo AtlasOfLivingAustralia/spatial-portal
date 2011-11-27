@@ -1673,7 +1673,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             ci.setValue(ml);
             ci.setParent(cbHighlightArea);
             if(data != null && data.getHighlightSa() != null
-                    && data.getHighlightSa().getMapLayer() == ml) {
+                    && data.getHighlightSa().getMapLayer().getName().equals(ml.getName())) {
                 cbHighlightArea.setSelectedItem(ci);
                 selectionSuccessful = true;
             }
@@ -1684,7 +1684,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 && data.getHighlightSa() != null) {            
             MapLayer ml = data.getHighlightSa().getMapLayer();
             if(ml != null) {
-                Comboitem ci = new Comboitem(ml.getDisplayName());
+                Comboitem ci = new Comboitem(ml.getDisplayName() + " (DELETED LAYER)");
                 ci.setValue(ml);
                 ci.setParent(cbHighlightArea);
                 cbHighlightArea.setSelectedItem(ci);
@@ -1705,7 +1705,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         }
     }
 
-    public void onChange$cbHighlightArea(Event event) {
+    public void onSelect$cbHighlightArea(Event event) {
         if(cbHighlightArea.getSelectedItem() != null) {
             if(cbHighlightArea.getSelectedItem().getValue() instanceof MapLayer) {
                 MapLayer ml = ((MapLayer)cbHighlightArea.getSelectedItem().getValue());
@@ -1725,6 +1725,6 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
     public void onClick$bClearHighlightArea(Event event) {
         cbHighlightArea.setSelectedIndex(-1);
-        onChange$cbHighlightArea(null);
+        onSelect$cbHighlightArea(null);
     }
 }
