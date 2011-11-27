@@ -51,6 +51,7 @@ public class Distribution {
     String checklist_name;
     Double area_km;
     String notes;
+    Long geom_idx;
 
     public void setGid(Long gid) {
         this.gid = gid;
@@ -225,5 +226,13 @@ public class Distribution {
 
     public String getNotes() {
         return notes;
+    }
+
+    public void setGeom_idx(Long geom_idx) {
+        this.geom_idx = geom_idx;
+    }
+
+    public Long getGeom_idx() {
+        return geom_idx;
     }
 }

@@ -41,13 +41,21 @@ public class DistributionDAOImpl implements DistributionDAO {
     }
 
     @Override
-    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, String lsids, String type) {
+    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, Integer geomIdx, String lsids, String type) {
         logger.info("Getting distributions list");
 
         ArrayList<Object> params = new ArrayList<Object>();
         StringBuilder where = new StringBuilder();
 
+        if (geomIdx != null && geomIdx >= 0) {
+            where.append(" geom_idx = ? ");
+             params.add(geomIdx);
+        }
+
         if (lsids != null && lsids.length() > 0) {
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
             where.append(" ? LIKE '% '||lsid||' %'  ");
             params.add(" " + lsids.replace(",", " ") + " ");
         }
@@ -81,7 +89,7 @@ public class DistributionDAOImpl implements DistributionDAO {
             params.add(wkt);
         }
 
-        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid,checklist_name,area_km, notes from distributions ";
+        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid,checklist_name,area_km, notes, geom_idx from distributions ";
         if (where.length() > 0) {
             sql += " WHERE " + where.toString() + " AND type = ? ";
         } else {
@@ -100,6 +108,8 @@ public class DistributionDAOImpl implements DistributionDAO {
             distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), params.get(1), params.get(2), type);
         } else if (params.size() == 4) {
             distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), params.get(1), params.get(2), params.get(3), type);
+        } else if (params.size() == 5) {
+            distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), params.get(1), params.get(2), params.get(3), params.get(4), type);
         }
 
         return distributions;
@@ -107,7 +117,7 @@ public class DistributionDAOImpl implements DistributionDAO {
 
     @Override
     public Distribution getDistributionBySpcode(long spcode, String type) {
-        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid, ST_AsText(the_geom) as geometry, checklist_name, area_km, notes from distributions where spcode= ? and type= ? ";
+        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid, ST_AsText(the_geom) as geometry, checklist_name, area_km, notes, geom_idx from distributions where spcode= ? and type= ? ";
         List<Distribution> d = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), (double) spcode, type);
 
         if (d.size() > 0) {

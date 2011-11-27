@@ -24,7 +24,7 @@ import org.ala.layers.dto.Distribution;
  * @author ajay
  */
 public interface DistributionDAO {
-    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, String lsids, String type);
+    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, Integer geomIdx, String lsids, String type);
     public Distribution getDistributionBySpcode(long spcode, String type);
 
 }
