@@ -25,6 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -33,6 +34,7 @@ import java.util.zip.ZipOutputStream;
 import org.ala.layers.dto.GridClass;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.tabulation.TabulationUtil;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
@@ -56,6 +58,43 @@ import org.opengis.feature.simple.SimpleFeatureType;
  * @author Adam
  */
 public class GridClassBuilder {
+    final public static int[] colours = {0x003366CC, 0x00DC3912, 0x00FF9900, 0x00109618, 0x00990099, 0x000099C6, 0x00DD4477, 0x0066AA00, 0x00B82E2E, 0x00316395, 0x00994499, 0x0022AA99, 0x00AAAA11, 0x006633CC, 0x00E67300, 0x008B0707, 0x00651067, 0x00329262, 0x005574A6, 0x003B3EAC, 0x00B77322, 0x0016D620, 0x00B91383, 0x00F4359E, 0x009C5935, 0x00A9C413, 0x002A778D, 0x00668D1C, 0x00BEA413, 0x000C5922, 0x00743411};
+
+    public static void main(String[] args) {
+        //args = new String[]{"e:\\layers\\ready\\shape_diva\\fci"};
+
+        System.out.println("args[0]=diva grid input file (do not include .grd or .gri)\n\n");
+
+        if (args.length > 0) {
+            //remove existing
+            try {
+                File f;
+
+                if ((f = new File(args[0] + ".classes.json")).exists()) {
+                    f.delete();
+                }
+
+                if ((f = new File(args[0])).exists() && f.isDirectory()) {
+                    File[] fs = f.listFiles();
+                    for (int i = 0; i < fs.length; i++) {
+                        if (fs[i].isFile()) {
+                            fs[i].delete();
+                        }
+                    }
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            //build new
+            try {
+                buildFromGrid(args[0]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public static HashMap<Integer, GridClass> buildFromGrid(String filePath) throws IOException {
         File wktDir = new File(filePath);
@@ -63,12 +102,30 @@ public class GridClassBuilder {
 
         int[] wktMap = null;
 
+        //track values for the SLD
+        ArrayList<Integer> maxValues = new ArrayList<Integer>();
+        ArrayList<String> labels = new ArrayList<String>();
+
         HashMap<Integer, GridClass> classes = new HashMap<Integer, GridClass>();
         Properties p = new Properties();
         p.load(new FileReader(filePath + ".txt"));
+
+        ArrayList<Integer> keys = new ArrayList<Integer>();
         for (String key : p.stringPropertyNames()) {
             try {
                 int k = Integer.parseInt(key);
+                keys.add(k);
+            } catch (NumberFormatException e) {
+                System.out.println("Excluding shape key '" + key + "'");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        java.util.Collections.sort(keys);
+        for(int j=0;j<keys.size();j++) {
+            int k = keys.get(j);
+            String key = String.valueOf(k);
+            try {
                 String name = p.getProperty(key);
 
                 GridClass gc = new GridClass();
@@ -90,6 +147,13 @@ public class GridClassBuilder {
                 //store map
                 wktMap = (int[]) wktIndexed.get("map");
 
+                gc.setMinShapeIdx(Grid2Shape.getArrayMin(wktMap));
+                gc.setMaxShapeIdx(Grid2Shape.getArrayMax(wktMap));
+
+                //for SLD
+                maxValues.add(gc.getMaxShapeIdx());
+                labels.add(name.replace("\"","'"));
+
                 //write wkt index
                 FileWriter fw = new FileWriter(filePath + File.separator + key + ".wkt.index");
                 fw.append((String) wktIndexed.get("index"));
@@ -100,7 +164,7 @@ public class GridClassBuilder {
                 int len = ((String) wktIndexed.get("wkt")).length();
                 WKTReader r = new WKTReader();
                 for (int i = 0; i < index.length; i++) {
-                    if(index[i].length() > 1) {
+                    if (index[i].length() > 1) {
                         String[] cells = index[i].split(",");
                         raf.writeInt(Integer.parseInt(cells[0]));   //polygon number
                         int polygonStart = Integer.parseInt(cells[1]);
@@ -195,8 +259,6 @@ public class GridClassBuilder {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("Excluding shape key '" + key + "'");
             } catch (Exception e) {
                 //logger.warn("Cannot parse integer key '" + key + "' in file " + filePath + ".txt");
                 e.printStackTrace();
@@ -207,6 +269,102 @@ public class GridClassBuilder {
         Grid g = new Grid(filePath);
         g.writeGrid(filePath + File.separator + "polygons", wktMap, g.xmin, g.ymin, g.xmax, g.ymax, g.xres, g.yres, g.nrows, g.ncols);
 
+        //write sld
+        exportSLD(filePath + File.separator + "polygons.sld", new File(filePath + ".txt").getName(), maxValues, labels);
+
+        writeProjectionFile(filePath + File.separator + "polygons.prj");
+
+        //write .classes.json
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(new File(filePath + ".classes.json"), classes);
+        
         return classes;
     }
+
+    static void exportSLD(String filename, String name, ArrayList<Integer> maxValues, ArrayList<String> labels) {
+        try {
+            StringBuffer sld = new StringBuffer();
+            sld.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>");
+
+            /* header */
+            sld.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            sld.append("<sld:StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\" xmlns:sld=\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" version=\"1.0.0\">");
+            sld.append("<sld:NamedLayer>");
+            sld.append("<sld:Name>raster</sld:Name>");
+            sld.append(" <sld:UserStyle>");
+            sld.append("<sld:Name>raster</sld:Name>");
+            sld.append("<sld:Title>A very simple color map</sld:Title>");
+            sld.append("<sld:Abstract>A very basic color map</sld:Abstract>");
+            sld.append("<sld:FeatureTypeStyle>");
+            sld.append(" <sld:Name>name</sld:Name>");
+            sld.append("<sld:FeatureTypeName>Feature</sld:FeatureTypeName>");
+            sld.append(" <sld:Rule>");
+            sld.append("   <sld:RasterSymbolizer>");
+            sld.append(" <sld:Geometry>");
+            sld.append(" <ogc:PropertyName>geom</ogc:PropertyName>");
+            sld.append(" </sld:Geometry>");
+            sld.append(" <sld:ChannelSelection>");
+            sld.append(" <sld:GrayChannel>");
+            sld.append("   <sld:SourceChannelName>1</sld:SourceChannelName>");
+            sld.append(" </sld:GrayChannel>");
+            sld.append(" </sld:ChannelSelection>");
+            sld.append(" <sld:ColorMap>");
+
+            /* outputs */
+            sld.append("\n<sld:ColorMapEntry color=\"#ffffff\" opacity=\"0\" quantity=\"0\"/>\n");
+            for (int i = 0; i < labels.size(); i++) {
+                sld.append("<sld:ColorMapEntry color=\"#" + getHexColour(colours[i % colours.length]) + "\" quantity=\"" + maxValues.get(i) + ".0\" label=\"" + labels.get(i) + "\" opacity=\"1\"/>\r\n");
+            }
+
+            /* footer */
+            sld.append("</sld:ColorMap></sld:RasterSymbolizer></sld:Rule></sld:FeatureTypeStyle></sld:UserStyle><sld:/NamedLayer></sld:StyledLayerDescriptor>");
+
+            /* write */
+            FileWriter fw = new FileWriter(filename);
+            fw.append(sld.toString());
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static String getHexColour(int colour) {
+        String s = Integer.toHexString(colour);
+        while(s.length() > 6) {
+            s = s.substring(1);
+        }
+        while(s.length() < 6) {
+            s = "0" + s;
+        }
+        return s;
+    }
+
+    private static void writeProjectionFile(String filename) {
+        try {
+            FileWriter spWriter = new FileWriter(filename);
+
+            StringBuffer sbProjection = new StringBuffer();
+            sbProjection.append("GEOGCS[\"WGS 84\", ").append("\n");
+            sbProjection.append("    DATUM[\"WGS_1984\", ").append("\n");
+            sbProjection.append("        SPHEROID[\"WGS 84\",6378137,298.257223563, ").append("\n");
+            sbProjection.append("            AUTHORITY[\"EPSG\",\"7030\"]], ").append("\n");
+            sbProjection.append("        AUTHORITY[\"EPSG\",\"6326\"]], ").append("\n");
+            sbProjection.append("    PRIMEM[\"Greenwich\",0, ").append("\n");
+            sbProjection.append("        AUTHORITY[\"EPSG\",\"8901\"]], ").append("\n");
+            sbProjection.append("    UNIT[\"degree\",0.01745329251994328, ").append("\n");
+            sbProjection.append("        AUTHORITY[\"EPSG\",\"9122\"]], ").append("\n");
+            sbProjection.append("    AUTHORITY[\"EPSG\",\"4326\"]] ").append("\n");
+
+            //spWriter.write("spname, longitude, latitude \n");
+            spWriter.append(sbProjection.toString());
+            spWriter.close();
+
+        } catch (IOException ex) {
+            //Logger.getLogger(MaxentServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("error writing species file:");
+            ex.printStackTrace(System.out);
+        }
+    }
 }
+
+

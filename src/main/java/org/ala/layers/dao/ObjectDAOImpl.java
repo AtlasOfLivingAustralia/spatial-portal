@@ -340,7 +340,8 @@ public class ObjectDAOImpl implements ObjectDAO {
                                     && ("kml".equals(geomtype)
                                     || "wkt".equals(geomtype)
                                     || "geojson".equals(geomtype))) {
-                                if (f.getType().equals("a") || s.length == 2) {           //class
+                                //TODO: enable for type 'a' after implementation of fields table defaultLayer field
+                                /*if (f.getType().equals("a") || s.length == 2) {           //class
                                     File file = new File(f.getFilePath() + File.separator + s[1] + "." + geomtype + ".zip");
                                     if (file.exists()) {
                                         ZipInputStream zis = new ZipInputStream(new FileInputStream(file));
@@ -352,7 +353,7 @@ public class ObjectDAOImpl implements ObjectDAO {
                                         }
                                         zis.close();
                                     }
-                                } else {                                //polygon
+                                } else*/ {                                //polygon
                                     BufferedReader br = null;
                                     RandomAccessFile raf = null;
                                     try {

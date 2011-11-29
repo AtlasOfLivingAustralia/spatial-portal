@@ -205,17 +205,18 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                         if (f != null && f.getClasses() != null) {
                             GridClass gc = f.getClasses().get((int) v[0]);
                             if (gc != null) {
-                                m.put("value", (gc == null ? "n/a" : gc.getName()));
-                                if (f.getType().equals("a")) {           //class pid
-                                    m.put("pid", f.getLayerPid() + ":" + ((int) v[0]));
-                                } else { // if(f.getType().equals("b")) {//polygon pid
-                                    g = new Grid(f.getFilePath() + File.separator + "polygons");
-                                    if (g != null) {
-                                        int v0 = (int) v[0];
-                                        v = g.getValues(p);
-                                        m.put("pid", f.getLayerPid() + ":" + v0 + ":" + ((int) v[0]));
-                                    }
-                                }
+                                    m.put("value", (gc == null ? "n/a" : gc.getName()));
+                                    //TODO: re-enable intersection for type 'a' after correct implementation of 'defaultField' fields table column
+//                                    if (f.getType().equals("a")) {           //class pid
+//                                        m.put("pid", f.getLayerPid() + ":" + ((int) v[0]));
+//                                    } else { // if(f.getType().equals("b")) {//polygon pid
+                                        g = new Grid(f.getFilePath() + File.separator + "polygons");
+                                        if (g != null) {
+                                            int v0 = (int) v[0];
+                                            v = g.getValues(p);
+                                            m.put("pid", f.getLayerPid() + ":" + v0 + ":" + ((int) v[0]));
+                                        }
+//                                }
                             }
                         }
                         if (!m.containsKey("value")) {
@@ -514,10 +515,10 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
     public ArrayList<String> sampling(IntersectionFile[] intersectionFiles, double[][] points) {
         init();
 
-        if (intersectConfig.getLayerIndexUrl() != null) {
-            return remoteSampling(intersectionFiles, points);
-        } else {
+        if (intersectConfig.isLocalSampling()) {
             return localSampling(intersectionFiles, points);
+        } else {
+            return remoteSampling(intersectionFiles, points);
         }
     }
 

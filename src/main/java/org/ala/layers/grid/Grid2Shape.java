@@ -55,13 +55,13 @@ public class Grid2Shape {
         return baos.toString();
     }
 
-    static public HashMap grid2WktIndexed(BitSet data, int nrows, int ncols, double minx, double miny, double resx, double resy) {
+    static public HashMap grid2WktIndexed(BitSet data, int nrows, int ncols, double minx, double miny, double resx, double resy, int startKey) {
         int[] map = new int[nrows * ncols];
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StringBuilder index = new StringBuilder();
         try {
-            streamGrid2WktIndexed(baos, data, nrows, ncols, minx + (float) (minx * resx), miny + (float) ((nrows - miny - 1) * resy), resx, resy, map, index);
+            streamGrid2WktIndexed(baos, data, nrows, ncols, minx + (float) (minx * resx), miny + (float) ((nrows - miny - 1) * resy), resx, -resy, map, index, startKey);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -81,12 +81,12 @@ public class Grid2Shape {
         os.write(")".getBytes());
     }
 
-    static public void streamGrid2WktIndexed(OutputStream os, BitSet data, int nrows, int ncols, double minx, double miny, double resx, double resy, int[] map, StringBuilder index) throws IOException {
+    static public void streamGrid2WktIndexed(OutputStream os, BitSet data, int nrows, int ncols, double minx, double miny, double resx, double resy, int[] map, StringBuilder index, int startKey) throws IOException {
         int characterPos = 0;
 
         os.write("MULTIPOLYGON(".getBytes());
         characterPos += 13;
-        characterPos = getPolygonsWktIndexed(os, characterPos, data, nrows, ncols, resx, resy, minx, miny, map, index);
+        characterPos = getPolygonsWktIndexed(os, characterPos, data, nrows, ncols, resx, resy, minx, miny, map, index, startKey);
         os.write(")".getBytes());
         characterPos++;
     }
@@ -147,13 +147,16 @@ public class Grid2Shape {
                 grid.set(i);
             }
         }
-
-        HashMap m = grid2WktIndexed(grid, nrows, ncols, minx, miny, resx, resy);
-
-        //merge maps
+        
+        //get next start key from the map
         if (map == null) {
             map = new int[nrows * ncols];
         }
+        int startKey = getArrayMax(map) + 1;
+
+        HashMap m = grid2WktIndexed(grid, nrows, ncols, minx, miny, resx, resy, startKey);
+
+        //merge maps        
         int[] partial = (int[]) m.get("map");
         for (int i = 0; i < len; i++) {
             int x = i % cols;
@@ -250,14 +253,14 @@ public class Grid2Shape {
         byte[] edges = new byte[data.size()];
 
         HashMap<Integer, Entry<Integer, Set<Integer>>> polygons = new HashMap<Integer, Entry<Integer, Set<Integer>>>();
-        findEdges(data, image, edges, nrows, ncols, polygons);
+        findEdges(data, image, edges, nrows, ncols, polygons, 1);
 
         gid = edgesToPolyonsWkt(os, gid, edges, image, nrows, ncols, yres, yres, minx, miny, polygons);
 
         return gid;
     }
 
-    static int getPolygonsWktIndexed(OutputStream os, int gid, BitSet data, int nrows, int ncols, double xres, double yres, double minx, double miny, int[] map, StringBuilder index) throws IOException {
+    static int getPolygonsWktIndexed(OutputStream os, int gid, BitSet data, int nrows, int ncols, double xres, double yres, double minx, double miny, int[] map, StringBuilder index, int startKey) throws IOException {
         int[] image = null;
         if (map != null) {
             image = map;
@@ -267,7 +270,7 @@ public class Grid2Shape {
         byte[] edges = new byte[data.size()];
 
         HashMap<Integer, Entry<Integer, Set<Integer>>> polygons = new HashMap<Integer, Entry<Integer, Set<Integer>>>();
-        findEdges(data, image, edges, nrows, ncols, polygons);
+        findEdges(data, image, edges, nrows, ncols, polygons, startKey);
 
         //write image onto map
         int len = nrows * ncols;
@@ -287,15 +290,15 @@ public class Grid2Shape {
         byte[] edges = new byte[data.size()];
 
         HashMap<Integer, Entry<Integer, Set<Integer>>> polygons = new HashMap<Integer, Entry<Integer, Set<Integer>>>();
-        findEdges(data, image, edges, nrows, ncols, polygons);
+        findEdges(data, image, edges, nrows, ncols, polygons, 1);
 
         gid = edgesToPolyons(output, gid, edges, image, nrows, ncols, yres, yres, minx, miny, polygons);
 
         return gid;
     }
 
-    static void findEdges(BitSet data, int[] image, byte[] edges, int nrows, int ncols, HashMap<Integer, Entry<Integer, Set<Integer>>> polygons) {
-        int groups = 1;
+    static void findEdges(BitSet data, int[] image, byte[] edges, int nrows, int ncols, HashMap<Integer, Entry<Integer, Set<Integer>>> polygons, int startKey) {
+        int groups = startKey;
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy hh:mm:ss:SSS");
         //row by row
@@ -325,9 +328,6 @@ public class Grid2Shape {
                                 boolean cellFound = false;
                                 for (int m = 0; m < ncols; m++) {
                                     int p = getPos(m, n, ncols);
-                                    if (p >= image.length) {
-                                        p = p;
-                                    }
                                     if (image[p] == oldGroup) {
                                         image[p] = newGroup;
                                         cellFound = true;
@@ -490,8 +490,20 @@ public class Grid2Shape {
     }
 
     static int edgesToPolyonsWktIndexed(OutputStream os, int characterPos, byte[] edges, int[] image, int nrows, int ncols, double resx, double resy, double minx, double miny, HashMap<Integer, Entry<Integer, Set<Integer>>> polygons, StringBuilder index) throws IOException {
+        ArrayList<Integer> keys = new ArrayList<Integer>(polygons.keySet());
+        java.util.Collections.sort(keys);
+
         //follow edges
-        for (int key : polygons.keySet()) {
+        if(keys == null || keys.isEmpty()) {
+            System.out.println("no polygons for this key value");
+            return characterPos;
+        }
+        int thisKey = keys.get(0);
+        int startKey = thisKey;
+        int [] sequentialKeys = new int[keys.get(keys.size()-1) + 1 - startKey];
+        for (int i=0;i<keys.size();i++) {
+            int key = keys.get(i);
+            sequentialKeys[key - startKey] = thisKey;
             if (polygons.get(key) == null) {
                 continue;
             }
@@ -501,7 +513,7 @@ public class Grid2Shape {
                 characterPos++;
             }
 
-            index.append(key).append(",").append(characterPos).append("\n");
+            index.append(thisKey).append(",").append(characterPos).append("\n");
 
             os.write("(".getBytes());
             characterPos++;
@@ -518,9 +530,19 @@ public class Grid2Shape {
                 }
             }
 
+            thisKey++;
+
             os.write(")".getBytes());
             characterPos++;
+        }   
+
+        //update image with sequential keys
+        for(int k=0;k<image.length;k++) {
+            if(image[k] > 0) {
+                image[k] = sequentialKeys[image[k] - startKey];
+            }
         }
+
         return characterPos;
     }
 
@@ -918,6 +940,26 @@ public class Grid2Shape {
         } else { //!currentCw
             System.out.println("path not coded");
         }
+    }
+
+    public static int getArrayMax(int[] wktMap) {
+        int max = wktMap[0];
+        for (int i = 1; i < wktMap.length; i++) {
+            if (wktMap[i] > max) {
+                max = wktMap[i];
+            }
+        }
+        return max;
+    }
+
+    public static int getArrayMin(int[] wktMap) {
+        int min = wktMap[0];
+        for (int i = 1; i < wktMap.length; i++) {
+            if (wktMap[i] != 0 && (min == 0 || wktMap[i] < min)) {
+                min = wktMap[i];
+            }
+        }
+        return min;
     }
 }
 

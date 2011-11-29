@@ -24,6 +24,8 @@ public class GridClass {
     String name;
     Double area_km;
     String bbox;
+    Integer minShapeIdx;
+    Integer maxShapeIdx;
 
     public void setId(Integer id) {
         this.id = id;
@@ -55,5 +57,21 @@ public class GridClass {
 
     public String getBbox() {
         return bbox;
+    }
+
+    public void setMinShapeIdx(Integer minShapeIdx) {
+        this.minShapeIdx = minShapeIdx;
+    }
+
+    public Integer getMinShapeIdx() {
+        return minShapeIdx;
+    }
+    
+    public void setMaxShapeIdx(Integer maxShapeIdx) {
+        this.maxShapeIdx = maxShapeIdx;
+    }
+
+    public Integer getMaxShapeIdx() {
+        return maxShapeIdx;
     }
 }

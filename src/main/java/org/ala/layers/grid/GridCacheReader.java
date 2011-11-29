@@ -43,14 +43,16 @@ public class GridCacheReader {
 
         if (directory != null) {
             File dir = new File(directory);
-            for (File f : dir.listFiles()) {
-                try {
-                    if (f.getName().endsWith(".txt")) {
-                        GridGroup g = new GridGroup(f.getPath());
-                        groups.add(g);
+            if(dir != null && dir.exists() && dir.isDirectory()) {
+                for (File f : dir.listFiles()) {
+                    try {
+                        if (f.getName().endsWith(".txt")) {
+                            GridGroup g = new GridGroup(f.getPath());
+                            groups.add(g);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
         }

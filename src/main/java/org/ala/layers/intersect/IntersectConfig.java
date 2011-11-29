@@ -18,10 +18,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.logging.Level;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.layers.dao.FieldDAO;
@@ -34,6 +37,8 @@ import org.ala.layers.grid.GridClassBuilder;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
@@ -54,6 +59,7 @@ public class IntersectConfig {
     static final String GRID_BUFFER_SIZE = "GRID_BUFFER_SIZE";
     static final String GRID_CACHE_PATH = "GRID_CACHE_PATH";
     static final String GRID_CACHE_READER_COUNT = "GRID_CACHE_READER_COUNT";
+    static final String LOCAL_SAMPLING = "LOCAL_SAMPLING";
     static final String LAYER_PROPERTIES = "layer.properties";
     static ObjectMapper mapper = new ObjectMapper();
     private FieldDAO fieldDao;
@@ -71,6 +77,7 @@ public class IntersectConfig {
     String gridCachePath;
     int gridCacheReaderCount;
     HashMap<String, HashMap<Integer, GridClass>> classGrids;
+    boolean localSampling;
 
     public IntersectConfig(FieldDAO fieldDao, LayerDAO layerDao) {
         this.fieldDao = fieldDao;
@@ -95,15 +102,16 @@ public class IntersectConfig {
             logger.error(null, ex);
         }
 
-        layerFilesPath = getProperty(LAYER_FILES_PATH, properties);
-        alaspatialOutputPath = getProperty(ALASPATIAL_OUTPUT_PATH, properties);
-        layerIndexUrl = getProperty(LAYER_INDEX_URL, properties);
+        layerFilesPath = getProperty(LAYER_FILES_PATH, properties, null);
+        alaspatialOutputPath = getProperty(ALASPATIAL_OUTPUT_PATH, properties, null);
+        layerIndexUrl = getProperty(LAYER_INDEX_URL, properties, null);
         batchThreadCount = (int) getPositiveLongProperty(BATCH_THREAD_COUNT, properties, 1);
         configReloadWait = getPositiveLongProperty(CONFIG_RELOAD_WAIT, properties, 3600000);
-        preloadedShapeFiles = getProperty(PRELOADED_SHAPE_FILES, properties);
+        preloadedShapeFiles = getProperty(PRELOADED_SHAPE_FILES, properties, null);
         gridBufferSize = (int) getPositiveLongProperty(GRID_BUFFER_SIZE, properties, 4096);
-        gridCachePath = getProperty(GRID_CACHE_PATH, properties);
+        gridCachePath = getProperty(GRID_CACHE_PATH, properties, null);
         gridCacheReaderCount = (int) getPositiveLongProperty(GRID_CACHE_READER_COUNT, properties, 10);
+        localSampling = getProperty(LOCAL_SAMPLING, properties, "true").toLowerCase().equals("true");
 
         try {
             updateIntersectionFiles();
@@ -115,17 +123,20 @@ public class IntersectConfig {
         }
     }
 
-    String getProperty(String property, Properties properties) {
+    String getProperty(String property, Properties properties, String defaultValue) {
         String p = System.getProperty(property);
         if (p == null) {
             p = properties.getProperty(property);
+        }
+        if (p == null) {
+            p = defaultValue;
         }
         logger.info(property + " > " + p);
         return p;
     }
 
     long getPositiveLongProperty(String property, Properties properties, long defaultValue) {
-        String p = getProperty(property, properties);
+        String p = getProperty(property, properties, null);
         long l = defaultValue;
         try {
             l = Long.parseLong(p);
@@ -204,6 +215,10 @@ public class IntersectConfig {
             for (int i = 0; i < fields.size(); i++) {
                 JSONObject jo = fields.getJSONObject(i);
                 String spid = jo.getString("spid");
+                if (layerPathOrig.get(spid) == null) {
+                        logger.error("cannot find layer with id '" + spid + "'");
+                        continue;
+                    }
                 HashMap<Integer, GridClass> gridClasses =
                         getGridClasses(layerFilesPath + layerPathOrig.get(spid), layerType.get(spid));
 
@@ -290,6 +305,8 @@ public class IntersectConfig {
 
     String getUrl(String url) {
         try {
+            logger.info("opening url: " + url);
+
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(url);
 
@@ -405,9 +422,6 @@ public class IntersectConfig {
 
     static private HashMap<Integer, GridClass> getGridClasses(String filePath, String type) throws IOException {
         HashMap<Integer, GridClass> classes = null;
-        if (filePath.contains("shape_diva")) {
-            int i = 4;
-        }
         if (type.equals("Contextual")
                 && new File(filePath + ".gri").exists()
                 && new File(filePath + ".grd").exists()
@@ -420,8 +434,7 @@ public class IntersectConfig {
             } else {
                 logger.info("building " + gridClassesFile.getPath());
                 long start = System.currentTimeMillis();
-                classes = GridClassBuilder.buildFromGrid(filePath);
-                mapper.writeValue(gridClassesFile, classes);
+                classes = GridClassBuilder.buildFromGrid(filePath);                
                 logger.info("finished building " + gridClassesFile.getPath() + " in " + (System.currentTimeMillis() - start) + " ms");
             }
         } else {
@@ -436,5 +449,23 @@ public class IntersectConfig {
 
     public boolean requiresReload() {
         return lastReload + configReloadWait >= System.currentTimeMillis();
+    }
+
+    public boolean isLocalSampling() {
+        return localSampling;
+    }
+
+    public List<Field> getFieldsByDB() {
+        List<Field> fields = new ArrayList<Field>();
+        if (layerIndexUrl != null) {
+            try {
+                //request from url
+                fields = mapper.readValue(getUrl(layerIndexUrl + "/fieldsdb"), new TypeReference<List<Field>>() {
+                });
+            } catch (Exception ex) {
+                logger.error("failed to read: " + layerIndexUrl + "/fieldsdb", ex);
+            }
+        }
+        return fields;
     }
 }
