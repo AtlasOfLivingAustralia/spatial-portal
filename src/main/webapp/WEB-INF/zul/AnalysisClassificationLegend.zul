@@ -11,9 +11,9 @@
                 /*border-top: 1px solid grey;*/
                 border: 2px solid red;
              }
-        </style>
-
+        </style>            
             <div id="dCreateButtons" height="20px" style="bottom: 0px;right: 0px;margin: 0px 5px 5px 0px;padding: 0px 5px 5px 0px;" >
+                <button id="selectAll" label="Select all" sclass="goButton" />
                 <button id="createInGroup" label="Create layer" sclass="goButton" visible="true" />
                 <button id="clearSelection" label="Clear selection" sclass="goButton" visible="true" />
             </div>

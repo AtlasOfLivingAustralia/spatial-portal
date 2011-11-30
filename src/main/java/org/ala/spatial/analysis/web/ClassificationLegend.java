@@ -807,4 +807,19 @@ public class ClassificationLegend extends UtilityComposer {
             }
         }
     }
+
+    public void onClick$selectAll(Event event) {
+        if(legend != null) {
+            for (Listitem li : (List<Listitem>) legend.getItems()) {
+                if (li.getFirstChild().getChildren().size() > 0
+                        && !((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
+                    ((Checkbox) li.getFirstChild().getFirstChild()).setChecked(true);
+                }
+            }
+            updateD();
+            mapLayer.setHighlight(getSelectionFacet());
+            getMapComposer().applyChange(mapLayer);
+            dCreateButtons.setVisible(true);
+        }
+    }
 }

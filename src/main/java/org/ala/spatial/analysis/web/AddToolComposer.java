@@ -577,6 +577,7 @@ public class AddToolComposer extends UtilityComposer {
 
             if (fullList) {
                 lbListLayers.init(getMapComposer(), CommonData.satServer, environmentalOnly, false);
+                lbListLayers.updateDistances();
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (int i = 0; i < layers.size(); i++) {
@@ -948,6 +949,7 @@ public class AddToolComposer extends UtilityComposer {
                             if((lbListLayers.getIncludeAnalysisLayers()) != test) {
                                 String [] selectedLayers = lbListLayers.getSelectedLayers();
                                 lbListLayers.init(getMapComposer(), CommonData.satServer, environmentalOnly, test);
+                                lbListLayers.updateDistances();
 
                                 if (selectedLayers != null && selectedLayers.length > 0) {
                                     lbListLayers.selectLayers(selectedLayers);

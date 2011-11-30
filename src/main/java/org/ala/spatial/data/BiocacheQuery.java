@@ -988,10 +988,10 @@ public class BiocacheQuery implements Query, Serializable {
             //default to 'world' bb
             SimpleRegion sr = SimpleShapeFile.parseWKT(CommonData.WORLD_WKT);
             bbox.clear();
-            bbox.add(sr.getBoundingBox()[0][0]);
-            bbox.add(sr.getBoundingBox()[0][1]);
-            bbox.add(sr.getBoundingBox()[1][0]);
-            bbox.add(sr.getBoundingBox()[1][1]);
+            bbox.add(Math.max(-180, sr.getBoundingBox()[0][0]));
+            bbox.add(Math.max(-90, sr.getBoundingBox()[0][1]));
+            bbox.add(Math.min(180, sr.getBoundingBox()[1][0]));
+            bbox.add(Math.min(90, sr.getBoundingBox()[1][1]));
 
             e.printStackTrace();
         }

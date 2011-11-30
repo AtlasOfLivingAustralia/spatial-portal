@@ -31,7 +31,7 @@
             </n:tr>
             <n:tr height="18px" >
                 <n:td>
-                    <label value="Species" />
+                    <label value="Species points" />
                 </n:td>
                 <n:td>
                     <label id="results_label2_species" style="cursor:pointer;" />
@@ -60,7 +60,7 @@
             </n:tr>
             <n:tr height="18px" >
                 <n:td>
-                    <label value="Area Checklists" />
+                    <label value="Checklist areas" />
                 </n:td>
                 <n:td>
                     <label id="aclLabel" style="cursor:pointer;" />

@@ -803,7 +803,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             try {
                 window.doModal();
-                window.init(areaChecklistText, "Area Checklists", aclLabel.getValue(), new EventListener() {
+                window.init(areaChecklistText, "Checklist areas", aclLabel.getValue(), new EventListener() {
                     @Override
                     public void onEvent(Event event) throws Exception {
                         onClick$aclDownload(event);

@@ -68,24 +68,6 @@
                         </div>
                         <combobox id="cbColour" width="280px" >
                             <comboitem label="User defined colour" id="ciColourUser" value="-1" />
-                                                        <!-- comboitem label="Density Grid" value="grid" /-->
-                            <comboitem label="Lifeform" value="10" />
-                            <comboitem label="Scientific Name" value="taxon_name" />
-                            <comboitem label="Species" value="species" />
-                            <comboitem label="Genus" value="genus" />
-                            <comboitem label="Family" value="family" />
-                            <comboitem label="Order" value="order" />
-                            <comboitem label="Class" value="class" />
-                            <comboitem label="Phylum" value="phylum" />
-                            <comboitem label="Kingdom" value="kingdom" />
-                            <comboitem label="Uncertainty" value="u" />
-                            <comboitem label="Data Provider" value="p" />
-                            <comboitem label="Institution" value="in" />
-                            <comboitem label="Year" value="y" visible="false" />
-                            <comboitem label="Collection" value="c" />
-                            <comboitem label="Basis of Record" value="b" />
-                            <comboitem label="Altitude" value="a" visible="false" />
-                            <comboitem label="Depth" value="d" visible="false" />
                         </combobox>
                     </hbox>
                     <div id="divUserColours" >

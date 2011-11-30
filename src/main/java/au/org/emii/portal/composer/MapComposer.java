@@ -2067,7 +2067,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String url = CommonData.layersServer + "/distribution/" + spcode;
             String jsontxt = Util.readUrl(url);
             if (jsontxt == null || jsontxt.length() == 0) {
-                url = CommonData.layersServer + "/checklists/" + spcode;
+                url = CommonData.layersServer + "/checklist/" + spcode;
                 jsontxt = Util.readUrl(url);
             }
             if (jsontxt == null || jsontxt.length() == 0) {

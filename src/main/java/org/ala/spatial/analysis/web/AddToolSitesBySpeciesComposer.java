@@ -135,6 +135,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             sbProcessUrl.append("speciesq=" + URLEncoder.encode(query.getQ(), "UTF-8"));
 
             sbProcessUrl.append("&gridsize=" + URLEncoder.encode(String.valueOf(gridResolution), "UTF-8"));
+            sbProcessUrl.append("&bs=" + URLEncoder.encode(((BiocacheQuery)query).getBS(), "UTF-8"));
 
             if (chkOccurrenceDensity.isChecked()) {
                 sbProcessUrl.append("&occurrencedensity=1");

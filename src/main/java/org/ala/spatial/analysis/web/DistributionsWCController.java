@@ -341,7 +341,7 @@ public class DistributionsWCController extends UtilityComposer {
 
             JSONObject jo = JSONObject.fromObject(jsontxt);
 
-            String html = "Area Checklist\n";
+            String html = "Checklist area\n";
             html += "<table class='md_table'>";
 
             String lastClass = "";
