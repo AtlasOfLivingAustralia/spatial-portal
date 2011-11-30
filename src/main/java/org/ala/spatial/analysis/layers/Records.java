@@ -49,9 +49,6 @@ public class Records {
             InputStream is = getUrlStream(url);
 
             CSVReader csv = new CSVReader(new InputStreamReader(new GZIPInputStream(is)));
-            if (start != 0) {
-                csv.readNext(); //discard header
-            }
             String[] line;
             int[] header = new int[3]; //to contain [0]=lsid, [1]=longitude, [2]=latitude
             int row = start;
@@ -67,7 +64,7 @@ public class Records {
                     raf.write("\n".getBytes());
                 }
                 currentCount++;
-                if (row == 0) {
+                if (currentCount == 1) {
                     //determine header
                     for (int i = 0; i < line.length; i++) {
                         if (line[i].equals("names_and_lsid")) {
@@ -80,6 +77,7 @@ public class Records {
                             header[2] = i;
                         }
                     }
+                    System.out.println("header info:" + header[0] + "," + header[1] + "," + header[2]);
                 } else {
                     if (line.length >= 3) {
                         try {
@@ -213,7 +211,7 @@ public class Records {
             lsids[e.getValue()] = e.getKey();
         }
 
-        System.out.println("Got " + getRecordsSize() + " records of " + getSpeciesSize() + " species");
+        System.out.println("\nGot " + getRecordsSize() + " records of " + getSpeciesSize() + " species");
     }
 
     public String getSpecies(int pos) {

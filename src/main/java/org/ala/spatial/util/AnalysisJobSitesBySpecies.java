@@ -34,8 +34,9 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
     int movingAverageSize;
     LayerFilter[] envelope;
     SimpleRegion region;
+    String biocacheserviceurl;
 
-    public AnalysisJobSitesBySpecies(String pid, String currentPath_, String qname, String speciesq, double gridsize, SimpleRegion region_, LayerFilter[] filter_, boolean sitesbyspecies, boolean occurrencedensity, boolean speciesdensity, int movingAverageSize) {
+    public AnalysisJobSitesBySpecies(String pid, String currentPath_, String qname, String speciesq, double gridsize, SimpleRegion region_, LayerFilter[] filter_, boolean sitesbyspecies, boolean occurrencedensity, boolean speciesdensity, int movingAverageSize, String biocacheserviceurl) {
         super(pid);
         currentPath = currentPath_ + File.separator + pid + File.separator;
         new File(currentPath).mkdirs();
@@ -51,6 +52,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         this.sitesbyspecies = sitesbyspecies;
         this.occurrencedensity = occurrencedensity;
         this.speciesdensity = speciesdensity;
+        this.biocacheserviceurl = biocacheserviceurl;
     }
 
     @Override
@@ -80,7 +82,8 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
 
             // dump the species data to a file
             setProgress(0, "getting species data");
-            Records records = new Records(TabulationSettings.biocache_service, speciesq, bbox, /*currentPath + File.separator + "raw_data.csv"*/ null);
+            Records records = new Records(biocacheserviceurl/*TabulationSettings.biocache_service*/,
+                    speciesq, bbox, /*currentPath + File.separator + "raw_data.csv"*/ null);
 
             //test restrictions
             int occurrenceCount = records.getRecordsSize();
@@ -363,7 +366,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
     AnalysisJob copy() {
         return new AnalysisJobSitesBySpecies(String.valueOf(System.currentTimeMillis()),
                 currentPath, qname, speciesq, gridsize, region, envelope,
-                sitesbyspecies, occurrencedensity, speciesdensity, movingAverageSize);
+                sitesbyspecies, occurrencedensity, speciesdensity, movingAverageSize, biocacheserviceurl);
     }
 
     private void writeProjectionFile(String outputpath_prj) {

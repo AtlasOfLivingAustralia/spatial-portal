@@ -239,7 +239,7 @@ public class CitationService {
     }
 
     public static void generateSitesBySpeciesReadme(String outputdir, boolean sitesBySpecies, boolean occurrenceDensity, boolean speciesRichness) {
-        generateClassificationReadme(new File(outputdir));
+        generateSitesBySpeciesReadme(new File(outputdir), sitesBySpecies, occurrenceDensity, speciesRichness);
     }
     public static void generateSitesBySpeciesReadme(File fDir, boolean sitesBySpecies, boolean occurrenceDensity, boolean speciesRichness) {
         try {

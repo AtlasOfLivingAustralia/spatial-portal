@@ -61,6 +61,7 @@ public class DensityLayers {
                         ex.printStackTrace();
                     }
                 }
+                records = null;
                 records = new Records(recordsFile);
             }
 

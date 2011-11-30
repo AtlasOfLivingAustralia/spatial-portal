@@ -37,6 +37,7 @@ public class SitesBySpeciesWSController {
             String qname = URLDecoder.decode(req.getParameter("qname"), "UTF-8").replace("__", ".");
             String speciesq = URLDecoder.decode(req.getParameter("speciesq"), "UTF-8").replace("__", ".");
             String area = req.getParameter("area");
+            String biocacheurl = URLDecoder.decode(req.getParameter("bs"), "UTF-8");
             double gridsize = Double.parseDouble(req.getParameter("gridsize"));
             int movingAverageSize = Integer.parseInt(req.getParameter("movingaveragesize"));
             boolean occurrencedensity = req.getParameter("occurrencedensity") != null;
@@ -53,7 +54,7 @@ public class SitesBySpeciesWSController {
 
             String pid = Long.toString(currTime);
 
-            AnalysisJobSitesBySpecies sbs = new AnalysisJobSitesBySpecies(pid, currentPath, qname, speciesq, gridsize, region, filter, sitesbyspecies, occurrencedensity, speciesdensity, movingAverageSize);
+            AnalysisJobSitesBySpecies sbs = new AnalysisJobSitesBySpecies(pid, currentPath, qname, speciesq, gridsize, region, filter, sitesbyspecies, occurrencedensity, speciesdensity, movingAverageSize, biocacheurl);
 
             StringBuffer inputs = new StringBuffer();
             inputs.append("pid:").append(pid);

@@ -53,13 +53,13 @@ public class SitesBySpecies {
             if(j == 0) {
                  fw.append("LSID,Longitude,Latitude");
             } else if(j == 1) {
-                fw.append("Common Name,,");
+                fw.append("Common Name,Longitude,Latitude");
             } else if(j == 2) {
-                fw.append("Kingdom,,");
+                fw.append("Kingdom,Longitude,Latitude");
             } else if(j == 3) {
-                fw.append("Family,,");
+                fw.append("Family,Longitude,Latitude");
             } else if(j == 4) {
-                fw.append("Species,,");
+                fw.append("Species,Longitude,Latitude");
             }
             for (int i = 0; i < records.lsids.length; i++) {
                 fw.append(",\"");
