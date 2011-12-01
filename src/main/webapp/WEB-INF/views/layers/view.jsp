@@ -103,12 +103,18 @@
                         </tr>
 
                         <tr class="md_grey-bg">
-                            <th class="md_th">Notes (used for search index)</th>
+                            <th class="md_th">Notes</th>
                             <td class="md_spacer"/>
                             <td class="md_value">${layer.notes}</td>
                         </tr>
 
                         <tr>
+                            <th class="md_th">Keywords</th>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${layer.keywords}</td>
+                        </tr>
+
+                        <tr class="md_grey-bg">
                             <th class="md_th">More information</th>
                             <td class="md_spacer"/>
                             <td class="md_value">
