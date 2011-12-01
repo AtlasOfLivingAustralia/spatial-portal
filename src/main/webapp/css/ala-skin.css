@@ -61,7 +61,7 @@ header#site-header nav li a:hover {
 header#site-header #header-search {
 	float:right;
 	position:relative;
-	width:274px;
+	width:277px;
 }
 
 header#site-header h1 {
@@ -114,3 +114,90 @@ input#dr-search{
 .logged_in, .not_logged_in {
     display: none;
 }
+
+
+
+
+
+
+#header-search button{
+    display:inline-block;
+    /*float:right;*/
+    margin:0 5px 0 0;
+    background-color:#f0f0f0;
+	background-image: -moz-linear-gradient(top, #ffffff, #f0f0f0); /* FF3.6 */
+	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #ffffff),color-stop(1, #f0f0f0)); /* Saf4+, Chrome */
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#ffffff', EndColorStr='#f0f0f0'); /* IE6,IE7 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#ffffff', EndColorStr='#f0f0f0')"; /* IE8 */
+
+    border:1px solid #d9d9d9;
+    border-top:1px solid #eee;
+    border-left:1px solid #eee;
+
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-o-border-radius: 3px;
+	-icab-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	border-radius: 3px;
+
+    font-family:Arial, Verdana, sans-serif;
+    font-size:100%;
+    line-height:130%;
+    text-decoration:none;
+    font-weight:bold;
+    color:#333a3f;
+    cursor:pointer;
+    padding:5px 8px 6px 7px; /* Links */
+}
+#header-search button {
+    width:auto;
+    overflow:visible;
+    padding:4px 8px 3px 7px; /* IE6 */
+}
+#header-search button img, a.button img {
+    margin:0 3px -3px 0 !important;
+    padding:0;
+    border:none;
+    width:16px;
+    height:16px;
+}
+#header-search button:hover, a.button:hover{
+    background-color:#dff4ff;
+	background-image: -moz-linear-gradient(top, #ffffff, #dff4ff); /* FF3.6 */
+	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #ffffff),color-stop(1, #dff4ff)); /* Saf4+, Chrome */
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#ffffff', EndColorStr='#dff4ff'); /* IE6,IE7 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#ffffff', EndColorStr='#dff4ff')"; /* IE8 */
+    border:1px solid #c2e1ef;
+    color:#3a5c83;
+}
+a.button:active{
+    background-color:#6299c5;
+    border:1px solid #6299c5;
+    color:#fff;
+}
+
+/*overrides and special buttons*/
+#header-search button{
+    padding:3px 5px 2px 5px; /* IE6 */
+}
+#header-search button[type]{
+    padding:4px 5px 3px 5px; /* Firefox */
+    line-height:17px; /* Safari */
+}
+*:first-child+html #header-search button[type]{
+    padding:3px 5px 2px 5px; /* IE7 */
+}
+
+#content-search form button img{
+	margin:0!important;
+	width:24px;
+	height:24px;
+}
+#header-search form button img{
+	margin:0!important;
+	width:16px;
+	height:16px;
+}
+
+

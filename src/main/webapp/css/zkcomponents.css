@@ -635,7 +635,7 @@ tr.z-listitem-disd a:visited,tr.z-listitem-disd a:hover,td.z-listcell-disd a:vis
 
 
 
-.buttons, .helpButtonMain, .goButton111222111 {
+.buttons, .helpButtonMain, .goButton {
     -webkit-appearance: button;
     margin: 0em;
     font: -webkit-small-control;
@@ -1403,7 +1403,8 @@ div.z-window-modal-header, div.z-window-overlapped-header {
     border-spacing: 0;
 }
 /* species info table end */
-
+/*
 .z-button .z-button-tl, .z-button .z-button-tr {
     height: 0;
 }
+*/

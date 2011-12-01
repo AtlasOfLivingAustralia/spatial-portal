@@ -1,4 +1,4 @@
-a.button, button, .goButton{
+a.button, button{
     display:inline-block;
     /*float:right;*/
     margin:0 5px 0 0;
@@ -28,10 +28,10 @@ a.button, button, .goButton{
     cursor:pointer;
     padding:5px 8px 6px 7px; /* Links */
 }
-a.button:last-child, button:last-child, .goButton:last-child {
+a.button:last-child, button:last-child {
 	margin-right:0;
 }
-button, .goButton{
+button {
     width:auto;
     overflow:visible;
     padding:4px 8px 3px 7px; /* IE6 */
@@ -43,7 +43,7 @@ button[type]{
 *:first-child+html button[type]{
     padding:4px 8px 3px 7px; /* IE7 */
 }
-button img, a.button img, .goButton img{
+button img, a.button img {
     margin:0 3px -3px 0 !important;
     padding:0;
     border:none;
@@ -82,7 +82,7 @@ button.small[type]{
 
 /* STANDARD */
 
-button:hover, a.button:hover, .goButton:hover {
+button:hover, a.button:hover{
     background-color:#dff4ff;
 	background-image: -moz-linear-gradient(top, #ffffff, #dff4ff); /* FF3.6 */
 	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #ffffff),color-stop(1, #dff4ff)); /* Saf4+, Chrome */

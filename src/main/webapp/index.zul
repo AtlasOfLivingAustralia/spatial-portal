@@ -15,7 +15,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
     xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd"
     xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
 
-    <style src="css/test.ala.buttons.css" media="screen" />
+    <!--<style src="css/test.ala.buttons.css" media="screen" />-->
     <style src="css/ala-skin.css" media="screen" />
     <style src="css/zkcomponents.css" media="screen" />
     <style src="css/zkprint.css" media="print" />
