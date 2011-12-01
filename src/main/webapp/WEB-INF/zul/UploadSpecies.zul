@@ -40,7 +40,8 @@
             <div style="float:right;margin-right:5px">
                 <hbox>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
-                    <fileupload sclass="fUploadButton" id="fileUpload" label="Next" upload="true" />
+                    <!--<fileupload sclass="fUploadButton" id="fileUpload" label="Next" upload="true" />-->
+                    <button sclass="goButton" id="fileUpload" label="Next" upload="true" />
                 </hbox>
             </div>
             <separator />

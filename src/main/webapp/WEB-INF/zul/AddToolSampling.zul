@@ -133,7 +133,8 @@
                 <hbox>
                     <label value="Add set a of layers:" />
                     <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="320px" readonly="true"/>
-                    <fileupload sclass="fUploadButton" id="uploadLayerList" label="Upload set" upload="true" />
+                    <!--<fileupload sclass="fUploadButton" id="uploadLayerList" label="Upload set" upload="true" />-->
+                    <button sclass="goButton" id="uploadLayerList" label="Upload set" upload="true" />
                 </hbox>
                 <separator />
                 <hbox>
@@ -172,7 +173,8 @@
                 <button sclass="goButton" label="Cancel" id="btnCancel" />
                 <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
                 <button sclass="goButton" label="Next &gt;" id="btnOk" />
-                <fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+                <!--<fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />-->
+                <button sclass="goButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
             </hbox>
         </div>
     </window>

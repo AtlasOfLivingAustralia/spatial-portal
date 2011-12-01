@@ -1,6 +1,10 @@
 package org.ala.logger.client;
 
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerSelection;
+import java.net.URLDecoder;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -19,7 +23,6 @@ import org.zkoss.zk.ui.Sessions;
 public class RemoteLogger {
 
     Logger logger = Logger.getLogger(this.getClass());
-
     SettingsSupplementary settingsSupplementary;
     String logger_service = "";
     String appid = "";
@@ -49,9 +52,11 @@ public class RemoteLogger {
     public void logMapArea(String name, String type, String area) {
         logMapArea(name, type, area, "");
     }
+
     public void logMapArea(String name, String type, String area, String extra) {
         logMapArea(name, type, area, "", "");
     }
+
     public void logMapArea(String name, String type, String area, String layer, String extra) {
         sendToServer(type, name, "", area, layer, extra, "mapped", "0", "");
     }
@@ -80,9 +85,9 @@ public class RemoteLogger {
 //            sbProcessUrl.append("privacy=0");
 
             if (StringUtils.isBlank(logger_service)) {
-                init(); 
+                init();
             }
-            
+
             String sessionid = ((HttpSession) Sessions.getCurrent().getNativeSession()).getId();
 
             String userip = Executions.getCurrent().getHeader("x-forwarded-for");
@@ -93,6 +98,21 @@ public class RemoteLogger {
                 }
             }
 
+            String useremail = "guest@ala.org.au";
+            try {
+                Cookie[] cookies = ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies();
+                if (cookies != null) {
+                    for (Cookie cookie : cookies) {
+                        if (cookie.getName().equals("ALA-Auth")) {
+                            useremail = cookie.getValue();
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+            }
+
+            System.out.println("Sending log to: " + logger_service + "/log/action");
             HttpClient client = new HttpClient();
             PostMethod post = new PostMethod(logger_service + "/log/action");
             post.addRequestHeader("Accept", "application/json");
@@ -100,21 +120,21 @@ public class RemoteLogger {
             String category1 = "", category2 = "";
             String[] types = type.split("-");
             category1 = StringUtils.capitalize(types[0].trim());
-            if (types.length>1) {
+            if (types.length > 1) {
                 category2 = StringUtils.capitalize(types[1].trim());
             }
 
             if (StringUtils.isBlank(lsid)) {
-                lsid = ""; 
+                lsid = "";
             }
             if (StringUtils.isBlank(pid)) {
                 pid = "";
             }
 
-            post.addParameter("email", "guest@ala.org.au");
+            post.addParameter("email", useremail);
             post.addParameter("appid", appid);
             post.addParameter("userip", userip);
-            post.addParameter("sessionid", sessionid); 
+            post.addParameter("sessionid", sessionid);
             post.addParameter("type", type);
             post.addParameter("category1", category1);
             post.addParameter("category2", category2);
@@ -127,7 +147,7 @@ public class RemoteLogger {
             post.addParameter("area", area);
             post.addParameter("extra", extra);
 
-            logger.debug("logging " + type + " action for user session " + sessionid + " for user " + userip);
+            logger.debug("logging " + type + " action for user session " + sessionid + " for user " + useremail + " from " + userip);
             return client.executeMethod(post);
 
         } catch (Exception e) {
@@ -142,7 +162,7 @@ public class RemoteLogger {
         try {
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(logger_service + "/log/update/"+pid+"/"+status);
+            GetMethod get = new GetMethod(logger_service + "/log/update/" + pid + "/" + status);
             get.addRequestHeader("Accept", "application/json");
 
             logger.debug("logging status update on " + pid);

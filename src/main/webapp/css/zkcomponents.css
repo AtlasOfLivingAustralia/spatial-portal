@@ -15,8 +15,8 @@ html, body {
     font-weight: normal;
     font-size: 12px;
     background-color: #EBEBEB;
-    margin: 0px 3px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
 }
 
 /*
@@ -504,7 +504,7 @@ tr.z-listitem-disd a:visited,tr.z-listitem-disd a:hover,td.z-listcell-disd a:vis
 .z-button .z-button-cl,
 .z-button .z-button-cm,
 .z-button .z-button-cr {
-    background: #eee;
+    /*background: #eee;*/
     padding: 2px 0px;
     font-weight: bold;
 }
@@ -635,7 +635,7 @@ tr.z-listitem-disd a:visited,tr.z-listitem-disd a:hover,td.z-listcell-disd a:vis
 
 
 
-.buttons, .helpButtonMain, .goButton {
+.buttons, .helpButtonMain, .goButton111222111 {
     -webkit-appearance: button;
     margin: 0em;
     font: -webkit-small-control;
@@ -1403,3 +1403,7 @@ div.z-window-modal-header, div.z-window-overlapped-header {
     border-spacing: 0;
 }
 /* species info table end */
+
+.z-button .z-button-tl, .z-button .z-button-tr {
+    height: 0;
+}

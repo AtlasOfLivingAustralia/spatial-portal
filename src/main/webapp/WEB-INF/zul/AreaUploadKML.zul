@@ -29,7 +29,8 @@
                 <hbox>
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
                 <div>
-                    <fileupload label="Next" id="fileUpload" sclass="fUploadButton" />
+                    <!--<fileupload label="Next" id="fileUpload" sclass="fUploadButton" />-->
+                    <button sclass="goButton" id="fileUpload" label="Next" upload="true" />
                 </div>
                 <button sclass="goButton" label="Next" id="btnOk" visible="false"/>
                 </hbox>

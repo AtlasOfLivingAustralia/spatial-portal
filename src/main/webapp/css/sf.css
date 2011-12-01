@@ -60,6 +60,7 @@
 }
 .sf ul li { width:100%; }
 .sf li:hover { visibility:inherit; /* fixes IE7 'sticky bug' */ }
+.sf li:hover { cursor:pointer; }
 .sf li { float:left; position:relative; }
 .sf a { display:block; position:relative; }
 

@@ -34,6 +34,7 @@ import org.zkoss.zul.Constraint;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Messagebox;
+import org.zkoss.zul.Button;
 
 /**
  *
@@ -44,7 +45,7 @@ public class UploadSpeciesController extends UtilityComposer {
     SettingsSupplementary settingsSupplementary;
     Textbox tbDesc;
     Textbox tbName;
-    Fileupload fileUpload;
+    Button fileUpload;
     Label tbInstructions;
     String uploadLSID;
     String uploadType = "normal";

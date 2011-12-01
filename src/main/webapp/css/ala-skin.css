@@ -1,0 +1,116 @@
+/* 
+    Document   : ala-skin
+    Created on : Nov 25, 2011, 12:02:50 PM
+    Author     : ajay
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+header, hgroup, nav, section, footer { display: block; }
+
+header#site-header {
+	width:100%;
+	height:56px;
+	overflow:hidden;
+	text-align:left;
+	background-color: #3d464c;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#3d464c), to(#353d43));
+	background-image: -webkit-linear-gradient(top, #3d464c, #353d43);
+	background-image:    -moz-linear-gradient(top, #3d464c, #353d43);
+	background-image:     -ms-linear-gradient(top, #3d464c, #353d43);
+	background-image:      -o-linear-gradient(top, #3d464c, #353d43);
+	background-image:         linear-gradient(top, #3d464c, #353d43);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#3d464c', EndColorStr='#353d43');
+	border-bottom:2px solid #5c656b;
+}
+
+header#site-header #nav-search {
+	width:40%;
+	float:right;
+	position:relative;
+	padding-top:1px;
+}
+header#site-header nav {
+	float:right;
+	position:relative;
+	padding:0 12px 0 0;
+	text-align:right;
+}
+header#site-header nav li {
+	display:inline;
+}
+header#site-header nav li:after{
+	color:#fff;
+	content: " | ";
+}
+header#site-header nav li.last:after{
+	content: "";
+}
+header#site-header nav li a:link, header#site-header nav li a:visited, header#site-header nav li a:hover, header#site-header nav li a:active {
+	color:#fff;
+	text-decoration:none;
+}
+header#site-header nav li a:hover {
+	text-decoration:underline;
+}
+header#site-header #header-search {
+	float:right;
+	position:relative;
+	width:274px;
+}
+
+header#site-header h1 {
+	float:left;
+	width:60%;
+	padding:0;
+
+    margin-top: 2px; 
+}
+
+.inner {
+	text-align:left;
+	margin:0 auto;
+	width:972px;
+	padding:10px 14px 0 14px;
+	/*background:url(images/guides.png) center top repeat-y;*/
+}
+
+header .inner {
+	width:97%;
+	margin:0;
+}
+
+#content-search form input,
+#header-search form label {
+	display:none;
+}
+
+#header-search form input, input#dr-search {
+	width:200px;
+	height:27px;
+	outline:none;
+	font: normal 1.2em/1 Arial, Helvetica, sans-serif;
+	padding:0 12px;
+	margin:0 12px 6px 0;
+	border:1px #a5acb2 solid;
+	float:left;
+}
+
+input#dr-search{
+	float:none;
+	margin-right:9px;
+}
+#content-search form input,
+#header-search form input{
+	color:#000;
+}
+
+
+.logged_in, .not_logged_in {
+    display: none;
+}

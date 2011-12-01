@@ -40,6 +40,7 @@ import org.geotools.kml.KMLConfiguration;
 import org.geotools.xml.Encoder;
 import org.geotools.xml.Parser;
 import org.opengis.feature.simple.SimpleFeature;
+import org.zkoss.zul.Button;
 
 /**
  *
@@ -47,7 +48,8 @@ import org.opengis.feature.simple.SimpleFeature;
  */
 public class AreaUploadShapefile extends AreaToolComposer {
 
-    Fileupload fileUpload;
+    //Fileupload fileUpload;
+    Button fileUpload;
     Textbox txtLayerName;
 
     @Override

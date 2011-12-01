@@ -93,7 +93,7 @@ public class AddToolComposer extends UtilityComposer {
     //boolean setCustomArea = false;
     boolean hasCustomArea = false;
     MapLayer prevTopArea = null;
-    Fileupload fileUpload;
+    Button fileUpload;
     SelectedLayersCombobox selectedLayersCombobox;
     Div tlinfo;
     Textbox tLayerList;

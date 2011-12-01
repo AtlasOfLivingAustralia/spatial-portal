@@ -1,8 +1,31 @@
 //zk.Widget.$(jq('$westContent')[0]).firstChild.lastChild.listen({onMouseUp: function () { setTimeout("map.pan(1,1);",300); }});
+var isMenuAlreadyOpen = true;
+$(".z-west-colpsd").click(function() {
+    if (!isMenuAlreadyOpen) {
+        //console.log('Handler for .click() called.');
+    } else {
+        isMenuAlreadyOpen = false;
+    }
+  
+});
+
+$(".z-west-colpsd .z-west-exp").click(function(event) {
+    isMenuAlreadyOpen = true;
+  //console.log('arrow Handler for .click() called.');
+
+});
 
 $(window.mapFrame).resize(function() {
   setTimeout("map.pan(1,1);",500);
 });
+
+if (readCookie('ALA-Auth') != "") {
+    $(".not_logged_in").hide();
+    $(".logged_in").show();
+} else {
+    $(".logged_in").hide();
+    $(".not_logged_in").show();
+}
 
 
 function updateSafeToLoadMap(status) {                        
@@ -13,8 +36,8 @@ function updateSafeToLoadMap(status) {
             updateSafeToLoadMap(status);
         }, 1000);
     }
-}            
-            
+}
+
 function roundNumber(num, dec) {
     var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
     return result;
