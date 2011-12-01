@@ -18,6 +18,11 @@
         <div height="570px">
             <vbox width="100%">
                 <separator />
+                <html><![CDATA[
+                You can view a list of available layers at <a href="http://spatial.ala.org.au/layers" target="_blank">http://spatial.ala.org.au/layers</a>. The layers in the Atlas of Living Australia come from many agencies and have generally be provided on the basis that the data is not passed to third parties. The agency and license details associated with each layer are available as a <a href="http://spatial.ala.org.au/layers.csv">CSV download file</a>).
+            ]]>
+                </html>
+                <separator />
                 <radiogroup id="rgAddLayer" >
                     <vbox>
                         <radio id="rSearch" label="Enter a layer name or keyword" />
