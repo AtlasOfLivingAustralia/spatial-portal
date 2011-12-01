@@ -1,18 +1,11 @@
-//zk.Widget.$(jq('$westContent')[0]).firstChild.lastChild.listen({onMouseUp: function () { setTimeout("map.pan(1,1);",300); }});
-var isMenuAlreadyOpen = true;
-$(".z-west-colpsd").click(function() {
-    if (!isMenuAlreadyOpen) {
-        //console.log('Handler for .click() called.');
-    } else {
-        isMenuAlreadyOpen = false;
-    }
-  
+//zk.Widget.$(jq('$westContent')[0]).firstChild.lastChild.listen({onMouseUp: function () { console.log('map.pan');setTimeout("map.pan(1,1);",300); }});
+
+$(".z-west-colps").click(function() {
+    setTimeout("map.pan(1,1);",500);
 });
-
-$(".z-west-colpsd .z-west-exp").click(function(event) {
-    isMenuAlreadyOpen = true;
-  //console.log('arrow Handler for .click() called.');
-
+$(".z-west-colpsd").click(function() {
+    $(".menudiv").css("top",0);
+    setTimeout("map.pan(1,1);",500);
 });
 
 $(window.mapFrame).resize(function() {
