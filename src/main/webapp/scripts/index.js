@@ -1,15 +1,7 @@
 //zk.Widget.$(jq('$westContent')[0]).firstChild.lastChild.listen({onMouseUp: function () { console.log('map.pan');setTimeout("map.pan(1,1);",300); }});
 
-$(".z-west-colps").click(function() {
-    setTimeout("map.pan(1,1);",500);
-});
 $(".z-west-colpsd").click(function() {
     $(".menudiv").css("top",0);
-    setTimeout("map.pan(1,1);",500);
-});
-
-$(window.mapFrame).resize(function() {
-  setTimeout("map.pan(1,1);",500);
 });
 
 if (readCookie('ALA-Auth') != "") {

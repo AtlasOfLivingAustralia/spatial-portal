@@ -149,13 +149,18 @@ function loadBaseMap() {
 
     goToLocation(134, -25, 4);
 
-// Google.v3 uses EPSG:900913 as projection, so we have to
-// transform our coordinates
-//    map.setCenter(
-//        new OpenLayers.LonLat(134, -25).transform(
-//            new OpenLayers.Projection("EPSG:4326"),
-//            map.getProjectionObject()),
-//        4);
+    // Google.v3 uses EPSG:900913 as projection, so we have to
+    // transform our coordinates
+    //    map.setCenter(
+    //        new OpenLayers.LonLat(134, -25).transform(
+    //            new OpenLayers.Projection("EPSG:4326"),
+    //            map.getProjectionObject()),
+    //        4);
+
+    $(window).resize(function() {
+        setTimeout("map.pan(1,1);",500);
+    });
+
 }
 function goToLocation(lon, lat, zoom) {
     // Google.v3 uses EPSG:900913 as projection, so we have to
@@ -259,10 +264,15 @@ function buildMapReal() {
     bLayer3 = new OpenLayers.Layer.OSM();
     
     bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/gwc/service/wms/reflect",{
-        layers:"ALA:world"},
-	{isBaseLayer: true,'wrapDateLine': true,
+        layers:"ALA:world"
+    },
+
+    {
+        isBaseLayer: true,
+        'wrapDateLine': true,
         projection: new OpenLayers.Projection("EPSG:900913"),
-        'sphericalMercator': true}
+        'sphericalMercator': true
+    }
     );
     map.addLayers([bLayer2,bLayer,bLayer3,bLayer4]);
     parent.bLayer = bLayer;
@@ -497,8 +507,8 @@ function pointSpeciesSearch(e) {
     }
 
     var lonlat = new OpenLayers.LonLat(lonlat.lon, lonlat.lat).transform(
-    new OpenLayers.Projection("EPSG:4326"),
-    map.getProjectionObject());
+        new OpenLayers.Projection("EPSG:4326"),
+        map.getProjectionObject());
 
     setupPopup(query_count_total, lonlat);
     iterateSpeciesInfoQuery(0)
@@ -759,8 +769,8 @@ function onPopupClose(evt) {
 
 function relocatePopup(lon, lat) {
     popup.lonlat = new OpenLayers.LonLat(lon, lat).transform(
-            new OpenLayers.Projection("EPSG:4326"),
-            map.getProjectionObject());
+        new OpenLayers.Projection("EPSG:4326"),
+        map.getProjectionObject());
     popup.updatePosition(); 
 }
 
@@ -1324,14 +1334,14 @@ function envLayerInspection(e) {
             pt = pt.transform(map.projection, map.displayProjection);
 
             infoHtml = "<div id='sppopup'>"
-                + "<table><tr><td colspan='5'><b>Point "
-                + pt.lon.toPrecision(8)
-                + ", " 
-                + pt.lat.toPrecision(8)
-                + "</b></td></tr>" 
-                + infoHtml
-                + "</table>"
-                + "</div>";
+            + "<table><tr><td colspan='5'><b>Point "
+            + pt.lon.toPrecision(8)
+            + ", "
+            + pt.lat.toPrecision(8)
+            + "</b></td></tr>"
+            + infoHtml
+            + "</table>"
+            + "</div>";
 
             if (document.getElementById("sppopup") != null) {
                 document.getElementById("sppopup").innerHTML = infoHtml;
@@ -1428,7 +1438,7 @@ function envLayerNearest(e) {
         });
 
         if(ret != null && ret.length > 0) {
-             body = body + "<tr><td width='200px'><b>Feature</td><td width='85px'><b>Location</b></td><td width='55px'><b>Distance (km)</b></td><td width='50px'><b>Heading (deg)</b></td></tr>"
+            body = body + "<tr><td width='200px'><b>Feature</td><td width='85px'><b>Location</b></td><td width='55px'><b>Distance (km)</b></td><td width='50px'><b>Heading (deg)</b></td></tr>"
             if(markers == null) {
                 initMarkersLayer();
             }
@@ -1441,19 +1451,21 @@ function envLayerNearest(e) {
                     style = "class='md_grey-bg'"
                 }
                 body = body + "<tr " + style + "><td>" + ret[i].name
-                    + "</td><td>" + lng + ",<br>" + lat
-                    + "</td><td>" + (Math.round(ret[i].distance/100)/10)
-                    + "</td><td>" + (Math.round(ret[i].degrees*10)/10) + "</td></tr>";
+                + "</td><td>" + lng + ",<br>" + lat
+                + "</td><td>" + (Math.round(ret[i].distance/100)/10)
+                + "</td><td>" + (Math.round(ret[i].degrees*10)/10) + "</td></tr>";
                 
                 //markers.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(lng,lat).transform(map.displayProjection, map.projection),markers_icon.clone()));
                 var c = new OpenLayers.LonLat(lng,lat).transform(map.displayProjection, map.projection)
                 var point = new OpenLayers.Geometry.Point(c.lon, c.lat);
                 var pointFeature = new OpenLayers.Feature.Vector(point);
-                pointFeature.attributes = {name: ret[i].name};
+                pointFeature.attributes = {
+                    name: ret[i].name
+                    };
                 try {
                     markers.addFeatures([pointFeature]);
                 } catch (err) {
-                    //Catch IE9 error.  pointFeature is still mapping.
+                //Catch IE9 error.  pointFeature is still mapping.
                 }
             }           
             last_nearest_data = body;
@@ -1468,28 +1480,30 @@ function initMarkersLayer() {
     var renderer = OpenLayers.Util.getParameters(window.location.href).renderer;
     renderer = (renderer) ? [renderer] : OpenLayers.Layer.Vector.prototype.renderers;
     markers = new OpenLayers.Layer.Vector("Nearest Localities", {
-        styleMap: new OpenLayers.StyleMap({'default':{
-            strokeColor: "#FFFF00",
-            strokeOpacity: 1,
-            strokeWidth: 2,
-            fillColor: "#FF0000",
-            fillOpacity: 1,
-            pointRadius: 6,
-            pointerEvents: "visiblePainted",
-            label : "${name}",
+        styleMap: new OpenLayers.StyleMap({
+            'default':{
+                strokeColor: "#FFFF00",
+                strokeOpacity: 1,
+                strokeWidth: 2,
+                fillColor: "#FF0000",
+                fillOpacity: 1,
+                pointRadius: 6,
+                pointerEvents: "visiblePainted",
+                label : "${name}",
 
-            fontColor: "black",
-            fontSize: "12px",
-            fontFamily: "Courier New, monospace",
-            fontWeight: "bold",
-            labelAlign: "left",
-            labelXOffset: "5",
-            labelYOffset: "0"
-        }}),
-        renderers: renderer
+                fontColor: "black",
+                fontSize: "12px",
+                fontFamily: "Courier New, monospace",
+                fontWeight: "bold",
+                labelAlign: "left",
+                labelXOffset: "5",
+                labelYOffset: "0"
+            }
+        }),
+    renderers: renderer
     });
 
-    map.addLayer(markers);
+map.addLayer(markers);
 }
 var hovercontrol = null;
 var hovercontrolprevpos = null;
@@ -1660,15 +1674,15 @@ function getLayerValue(layer, lat, lon) {
 function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {    
     dotradius = dotradius*1 + 3
     var px = map.getViewPortPxFromLonLat(new OpenLayers.LonLat(lon,lat).transform(
-            new OpenLayers.Projection("EPSG:4326"),map.getProjectionObject()));
+        new OpenLayers.Projection("EPSG:4326"),map.getProjectionObject()));
     var lonlat = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(px.x + dotradius, px.y + dotradius)).transform(
-            map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));    
+        map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
     var lonSize = Math.abs(lon - lonlat.lon);
     var latSize = Math.abs(lat - lonlat.lat);
     var url = layer.bs + "/webportal/occurrences?q=" + query
-        + "&fq=longitude:[" + (lon-lonSize) + "%20TO%20" + (lon+lonSize) + "]"
-        + "&fq=latitude:[" + (lat-latSize) + "%20TO%20" + (lat+latSize) + "]"
-        + "&pageSize=1&facet=false";
+    + "&fq=longitude:[" + (lon-lonSize) + "%20TO%20" + (lon+lonSize) + "]"
+    + "&fq=latitude:[" + (lat-latSize) + "%20TO%20" + (lat+latSize) + "]"
+    + "&pageSize=1&facet=false";
     var ret = null;
     $.ajax({
         url: proxy_script + URLEncode(url + "&start=" + start),
@@ -1693,13 +1707,13 @@ function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {
 function getOccurrenceUploaded(layer, query, lat, lon, start, pos, dotradius) {
     dotradius = dotradius*1 + 3
     var px = map.getViewPortPxFromLonLat(new OpenLayers.LonLat(lon,lat).transform(
-            new OpenLayers.Projection("EPSG:4326"),map.getProjectionObject()));
+        new OpenLayers.Projection("EPSG:4326"),map.getProjectionObject()));
     var lonlat = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(px.x + dotradius, px.y + dotradius)).transform(
-            map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
+        map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
     var lonSize = Math.abs(lon - lonlat.lon);
     var latSize = Math.abs(lat - lonlat.lat);
     var url = parent.jq('$webportal_url')[0].innerHTML + "/ws/occurrences?q=" + query
-        + "&box=" + (lon-lonSize) + "," + (lat-latSize) + "," + (lon+lonSize) + "," + (lat+latSize);
+    + "&box=" + (lon-lonSize) + "," + (lat-latSize) + "," + (lon+lonSize) + "," + (lat+latSize);
     var ret = null;
     $.ajax({
         url: proxy_script + URLEncode(url + "&start=" + start),
