@@ -114,7 +114,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
             byte[] kmldata = getKml(m);
             if (kmldata != null) {
                 loadUserLayerKML(m.getName(), kmldata);
-            } else if (m.getFormat().equalsIgnoreCase("zip")) { //else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
+            } else if (m.getName().toLowerCase().endsWith("zip")) { //else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
                 // "/data/ala/runtime/output/layers/"
                 // "/Users/ajay/projects/tmp/useruploads/"
                 Map input = Zipper.unzipFile(m.getName(), m.getStreamData(), "/data/ala/runtime/output/layers/");
@@ -140,7 +140,8 @@ public class AreaUploadShapefile extends AreaToolComposer {
                         layerName = txtLayerName.getValue();
                         MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName, layerName);
                         mapLayer.setMapLayerMetadata(new MapLayerMetadata());
-                        mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile. \n Used polygon: " + shape.get("id"));
+                        //mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile. \n Used polygon: " + shape.get("id"));
+                        mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile.");
 
                         ok = true;
                     }

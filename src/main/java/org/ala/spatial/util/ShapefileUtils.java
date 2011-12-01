@@ -50,6 +50,9 @@ public class ShapefileUtils {
             FeatureCollection featureCollection = featureSource.getFeatures();
             FeatureIterator it = featureCollection.features();
             Map shape = new HashMap();
+            StringBuilder sb = new StringBuilder();
+            StringBuilder sbGeometryCollection = new StringBuilder();
+            boolean isGeometryCollection = false;
             while (it.hasNext()) {
                 //System.out.println("======================================");
                 //System.out.println("Feature: ");
@@ -59,21 +62,64 @@ public class ShapefileUtils {
                 WKTWriter wkt = new WKTWriter();
 
                 String wktString = wkt.write(geom);
-                wktString = wktString.replaceAll(", ", ",").replace(",(", ",POLYGON(").replace("),", "),");
-
-                if (wktString.indexOf(",POLYGON") > -1) {
-                    wktString = wktString.replace("MULTIPOLYGON (((", "GEOMETRYCOLLECTION(POLYGON((");
+//                wktString = wktString.replaceAll(", ", ",").replace(",(", ",POLYGON(").replace("),", "),");
+                wktString = wktString.replaceAll(", ", ",");
+                boolean valid = true;
+                boolean multipolygon = false;
+                boolean polygon = false;
+                boolean geometrycollection = false;
+                if(wktString.startsWith("MULTIPOLYGON ")) {
+                    wktString = wktString.substring("MULTIPOLYGON (".length(), wktString.length()-1);
+                    multipolygon = true;
+                } else if(wktString.startsWith("POLYGON ")) {
+                    wktString = wktString.substring("POLYGON ".length());
+                    polygon = true;
+                } else if(wktString.startsWith("GEOMETRYCOLLECTION (")) {
+                    wktString = wktString.substring("GEOMETRYCOLLECTION (".length(), wktString.length()-1);
+                    geometrycollection = true;
+                    isGeometryCollection = true;
                 } else {
-                    wktString = wktString.replace("MULTIPOLYGON (((", "POLYGON((").replace(")))", "))");
+                    valid = false;
                 }
+                if (valid) {
+                    if(sb.length() > 0) {
+                        sb.append(",");
+                        sbGeometryCollection.append(",");
+                    }
+                    sb.append(wktString);
+
+                    if(multipolygon) {
+                        sbGeometryCollection.append("MULTIPOLYGON(").append(wktString).append(")");
+                    } else if(polygon) {
+                        sbGeometryCollection.append("POLYGON").append(wktString);
+                    } else if(geometrycollection) {
+                        sbGeometryCollection.append(wktString);
+                    }
+                }
+
+//                if (wktString.indexOf(",POLYGON") > -1) {
+//                    wktString = wktString.replace("MULTIPOLYGON (((", "GEOMETRYCOLLECTION(POLYGON((");
+//                } else {
+//                    wktString = wktString.replace("MULTIPOLYGON (((", "POLYGON((").replace(")))", "))");
+//                }
+
 
                 //System.out.println(wkt.writeFormatted(geom));
                 //addWKTLayer(wkt.write(geom), feature.getID());
-                shape.put("id", feature.getID());
-                shape.put("wkt", wktString);
-
-                break;
+//                shape.put("id", feature.getID());
+//                shape.put("wkt", wktString);
+                
+//                break;
             }
+//            shape.put("id", feature.getID());
+            if(!isGeometryCollection) {
+                sb.append(")");
+                shape.put("wkt", "MULTIPOLYGON(" + sb);
+            } else {
+                sbGeometryCollection.append(")");
+                shape.put("wkt", "GEOMETRYCOLLECTION(" + sbGeometryCollection);
+            }
+
             featureCollection.close(it);
 
             return shape;
