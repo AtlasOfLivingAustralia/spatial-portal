@@ -61,7 +61,7 @@
                         </listbox>
                         <separator height="20px"/>
                     </vbox>
-                    <radio id ="rUploadCoordinates" label="Upload coordinates" />
+                    <radio id ="rUploadCoordinates" label="Upload points" />
                     <radio id ="rUploadLSIDs" label="Upload LSIDs" />
                 </vbox>
             </radiogroup>

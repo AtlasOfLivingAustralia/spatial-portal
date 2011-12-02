@@ -133,7 +133,7 @@
                             </listbox>
                             <separator height="20px"/>
                         </vbox>
-                        <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Upload coordinates" />
+                        <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Upload points" />
                         <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Upload LSIDs" />
                     </radiogroup>
                 </div>

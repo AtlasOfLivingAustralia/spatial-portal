@@ -13,7 +13,7 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="uploadspecieswindow.onClick$btnCancel(null)" style="display: inline" />
 
-        <caption label="Upload Points" />
+        <caption label="Upload points" />
 
         <vbox width="100%">
             <separator />
