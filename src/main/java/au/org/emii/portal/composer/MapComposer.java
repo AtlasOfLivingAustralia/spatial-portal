@@ -1818,6 +1818,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if(open == true) {
             menudiv.setParent(menucontainer);
+            menudiv.setStyle("position:absolute; top:58px");
         } //close handled in index.zul
     }
 
@@ -1998,7 +1999,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                     try {
                         window.doModal();
-                        window.init(finallist, "Checklist Species", String.valueOf(finallist.length - 1), null);
+                        window.init(finallist, "Checklist species", String.valueOf(finallist.length - 1), null);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -2025,7 +2026,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             try {
                 window.doModal();
-                window.init(finallist, "Checklist Species", String.valueOf(finallist.length - 1), null);
+                window.init(finallist, "Checklist species", String.valueOf(finallist.length - 1), null);
             } catch (Exception e) {
                 e.printStackTrace();
             }

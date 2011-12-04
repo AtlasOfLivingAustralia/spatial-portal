@@ -170,7 +170,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         </n:li>
                     </n:ul>
                 </n:div>
-                <div onClick="menus.setOpen(false);menudiv.setParent(menucontainerwest);" sclass="z-west-colps z-borderlayout-icon"
+                <div onClick='menus.setOpen(false);menudiv.setStyle("position:absolute; top:0px");menudiv.setParent(menucontainerwest);' sclass="z-west-colps z-borderlayout-icon"
                 style="position: absolute; z-index: 201; left: 380px; top: 3px;" >
                 </div>
             </div>

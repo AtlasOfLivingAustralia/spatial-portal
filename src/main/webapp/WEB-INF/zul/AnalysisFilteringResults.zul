@@ -31,7 +31,7 @@
             </n:tr>
             <n:tr height="18px" >
                 <n:td>
-                    <label value="Species points" />
+                    <label value="Number of species" />
                 </n:td>
                 <n:td>
                     <label id="results_label2_species" style="cursor:pointer;" />
@@ -68,7 +68,7 @@
             </n:tr>
             <n:tr height="18px" >
                 <n:td>
-                    <label value="Checklist Species" />
+                    <label value="Checklist species" />
                 </n:td>
                 <n:td>
                     <label id="clLabel" style="cursor:pointer;" />
