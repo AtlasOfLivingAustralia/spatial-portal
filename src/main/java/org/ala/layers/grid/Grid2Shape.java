@@ -47,7 +47,7 @@ public class Grid2Shape {
     static public String grid2Wkt(BitSet data, int nrows, int ncols, double minx, double miny, double resx, double resy) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            streamGrid2Wkt(baos, data, nrows, ncols, minx + (float) (minx * resx), miny + (float) ((nrows - miny - 1) * resy), resx, resy);
+            streamGrid2Wkt(baos, data, nrows, ncols, minx, miny, resx, resy);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -61,7 +61,7 @@ public class Grid2Shape {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StringBuilder index = new StringBuilder();
         try {
-            streamGrid2WktIndexed(baos, data, nrows, ncols, minx + (float) (minx * resx), miny + (float) ((nrows - miny - 1) * resy), resx, -resy, map, index, startKey);
+            streamGrid2WktIndexed(baos, data, nrows, ncols, minx, miny, resx, resy, map, index, startKey);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -77,7 +77,7 @@ public class Grid2Shape {
         int gid = 0;
 
         os.write("MULTIPOLYGON(".getBytes());
-        gid = getPolygonsWkt(os, gid, data, nrows, ncols, resy, resy, minx, miny);
+        gid = getPolygonsWkt(os, gid, data, nrows, ncols, resx, resy, minx, miny);
         os.write(")".getBytes());
     }
 
@@ -95,7 +95,7 @@ public class Grid2Shape {
         int gid = 0;
 
         ArrayList<Polygon> polygons = new ArrayList<Polygon>();
-        gid = getPolygons(polygons, gid, data, nrows, ncols, resy, resy, minx, miny);
+        gid = getPolygons(polygons, gid, data, nrows, ncols, resx, resy, minx, miny);
 
         GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
         Polygon[] polygonArray = new Polygon[polygons.size()];
@@ -154,7 +154,7 @@ public class Grid2Shape {
         }
         int startKey = getArrayMax(map) + 1;
 
-        HashMap m = grid2WktIndexed(grid, nrows, ncols, minx, miny, resx, resy, startKey);
+        HashMap m = grid2WktIndexed(grid, rows, cols, minx + bbox[0]*resx, miny + (nrows- bbox[3] -1)*resy, resx, resy, startKey);
 
         //merge maps        
         int[] partial = (int[]) m.get("map");
@@ -219,16 +219,16 @@ public class Grid2Shape {
         if (isWkt) {
             if (os != null) {
                 try {
-                    streamGrid2Wkt(os, grid, rows, cols, minx, miny, resx, resy);
+                    streamGrid2Wkt(os, grid, rows, cols, minx + bbox[0]*resx, miny + (nrows- bbox[3]-1)*resy, resx, resy);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return null;
             } else {
-                return grid2Wkt(grid, rows, cols, minx, miny, resx, resy);
+                return grid2Wkt(grid, rows, cols, minx + bbox[0]*resx, miny + (nrows- bbox[3]-1)*resy, resx, resy);
             }
         } else {
-            return grid2Multipolygon(grid, rows, cols, minx, miny, resx, resy);
+            return grid2Multipolygon(grid, rows, cols, minx + bbox[0]*resx, miny + (nrows- bbox[3]-1)*resy, resx, resy);
         }
     }
 
@@ -255,7 +255,7 @@ public class Grid2Shape {
         HashMap<Integer, Entry<Integer, Set<Integer>>> polygons = new HashMap<Integer, Entry<Integer, Set<Integer>>>();
         findEdges(data, image, edges, nrows, ncols, polygons, 1);
 
-        gid = edgesToPolyonsWkt(os, gid, edges, image, nrows, ncols, yres, yres, minx, miny, polygons);
+        gid = edgesToPolyonsWkt(os, gid, edges, image, nrows, ncols, xres, yres, minx, miny, polygons);
 
         return gid;
     }
@@ -292,7 +292,7 @@ public class Grid2Shape {
         HashMap<Integer, Entry<Integer, Set<Integer>>> polygons = new HashMap<Integer, Entry<Integer, Set<Integer>>>();
         findEdges(data, image, edges, nrows, ncols, polygons, 1);
 
-        gid = edgesToPolyons(output, gid, edges, image, nrows, ncols, yres, yres, minx, miny, polygons);
+        gid = edgesToPolyons(output, gid, edges, image, nrows, ncols, xres, yres, minx, miny, polygons);
 
         return gid;
     }
@@ -814,7 +814,7 @@ public class Grid2Shape {
             }
         }
         double x = minx + getX(pos, ncols) * resx;
-        double y = miny + (nrows - getY(pos, ncols) + 1) * resy;
+        double y = miny + (nrows - getY(pos, ncols) + 0.5) * resy;
         switch (edge) {
             case lEdge:
                 break;

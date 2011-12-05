@@ -50,7 +50,12 @@ public class TabulationGenerator {
     }
 
     static public void main(String[] args) {
-        System.out.println("args[0] = threadcount, args[1] = db connection string,\n args[2] = db username,\n args[3] = password,\n args[4] = (optional) specify one step to run, '1' pair objects, '2' single objects, '3' delete invalid objects, '4' area");
+        System.out.println("args[0] = threadcount,"
+                + "\nargs[1] = db connection string,"
+                + "\n args[2] = db username,"
+                + "\n args[3] = password,"
+                + "\n args[4] = (optional) specify one step to run, "
+                + "'1' pair objects, '3' delete invalid objects, '4' area");
         if(args.length >= 4) {
             CONCURRENT_THREADS = Integer.parseInt(args[0]);
             db_url = args[1];
@@ -61,7 +66,7 @@ public class TabulationGenerator {
         if(args.length <= 4) {
             updatePairObjects();
 
-            updateSingleObjects();
+//            updateSingleObjects();
 
             deleteInvalidObjects();
 
@@ -72,7 +77,7 @@ public class TabulationGenerator {
         } else if(args[4].equals("1")) {
             updatePairObjects();
         } else if(args[4].equals("2")) {
-            updateSingleObjects();
+//            updateSingleObjects();
         } else if(args[4].equals("3")) {
             deleteInvalidObjects();
         } else if(args[4].equals("4")) {
@@ -88,7 +93,7 @@ public class TabulationGenerator {
         try {
             conn = getConnection();
             String allFidPairs = "SELECT (CASE WHEN f1.id < f2.id THEN f1.id ELSE f2.id END) as fid1, (CASE WHEN f1.id < f2.id THEN f2.id ELSE f1.id END) as fid2 FROM fields f1, fields f2 WHERE f1.id != f2.id AND f1.intersect=true AND f2.intersect=true";
-            String existingFidPairs = "SELECT fid1, fid2 FROM tabulation WHERE fid2 <> '' GROUP BY fid1, fid2";
+            String existingFidPairs = "SELECT fid1, fid2 FROM tabulation WHERE pid1 is null";
             String newFidPairs = "SELECT a.fid1, a.fid2 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b ON a.fid1=b.fid1 AND a.fid2=b.fid2 WHERE b.fid1 is null group by a.fid1, a.fid2;";
             String sql = newFidPairs;
             Statement s1 = conn.createStatement();
@@ -139,62 +144,62 @@ public class TabulationGenerator {
         }
     }
 
-    private static void updateSingleObjects() {
-        Connection conn = null;
-        try {
-            conn = getConnection();
-            String allFidPairs = "SELECT id as fid1 FROM fields f WHERE f.intersect=true";
-            String existingFidPairs = "SELECT fid1 FROM tabulation WHERE fid2 = '' GROUP BY fid1";
-            String newFidPairs = "SELECT a.fid1 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b "
-                    + "ON a.fid1=b.fid1 WHERE b.fid1 is null group by a.fid1";
-            String sql = newFidPairs;
-            Statement s1 = conn.createStatement();
-            ResultSet rs1 = s1.executeQuery(sql);
-
-            LinkedBlockingQueue<String> data = new LinkedBlockingQueue<String>();
-            while (rs1.next()) {
-                data.put(rs1.getString("fid1"));
-            }
-
-            System.out.println("next " + data.size());
-
-            int size = data.size();
-
-            if (size == 0) {
-                return;
-            }
-
-            CountDownLatch cdl = new CountDownLatch(data.size());
-
-            SingleDistributionThread[] threads = new SingleDistributionThread[CONCURRENT_THREADS];
-            for (int j = 0; j < CONCURRENT_THREADS; j++) {
-                threads[j] = new SingleDistributionThread(getConnection().createStatement(), data, cdl);
-                threads[j].start();
-            }
-
-            cdl.await();
-
-            for (int j = 0; j < CONCURRENT_THREADS; j++) {
-                try {
-                    threads[j].s.getConnection().close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                threads[j].interrupt();
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            if(conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
+//    private static void updateSingleObjects() {
+//        Connection conn = null;
+//        try {
+//            conn = getConnection();
+//            String allFidPairs = "SELECT id as fid1 FROM fields f WHERE f.intersect=true";
+//            String existingFidPairs = "SELECT fid1 FROM tabulation WHERE fid2 = '' GROUP BY fid1";
+//            String newFidPairs = "SELECT a.fid1 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b "
+//                    + "ON a.fid1=b.fid1 WHERE b.fid1 is null group by a.fid1";
+//            String sql = newFidPairs;
+//            Statement s1 = conn.createStatement();
+//            ResultSet rs1 = s1.executeQuery(sql);
+//
+//            LinkedBlockingQueue<String> data = new LinkedBlockingQueue<String>();
+//            while (rs1.next()) {
+//                data.put(rs1.getString("fid1"));
+//            }
+//
+//            System.out.println("next " + data.size());
+//
+//            int size = data.size();
+//
+//            if (size == 0) {
+//                return;
+//            }
+//
+//            CountDownLatch cdl = new CountDownLatch(data.size());
+//
+//            SingleDistributionThread[] threads = new SingleDistributionThread[CONCURRENT_THREADS];
+//            for (int j = 0; j < CONCURRENT_THREADS; j++) {
+//                threads[j] = new SingleDistributionThread(getConnection().createStatement(), data, cdl);
+//                threads[j].start();
+//            }
+//
+//            cdl.await();
+//
+//            for (int j = 0; j < CONCURRENT_THREADS; j++) {
+//                try {
+//                    threads[j].s.getConnection().close();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//                threads[j].interrupt();
+//            }
+//
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        } finally {
+//            if(conn != null) {
+//                try {
+//                    conn.close();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//    }
 
     private static int updateArea() {
         Connection conn = null;
