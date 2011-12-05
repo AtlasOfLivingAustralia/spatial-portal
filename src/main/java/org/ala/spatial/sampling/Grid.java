@@ -995,8 +995,13 @@ public class Grid { //  implements Serializable
             //get cell numbers
             int[][] cells = new int[points.length][2];
             for (int j = 0; j < points.length; j++) {
-                cells[j][0] = getcellnumber(points[j][0], points[j][1]);
-                cells[j][1] = j;
+                if(Double.isNaN(points[j][0]) || Double.isNaN(points[j][1])) {
+                    cells[j][0] = -1;
+                    cells[j][1] = j;
+                } else {
+                    cells[j][0] = getcellnumber(points[j][0], points[j][1]);
+                    cells[j][1] = j;
+                }
             }
             java.util.Arrays.sort(cells, new Comparator<int[]>() {
 
@@ -1050,7 +1055,7 @@ public class Grid { //  implements Serializable
                         continue;
                     }
                     if (cells[i][0] >= 0) {
-                        getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
                         if (byteorderLSB) {
                             ret[cells[i][1]] = (short) (((0xFF & b[1]) << 8) | (b[0] & 0xFF));
                         } else {
@@ -1070,7 +1075,7 @@ public class Grid { //  implements Serializable
                         continue;
                     }
                     if (cells[i][0] >= 0) {
-                        getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
                         if (byteorderLSB) {
                             ret[cells[i][1]] = ((0xFF & b[3]) << 24) | ((0xFF & b[2]) << 16) + ((0xFF & b[1]) << 8) + (b[0] & 0xFF);
                         } else {
@@ -1090,7 +1095,7 @@ public class Grid { //  implements Serializable
                         continue;
                     }
                     if (cells[i][0] >= 0) {
-                        getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
                         if (byteorderLSB) {
                             ret[cells[i][1]] = ((long) (0xFF & b[7]) << 56) + ((long) (0xFF & b[6]) << 48)
                                     + ((long) (0xFF & b[5]) << 40) + ((long) (0xFF & b[4]) << 32)
@@ -1116,7 +1121,7 @@ public class Grid { //  implements Serializable
                         continue;
                     }
                     if (cells[i][0] >= 0) {
-                        getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
                         ByteBuffer bb = ByteBuffer.wrap(b);
                         if (byteorderLSB) {
                             bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -1136,7 +1141,7 @@ public class Grid { //  implements Serializable
                         continue;
                     }
                     if (cells[i][0] >= 0) {
-                        getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
                         ByteBuffer bb = ByteBuffer.wrap(b);
                         if (byteorderLSB) {
                             bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -1318,33 +1323,27 @@ public class Grid { //  implements Serializable
      * @param seekTo
      * @return
      */
-    private void getBytes(RandomAccessFile raf, byte[] buffer, Long bufferOffset, long seekTo, byte[] dest) throws IOException {
+    private Long getBytes(RandomAccessFile raf, byte[] buffer, Long bufferOffset, long seekTo, byte[] dest) throws IOException {
         long relativePos = seekTo - bufferOffset;
         if (relativePos < 0) {
             raf.seek(seekTo);
             bufferOffset = seekTo;
             raf.read(buffer);
-            for (int i = 0; i < dest.length; i++) {
-                dest[i] = buffer[i];
-            }
+            System.arraycopy(buffer,0,dest,0,dest.length);
         } else if (relativePos >= 0 && relativePos < buffer.length) {
-            for (int i = 0; i < dest.length; i++) {
-                dest[i] = buffer[i + (int) relativePos];
-            }
+            System.arraycopy(buffer,(int) relativePos,dest,0,dest.length);
         } else if (relativePos - buffer.length < buffer.length) {
             bufferOffset += buffer.length;
             raf.read(buffer);
             int offset = (int) (relativePos - buffer.length);
-            for (int i = 0; i < dest.length; i++) {
-                dest[i] = buffer[i + offset];
-            }
+            System.arraycopy(buffer,offset,dest,0,dest.length);
         } else {
             raf.seek(seekTo);
             bufferOffset = seekTo;
             raf.read(buffer);
-            for (int i = 0; i < dest.length; i++) {
-                dest[i] = buffer[i];
-            }
+            System.arraycopy(buffer,0,dest,0,dest.length);
         }
+
+        return bufferOffset;
     }
 }
