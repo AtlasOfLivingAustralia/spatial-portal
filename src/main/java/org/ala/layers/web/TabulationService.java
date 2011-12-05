@@ -49,6 +49,19 @@ public class TabulationService {
     private final String WS_TABULATION_SINGLE = "/tabulation/{fid1}";
     private final String WS_TABULATION_SINGLE_CSV = "/tabulation/{fid1}/csv";
     private final String WS_TABULATION_SINGLE_HTML = "/tabulation/{fid1}/html";
+    /*
+     * URLs: /tabulation/area/{fid1}/{fid2}/html
+     *       /tabulation/area/rows/{fid1}/{fid2}/html
+     *       /tabulation/area/columns/{fid1}/{fid2}/html
+     *       /tabulation/area/{fid1}/{fid2}/csv
+     *       /tabulation/area/rows/{fid1}/{fid2}/csv
+     *       /tabulation/area/columns/{fid1}/{fid2}/csv
+     *       /tabulation/area/{fid1}/{fid2}/json
+     *       /tabulation/area/rows/{fid1}/{fid2}/json
+     *       /tabulation/area/columns/{fid1}/{fid2}/json
+     */
+    
+    
     /**
      * Log4j instance
      */
@@ -93,7 +106,7 @@ public class TabulationService {
 
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
 
-        writeArea(tabulations, resp, fid1, fid2, wkt, "csv");
+        writeArea(tabulations, resp, fid1, fid2, wkt, "csv","area");
     }
 
     /*
@@ -106,7 +119,7 @@ public class TabulationService {
 
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
 
-        writeAreaRows(tabulations, resp, fid1, fid2, wkt, "csv");
+        writeArea(tabulations, resp, fid1, fid2, wkt, "csv","areaRows");
     }
 
     /*
@@ -119,7 +132,7 @@ public class TabulationService {
 
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
 
-        writeAreaColumns(tabulations, resp, fid1, fid2, wkt, "csv");
+        writeArea(tabulations, resp, fid1, fid2, wkt, "csv","areaColumns");
     }
 
     /*
@@ -145,7 +158,7 @@ public class TabulationService {
 
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
 
-        writeArea(tabulations, resp, fid1, fid2, wkt, "html");
+        writeArea(tabulations, resp, fid1, fid2, wkt, "html","area");
     }
 
     /*
@@ -158,7 +171,7 @@ public class TabulationService {
 
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
 
-        writeAreaRows(tabulations, resp, fid1, fid2, wkt, "html");
+        writeArea(tabulations, resp, fid1, fid2, wkt, "html","areaRows");
     }
 
     /*
@@ -171,7 +184,7 @@ public class TabulationService {
 
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
 
-        writeAreaColumns(tabulations, resp, fid1, fid2, wkt, "html");
+        writeArea(tabulations, resp, fid1, fid2, wkt, "html","areaColumns");
     }
 
     @RequestMapping(value = "/tabulation/area/{fid1}/{fid2}/json", method = RequestMethod.GET)
@@ -181,7 +194,7 @@ public class TabulationService {
 
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
 
-        writeArea(tabulations, resp, fid1, fid2, wkt, "json");
+        writeArea(tabulations, resp, fid1, fid2, wkt, "json","area");
     }
 
     /*
@@ -194,7 +207,7 @@ public class TabulationService {
 
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
 
-        writeAreaRows(tabulations, resp, fid1, fid2, wkt, "json");
+        writeArea(tabulations, resp, fid1, fid2, wkt, "json","areaRows");
     }
 
     /*
@@ -207,7 +220,7 @@ public class TabulationService {
 
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
 
-        writeAreaColumns(tabulations, resp, fid1, fid2, wkt, "json");
+        writeArea(tabulations, resp, fid1, fid2, wkt, "json","areaColumns");
     }
 
     /*
@@ -462,9 +475,9 @@ public class TabulationService {
             sb.append("<html>");
             sb.append("<title>Tabulation for " + title + "</title>");
             sb.append("<body>");
-            sb.append("<h2>");
+            sb.append("<h3>");
             sb.append(title + "\" (sq km)");
-            sb.append("</h2><br>");
+            sb.append("</h3><br>");
             if (wkt != null && wkt.length() > 0) {
                 sb.append("within area ").append(wkt).append("<br>");
             }
@@ -493,7 +506,7 @@ public class TabulationService {
                 }
                 if (i == 0) {
                     sb.append("<td>");
-                    sb.append("Rows in total");
+                    sb.append("Total area");
                     sb.append("</td>");
                 } else {
                     sb.append("<td>");
@@ -504,7 +517,7 @@ public class TabulationService {
             }
             sb.append("<tr>");
             sb.append("<td>");
-            sb.append("Columns in total");
+            sb.append("Total area");
             sb.append("</td>");
             for (int j = 1; j < grid[0].length; j++) {
                 sb.append("<td>");
@@ -514,9 +527,9 @@ public class TabulationService {
             sb.append("</tr>");
             sb.append("</table>");
 
-            sb.append("<h2>");
+            sb.append("<h3>");
             sb.append(title + "\" (row percentage %)");
-            sb.append("</h2><br>");
+            sb.append("</h3><br>");
             if (wkt != null && wkt.length() > 0) {
                 sb.append("within area ").append(wkt).append("<br>");
             }
@@ -547,9 +560,9 @@ public class TabulationService {
             }
             sb.append("</table>");
 
-            sb.append("<h2>");
+            sb.append("<h3>");
             sb.append(title + "\" (column percentage %)");
-            sb.append("</h2><br>");
+            sb.append("</h3><br>");
             if (wkt != null && wkt.length() > 0) {
                 sb.append("within area ").append(wkt).append("<br>");
             }
@@ -604,13 +617,13 @@ public class TabulationService {
                     }
                 }
                 if (i == 0) {
-                    sb.append(",Rows in total");
+                    sb.append(",Total area");
                 } else {
                     sb.append(sumofcolumns[i - 1] * 1000000.0);
                 }
             }
             sb.append("\n");
-            sb.append("Columns in total");
+            sb.append("Total area");
             for (int j = 1; j < grid[0].length; j++) {
                 sb.append("," + sumofrows[j - 1] * 1000000.0);
             }
@@ -621,7 +634,7 @@ public class TabulationService {
         os.close();
     }
 
-    private void writeArea(List<Tabulation> tabulations, HttpServletResponse resp, String fid1, String fid2, String wkt, String type) throws IOException {
+    private void writeArea(List<Tabulation> tabulations, HttpServletResponse resp, String fid1, String fid2, String wkt, String type, String func) throws IOException {
         //determine x & y field names
         TreeMap<String, String> objects1 = new TreeMap<String, String>();
         TreeMap<String, String> objects2 = new TreeMap<String, String>();
@@ -639,7 +652,8 @@ public class TabulationService {
         if (objects1.size() <= objects2.size()) {
             rows = objects2.size();
             columns = objects1.size();
-        } else {
+        } 
+        else {
             rows = objects1.size();
             columns = objects2.size();
         }
@@ -757,22 +771,90 @@ public class TabulationService {
                     } else {
                         sb.append(",");
                         if (grid[i][j] != null) {
-                            sb.append(Double.parseDouble(grid[i][j]) / 1000000.0);
+                            if (func.equals("area")){
+                                sb.append(Double.parseDouble(grid[i][j]) / 1000000.0);
+                            }
+                            else if (func.equals("areaRows")) {
+                                double temp = Double.parseDouble(grid[i][j]) / 1000000.0 / sumofcolumns[i - 1] * 100.0;
+                                sb.append(temp);
+                            }
+                            else if (func.equals("areaColumns")){
+                                double temp = Double.parseDouble(grid[i][j]) / 1000000.0 / sumofrows[j - 1] * 100.0;
+                                sb.append(temp);
+                            }
                         }
                     }
                 }
                 if (i == 0) {
-                    sb.append(",\"Rows in total\"");
-                } else {
-                    sb.append("," + sumofcolumns[i - 1]);
+                    if (func.equals("area")){
+                        sb.append(",\"Total area\"");
+                    }
+                    else if (func.equals("areaRows")) {
+                        sb.append(",\"Total %\"");
+                    }
+                    else if (func.equals("areaColumns")){
+                        sb.append(",\"Total %\"");
+                    }
+                } 
+                else {
+                    if (func.equals("area")){
+                        sb.append("," + sumofcolumns[i - 1]);
+                    }
+                    else if (func.equals("areaRows")) {
+                        double sumofColumnPercentage = 0.0;
+                        for (int k = 1;k < grid[0].length; k++){
+                            if (grid[i][k] != null) {
+                                sumofColumnPercentage = sumofColumnPercentage + Double.parseDouble(grid[i][k]) / 1000000.0 / sumofcolumns[i - 1] * 100.0;
+                            }
+                        }
+                        sb.append("," + sumofColumnPercentage);
+                    }
+                    else if (func.equals("areaColumns")){
+                        double sumofColumnPercentage = 0.0;
+                        for (int k = 1;k < grid[0].length; k++){
+                            if (grid[i][k] != null) {
+                                sumofColumnPercentage = sumofColumnPercentage + Double.parseDouble(grid[i][k]) / 1000000.0 / sumofrows[k - 1] * 100.0;
+                            }
+                        }
+                    sb.append("," + sumofColumnPercentage);
+                    }
                 }
             }
             sb.append("\n");
-            sb.append("\"Columns in total\"");
-            for (int j = 1; j < grid[0].length; j++) {
-                sb.append("," + sumofrows[j - 1]);
+            if (func.equals("area")){
+                sb.append("\"Total area\"");
             }
-        } else if (type.equals("json")) {
+            else if (func.equals("areaRows")) {
+                sb.append("\"Total %\"");
+            }
+            else if (func.equals("areaColumns")){
+                sb.append("\"Total %\"");
+            }
+            for (int j = 1; j < grid[0].length; j++) {
+                if (func.equals("area")){
+                    sb.append("," + sumofrows[j - 1]);
+                }
+                else if (func.equals("areaRows")) {
+                    double sumofRowPercentage = 0.0;
+                    for (int k = 1;k < grid.length; k++){
+                        if (grid[k][j] != null) {
+                            sumofRowPercentage = sumofRowPercentage + Double.parseDouble(grid[k][j]) / 1000000.0 / sumofcolumns[k - 1] * 100.0;
+                        }
+                    }
+                sb.append("," + sumofRowPercentage);
+                }
+                else if (func.equals("areaColumns")){
+                    double sumofRowPercentage = 0.0;
+                    for (int k = 1;k < grid.length; k++){
+                        if (grid[k][j] != null) {
+                            sumofRowPercentage = sumofRowPercentage + Double.parseDouble(grid[k][j]) / 1000000.0 / sumofrows[j - 1] * 100.0;
+                        }
+                    }
+                sb.append("," + sumofRowPercentage);
+                }
+            }
+        } 
+        else if (type.equals("json")) {
             resp.setContentType("application/json");
             sb.append("{");
             for (int i = 1; i < grid.length; i++) {
@@ -781,26 +863,87 @@ public class TabulationService {
                 for (int j = 1; j < grid[i].length; j++) {
                     if (grid[i][j] != null) {
                         sb.append("\"").append(grid[0][j].replace("\"", "\"\"")).append("\":");
-                        sb.append(Double.parseDouble(grid[i][j]) / 1000000.0 + ",\n");
+                        if (func.equals("area")){
+                            sb.append(Double.parseDouble(grid[i][j]) / 1000000.0);
+                        }
+                        else if (func.equals("areaRows")){
+                            sb.append(Double.parseDouble(grid[i][j]) / 1000000.0 / sumofcolumns[i - 1] * 100.0);
+                        }
+                        else if (func.equals("areaColumns")){
+                            sb.append(Double.parseDouble(grid[i][j]) / 1000000.0 / sumofrows[j - 1] * 100.0);
+                        }
+                        sb.append(",");
                     }
                 }
-                sb.append("\"Rows in total\":");
-                sb.append(String.format("%.2f", sumofcolumns[i - 1]));
-                sb.append("},\n");
-            }
-            sb.append("\"Columns in total\":");
-            sb.append("{");
-            for (int j = 1; j < grid[0].length; j++) {
-                sb.append("\"").append(grid[0][j].replace("\"", "\"\"")).append("\":");
-                sb.append(sumofrows[j - 1]);
-                if (j < grid[0].length - 1) {
+                
+                if (func.equals("area")){
+                    sb.append("\"Total area\":");
+                    sb.append(String.format("%.2f", sumofcolumns[i - 1]));
+                }
+                else if (func.equals("areaRows")){
+                    sb.append("\"Total %\":");
+                    double sumofColumnPercentage = 0.0;
+                    for (int k = 1;k < grid[0].length; k++){
+                        if (grid[i][k] != null) {
+                            sumofColumnPercentage = sumofColumnPercentage + Double.parseDouble(grid[i][k]) / 1000000.0 / sumofcolumns[i - 1] * 100.0;
+                        }
+                    }
+                    sb.append(sumofColumnPercentage);
+                }
+                else if (func.equals("areaColumns")){
+                    sb.append("\"Total %\":");
+                    double sumofColumnPercentage = 0.0;
+                    for (int k = 1;k < grid[0].length; k++){
+                        if (grid[i][k] != null) {
+                            sumofColumnPercentage = sumofColumnPercentage + Double.parseDouble(grid[i][k]) / 1000000.0 / sumofcolumns[i - 1] * 100.0;
+                        }
+                    }
+                    sb.append(sumofColumnPercentage);
+                }
+                
+                if (sb.toString().endsWith(",")) {
+                    sb.deleteCharAt(sb.toString().length() - 1);
+                }
+                sb.append("}");
+                if (i < grid.length - 1) {
                     sb.append(",");
                 }
                 sb.append("\n");
             }
+            if (func.equals("area")){
+                sb.append(",\"Total area\":");
+                sb.append("{");
+                for (int j = 1; j < grid[0].length; j++) {
+                    sb.append("\"").append(grid[0][j].replace("\"", "\"\"")).append("\":");
+                
+                        sb.append(sumofrows[j - 1]+",");
+                }
+            }
+            else {
+                sb.append(",\"Total %\":");
+                sb.append("{");
+                for (int j = 1; j < grid[0].length; j++) {
+                    sb.append("\"").append(grid[0][j].replace("\"", "\"\"")).append("\":");
+                    double sumofRowPercentage = 0.0;
+                    for (int k = 1;k < grid.length; k++){
+                         if (grid[k][j] != null) {
+                            sumofRowPercentage = sumofRowPercentage + Double.parseDouble(grid[k][j]) / 1000000.0 / sumofcolumns[k - 1] * 100.0;
+                        }
+                    }
+                    sb.append(sumofRowPercentage);
+                    sb.append(",");
+                }
+            }
+            
+            if (sb.toString().endsWith(",")) {
+                sb.deleteCharAt(sb.toString().length() - 1);
+            }
+            sb.append("\n");
+            
             sb.append("}");
             sb.append("}");
-        } else {
+        } 
+        else {
             resp.setContentType("text/html");
             String title = "\"";
             if (fieldDao.getFieldById(fid1) != null) {
@@ -822,9 +965,9 @@ public class TabulationService {
             sb.append("</head>");
             sb.append("<body");
             sb.append("<basefont size=\"2\" >");
-            sb.append("<h2>");
+            sb.append("<h3>");
             sb.append(title + "\" (sq km)");
-            sb.append("</h2><br>");
+            sb.append("</h3><br>");
             if (wkt != null && wkt.length() > 0) {
                 sb.append("within area ").append(wkt).append("<br>");
             }
@@ -843,7 +986,15 @@ public class TabulationService {
                         //data
                         if (grid[i][j] != null) {
                             try {
-                                sb.append(String.format("%.2f", Double.parseDouble(grid[i][j]) / 1000000.0));
+                                if (func.equals("area")){
+                                    sb.append(String.format("%.2f", Double.parseDouble(grid[i][j]) / 1000000.0));
+                                }
+                                else if (func.equals("areaRows")){
+                                    sb.append(String.format("%.2f", Double.parseDouble(grid[i][j]) / 1000000.0 / sumofcolumns[i - 1] * 100.0));
+                                }
+                                else if (func.equals("areaColumns")){
+                                    sb.append(String.format("%.2f", Double.parseDouble(grid[i][j]) / 1000000.0 / sumofrows[j - 1] * 100.0));
+                                }
                             } catch (Exception e) {
                                 sb.append(grid[i][j]);
                             }
@@ -853,22 +1004,72 @@ public class TabulationService {
                 }
                 if (i == 0) {
                     sb.append("<td>");
-                    sb.append("Rows in total");
+                    if (func.equals("area")){
+                        sb.append("Total area");
+                    }
+                    else{
+                        sb.append("Total %");
+                    }
                     sb.append("</td>");
                 } else {
                     sb.append("<td>");
-                    sb.append(String.format("%.2f", sumofcolumns[i - 1]));
+                    if (func.equals("area")){
+                        sb.append(String.format("%.2f", sumofcolumns[i - 1]));
+                    }
+                    else if (func.equals("areaRows")){
+                        double sumofColumnPercentage = 0.0;
+                        for (int k = 1;k < grid[0].length; k++){
+                            if (grid[i][k] != null) {
+                                sumofColumnPercentage = sumofColumnPercentage + Double.parseDouble(grid[i][k]) / 1000000.0 / sumofcolumns[i - 1] * 100.0;
+                            }
+                        }
+                        sb.append(String.format("%.2f", sumofColumnPercentage));
+                    }
+                    else if (func.equals("areaColumns")){
+                        double sumofColumnPercentage = 0.0;
+                        for (int k = 1;k < grid[0].length; k++){
+                            if (grid[i][k] != null) {
+                                sumofColumnPercentage = sumofColumnPercentage + Double.parseDouble(grid[i][k]) / 1000000.0 / sumofrows[k - 1] * 100.0;
+                            }
+                        }
+                        sb.append(String.format("%.2f", sumofColumnPercentage));
+                    }
                     sb.append("</td>");
                 }
                 sb.append("</tr>");
             }
             sb.append("<tr>");
             sb.append("<td>");
-            sb.append("Columns in total");
+            if (func.equals("area")){
+                sb.append("Total area");
+            }
+            else {
+                sb.append("Total %");
+            }
             sb.append("</td>");
             for (int j = 1; j < grid[0].length; j++) {
                 sb.append("<td>");
-                sb.append(String.format("%.2f", sumofrows[j - 1]));
+                if (func.equals("area")){
+                    sb.append(String.format("%.2f", sumofrows[j - 1]));
+                }
+                else if (func.equals("areaRows")){
+                    double sumofRowPercentage = 0.0;
+                    for (int k = 1;k < grid.length; k++){
+                        if (grid[k][j] != null) {
+                            sumofRowPercentage = sumofRowPercentage + Double.parseDouble(grid[k][j]) / 1000000.0 / sumofcolumns[k - 1] * 100.0;
+                        }
+                    }
+                    sb.append(String.format("%.2f", sumofRowPercentage));
+                }
+                else if (func.equals("areaColumns")){
+                    double sumofRowPercentage = 0.0;
+                    for (int k = 1;k < grid.length; k++){
+                        if (grid[k][j] != null) {
+                            sumofRowPercentage = sumofRowPercentage + Double.parseDouble(grid[k][j]) / 1000000.0 / sumofrows[j - 1] * 100.0;
+                        }
+                    }
+                    sb.append(String.format("%.2f", sumofRowPercentage));
+                }
                 sb.append("</td>");
             }
             sb.append("<td></td>");
@@ -877,452 +1078,6 @@ public class TabulationService {
             sb.append("</body></html>");
         }
 
-        OutputStream os = resp.getOutputStream();
-        os.write(sb.toString().getBytes("UTF-8"));
-        os.close();
-    }
-
-    private void writeAreaRows(List<Tabulation> tabulations, HttpServletResponse resp, String fid1, String fid2, String wkt, String type) throws IOException {
-        //determine x & y field names
-        TreeMap<String, String> objects1 = new TreeMap<String, String>();
-        TreeMap<String, String> objects2 = new TreeMap<String, String>();
-
-        int rows = 0;
-        int columns = 0;
-
-
-        for (Tabulation t : tabulations) {
-            objects1.put(t.getPid1(), t.getName1());
-            objects2.put(t.getPid2(), t.getName2());
-        }
-
-        //define grid
-        if (objects1.size() <= objects2.size()) {
-            rows = objects2.size();
-            columns = objects1.size();
-        } else {
-            rows = objects1.size();
-            columns = objects2.size();
-        }
-        String[][] grid = new String[rows + 1][columns + 1];
-
-        //populate grid
-        if (objects1.size() <= objects2.size()) {
-
-            //row and column sort order and labels
-            TreeMap<String, Integer> order1 = new TreeMap<String, Integer>();
-            TreeMap<String, Integer> order2 = new TreeMap<String, Integer>();
-            int pos = 0;
-            for (String s : objects1.keySet()) {
-                order1.put(s, pos++);
-                /*
-                 * if(s.equals(objects1.get(s))){ //grid[pos][0] =
-                 * objects1.get(s); grid[0][pos] = objects1.get(s); } else {
-                 * grid[0][pos] = objects1.get(s) + " (" + s + ") "; }*
-                 *
-                 */
-                grid[0][pos] = objects1.get(s);
-            }
-            pos = 0;
-            for (String s : objects2.keySet()) {
-                order2.put(s, pos++);
-                /*
-                 * if(s.equals(objects2.get(s))){ grid[pos][0] =
-                 * objects2.get(s); } else { grid[pos][0] = objects2.get(s) + "
-                 * (" + s + ") "; }*
-                 *
-                 */
-                grid[pos][0] = objects2.get(s);
-            }
-
-            //grid
-            for (Tabulation t : tabulations) {
-                //grid[order1.get(t.getPid1()) + 1][order2.get(t.getPid2()) + 1] = String.valueOf(t.getArea());
-                grid[order2.get(t.getPid2()) + 1][order1.get(t.getPid1()) + 1] = String.valueOf(t.getArea());
-            }
-        } else {
-            //row and column sort order and labels
-            TreeMap<String, Integer> order1 = new TreeMap<String, Integer>();
-            TreeMap<String, Integer> order2 = new TreeMap<String, Integer>();
-            int pos = 0;
-            for (String s : objects1.keySet()) {
-                order1.put(s, pos++);
-                /*
-                 * if(s.equals(objects1.get(s))){ grid[pos][0] =
-                 * objects1.get(s); } else { grid[pos][0] = objects1.get(s) + "
-                 * (" + s + ") "; }*
-                 *
-                 */
-                grid[pos][0] = objects1.get(s);
-            }
-            pos = 0;
-            for (String s : objects2.keySet()) {
-                order2.put(s, pos++);
-                if (s.equals(objects2.get(s))) {
-                    grid[0][pos] = objects2.get(s);
-                } else {
-                    grid[0][pos] = objects2.get(s) + " (" + s + ") ";
-                }
-            }
-
-            //grid
-            for (Tabulation t : tabulations) {
-                grid[order1.get(t.getPid1()) + 1][order2.get(t.getPid2()) + 1] = String.valueOf(t.getArea());
-            }
-        }
-
-        //define row totals
-        double[] sumofcolumns = new double[grid.length - 1];
-        for (int k = 1; k < grid.length; k++) {
-            //sum of rows
-            for (int j = 1; j < grid[0].length; j++) {
-                //not row and column headers
-                if (grid[k][j] != null) {
-                    sumofcolumns[k - 1] = sumofcolumns[k - 1] + Double.parseDouble(grid[k][j]) / 1000000.0;
-                }
-            }
-        }
-
-        //define column totals
-        double[] sumofrows = new double[grid[0].length - 1];
-        for (int j = 1; j < grid[0].length; j++) {
-            //sum of rows
-            for (int k = 1; k < grid.length; k++) {
-                //not row and column headers
-                if (grid[k][j] != null) {
-                    sumofrows[j - 1] = sumofrows[j - 1] + Double.parseDouble(grid[k][j]) / 1000000.0;
-                }
-            }
-        }
-        //write to csv or html
-        StringBuilder sb = new StringBuilder();
-        if (type.equals("html")) {
-            resp.setContentType("text/html");
-            String title = "\"";
-            if (fieldDao.getFieldById(fid1) != null) {
-                title += fieldDao.getFieldById(fid1).getName();
-            } else {
-                title += fid1;
-            }
-            title += "\" and \"";
-            if (fieldDao.getFieldById(fid2) != null) {
-                title += fieldDao.getFieldById(fid2).getName();
-            } else {
-                title += fid2;
-            }
-            //title += "\" (sq km)";
-
-            sb.append("<html>");
-            sb.append("<title>Tabulation for " + title + "</title>");
-            sb.append("<body>");
-
-            sb.append("<h2>");
-            sb.append(title + "\" (row percentage %)");
-            sb.append("</h2><br>");
-            if (wkt != null && wkt.length() > 0) {
-                sb.append("within area ").append(wkt).append("<br>");
-            }
-            sb.append("<table border='1'>");
-            // write row percentage table
-            for (int i = 0; i < grid.length; i++) {
-                sb.append("<tr>");
-                for (int j = 0; j < grid[i].length; j++) {
-                    sb.append("<td>");
-                    if (i == 0 || j == 0) {
-                        //row and column headers
-                        if (grid[i][j] != null) {
-                            sb.append(grid[i][j]);
-                        }
-                    } else {
-                        //data
-                        if (grid[i][j] != null) {
-                            try {
-                                sb.append(String.format("%.2f", Double.parseDouble(grid[i][j]) / 1000000.0 / sumofcolumns[i - 1] * 100.0));
-                            } catch (Exception e) {
-                                sb.append(grid[i][j]);
-                            }
-                        }
-                    }
-                    sb.append("</td>");
-                }
-                sb.append("</tr>");
-            }
-            sb.append("</table>");
-
-            sb.append("</body></html>");
-        } else if (type.equals("csv")) {
-            resp.setContentType("text/plain");
-            for (int i = 0; i < grid.length; i++) {
-                if (i > 0) {
-                    sb.append("\n");
-                }
-                for (int j = 0; j < grid[i].length; j++) {
-                    if (i == 0 || j == 0) {
-                        if (i == 0 && j == 0) {
-                            sb.append("\"\"");
-                        }
-                        if (j > 0) {
-                            sb.append(",");
-                        }
-                        if (grid[i][j] != null) {
-                            sb.append("\"").append(grid[i][j].replace("\"", "\"\"")).append("\"");
-                        }
-                    } else {
-                        sb.append(",");
-                        if (grid[i][j] != null) {
-                            double temp = Double.parseDouble(grid[i][j]) / 1000000.0 / sumofcolumns[i - 1] * 100.0;
-                            sb.append(temp);
-                        }
-                    }
-                }
-            }
-        } else {
-            resp.setContentType("application/json");
-            sb.append("{");
-            for (int i = 1; i < grid.length; i++) {
-                sb.append("\"").append(grid[i][0].replace("\"", "\"\"")).append("\":");
-                sb.append("{");
-                for (int j = 1; j < grid[i].length; j++) {
-                    if (grid[i][j] != null) {
-                        sb.append("\"").append(grid[0][j].replace("\"", "\"\"")).append("\":");
-                        sb.append(Double.parseDouble(grid[i][j]) / 1000000.0 / sumofcolumns[i - 1] * 100.0);
-                        sb.append(",");
-                    }
-                }
-                if (sb.toString().endsWith(",")) {
-                    sb.deleteCharAt(sb.toString().length() - 1);
-                }
-                sb.append("}");
-                if (i < grid.length - 1) {
-                    sb.append(",");
-                }
-                sb.append("\n");
-            }
-            sb.append("}");
-        }
-
-        OutputStream os = resp.getOutputStream();
-        os.write(sb.toString().getBytes("UTF-8"));
-        os.close();
-    }
-
-    private void writeAreaColumns(List<Tabulation> tabulations, HttpServletResponse resp, String fid1, String fid2, String wkt, String type) throws IOException {
-        //determine x & y field names
-        TreeMap<String, String> objects1 = new TreeMap<String, String>();
-        TreeMap<String, String> objects2 = new TreeMap<String, String>();
-
-        int rows = 0;
-        int columns = 0;
-
-
-        for (Tabulation t : tabulations) {
-            objects1.put(t.getPid1(), t.getName1());
-            objects2.put(t.getPid2(), t.getName2());
-        }
-
-        //define grid
-        if (objects1.size() <= objects2.size()) {
-            rows = objects2.size();
-            columns = objects1.size();
-        } else {
-            rows = objects1.size();
-            columns = objects2.size();
-        }
-        String[][] grid = new String[rows + 1][columns + 1];
-
-        //populate grid
-        if (objects1.size() <= objects2.size()) {
-
-            //row and column sort order and labels
-            TreeMap<String, Integer> order1 = new TreeMap<String, Integer>();
-            TreeMap<String, Integer> order2 = new TreeMap<String, Integer>();
-            int pos = 0;
-            for (String s : objects1.keySet()) {
-                order1.put(s, pos++);
-                /*
-                 * if(s.equals(objects1.get(s))){ //grid[pos][0] =
-                 * objects1.get(s); grid[0][pos] = objects1.get(s); } else {
-                 * grid[0][pos] = objects1.get(s) + " (" + s + ") "; }*
-                 *
-                 */
-                grid[0][pos] = objects1.get(s);
-            }
-            pos = 0;
-            for (String s : objects2.keySet()) {
-                order2.put(s, pos++);
-                /*
-                 * if(s.equals(objects2.get(s))){ grid[pos][0] =
-                 * objects2.get(s); } else { grid[pos][0] = objects2.get(s) + "
-                 * (" + s + ") "; }*
-                 *
-                 */
-                grid[pos][0] = objects2.get(s);
-            }
-
-            //grid
-            for (Tabulation t : tabulations) {
-                //grid[order1.get(t.getPid1()) + 1][order2.get(t.getPid2()) + 1] = String.valueOf(t.getArea());
-                grid[order2.get(t.getPid2()) + 1][order1.get(t.getPid1()) + 1] = String.valueOf(t.getArea());
-            }
-        } else {
-            //row and column sort order and labels
-            TreeMap<String, Integer> order1 = new TreeMap<String, Integer>();
-            TreeMap<String, Integer> order2 = new TreeMap<String, Integer>();
-            int pos = 0;
-            for (String s : objects1.keySet()) {
-                order1.put(s, pos++);
-                if (s.equals(objects1.get(s))) {
-                    grid[pos][0] = objects1.get(s);
-                } else {
-                    grid[pos][0] = objects1.get(s) + " (" + s + ") ";
-                }
-            }
-            pos = 0;
-            for (String s : objects2.keySet()) {
-                order2.put(s, pos++);
-                if (s.equals(objects2.get(s))) {
-                    grid[0][pos] = objects2.get(s);
-                } else {
-                    grid[0][pos] = objects2.get(s) + " (" + s + ") ";
-                }
-            }
-
-            //grid
-            for (Tabulation t : tabulations) {
-                grid[order1.get(t.getPid1()) + 1][order2.get(t.getPid2()) + 1] = String.valueOf(t.getArea());
-            }
-        }
-
-        //define row totals
-        double[] sumofcolumns = new double[grid.length - 1];
-        for (int k = 1; k < grid.length; k++) {
-            //sum of rows
-            for (int j = 1; j < grid[0].length; j++) {
-                //not row and column headers
-                if (grid[k][j] != null) {
-                    sumofcolumns[k - 1] = sumofcolumns[k - 1] + Double.parseDouble(grid[k][j]) / 1000000.0;
-                }
-            }
-        }
-
-        //define column totals
-        double[] sumofrows = new double[grid[0].length - 1];
-        for (int j = 1; j < grid[0].length; j++) {
-            //sum of rows
-            for (int k = 1; k < grid.length; k++) {
-                //not row and column headers
-                if (grid[k][j] != null) {
-                    sumofrows[j - 1] = sumofrows[j - 1] + Double.parseDouble(grid[k][j]) / 1000000.0;
-                }
-            }
-        }
-        //write to csv or html
-        StringBuilder sb = new StringBuilder();
-        if (type.equals("html")) {
-            resp.setContentType("text/html");
-            String title = "\"";
-            if (fieldDao.getFieldById(fid1) != null) {
-                title += fieldDao.getFieldById(fid1).getName();
-            } else {
-                title += fid1;
-            }
-            title += "\" and \"";
-            if (fieldDao.getFieldById(fid2) != null) {
-                title += fieldDao.getFieldById(fid2).getName();
-            } else {
-                title += fid2;
-            }
-            //title += "\" (sq km)";
-
-            sb.append("<html>");
-            sb.append("<title>Tabulation for " + title + "</title>");
-            sb.append("<body>");
-
-            sb.append("<h2>");
-            sb.append(title + "\" (column percentage %)");
-            sb.append("</h2><br>");
-            if (wkt != null && wkt.length() > 0) {
-                sb.append("within area ").append(wkt).append("<br>");
-            }
-            sb.append("<table border='1'>");
-            // write column percentage table: assume every column has equal length
-
-            for (int i = 0; i < grid.length; i++) {
-                sb.append("<tr>");
-                for (int j = 0; j < grid[i].length; j++) {
-                    sb.append("<td>");
-                    if (i == 0 || j == 0) {
-                        //row and column headers
-                        if (grid[i][j] != null) {
-                            sb.append(grid[i][j]);
-                        }
-                    } else {
-                        //data
-                        if (grid[i][j] != null) {
-                            try {
-                                sb.append(String.format("%.2f", Double.parseDouble(grid[i][j]) / 1000000.0 / sumofrows[j - 1] * 100.0));
-                            } catch (Exception e) {
-                                sb.append(grid[i][j]);
-                            }
-                        }
-                    }
-                    sb.append("</td>");
-                }
-                sb.append("</tr>");
-            }
-
-            sb.append("</table>");
-            sb.append("</body></html>");
-        } else if (type.equals("csv")) {
-            resp.setContentType("text/plain");
-            for (int i = 0; i < grid.length; i++) {
-                if (i > 0) {
-                    sb.append("\n");
-                }
-                for (int j = 0; j < grid[i].length; j++) {
-                    if (i == 0 || j == 0) {
-                        if (i == 0 && j == 0) {
-                            sb.append("\"\"");
-                        }
-                        if (j > 0) {
-                            sb.append(",");
-                        }
-                        if (grid[i][j] != null) {
-                            sb.append("\"").append(grid[i][j].replace("\"", "\"\"")).append("\"");
-                        }
-                    } else {
-                        sb.append(",");
-                        if (grid[i][j] != null) {
-                            double temp = Double.parseDouble(grid[i][j]) / 1000000.0 / sumofrows[j - 1] * 100.0;
-                            sb.append(temp);
-                        }
-                    }
-                }
-            }
-        } else {
-            resp.setContentType("application/json");
-            sb.append("{");
-            for (int i = 1; i < grid.length; i++) {
-                sb.append("\"").append(grid[i][0].replace("\"", "\"\"")).append("\":");
-                sb.append("{");
-                for (int j = 1; j < grid[i].length; j++) {
-                    if (grid[i][j] != null) {
-                        sb.append("\"").append(grid[0][j].replace("\"", "\"\"")).append("\":");
-                        sb.append(Double.parseDouble(grid[i][j]) / 1000000.0 / sumofrows[j - 1] * 100.0);
-                        sb.append(",");
-                    }
-                }
-                if (sb.toString().endsWith(",")) {
-                    sb.deleteCharAt(sb.toString().length() - 1);
-                }
-                sb.append("}");
-                if (i < grid.length - 1) {
-                    sb.append(",");
-                }
-                sb.append("\n");
-            }
-            sb.append("}");
-        }
         OutputStream os = resp.getOutputStream();
         os.write(sb.toString().getBytes("UTF-8"));
         os.close();
