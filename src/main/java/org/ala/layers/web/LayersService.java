@@ -48,7 +48,7 @@ public class LayersService {
      */
     @RequestMapping(value = "/layers", method = RequestMethod.GET)
     public @ResponseBody List<Layer> layerObjects(HttpServletRequest req) {
-        logger.info("Retriving all layers");
+        logger.info("Retriving enabled layers");
         return layerDao.getLayers();
     }
     
