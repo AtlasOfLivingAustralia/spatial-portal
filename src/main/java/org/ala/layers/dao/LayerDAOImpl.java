@@ -16,11 +16,13 @@
 package org.ala.layers.dao;
 
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import org.ala.layers.dto.Layer;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,7 @@ public class LayerDAOImpl implements LayerDAO {
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(LayerDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
+    private SimpleJdbcInsert insertLayer;
 
     @Resource(name = "dataSource")
     public void setDataSource(DataSource dataSource) {
@@ -45,6 +48,7 @@ public class LayerDAOImpl implements LayerDAO {
             System.out.println("dataSource is null");
         }
         this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
+        this.insertLayer = new SimpleJdbcInsert(dataSource).withTableName("layers").usingGeneratedKeyColumns("id");
     }
 
     @Override
@@ -100,4 +104,61 @@ public class LayerDAOImpl implements LayerDAO {
         String sql = "select * from layers where enabled=true and type = ?";
         return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), type);
     }
+
+    @Override
+    public Layer getLayerByIdForAdmin(int id) {
+        //List<Layer> layers = hibernateTemplate.find("from Layer where enabled=true and id=?", id);
+        logger.info("Getting enabled layer info for id = " + id);
+        String sql = "select * from layers where id = ?";
+        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), id);
+        if (l.size() > 0) {
+            return l.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Layer getLayerByNameForAdmin(String name) {
+        logger.info("Getting enabled layer info for name = " + name);
+        String sql = "select * from layers where name = ?";
+        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
+        if (l.size() > 0) {
+            return l.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public List<Layer> getLayersForAdmin() {
+        //return hibernateTemplate.find("from Layer where enabled=true");
+        logger.info("Getting a list of all layers");
+        String sql = "select * from layers";
+        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class));
+        return l;
+    }
+
+    @Override
+    public void addLayer(Layer layer) {
+        logger.info("Add new layer metadta for " + layer.getName());
+        String sql = "insert into layers (citation_date,classification1,classification2,datalang,description,displayname,displaypath,enabled,env_category,environmentalvaluemax,environmentalvaluemin,environmentalvalueunits,extents,keywords,licence_link,licence_notes,licence_level,lookuptablepath,maxlatitude,maxlongitude,mddatest,mdhrlv,metadatapath,minlatitude,minlongitude,name,notes,path,path_1km,path_250m,path_orig,pid,respparty_role,scale,source,source_link,type) values (:citation_date,:classification1,:classification2,:datalang,:description,:displayname,:displaypath,:enabled,:env_category,:environmentalvaluemax,:environmentalvaluemin,:environmentalvalueunits,:extents,:keywords,:licence_link,:licence_notes,:licence_level,:lookuptablepath,:maxlatitude,:maxlongitude,:mddatest,:mdhrlv,:metadatapath,:minlatitude,:minlongitude,:name,:notes,:path,:path_1km,:path_250m,:path_orig,:pid,:respparty_role,:scale,:source,:source_link,:type)";
+        //jdbcTemplate.update(sql, layer.toMap());
+        Map<String, Object> parameters = layer.toMap();
+        parameters.remove("uid");
+        parameters.remove("id");
+        Number newId = insertLayer.execute(parameters);
+        layer.setId(newId.longValue());
+        layer.setUid(newId.longValue()+"");
+        //updateLayer(layer);
+    }
+
+    @Override
+    public void updateLayer(Layer layer) {
+        logger.info("Updating layer metadata for " + layer.getName());
+        String sql = "update layers set citation_date=:citation_date, classification1=:classification1, classification2=:classification2, datalang=:datalang, description=:description, displayname=:displayname, displaypath=:displaypath, enabled=:enabled, env_category=:env_category, environmentalvaluemax=:environmentalvaluemax, environmentalvaluemin=:environmentalvaluemin, environmentalvalueunits=:environmentalvalueunits, extents=:extents, keywords=:keywords, licence_link=:licence_link, licence_notes=:licence_notes, licence_level=:licence_level, lookuptablepath=:lookuptablepath, maxlatitude=:maxlatitude, maxlongitude=:maxlongitude, mddatest=:mddatest, mdhrlv=:mdhrlv, metadatapath=:metadatapath, minlatitude=:minlatitude, minlongitude=:minlongitude, name=:name, notes=:notes, path=:path, path_1km=:path_1km, path_250m=:path_250m, path_orig=:path_orig, pid=:pid, respparty_role=:respparty_role, scale=:scale, source=:source, source_link=:source_link, type=:type, uid=:uid where id=:id";
+        jdbcTemplate.update(sql, layer.toMap()); 
+    }
+
+
 }

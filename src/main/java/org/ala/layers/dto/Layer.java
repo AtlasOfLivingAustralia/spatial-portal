@@ -15,7 +15,9 @@
 
 package org.ala.layers.dto;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -153,6 +155,12 @@ public class Layer {
     @Column(name="path_250m")
     private String path_250m;
 
+    @Column(name="env_category")
+    private String env_category;
+
+    @Column(name="pid")
+    private String pid; 
+
 
 //    @GeneratedValue
 //    private String capabilities;
@@ -185,6 +193,10 @@ public class Layer {
     }
 
     public Boolean isEnabled() {
+        return enabled;
+    }
+
+    public Boolean getEnabled() {
         return enabled;
     }
 
@@ -476,6 +488,22 @@ public class Layer {
         this.path_orig = pathorig;
     }
 
+    public String getEnv_category() {
+        return env_category;
+    }
+
+    public void setEnv_category(String env_category) {
+        this.env_category = env_category;
+    }
+
+    public String getPid() {
+        return pid;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
+    }
+
 //    public String getCapabilities() {
 //        return capabilities;
 //    }
@@ -574,6 +602,52 @@ public class Layer {
         lyr += "\"" + keywords + "\"";
 
         return lyr;
+    }
+
+    public Map<String,Object> toMap() {
+        Map<String, Object> m = new HashMap<String, Object>();
+
+        m.put("citation_date", citation_date);
+        m.put("classification1", classification1);
+        m.put("classification2", classification2);
+        m.put("datalang", datalang);
+        m.put("description", description);
+        m.put("displayname", displayname);
+        m.put("displaypath", displaypath);
+        m.put("enabled",enabled);
+        m.put("env_category",env_category);
+        m.put("environmentalvaluemax", environmentalvaluemax);
+        m.put("environmentalvaluemin",environmentalvaluemin);
+        m.put("environmentalvalueunits",environmentalvalueunits);
+        m.put("extents",extent);
+        m.put("keywords",keywords);
+        m.put("licence_link",licence_link);
+        m.put("licence_notes",licence_notes);
+        m.put("licence_level",licence_level);
+        m.put("lookuptablepath",lookuptablepath);
+        m.put("maxlatitude",maxlatitude);
+        m.put("maxlongitude",maxlongitude);
+        m.put("mddatest",mddatest);
+        m.put("mdhrlv",mdhrlv);
+        m.put("metadatapath",metadatapath);
+        m.put("minlatitude",minlatitude);
+        m.put("minlongitude",minlongitude);
+        m.put("name",name);
+        m.put("notes",notes);
+        m.put("path",path);
+        m.put("path_1km",path_1km);
+        m.put("path_250m",path_250m);
+        m.put("path_orig",path_orig);
+        m.put("pid",pid);
+        m.put("respparty_role",respparty_role);
+        m.put("scale",scale);
+        m.put("source",source);
+        m.put("source_link",source_link);
+        m.put("type",type);
+        m.put("uid",uid);
+        m.put("id",id);
+
+        return m;
     }
 
     public boolean isShape() {

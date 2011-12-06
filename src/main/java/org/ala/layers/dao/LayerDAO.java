@@ -29,4 +29,11 @@ public interface LayerDAO {
     public List<Layer> getLayersByContextual();
     public Layer getLayerById(int id);
     public Layer getLayerByName(String name);
+
+    public List<Layer> getLayersForAdmin();
+    public Layer getLayerByIdForAdmin(int id);
+    public Layer getLayerByNameForAdmin(String name);
+
+    public void addLayer(Layer layer);
+    public void updateLayer(Layer layer);
 }
