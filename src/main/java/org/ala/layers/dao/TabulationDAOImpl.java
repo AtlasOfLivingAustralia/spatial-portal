@@ -52,7 +52,7 @@ public class TabulationDAOImpl implements TabulationDAO {
         }
 
         if(wkt == null || wkt.length() == 0) {
-            String sql = "SELECT i.*, o1.name as name1, o2.name as name2 FROM "
+            String sql = "SELECT i.pid1, i.pid2, i.fid1, i.fid2, i.area, o1.name as name1, o2.name as name2 FROM "
                     + "(SELECT * FROM tabulation WHERE fid1= ? AND fid2 = ? ) i, "
                     + "(SELECT * FROM objects WHERE fid= ? ) o1, "
                     + "(SELECT * FROM objects WHERE fid= ? ) o2 "
@@ -85,9 +85,8 @@ public class TabulationDAOImpl implements TabulationDAO {
     @Override
     public List<Tabulation> listTabulations(){
         String sql = "SELECT fid1, fid2, f1.name as name1, f2.name as name2 "
-                + "FROM tabulation, fields f1, fields f2 "
-                + "WHERE f1.id = fid1 AND f2.id = fid2 AND the_geom is not null "
-                + "AND area is not null "
+                + "FROM (select fid1, fid2, sum(area) a from tabulation group by fid1, fid2) t, fields f1, fields f2 "
+                + "WHERE f1.id = fid1 AND f2.id = fid2 AND a > 0 "
                 + "AND f1.intersect=true AND f2.intersect=true "
                 + "GROUP BY fid1, fid2, name1, name2;";
 
