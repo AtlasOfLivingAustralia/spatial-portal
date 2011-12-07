@@ -166,24 +166,40 @@ public class TabulationService {
 
         //update grid values
         if(func.equals("rows")) {
+            int [] count = new int[grid[0].length];
             for(int j=0;j<grid[0].length;j++) {
-                sumofrows[j] /= (total/100);
+                sumofrows[j] = 0;
             }
             for (int i = 0; i < grid.length; i++) {
                 for (int j = 0; j < grid[i].length; j++) {
                     grid[i][j] = grid[i][j] / sumofcolumns[i] * 100.0;
+                    if(grid[i][j] > 0) {
+                        sumofrows[j] += grid[i][j];
+                        count[j]++;
+                    }
                 }
                 sumofcolumns[i] = 100;  //avoid rounding errors
             }
+            for(int j=0;j<grid[0].length;j++) {
+                sumofrows[j] /= count[j];
+            }
         } else if(func.equals("columns")) {
+            int [] count = new int[grid.length];
             for (int i = 0; i < grid.length; i++) {
-                sumofcolumns[i] /= (total/100);
+                sumofcolumns[i] = 0;
             }
             for (int j = 0; j < grid[0].length; j++) {
                 for (int i = 0; i < grid.length; i++) {
                     grid[i][j] = grid[i][j] / sumofrows[j] * 100.0;
+                    if(grid[i][j] > 0) {
+                        sumofcolumns[i] += grid[i][j];
+                        count[i]++;
+                    }
                 }
                 sumofrows[j] = 100;  //avoid any rounding errors
+            }
+            for (int i = 0; i < grid.length; i++) {
+                sumofcolumns[i] = 0;
             }
         } else {
             //convert to sq km
@@ -226,9 +242,11 @@ public class TabulationService {
                 }
                 if (i == 0) {
                     if (func.equals("area")){
-                        sb.append(",\"Total area\"");
+                        sb.append(",Total area");
+                    } else if (func.equals("rows")) {
+                        sb.append(",Total %");
                     } else {
-                        sb.append(",\"Total %\"");
+                        sb.append(",Average non-zero %");
                     }
                 }  else {
                     sb.append(",").append(sumofcolumns[i - 1]);
@@ -236,9 +254,11 @@ public class TabulationService {
             }
             sb.append("\n");
             if (func.equals("area")){
-                sb.append("\"Total area\"");
+                sb.append("Total area");
+            } else if (func.equals("rows")) {
+                sb.append("Average non-zero %");
             } else {
-                sb.append("\"Total %\"");
+                sb.append("Total %");
             }
             for (int j = 0; j < grid[0].length; j++) {
                 sb.append("," + sumofrows[j]);
@@ -259,8 +279,10 @@ public class TabulationService {
                 
                 if (func.equals("area")){
                     sb.append("\"Total area\":");
-                } else {
+                } else if (func.equals("rows")) {
                     sb.append("\"Total %\":");
+                } else {
+                    sb.append("\"Average non-zero %\":");
                 }
                 sb.append(String.valueOf(sumofcolumns[i]));
 
@@ -272,6 +294,8 @@ public class TabulationService {
             }
             if (func.equals("area")){
                 sb.append(",\"Total area\":");                
+            } else if (func.equals("rows")) {
+                sb.append(",\"Average non-zero %\":");
             } else {
                 sb.append(",\"Total %\":");
             }
@@ -342,8 +366,10 @@ public class TabulationService {
                     sb.append("<td>");
                     if (func.equals("area")){
                         sb.append("Total area");
-                    } else{
+                    } else if (func.equals("rows")) {
                         sb.append("Total %");
+                    } else {
+                        sb.append("Average non-zero %");
                     }
                     sb.append("</td>");
                 } else {
@@ -357,6 +383,8 @@ public class TabulationService {
             sb.append("<td>");
             if (func.equals("area")){
                 sb.append("Total area");
+            } else if (func.equals("rows")) {
+                sb.append("Average non-zero %");
             } else {
                 sb.append("Total %");
             }
