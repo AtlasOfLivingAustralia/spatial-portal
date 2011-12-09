@@ -127,7 +127,7 @@ public class TabulationDAOImpl implements TabulationDAO {
                         + "objects WHERE fid= ? ) t "
                     + "WHERE newgeom is not null AND ST_Area(newgeom) > 0;";
 
-            List<Tabulation> tabulations = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Tabulation.class), fid, fid);
+            List<Tabulation> tabulations = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Tabulation.class), fid);
 
             //objects table area ok to use
 //            for(Tabulation t : tabulations) {
