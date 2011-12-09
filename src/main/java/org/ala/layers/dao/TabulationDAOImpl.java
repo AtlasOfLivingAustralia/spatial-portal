@@ -123,7 +123,7 @@ public class TabulationDAOImpl implements TabulationDAO {
             String sql = "SELECT fid1, pid1, name as name1,"
                     + " 'world' as fid2, 'world' as pid2, 'world' as name2, "
                     + " ST_AsText(newgeom) as geometry, area_km as area FROM "
-                    + "(SELECT name, fid as fid1, pid as pid1, the_geom as newgeom FROM "
+                    + "(SELECT name, fid as fid1, pid as pid1, the_geom as newgeom, area_km FROM "
                         + "objects WHERE fid= ? ) t "
                     + "WHERE newgeom is not null AND ST_Area(newgeom) > 0;";
 
