@@ -33,8 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import java.io.File;
-import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -53,8 +51,9 @@ public class TabulationService {
      *       /tabulation/area/rows/{fid1}/{fid2}/json
      *       /tabulation/area/columns/{fid1}/{fid2}/json
      *       /tabulations/html
-     */  
-    
+     */
+    private final String WS_TABULATION_LIST = "/tabulations";
+    private final String WS_TABULATION_SINGLE = "/tabulation/{fid1}";
     /**
      * Log4j instance
      */
@@ -146,7 +145,7 @@ public class TabulationService {
      * list distribution table records, GET
      */
     @RequestMapping(value = "/tabulation/area/{fid1}/{fid2}/json", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationAreaJason(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
+    public void getTabulationAreaJson(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
@@ -159,7 +158,7 @@ public class TabulationService {
      * list distribution table records, GET
      */
     @RequestMapping(value = "/tabulation/area/rows/{fid1}/{fid2}/json", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationAreaRowsJason(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
+    public void getTabulationAreaRowsJson(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
@@ -172,7 +171,7 @@ public class TabulationService {
      * list distribution table records, GET
      */
     @RequestMapping(value = "/tabulation/area/columns/{fid1}/{fid2}/json", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationAreaColumnsJason(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
+    public void getTabulationAreaColumnsJson(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
@@ -339,7 +338,7 @@ public class TabulationService {
                         sb.append(",\"Total %\"");
                     }
                     else if (func.equals("areaColumns")){
-                        sb.append(",\"Total %\"");
+                        sb.append(",\"Total % / number of non-zero classes\"");
                     }
                 } 
                 else {
@@ -371,7 +370,7 @@ public class TabulationService {
                 sb.append("\"Total area\"");
             }
             else if (func.equals("areaRows")) {
-                sb.append("\"Total %\"");
+                sb.append("\"Total % / number of non-zero classes\"");
             }
             else if (func.equals("areaColumns")){
                 sb.append("\"Total %\"");
@@ -437,14 +436,16 @@ public class TabulationService {
                     sb.append(sumofColumnPercentage);
                 }
                 else if (func.equals("areaColumns")){
-                    sb.append("\"Total %\":");
+                    sb.append("\"Total % / number of non-zero classes\":");
                     double sumofColumnPercentage = 0.0;
+                    int numOfNonzeroClasses = 0;
                     for (int k = 1;k < grid[0].length; k++){
                         if (grid[i][k] != null) {
                             sumofColumnPercentage = sumofColumnPercentage + Double.parseDouble(grid[i][k]) / 1000000.0 / sumofcolumns[i - 1] * 100.0;
+                            numOfNonzeroClasses = numOfNonzeroClasses+1;
                         }
                     }
-                    sb.append(sumofColumnPercentage);
+                    sb.append(sumofColumnPercentage / numOfNonzeroClasses);
                 }
                 
                 if (sb.toString().endsWith(",")) {
@@ -464,9 +465,26 @@ public class TabulationService {
                 
                         sb.append(sumofrows[j - 1]+",");
                 }
+            }            
+            else if (func.equals("areaRows")){
+                sb.append(",\"Total % / number of non-zero classes\":");
+                sb.append("{");
+                for (int j = 1; j < grid[0].length; j++) {
+                    sb.append("\"").append(grid[0][j].replace("\"", "\"\"")).append("\":");
+                    double sumofRowPercentage = 0.0;
+                    int numOfNonzeroClasses = 0;
+                    for (int k = 1;k < grid.length; k++){
+                         if (grid[k][j] != null) {
+                            sumofRowPercentage = sumofRowPercentage + Double.parseDouble(grid[k][j]) / 1000000.0 / sumofcolumns[k - 1] * 100.0;
+                            numOfNonzeroClasses = numOfNonzeroClasses + 1;
+                        }
+                    }
+                    sb.append(sumofRowPercentage / numOfNonzeroClasses);
+                    sb.append(",");
+                }
             }
-            else {
-                sb.append(",\"Total %\":");
+            else if (func.equals("areaColumns")){
+                sb.append(",\"Total % \":");
                 sb.append("{");
                 for (int j = 1; j < grid[0].length; j++) {
                     sb.append("\"").append(grid[0][j].replace("\"", "\"\"")).append("\":");
@@ -576,11 +594,9 @@ public class TabulationService {
                     }
                     else if (func.equals("areaRows")){
                         double sumofColumnPercentage = 0.0;
-                        //int numOfNonzeroClasses = 0;
                         for (int k = 1;k < grid[0].length; k++){
                             if (grid[i][k] != null) {
                                 sumofColumnPercentage = sumofColumnPercentage + Double.parseDouble(grid[i][k]) / 1000000.0 / sumofcolumns[i - 1] * 100.0;
-                                //numOfNonzeroClasses = numOfNonzeroClasses + 1;
                             }
                         }
                         sb.append(String.format("%.2f", sumofColumnPercentage));
@@ -650,9 +666,9 @@ public class TabulationService {
         OutputStream os = resp.getOutputStream();
         os.write(sb.toString().getBytes("UTF-8"));
         os.close();
-    }
+    }    
     
-    @RequestMapping(value = "/tabulations/html", method = RequestMethod.GET)
+    @RequestMapping(value = WS_TABULATION_LIST, method = RequestMethod.GET)
     public void listAvailableTabulationsHtml(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         List<Tabulation> tabulations = tabulationDao.listTabulations();
@@ -661,11 +677,7 @@ public class TabulationService {
         sb.append("<html>");
         sb.append("<head>");
         sb.append("<title>Available tabulation layers</title>");
-        sb.append("<script type=\"text/javascript\">");
-        File file = new File("/Users/fan03c/ALA_csiro/projects/ala/code/alageospatialportal/trunk/layers-service/src/main/webapp/javascript/SortingTable.js");            
-        String js = FileUtils.readFileToString(file);
-        sb.append(js.replace('"','\"'));
-        sb.append("</script>");            
+        sb.append("<script type=\"text/javascript\" src=\"/layers-service/javascript/SortingTable.js\"></script>");           
         sb.append("</head>");
         sb.append("<body");
         sb.append("<basefont size=\"2\" >");
@@ -693,33 +705,33 @@ public class TabulationService {
             //add field 2
             sb.append(t.getName2()).append("</td><td>");
             //add link to area intersection (html)
-            sb.append("<a href='../tabulation/area/").append(t.getFid1());
+            sb.append("<a href='tabulation/area/").append(t.getFid1());
             sb.append("/").append(t.getFid2()).append("/html'>html</a>; ");
             //add link to area intersection (csv)
-            sb.append("<a href='../tabulation/area/").append(t.getFid1());
+            sb.append("<a href='tabulation/area/").append(t.getFid1());
             sb.append("/").append(t.getFid2()).append("/csv'>csv</a>; ");
             //add link to area intersection (json)
-            sb.append("<a href='../tabulation/area/").append(t.getFid1());
+            sb.append("<a href='tabulation/area/").append(t.getFid1());
             sb.append("/").append(t.getFid2()).append("/json'>json</a>");
             sb.append("</td><td>");
             //add link to area intersection rows % (html)
-            sb.append("<a href='../tabulation/area/rows/").append(t.getFid1());
+            sb.append("<a href='tabulation/area/rows/").append(t.getFid1());
             sb.append("/").append(t.getFid2()).append("/html'>html</a>; ");
             //add link to area intersection rows % (csv)
-            sb.append("<a href='../tabulation/area/rows/").append(t.getFid1());
+            sb.append("<a href='tabulation/area/rows/").append(t.getFid1());
             sb.append("/").append(t.getFid2()).append("/csv'>csv</a>; ");
             //add link to area intersection rows % (json)
-            sb.append("<a href='../tabulation/area/rows/").append(t.getFid1());
+            sb.append("<a href='tabulation/area/rows/").append(t.getFid1());
             sb.append("/").append(t.getFid2()).append("/json'>json</a>");
             sb.append("</td><td>");
             //add link to area intersection columns % (html)
-            sb.append("<a href='../tabulation/area/columns/").append(t.getFid1());
+            sb.append("<a href='tabulation/area/columns/").append(t.getFid1());
             sb.append("/").append(t.getFid2()).append("/html'>html</a>; ");
             //add link to area intersection columns % (csv)
-            sb.append("<a href='../tabulation/area/columns/").append(t.getFid1());
+            sb.append("<a href='tabulation/area/columns/").append(t.getFid1());
             sb.append("/").append(t.getFid2()).append("/csv'>csv</a>; ");
             //add link to area intersection columns % (json)
-            sb.append("<a href='../tabulation/area/columns/").append(t.getFid1());
+            sb.append("<a href='tabulation/area/columns/").append(t.getFid1());
             sb.append("/").append(t.getFid2()).append("/json'>json</a>");
             sb.append("</td>");
             sb.append("</tr>");
@@ -740,5 +752,21 @@ public class TabulationService {
 //        return new ModelAndView("tabulations/list", m);
 
     }
+    
+
+    /*
+     * list distribution table records, GET
+     */
+    @RequestMapping(value = WS_TABULATION_SINGLE, method = RequestMethod.GET)
+    public void getTabulationSingleCsv(@PathVariable("fid1") String fid1,
+            @PathVariable("output") String output,
+            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+        List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1, wkt);
+
+        writeArea(tabulations, resp, fid1, null, wkt, output,"area");
+    }
+    
 
 }
