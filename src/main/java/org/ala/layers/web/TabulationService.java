@@ -67,7 +67,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/area/{fid1}/{fid2}/csv", method = RequestMethod.GET)
+    @RequestMapping(value = "/tabulation/area/{fid1}/{fid2}/csv", method = {RequestMethod.GET, RequestMethod.POST})
     public void getTabulationAreaCsv(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -80,7 +80,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/area/rows/{fid1}/{fid2}/csv", method = RequestMethod.GET)
+    @RequestMapping(value = "/tabulation/area/rows/{fid1}/{fid2}/csv", method = {RequestMethod.GET, RequestMethod.POST})
     public void getTabulationAreaRowsCsv(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -93,7 +93,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/area/columns/{fid1}/{fid2}/csv", method = RequestMethod.GET)
+    @RequestMapping(value = "/tabulation/area/columns/{fid1}/{fid2}/csv", method = {RequestMethod.GET, RequestMethod.POST})
     public void getTabulationAreaColumnsCsv(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -106,7 +106,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/area/{fid1}/{fid2}/html", method = RequestMethod.GET)
+    @RequestMapping(value = "/tabulation/area/{fid1}/{fid2}/html", method = {RequestMethod.GET, RequestMethod.POST})
     public void getTabulationAreaHtml(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -119,7 +119,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/area/rows/{fid1}/{fid2}/html", method = RequestMethod.GET)
+    @RequestMapping(value = "/tabulation/area/rows/{fid1}/{fid2}/html", method = {RequestMethod.GET, RequestMethod.POST})
     public void getTabulationAreaRowsHtml(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -132,7 +132,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/area/columns/{fid1}/{fid2}/html", method = RequestMethod.GET)
+    @RequestMapping(value = "/tabulation/area/columns/{fid1}/{fid2}/html", method = {RequestMethod.GET, RequestMethod.POST})
     public void getTabulationAreaColumnsHtml(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -145,7 +145,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/area/{fid1}/{fid2}/json", method = RequestMethod.GET)
+    @RequestMapping(value = "/tabulation/area/{fid1}/{fid2}/json", method = {RequestMethod.GET, RequestMethod.POST})
     public void getTabulationAreaJason(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -158,7 +158,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/area/rows/{fid1}/{fid2}/json", method = RequestMethod.GET)
+    @RequestMapping(value = "/tabulation/area/rows/{fid1}/{fid2}/json", method = {RequestMethod.GET, RequestMethod.POST})
     public void getTabulationAreaRowsJason(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -171,7 +171,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/area/columns/{fid1}/{fid2}/json", method = RequestMethod.GET)
+    @RequestMapping(value = "/tabulation/area/columns/{fid1}/{fid2}/json", method = {RequestMethod.GET, RequestMethod.POST})
     public void getTabulationAreaColumnsJason(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {

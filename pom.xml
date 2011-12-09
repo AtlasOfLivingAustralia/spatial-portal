@@ -103,6 +103,11 @@
             <artifactId>jstl</artifactId>
             <version>1.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.portals.jetspeed-2</groupId>
+            <artifactId>jetspeed-fileutils-maven-plugin</artifactId>
+            <version>2.2.2</version>
+        </dependency>
 
     </dependencies>
     <build>
