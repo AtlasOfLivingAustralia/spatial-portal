@@ -758,14 +758,12 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/area/{fid1}/html", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationAreaSingleHtml(@PathVariable("fid1") String fid1,
+    @RequestMapping(value = "/tabulation/area/{fid1}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
+    public void getTabulationAreaSingleHtml(@PathVariable("fid1") String fid1,@PathVariable("type") String type,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        System.out.println("Testing single tabulations");
         List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1,wkt);
-        System.out.println(tabulations.size());
-        writeArea(tabulations, resp, fid1, fid1,wkt,"html","area");
+        writeArea(tabulations, resp, fid1,null,wkt,type,"area");
         
     }
 
