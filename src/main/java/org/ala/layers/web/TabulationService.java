@@ -687,8 +687,8 @@ public class TabulationService {
         sb.append("<table border=1 class=\"sortable\">");  
         sb.append("<thead>");
         sb.append("<tr>");
-        sb.append("<th style=\"-moz-user-select: none;\" class=\"sortable-keep fd-column-0\"><a title=\"Sort on â€œFieldâ€\" href=\"#\">Field 1</a></th>");
-        sb.append("<th style=\"-moz-user-select: none;\" class=\"sortable-numeric fd-column-1\"><a title=\"Sort on â€œFieldâ€\" href=\"#\">Field 2</a></th>");
+        sb.append("<th style=\"-moz-user-select: none;\" class=\"sortable-keep fd-column-0\"><a title=\"Sort on Field\" href=\"#\">Field 1</a></th>");
+        sb.append("<th style=\"-moz-user-select: none;\" class=\"sortable-numeric fd-column-1\"><a title=\"Sort on Field\" href=\"#\">Field 2</a></th>");
         sb.append("<th>Area intersection </th>");
         sb.append("<th>Area intersection (row %)</th>");
         sb.append("<th>Area intersection (column %)</th>");
@@ -754,19 +754,19 @@ public class TabulationService {
     }
     
 
+    
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = WS_TABULATION_SINGLE, method = RequestMethod.GET)
-    public void getTabulationSingleCsv(@PathVariable("fid1") String fid1,
-            @PathVariable("output") String output,
+    @RequestMapping(value = "/tabulation/area/{fid1}/html", method = {RequestMethod.GET, RequestMethod.POST})
+    public void getTabulationAreaSingleHtml(@PathVariable("fid1") String fid1,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1, wkt);
-
-        writeArea(tabulations, resp, fid1, null, wkt, output,"area");
+        System.out.println("Testing single tabulations");
+        List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1,wkt);
+        System.out.println(tabulations.size());
+        writeArea(tabulations, resp, fid1, fid1,wkt,"html","area");
+        
     }
-    
 
 }
