@@ -178,7 +178,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
         <borderlayout width="100%" height="100%">
             <north id="header" height="58" visible="true" style="height: 58px">
-                <html><![CDATA[
+                <html id="headerhtml"><![CDATA[
 <header id="site-header">
 	<div class="inner">
 		<h1 title="Atlas of Living Australia"><a href="http://www.ala.org.au" title="Atlas of Living Australia home"><img src="img/test.ala.logo.png" width="315" height="33" alt="" /></a></h1>
@@ -192,14 +192,14 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 			<nav class="not_logged_in">
 				<ol>
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
-					<li class="last"><a href="https://auth.ala.org.au/cas/login?service=http://www.ala.org.au/wp-login.php?redirect_to=http://www.ala.org.au/my-profile/">Log in</a></li>
+					<li class="last"><a href="https://auth.ala.org.au/cas/login?service=http://ajay.ala.org.au:8080/webportal">Log in</a></li>
 				</ol>
 			</nav>
 			<nav class="logged_in">
 				<ol>
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
                     <li><a href="http://spatial-dev.ala.org.au/actions/dashboard" title="User dashboard">Dashboard</a></li>
-					<li class="last"><a href="https://auth.ala.org.au/cas/logout?service=http://spatial-dev.ala.org.au/">Logout</a></li>
+					<li class="last"><a href="https://auth.ala.org.au/cas/logout?service=http://ajay.ala.org.au:8080/webportal/">Logout</a></li>
 				</ol>
 			</nav>
 		</section>
@@ -241,7 +241,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </north>
                             <center vflex="false">
                                 <vlayout height="100%" style="overflow-y: auto" >
-                                    <div width="400px">
+                                    <div width="400px" style="margin-left:3px;">
                                         <label id="lblSelectedLayer" value="No layers added" sclass="selectedLayer" />
                                     </div>
                                     <separator />
@@ -443,6 +443,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             map.signalLayerLoaded = function (layerName) {
                 zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onLayerLoaded', layerName));
             }
+
+            map.baseLayer.redraw(); 
         };
 
         ]]>
@@ -562,10 +564,20 @@ function readCookie(name) {
                 <n:div id="nearestOutput"></n:div>
             </div>
         </window>
+
+        <html><![CDATA[
+            <div class="login-bubble">
+                <div class="login-bubble-arrow"></div>
+                <div class="login-bubble-arrow-border"></div>
+                Log into the ALA Spatial Portal to keep track of your session.
+            </div>
+        ]]></html>
+        
         <zscript defer="true">
             hovertool.setVisible(false);
             nearesttool.setVisible(false);
         </zscript>
+
     </window>
 
     

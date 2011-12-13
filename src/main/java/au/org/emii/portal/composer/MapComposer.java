@@ -1878,14 +1878,26 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             try {
                 updateUserLogMapSpecies(sq.toString());
+                String layerType = "Species - Search";
+                if (species.startsWith("Occurrences in ")) {
+                    layerType = "Species - Occurrences";
+                } else if (species.equals("Species assemblage")) {
+                    layerType = "Species - Assemblage";
+                }
+                if (subType == LayerUtilities.SPECIES_UPLOAD) {
+                    layerType = "Import - Species";
+                }
+                if (subType == LayerUtilities.SPECIES && rank.equals("user")) {
+                    layerType = "Import - LSID";
+                }
                 if (sq instanceof BiocacheQuery) {
                     BiocacheQuery bq = (BiocacheQuery) sq;
                     String extra = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false);
-                    remoteLogger.logMapSpecies(sq.getName(), bq.getLsids(), wkt, "Species", extra);
-                } else if (sq instanceof UploadQuery) {
-                    remoteLogger.logMapSpecies(sq.getName(), "user-" + ((UploadQuery) sq).getSpeciesCount() + " records", wkt, "Import - Species", sq.getMetadataHtml());
+                    remoteLogger.logMapSpecies(ml.getDisplayName(), bq.getLsids(), wkt, layerType, extra);
+                } else if (sq instanceof UploadQuery) { 
+                    remoteLogger.logMapSpecies(ml.getDisplayName(), "user-" + ((UploadQuery) sq).getSpeciesCount() + " records", wkt, layerType, sq.getMetadataHtml());
                 } else {
-                    remoteLogger.logMapSpecies(ml.getDisplayName(), species, wkt, "Species", sq.getMetadataHtml());
+                    remoteLogger.logMapSpecies(ml.getDisplayName(), species, wkt, layerType, sq.getMetadataHtml());
                 }
             } catch (Exception e) {
                 e.printStackTrace();

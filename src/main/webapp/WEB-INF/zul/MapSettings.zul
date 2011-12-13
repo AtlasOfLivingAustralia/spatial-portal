@@ -2,8 +2,8 @@
 <zk>
     <window id="mapoptionswindow" xmlns:n="http://www.zkoss.org/2005/zk/native"
     use="org.ala.spatial.analysis.web.MapOptions"
-    apply="org.ala.spatial.analysis.web.MapOptions" >
-        <vbox width="100%">
+    apply="org.ala.spatial.analysis.web.MapOptions" style="padding-top:1px; margin-left: 3px;" >
+        <vbox width="100%" style="padding-top:1px;">
             <hbox width="100%">
                 <div style="padding-top:0px" width="65px">
                     <label value="Base map" sclass="h3" />

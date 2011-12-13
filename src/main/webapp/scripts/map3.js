@@ -157,9 +157,9 @@ function loadBaseMap() {
     //            map.getProjectionObject()),
     //        4);
 
-    $(window).resize(function() {
-        setTimeout("map.pan(1,1);",500);
-    });
+//    $(window).resize(function() {
+//        setTimeout("map.pan(1,1);",500);
+//    });
 
 }
 function goToLocation(lon, lat, zoom) {

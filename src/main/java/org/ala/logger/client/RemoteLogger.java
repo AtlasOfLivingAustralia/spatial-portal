@@ -45,7 +45,7 @@ public class RemoteLogger {
         logMapSpecies(name, lsid, area, "Species", extra);
     }
 
-    public void logMapSpecies(String name, String lsid, String area, String type, String extra) {
+    public void logMapSpecies(String name, String lsid, String area, String type, String extra) {        
         sendToServer(type, name, lsid, area, "", extra, "mapped", "0", "");
     }
 
@@ -129,6 +129,9 @@ public class RemoteLogger {
             }
             if (StringUtils.isBlank(pid)) {
                 pid = "";
+            }
+            if (StringUtils.isBlank(area)) {
+                area = "";
             }
 
             post.addParameter("email", useremail);

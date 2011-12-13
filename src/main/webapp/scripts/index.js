@@ -4,12 +4,13 @@ $(".z-west-colpsd").click(function() {
     $(".menudiv").css("top",0);
 });
 
-if (readCookie('ALA-Auth') != "") {
+if (readCookie('ALA-Auth')) {
     $(".not_logged_in").hide();
     $(".logged_in").show();
 } else {
-    $(".logged_in").hide();
     $(".not_logged_in").show();
+    $(".logged_in").hide();
+    $(".login-bubble").show().delay(8000).fadeOut(2000);
 }
 
 

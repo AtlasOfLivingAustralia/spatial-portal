@@ -220,15 +220,6 @@ public class AddSpeciesInArea extends UtilityComposer {
             }
             //RemoteLogger rm = new RemoteLogger();
             System.out.println("metadata: " + metadata);
-            if (q instanceof BiocacheQuery) {
-                BiocacheQuery bq = (BiocacheQuery) q;
-                String extra = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false);
-                remoteLogger.logMapSpecies(q.getName(), ((BiocacheQuery)q).getLsids(), sa.getWkt(), "Species", extra);
-            } else if (q instanceof UploadQuery) {
-                remoteLogger.logMapSpecies(q.getName(), "user-"+((UploadQuery)q).getSpeciesCount()+" records", sa.getWkt(), "Import - Species", q.getMetadataHtml());
-            } else if(ml.getMapLayerMetadata() != null) {
-                remoteLogger.logMapSpecies(ml.getMapLayerMetadata().getSpeciesDisplayName(), s, sa.getWkt(), "Species", "");
-            }
             
         } catch (Exception e) {
             e.printStackTrace();

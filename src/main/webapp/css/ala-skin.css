@@ -112,9 +112,8 @@ input#dr-search{
 
 
 .logged_in, .not_logged_in {
-    display: none;
+    display: block;
 }
-
 
 
 
@@ -201,3 +200,55 @@ a.button:active{
 }
 
 
+
+
+
+.login-bubble {
+  background-color:#EDEDED;
+  border:2px solid #666666;
+  font-size:12px;
+  line-height:1.3em;
+  margin:10px auto;
+  padding:10px;
+  position:relative;
+  text-align:left;
+  width:330px;
+  -moz-border-radius:10px;
+  -webkit-border-radius:10px;
+  -moz-box-shadow:0 0 5px #888888;
+  -webkit-box-shadow:0 0 5px #888888;
+
+  position: absolute;
+  right: 290px;
+  top: 40px;
+  z-index: 12345;
+  display: none;
+
+}
+.login-bubble-arrow-border {
+  border-color: transparent transparent #EDEDED;
+  border-style: solid;
+  border-width: 0 10px 10px;
+  height:0;
+  width:0;
+  position:absolute;
+  top:-9px;
+  left:300px;
+}
+.login-bubble-arrow {
+  border-color: transparent transparent #666666;
+  border-style: solid;
+  border-width: 0 10px 10px;
+  height:0;
+  width:0;
+  position:absolute;
+  top:-12px;
+  left:300px;
+}
+/* IE6 */
+.login-bubble-arrow {
+    _border-left-color: pink;
+    _border-top-color: pink;
+    _border-right-color: pink;
+    _filter: chroma(color=pink);
+}

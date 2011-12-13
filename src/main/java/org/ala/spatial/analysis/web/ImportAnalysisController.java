@@ -49,15 +49,15 @@ public class ImportAnalysisController extends UtilityComposer {
         if(getParametersAloc()) {
             isAloc = true;
             openProgressBarAloc();
-            remoteLogger.logMapAnalysis("Import Classification", "Import - Classification", "", "", "", pid, "classification", "IMPORTED");
+            remoteLogger.logMapAnalysis("Import Classification", "Tool - Restore", "", "", "", pid, "classification", "IMPORTED");
         } else if(getParametersMaxent()) {
             isMaxent = true;
             openProgressBarMaxent();
-            remoteLogger.logMapAnalysis("Import Prediction", "Import - Prediction", "", "", "", pid, "prediction", "IMPORTED");
+            remoteLogger.logMapAnalysis("Import Prediction", "Tool - Restore", "", "", "", pid, "prediction", "IMPORTED");
         } else if(getParametersSxS()){
             isSxS = true;
             openProgressBarSxS();
-            remoteLogger.logMapAnalysis("Import Species to Grid", "Import - Species by Grid", "", "", "", pid, "species to grid", "IMPORTED");
+            remoteLogger.logMapAnalysis("Import Species to Grid", "Tool - Restore", "", "", "", pid, "species to grid", "IMPORTED");
         } else {
             getMapComposer().showMessage("Invalid reference number.");
         }
