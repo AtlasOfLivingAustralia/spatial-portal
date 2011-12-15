@@ -28,6 +28,8 @@ public class Tabulation {
     String name2;
     Double area;
     String geometry;
+    int occurrences;
+    int species;
 
     public void setFid1(String fid1) {
         this.fid1 = fid1;
@@ -92,4 +94,20 @@ public class Tabulation {
     public String getGeometry() {
         return geometry;
     }
+    public void setOccurrences(int occurrences) {
+        this.occurrences = occurrences;
+    }
+
+    public int getOccurrences() {
+        return occurrences;
+    }
+    
+    public void setSpecies(int species) {
+        this.species = species;
+    }
+    
+    public int getSpecies() {
+        return species;
+    }
+
 }

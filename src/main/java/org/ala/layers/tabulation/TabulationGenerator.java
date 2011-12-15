@@ -15,13 +15,19 @@
 
 package org.ala.layers.tabulation;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.ala.layers.dao.Records;
+import org.ala.layers.intersect.SimpleRegion;
+import org.ala.layers.intersect.SimpleShapeFile;
 
 /**
  *
@@ -30,6 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class TabulationGenerator {
     static int CONCURRENT_THREADS = 6;
     static String db_url = "jdbc:postgresql://localhost:5432/layersdb";
+    //static String db_url = "jdbc:postgresql://ala-devmaps-db.vm.csiro.au:5432/layersdb";
     static String db_usr = "postgres";
     static String db_pwd = "postgres";
 
@@ -49,13 +56,13 @@ public class TabulationGenerator {
         return conn;
     }
 
-    static public void main(String[] args) {
+    static public void main(String[] args) throws IOException {
         System.out.println("args[0] = threadcount,"
                 + "\nargs[1] = db connection string,"
                 + "\n args[2] = db username,"
                 + "\n args[3] = password,"
                 + "\n args[4] = (optional) specify one step to run, "
-                + "'1' pair objects, '3' delete invalid objects, '4' area");
+                + "'1' pair objects, '3' delete invalid objects, '4' area, '5' occurrences");
         if(args.length >= 4) {
             CONCURRENT_THREADS = Integer.parseInt(args[0]);
             db_url = args[1];
@@ -83,6 +90,12 @@ public class TabulationGenerator {
         } else if(args[4].equals("4")) {
             long start = System.currentTimeMillis();
             while (updateArea() > 0) {
+                System.out.println("time since start= " + (System.currentTimeMillis() - start) + "ms");
+            }
+        } else if(args[5].equals("5")) {
+            long start = System.currentTimeMillis();
+            Records records = new Records("/Users/fan03c/biochache_records/_records.csv");
+            while (updateOccurrencesSpecies(records) > 0) {
                 System.out.println("time since start= " + (System.currentTimeMillis() - start) + "ms");
             }
         }
@@ -261,6 +274,69 @@ public class TabulationGenerator {
         return 0;
     }
 
+    private static int updateOccurrencesSpecies(Records records) {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            String sql = "SELECT pid1, pid2, ST_AsText(the_geom) as wkt FROM tabulation WHERE pid1 is not null AND occurrences is null "
+                    + " limit 100";
+            if(conn == null) {
+                System.out.println("connection is null");
+            } else {
+                System.out.println("connection is not null");
+            }
+            Statement s1 = conn.createStatement();
+            ResultSet rs1 = s1.executeQuery(sql);
+            
+            LinkedBlockingQueue<String[]> data = new LinkedBlockingQueue<String[]>();
+            while (rs1.next()) {
+                data.put(new String[]{rs1.getString("pid1"), rs1.getString("pid2"), rs1.getString("wkt")});
+            }
+
+            System.out.println("next " + data.size());
+
+            int size = data.size();
+
+            if (size == 0) {
+                return 0;
+            }
+
+            CountDownLatch cdl = new CountDownLatch(data.size());
+            
+            
+
+            OccurrencesSpeciesThread[] threads = new OccurrencesSpeciesThread[CONCURRENT_THREADS];
+            for (int j = 0; j < CONCURRENT_THREADS; j++) {
+                
+                threads[j] = new OccurrencesSpeciesThread(data, cdl, getConnection().createStatement(), records);
+                threads[j].start();
+            }
+
+            cdl.await();
+
+            for (int j = 0; j < CONCURRENT_THREADS; j++) {
+                try {
+                    threads[j].s.getConnection().close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                threads[j].interrupt();
+            }
+            return size;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if(conn != null) {
+                try {
+                    conn.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return 0;
+    }
+    
     private static void deleteInvalidObjects() {
         Connection conn = null;
         try {
@@ -279,6 +355,8 @@ public class TabulationGenerator {
             }
         }
     }
+    
+    
 }
 
 class DistributionThread extends Thread {
@@ -378,6 +456,114 @@ class AreaThread extends Thread {
                     String sql = "UPDATE tabulation SET area = " + area + " WHERE pid1='" + data[0] + "' AND pid2='" + data[1] + "';";
 
                     int update = s.executeUpdate(sql);
+                } catch (InterruptedException e) {
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                cdl.countDown();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+/*
+ * class OccurrencesSpeciesThread extends Thread {
+
+    Statement s;
+    LinkedBlockingQueue<String[]> lbq;
+    CountDownLatch cdl;
+
+    public OccurrencesSpeciesThread(LinkedBlockingQueue<String[]> lbq, CountDownLatch cdl, Statement s) {
+        this.s = s;
+        this.cdl = cdl;
+        this.lbq = lbq;
+    }
+
+    @Override
+    public void run() {
+        try {
+            while (true) {
+
+                try {
+                    String[] data = lbq.take();
+                    Records records = new Records("/Users/fan03c/biochache_records/biochache_records.csv", data[2]);
+                    int occurrences = records.getRecordsSize();
+                    int species = records.getSpeciesSize();
+
+                    String sqlUpdate = "UPDATE tabulation SET occurrences = " + occurrences + ", species = " + species + " WHERE pid1='" + data[0] + "' AND pid2='" + data[1] + "';";
+
+                    int update = s.executeUpdate(sqlUpdate);
+                    
+                } catch (InterruptedException e) {
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                cdl.countDown();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+*/
+class OccurrencesSpeciesThread extends Thread {
+
+    Statement s;
+    LinkedBlockingQueue<String[]> lbq;
+    CountDownLatch cdl;
+    Records r;
+
+    public OccurrencesSpeciesThread(LinkedBlockingQueue<String[]> lbq, CountDownLatch cdl, Statement s, Records r) {
+        this.s = s;
+        this.cdl = cdl;
+        this.lbq = lbq;
+        this.r = r;
+    }
+
+    @Override
+    public void run() {
+        try {
+            while (true) {
+
+                try {
+                    String[] data = lbq.take();
+                    
+                    SimpleRegion areaWorking = SimpleShapeFile.parseWKT(data[2]);
+                    int recordsLength = r.getRecordsSize();                    
+                    int occurrences = 0;
+                    
+                    /*ArrayList<String> speciesName = new ArrayList<String>();
+                    for (int i = 0;i < recordsLength;i++){
+                        double longitude = r.getLongitude(i);
+                        double latitude = r.getLatitude(i);
+                        if (areaWorking.isWithin(longitude, latitude)){
+                            occurrences++;
+                            if (speciesName.contains(r.getSpecies(i))==false){
+                                speciesName.add(r.getSpecies(i));
+                            }                            
+                        }
+                    }
+                    int species = speciesName.size();
+                    * 
+                    */
+                    BitSet speciesSet = new BitSet(r.getSpeciesSize());
+                    for (int i = 0;i < recordsLength;i++){
+                        double longitude = r.getLongitude(i);
+                        double latitude = r.getLatitude(i);
+                        if (areaWorking.isWithin(longitude, latitude)){
+                            occurrences++;
+                            speciesSet.set(r.getSpeciesNumber(i));                       
+                        }
+                    }
+                    int species = speciesSet.cardinality();
+                                        
+                    String sqlUpdate = "UPDATE tabulation SET occurrences = " + occurrences + ", species = " + species + " WHERE pid1='" + data[0] + "' AND pid2='" + data[1] + "';";
+
+                    int update = s.executeUpdate(sqlUpdate);
+                    
                 } catch (InterruptedException e) {
                     break;
                 } catch (Exception e) {

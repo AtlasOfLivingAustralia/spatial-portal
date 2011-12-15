@@ -14,6 +14,7 @@
  ***************************************************************************/
 package org.ala.layers.dao;
 
+import java.io.IOException;
 import java.util.List;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -34,6 +35,7 @@ public class TabulationDAOImpl implements TabulationDAO {
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(TabulationDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
+    
 
     @Resource(name = "dataSource")
     public void setDataSource(DataSource dataSource) {
@@ -41,7 +43,7 @@ public class TabulationDAOImpl implements TabulationDAO {
     }
 
     @Override
-    public List<Tabulation> getTabulation(String fid1, String fid2, String wkt) {
+    public List<Tabulation> getTabulation(String fid1, String fid2, String wkt){
         String min, max;
         if (fid1.compareTo(fid2) < 0) {
             min = fid1;
@@ -52,13 +54,23 @@ public class TabulationDAOImpl implements TabulationDAO {
         }
 
         if(wkt == null || wkt.length() == 0) {
+            /*  after "tabulation" table is updated with column "occurrences" and column "species"
+             * String sql = "SELECT i.pid1, i.pid2, i.fid1, i.fid2, i.area, i.occurrences, i.species, o1.name as name1, o2.name as name2 FROM "
+                    + "(SELECT * FROM tabulation WHERE fid1= ? AND fid2 = ? ) i, "
+                    + "(SELECT * FROM objects WHERE fid= ? ) o1, "
+                    + "(SELECT * FROM objects WHERE fid= ? ) o2 "
+                    + "WHERE i.pid1=o1.pid AND i.pid2=o2.pid ;";
+                    * 
+                    */
+            /* before "tabulation" table is updated with column "occurrences", to just make sure column "area" is all good */
             String sql = "SELECT i.pid1, i.pid2, i.fid1, i.fid2, i.area, o1.name as name1, o2.name as name2 FROM "
                     + "(SELECT * FROM tabulation WHERE fid1= ? AND fid2 = ? ) i, "
                     + "(SELECT * FROM objects WHERE fid= ? ) o1, "
                     + "(SELECT * FROM objects WHERE fid= ? ) o2 "
-                    + "WHERE i.pid1=o1.pid AND i.pid2=o2.pid;";
-
+                    + "WHERE i.pid1=o1.pid AND i.pid2=o2.pid ;";
+            
             return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Tabulation.class), min, max, min, max);
+            
         } else {
             String sql = "SELECT fid1, pid1, fid2, pid2, ST_AsText(newgeom) as geometry, name1, name2 FROM "
                     + "(SELECT fid1, pid1, fid2, pid2, (ST_INTERSECTION(ST_GEOMFROMTEXT( ? ,4326), i.the_geom)) as newgeom, o1.name as name1, o2.name as name2 FROM "
@@ -72,7 +84,9 @@ public class TabulationDAOImpl implements TabulationDAO {
 
             for(Tabulation t : tabulations) {
                 try {
-                    t.setArea(TabulationUtil.calculateArea(t.getGeometry()));
+                    t.setArea(TabulationUtil.calculateArea(t.getGeometry()));                    
+                    t.setOccurrences(TabulationUtil.calculateOccurrences(t.getGeometry()));
+                    t.setSpecies(TabulationUtil.calculateSpecies(t.getGeometry()));
                 } catch (Exception e) {
                     logger.error("fid1:" + fid1 + " fid2:" + fid2 + " wkt:" + wkt, e);
                 }

@@ -15,13 +15,31 @@
 
 package org.ala.layers.tabulation;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import org.ala.layers.dao.Records;
+import org.ala.layers.intersect.SimpleRegion;
+import org.ala.layers.intersect.SimpleShapeFile;
 
 /**
  *
  * @author Adam
  */
 public class TabulationUtil {
+    static public int calculateOccurrences(String wkt) throws IOException {
+        System.out.println(wkt);
+        Records records = new Records("/Users/fan03c/biochache_records/_records.csv", wkt);
+        int result = records.getRecordsSize();
+        return result;
+    }
+    
+    static public int calculateSpecies(String wkt) throws IOException {
+        System.out.println(wkt);
+        Records records = new Records("/Users/fan03c/biochache_records/_records.csv", wkt);
+        int result = records.getSpeciesSize();
+        return result;
+    }
+    
     static public double calculateArea(String wkt) {
         double sumarea = 0;
 
