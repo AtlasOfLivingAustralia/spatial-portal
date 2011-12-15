@@ -602,7 +602,7 @@ public class SimpleRegion extends Object implements Serializable {
 
         int pos;
         int lastpos = 0;
-        while((pos = Math.min(pointsString.indexOf(','), pointsString.indexOf(' '))) > 0) {
+        while((pos = Math.min(pointsString.indexOf(',', lastpos), pointsString.indexOf(' ', lastpos))) > 0) {
             try {
                 points.add(Double.parseDouble(pointsString.substring(lastpos, pos)));
             } catch (Exception e) {
@@ -611,7 +611,7 @@ public class SimpleRegion extends Object implements Serializable {
             lastpos = pos + 1;
         }
         //one coordinate pair left
-        pos = pointsString.indexOf(' ');
+        pos = pointsString.indexOf(' ', lastpos);
         try {
             points.add(Double.parseDouble(pointsString.substring(lastpos, pos)));
             lastpos = pos + 1;
