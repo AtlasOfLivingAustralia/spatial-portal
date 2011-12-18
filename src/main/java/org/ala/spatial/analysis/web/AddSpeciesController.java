@@ -133,7 +133,7 @@ public class AddSpeciesController extends UtilityComposer {
         refreshBtnOkDisabled();
     }
 
-    public void onChange$mSearchSpeciesAuto(Event event) {
+    public void onSelect$mSearchSpeciesAuto(Event event) {
         //add to lMultiple
         Comboitem ci = mSearchSpeciesAuto.getSelectedItem();
         if(ci != null && ci.getAnnotatedProperties() != null
