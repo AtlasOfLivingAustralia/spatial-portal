@@ -20,7 +20,7 @@
        <basefont size="2" >
        <h3>${title}</h3><br>
             
-       <table border='1' align="right">
+       <table border='1' align="middle">
            <c:forEach items="${grid}" var="row" varStatus="counter">
                <tr>
                <c:forEach items="${row}" var="cell" varStatus="rowcounter">
@@ -114,6 +114,8 @@
                    
            </tr>
        </table>
+       <p><br />
+       </p>
        <p>Blanks = no intersection</p>
        <p>0 = no records in intersection</p>
        </body>
