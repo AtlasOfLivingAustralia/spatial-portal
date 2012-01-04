@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import javax.annotation.Resource;
 import javax.measure.quantity.Length;
@@ -24,16 +25,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.ala.layers.dao.FieldDAO;
 import org.ala.layers.dao.TabulationDAO;
+import org.ala.layers.dto.Field;
 import org.ala.layers.dto.Tabulation;
 import org.apache.log4j.Logger;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.servlet.HandlerMapping;
 
 /**
  *
@@ -42,7 +42,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class TabulationService {
     private final String WS_TABULATION_LIST = "/tabulations";
-    private final String WS_TABULATION_SINGLE = "/tabulation/{fid1}";
     /*
      * URLs:    /tabulation/area/{fid1}/{fid2}/{type}
      *          /tabulation/area/rows/{fid1}/{fid2}/{type}
@@ -67,114 +66,226 @@ public class TabulationService {
     @Resource(name = "tabulationDao")
     private TabulationDAO tabulationDao;
 
+    @RequestMapping(value = WS_TABULATION_LIST, method = RequestMethod.GET)
+     public ModelAndView listAvailableTabulationsHtml(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
-    /*
-     * list distribution table records, GET
-     */
-    @RequestMapping(value = "/tabulation/area/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationArea(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-        write(tabulations, resp, fid1, fid2, wkt, type,"area");
+        List<Tabulation> tabulations = tabulationDao.listTabulations();
+    
+        ModelMap m = new ModelMap();
+        m.addAttribute("tabulations", tabulations);
+        return new ModelAndView("tabulations/list", m);
+
     }
     
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/area/rows/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationAreaRows(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
+    @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/{fid2}/html", method = {RequestMethod.GET, RequestMethod.POST})    
+    public ModelAndView displayTabulation(@PathVariable("func1") String func1, @PathVariable("func2") String func2, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-
-        write(tabulations, resp, fid1, fid2, wkt, type,"area row%");
+            HttpServletRequest req, HttpServletResponse resp,NativeWebRequest webRequest) throws IOException {
+        String func = func1+func2;
+            return generateTabulation(func,fid1,fid2,wkt);
     }
-
-    /*
-     * list distribution table records, GET
-     */
+    @RequestMapping(value = "/tabulation/{func1}/{fid1}/{fid2}/html", method = {RequestMethod.GET, RequestMethod.POST})    
+    public ModelAndView displayTabulation(@PathVariable("func1") String func1, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
+            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+            HttpServletRequest req, HttpServletResponse resp,NativeWebRequest webRequest) throws IOException {       
+        return generateTabulation(func1,fid1,fid2,wkt);        
+    }
+    public ModelAndView generateTabulation(String func, String fid1, String fid2,
+            String wkt) throws IOException {
+        
+        ModelMap m = new ModelMap();
+        
+        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
+        
+        Field field1 = fieldDao.getFieldById(fid1);
+        Field field2 = fieldDao.getFieldById(fid2);
+        String title = "Tabulation for \"";
+        if (field1 != null) {
+            title += field1.getName();
+        } 
+        else {
+            title += fid1;
+        }
+        title += "\" and \"";
+        if (field2 != null) {
+            title += field2.getName();
+        } 
+        else {
+            title += fid2;
+        }
+        if (func.equals("area")){
+            title += "\"(sq km)";
+        }
+        else {
+            title += "\"";
+        }
+        m.addAttribute("title", title);
+        
+        String[][] grid = tabulationGridGenerator(tabulations, fid1, fid2, wkt, func);                        
+        double[] sumOfColumns = tabulationSumOfColumnsGenerator(grid, func);
+        double[] sumOfRows = tabulationSumOfRowsGenerator(grid, func);        
+        double[][] gridRowPercentage = tabulationGridRowPercentageGenerator(grid, sumOfColumns, func);        
+        double[][] gridColumnPercentage = tabulationGridColumnPercentageGenerator(grid, sumOfRows, func);        
+        double[][] gridTotalPercentage = tabulationGridTotalPercentageGenerator(grid, sumOfColumns, func);        
+        double[] sumOfRowsGridPercentage = tabulationSumOfRowsGridPercentageGenerator(grid, gridRowPercentage, gridColumnPercentage, gridTotalPercentage, sumOfColumns, func);        
+        double[] sumOfColumnsGridPercentage = tabulationSumOfColumnsGridPercentageGenerator(grid, gridRowPercentage, gridColumnPercentage, gridTotalPercentage, sumOfColumns, func);
+        
+        double Total = 0.0;
+        for (int j = 1; j < grid[0].length; j++) {
+            Total += sumOfRows[j - 1];
+        }
+        
+        double TotalPercentage = 0.0;
+        for (int j = 1; j < grid[0].length; j++) {
+            TotalPercentage += sumOfRowsGridPercentage[j - 1];
+        }
+        
+        
+        
+        double[] AveragePercentageOverRows = new double[grid[0].length-1];
+        for (int j = 1;j < grid[0].length; j++){
+            double NumOfNonzeroRows = 0.0;
+            for (int k = 1;k < grid.length; k++){
+                if (grid[k][j] != null) {
+                NumOfNonzeroRows = NumOfNonzeroRows + 1;
+                }                            
+            }
+            if (NumOfNonzeroRows != 0.0) {                
+                AveragePercentageOverRows[j-1] = sumOfRowsGridPercentage[j-1]/NumOfNonzeroRows;
+            }                            
+        }
+        double[] AveragePercentageOverColumns = new double[grid.length-1];
+        for (int i = 1;i < grid.length; i++){
+            double NumOfNonzeroColumns = 0.0;
+            for (int k = 1;k < grid[0].length; k++){
+                if (grid[i][k] != null) {
+                    NumOfNonzeroColumns = NumOfNonzeroColumns + 1;
+                }                            
+            }
+            if (NumOfNonzeroColumns != 0.0) {
+                AveragePercentageOverColumns[i-1] = sumOfColumnsGridPercentage[i-1]/NumOfNonzeroColumns;
+            }                            
+        }                 
+        
+        if (func.equals("area") || func.equals("occurrences") || func.equals("species")){
+            m.addAttribute("grid", grid);
+            m.addAttribute("sumofcolumns", sumOfColumns);
+            m.addAttribute("sumofrows", sumOfRows);
+            m.addAttribute("total", Total);
+        }
+        else if (func.equals("arearow") || func.equals("occurrencesrow") || func.equals("speciesrow")){
+            m.addAttribute("grid", grid);
+            m.addAttribute("sumofcolumns", sumOfColumns);
+            m.addAttribute("sumofrows", sumOfRows);
+            m.addAttribute("gridpercentage", gridRowPercentage);
+            m.addAttribute("sumofrowsgridpercentage", sumOfRowsGridPercentage);
+            m.addAttribute("sumofcolumnsgridpercentage", sumOfColumnsGridPercentage);
+            m.addAttribute("AveragePercentageOverRows",AveragePercentageOverRows);
+        }
+        else if (func.equals("areacolumn") || func.equals("occurrencescolumn") || func.equals("speciescolumn")){
+            m.addAttribute("grid", grid);
+            m.addAttribute("sumofcolumns", sumOfColumns);
+            m.addAttribute("sumofrows", sumOfRows);
+            m.addAttribute("gridpercentage", gridColumnPercentage);
+            m.addAttribute("sumofrowsgridpercentage", sumOfRowsGridPercentage);
+            m.addAttribute("sumofcolumnsgridpercentage", sumOfColumnsGridPercentage);
+            m.addAttribute("AveragePercentageOverColumns",AveragePercentageOverColumns);
+        }
+        else if (func.equals("areatotal") || func.equals("occurrencestotal") || func.equals("speciestotal")){
+            m.addAttribute("grid", grid);
+            m.addAttribute("sumofcolumns", sumOfColumns);
+            m.addAttribute("sumofrows", sumOfRows);
+            m.addAttribute("gridpercentage", gridTotalPercentage);
+            m.addAttribute("sumofrowsgridpercentage", sumOfRowsGridPercentage);
+            m.addAttribute("sumofcolumnsgridpercentage", sumOfColumnsGridPercentage);
+            m.addAttribute("totalpercentage", TotalPercentage);
+        }
+        
+        if (func.equals("area")){
+            m.addAttribute("tabulationDescription", "Area (square kilometres)");
+            m.addAttribute("tabulationRowMargin", "Total area");
+            m.addAttribute("tabulationColumnMargin", "Total area");
+            m.addAttribute("id", 1);
+        }
+        else if (func.equals("occurrences")){
+            m.addAttribute("tabulationDescription", "Number of occurrences");
+            m.addAttribute("tabulationRowMargin", "Total occurrences");
+            m.addAttribute("tabulationColumnMargin", "Total occurrences");
+            m.addAttribute("id", 2);
+        }
+        else if (func.equals("species")){
+            m.addAttribute("tabulationDescription", "Number of species");
+            m.addAttribute("tabulationRowMargin", "Total species (non unique)");
+            m.addAttribute("tabulationColumnMargin", "Total species (non unique)");
+            m.addAttribute("id", 2);
+        }
+        else if (func.equals("arearow")){
+            m.addAttribute("tabulationDescription", "Area: Row%");
+            m.addAttribute("tabulationRowMargin", "Total");
+            m.addAttribute("tabulationColumnMargin", "Average");
+            m.addAttribute("id", 4);
+        }
+        else if (func.equals("occurrencesrow")){
+            m.addAttribute("tabulationDescription", "Occurrences: Row%");
+            m.addAttribute("tabulationRowMargin", "Total");
+            m.addAttribute("tabulationColumnMargin", "Average");
+            m.addAttribute("id", 4);
+        }
+        else if (func.equals("speciesrow")){
+            m.addAttribute("tabulationDescription", "Species: Row%");
+            m.addAttribute("tabulationRowMargin", "Total");
+            m.addAttribute("tabulationColumnMargin", "Average");
+            m.addAttribute("id", 4);
+        }
+        else if (func.equals("areacolumn")){
+            m.addAttribute("tabulationDescription", "Area: Column%");
+            m.addAttribute("tabulationRowMargin", "Average");
+            m.addAttribute("tabulationColumnMargin", "Total");
+            m.addAttribute("id", 3);
+        }
+        else if (func.equals("occurrencescolumn")){
+            m.addAttribute("tabulationDescription", "Occurrences: Column%");
+            m.addAttribute("tabulationRowMargin", "Average");
+            m.addAttribute("tabulationColumnMargin", "Total");
+            m.addAttribute("id", 3);
+        }
+        else if (func.equals("speciescolumn")){
+            m.addAttribute("tabulationDescription", "Species: Column%");
+            m.addAttribute("tabulationRowMargin", "Average");
+            m.addAttribute("tabulationColumnMargin", "Total");
+            m.addAttribute("id", 3);
+        }
+        else if (func.equals("areatotal")){
+            m.addAttribute("tabulationDescription", "Area: Total%");
+            m.addAttribute("tabulationRowMargin", "Total");
+            m.addAttribute("tabulationColumnMargin", "Total");
+            m.addAttribute("id", 5);
+        }
+        else if (func.equals("occurrencestotal")){
+            m.addAttribute("tabulationDescription", "Occurrences: Total%");
+            m.addAttribute("tabulationRowMargin", "Total");
+            m.addAttribute("tabulationColumnMargin", "Total");
+            m.addAttribute("id", 5);
+        }
+        else if (func.equals("speciestotal")){
+            m.addAttribute("tabulationDescription", "Species: Total%");
+            m.addAttribute("tabulationRowMargin", "Total");
+            m.addAttribute("tabulationColumnMargin", "Total");
+            m.addAttribute("id", 5);
+            
+        }
+        
+        
+        
+                
+        return new ModelAndView("tabulations/TabulationHtml",m);
+    }
     
-    @RequestMapping(value = "/tabulation/area/columns/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationAreaColumns(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-
-        write(tabulations, resp, fid1, fid2, wkt, type,"area column%");
-    }
-    @RequestMapping(value = "/tabulation/area/total/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationAreaTotal(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-
-        write(tabulations, resp, fid1, fid2, wkt, type,"area total%");
-    }
-    @RequestMapping(value = "/tabulation/occurrences/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationOccurrences(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-        write(tabulations, resp, fid1, fid2, wkt, type,"occurrences");
-    }    
-    @RequestMapping(value = "/tabulation/occurrences/rows/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationOccurrencesRows(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-        write(tabulations, resp, fid1, fid2, wkt, type,"occurrences row%");
-    }
-    @RequestMapping(value = "/tabulation/occurrences/columns/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationOccurrencesColumns(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-        write(tabulations, resp, fid1, fid2, wkt, type,"occurrences column%");
-    }
-    @RequestMapping(value = "/tabulation/occurrences/total/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationOccurrencesTotal(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-
-        write(tabulations, resp, fid1, fid2, wkt, type,"occurrences total%");
-    }
-    @RequestMapping(value = "/tabulation/species/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationSpecies(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-        write(tabulations, resp, fid1, fid2, wkt, type,"species");
-    }
-    @RequestMapping(value = "/tabulation/species/rows/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationSpeciesRows(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-        write(tabulations, resp, fid1, fid2, wkt, type,"species row%");
-    }
-    @RequestMapping(value = "/tabulation/species/columns/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationSpeciesColumns(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-        write(tabulations, resp, fid1, fid2, wkt, type,"species column%");
-    }
-    @RequestMapping(value = "/tabulation/species/total/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationSpeciesTotal(@PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
-
-        write(tabulations, resp, fid1, fid2, wkt, type,"species total%");
-    }
-    private void write(List<Tabulation> tabulations, HttpServletResponse resp, String fid1, String fid2, String wkt, String type, String func) throws IOException {
+    
+    private String[][] tabulationGridGenerator(List<Tabulation> tabulations, String fid1, String fid2, String wkt, String func) throws IOException {
         //determine x & y field names
         TreeMap<String, String> objects1 = new TreeMap<String, String>();
         TreeMap<String, String> objects2 = new TreeMap<String, String>();
@@ -208,13 +319,13 @@ public class TabulationService {
 
             //grid
             for (Tabulation t : tabulations) {
-                if (func.equals("area") || func.equals("area row%") || func.equals("area column%")|| func.equals("area total%")){
+                if (func.equals("area") || func.equals("arearow") || func.equals("areacolumn")|| func.equals("areatotal")){
                     grid[order2.get(t.getPid2()) + 1][order1.get(t.getPid1()) + 1] = String.valueOf(t.getArea());
                 }
-                else if (func.equals("occurrences") || func.equals("occurrences row%") || func.equals("occurrences column%") || func.equals("occurrences total%")){
+                else if (func.equals("occurrences") || func.equals("occurrencesrow") || func.equals("occurrencescolumn") || func.equals("occurrencestotal")){
                     grid[order2.get(t.getPid2()) + 1][order1.get(t.getPid1()) + 1] = String.valueOf(t.getOccurrences());
                 }
-                else if (func.equals("species") || func.equals("species row%") || func.equals("species column%")|| func.equals("species total%")){
+                else if (func.equals("species") || func.equals("speciesrow") || func.equals("speciescolumn")|| func.equals("speciestotal")){
                     grid[order2.get(t.getPid2()) + 1][order1.get(t.getPid1()) + 1] = String.valueOf(t.getSpecies());
                 }
             }
@@ -235,17 +346,21 @@ public class TabulationService {
 
             //grid
             for (Tabulation t : tabulations) {                
-                if (func.equals("area") || func.equals("area row%") || func.equals("area column%")|| func.equals("area total%")){
+                if (func.equals("area") || func.equals("arearow") || func.equals("areacolumn")|| func.equals("areatotal")){
                     grid[order1.get(t.getPid1()) + 1][order2.get(t.getPid2()) + 1] = String.valueOf(t.getArea());
                 }
-                else if (func.equals("occurrences") || func.equals("occurrences row%") || func.equals("occurrences column%")|| func.equals("occurrences total%")){
+                else if (func.equals("occurrences") || func.equals("occurrencesrow") || func.equals("occurrencescolumn")|| func.equals("occurrencestotal")){
                     grid[order1.get(t.getPid1()) + 1][order2.get(t.getPid2()) + 1] = String.valueOf(t.getOccurrences());
                 }
-                else if (func.equals("species") || func.equals("species row%") || func.equals("species column%")|| func.equals("species total%")){
+                else if (func.equals("species") || func.equals("speciesrow") || func.equals("speciescolumn")|| func.equals("speciestotal")){
                     grid[order1.get(t.getPid1()) + 1][order2.get(t.getPid2()) + 1] = String.valueOf(t.getSpecies());
                 }
             }
         }
+        return grid;
+    }
+    
+    private double[] tabulationSumOfColumnsGenerator(String[][] grid, String func) throws IOException {
 
         //define row totals
         double[] sumofcolumns = new double[grid.length - 1];
@@ -255,16 +370,18 @@ public class TabulationService {
             for (int j = 1; j < grid[0].length; j++) {
                 //not row and column headers
                 if (grid[k][j] != null) {
-                    if (func.equals("area") || func.equals("area row%") || func.equals("area column%")|| func.equals("area total%")){
+                    if (func.equals("area") || func.equals("arearow") || func.equals("areacolumn")|| func.equals("areatotal")){
                         sumofcolumns[k - 1] = sumofcolumns[k - 1] + Double.parseDouble(grid[k][j])/1000000.00;
                     }
-                    else if (func.equals("occurrences") || func.equals("occurrences row%") || func.equals("occurrences column%")|| func.equals("occurrences total%")|| func.equals("species")|| func.equals("species row%") || func.equals("species column%")|| func.equals("species total%")){
+                    else if (func.equals("occurrences") || func.equals("occurrencesrow") || func.equals("occurrencescolumn")|| func.equals("occurrencestotal")|| func.equals("species")|| func.equals("speciesrow") || func.equals("speciescolumn")|| func.equals("speciestotal")){
                         sumofcolumns[k - 1] = sumofcolumns[k - 1] + Double.parseDouble(grid[k][j]);
                     }
                 }
             }
         }
-
+        return sumofcolumns;
+    }
+    private double[] tabulationSumOfRowsGenerator(String[][] grid, String func) throws IOException {
         //define column totals
         double[] sumofrows = new double[grid[0].length - 1];
         for (int j = 1; j < grid[0].length; j++) {
@@ -272,25 +389,28 @@ public class TabulationService {
             for (int k = 1; k < grid.length; k++) {
                 //not row and column headers
                 if (grid[k][j] != null) {
-                    if (func.equals("area")|| func.equals("area row%") || func.equals("area column%")|| func.equals("area total%")){
+                    if (func.equals("area")|| func.equals("arearow") || func.equals("areacolumn")|| func.equals("areatotal")){
                         sumofrows[j - 1] = sumofrows[j - 1] + Double.parseDouble(grid[k][j])/1000000.00;
                     }
-                    else if (func.equals("occurrences") || func.equals("occurrences row%") || func.equals("occurrences column%")|| func.equals("occurrences total%")|| func.equals("species")|| func.equals("species row%") || func.equals("species column%")|| func.equals("species total%")) {
+                    else if (func.equals("occurrences") || func.equals("occurrencesrow") || func.equals("occurrencescolumn")|| func.equals("occurrencestotal")|| func.equals("species")|| func.equals("speciesrow") || func.equals("speciescolumn")|| func.equals("speciestotal")) {
                         sumofrows[j - 1] = sumofrows[j - 1] + Double.parseDouble(grid[k][j]);
                     }
                 }
             }
         }
-
-        double[][] gridRowPercentage = new double[rows][columns];
-        if (func.equals("area row%") || func.equals("occurrences row%") || func.equals("species row%")){
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < columns; j++) {
+        return sumofrows;
+    }
+    
+    private double[][] tabulationGridRowPercentageGenerator(String[][] grid, double[] sumofcolumns, String func) throws IOException {
+        double[][] gridRowPercentage = new double[grid.length - 1][grid[0].length - 1];
+        if (func.equals("arearow") || func.equals("occurrencesrow") || func.equals("speciesrow")){
+            for (int i = 0; i < grid.length - 1; i++) {
+                for (int j = 0; j < grid[0].length - 1; j++) {
                     if (grid[i+1][j+1] != null && sumofcolumns[i] != 0.0) {
-                        if (func.equals("area row%")){
+                        if (func.equals("arearow")){
                             gridRowPercentage[i][j] = Double.parseDouble(grid[i+1][j+1]) / 1000000.00 / sumofcolumns[i]* 100.00;
                         }
-                        else if (func.equals("occurrences row%") || func.equals("species row%") ){
+                        else if (func.equals("occurrencesrow") || func.equals("speciesrow") ){
                             gridRowPercentage[i][j] = Double.parseDouble(grid[i+1][j+1]) / sumofcolumns[i]* 100.00;
                         }
                     
@@ -301,15 +421,19 @@ public class TabulationService {
                 }
             }
         }
-        double[][] gridColumnPercentage = new double[rows][columns];
-        if (func.equals("area column%") || func.equals("occurrences column%") || func.equals("species column%")){
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < columns; j++) {
+        return gridRowPercentage;
+    }
+        
+    private double[][] tabulationGridColumnPercentageGenerator(String[][] grid, double[] sumofrows, String func) throws IOException {
+        double[][] gridColumnPercentage = new double[grid.length - 1][grid[0].length - 1];
+        if (func.equals("areacolumn") || func.equals("occurrencescolumn") || func.equals("speciescolumn")){
+            for (int i = 0; i < grid.length - 1; i++) {
+                for (int j = 0; j < grid[0].length - 1; j++) {
                     if (grid[i+1][j+1] != null && sumofrows[j] != 0.0) {
-                        if (func.equals("area column%")){
+                        if (func.equals("areacolumn")){
                             gridColumnPercentage[i][j] = Double.parseDouble(grid[i+1][j+1]) / 1000000.00 / sumofrows[j]* 100.00;
                         }
-                        else if (func.equals("occurrences column%") || func.equals("species column%") ){
+                        else if (func.equals("occurrencescolumn") || func.equals("speciescolumn") ){
                             gridColumnPercentage[i][j] = Double.parseDouble(grid[i+1][j+1]) / sumofrows[j]* 100.00;
                         }                    
                     }
@@ -317,22 +441,25 @@ public class TabulationService {
                         gridColumnPercentage[i][j] = 0.0;
                     }
                 }
-            }
+            }            
         }
+        return gridColumnPercentage;
+    }
 
-        double[][] gridTotalPercentage = new double[rows][columns];
+    private double[][] tabulationGridTotalPercentageGenerator(String[][] grid, double[] sumofcolumns, String func) throws IOException {
+        double[][] gridTotalPercentage = new double[grid.length - 1][grid[0].length - 1];
         double total = 0.0;
-        for (int i = 0; i < rows; i++) {
+        for (int i = 0; i < grid.length - 1; i++) {
             total += sumofcolumns[i];
         }
-        if (func.equals("area total%")|| func.equals("occurrences total%")|| func.equals("species total%")){            
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < columns; j++) {
+        if (func.equals("areatotal")|| func.equals("occurrencestotal")|| func.equals("speciestotal")){            
+            for (int i = 0; i < grid.length - 1; i++) {
+                for (int j = 0; j < grid[0].length - 1; j++) {
                     if (grid[i+1][j+1] != null && total != 0.0) {
-                        if (func.equals("area total%")){
+                        if (func.equals("areatotal")){
                             gridTotalPercentage[i][j] = Double.parseDouble(grid[i+1][j+1]) / 1000000.00 / total* 100.00;
                         }
-                        else if (func.equals("occurrences total%")|| func.equals("species total%")){
+                        else if (func.equals("occurrencestotal")|| func.equals("speciestotal")){
                             gridTotalPercentage[i][j] = Double.parseDouble(grid[i+1][j+1]) / total* 100.00;
                         }
                     }
@@ -342,47 +469,64 @@ public class TabulationService {
                 }
             }
         }
-        
-        double[] sumofrowsGridRowPercentage = new double[columns];
-        double[] sumofrowsGridColumnPercentage = new double[columns];
-        double[] sumofrowsGridTotalPercentage = new double[columns];
+        return gridTotalPercentage;
+    }
+    
+    private double[] tabulationSumOfRowsGridPercentageGenerator(String[][] grid, double[][] gridRowPercentage, double[][] gridColumnPercentage, double[][] gridTotalPercentage, double[] sumofcolumns, String func) throws IOException {
+        double[] sumofrowsGridRowPercentage = new double[grid[0].length - 1];
+        double[] sumofrowsGridColumnPercentage = new double[grid[0].length - 1];
+        double[] sumofrowsGridTotalPercentage = new double[grid[0].length - 1];
+        double[] result = new double[grid[0].length - 1];
 
-        for (int j = 0; j < columns; j++) {
+        for (int j = 0; j < grid[0].length - 1; j++) {
             //sum of rows
-            for (int i = 0; i < rows; i++) {
+            for (int i = 0; i < grid.length - 1; i++) {
                 //not row and column headers
                 if (grid[i+1][j+1] != null) {
-                    if (func.equals("area row%") || func.equals("occurrences row%") || func.equals("species row%") ) {
+                    if (func.equals("arearow") || func.equals("occurrencesrow") || func.equals("speciesrow") ) {
                         sumofrowsGridRowPercentage[j] = sumofrowsGridRowPercentage[j] + gridRowPercentage[i][j];                        
                     }
-                    else if (func.equals("area column%") || func.equals("occurrences column%") || func.equals("species column%") ) {
+                    else if (func.equals("areacolumn") || func.equals("occurrencescolumn") || func.equals("speciescolumn") ) {
                         sumofrowsGridColumnPercentage[j] = sumofrowsGridColumnPercentage[j] + gridColumnPercentage[i][j];
                     }
-                    else if (func.equals("area total%")|| func.equals("occurrences total%")|| func.equals("species total%")){
+                    else if (func.equals("areatotal")|| func.equals("occurrencestotal")|| func.equals("speciestotal")){
                         sumofrowsGridTotalPercentage[j] = sumofrowsGridTotalPercentage[j] + gridTotalPercentage[i][j];
                     }
                 }
             }
             //System.out.println("sumofrowsGridRowPercentage["+j+"]:"+sumofrowsGridRowPercentage[j]);
         }
+        if (func.equals("arearow") || func.equals("occurrencesrow") || func.equals("speciesrow") ) {
+            result = sumofrowsGridRowPercentage;
+        }
+        else if (func.equals("areacolumn") || func.equals("occurrencescolumn") || func.equals("speciescolumn") ) {
+            result = sumofrowsGridColumnPercentage;
+        }
+        else if (func.equals("areatotal")|| func.equals("occurrencestotal")|| func.equals("speciestotal")){
+            result = sumofrowsGridTotalPercentage;
+        }
+        return result;                   
+    }
+    
         //define row totals
-        
-        double[] sumofcolumnsGridRowPercentage = new double[rows];
-        double[] sumofcolumnsGridColumnPercentage = new double[rows];
-        double[] sumofcolumnsGridTotalPercentage = new double[rows];
+    private double[] tabulationSumOfColumnsGridPercentageGenerator(String[][] grid, double[][] gridRowPercentage, double[][] gridColumnPercentage, double[][] gridTotalPercentage, double[] sumofcolumns, String func) throws IOException {    
+        double[] sumofcolumnsGridRowPercentage = new double[grid.length - 1];
+        double[] sumofcolumnsGridColumnPercentage = new double[grid.length - 1];
+        double[] sumofcolumnsGridTotalPercentage = new double[grid.length - 1];
+        double[] result = new double[grid.length - 1];
 
-        for (int i = 0; i < rows; i++) {
+        for (int i = 0; i < grid.length - 1; i++) {
             //sum of rows
-            for (int j = 0; j < columns; j++) {
+            for (int j = 0; j < grid[0].length - 1; j++) {
                 //not row and column headers
                 if (grid[i+1][j+1] != null) {
-                    if (func.equals("area row%") || func.equals("occurrences row%") || func.equals("species row%") ) {
+                    if (func.equals("arearow") || func.equals("occurrencesrow") || func.equals("speciesrow") ) {
                         sumofcolumnsGridRowPercentage[i] = sumofcolumnsGridRowPercentage[i] + gridRowPercentage[i][j];
                     }
-                    else if (func.equals("area column%") || func.equals("occurrences column%") || func.equals("species column%") ) {
+                    else if (func.equals("areacolumn") || func.equals("occurrencescolumn") || func.equals("speciescolumn") ) {
                         sumofcolumnsGridColumnPercentage[i] = sumofcolumnsGridColumnPercentage[i] + gridColumnPercentage[i][j];
                     }
-                    else if (func.equals("area total%")|| func.equals("occurrences total%")|| func.equals("species total%")){
+                    else if (func.equals("areatotal")|| func.equals("occurrencestotal")|| func.equals("speciestotal")){
                         System.out.println("sumofcolumnsGridTotalPercentage["+i+"]:"+sumofcolumnsGridTotalPercentage[i]+";gridTotalPercentage:"+gridTotalPercentage[i][j]);
                         sumofcolumnsGridTotalPercentage[i] += gridTotalPercentage[i][j];
                         
@@ -390,12 +534,86 @@ public class TabulationService {
                 }
             }
         }
+        if (func.equals("arearow") || func.equals("occurrencesrow") || func.equals("speciesrow") ) {
+            result = sumofcolumnsGridRowPercentage;
+        }
+        else if (func.equals("areacolumn") || func.equals("occurrencescolumn") || func.equals("speciescolumn") ) {
+            result = sumofcolumnsGridColumnPercentage;
+        }
+        else if (func.equals("areatotal")|| func.equals("occurrencestotal")|| func.equals("speciestotal")){
+            result = sumofcolumnsGridTotalPercentage;
+        }
+        return result;
+    }
+    
+    /*
+     * list distribution table records, GET
+     */
+    @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})    
+    public void displayTabulationCSVHTML(@PathVariable("func1") String func1, @PathVariable("func2") String func2, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,@PathVariable("type") String type,
+            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String func = func1+func2;
+        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
+        generateTabulationCSVHTML(tabulations,resp,func,fid1,fid2,wkt,type);
+    }
+    @RequestMapping(value = "/tabulation/{func1}/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})    
+    public void displayTabulationCSVHTML(@PathVariable("func1") String func1, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,@PathVariable("type") String type,
+            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
+        generateTabulationCSVHTML(tabulations,resp,func1,fid1,fid2,wkt,type);        
+    }
+    public void generateTabulationCSVHTML(List<Tabulation> tabulations,HttpServletResponse resp,String func, String fid1, String fid2,
+            String wkt,String type) throws IOException {
         
-        DecimalFormat df0 = new DecimalFormat("###");
-        DecimalFormat df1 = new DecimalFormat("##0.0");
-        DecimalFormat df2 = new DecimalFormat("##0.00");
         
-        //write to csv,json or html
+        
+        String[][] grid = tabulationGridGenerator(tabulations, fid1, fid2, wkt, func);                        
+        double[] sumOfColumns = tabulationSumOfColumnsGenerator(grid, func);
+        double[] sumOfRows = tabulationSumOfRowsGenerator(grid, func);        
+        double[][] gridRowPercentage = tabulationGridRowPercentageGenerator(grid, sumOfColumns, func);        
+        double[][] gridColumnPercentage = tabulationGridColumnPercentageGenerator(grid, sumOfRows, func);        
+        double[][] gridTotalPercentage = tabulationGridTotalPercentageGenerator(grid, sumOfColumns, func);        
+        double[] sumOfRowsGridPercentage = tabulationSumOfRowsGridPercentageGenerator(grid, gridRowPercentage, gridColumnPercentage, gridTotalPercentage, sumOfColumns, func);        
+        double[] sumOfColumnsGridPercentage = tabulationSumOfColumnsGridPercentageGenerator(grid, gridRowPercentage, gridColumnPercentage, gridTotalPercentage, sumOfColumns, func);
+        
+        double Total = 0.0;
+        for (int j = 1; j < grid[0].length; j++) {
+            Total += sumOfRows[j - 1];
+        }
+        
+        double TotalPercentage = 0.0;
+        for (int j = 1; j < grid[0].length; j++) {
+            TotalPercentage += sumOfRowsGridPercentage[j - 1];
+        }
+                
+        double[] AveragePercentageOverRows = new double[grid[0].length-1];
+        for (int j = 1;j < grid[0].length; j++){
+            double NumOfNonzeroRows = 0.0;
+            for (int k = 1;k < grid.length; k++){
+                if (grid[k][j] != null) {
+                NumOfNonzeroRows = NumOfNonzeroRows + 1;
+                }                            
+            }
+            if (NumOfNonzeroRows != 0.0) {                
+                AveragePercentageOverRows[j-1] = sumOfRowsGridPercentage[j-1]/NumOfNonzeroRows;
+            }                            
+        }
+        double[] AveragePercentageOverColumns = new double[grid.length-1];
+        for (int i = 1;i < grid.length; i++){
+            double NumOfNonzeroColumns = 0.0;
+            for (int k = 1;k < grid[0].length; k++){
+                if (grid[i][k] != null) {
+                    NumOfNonzeroColumns = NumOfNonzeroColumns + 1;
+                }                            
+            }
+            if (NumOfNonzeroColumns != 0.0) {
+                AveragePercentageOverColumns[i-1] = sumOfColumnsGridPercentage[i-1]/NumOfNonzeroColumns;
+            }                            
+        }
+        
+        //write to csv or json
         StringBuilder sb = new StringBuilder();
         if (type.equals("csv")) {
             resp.setContentType("text/plain");
@@ -409,37 +627,37 @@ public class TabulationService {
                             if (func.equals("area")) {
                                 sb.append("\"Area (square kilometres)\"");
                             }
-                            else if (func.equals("area row%")) {
+                            else if (func.equals("arearow")) {
                                 sb.append("\"Area: Row%\"");
                             }
-                            else if (func.equals("area column%")) {
+                            else if (func.equals("areacolumn")) {
                                 sb.append("\"Area: Column%\"");
                             }
-                            else if (func.equals("area total%")) {
+                            else if (func.equals("areatotal")) {
                                 sb.append("\"Area: Total%\"");
                             }
                             else if (func.equals("occurrences")) {
                                 sb.append("\"Number of occurrences\"");
                             }
-                            else if (func.equals("occurrences row%")) {
+                            else if (func.equals("occurrencesrow")) {
                                 sb.append("\"Occurrences: Row%\"");
                             }
-                            else if (func.equals("occurrences column%")) {
+                            else if (func.equals("occurrencescolumn")) {
                                 sb.append("\"Occurrences: Column%\"");
                             }
-                            else if (func.equals("occurrences total%")) {
+                            else if (func.equals("occurrencestotal")) {
                                 sb.append("\"Occurrences: Total%\"");
                             }
                             else if (func.equals("species")) {
-                                sb.append("\"Number of species\"");
+                                sb.append("\"Number of species (non unique)\"");
                             }
-                            else if (func.equals("species row%")) {
+                            else if (func.equals("speciesrow")) {
                                 sb.append("\"Species: Row%\"");
                             }
-                            else if (func.equals("species column%")) {
+                            else if (func.equals("speciescolumn")) {
                                 sb.append("\"Species: Column%\"");
                             }
-                            else if (func.equals("species total%")) {
+                            else if (func.equals("speciestotal")) {
                                 sb.append("\"Species: Total%\"");
                             }
                             
@@ -456,13 +674,13 @@ public class TabulationService {
                             if (func.equals("area")||func.equals("occurrences")||func.equals("species")){
                                 sb.append(grid[i][j]);
                             }
-                            else if (func.equals("area row%")|| func.equals("occurrences row%") || func.equals("species row%")){
+                            else if (func.equals("arearow")|| func.equals("occurrencesrow") || func.equals("speciesrow")){
                                 sb.append(gridRowPercentage[i-1][j-1]/100.00);
                             }
-                            else if (func.equals("area column%")|| func.equals("occurrences column%") || func.equals("species column%")){
+                            else if (func.equals("areacolumn")|| func.equals("occurrencescolumn") || func.equals("speciescolumn")){
                                 sb.append(gridColumnPercentage[i-1][j-1]/100.00);
                             }
-                            else if (func.equals("area total%")|| func.equals("occurrences total%") || func.equals("species total%")){
+                            else if (func.equals("areatotal")|| func.equals("occurrencestotal") || func.equals("speciestotal")){
                                 sb.append(gridTotalPercentage[i-1][j-1]/100.00);
                             }
                         }
@@ -476,33 +694,36 @@ public class TabulationService {
                         sb.append(",\"Total occurrences\"");
                     }
                     else if (func.equals("species")){
-                        sb.append(",\"Total species (non-unique)\"");
+                        sb.append(",\"Total species (non unique)\"");
                     }
-                    else if (func.equals("area row%")||func.equals("occurrences row%")||func.equals("species row%")||func.equals("area total%")||func.equals("occurrences total%")||func.equals("species total%")){
-                        sb.append(",\"%\"");
+                    else if (func.equals("arearow")||func.equals("occurrencesrow")||func.equals("speciesrow")||func.equals("areatotal")||func.equals("occurrencestotal")||func.equals("speciestotal")){
+                        sb.append(",\"Total\"");
                     }
-                    else if (func.equals("area column%")||func.equals("occurrences column%")||func.equals("species column%")){
+                    else if (func.equals("areacolumn")||func.equals("occurrencescolumn")||func.equals("speciescolumn")){
                         sb.append(",\"Average\"");
+                    }
+                    else if (func.equals("areatotal")||func.equals("occurrencestotal")||func.equals("speciestotal")){
+                        sb.append(",\"Total\"");
                     }
                 } 
                 else {
                     if (func.equals("area")||func.equals("occurrences")||func.equals("species")){
-                        sb.append("," + sumofcolumns[i - 1]);
+                        sb.append("," + sumOfColumns[i - 1]);
                     }
-                    else if (func.equals("area row%")|| func.equals("occurrences row%") || func.equals("species row%")){
-                        sb.append(","+ sumofcolumnsGridRowPercentage[i - 1]);
+                    else if (func.equals("arearow")|| func.equals("occurrencesrow") || func.equals("speciesrow")){
+                        sb.append(","+ sumOfColumnsGridPercentage[i - 1]);
                     }
-                    else if (func.equals("area column%")|| func.equals("occurrences column%") || func.equals("species column%")){
+                    else if (func.equals("areacolumn")|| func.equals("occurrencescolumn") || func.equals("speciescolumn")){
                         int numOfNonzeroClasses = 0;
                         for (int k = 1;k < grid[0].length; k++){
                             if (grid[i][k] != null) {
                                 numOfNonzeroClasses = numOfNonzeroClasses + 1;
                             }                            
                         }
-                        sb.append(","+ sumofcolumnsGridColumnPercentage[i - 1]/numOfNonzeroClasses);
+                        sb.append(","+ AveragePercentageOverColumns[i - 1]);
                     }
-                    else if (func.equals("area total%")|| func.equals("occurrences total%") || func.equals("species total%")){
-                        sb.append(","+ sumofcolumnsGridTotalPercentage[i - 1]);
+                    else if (func.equals("areatotal")|| func.equals("occurrencestotal") || func.equals("speciestotal")){
+                        sb.append(","+ sumOfColumnsGridPercentage[i - 1]);
                     }
                 }
             }
@@ -516,50 +737,35 @@ public class TabulationService {
             else if (func.equals("species")){
                 sb.append("\"Total species (non-unique)\"");
             }
-            else if (func.equals("area row%")||func.equals("occurrences row%")||func.equals("species row%")||func.equals("area total%")||func.equals("occurrences total%")||func.equals("species total%")){
+            else if (func.equals("arearow")||func.equals("occurrencesrow")||func.equals("speciesrow")||func.equals("areatotal")||func.equals("occurrencestotal")||func.equals("speciestotal")){
                 sb.append("\"Average\"");
             }
-            else if (func.equals("area column%")||func.equals("occurrences column%")||func.equals("species column%")){
-                sb.append("\"%\"");
+            else if (func.equals("areacolumn")||func.equals("occurrencescolumn")||func.equals("speciescolumn")){
+                sb.append("\"Total\"");
+            }
+            else if (func.equals("areatotal")||func.equals("occurrencestotal")||func.equals("speciestotal")){
+                sb.append("\"Total\"");
             }
             for (int j = 1; j < grid[0].length; j++) {
                 if (func.equals("area")||func.equals("occurrences")||func.equals("species")){
-                    sb.append("," + sumofrows[j - 1]);
+                    sb.append("," + sumOfRows[j - 1]);
                 }
-                else if (func.equals("area row%")|| func.equals("occurrences row%") || func.equals("species row%")){
-                    double numOfNonzeroClasses = 0.0;
-                    for (int k = 1;k < grid.length; k++){
-                        if (grid[k][j] != null) {
-                            numOfNonzeroClasses = numOfNonzeroClasses + 1;
-                        }                            
-                    }
-                    sb.append(","+ sumofrowsGridRowPercentage[j - 1]/numOfNonzeroClasses);
+                else if (func.equals("arearow")|| func.equals("occurrencesrow") || func.equals("speciesrow")){
+                    sb.append(","+ AveragePercentageOverRows[j - 1]);
                 }
-                else if (func.equals("area column%")|| func.equals("occurrences column%") || func.equals("species column%")){                    
-                    sb.append(","+ sumofrowsGridColumnPercentage[j - 1]);
+                else if (func.equals("areacolumn")|| func.equals("occurrencescolumn") || func.equals("speciescolumn")){                    
+                    sb.append(","+ sumOfRowsGridPercentage[j - 1]);
                 }
-                else if (func.equals("area total%")|| func.equals("occurrences total%") || func.equals("species total%")){
-                        sb.append(","+ sumofrowsGridTotalPercentage[j - 1]);
+                else if (func.equals("areatotal")|| func.equals("occurrencestotal") || func.equals("speciestotal")){
+                    sb.append(","+ sumOfRowsGridPercentage[j - 1]);
                 }                
             }
-            if (func.equals("area total%")|| func.equals("occurrences total%")|| func.equals("species total%")) {
-                double temp = 0.0;
-                for (int j = 1; j < grid[0].length; j++) {
-                    temp += sumofrowsGridTotalPercentage[j - 1];
-                }
-                sb.append(","+ temp);
+            if (func.equals("areatotal")|| func.equals("occurrencestotal")|| func.equals("speciestotal")) {
+                
+                sb.append(","+ TotalPercentage);
             }
             else if (func.equals("area") || func.equals("occurrences") ||func.equals("species")){
-                double temp = 0.0;
-                for (int j = 1; j < grid[0].length; j++) {
-                    temp += sumofrows[j - 1];
-                }
-                if (func.equals("area")){
-                    sb.append(","+ temp);
-                }
-                else if (func.equals("occurrences") ||func.equals("species")){
-                    sb.append(","+ temp);
-                }
+                sb.append(","+ Total);
             }
             else {
                 sb.append(",");
@@ -579,28 +785,22 @@ public class TabulationService {
                     }
                 }
                 if (func.equals("area")){
-                    sb.append("\"Total area\":"+sumofcolumns[i - 1]);
+                    sb.append("\"Total area\":"+sumOfColumns[i - 1]);
                 }
                 else if (func.equals("occurrences")){
-                    sb.append("\"Total occurrences\":"+sumofcolumns[i - 1]);
+                    sb.append("\"Total occurrences\":"+sumOfColumns[i - 1]);
                 }
                 else if (func.equals("species")){
-                    sb.append("\"Total species (non-unique)\":"+sumofcolumns[i - 1]);
+                    sb.append("\"Total species (non unique)\":"+sumOfColumns[i - 1]);
                 }
-                else if (func.equals("area row%")||func.equals("occurrences row%")||func.equals("species row%")){
-                    sb.append("\"%\":"+sumofcolumnsGridRowPercentage[i - 1]);
+                else if (func.equals("arearow")||func.equals("occurrencesrow")||func.equals("speciesrow")){
+                    sb.append("\"Total\":"+sumOfColumnsGridPercentage[i - 1]);
                 }
-                else if (func.equals("area column%")||func.equals("occurrences column%")||func.equals("species column%")){
-                    int numOfNonzeroClasses = 0;
-                        for (int k = 1;k < grid[0].length; k++){
-                            if (grid[i][k] != null) {
-                                numOfNonzeroClasses = numOfNonzeroClasses + 1;
-                            }                            
-                        }
-                    sb.append("\"Average\":"+sumofcolumnsGridColumnPercentage[i - 1]/numOfNonzeroClasses);
+                else if (func.equals("areacolumn")||func.equals("occurrencescolumn")||func.equals("speciescolumn")){
+                    sb.append("\"Average\":"+AveragePercentageOverColumns[i - 1]);
                 }
-                else if (func.equals("area total%")||func.equals("occurrences total%")||func.equals("species total%")){
-                    sb.append("\"%\":"+sumofcolumnsGridTotalPercentage[i - 1]);
+                else if (func.equals("areatotal")||func.equals("occurrencestotal")||func.equals("speciestotal")){
+                    sb.append("\"Total\":"+sumOfColumnsGridPercentage[i - 1]);
                 }
                 
                 if (sb.toString().endsWith(",")) {
@@ -622,58 +822,44 @@ public class TabulationService {
                 else if (func.equals("species")){
                     sb.append(",\"Total species (non-unique)\":");
                 }
-                else if (func.equals("area row%")||func.equals("occurrences row%")||func.equals("species row%")){
+                else if (func.equals("arearow")||func.equals("occurrencesrow")||func.equals("speciesrow")){
                     sb.append(",\"Average\":");
                 }
-                else if (func.equals("area column%")||func.equals("occurrences column%")||func.equals("species column%")){
-                    sb.append(",\"%\":");
+                else if (func.equals("areacolumn")||func.equals("occurrencescolumn")||func.equals("speciescolumn")){
+                    sb.append(",\"Total\":");
                 }
-                else if (func.equals("area total%")||func.equals("occurrences total%")||func.equals("species total%")){
-                    sb.append(",\"%\":");
+                else if (func.equals("areatotal")||func.equals("occurrencestotal")||func.equals("speciestotal")){
+                    sb.append(",\"Total\":");
                 }
                         
             sb.append("{");
             for (int j = 1; j < grid[0].length; j++) {
                 sb.append("\"").append(grid[0][j].replace("\"", "\"\"")).append("\":");
                 if (func.equals("area")||func.equals("occurrences")||func.equals("species")) {
-                    sb.append(sumofrows[j - 1]+",");
+                    sb.append(sumOfRows[j - 1]+",");
                 }
-                else if (func.equals("area row%") || func.equals("occurrences row%") || func.equals("species row%")) {
-                    double numOfNonzeroClasses = 0.0;
-                    for (int k = 1;k < grid.length; k++){
-                        if (grid[k][j] != null) {
-                            numOfNonzeroClasses = numOfNonzeroClasses + 1;
-                        }                            
-                    }
-                sb.append(sumofrowsGridRowPercentage[j - 1]/numOfNonzeroClasses+",");
+                else if (func.equals("arearow") || func.equals("occurrencesrow") || func.equals("speciesrow")) {
+                sb.append(AveragePercentageOverColumns[j - 1]+",");
                 }
-                else if (func.equals("area column%") || func.equals("occurrences column%") || func.equals("species column%")) {
-                    sb.append(sumofrowsGridColumnPercentage[j - 1]+",");
+                else if (func.equals("areacolumn") || func.equals("occurrencescolumn") || func.equals("speciescolumn")) {
+                    sb.append(sumOfRowsGridPercentage[j - 1]+",");
                 }
-                else if (func.equals("area total%")|| func.equals("occurrences total%")|| func.equals("species total%")) {
-                    sb.append(sumofrowsGridTotalPercentage[j - 1]+","); 
+                else if (func.equals("areatotal")|| func.equals("occurrencestotal")|| func.equals("speciestotal")) {
+                    sb.append(sumOfRowsGridPercentage[j - 1]+","); 
                 }
             }
-            if (func.equals("area total%")|| func.equals("occurrences total%")|| func.equals("species total%")) {
-                double temp = 0.0;
-                for (int j = 1; j < grid[0].length; j++) {
-                    temp += sumofrowsGridTotalPercentage[j - 1];
-                }
-                sb.append("\"%\":"+temp+",");
+            if (func.equals("areatotal")|| func.equals("occurrencestotal")|| func.equals("speciestotal")) {
+                sb.append("\"%\":"+TotalPercentage+",");
             }
             else if (func.equals("area") || func.equals("occurrences") ||func.equals("species")){
-                double temp = 0.0;
-                for (int j = 1; j < grid[0].length; j++) {
-                    temp += sumofrows[j - 1];
-                }
                 if (func.equals("area")){
-                    sb.append("\"Total area\":"+temp+",");
+                    sb.append("\"Total area\":"+Total+",");
                 }
                 else if (func.equals("occurrences") ){
-                    sb.append("\"Total occurrences\":"+temp+",");
+                    sb.append("\"Total occurrences\":"+Total+",");
                 }
                 else if (func.equals("species") ){
-                    sb.append("\"Total species (non-unique)\":"+temp+",");
+                    sb.append("\"Total species (non unique)\":"+Total+",");
                 }
             }
             if (sb.toString().endsWith(",")) {
@@ -683,389 +869,10 @@ public class TabulationService {
             
             sb.append("}");
             sb.append("}");
-        } 
-        else {
-            resp.setContentType("text/html");
-            String title = "\"";
-            if (fieldDao.getFieldById(fid1) != null) {
-                title += fieldDao.getFieldById(fid1).getName();
-            } else {
-                title += fid1;
-            }
-            title += "\" and \"";
-            if (fieldDao.getFieldById(fid2) != null) {
-                title += fieldDao.getFieldById(fid2).getName();
-            } else {
-                title += fid2;
-            }
-            //title += "\" (sq km)";
-
-            sb.append("<html>");
-            sb.append("<head>");           
-            sb.append("<title>Tabulation for " + title + "</title>");
-            sb.append("</head>");
-            sb.append("<body");
-            sb.append("<basefont size=\"2\" >");
-            sb.append("<h3>");
-            sb.append(title);
-            sb.append("</h3><br>");
-            if (wkt != null && wkt.length() > 0) {
-                sb.append("within area ").append(wkt).append("<br>");
-            }
-            sb.append("<table border='1' style=\"right\">" );
-            // write area table
-            for (int i = 0; i < grid.length; i++) {
-                sb.append("<tr valign=\"middle\">");
-                for (int j = 0; j < grid[i].length; j++) {                    
-                    if (i == 0 || j == 0) {
-                        sb.append("<td>");
-                        //row and column headers
-                        if (grid[i][j] != null) {                           
-                            sb.append(grid[i][j]);
-                        }
-                        else {
-                            if (func.equals("area")) {
-                                sb.append("<b>Area (square kilometres)</b>");
-                            }
-                            else if (func.equals("area row%")) {
-                                sb.append("<b>Area: Row%</b>");
-                            }
-                            else if (func.equals("area column%")) {
-                                sb.append("<b>Area: Column%</b>");
-                            }
-                            else if (func.equals("area total%")) {
-                                sb.append("<b>Area: Total%</b>");
-                            }
-                            else if (func.equals("occurrences")) {
-                                sb.append("<b>Number of occurrences</b>");
-                            }
-                            else if (func.equals("occurrences row%")) {
-                                sb.append("<b>Occurrences: Row%</b>");
-                            }
-                            else if (func.equals("occurrences column%")) {
-                                sb.append("<b>Occurrences: Column%</b>");
-                            }
-                            else if (func.equals("occurrences total%")) {
-                                sb.append("<b>Occurrences: Total%</b>");
-                            }
-                            else if (func.equals("species")) {
-                                sb.append("<b>Number of species</b>");
-                            }
-                            else if (func.equals("species row%")) {
-                                sb.append("<b>Species: Row%</b>");
-                            }
-                            else if (func.equals("species column%")) {
-                                sb.append("<b>Species: Column%</b>");
-                            }
-                            else if (func.equals("species total%")) {
-                                sb.append("<b>Species: Total%</b>");
-                            }
-                        }
-                        sb.append("</td>");
-                    } else {
-                        //data
-                        if (grid[i][j] != null) {
-                            if (func.equals("area")){
-                                //sb.append("<td align=\"right\">"+String.format("%.2f",Double.parseDouble(grid[i][j]) / 1000000.0)+"</td>");
-                                sb.append("<td align=\"right\">"+df0.format(Double.parseDouble(grid[i][j]) / 1000000.0)+"</td>");
-                            }
-                            else if (func.equals("occurrences") || func.equals("species")){
-                                sb.append("<td align=\"right\">"+grid[i][j]+"</td>");
-                            }
-                            else if (func.equals("area row%") || func.equals("occurrences row%") || func.equals("species row%")) {
-                                //sb.append("<td align=\"right\">"+String.format("%.1f",gridRowPercentage[i-1][j-1])+"%"+"</td>");
-                                sb.append("<td align=\"right\">"+df0.format(gridRowPercentage[i-1][j-1])+"%"+"</td>");
-                            }
-                            else if (func.equals("area column%") || func.equals("occurrences column%") || func.equals("species column%")){
-                                //sb.append("<td align=\"right\">"+String.format("%.1f",gridColumnPercentage[i-1][j-1])+"%"+"</td>");
-                                sb.append("<td align=\"right\">"+df0.format(gridColumnPercentage[i-1][j-1])+"%"+"</td>");
-                            }
-                            else if (func.equals("area total%")|| func.equals("occurrences total%") || func.equals("species total%")){
-                                //sb.append("<td align=\"right\">"+String.format("%.1f",gridTotalPercentage[i-1][j-1])+"%"+"</td>");
-                                sb.append("<td align=\"right\">"+df1.format(gridTotalPercentage[i-1][j-1])+"%"+"</td>");
-                            }
-                        }
-                        else{
-                            sb.append("<td></td>");
-                        }
-                    }
-                    
-                }
-                if (i == 0) {
-                    sb.append("<td border: 5pt>");
-                    if (func.equals("area")) {
-                        sb.append("<b>Total Area</b>");
-                    }
-                    else if (func.equals("area row%") || func.equals("occurrences row%") || func.equals("species row%") ) {
-                        sb.append("<b>%</b>");
-                    }
-                    else if (func.equals("area total%")|| func.equals("occurrences total%")|| func.equals("species total%")) {
-                        sb.append("<b>Total</b>");
-                    }
-                    else if (func.equals("area column%") || func.equals("occurrences column%") || func.equals("species column%")) {
-                        sb.append("<b>Average</b>");
-                    }
-                    else if (func.equals("occurrences")) {
-                        sb.append("<b>Total occurrences</b>");
-                    }                                        
-                    else if (func.equals("species")) {
-                        sb.append("<b>Total species (non-unique)</b>");
-                    }
-                    
-                    
-                    sb.append("</td>");
-                } else {
-                    sb.append("<td align=\"right\" border: 5pt>");
-                    if (func.equals("area") ){
-                        //sb.append(String.format("%.2f",sumofcolumns[i - 1]));
-                        sb.append(df0.format(sumofcolumns[i - 1]));
-                    }
-                    else if (func.equals("occurrences") || func.equals("species")){
-                        //sb.append((int)sumofcolumns[i - 1]);
-                        sb.append(df0.format(sumofcolumns[i - 1]));
-                    }
-                    else if (func.equals("area row%") || func.equals("occurrences row%") || func.equals("species row%")) {
-                        double temp = sumofcolumnsGridRowPercentage[i - 1];
-                        //sb.append((int)temp+"%");
-                        sb.append(df0.format(temp)+"%");
-                    }
-                    else if (func.equals("area column%") || func.equals("occurrences column%") || func.equals("species column%")) {
-                        int numOfNonzeroClasses = 0;
-                        for (int k = 1;k < grid[0].length; k++){
-                            if (grid[i][k] != null) {
-                                numOfNonzeroClasses = numOfNonzeroClasses + 1;
-                            }                            
-                        }
-                        double temp = sumofcolumnsGridColumnPercentage[i - 1]/numOfNonzeroClasses;
-                        //sb.append((int)temp+"%");
-                        sb.append(df0.format(temp)+"%");
-                    }
-                    else if (func.equals("area total%")|| func.equals("occurrences total%")|| func.equals("species total%")) {
-                        double temp = sumofcolumnsGridTotalPercentage[i - 1];
-                        
-                        //sb.append(String.format("%.1f",temp)+"%");
-                        sb.append(df1.format(temp)+"%");
-                    }
-                    sb.append("</td>");
-                }
-                sb.append("</tr>");
-            }
-            sb.append("<tr >");
-            sb.append("<td>");
-            if (func.equals("area")) {
-                sb.append("<b>Total Area</b>");
-            }
-            else if (func.equals("area row%") || func.equals("occurrences row%") || func.equals("species row%")) {
-                sb.append("<b>Average</b>");
-            }
-            else if (func.equals("area column%") || func.equals("occurrences column%") || func.equals("species column%") ) {
-                sb.append("<b>％</b>");
-            }
-            else if (func.equals("area total%")|| func.equals("occurrences total%")|| func.equals("species total%")){
-                sb.append("<b>Total</b>");
-            }
-            else if (func.equals("occurrences")) {
-                sb.append("<b>Total occurrences</b>");
-            }
-            else if (func.equals("species")) {
-                sb.append("<b>Total species (non-unique)</b>");
-            }
-            sb.append("</td>");
-            for (int j = 1; j < grid[0].length; j++) {
-                sb.append("<td align='right' >");
-                if (func.equals("area")){
-                    //sb.append(String.format("%.2f",sumofrows[j - 1]));
-                    sb.append(df0.format(sumofrows[j - 1]));
-                }
-                else if (func.equals("occurrences") || func.equals("species")){
-                    //sb.append(String.format("%.1f",sumofrows[j - 1]));
-                    sb.append(df0.format(sumofrows[j - 1]));
-                }
-                else if (func.equals("area row%") || func.equals("occurrences row%") || func.equals("species row%")) {
-                    double numOfNonzeroClasses = 0.0;
-                    for (int k = 1;k < grid.length; k++){
-                        if (grid[k][j] != null) {
-                            numOfNonzeroClasses = numOfNonzeroClasses + 1;
-                        }                            
-                    }
-                    double temp = sumofrowsGridRowPercentage[j - 1]/numOfNonzeroClasses;                    
-                    //sb.append(String.format("%.1f",temp)+"%");
-                    sb.append(df0.format(temp)+"%");
-                }
-                else if (func.equals("area column%") || func.equals("occurrences column%") || func.equals("species column%")) {
-                    double temp = sumofrowsGridColumnPercentage[j - 1];                    
-                    //sb.append(String.format("%.1f",temp)+"%");
-                    sb.append(df0.format(temp)+"%");
-                        //sb.append(sumofrowsGridColumnPercentage[j - 1]+"%");
-                }
-                else if (func.equals("area total%")|| func.equals("occurrences total%")|| func.equals("species total%")) {
-                    double temp = sumofrowsGridTotalPercentage[j - 1];                    
-                    //sb.append(String.format("%.1f",temp)+"%");
-                    sb.append(df1.format(temp)+"%");
-                }
-                sb.append("</td>");
-            }
-            if (func.equals("area total%")|| func.equals("occurrences total%")|| func.equals("species total%")) {
-                double temp = 0.0;
-                for (int j = 1; j < grid[0].length; j++) {
-                    temp += sumofrowsGridTotalPercentage[j - 1];
-                }
-                //sb.append("<td align='right'>"+String.format("%.1f",temp)+"%</td>");
-                sb.append("<td align='right'>"+df1.format(temp)+"%</td>");
-            }
-            else if (func.equals("area") || func.equals("occurrences") ||func.equals("species")){
-                double temp = 0.0;
-                for (int j = 1; j < grid[0].length; j++) {
-                    temp += sumofrows[j - 1];
-                }
-                if (func.equals("area")){
-                    //sb.append("<td align='right'>"+String.format("%.2f",temp)+"</td>");
-                    sb.append("<td align='right'>"+df0.format(temp)+"</td>");
-                }
-                else if (func.equals("occurrences") ||func.equals("species")){
-                    //sb.append("<td align='right'>"+String.format("%.1f",temp)+"</td>");
-                    sb.append("<td align='right'>"+df0.format(temp)+"</td>");
-                }
-            }
-            else {
-                sb.append("<td></td>");
-            }
-            sb.append("</tr>");                
-            
-            sb.append("</table>");
-            sb.append("<p>");
-            sb.append("Blanks = no intersection");
-            sb.append("</p>");
-            sb.append("<p>");
-            sb.append("0 = no records in intersection");
-            sb.append("</p>");
-            sb.append("</body></html>");
         }
-
         OutputStream os = resp.getOutputStream();
         os.write(sb.toString().getBytes("UTF-8"));
         os.close();
     }
     
-    
-    
-    @RequestMapping(value = WS_TABULATION_LIST, method = RequestMethod.GET)
-    /*public void listAvailableTabulationsHtml(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        List<Tabulation> tabulations = tabulationDao.listTabulations();
-        
-        // write to string
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html>");
-        sb.append("<head>");
-        sb.append("<title>Available tabulation layers</title>");
-        sb.append("<script type=\"text/javascript\" src=\"/layers-service/javascript/SortingTable.js\"></script>");           
-        sb.append("</head>");
-        sb.append("<body");
-        sb.append("<basefont size=\"2\" >");
-        sb.append("<h2>");
-        sb.append("Available tabulation layers");
-        sb.append("</h2>");                    
-        sb.append("<table border=1 class=\"sortable\">");  
-        sb.append("<thead>");
-        sb.append("<tr>");
-        sb.append("<th style=\"-moz-user-select: none;\" class=\"sortable-keep fd-column-0\"><a title=\"Sort on Field\" href=\"#\">Field 1</a></th>");
-        sb.append("<th style=\"-moz-user-select: none;\" class=\"sortable-numeric fd-column-1\"><a title=\"Sort on Field\" href=\"#\">Field 2</a></th>");
-        sb.append("<th>Area intersection </th>");
-        sb.append("<th>Area intersection (row %)</th>");
-        sb.append("<th>Area intersection (column %)</th>");
-        sb.append("</tr>");
-        sb.append("</thead>");
-        sb.append("<tbody>");
-
-        
-        for (Tabulation t : tabulations) {
-            sb.append("<tr class=\"\">");
-            sb.append("<td>");
-            //add field 1
-            sb.append(t.getName1()).append("</td><td>");
-            //add field 2
-            sb.append(t.getName2()).append("</td><td>");
-            //add link to area intersection (html)
-            sb.append("<a href='tabulation/area/").append(t.getFid1());
-            sb.append("/").append(t.getFid2()).append("/html'>html</a>; ");
-            //add link to area intersection (csv)
-            sb.append("<a href='tabulation/area/").append(t.getFid1());
-            sb.append("/").append(t.getFid2()).append("/csv'>csv</a>; ");
-            //add link to area intersection (json)
-            sb.append("<a href='tabulation/area/").append(t.getFid1());
-            sb.append("/").append(t.getFid2()).append("/json'>json</a>");
-            sb.append("</td><td>");
-            //add link to area intersection rows % (html)
-            sb.append("<a href='tabulation/area/rows/").append(t.getFid1());
-            sb.append("/").append(t.getFid2()).append("/html'>html</a>; ");
-            //add link to area intersection rows % (csv)
-            sb.append("<a href='tabulation/area/rows/").append(t.getFid1());
-            sb.append("/").append(t.getFid2()).append("/csv'>csv</a>; ");
-            //add link to area intersection rows % (json)
-            sb.append("<a href='tabulation/area/rows/").append(t.getFid1());
-            sb.append("/").append(t.getFid2()).append("/json'>json</a>");
-            sb.append("</td><td>");
-            //add link to area intersection columns % (html)
-            sb.append("<a href='tabulation/area/columns/").append(t.getFid1());
-            sb.append("/").append(t.getFid2()).append("/html'>html</a>; ");
-            //add link to area intersection columns % (csv)
-            sb.append("<a href='tabulation/area/columns/").append(t.getFid1());
-            sb.append("/").append(t.getFid2()).append("/csv'>csv</a>; ");
-            //add link to area intersection columns % (json)
-            sb.append("<a href='tabulation/area/columns/").append(t.getFid1());
-            sb.append("/").append(t.getFid2()).append("/json'>json</a>");
-            sb.append("</td>");
-            sb.append("</tr>");
-        }
-        
-        sb.append("</tbody>");
-  
-        sb.append("</table>");
-
-        sb.append("</body></html>");    
-    
-        OutputStream os = resp.getOutputStream();
-        os.write(sb.toString().getBytes("UTF-8"));
-        os.close();
-    }
-    * 
-    */
-
-    public ModelAndView listAvailableTabulationsHtml(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        List<Tabulation> tabulations = tabulationDao.listTabulations();
-    
-        ModelMap m = new ModelMap();
-        m.addAttribute("tabulations", tabulations);
-        return new ModelAndView("tabulations/list", m);
-
-    }
-    /*
-     * list distribution table records, GET
-     */
-    @RequestMapping(value = "/tabulation/area/{fid1}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationAreaSingleHtml(@PathVariable("fid1") String fid1,@PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1,wkt);
-        write(tabulations, resp, fid1,null,wkt,type,"area");        
-    }
-    /*@RequestMapping(value = "/tabulation/occurrences/{fid1}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationOccurrencesSingleHtml(@PathVariable("fid1") String fid1,@PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1,wkt);
-        write(tabulations, resp, fid1,null,wkt,type,"occurrences");        
-    }
-    @RequestMapping(value = "/tabulation/species/{fid1}/{type}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void getTabulationSpeciesSingleHtml(@PathVariable("fid1") String fid1,@PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1,wkt);
-        write(tabulations, resp, fid1,null,wkt,type,"species");        
-    }
-    * 
-    */
-
 }
