@@ -1,197 +1,175 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.ala.spatial.analysis.web;
 
-import au.org.emii.portal.composer.LayerListComposer;
-import au.org.emii.portal.composer.UtilityComposer;
+import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
+import java.net.URLEncoder;
+import java.util.*;
 import net.sf.json.JSONObject;
-import org.ala.logger.client.RemoteLogger;
-import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.Facet;
-import org.ala.spatial.sampling.SimpleShapeFile;
+import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.data.QueryField;
+import org.ala.spatial.data.QueryUtil;
+import org.ala.spatial.data.BiocacheQuery;
+import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.sampling.SimpleShapeFile;
+import org.ala.spatial.util.ListEntry;
+import org.ala.spatial.util.SelectedArea;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zul.Button;
-import org.zkoss.zul.Div;
-import org.zkoss.zul.Radio;
+import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Filedownload;
+import org.zkoss.zul.Listbox;
+import org.zkoss.zul.Listitem;
+import org.zkoss.zul.Textbox;
+import org.zkoss.zul.api.Window;
 
 /**
  *
  * @author ajay
  */
-public class AddLayerController extends UtilityComposer {
+public class AddLayerController extends AddToolComposer {
 
-    LayersAutoComplete lac;
-    RemoteLogger remoteLogger;
-    String shortName, treeName, treePath, treeMetadata, treePid;
-    int treeSubType;
-    String searchName, searchPath, searchMetadata;
-    int searchSubType;
-    Button btnOk;
-    Div divSearch, divTree;
-    Radio rSearch, rTree;
+    int generation_count = 1;
+    private Checkbox chkJackknife;
+    private Checkbox chkRCurves;
+    private Textbox txtTestPercentage;
+    private Listbox lbListLayersCtx;
+//    private String taxon = "";
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-        rSearch.setChecked(true);
+        this.selectedMethod = "Add layers";
+        this.totalSteps = 2;
+
+        this.setIncludeAnalysisLayersForUploadQuery(true);
+        //this.loadAreaLayers();
+        this.loadGridLayers(false, true);
+        this.updateWindowTitle();
+        
+        if(lbListLayers != null) {
+            lbListLayers.clearSelection();
+            lbListLayers.updateDistances();
+        }
+
     }
 
-    public void onClick$btnOk(Event event) {
-        if (btnOk.isDisabled()) {
-            return;
+    public void onClick$btnClearSelectionCtx(Event event) {
+        lbListLayersCtx.clearSelection();
+
+        // check if lbListLayers is empty as well,
+        // if so, then disable the next button
+        if (lbListLayers.getSelectedCount() == 0) {
+            btnOk.setDisabled(true);
         }
-        if (treeName != null) {
+    }
 
-            String lyrSubType = "";
-            if (treeSubType == LayerUtilities.CONTEXTUAL) {
-                lyrSubType = "Contextual";
-            } else if (treeSubType == LayerUtilities.GRID) {
-                lyrSubType = "Environmental";
-            }
+    public void onSelect$lbListLayersCtx(Event event) {
+        btnOk.setDisabled(lbListLayersCtx.getSelectedCount() < 1);
+    }
 
+    @Override
+    public void onLastPanel() {
+        super.onLastPanel();
+        //this.updateName("My Prediction model for " + rgSpecies.getSelectedItem().getLabel());
+        //this.updateName(getMapComposer().getNextAreaLayerName("My layer"));
 
-            if (treePid != null) {
-                //map layerbranch as polygon layer
-                MapLayer mapLayer;
-                mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(treeName), treeName, treePath, 0.6f, /*metadata url*/ null,
-                        null, LayerUtilities.WKT, null, null);
-                if (mapLayer != null) {
-                    mapLayer.setWKT(readUrl(CommonData.layersServer + "/shape/wkt/" + treePid));
-                    mapLayer.setPolygonLayer(true);
+    }
 
-                    String object = readUrl(CommonData.layersServer + "/object/" + treePid);
-                    String fid = getStringValue(null, "fid", object);
-                    String bbox = getStringValue(null, "bbox", object);
-                    String spid = getStringValue("\"id\":\"" + fid + "\"", "spid", readUrl(CommonData.layersServer + "/fields"));
+    
 
-                    MapLayerMetadata md = mapLayer.getMapLayerMetadata();
-                    if (md == null) {
-                        md = new MapLayerMetadata();
-                        mapLayer.setMapLayerMetadata(md);
-                    }
-                    try {
-                        double[][] bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
-                        ArrayList<Double> dbb = new ArrayList<Double>();
-                        dbb.add(bb[0][0]);
-                        dbb.add(bb[0][1]);
-                        dbb.add(bb[1][0]);
-                        dbb.add(bb[1][1]);
-                        md.setBbox(dbb);
-                    } catch (Exception e) {
-                        System.out.println("failed to parse: " + bbox);
-                        e.printStackTrace();
-                    }
-                    md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
-
-                    Facet facet = getFacetForObject(treePid, treeName);
-                    if (facet != null) {
-                        ArrayList<Facet> facets = new ArrayList<Facet>();
-                        facets.add(facet);
-                        mapLayer.setData("facets", facets);
-                    }
-
-                    getMapComposer().updateUserLogMapLayer("gaz", treeName + "|" + treePath);
-                    remoteLogger.logMapArea(treeName, "Layer - " + lyrSubType, CommonData.layersServer + "/object/" + treePid, shortName, treeMetadata);
-                }
-            } else {
-                getMapComposer().addWMSLayer(treeName, treeName,
-                        treePath,
-                        (float) 0.75, treeMetadata, null, treeSubType, null, null, null);
-                remoteLogger.logMapArea(treeName, "Layer - " + lyrSubType, treePath, shortName, treeMetadata );
-            }
-
-            getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/ "|" + treeName);
-            //remoteLogger.logMapArea(treeName, "env - tree - add", "");
-        } else if (searchName != null) {
-            getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(searchName),searchName,
-                    searchPath,
-                    (float) 0.75, searchMetadata, null, searchSubType, null, null);
-
-            getMapComposer().updateUserLogMapLayer("env - search - add", /*joLayer.getString("uid")+*/ "|" + searchName);
-            if (!rTree.isChecked()) {
-                //JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
-                String lyrSubType = "";
-                if (searchSubType == LayerUtilities.CONTEXTUAL) {
-                    lyrSubType = "Contextual";
-                } else if (searchSubType == LayerUtilities.GRID) {
-                    lyrSubType = "Environmental";
-                }
-                remoteLogger.logMapArea(searchName, "Layer - " + lyrSubType, searchPath, shortName, searchMetadata);
-            } else {
-                remoteLogger.logMapArea(searchName, "Layer", searchMetadata);
-            }
+    @Override
+    void fixFocus() {
+        System.out.println(currentStep);
+        switch (currentStep) {
             
+            case 1:
+                lbListLayers.setFocus(true);
+                break;
+           
         }
+    }
+    
+    @Override
+    public void onClick$btnOk(Event event){
+        super.onClick$btnOk(event);
+        if (currentStep == 2){
+            loadMap(event);
+        }
+    }
+    
+    public void loadMap(Event event) {
+        //String layername = tToolName.getValue();
+        //System.out.println("layername:"+layername);
+        
+        
+        if (lbListLayers.getSelectedLayers().length > 0) {
+            String[] sellayers = lbListLayers.getSelectedLayers();
+            int i = 0;
+                for (String s : sellayers) {
+                    i++;
+                    System.out.println("i="+i);
+                    System.out.println("s:"+s);
+                    String treeName = CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
+                    String treePath = CommonData.geoServer + "/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:"+s+"&format=image/png&styles=";
+                    //String treeMetadata = CommonData.satServer + "/layers/" + "660";  //http://spatial-dev.ala.org.au/alaspatial/layers/660";
+
+                    /*
+                     * getMapComposer().addWMSLayer(s, treeName,treePath,(float) 0.75, treeMetadata, null, subType, null, null, null);
+                     * treeMetadata not necessary has to be known
+                     * subType is actually not used in getMapComposer().addWMSLayer
+                     */
+                    getMapComposer().addWMSLayer(s, treeName,treePath,(float) 0.75, null, null, 20, null, null, null);
+                    /*
+                     * Problem: could not map contrextual layers
+                     */
+                }
+            
+                
+            /*
+             * ArrayList<ListEntry> lE = lbListLayers.listEntries;
+            for (ListEntry le : lE){
+                String treeName = le.name;
+                String treePath = CommonData.geoServer + "/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:"+treeName+"&format=image/png&styles=";
+                String treeDisplayName = le.displayname;
+                String treeUid = le.uid;
+                String treeMetadata = CommonData.satServer + "/layers/" + treeUid;
+                String treeType = le.type;
+                getMapComposer().addWMSLayer(treeName, treeDisplayName,
+                        treePath,
+                        (float) 0.75, treeMetadata, null, 20, null, null, null);
+            }
+            * 
+            */
+            
+                
+        }
+        
+        
 
         this.detach();
+
+        //getMapComposer().showMessage("Reference number to retrieve results: " + pid);
+
+        //showInfoWindow("/output/maxent/" + pid + "/species.html");
     }
-
-    public void onClick$btnCancel(Event event) {
-        this.detach();
-    }
-
-    public void onChange$lac(Event event) {
-        searchName = null;
-        btnOk.setDisabled(true);
-
-        LayerListComposer llc = (LayerListComposer) getFellow("layerList").getFellow("layerswindow");
-
-        if (lac.getItemCount() > 0 && lac.getSelectedItem() != null) {
-            JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
-            String metadata = "";
-
-            metadata = CommonData.satServer + "/layers/" + jo.getString("uid");
-
-            setLayer(jo.getString("name"), jo.getString("displayname"), jo.getString("displaypath"), metadata,
-                    jo.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
-        }
-    }
-
-    public void setLayer(String shortName, String name, String displaypath, String metadata, int subType) {
-        setLayer(shortName, name, null, displaypath, metadata, subType);
-    }
-
-    public void setLayer(String shortName, String name, String pid, String displaypath, String metadata, int subType) {
-        if (rTree.isChecked()) {
-            this.shortName = shortName;
-            treeName = name;
-            treePid = pid;
-            treePath = displaypath;
-            treeMetadata = metadata;
-            treeSubType = subType;
-        } else {
-            this.shortName = shortName; 
-            searchName = name;
-            searchPath = displaypath;
-            searchMetadata = metadata;
-            searchSubType = subType;
-        }
-
-        btnOk.setDisabled(false);
-    }
-
-    public void onCheck$rgAddLayer(Event event) {
-        divSearch.setVisible(rSearch.isChecked());
-        divTree.setVisible(rTree.isChecked());
-
-        btnOk.setDisabled((rTree.isChecked() && treeName == null)
-                || (rSearch.isChecked() && searchName == null));
-
-//        if(rSearch.isChecked()) {
-//            lac.setFocus(true);
-//        } else {
-//            ((LayerListComposer)((HtmlMacroComponent)getFellow("layerList")).getFellow("layerswindow")).setFocus(true);
-//        }
-    }
-
+    
     private String readUrl(String feature) {
         StringBuffer content = new StringBuffer();
 
@@ -221,6 +199,8 @@ public class AddLayerController extends UtilityComposer {
         int beginning = startAt == null ? 0 : json.indexOf(startAt) + startAt.length();
         int start = json.indexOf(typeStart, beginning) + typeStart.length();
         int end = json.indexOf(typeEnd, start);
+        System.out.println("start: "+start);
+        System.out.println("end: "+end);
         return json.substring(start, end);
     }
 
