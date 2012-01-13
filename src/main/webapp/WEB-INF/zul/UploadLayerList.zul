@@ -13,13 +13,13 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="uploadlayerlist.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('species-add-to-map')" style="display: inline" />
-        <caption label="Upload a layer list" sclass="caption" />
+        <caption label="Import a layer list" sclass="caption" />
         <separator height="20px"/>
-        <label style="margin-left:20px" value="Upload a previously downloaded layer list." />
+        <label style="margin-left:20px" value="Import a previously downloaded layer list." />
         <separator height="40px"/>
         <div sclass="wButtons">
             <hbox>
-                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                <button sclass="goButton" id="btnCancel" label="Cancel"/>
                 <!--button sclass="goButton" label="Next" id="btnOk"/-->
                 <fileupload sclass="fUploadButton" id="fileUpload" label="Next" upload="true" />
                 <!-- <button sclass="goButton" id="fileUpload" label="Next" upload="true" /> -->

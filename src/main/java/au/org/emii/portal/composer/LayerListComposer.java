@@ -1,6 +1,6 @@
 package au.org.emii.portal.composer;
 
-import org.ala.spatial.analysis.web.AddLayerController;
+import org.ala.spatial.analysis.web.AddLayerTreeController;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
@@ -37,7 +37,7 @@ public class LayerListComposer extends UtilityComposer {
     public Tree tree;
     private ArrayList empty = new ArrayList();
     private MapComposer mc;
-    public AddLayerController alc;
+    public AddLayerTreeController alc;
     SettingsSupplementary settingsSupplementary;
 
     @Override
@@ -206,7 +206,7 @@ public class LayerListComposer extends UtilityComposer {
     void initALC() {
         if(alc == null) {
             try {
-                alc = (AddLayerController) getMapComposer().getFellow("addlayerwindow");
+                alc = (AddLayerTreeController) getMapComposer().getFellow("addlayerwindow");
             } catch (Exception e) {
                 e.printStackTrace();
             }

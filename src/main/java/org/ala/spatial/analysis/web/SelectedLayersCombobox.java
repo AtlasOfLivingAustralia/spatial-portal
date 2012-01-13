@@ -30,7 +30,7 @@ public class SelectedLayersCombobox extends Combobox {
 
         Comboitem ci = new Comboitem("Paste a layer set");
         ci.setParent(this);
-        ci = new Comboitem("Import a layer list");
+        ci = new Comboitem("Import a layer set");
         ci.setParent(this);
         for (int i = 0; i < CommonData.analysisLayerSets.size(); i++) {
             ci = new Comboitem(CommonData.analysisLayerSets.get(i).toString());

@@ -15,44 +15,17 @@
         <a sclass="fancybox-close" onClick="addlayerwindow.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('layers-add-to-map')" style="display: inline" />
         
-        <separator />
-        <hbox id="stepCounter">
-            <vbox style="padding-left: 10px">
-                <grid width="150px">
-                    <columns>
-                        <column width="120px"/>
-                        <column />
-                    </columns>
-                    <rows>
-                       
-                        <row>
-                            <label id="lblStep1" style="font-weight:bold" value="1. Select layers"/>
-                            <image id="imgCompletedStep1" visible="true" src="img/accept.png"/>
-                        </row>
-                        <row>
-                            <label id="lblStep2" value="2. Add layers to map"/>
-                            <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
-
-                        </row>
-                      
-                    </rows>
         
-                </grid>
+        <caption label="Add layer" />
 
-                <div id="tlinfo" visible="false">
-                    <separator spacing="20px" />
-                    <label value="The colours against the layers are like traffic lights. Green implies the layer is uncorrelated to all selected layers, orange implies some correlation while red implies high correlation. As you select layers, the colours change to reflect correlation with already selected layers. For example a red layer implies high correlation with at least one selected layer while a green layer implies little or no correlation to any selected layer" />
-                    <separator />
-                    <label value="Note: The correlations are currently based on full layer spatial extents and not any selected sub-area." />
-                </div>
-
-            </vbox>
-            <vbox style="padding-left: 10px" >
-                
-                <div id="atstep1" visible="true" zclass="first optional" sclass="atstep" width="600px" height="550px">
-                    <label id="atstep1_desc" value="Select layers" sclass="wSubLabel"/>
-                    <label id="atstep1_label" value="" />
-                    <separator height="15px" />
+        <div height="570px">
+            <vbox width="100%">
+                <separator />
+                <html><![CDATA[
+                You can view a list of available layers at <a href="http://spatial.ala.org.au/layers" target="_blank">http://spatial.ala.org.au/layers</a>. The layers in the Atlas of Living Australia come from many agencies and have generally be provided on the basis that the data is not passed to third parties. The agency and license details associated with each layer are available as a <a href="http://spatial.ala.org.au/layers.csv">CSV download file</a>).
+            ]]>
+                </html>
+                <separator height="15px" />
                     <hbox>
                         <label value="The layer sets use layer 'short name': see " />
                         <a href="http://spatial.ala.org.au/layers" target="_blank" label="layers"/>
@@ -69,6 +42,7 @@
                         <label value="Add from search:"  sclass="wSubLabel"/>
                         <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="250px" />
                     </vbox>
+                </vbox>
                     <separator height="15px" />
                     <vbox>
                         <label value="Add from listing:" sclass="wSubLabel" />
@@ -91,45 +65,17 @@
                             </vbox>
                         </hbox>
                     </vbox>
-                </div>               
-                <!--<div id="atstep3" visible="false" zclass="last optional" sclass="atstep" width="550px" height="500px">
-                    <label id="atstep3_desc" value="List of selected layers" sclass="wSubLabel"/>
-                    <label id="atstep3_label" value="" />
-                    <separator height="15px" />
-                    <hbox>
-                        <textbox id="tToolName" width="250px" onOK="addlayerwindow.onClick$btnOk(null)"/>
-                    </hbox>
-                    <vbox>
-                        <label value="Summary" style="font-weight: bold" visible="false" />
-                        <div id="atsummary"></div>
-                    </vbox>
-                    <separator height="60px" />
-                    <vbox id="dLayerSummary" visible="true" >
-                        <label value="List of selected environmental layers" />
-                        <textbox id="tLayerList" width="500px" height="80px" readonly="true" multiline="true"/>
-                        <button id="bLayerListDownload1" label="Export set" sclass="goButton" />
-                        
-                    </vbox>
-                </div>-->
-                
-                <div id="atstep2" visible="false" zclass="last optional" sclass="atstep">
-                    <label id="atstep2_desc" value="Add the layer to map" sclass="wSubLabel"/>
-                    <label id="atstep2_label" value="" />
-                </div>
-               
-
-                
-            </vbox>
-        </hbox>
+        </div>
+           
         <div sclass="wizButtonContainer">
             <hbox>
-                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
-                <button sclass="goButton" label="Cancel" id="btnCancel" />
-                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
                 <button sclass="goButton" label="Next &gt;" id="btnOk" />
-                <fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
-                <!-- <button sclass="goButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" /> -->
             </hbox>
         </div>
+        
+        
+        <separator />
+        
     </window>
 </zk>
