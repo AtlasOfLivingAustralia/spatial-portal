@@ -188,6 +188,10 @@ public class Zipper {
         return true;
     }
 
+    public static void cleanUpZip(String zipfile, String[] deleteFiles, String[] renameFile) {
+        
+    }
+
     private static void copyInputStream(InputStream in, OutputStream out) throws IOException, Exception {
         byte[] buffer = new byte[1024];
         int len;

@@ -1,5 +1,6 @@
 package org.ala.spatial.dao;
 
+import java.sql.BatchUpdateException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +36,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayers() {
-        return hibernateTemplate.find("from LayerInfo where enabled=true order by  classification1, classification2, displayname ");
+        return hibernateTemplate.find("from LayerInfo order by  classification1, classification2, displayname ");
     }
 
     /**
@@ -47,6 +48,24 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
     @Override
     public LayerInfo getLayerById(String id) {
         List<LayerInfo> layers = hibernateTemplate.find("from LayerInfo where uid = ? AND  enabled=true ", id);
+        if (layers.size() > 0) {
+            return layers.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get layer by id even if disabled
+     *
+     * @param id
+     * @return LayerInfo
+     */
+    @Override
+    public LayerInfo getLayerById(String id, boolean force) {
+        if (!force) return getLayerById(id);
+        
+        List<LayerInfo> layers = hibernateTemplate.find("from LayerInfo where uid = ? ", id);
         if (layers.size() > 0) {
             return layers.get(0);
         } else {
@@ -117,7 +136,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByEnabled(boolean enabled) {
-        return hibernateTemplate.find("from LayerInfo where enabled = ? AND  enabled=true order by  classification1, classification2, displayname ", enabled);
+        return hibernateTemplate.find("from LayerInfo where enabled = ? order by  classification1, classification2, displayname ", enabled);
     }
 
     /**
@@ -134,7 +153,20 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
 
     @Override
     public void addLayer(LayerInfo layer) {
-        hibernateTemplate.saveOrUpdate(layer);
+        try {
+            hibernateTemplate.saveOrUpdate(layer);
+        } catch (Exception e) {
+            System.out.println("Unable to save or update layer. :: " + e.getCause().getMessage());
+            e.printStackTrace(System.out);
+            if (e instanceof BatchUpdateException) {
+                BatchUpdateException bue = (BatchUpdateException) e;
+                bue.getNextException().printStackTrace(System.out);
+            }
+            if (e.getCause() instanceof BatchUpdateException) {
+                BatchUpdateException bue = (BatchUpdateException) e.getCause();
+                bue.getNextException().printStackTrace(System.out);
+            }
+        }
     }
 
     @Override

@@ -176,7 +176,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     setCurrentState(FAILED);
                     if (maxentError.equals("Warning: Skipping species because it has 0 test samples")) {
                         setMessage("Warning: Skipping species because it has 0 test samples." + (msets.getRandomTestPercentage() > 0 ? "\nHint: Try to set the test percetage to '0'" : ""));
-                    } else if (maxentError.equals("Warning: Skipping species because it has 0 test samples")) {
+                    } else if (maxentError.equals("No species selected")) {
                         setMessage("No species selected.\nHint: Make sure your active area includes species occurrences");
                     }
                 } else {
@@ -246,7 +246,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     StringBuffer removedSpecies = new StringBuffer();
                     try {
                         BufferedReader br = new BufferedReader(new FileReader(
-                                currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "removedSpecies.txt"));
+                                currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "Prediction_removedSpecies.txt"));
                         String s;
                         while ((s = br.readLine()) != null) {
                             removedSpecies.append(s);
@@ -257,10 +257,10 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     if (removedSpecies.length() > 0) {
                         String header = "'Sensitive species' have been masked out of the model. See: http://www.ala.org.au/about/program-of-projects/sds/\r\n\r\nLSID,Species scientific name,Taxon rank";
                         writeToFile(header + removedSpecies.toString(),
-                                currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "maskedOutSensitiveSpecies.csv");
+                                currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "Prediction_maskedOutSensitiveSpecies.csv");
 
                         String insertBefore = "<a href = \"species.asc\">The";
-                        String insertText = "<b><a href = \"maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br></b>";
+                        String insertText = "<b><a href = \"Prediction_maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br></b>";
                         readReplace(pth + "species.html", insertBefore, insertText + insertBefore);
                     }
 

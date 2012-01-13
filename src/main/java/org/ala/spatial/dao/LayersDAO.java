@@ -11,6 +11,7 @@ import org.ala.spatial.model.LayerInfo;
 public interface LayersDAO {
     public List<LayerInfo> getLayers();
     public LayerInfo getLayerById(String id);
+    public LayerInfo getLayerById(String id, boolean force);
     public List<LayerInfo> getLayersByName(String name);
     public List<LayerInfo> getLayersByDisplayName(String name);
     public List<LayerInfo> getLayersByType(String type);

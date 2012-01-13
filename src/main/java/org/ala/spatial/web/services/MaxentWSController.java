@@ -85,7 +85,7 @@ public class MaxentWSController {
             String pid = Long.toString(currTime);
             writeFile(species, currentPath + "output" + File.separator + "maxent" + File.separator + pid + File.separator, "species_points.csv");
             if(removedSpecies != null) {
-                writeFile(removedSpecies, currentPath + "output" + File.separator + "maxent" + File.separator + pid + File.separator, "removedSpecies.txt");
+                writeFile(removedSpecies, currentPath + "output" + File.separator + "maxent" + File.separator + pid + File.separator, "Prediction_removedSpecies.txt");
             }
             AnalysisJobMaxent ajm = new AnalysisJobMaxent(pid, currentPath, taxon, envlist, region, filter, layers, txtTestPercentage,chkJackknife,chkResponseCurves);
             StringBuffer inputs = new StringBuffer();

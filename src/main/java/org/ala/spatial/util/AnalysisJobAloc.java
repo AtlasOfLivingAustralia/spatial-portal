@@ -143,7 +143,7 @@ public class AnalysisJobAloc extends AnalysisJob {
             fmetadata.close();
 
             // generate the readme.txt file
-            CitationService.generateClassificationReadme(filepath);
+            CitationService.generateClassificationReadme(filepath,"Classification");
 
             setProgress(0.5);
 

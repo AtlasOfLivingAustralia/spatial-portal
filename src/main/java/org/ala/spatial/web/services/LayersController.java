@@ -39,7 +39,7 @@ public class LayersController {
     private final String LAYERS_BASE = "/layers";
     private final String LAYERS_INDEX = "/ws/layers/index";
     private final String LAYERS_ADD = "/ws/layers/add";
-    private final String LAYERS_EDIT = "/ws/layers/edit";
+    private final String LAYERS_EDIT = "/ws/layers/edit/{id}";
     private final String LAYERS_LIST = "/ws/layers/list";
     private final String LAYERS_ASSOCIATIONS = "/layers/analysis/inter_layer_association.csv";
     private final String LAYERS_ASSOCIATIONS_RAWNAMES = "/layers/analysis/inter_layer_association_rawnames.csv";
@@ -70,7 +70,7 @@ public class LayersController {
             //msg = count + " search results for " + q;
             //modelMap.addAttribute("mode", "search");
         } else {
-            l = layersDao.getLayers();
+            l = layersDao.getLayersByEnabled(true); 
             //msg = "Displaying all layers";
             //modelMap.addAttribute("mode", "list");
         }
@@ -106,33 +106,31 @@ public class LayersController {
                 //msg = count + " search results for " + q;
                 //modelMap.addAttribute("mode", "search");
             } else {
-                layers = layersDao.getLayers();
+                layers = layersDao.getLayersByEnabled(true); 
                 //msg = "Displaying all layers";
                 //modelMap.addAttribute("mode", "list");
             }
 
 
             String header = "";
-            header += "UID, ";
-            header += "Short name, ";
-            header += "Name, ";
-            header += "Description, ";
-            header += "Metadata contact organization, ";
-            header += "Metadata contact organization website, ";
-            header += "Organisation role, ";
-            header += "Metadata date, ";
-            header += "Reference date, ";
-            header += "Licence level, ";
-            header += "Licence info, ";
-            header += "Licence notes, ";
-            header += "Type, ";
-            header += "Classification 1, ";
-            header += "Classification 2, ";
-            header += "Units, ";
-            header += "Data language, ";
-            header += "Scope, ";
-            header += "Notes, ";
-            header += "More information, ";
+            header += "UID,";
+            header += "Short name,";
+            header += "Name,";
+            header += "Description,";
+            header += "Data provider,";
+            header += "Provider website,";
+            header += "Provider role,";
+            header += "Metadata date,";
+            header += "Reference date,";
+            header += "Licence level,";
+            header += "Licence info,";
+            header += "Licence notes,";
+            header += "Type,";
+            header += "Classification 1,";
+            header += "Classification 2,";
+            header += "Units,";
+            header += "Notes,";
+            header += "More information,";
             header += "Keywords";
 
             res.setContentType("text/csv; charset=UTF-8");
@@ -145,7 +143,7 @@ public class LayersController {
             List<String[]> mylist = new Vector<String[]>();
             while (it.hasNext()) {
                 LayerInfo lyr = it.next();
-                System.out.println("Writing layer info for: " + lyr.getUid() + " - " + lyr.getDisplayname());
+                //System.out.println("Writing layer info for: " + lyr.getUid() + " - " + lyr.getDisplayname());
                 mylist.add(lyr.toArray());
             }
             cw.writeAll(mylist);
@@ -210,8 +208,11 @@ public class LayersController {
     }
 
     @RequestMapping(value = LAYERS_EDIT, method = RequestMethod.GET)
-    public String showEditPage() {
-        return "layers/edit";
+    public ModelAndView showEditPage(@PathVariable String id) {
+        ModelAndView mv = new ModelAndView("layers/edit");
+        mv.addObject("layer", layersDao.getLayerById(id, true));
+        mv.addObject("mode", "edit"); 
+        return mv;
     }
 
     @RequestMapping(value = LAYERS_EDIT, method = RequestMethod.POST)

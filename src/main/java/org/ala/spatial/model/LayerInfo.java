@@ -33,7 +33,7 @@ public class LayerInfo {
     @Column(name="uid")
     private String uid;
 
-    @Column(name="name")
+    @Column(name="`name`")
     private String name;
 
     @Column(name="displayname")
@@ -42,7 +42,7 @@ public class LayerInfo {
     @Column(name="description")
     private String description;
 
-    @Column(name="type")
+    @Column(name="`type`")
     private String type;
 
     @Column(name="source")
@@ -126,8 +126,23 @@ public class LayerInfo {
     @Column(name="source_link")
     private String sourcelink;
 
+    @Column(name="path_orig")
+    private String pathorig;
+
+    @Column(name="path_1km")
+    private String path1km;
+
+    @Column(name="path_250m")
+    private String path250m;
+
+    @Column(name="pid")
+    private String pid;
+
     @Column(name="keywords")
     private String keywords;
+
+    @Column(name="env_category")
+    private String envcategory;
 
 //    @GeneratedValue
 //    private String capabilities;
@@ -411,6 +426,46 @@ public class LayerInfo {
         this.sourcelink = sourcelink;
     }
 
+    public String getEnvcategory() {
+        return envcategory;
+    }
+
+    public void setEnvcategory(String envcategory) {
+        this.envcategory = envcategory;
+    }
+
+    public String getPath1km() {
+        return path1km;
+    }
+
+    public void setPath1km(String path1km) {
+        this.path1km = path1km;
+    }
+
+    public String getPath250m() {
+        return path250m;
+    }
+
+    public void setPath250m(String path250m) {
+        this.path250m = path250m;
+    }
+
+    public String getPathorig() {
+        return pathorig;
+    }
+
+    public void setPathorig(String pathorig) {
+        this.pathorig = pathorig;
+    }
+
+    public String getPid() {
+        return pid;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
+    }
+
     public String getKeywords() {
         return keywords;
     }
@@ -468,8 +523,6 @@ public class LayerInfo {
         v.add(classification1);
         v.add(classification2);
         v.add(environmentalvalueunits);
-        v.add(datalang);
-        v.add(mdhrlv);
         v.add(notes.replaceAll("\n", " "));
         v.add(metadatapath);
         v.add(keywords);
