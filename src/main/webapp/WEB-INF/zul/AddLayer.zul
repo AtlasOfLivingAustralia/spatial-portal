@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addlayerwindow" use="org.ala.spatial.analysis.web.AddLayerController"
-    apply="org.ala.spatial.analysis.web.AddLayerController" width="750px" height="600px"
+    apply="org.ala.spatial.analysis.web.AddLayerController" width="600px" height="640px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -19,7 +19,7 @@
         <caption label="Add layer" />
 
         <div height="570px">
-            <vbox width="100%">
+            <vbox style="margin-left:20px;overflow: auto" width="550px">
                 <separator />
                 <html><![CDATA[
                 You can view a list of available layers at <a href="http://spatial.ala.org.au/layers" target="_blank">http://spatial.ala.org.au/layers</a>. The layers in the Atlas of Living Australia come from many agencies and have generally be provided on the basis that the data is not passed to third parties. The agency and license details associated with each layer are available as a <a href="http://spatial.ala.org.au/layers.csv">CSV download file</a>).
@@ -31,21 +31,21 @@
                         <a href="http://spatial.ala.org.au/layers" target="_blank" label="layers"/>
                     </hbox>
                     <separator />
-                    <vbox>
-                        <label value="Add a set of layers:"  sclass="wSubLabel"/>
+                    <hbox>
+                        <label value="Add a set of layers:"/>
                         <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="250px" readonly="true"/>
                         <!--<fileupload sclass="fUploadButton" id="uploadLayerList" label="Upload set" upload="true" />-->
                         <!--<button sclass="goButton" id="uploadLayerList" label="Upload set" upload="true" />-->
-                    </vbox>
+                    </hbox>
                     <separator height="15px" />
-                    <vbox>
-                        <label value="Add from search:"  sclass="wSubLabel"/>
+                    <hbox>
+                        <label value="Add from search:"/>
                         <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="250px" />
-                    </vbox>
+                    </hbox>
                 </vbox>
                     <separator height="15px" />
-                    <vbox>
-                        <label value="Add from listing:" sclass="wSubLabel" />
+                    <vbox   style="margin-left:20px;overflow: auto" width="550px">
+                        <label value="" />
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
                     use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px" height="300px" multiple="true"
                     checkmark="true" onOK="addlayerwindow.onClick$btnOk(null)">
