@@ -195,7 +195,7 @@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
             <br />
 
             <input type="submit" class="button" value="Save changes" />
-            <input type="button" class="button" value="Cancel" onclick="location.href='index';" />
+            <input type="button" class="button" value="Cancel" onclick="location.href='/ws/admin/layers';" />
         </form>
             </c:otherwise>
         </c:choose>

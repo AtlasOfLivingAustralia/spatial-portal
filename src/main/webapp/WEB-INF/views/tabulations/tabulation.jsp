@@ -3,24 +3,28 @@
     Created on : Sep 26, 2011, 9:52:39 PM
     Author     : ajay
 --%>
+<%@ page contentType="text/html" pageEncoding="UTF-8" %><%@
+taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%><%@
+taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%><%@
+taglib uri="http://java.sun.com/jsp/jstl/fmt"  prefix="fmt" %>
+<%-- <%@include file="../common/top.jsp" %> --%>
+<jsp:include page="../common/top.jsp?fluid=true" />
+<header id="page-header">
+    <div class="inner">
+        <nav id="breadcrumb"><ol><li><a href="http://www.ala.org.au">Home</a></li> <li><a href="http://spatial.ala.org.au">Mapping &#038; analysis</a></li> <li class="last">Spatial Web Services</li></ol></nav>
+        <section id="content-search">
+            <h1>Spatial Web Services</h1>
+            <p>${title}</p>
+        </section>
+    </div><!--inner-->
 
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt"  prefix="fmt" %>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-   "http://www.w3.org/TR/html4/loose.dtd">
+</header>
+<div class="inner">
+    <div class="col-wide last" style="width:100%">
 
-<html>
-    <head>
-       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">       
-       <title>${title}</title>
-    </head>
-    <body>
-       <basefont size="2" >
-       <h3>${title}</h3><br>
+        <script type="text/javascript" src="/layers-service/javascript/SortingTable.js"></script>
             
-       <table border='1' align="middle">
+       <table class="table-borders" style="width:100%">
            <c:forEach items="${grid}" var="row" varStatus="counter">
                <tr>
                <c:forEach items="${row}" var="cell" varStatus="rowcounter">
@@ -114,9 +118,13 @@
                    
            </tr>
        </table>
-       <p><br />
+       <p>
+           Blanks = no intersection
+           <br />
+           0 = no records in intersection
        </p>
-       <p>Blanks = no intersection</p>
-       <p>0 = no records in intersection</p>
-       </body>
-</html>
+
+    </div>
+</div><!--inner-->
+
+<%@include file="../common/bottom.jsp" %>

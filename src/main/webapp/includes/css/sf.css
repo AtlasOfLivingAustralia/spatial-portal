@@ -1,0 +1,163 @@
+/*
+-----------------------------------------------------
+
+Superfish menu with image replacspanent
+
+full version with comments (compressed = sf.css)
+
+  note:
+  http://iceyboard.no-ip.org/projects/css_compressor
+  DO NOT COMBINE IDENTICAL RULES (EVERYTHING ELSE OK)
+
+-----------------------------------------------------
+*/
+nav#nav-site {
+	z-index:100;
+	position:relative;
+	width:998px;
+	height:37px;
+	margin:0 auto;
+	-moz-border-radius: 0 0 3px 3px;
+	-webkit-border-radius: 0 0 3px 3px;
+	-o-border-radius: 0 0 3px 3px;
+	-icab-border-radius: 0 0 3px 3px;
+	-khtml-border-radius: 0 0 3px 3px;
+	border-radius: 0 0 3px 3px;
+	
+	border:1px solid #bc2b03;
+	border-top:none;
+	background-color: #df4a21;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#df4a21), to(#d3421a)); 
+	background-image: -webkit-linear-gradient(top, #df4a21, #d3421a); 
+	background-image:    -moz-linear-gradient(top, #df4a21, #d3421a);
+	background-image:     -ms-linear-gradient(top, #df4a21, #d3421a);
+	background-image:      -o-linear-gradient(top, #df4a21, #d3421a);
+	background-image:         linear-gradient(top, #df4a21, #d3421a);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#df4a21', EndColorStr='#d3421a');
+	
+}
+
+.fluid nav#nav-site {
+	border-left:none;
+	margin:0;
+	-moz-border-radius: 0 0 3px 0;
+	-webkit-border-radius: 0 0 3px 0;
+	-o-border-radius: 0 0 3px 0;
+	-icab-border-radius: 0 0 3px 0;
+	-khtml-border-radius: 0 0 3px 0;
+	border-radius: 0 0 3px 0;
+}
+
+nav#nav-site ul li {
+	display:inline;
+}
+nav#nav-site li a {
+	float: left;
+	overflow: hidden;
+	border: none;
+	font-size:1.4em;
+	font-family:"Arial Narrow", Arial, Helvetica,sans-serif;
+	font-weight:narrow;
+	color:#fff;
+	padding:.5em 1em;
+}
+/*** ESSENTIAL STYLES ***/
+.sf, .sf * {
+	margin:0;
+	padding:0;
+	list-style:none;
+}
+
+/*.sf ul {*/
+.sf li ul {
+	position:absolute;
+	top:-999em;
+	width:100%; /* left offset of submenus need to match (see below) */
+}
+.sf ul li { width:100%; }
+.sf li:hover { visibility:inherit; /* fixes IE7 'sticky bug' */ }
+.sf li { float:left; position:relative; }
+.sf a { display:block; position:relative; }
+
+.sf li:hover ul,
+.sf li.sfHover ul {
+	left:0;
+	top:3em;    /* where to start sub menu (match height of button image) */
+	width:16em;  /* how wide the sub-menus should be when javascript is disabled. don't forget left margin for level 3! */
+	z-index:50;
+	text-align:left;
+}
+
+ul.sf li:hover li ul,
+ul.sf li.sfHover li ul {
+	top:-999em;
+}
+
+/*** CUSTOM SKIN ***/
+
+/* top */
+.sf a {text-decoration:none}
+.sf li:hover, .sf li.wpm-hover,
+.sf li:hover > a,
+.sf li.selected a,
+#page-24214 .nav-species a,
+#page-24216 .nav-locations a, 
+#page-collections-map .nav-collections a, 
+#page-datasets .nav-datasets a, 
+#page-77  .nav-getinvolved a, 
+#page-24219 .nav-blogs a, .category .nav-blogs a, .single-format-standard .nav-blogs a, 
+#page-24241 .nav-about a,
+.sf a:focus, .sf a:hover, .sf a:active {
+	text-decoration: none;
+	background:		#3d464c;			/* color 3 */
+	outline:		0;
+}
+
+/* end of image replace */
+
+/* subs */
+.sf li li {
+	height:100%;
+	line-height:1;
+}
+
+.sf li li a, .sf li li a:visited {
+	font-family:Arial, Helvetica, sans-serif!important;
+	padding:.5em 1em!important;
+	width:14em;
+	color:#fff;
+	font-size:1.2em!important;
+	cursor:pointer;
+}
+
+.sf li ul {
+	padding: 0;
+	background-color:#3d464c;
+	border:1px #3d464c solid;
+	-moz-border-radius:  0 0 3px 3px; /* FF1+ */
+	-webkit-border-radius:  0 0 3px 3px; /* Saf3+, Chrome */
+	-o-border-radius:  0 0 3px 3px;
+	-icab-border-radius: 0 0 3px 3px;
+	-khtml-border-radius:  0 0 3px 3px;
+	border-radius:  0 0 3px 3px; /* Opera 7.7, IE 9 */
+	z-index:50;
+	overflow:hidden;
+}
+
+/* hover for subs */
+.sf li li:hover, .sf li li.sfHover,.sf li li a:focus, .sf li li a:hover, .sf li li a:active, .sf li li.selected a { background-color:#df4a21!important; outline:0;}
+
+/* DM - "Logged in" message at top of page, please move to the most appropriate place */
+#loginId {
+    position: absolute;
+    right: 0;
+    margin-right: 4px;
+    padding: 0 4px;
+    text-align:right;
+    color:white;
+    background-color:grey;
+    -moz-border-radius: 0 0 4px 4px; /* FF1+ */
+    -webkit-border-radius: 0 0 4px 4px; /* Saf3+, Chrome */
+    border-radius: 0 0 4px 4px; /* Opera 10.5, IE 9 */
+}
+

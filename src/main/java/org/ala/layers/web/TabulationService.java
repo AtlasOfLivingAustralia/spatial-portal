@@ -280,7 +280,7 @@ public class TabulationService {
             m.addAttribute("id", 5);
             
         }        
-        return new ModelAndView("tabulations/TabulationHtml",m);
+        return new ModelAndView("tabulations/tabulation",m);
     }
     
     
