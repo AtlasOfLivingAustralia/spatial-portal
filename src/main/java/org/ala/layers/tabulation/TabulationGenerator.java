@@ -15,6 +15,7 @@
 
 package org.ala.layers.tabulation;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -62,15 +63,16 @@ public class TabulationGenerator {
                 + "\n args[2] = db username,"
                 + "\n args[3] = password,"
                 + "\n args[4] = (optional) specify one step to run, "
-                + "'1' pair objects, '3' delete invalid objects, '4' area, '5' occurrences");
-        if(args.length >= 4) {
+                + "'1' pair objects, '3' delete invalid objects, '4' area, '5' occurrences"
+                + "\n args[4] = (optional) specify one step to run, ");
+        if(args.length >= 5) {
             CONCURRENT_THREADS = Integer.parseInt(args[0]);
             db_url = args[1];
             db_usr = args[2];
             db_pwd = args[3];
         }
 
-        if(args.length <= 4) {
+        if(args.length <= 5) {
             updatePairObjects();
 
 //            updateSingleObjects();
@@ -92,11 +94,16 @@ public class TabulationGenerator {
             while (updateArea() > 0) {
                 System.out.println("time since start= " + (System.currentTimeMillis() - start) + "ms");
             }
-        } else if(args[5].equals("5")) {
+        } else if(args[4].equals("5")) {
             long start = System.currentTimeMillis();
-            Records records = new Records("/Users/fan03c/biochache_records/_records.csv");
-            while (updateOccurrencesSpecies(records) > 0) {
-                System.out.println("time since start= " + (System.currentTimeMillis() - start) + "ms");
+            File f = new File(args[5]);
+            if (f.exists()) {
+                Records records = new Records(f.getAbsolutePath());
+                while (updateOccurrencesSpecies(records) > 0) {
+                    System.out.println("time since start= " + (System.currentTimeMillis() - start) + "ms");
+                }
+            } else {
+                System.out.println("Please provide a valid path to the species occurrence file");
             }
         }
     }

@@ -80,6 +80,21 @@ public class LayerDAOImpl implements LayerDAO {
         logger.info("Getting enabled layer info for name = " + name);
         String sql = "select * from layers where enabled=true and name = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
+        System.out.println("Searching for " + name + ": Found " + l.size() + " records. " );
+        if (l.size() > 0) {
+            return l.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Layer getLayerByDisplayName(String name) {
+        //List<Layer> layers = hibernateTemplate.find("from Layer where enabled=true and name=?", name);
+
+        logger.info("Getting enabled layer info for name = " + name);
+        String sql = "select * from layers where enabled=true and displayname = ?";
+        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
         if (l.size() > 0) {
             return l.get(0);
         } else {
@@ -103,6 +118,38 @@ public class LayerDAOImpl implements LayerDAO {
         logger.info("Getting a list of all enabled Contextual layers");
         String sql = "select * from layers where enabled=true and type = ?";
         return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), type);
+    }
+
+    @Override
+    public List<Layer> getLayersByCriteria(String keywords) {
+        /*
+        logger.info("Getting a list of all enabled layers by criteria: " + keywords);
+        String sql = "";
+        sql += "select * from layers where ";
+        sql += " enabled=true AND ( ";
+        sql += "lower(keywords) like ? ";
+        sql += " or lower(displayname) like ? ";
+        //sql += " or lower(type) like ? ";
+        sql += " or lower(name) like ? ";
+        sql += ") order by displayname ";
+
+        keywords = "%" + keywords.toLowerCase() + "%";
+
+        List list = hibernateTemplate.find(sql, new String[]{keywords, keywords, keywords}); // keywords,
+
+        //remove duplicates if any
+        Set setItems = new LinkedHashSet(list);
+        list.clear();
+        list.addAll(setItems);
+
+        return list;//no duplicates now
+         *
+         */
+        logger.info("Getting a list of all enabled layers");
+        String sql = "select * from layers where enabled=true";
+        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class));
+        return l;
+
     }
 
     @Override

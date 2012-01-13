@@ -196,9 +196,9 @@ public class Layer {
         return enabled;
     }
 
-    public Boolean getEnabled() {
-        return enabled;
-    }
+//    public Boolean getEnabled() {
+//        return enabled;
+//    }
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
@@ -538,6 +538,7 @@ public class Layer {
 
         List v = new Vector();
         v.add(uid);
+        v.add(name);
         v.add(displayname);
         v.add(description.replaceAll("\n", " "));
         v.add(source);
@@ -552,8 +553,6 @@ public class Layer {
         v.add(classification1);
         v.add(classification2);
         v.add(environmentalvalueunits);
-        v.add(datalang);
-        v.add(mdhrlv);
         v.add(notes.replaceAll("\n", " "));
         v.add(metadatapath);
         v.add(keywords);
