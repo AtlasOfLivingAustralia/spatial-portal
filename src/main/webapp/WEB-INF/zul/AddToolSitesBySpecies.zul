@@ -162,8 +162,8 @@
                 <button sclass="goButton" label="Cancel" id="btnCancel" />
                 <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
                 <button sclass="goButton" label="Next &gt;" id="btnOk" />
-                <!--<fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />-->
-                <button sclass="goButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+                <fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+                <!-- <button sclass="goButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" /> -->
             </hbox>
         </div>
     </window>
