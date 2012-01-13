@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-    <window id="addtoolwindow" use="org.ala.spatial.analysis.web.AddToolMaxentComposer"
-    apply="org.ala.spatial.analysis.web.AddToolMaxentComposer" width="750px" height="700px"
+    <window id="addtoolwindow" use="org.ala.spatial.analysis.web.AddToolGDMComposer"
+    apply="org.ala.spatial.analysis.web.AddToolGDMComposer" width="750px" height="700px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -38,13 +38,13 @@
             
                         </row>
                         <row>
-                            <label id="lblStep4" value="4. MaxEnt options"/>
+                            <label id="lblStep4" value="4. GDM options"/>
                             <image id="imgCompletedStep4" visible="false" src="img/accept.png"/>
                         </row>
                         <row>
                             <label id="lblStep5" value="5. Set layer name"/>
                             <image id="imgCompletedStep5" visible="false" src="img/accept.png"/>
-
+           
                         </row>
                     </rows>
         
@@ -78,7 +78,7 @@
                     <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
                         <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false" />
                         <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false" />
-                        <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" />
+                        <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" visible="false" />
                         <vbox width="100%">
                             <div id="divSpeciesSearch" visible="false" >
                                 <separator />
@@ -98,7 +98,7 @@
                                 <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
                         </vbox>
-                        <radio id="rMultiple" label="Search for multiple species by scientific or common name" />
+                        <radio id="rMultiple" label="Search for multiple species by scientific or common name" value="multiple" />
                         <vbox id="vboxMultiple" visible="false">
                             <separator />
                             <label value="Enter scientific names separated by a comma or new line." />
@@ -133,8 +133,8 @@
                     </radiogroup>
                 </div>
 
-                <div id="atstep3" visible="false" zclass="step3 minlayers1">
-                    <label id="atstep3_desc" value="Select one or more environmental and/or contextual layers" sclass="wSubLabel"/>                    
+                <div id="atstep3_proper" visible="false" zclass="step3 minlayers1">
+                    <label id="atstep3_desc" value="Select one or more environmental and/or contextual layers" sclass="wSubLabel"/>
                     <label id="atstep3_label" value="" />
                     <separator height="15px" />
                     <hbox>
@@ -146,7 +146,7 @@
                         <label value="Add set a of layers:" />
                         <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="320px" readonly="true"/>
                         <!--<fileupload sclass="fUploadButton" id="uploadLayerList" label="Upload set" upload="true" />-->
-                        <!--<button sclass="goButton" id="uploadLayerList" label="Upload set" upload="true" />-->
+                        <button sclass="goButton" id="uploadLayerList" label="Upload set" upload="true" />
                     </hbox>
                     <separator />
                     <hbox>
@@ -158,7 +158,7 @@
                         <label value="Environmental layers" sclass="wSubLabel" />
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
                     use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px"
-                    height="300px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
+                    height="430px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
                             <listhead>
                                 <listheader label="category"  />
                                 <listheader label="name" />
@@ -180,46 +180,75 @@
                         <label id="atstep4_desc" value="Select one or more contextual layers" sclass="wSubLabel"/>
                         <label id="atstep4_label" value="" />
                         -->
-                        <separator />
-                        <vbox>
-                            <label value="Contextual layers" sclass="wSubLabel" />
-                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayersCtx" width="500px"
+                    <separator />
+                    <vbox visible="false">
+                        <label value="Contextual layers" sclass="wSubLabel" />
+                        <listbox sclass="envlist" fixedLayout="false" id="lbListLayersCtx" width="500px"
                     height="135px" multiple="true" checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
-                                <listhead>
-                                    <listheader label="category" />
-                                    <listheader label="name" width="300px" />
-                                    <listheader label=" "  />
-                                    <listheader label=" " width="10px" visible="false" />
-                                </listhead>
-                                <listitem value="landcover">
-                                    <listcell>Vegetation</listcell>
-                                    <listcell>Land cover</listcell>
-                                    <listcell value="618" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/618", "Metadata", false);'></listcell>
-                                </listitem>
-                                <listitem value="landuse">
-                                    <listcell>Vegetation</listcell>
-                                    <listcell>Land use</listcell>
-                                    <listcell value="678" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/678", "Metadata", false);'></listcell>
-                                </listitem>
-                                <listitem value="vast">
-                                    <listcell>Vegetation</listcell>
-                                    <listcell>Vegetation condition</listcell>
-                                    <listcell value="619" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/619", "Metadata", false);'></listcell>
-                                </listitem>
-                                <listitem value="native_veg">
-                                    <listcell>Vegetation</listcell>
-                                    <listcell>Vegetation types - native</listcell>
-                                    <listcell value="617" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/617", "Metadata", false);'></listcell>
-                                </listitem>
-                                <listitem value="present_veg">
-                                    <listcell>Vegetation</listcell>
-                                    <listcell>Vegetation types - present</listcell>
-                                    <listcell value="620" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/620", "Metadata", false);'></listcell>
-                                </listitem>
-                            </listbox>
-                            <button id="btnClearSelectionCtx" label="Clear layers"  sclass="goButton" style="float:left" />
-                        </vbox>
+                            <listhead>
+                                <listheader label="category" />
+                                <listheader label="name" width="300px" />
+                                <listheader label=" "  />
+                                <listheader label=" " width="10px" visible="false" />
+                            </listhead>
+                            <listitem value="landcover">
+                                <listcell>Vegetation</listcell>
+                                <listcell>Land cover</listcell>
+                                <listcell value="618" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/618", "Metadata", false);'></listcell>
+                            </listitem>
+                            <listitem value="landuse">
+                                <listcell>Vegetation</listcell>
+                                <listcell>Land use</listcell>
+                                <listcell value="678" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/678", "Metadata", false);'></listcell>
+                            </listitem>
+                            <listitem value="vast">
+                                <listcell>Vegetation</listcell>
+                                <listcell>Vegetation condition</listcell>
+                                <listcell value="619" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/619", "Metadata", false);'></listcell>
+                            </listitem>
+                            <listitem value="native_veg">
+                                <listcell>Vegetation</listcell>
+                                <listcell>Vegetation types - native</listcell>
+                                <listcell value="617" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/617", "Metadata", false);'></listcell>
+                            </listitem>
+                            <listitem value="present_veg">
+                                <listcell>Vegetation</listcell>
+                                <listcell>Vegetation types - present</listcell>
+                                <listcell value="620" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/620", "Metadata", false);'></listcell>
+                            </listitem>
+                        </listbox>
+                        <button id="btnClearSelectionCtx" label="Clear layers"  sclass="goButton" style="float:left" />
+                    </vbox>
                 </div>
+
+
+
+                <div id="atstep3" visible="false" zclass="step4 minlayers1">
+                    <groupbox mold="3d" width="500px" style="padding: 10px">
+                        <caption label="Select your environmental layers" />
+                        <vbox>
+                            <label value="Select env layers" />
+                            <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" width="450px" >
+                                <listhead>
+                                    <listheader label="Select all layers" />
+                                </listhead>
+                                <listitem value="p01" label="p01" />
+                                <listitem value="p05" label="p05" />
+                                <listitem value="p09" label="p09" />
+                                <listitem value="p12" label="p12" />
+                                <listitem value="p18" label="p18" />
+                                <listitem value="p23" label="p23" />
+                                <listitem value="p30" label="p30" />
+                                <listitem value="p35" label="p35" />
+                            </listbox>
+                            <button id="btnClearlbenvlayers" label="Clear layers"  sclass="goButton" style="float:left" />
+                        </vbox>
+                    </groupbox>
+
+                </div>
+
+
+
 
                 <!--
                 <div id="atstep4" visible="false" zclass="step4 minlayers1">
@@ -258,9 +287,9 @@
                 -->
 
                 <div id="atstep4" visible="false" zclass="step4 optional">
-                    <label id="atstep4_desc" value="MaxEnt options" sclass="wSubLabel"/>
+                    <label id="atstep4_desc" value="GDM options" sclass="wSubLabel"/>
                     <label id="atstep4_label" value="" />
-                    <vbox>
+<!--                    <vbox>
                         <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" onOK="addtoolwindow.onClick$btnOk(null)"/>
                         <checkbox id="chkRCurves" label="Create response curves" checked="true" onOK="addtoolwindow.onClick$btnOk(null)"/>
                     </vbox>
@@ -270,7 +299,42 @@
                             <label value="Random test percentage (0 - 100):" />
                             <textbox id="txtTestPercentage" value="0"  onOK="addtoolwindow.onClick$btnOk(null)"/>
                         </hbox>
+                    </vbox>-->
+                    <vbox>
+                        <hbox>
+                            <label value="Generate quantile from:  Data" />
+                    <!--
+                    <combobox id="quantile">
+                        <comboitem label="Data" />
+                        <comboitem label="Grid" />
+                    </combobox>
+                    -->
+                        </hbox>
+
+                <!--<checkbox id="useDistance" label="Use geographic (Euclidean) distance" />-->
+                        <hbox>
+                            <label value="Use geographic distance as additional predictor:" />
+                            <radiogroup>
+                                <radio value="yes" label="yes" />
+                                <radio value="no" label="no" selected="true" />
+                            </radiogroup>
+                        </hbox>
+
+                        <hbox>
+                    Sites weighted:
+                            <combobox id="weighting">
+                                <comboitem label="equally" />
+                                <comboitem label="by number of species" />
+                            </combobox>
+                        </hbox>
+
+                        <hbox>
+                            <checkbox id="useSubSample" label="Use all site pairs" checked="true" disabled="true" />
+                            <textbox id="sitePairsSize" disabled="true" value="1000000" />
+                        </hbox>
+
                     </vbox>
+
                 </div>
 
                 <div id="atstep5" visible="false" zclass="last optional">

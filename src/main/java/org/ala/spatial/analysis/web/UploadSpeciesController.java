@@ -35,6 +35,7 @@ import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Html;
 
 /**
  *
@@ -47,6 +48,7 @@ public class UploadSpeciesController extends UtilityComposer {
     Textbox tbName;
     Button fileUpload;
     Label tbInstructions;
+    Html lsidinfo;
     String uploadLSID;
     String uploadType = "normal";
     private EventListener eventListener;
@@ -488,6 +490,13 @@ public class UploadSpeciesController extends UtilityComposer {
 
     void setTbInstructions(String instructions) {
         tbInstructions.setValue(instructions);
+        if (instructions.contains("LSID")) {
+            lsidinfo.setVisible(true);
+            this.setTitle("Import LSIDs");
+        } else {
+            lsidinfo.setVisible(false);
+            this.setTitle("Import points");
+        }
     }
 
     void setUploadType(String uploadType) {

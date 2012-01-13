@@ -22,9 +22,9 @@
                 <radiogroup id="cbAreaSelection" orient="vertical" onOK="addareawindow.onClick$btnOk(null)" >
                     <vbox>
                     <separator />                    
-                    <label value="Upload"  sclass="wSubLabel"/>
-                    <radio label="Upload Shapefile" id="ciUploadShapefile"  focus="true" checked="true" />
-                    <radio label="Upload KML" id="ciUploadKML" />
+                    <label value="Import"  sclass="wSubLabel"/>
+                    <radio label="Import Shapefile" id="ciUploadShapefile"  focus="true" checked="true" />
+                    <radio label="Import KML" id="ciUploadKML" />
                     <radio label="Enter area coordinates (WKT)" id="ciWKT" />
                     </vbox>
                 </radiogroup>

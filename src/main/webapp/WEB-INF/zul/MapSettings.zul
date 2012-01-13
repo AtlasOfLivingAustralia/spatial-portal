@@ -4,23 +4,37 @@
     use="org.ala.spatial.analysis.web.MapOptions"
     apply="org.ala.spatial.analysis.web.MapOptions" style="padding-top:1px; margin-left: 3px;" >
         <vbox width="100%" style="padding-top:1px;">
-            <hbox width="100%">
+            <vbox width="100%">
                 <div style="padding-top:0px" width="65px">
                     <label value="Base map" sclass="h3" />
                 </div>
                 <radiogroup id="rgBaseMap">
-                    <radio value="outline" onCheck='Clients.evalJavaScript("changeBaseLayer(\"outline\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Outline" />
-                    <radio value="minimal" onCheck='Clients.evalJavaScript("changeBaseLayer(\"minimal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Minimal" />
-                    <radio value="normal" onCheck='Clients.evalJavaScript("changeBaseLayer(\"normal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Normal" />
-                    <radio value="hybrid" onCheck='Clients.evalJavaScript("changeBaseLayer(\"hybrid\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Satellite" />
+                    <vlayout>
+                        <hlayout>
+                            <radio value="outline" onCheck='Clients.evalJavaScript("changeBaseLayer(\"outline\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Outline" />
+                            <span style="cursor:pointer" onClick='Clients.evalJavaScript("loadMetadataUrl(\"outline\");")'>?</span>
+                        </hlayout>
+                        <hlayout>
+                            <radio value="minimal" onCheck='Clients.evalJavaScript("changeBaseLayer(\"minimal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Minimal" />
+                            <span style="cursor:pointer" onClick='Clients.evalJavaScript("loadMetadataUrl(\"minimal\");")'>?</span>
+                        </hlayout>
+                        <hlayout>
+                            <radio value="normal" onCheck='Clients.evalJavaScript("changeBaseLayer(\"normal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Normal" />
+                            <span style="cursor:pointer" onClick='Clients.evalJavaScript("loadMetadataUrl(\"normal\");")'>?</span>
+                        </hlayout>
+                        <hlayout>
+                            <radio value="hybrid" onCheck='Clients.evalJavaScript("changeBaseLayer(\"hybrid\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Satellite" />
+                            <span style="cursor:pointer" onClick='Clients.evalJavaScript("loadMetadataUrl(\"hybrid\");")'>?</span>
+                        </hlayout>
+                    </vlayout>
                 </radiogroup>
-            </hbox>
+            </vbox>
             <separator />
-           <hbox style="float: right">
-           <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
-           <separator />
-           <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
-           </hbox>
+            <hbox style="float: right">
+                <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
+                <separator />
+                <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
+            </hbox>
         </vbox>
     </window>
 </zk>

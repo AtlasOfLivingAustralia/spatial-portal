@@ -323,7 +323,7 @@ function runTabulation(){
 }
 
 function runGDM(){
-    alert("Run GDM");
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddGDM', null));
 }
 
 function runImportSpecies(){
@@ -352,6 +352,17 @@ function loadHelp(page){
         page = 'spatial-portal-help-contents';
     }
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', help_base_url + "/" + page));
+}
+function loadMetadataUrl(type){
+    var metaurl = "http://www.google.com/intl/en_au/help/terms_maps.html";
+    if (type=="minimal") {
+        metaurl = "http://www.openstreetmap.org/copyright";
+    } else if (type=="outline") {
+        metaurl = "http://www.naturalearthdata.com/about/terms-of-use";
+    } else {
+        metaurl = "http://www.google.com/intl/en_au/help/terms_maps.html";
+    }
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', metaurl));
 }
 
 function clearNearestMarkerLayer(){

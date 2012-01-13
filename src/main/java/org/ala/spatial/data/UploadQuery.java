@@ -519,7 +519,7 @@ public class UploadQuery implements Query, Serializable {
             fieldsList.append(data.get(i).getDisplayName());
         }
 
-        String html = "User uploaded coordinates\n";
+        String html = "User uploaded points\n";
         html += "<table class='md_table'>";
         html += "<tr class='md_grey-bg'><td class='md_th'>Name: </td><td class='md_spacer'/><td class='md_value'>" + name + "</td></tr>";
         html += "<tr><td class='md_th'>Description: </td><td class='md_spacer'/><td class='md_value'>" + description + "</td></tr>";

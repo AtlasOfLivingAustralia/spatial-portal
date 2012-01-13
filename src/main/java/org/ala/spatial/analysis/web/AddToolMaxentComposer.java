@@ -186,16 +186,25 @@ public class AddToolMaxentComposer extends AddToolComposer {
                 get.addParameter("area", area);
             }
 
+            System.out.println("Getting species data");
             String[] speciesData = getSpeciesData(query);
+            System.out.print("checking for species data...");
             //check for no data
-            if (speciesData[0] == null) {
+            if (speciesData[0] == null || speciesData[0].trim().equals("")) {
+                System.out.println("none available");
                 if (speciesData[1] == null) {
                     getMapComposer().showMessage("No records available for Prediction", this);
                 } else {
                     getMapComposer().showMessage("All species and records selected are marked as sensitive", this);
                 }
                 return false;
+            } else {
+                System.out.println("available");
             }
+            System.out.println("displaying species data: '");
+            System.out.println(speciesData[0]);
+            System.out.println("'");
+
             get.addParameter("species", speciesData[0]);
             if (speciesData[1] != null) {
                 get.addParameter("removedspecies", speciesData[1]);

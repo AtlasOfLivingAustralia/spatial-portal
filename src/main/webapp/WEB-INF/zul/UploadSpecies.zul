@@ -2,7 +2,7 @@
 <zk>
     <window id="uploadspecieswindow" use="org.ala.spatial.analysis.web.UploadSpeciesController"
     apply="org.ala.spatial.analysis.web.UploadSpeciesController" width="400px"
-    xmlns:n="http://www.zkoss.org/2005/zk/native">
+    xmlns:n="http://www.zkoss.org/2005/zk/native" title="Import points">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -13,7 +13,7 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="uploadspecieswindow.onClick$btnCancel(null)" style="display: inline" />
 
-        <caption label="Upload points" />
+        <!-- <caption label="Import points" /> -->
 
         <vbox width="100%">
             <separator />
@@ -25,7 +25,7 @@
             <separator />
             <label id="tbInstructions" style="white-space: normal; padding: 5px" />
             <separator />
-            <html><![CDATA[
+            <html id="lsidinfo" visible="true"><![CDATA[
                 <p>
                 NOTE: If you wish to built an assemblage of various taxa,
                 we have created an Excel macro

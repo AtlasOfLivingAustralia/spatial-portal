@@ -97,7 +97,7 @@
                         </listbox>
                         <hbox>
                             <button id="btnClearSelection" label="Clear layers" sclass="goButton" style="float:left" />
-                            <button id="bLayerListDownload1" label="Download set" sclass="goButton" />
+                            <button id="bLayerListDownload1" label="Export set" sclass="goButton" />
                             <vbox>
                                 <separator height="2px" />
                                 <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />
@@ -130,7 +130,7 @@
                     <vbox id="dLayerSummary" visible="true" >
                         <label value="Environmental layer set" />
                         <textbox id="tLayerList" width="500px" height="80px" readonly="true" multiline="true"/>
-                        <button id="bLayerListDownload2" label="Download selection" visible="false" sclass="goButton" />
+                        <button id="bLayerListDownload2" label="Export selection" visible="false" sclass="goButton" />
                     </vbox>
                 </div>
             </vbox>

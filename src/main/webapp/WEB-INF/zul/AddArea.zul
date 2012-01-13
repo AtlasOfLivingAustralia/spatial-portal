@@ -41,9 +41,9 @@
                     <radio label="Box - Current View" id="ciBoxCurrentView" />
 
                     <separator />
-                    <label value="Upload"  sclass="wSubLabel"/>
-                    <radio label="Upload Shapefile" id="ciUploadShapefile" />
-                    <radio label="Upload KML" id="ciUploadKML" />
+                    <label value="Import"  sclass="wSubLabel"/>
+                    <radio label="Import Shapefile" id="ciUploadShapefile" />
+                    <radio label="Import KML" id="ciUploadKML" />
 
                     <separator />
                     <label value="Other" sclass="wSubLabel" />

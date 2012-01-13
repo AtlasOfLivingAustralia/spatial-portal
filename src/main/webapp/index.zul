@@ -113,8 +113,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <n:li>
                                     <n:a href="#" n:onClick="runPrediction();">Predict</n:a>
                                 </n:li>
-			<!--<n:li><n:a href="#" n:onClick="runTabulation();">(Tabulate)</n:a></n:li>
-				<n:li><n:a href="#" n:onClick="runGDM();">(GDM)</n:a></n:li> -->
+                                <n:li>
+                                    <n:a href="#" n:onClick="runGDM();">GDM</n:a>
+                                </n:li>
+			<!--<n:li><n:a href="#" n:onClick="runTabulation();">(Tabulate)</n:a></n:li> -->
                                 <n:li>
                                     <n:a href="#" n:onClick="runSitesBySpecies();">Points to Grid</n:a>
                                 </n:li>
@@ -571,7 +573,8 @@ function readCookie(name) {
                 <div class="login-bubble-arrow-border"></div>
                 Log into the ALA Spatial Portal to keep track of your session.
             </div>
-        ]]></html>
+        ]]>
+        </html>
         
         <zscript defer="true">
             hovertool.setVisible(false);
