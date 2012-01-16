@@ -958,9 +958,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     mapLayer.setSubType(subType);
                     mapLayer.setCql(cqlfilter);
                     mapLayer.setEnvParams(envParams);
+                    uri = CommonData.geoServer + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + mapLayer.getLayer();
+                    mapLayer.setDefaultStyleLegendUri(uri);
                     if (metadata != null) {
-                        uri = CommonData.geoServer + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + mapLayer.getLayer();
-                        mapLayer.setDefaultStyleLegendUri(uri);
                         if (mapLayer.getMapLayerMetadata() == null) {
                             mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                         }
