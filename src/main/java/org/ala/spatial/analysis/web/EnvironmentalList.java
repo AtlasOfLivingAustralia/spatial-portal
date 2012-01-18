@@ -45,10 +45,12 @@ public class EnvironmentalList extends Listbox {
                 distances = CommonData.getDistances();
                 layerNames = CommonData.getLayerNamesEnv();
             } else {
-                distances = null;
+                //distances = null;
+                distances = CommonData.getDistances();
                 listEntries = CommonData.getListEntriesAll();
                 layerNames = CommonData.getLayerNamesAll();
             }
+                        
 
             if(includeAnalysisLayers != this.includeAnalysisLayers) {
                 //remove
@@ -71,7 +73,7 @@ public class EnvironmentalList extends Listbox {
                             le = new ListEntry((String)ml.getData("pid"), ml.getDisplayName(), "Analysis", "Occurrence Density", "Environmental", 0, -1, -1, null);
                         } else if(ml.getSubType() == LayerUtilities.SRICHNESS) {
                             le = new ListEntry((String)ml.getData("pid"), ml.getDisplayName(), "Analysis", "Species Richness", "Environmental", 0, -1, -1, null);
-                        }
+                        } 
                         if(le != null) {
                             listEntries.add(le);
                         }
@@ -122,8 +124,10 @@ public class EnvironmentalList extends Listbox {
                             }
                         });
                         img.setParent(lc);
-
-                        if (environmentalOnly) {
+                        
+                        String type = ((ListEntry) data).type;
+                            
+                        if (type.equalsIgnoreCase("environmental")){
                             float value = ((ListEntry) data).value;
                             lc = new Listcell(" ");
                             if (threasholds[0] > value) {
@@ -132,9 +136,10 @@ public class EnvironmentalList extends Listbox {
                                 lc.setSclass("lcYellow");//lc.setStyle("background: #ffff22;");
                             } else {
                                 lc.setSclass("lcGreen");//lc.setStyle("background: #22aa22;");
-                            }
+                            } 
                             lc.setParent(li);
                         }
+                        
                     }
                 });
 
@@ -175,21 +180,22 @@ public class EnvironmentalList extends Listbox {
 
         for (int i = 0; i < listEntries.size(); i++) {
             float value = listEntries.get(i).value;
+            String type = listEntries.get(i).type;
             Listcell lc = (Listcell) (getItemAtIndex(i).getLastChild());
-            if (!getSelectedItems().isEmpty() && threasholds[0] > value) {
-                lc.setSclass("lcRed");//setStyle("background: #bb2222;");
-            } else if (!getSelectedItems().isEmpty() && threasholds[1] > value) {
-                lc.setSclass("lcYellow");//lc.setStyle("background: #ffff22;");
-            } else {
-                lc.setSclass("lcGreen");//lc.setStyle("background: #22aa22;");
+            if (type.equalsIgnoreCase("environmental")){
+                if (!getSelectedItems().isEmpty() && threasholds[0] > value) {
+                    lc.setSclass("lcRed");//setStyle("background: #bb2222;");
+                } else if (!getSelectedItems().isEmpty() && threasholds[1] > value) {
+                    lc.setSclass("lcYellow");//lc.setStyle("background: #ffff22;");
+                } else {
+                    lc.setSclass("lcGreen");//lc.setStyle("background: #22aa22;");
+                }
             }
         }
     }
 
     public void onSelect(Event event) {
-        if (environmentalOnly) {
-            updateDistances();
-        }
+        updateDistances();
     }
 
     private float getDistance(int row, int row0) {

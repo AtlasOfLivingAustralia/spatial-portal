@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addlayerwindow" use="org.ala.spatial.analysis.web.AddLayerController"
-    apply="org.ala.spatial.analysis.web.AddLayerController" width="600px" height="640px"
+    apply="org.ala.spatial.analysis.web.AddLayerController" width="750px" height="700px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -16,38 +16,64 @@
         <n:a class="fancybox-help" n:onClick="loadHelp('layers-add-to-map')" style="display: inline" />
         
         
-        <caption label="Add layer" />
+        <separator />
+        <hbox id="stepCounter">
+            <vbox style="padding-left: 10px">
+                <grid width="150px">
+                    <columns>
+                        <column width="120px"/>
+                        <column />
+                    </columns>
+                    <rows>
+                       
+                        <row>
+                            <label id="lblStep1" style="font-weight:bold" value="1. Select layers"/>
+                            <image id="imgCompletedStep1" visible="true" src="img/accept.png"/>
+                        </row>
+                        <!--<row>
+                            <label id="lblStep2" value="2. Add layers to map"/>
+                            <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
 
-        <div height="570px">
-            <vbox style="margin-left:20px;overflow: auto" width="550px">
-                <separator />
-                <html><![CDATA[
-                You can view a list of available layers at <a href="http://spatial.ala.org.au/layers" target="_blank">http://spatial.ala.org.au/layers</a>. The layers in the Atlas of Living Australia come from many agencies and have generally be provided on the basis that the data is not passed to third parties. The agency and license details associated with each layer are available as a <a href="http://spatial.ala.org.au/layers.csv">CSV download file</a>).
-            ]]>
-                </html>
-                <separator height="15px" />
+                        </row>-->
+                      
+                    </rows>
+        
+                </grid>
+
+                <div id="tlinfo" visible="true">
+                    <separator spacing="156px" />
+                    <label value="The colours against the layers are like traffic lights. Green implies the layer is uncorrelated to all selected layers, orange implies some correlation while red implies high correlation. As you select layers, the colours change to reflect correlation with already selected layers. For example a red layer implies high correlation with at least one selected layer while a green layer implies little or no correlation to any selected layer" />
+                    <separator />
+                    <label value="Note: The correlations are currently based on full layer spatial extents and not any selected sub-area." />
+                </div>
+
+            </vbox>
+            <vbox style="padding-left: 10px" >
+                
+                <div id="atstep1" visible="true" zclass="last optional" sclass="atstep"  width="650px" height="600px">
+                    <label id="atstep1_desc" value="Select one or more layers" sclass="wSubLabel"/>
+                    <label id="atstep1_label" value="" />
+                    <separator height="15px" />
                     <hbox>
                         <label value="The layer sets use layer 'short name': see " />
                         <a href="http://spatial.ala.org.au/layers" target="_blank" label="layers"/>
                     </hbox>
                     <separator />
                     <hbox>
-                        <label value="Add a set of layers:"/>
-                        <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="250px" readonly="true"/>
-                        <!--<fileupload sclass="fUploadButton" id="uploadLayerList" label="Upload set" upload="true" />-->
-                        <!--<button sclass="goButton" id="uploadLayerList" label="Upload set" upload="true" />-->
+                        <label value="Add set a of layers:"/>
+                        <combobox id="selectedLayersCombobox" use="org.ala.spatial.analysis.web.SelectedLayersCombobox" width="320px" readonly="true"/>
+                        
                     </hbox>
                     <separator height="15px" />
                     <hbox>
                         <label value="Add from search:"/>
-                        <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="250px" />
+                        <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" />
                     </hbox>
-                </vbox>
                     <separator height="15px" />
-                    <vbox   style="margin-left:20px;overflow: auto" width="550px">
+                    <vbox>
                         <label value="" />
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px" height="300px" multiple="true"
+                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="550px" height="450px" multiple="true"
                     checkmark="true" onOK="addlayerwindow.onClick$btnOk(null)">
                         <listhead>
                             <listheader label="category"  />
@@ -65,17 +91,44 @@
                             </vbox>
                         </hbox>
                     </vbox>
-        </div>
-           
+                </div>               
+                <!--<div id="atstep3" visible="false" zclass="last optional" sclass="atstep" width="550px" height="500px">
+                    <label id="atstep3_desc" value="List of selected layers" sclass="wSubLabel"/>
+                    <label id="atstep3_label" value="" />
+                    <separator height="15px" />
+                    <hbox>
+                        <textbox id="tToolName" width="250px" onOK="addlayerwindow.onClick$btnOk(null)"/>
+                    </hbox>
+                    <vbox>
+                        <label value="Summary" style="font-weight: bold" visible="false" />
+                        <div id="atsummary"></div>
+                    </vbox>
+                    <separator height="60px" />
+                    <vbox id="dLayerSummary" visible="true" >
+                        <label value="List of selected environmental layers" />
+                        <textbox id="tLayerList" width="500px" height="80px" readonly="true" multiline="true"/>
+                        
+                        
+                    </vbox>
+                </div>-->
+                
+                <!--<div id="atstep2" visible="false" zclass="last optional" sclass="atstep">
+                    <label id="atstep2_desc" value="Add the layer to map" sclass="wSubLabel"/>
+                    <label id="atstep2_label" value="" />
+                </div>-->
+               
+
+                
+            </vbox>
+        </hbox>
         <div sclass="wizButtonContainer">
             <hbox>
-                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
+                <button sclass="goButton" label="Cancel" id="btnCancel" />
+                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
                 <button sclass="goButton" label="Next &gt;" id="btnOk" />
+                
             </hbox>
         </div>
-        
-        
-        <separator />
-        
     </window>
 </zk>
