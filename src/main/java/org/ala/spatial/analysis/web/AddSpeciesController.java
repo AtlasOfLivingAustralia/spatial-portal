@@ -40,7 +40,7 @@ public class AddSpeciesController extends UtilityComposer {
 
     SettingsSupplementary settingsSupplementary;
     SpeciesAutoComplete searchSpeciesAuto;
-    Button btnOk;
+    Button btnOk,bMultiple;
     Radio rSearch;
     Radio rMultiple;
     Radio rUploadCoordinates;
@@ -53,6 +53,7 @@ public class AddSpeciesController extends UtilityComposer {
     SpeciesAutoComplete mSearchSpeciesAuto;
     Textbox tMultiple;
     Listbox lMultiple;
+    Event event;
     
     Query query;
     String rank;
@@ -170,7 +171,7 @@ public class AddSpeciesController extends UtilityComposer {
             if (rUploadCoordinates.isSelected()) {
                 usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
             } else if (rUploadLSIDs.isSelected()) {
-                usc.setTbInstructions("3. Select file (text file, one LSID per line)");
+                usc.setTbInstructions("3. Select file (text file, one LSID or name per line)");
             } else {
                 usc.setTbInstructions("3. Select file");
             }
@@ -387,7 +388,7 @@ public class AddSpeciesController extends UtilityComposer {
         lc.setParent(li);
 
         //family
-        if(lsid == null) {
+        if(lsid == null && !sciname.matches(".*[0-9].*")) {
             lc = new Listcell("click to search");
             lc.setSclass("notFoundFamily");
             lc.addEventListener("onClick", new EventListener() {
@@ -448,5 +449,15 @@ public class AddSpeciesController extends UtilityComposer {
             }
         }
         return sb.toString();
+    }
+    
+    public void setMultipleSpecies(String splist) {
+        tMultiple.setText(splist);
+        rSearch.setSelected(false);
+        rMultiple.setSelected(true);
+        vboxSearch.setVisible(false);
+        vboxMultiple.setVisible(true);
+        bMultiple.focus();       
+        this.onClick$bMultiple(event);
     }
 }

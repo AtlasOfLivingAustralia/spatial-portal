@@ -15,6 +15,10 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.QueryField;
@@ -25,24 +29,20 @@ import org.ala.spatial.wms.RecordsLookup;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
-import org.zkoss.zul.Constraint;
-import org.zkoss.zul.Fileupload;
-import org.zkoss.zul.Label;
-import org.zkoss.zul.Messagebox;
-import org.zkoss.zul.Button;
-import org.zkoss.zul.Html;
-
+import org.zkoss.zul.*;
+import org.ala.spatial.analysis.web.AddSpeciesController;
 /**
  *
  * @author ajay
  */
 public class UploadSpeciesController extends UtilityComposer {
-
+    Button btnOk;
     SettingsSupplementary settingsSupplementary;
     Textbox tbDesc;
     Textbox tbName;
@@ -54,6 +54,7 @@ public class UploadSpeciesController extends UtilityComposer {
     private EventListener eventListener;
     public boolean addToMap;
     boolean defineArea;
+    Textbox tMultiple;
 
     @Override
     public void afterCompose() {
@@ -90,12 +91,12 @@ public class UploadSpeciesController extends UtilityComposer {
             }
         });
 
-        Map<String, String> map = Executions.getCurrent().getArg();
+        /*Map<String, String> map = Executions.getCurrent().getArg();
         if (map != null && map.get("addToMap") != null && map.get("addToMap").equals("false")) {
             addToMap = false;
         } else {
             addToMap = true;
-        }
+        }*/
 
 
     }
@@ -405,7 +406,8 @@ public class UploadSpeciesController extends UtilityComposer {
             data.close();
     }
 
-    public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
+    /*
+     * public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
         try {
             //don't care if it has a header
 
@@ -483,6 +485,49 @@ public class UploadSpeciesController extends UtilityComposer {
             e.printStackTrace(System.out);
         }
     }
+    */
+    
+    public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
+        try {
+            //don't care if it has a header
+
+            // check if the count of LSIDs goes over the threshold (+1).
+            int sizeToCheck = userPoints.size();
+            System.out.println("Checking user LSIDs size: " + sizeToCheck + " -> " + 50);
+            if (sizeToCheck > 50) {
+                getMapComposer().showMessage("Cannot upload more than 50 LSIDs");
+                return;
+            }
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < userPoints.size(); i++) {
+                String[] up = (String[]) userPoints.get(i);
+                if (i > 0) {
+                    sb.append(",");
+                }
+                sb.append(up[0].replace(",", "").trim().toLowerCase());
+            }
+           
+            String lsids = sb.toString();
+                       
+            AddSpeciesController window = (AddSpeciesController) Executions.createComponents("WEB-INF/zul/AddSpecies.zul", getMapComposer(), null);
+            try {
+                window.setMultipleSpecies(lsids);
+                window.doModal();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SuspendNotAllowedException ex) {
+                Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        
+        }catch (Exception e) {
+            getMapComposer().showMessage("Unable to load your file. Please try again.");
+
+            System.out.println("unable to load user LSIDs: ");
+            e.printStackTrace(System.out);
+        }
+    }
+    
 
     void setEventListener(EventListener eventListener) {
         this.eventListener = eventListener;
