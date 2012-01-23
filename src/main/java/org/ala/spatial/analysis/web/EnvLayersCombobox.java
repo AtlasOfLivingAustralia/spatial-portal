@@ -99,9 +99,9 @@ public class EnvLayersCombobox extends Combobox {
                     String displayName = jo.getString("displayname");
                     String type = jo.getString("type");
 
-                    if (!type.equalsIgnoreCase("environmental")) {
-                        continue;
-                    }
+                    //if (!type.equalsIgnoreCase("environmental")) {
+                    //    continue;
+                    //}
 
                     if (!isValidLayer(jo.getString("name"))) {
                         continue;
