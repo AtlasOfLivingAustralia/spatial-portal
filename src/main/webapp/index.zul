@@ -168,6 +168,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <n:li>
                                     <n:a href="#" n:onClick="loadHelp('tools');">Tools</n:a>
                                 </n:li>
+                                <n:li>
+                                    <n:a href="#" n:onClick="loadHelp('import');">Import</n:a>
+                                </n:li>
+                                <n:li>
+                                    <n:a href="#" n:onClick="loadHelp('export');">Export</n:a>
+                                </n:li>
                             </n:ul>
                         </n:li>
                     </n:ul>
