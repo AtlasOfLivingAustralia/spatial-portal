@@ -51,6 +51,7 @@ public class AddLayerController extends AddToolComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
+        btnOk.setDisabled(true);
 
         this.selectedMethod = "Add layers";
         this.totalSteps = 1;
