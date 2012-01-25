@@ -73,13 +73,13 @@
                     <vbox>
                         <label value="" />
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="550px" height="450px" multiple="true"
+                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="550px" height="430px" multiple="true"
                     checkmark="true" onOK="addlayerwindow.onClick$btnOk(null)">
                         <listhead>
                             <listheader label="category"  />
                             <listheader label="name" />
-                            <listheader label=" "  />
-                            <listheader label=" " width="10px" visible="true" />
+                            <listheader label=" " width="25px" />
+                            <listheader label=" " width="15px" visible="true" />
                         </listhead>
                         </listbox>
                         <hbox>
