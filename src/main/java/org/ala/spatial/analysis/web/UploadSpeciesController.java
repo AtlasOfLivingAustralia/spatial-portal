@@ -59,6 +59,8 @@ public class UploadSpeciesController extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
+        
+        setTbInstructions("3. Select file (text file, one LSID or name per line)");
 
         tbName.setConstraint(new Constraint() {
 
@@ -535,12 +537,12 @@ public class UploadSpeciesController extends UtilityComposer {
 
     void setTbInstructions(String instructions) {
         tbInstructions.setValue(instructions);
-        if (instructions.contains("LSID")) {
-            lsidinfo.setVisible(true);
-            this.setTitle("Import LSIDs");
-        } else {
+        if (instructions.contains("longitude")) {
             lsidinfo.setVisible(false);
             this.setTitle("Import points");
+        } else {
+            lsidinfo.setVisible(true);
+            this.setTitle("Import assemblage");
         }
     }
 
