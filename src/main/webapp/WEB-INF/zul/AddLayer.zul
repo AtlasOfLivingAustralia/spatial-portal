@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addlayerwindow" use="org.ala.spatial.analysis.web.AddLayerController"
-    apply="org.ala.spatial.analysis.web.AddLayerController" width="756px" height="700px"
+    apply="org.ala.spatial.analysis.web.AddLayerController" width="786px" height="700px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -72,16 +72,18 @@
                     <separator height="15px" />
                     <vbox>
                         <label value="" />
+                        
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="550px" height="430px" multiple="true"
+                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="560px" height="430px" multiple="true"
                     checkmark="true" onOK="addlayerwindow.onClick$btnOk(null)">
                         <listhead>
-                            <listheader label="category"  />
-                            <listheader label="name" />
-                            <listheader label=" " width="25px" />
-                            <listheader label=" " width="15px" visible="true" />
+                            <listheader label="category" hflex="min"/>
+                            <listheader label="name"  hflex="min"/>
+                            <listheader label=" "  width="25px"/>
+                            <listheader label=" " width="14px" />
                         </listhead>
                         </listbox>
+                        
                         <hbox>
                             <button id="btnClearSelection" label="Clear layers" sclass="goButton" style="float:left" />
                             <button id="bLayerListDownload1" label="Export set" sclass="goButton" />
