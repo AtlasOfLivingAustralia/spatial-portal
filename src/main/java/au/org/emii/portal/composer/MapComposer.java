@@ -2852,6 +2852,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onClick$btnAddLayer(Event event) {
         openModal("WEB-INF/zul/AddLayer.zul", null, "addlayerwindow");
     }
+    
+    public void onClick$btnAddFacet(Event event) {
+        openModal("WEB-INF/zul/AddFacet.zul", null, "addfacetwindow");
+    }
 
     public void onClick$btnAddGDM(Event event) {
         openModal("WEB-INF/zul/AddToolGDM.zul", null, "addtoolwindow");

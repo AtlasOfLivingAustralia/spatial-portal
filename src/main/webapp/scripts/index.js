@@ -283,6 +283,10 @@ function addLayerAction(){
    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddLayer', null));
 }
 
+function addFacetAction(){
+   zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddFacet', null));
+}
+
 function runSpeciesList(){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnSpeciesList', null));
 }
