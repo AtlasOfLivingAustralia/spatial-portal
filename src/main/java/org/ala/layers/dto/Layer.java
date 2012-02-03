@@ -155,8 +155,8 @@ public class Layer {
     @Column(name="path_250m")
     private String path_250m;
 
-    @Column(name="env_category")
-    private String env_category;
+    @Column(name="domain")
+    private String domain;
 
     @Column(name="pid")
     private String pid; 
@@ -488,12 +488,12 @@ public class Layer {
         this.path_orig = pathorig;
     }
 
-    public String getEnv_category() {
-        return env_category;
+    public String getdomain() {
+        return domain;
     }
 
-    public void setEnv_category(String env_category) {
-        this.env_category = env_category;
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 
     public String getPid() {
@@ -614,7 +614,7 @@ public class Layer {
         m.put("displayname", displayname);
         m.put("displaypath", displaypath);
         m.put("enabled",enabled);
-        m.put("env_category",env_category);
+        m.put("domain",domain);
         m.put("environmentalvaluemax", environmentalvaluemax);
         m.put("environmentalvaluemin",environmentalvaluemin);
         m.put("environmentalvalueunits",environmentalvalueunits);
