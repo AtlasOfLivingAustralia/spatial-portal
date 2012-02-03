@@ -17,6 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.data.Facet;
 import org.ala.spatial.data.Query;
@@ -31,6 +32,7 @@ import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Checkbox;
@@ -42,11 +44,13 @@ import org.zkoss.zul.api.Window;
 
 /**
  *
- * @author ajay
+ * @author YUAN
  */
 public class AddLayerController extends AddToolComposer {
 
     int generation_count = 1;
+    static JSONArray layerlistJSON = null;
+    static JSONArray copy_layerlistJSON = null;
 
     @Override
     public void afterCompose() {
@@ -108,29 +112,60 @@ public class AddLayerController extends AddToolComposer {
                     String treeName = CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
                     String treePath = CommonData.geoServer + "/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:"+s+"&format=image/png&styles=";
                     String legendurl = CommonData.geoServer+ "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
-                    
-                    getMapComposer().addWMSLayer(s, treeName,treePath,(float) 0.75, null, legendurl,LayerUtilities.WKT, null, null,null);
+                    String uid = getUid(s);
+                    String metadata  = CommonData.satServer + "/layers/" +uid;
+                    System.out.println("metadata="+metadata);
+                    getMapComposer().addWMSLayer(s, treeName,treePath,(float) 0.75, metadata, legendurl,LayerUtilities.WKT, null, null,null);
                     //getMapComposer().addWMSLayer(pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
                 }
-            
-                
-            /*
-             * ArrayList<ListEntry> lE = lbListLayers.listEntries;
+            /*ArrayList<ListEntry> lE = lbListLayers.listEntries;
             for (ListEntry le : lE){
                 String treeName = le.name;
                 String treePath = CommonData.geoServer + "/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:"+treeName+"&format=image/png&styles=";
                 String treeDisplayName = le.displayname;
                 String treeUid = le.uid;
                 String treeMetadata = CommonData.satServer + "/layers/" + treeUid;
+                String legendurl = CommonData.geoServer+ "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + treeName;
                 String treeType = le.type;
                 getMapComposer().addWMSLayer(treeName, treeDisplayName,
                         treePath,
-                        (float) 0.75, treeMetadata, null, 20, null, null, null);
+                        (float) 0.75, treeMetadata, legendurl, LayerUtilities.ALOC, null, null, null);
             }
             * 
-            */       
+            */                   
         }
         this.detach();
+    }
+    
+    public String getUid(String name) {
+        String uid="";
+        try {   
+            HttpClient client = new HttpClient();
+            String layersListURL = "http://spatial-dev.ala.org.au/alaspatial/ws/layers/list";
+            GetMethod get = new GetMethod(layersListURL);
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+            String copy_layerlist = get.getResponseBodyAsString();
+            copy_layerlistJSON = JSONArray.fromObject(copy_layerlist);
+            JSONArray layerlist = copy_layerlistJSON;
+            for (int j = 0; j < layerlist.size(); j++) {
+                 JSONObject jo = layerlist.getJSONObject(j);
+                 String n = jo.getString("name");
+                 if (name.equals(n)) {
+                       uid = jo.getString("uid");
+                       System.out.println("uid="+uid);
+                       break;
+                 } else {
+                       continue;
+                 }
+            }
+            return uid;
+                        
+        } catch (Exception e) {
+            System.out.println("error setting up env list");
+            e.printStackTrace(System.out);
+            return null;
+        }
     }
     
     
