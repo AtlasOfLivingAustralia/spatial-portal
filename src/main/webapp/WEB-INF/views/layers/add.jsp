@@ -42,8 +42,8 @@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
             <input type="text" id="type" name="type" value="" />
             <br />
 
-            <label for="env_category">env category:</label> <br />
-            <input type="text" id="env_category" name="env_category" value="" />
+            <label for="domain">domain:</label> <br />
+            <input type="text" id="domain" name="domain" value="" />
             <br />
 
             <label for="source">Source:</label> <br />

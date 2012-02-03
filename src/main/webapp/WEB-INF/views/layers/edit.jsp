@@ -60,8 +60,8 @@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
             -->
             <br />
 
-            <label for="env_category">env category:</label> <br />
-            <input type="text" id="env_category" name="env_category" value="${layer.env_category}" />
+            <label for="domain">domain:</label> <br />
+            <input type="text" id="domain" name="domain" value="${layer.domain}" />
             <br />
 
             <label for="source">Source:</label> <br />
