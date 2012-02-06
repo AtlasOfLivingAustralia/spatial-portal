@@ -1468,7 +1468,7 @@ public class AddToolComposer extends UtilityComposer {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                    }else if(ci.getLabel().toLowerCase().contains("upload")) {
+                    }else if(ci.getLabel().toLowerCase().contains("import")) {
                         Window window = (Window) Executions.createComponents("WEB-INF/zul/UploadLayerList.zul", this, null);
 
                         try {

@@ -108,15 +108,40 @@ public class AddLayerController extends AddToolComposer {
             int i = 0;
                 for (String s : sellayers) {
                     i++;
-                    System.out.println("s:"+s);
+                    /*System.out.println("s:"+s);
                     String treeName = CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
                     String treePath = CommonData.geoServer + "/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:"+s+"&format=image/png&styles=";
                     String legendurl = CommonData.geoServer+ "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
                     String uid = getUid(s);
                     String metadata  = CommonData.satServer + "/layers/" +uid;
                     System.out.println("metadata="+metadata);
-                    getMapComposer().addWMSLayer(s, treeName,treePath,(float) 0.75, metadata, legendurl,LayerUtilities.WKT, null, null,null);
-                    //getMapComposer().addWMSLayer(pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
+                    * 
+                    */
+                    String uid="";
+                    String type="";
+                    String treeName="";
+                    String treePath = "";
+                    String legendurl = "";
+                    String metadata = "";
+                    JSONArray layerlist = CommonData.getLayerListJSONArray();
+                    for (int j = 0; j < layerlist.size(); j++) {
+                        JSONObject jo = layerlist.getJSONObject(j);
+                        String name = jo.getString("name");
+                        if (name.equals(s)) {
+                            uid = jo.getString("uid");
+                            type = jo.getString("type");
+                            treeName = StringUtils.capitalize(jo.getString("displayname"));
+                            treePath = CommonData.geoServer + "/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:"+s+"&format=image/png&styles=";
+                            legendurl = CommonData.geoServer+ "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
+                            metadata  = CommonData.satServer + "/layers/" +uid;
+                            break;
+                        } else {
+                            continue;
+                        }
+                    }
+                    
+                    getMapComposer().addWMSLayer(s, treeName,treePath,(float) 0.75, metadata, legendurl,type.equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL, null, null,null);
+                    //getMapComposer().addWMSLayer(pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);                    
                 }
             /*ArrayList<ListEntry> lE = lbListLayers.listEntries;
             for (ListEntry le : lE){
@@ -167,6 +192,7 @@ public class AddLayerController extends AddToolComposer {
             return null;
         }
     }
+
     
     
     
