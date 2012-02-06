@@ -208,7 +208,8 @@ public class AddFacetController extends UtilityComposer {
                     //setupForBiocacheNumber(colourmode,h,true);
                     setupForNumericalList(h, colourmode);
                 } else if (colourmode.equals("coordinate_uncertainty")) {
-                    setupForBiocacheNumber(h,colourmode,false);
+                    //setupForBiocacheNumber(h,colourmode,false);
+                    setupForNumericalList(h, colourmode);
                 } else if (colourmode.equals("month")) {
                     setupForBiocacheMonth();
                 }
@@ -321,7 +322,7 @@ public class AddFacetController extends UtilityComposer {
                     && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                 String v = ((Listcell) li.getChildren().get(1)).getLabel();
                 if (legend_facets != null) {
-                    if (v.equals("Unknown") ||v.contains("year")) {
+                    if (v.equals("Unknown") ||v.contains("year") || v.contains("uncertainty")) {
                         //keep unchanged
                     } else {
                         v = legend_facets.get(v);
@@ -443,7 +444,7 @@ public class AddFacetController extends UtilityComposer {
                 Query query = q.newFacet(f, true);
         //mc.mapSpecies(newq, "my layer", "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, sa.getWkt(), 0);
         getMapComposer().mapSpecies(query,
-                "My layer", "species", -1, LayerUtilities.SPECIES, sa.getWkt(), 0);
+                "My layer", "species", -1, LayerUtilities.SPECIES, null, 0);
         this.detach();
     }
 
