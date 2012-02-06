@@ -133,7 +133,7 @@
                     </radiogroup>
                 </div>
 
-                <div id="atstep3_proper" visible="false" zclass="step3 minlayers1">
+                <div id="atstep3" visible="false" zclass="step3 minlayers1">
                     <label id="atstep3_desc" value="Select one or more environmental and/or contextual layers" sclass="wSubLabel"/>
                     <label id="atstep3_label" value="" />
                     <separator height="15px" />
@@ -223,7 +223,7 @@
 
 
 
-                <div id="atstep3" visible="false" zclass="step4 minlayers1">
+                <div id="atstep3_test" visible="false" zclass="step4 minlayers1">
                     <groupbox mold="3d" width="500px" style="padding: 10px">
                         <caption label="Select your environmental layers" />
                         <vbox>
@@ -320,10 +320,10 @@
                             </radiogroup>
                         </hbox>
 
-                        <hbox>
+                        <hbox visible="false">
                     Sites weighted:
-                            <combobox id="weighting">
-                                <comboitem label="equally" />
+                            <combobox id="weighting" readonly="true" value="equally">
+                                <comboitem label="equally" value="equally" />
                                 <comboitem label="by number of species" />
                             </combobox>
                         </hbox>

@@ -103,17 +103,19 @@ public class AddToolGDMComposer extends AddToolComposer {
             SelectedArea sa = getSelectedArea();
             Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
 
-            String sbenvsel = "p01:p05:p09:p12:p18:p23:p30:p35";
-            if (lbenvlayers.getSelectedCount() > 0) {
-                sbenvsel = ""; 
-                Iterator<Listitem> it = lbenvlayers.getSelectedItems().iterator();
-                sbenvsel += ""; 
-                while(it.hasNext()) {
-                    Listitem li = it.next();
-                    sbenvsel += li.getValue();
-                    if (it.hasNext()) sbenvsel += ":";
-                }
-            }
+//            String sbenvsel = "p01:p05:p09:p12:p18:p23:p30:p35";
+//            if (lbenvlayers.getSelectedCount() > 0) {
+//                sbenvsel = "";
+//                Iterator<Listitem> it = lbenvlayers.getSelectedItems().iterator();
+//                sbenvsel += "";
+//                while(it.hasNext()) {
+//                    Listitem li = it.next();
+//                    sbenvsel += li.getValue();
+//                    if (it.hasNext()) sbenvsel += ":";
+//                }
+//            }
+
+            String sbenvsel = getSelectedLayers();
 
             String[] speciesData = getSpeciesData(query);
 

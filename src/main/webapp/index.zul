@@ -203,14 +203,14 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 			<nav class="not_logged_in">
 				<ol>
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
-					<li class="last"><a href="https://auth.ala.org.au/cas/login?service=http://ajay.ala.org.au:8080/webportal">Log in</a></li>
+					<li class="last"><a href="https://auth.ala.org.au/cas/login?service=http://spatial-dev.ala.org.au/">Log in</a></li>
 				</ol>
 			</nav>
 			<nav class="logged_in">
 				<ol>
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
                     <li><a href="http://spatial-dev.ala.org.au/actions/dashboard" title="User dashboard">Dashboard</a></li>
-					<li class="last"><a href="https://auth.ala.org.au/cas/logout?service=http://ajay.ala.org.au:8080/webportal/">Logout</a></li>
+					<li class="last"><a href="https://auth.ala.org.au/cas/logout?service=http://spatial-dev.ala.org.au/">Logout</a></li>
 				</ol>
 			</nav>
 		</section>

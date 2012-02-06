@@ -9,32 +9,39 @@
                     <label value="Base map" sclass="h3" />
                 </div>
                 <radiogroup id="rgBaseMap">
-                    <vlayout>
-                        <hlayout>
-                            <radio value="outline" onCheck='Clients.evalJavaScript("changeBaseLayer(\"outline\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Outline" />
-                            <span style="cursor:pointer" onClick='Clients.evalJavaScript("loadMetadataUrl(\"outline\");")'>?</span>
-                        </hlayout>
-                        <hlayout>
-                            <radio value="minimal" onCheck='Clients.evalJavaScript("changeBaseLayer(\"minimal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Minimal" />
-                            <span style="cursor:pointer" onClick='Clients.evalJavaScript("loadMetadataUrl(\"minimal\");")'>?</span>
-                        </hlayout>
-                        <hlayout>
-                            <radio value="normal" onCheck='Clients.evalJavaScript("changeBaseLayer(\"normal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Normal" />
-                            <span style="cursor:pointer" onClick='Clients.evalJavaScript("loadMetadataUrl(\"normal\");")'>?</span>
-                        </hlayout>
-                        <hlayout>
-                            <radio value="hybrid" onCheck='Clients.evalJavaScript("changeBaseLayer(\"hybrid\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Satellite" />
-                            <span style="cursor:pointer" onClick='Clients.evalJavaScript("loadMetadataUrl(\"hybrid\");")'>?</span>
-                        </hlayout>
-                    </vlayout>
+                    <listbox>
+                        <listhead>
+                            <listheader label="name" width="100px" />
+                            <listheader label=" "  />
+                        </listhead>
+                        <listitem>
+                            <listcell><radio value="outline" onCheck='Clients.evalJavaScript("changeBaseLayer(\"outline\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Outline" /></listcell>
+                            <listcell image="/img/information.png" onClick='mapPortalPage.activateLink("http://www.naturalearthdata.com/about/terms-of-use", "Metadata", false);'></listcell>
+                        </listitem>
+                        <listitem>
+                            <listcell><radio value="minimal" onCheck='Clients.evalJavaScript("changeBaseLayer(\"minimal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Minimal" /></listcell>
+                            <listcell image="/img/information.png" onClick='mapPortalPage.activateLink("http://www.openstreetmap.org/copyright", "Metadata", false);'></listcell>
+                        </listitem>
+                        <listitem>
+                            <listcell><radio value="normal" onCheck='Clients.evalJavaScript("changeBaseLayer(\"normal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Normal" /></listcell>
+                            <listcell image="/img/information.png" onClick='mapPortalPage.activateLink("http://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'></listcell>
+                        </listitem>
+                        <listitem>
+                            <listcell><radio value="hybrid" onCheck='Clients.evalJavaScript("changeBaseLayer(\"hybrid\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Satellite" /></listcell>
+                            <listcell image="/img/information.png" onClick='mapPortalPage.activateLink("http://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'></listcell>
+                        </listitem>
+                        <listfoot>
+                            <listfooter span="2">
+                                <hbox>
+                                <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
+                                <separator />
+                                <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
+                                </hbox>
+                            </listfooter>
+                        </listfoot>
+                    </listbox>
                 </radiogroup>
             </vbox>
-            <separator />
-            <hbox style="float: right">
-                <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
-                <separator />
-                <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
-            </hbox>
         </vbox>
     </window>
 </zk>
