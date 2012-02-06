@@ -200,7 +200,6 @@ public class CitationService {
             sbReadme.append("species.asc                                   Contains the probabilities in ESRI ASCII grid format").append(NEW_LINE);
             sbReadme.append("species.lambdas                               Contains the computed values of the constants").append(NEW_LINE);
             sbReadme.append("species.prj                                   Map projection parameters.").append(NEW_LINE);
-            sbReadme.append("species.zip                                   Zip of species.asc and species.prj").append(NEW_LINE);
             sbReadme.append("species_omission.csv                          Describes the predicted area and training and (optionally) test omission for various raw and cumulative thresholds.").append(NEW_LINE);
             sbReadme.append("species_samplePredictions.csv                 Status and prediction values for each point in model.").append(NEW_LINE);
             sbReadme.append("readme.txt                                    This file.").append(NEW_LINE);

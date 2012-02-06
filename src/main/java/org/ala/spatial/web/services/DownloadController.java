@@ -30,61 +30,72 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/ws/download/")
 public class DownloadController {
 
-//    @RequestMapping(value = "/{pid}", method = RequestMethod.GET)
-//    @ResponseBody
-//    public String download(@PathVariable String pid, HttpServletResponse response) {
-//        try {
-//
-//            File dir = findFile(pid);
-//
-//            if (dir != null) {
-//                //System.out.println("Found session data: " + dir.getAbsolutePath());
-//                //return "Found session data: " + dir.getAbsolutePath();
-//
-//                String parentName = "ALA_";
-//                String parentPath = dir.getParent().substring(dir.getParent().lastIndexOf("/") + 1);
-//
-//                String zipfile = dir.getParent() + "/" + pid + ".zip";
-//                Zipper.zipDirectory(dir.getAbsolutePath(), zipfile);
-//
-//                System.out.println("Found " + dir.getName() + " in " + dir.getParent() + " and zipped at: " + zipfile);
-//                //return "Found " + dir.getName() + " in " + dir.getParent() + " and zipped at: " + zipfile;
-//
-//                if ("maxent".equals(parentPath)) {
-//                    parentName = "ALA_Prediction_";
-//                } else if ("sampling".equals(parentPath)) {
-//                    parentName = "ALA_Species_Samples_";
-//                } else if ("layers".equals(parentPath) || "aloc".equals(parentPath)) {
-//                    parentName = "ALA_Classification_";
-//                } else if ("gdm".equals(parentPath)) {
-//                    parentName = "ALA_GDM_";
-//                } else if ("filtering".equals(parentPath)) {
-//                    parentName = "ALA_EnvFilter_";
-//                } else if ("sitesbyspecies".equals(parentPath)) {
-//                    parentName = "ALA_SitesBySpecies_";
-//                }
-//
-//                File file = new File(zipfile);
-//                response.setContentType("application/zip");
-//                response.setContentLength(safeLongToInt(file.length()));
-//                response.setHeader("Content-Disposition", "attachment; filename=\"" + parentName + pid + ".zip\"");
-//
-//                FileCopyUtils.copy(new FileInputStream(file), response.getOutputStream());
-//
-//                return null;
-//
-//            } else {
-//                System.out.println("Could not find session data");
-//                return "Could not find session data";
-//            }
-//
-//        } catch (Exception e) {
-//            System.out.println("Unable to download:");
-//            e.printStackTrace(System.out);
-//        }
-//
-//        return "";
-//    }
+    @RequestMapping(value = "/{pid}", method = RequestMethod.GET)
+    @ResponseBody
+    public String download(@PathVariable String pid, HttpServletResponse response) {
+        try {
+
+            File dir = findFile(pid);
+
+            if (dir != null) {
+                //System.out.println("Found session data: " + dir.getAbsolutePath());
+                //return "Found session data: " + dir.getAbsolutePath();
+
+                String parentName = "ALA_";
+                String parentPath = dir.getParent().substring(dir.getParent().lastIndexOf("/") + 1);
+
+                String zipfile = dir.getParent() + "/" + pid + ".zip";
+
+                if ("maxent".equals(parentPath)) {
+                    fixMaxentFiles(pid, dir);
+                    Zipper.zipDirectory(dir.getParent()+"/temp/"+pid, zipfile);
+                } else if ("layers".equals(parentPath) || "aloc".equals(parentPath)) {
+                    fixAlocFiles(pid, dir);
+                    Zipper.zipDirectory(dir.getParent()+"/temp/"+pid, zipfile);
+                } else {
+                    Zipper.zipDirectory(dir.getAbsolutePath(), zipfile);
+                }
+
+
+
+                System.out.println("Found " + dir.getName() + " in " + dir.getParent() + " and zipped at: " + zipfile);
+                //return "Found " + dir.getName() + " in " + dir.getParent() + " and zipped at: " + zipfile;
+
+                if ("maxent".equals(parentPath)) {
+                    parentName = "ALA_Prediction_";
+                } else if ("sampling".equals(parentPath)) {
+                    parentName = "ALA_Species_Samples_";
+                } else if ("layers".equals(parentPath) || "aloc".equals(parentPath)) {
+                    parentName = "ALA_Classification_";
+                } else if ("gdm".equals(parentPath)) {
+                    parentName = "ALA_GDM_";
+                } else if ("filtering".equals(parentPath)) {
+                    parentName = "ALA_EnvFilter_";
+                } else if ("sitesbyspecies".equals(parentPath)) {
+                    parentName = "ALA_SitesBySpecies_";
+                }
+
+                File file = new File(zipfile);
+                response.setContentType("application/zip");
+                response.setContentLength(safeLongToInt(file.length()));
+                response.setHeader("Content-Disposition", "attachment; filename=\"" + parentName + pid + ".zip\"");
+
+                FileCopyUtils.copy(new FileInputStream(file), response.getOutputStream());
+
+                return null;
+
+            } else {
+                System.out.println("Could not find session data");
+                return "Could not find session data";
+            }
+
+        } catch (Exception e) {
+            System.out.println("Unable to download:");
+            e.printStackTrace(System.out);
+        }
+
+        return "";
+    }
 
     private File findFile(String pid) {
         try {
@@ -146,6 +157,7 @@ public class DownloadController {
             msp.renameTo(mspnew);
 
             (new File(tmpdir.getAbsolutePath() + "/species.zip")).delete();
+            (new File(tmpdir.getAbsolutePath() + "/species.bat")).delete();
 
         } catch (Exception e) {
             System.out.println("Unable to fix Prediction files");

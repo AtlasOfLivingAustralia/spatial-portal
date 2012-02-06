@@ -141,8 +141,8 @@ public class LayerInfo {
     @Column(name="keywords")
     private String keywords;
 
-    @Column(name="env_category")
-    private String envcategory;
+    @Column(name="domain")
+    private String domain;
 
 //    @GeneratedValue
 //    private String capabilities;
@@ -426,12 +426,12 @@ public class LayerInfo {
         this.sourcelink = sourcelink;
     }
 
-    public String getEnvcategory() {
-        return envcategory;
+    public String getDomain() {
+        return domain;
     }
 
-    public void setEnvcategory(String envcategory) {
-        this.envcategory = envcategory;
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 
     public String getPath1km() {

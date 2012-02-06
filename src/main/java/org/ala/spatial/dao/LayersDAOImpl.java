@@ -36,7 +36,8 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayers() {
-        return hibernateTemplate.find("from LayerInfo order by  classification1, classification2, displayname ");
+        List<LayerInfo> layers = hibernateTemplate.find("from LayerInfo where enabled=true order by classification1, classification2, displayname ");
+        return layers;
     }
 
     /**

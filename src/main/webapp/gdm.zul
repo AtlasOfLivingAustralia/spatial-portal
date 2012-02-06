@@ -4,40 +4,121 @@
     <window id="wingdm" apply="org.ala.spatial.web.zk.GdmZK" title="GDM"
         width="100%" border="normal">
 
+        <!--
         <tabbox>
             <tabs>
                 <tab id="tab1" label="1*" />
                 <tab id="tab2" label="2*" />
+                <tab id="tab3" label="3*" />
             </tabs>
             <tabpanels>
                 <tabpanel id="tabp1">
-                    <label value="Select species" />
                 </tabpanel>
                 <tabpanel id="tabp2">
-                    <label value="Select species" />
+                </tabpanel>
+                <tabpanel id="tabp3">
                 </tabpanel>
             </tabpanels>
         </tabbox>
-        
-        <vbox>
-            <hbox>
-                <label value="Generate quantile from: " />
-                <combobox id="quantile">
-                    <comboitem label="Data" />
-                    <comboitem label="Grid" />
-                </combobox>
-            </hbox>
+        -->
 
-            <checkbox id="useDistance" label="Use geographic (Euclidean) distance" />
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Step 1: Select your species" />
+            <vbox>
+                <label value="Select species" />
+                <hbox>
+                    <combobox id="sac" use="org.ala.spatial.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                        <comboitem label=""/>
+                    </combobox>
+                    <button label="add to map"  id="addToMap"/>
+                </hbox>
+                <!--<label id="splist" value="" />-->
+                <listbox id="lbsplist" fixedLayout="false" width="450px" >
+                </listbox>
+            </vbox>
+        </groupbox>
 
-            <hbox>
-                <checkbox id="useSubSample" label="Use all site pairs" checked="true" />
-                <textbox id="sitePairsSize" disabled="true" />
-            </hbox>
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Step 2: Select your environmental layers" />
+            <vbox>
+                <label value="Select env layers" />
+                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" width="450px" >
+                    <listhead>
+                        <listheader label="Select all layers" />
+                    </listhead>
+                    <listitem value="p01" label="p01" />
+                    <listitem value="p05" label="p05" />
+                    <listitem value="p09" label="p09" />
+                    <listitem value="p12" label="p12" />
+                    <listitem value="p18" label="p18" />
+                    <listitem value="p23" label="p23" />
+                    <listitem value="p30" label="p30" />
+                    <listitem value="p35" label="p35" />
 
+                </listbox>
+            </vbox>
+        </groupbox>
+
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Step 3: Select GDM parameters" />
+            <vbox>
+                <hbox>
+                    <label value="Generate quantile from:  Data" />
+                    <!--
+                    <combobox id="quantile">
+                        <comboitem label="Data" />
+                        <comboitem label="Grid" />
+                    </combobox>
+                    -->
+                </hbox>
+
+                <!--<checkbox id="useDistance" label="Use geographic (Euclidean) distance" />-->
+                <hbox>
+                <label value="Use geographic distance as additional predictor:" />
+                <radiogroup>
+                    <radio value="yes" label="yes" />
+                    <radio value="no" label="no" selected="true" />
+                </radiogroup>
+                </hbox>
+
+                <hbox>
+                    Sites weighted:
+                    <combobox id="weighting">
+                        <comboitem label="equally" />
+                        <comboitem label="by number of species" />
+                    </combobox>
+                    </hbox>
+
+                <hbox>
+                    <checkbox id="useSubSample" label="Use all site pairs" checked="true" />
+                    <textbox id="sitePairsSize" disabled="true" />
+                </hbox>
+
+            </vbox>
+        </groupbox>
+
+
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Step 4: Start GDM" />
             <button id="runGdm" label="Start GDM" />
+        </groupbox>
 
-        </vbox>
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Step 5: Visualize" />
+
+                <label value="If happy with the output, run classification" />
+
+                <hbox>
+                    Number of classification groups:
+                    <textbox value="150" id="noClassify" />
+                </hbox>
+
+                <button id="btnClassify" label="Classify" />
+
+
+
+        </groupbox>
+        
 
     </window>
 </zk>
