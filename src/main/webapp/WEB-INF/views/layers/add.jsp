@@ -42,7 +42,7 @@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
             <input type="text" id="type" name="type" value="" />
             <br />
 
-            <label for="domain">domain:</label> <br />
+            <label for="domain">Domain:</label> <br />
             <input type="text" id="domain" name="domain" value="" />
             <br />
 

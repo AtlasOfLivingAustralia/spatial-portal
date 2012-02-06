@@ -60,7 +60,7 @@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
             -->
             <br />
 
-            <label for="domain">domain:</label> <br />
+            <label for="domain">Domain:</label> <br />
             <input type="text" id="domain" name="domain" value="${layer.domain}" />
             <br />
 
