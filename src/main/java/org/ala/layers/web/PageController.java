@@ -27,9 +27,34 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class PageController {
 
     private final String INDEX = "/index";
+    private final String WMS = "/wms";
+    private final String EXAMPLE = "/examples";
+    private final String EXAMPLE_INDEX = "/examples/index";
+    private final String EXAMPLE_SPECIES_WMS = "/examples/specieswms";
+    private final String EXAMPLE_LAYERS_WMS = "/examples/layerswms";
 
     @RequestMapping(value = INDEX)
     public String index() {
         return "index"; 
+    }
+
+    @RequestMapping(value = WMS)
+    public String wms() {
+        return "wms/index";
+    }
+
+    @RequestMapping(value = {EXAMPLE, EXAMPLE_INDEX})
+    public String exampleIndex() {
+        return "examples/index";
+    }
+
+    @RequestMapping(value = EXAMPLE_SPECIES_WMS)
+    public String exampleSpeciesWms() {
+        return "examples/specieswms";
+    }
+
+    @RequestMapping(value = EXAMPLE_LAYERS_WMS)
+    public String exampleLayersWms() {
+        return "examples/layerswms";
     }
 }

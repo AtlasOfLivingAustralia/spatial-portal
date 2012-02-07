@@ -25,6 +25,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
@@ -71,6 +72,17 @@ public class LayersService {
         return l;
     }
     
+    /**This method returns all layers
+     *
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/layers/search", method = RequestMethod.GET)
+    public @ResponseBody List<Layer> layerObjects(@RequestParam("q") String q, HttpServletRequest req) {
+        logger.info("search enabled layers for " + q);
+        return layerDao.getLayersByCriteria(q); 
+    }
+
     @RequestMapping(value = "/layers/grids", method = RequestMethod.GET)
     public @ResponseBody List<Layer> gridsLayerObjects(HttpServletRequest req) {
 //        String query = "SELECT * FROM layers WHERE enabled='TRUE' and type='Environmental';";

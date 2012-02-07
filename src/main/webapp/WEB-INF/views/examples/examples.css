@@ -1,0 +1,94 @@
+* {
+	font-family: 'Droid Sans', sans-serif;
+	font-size: 12px;
+}
+body {
+	margin: 0px auto;
+	padding: 0px;
+	background-color: #82A50F;
+	color: #fff;
+	font-family: 'Droid Sans', Helvetica;
+	font-size: 12px;
+}
+header {
+	clear: both;
+	height: 70px;
+}
+footer {
+	position: relative;
+	bottom: 0px;
+	width: 100%;
+	display: block;
+	margin-top: 64px;
+	z-index: 1000;
+	background: #f00;
+	background-color: rgba(0,0,0,0.5);
+	padding-top: 16px;
+	padding-bottom: 16px;
+}
+h1 {
+	margin-top: 48px;
+	padding: 15px 0 0 15px;
+	border-bottom: 2px solid rgba(255,255,255,0.25);
+	margin-bottom: 10px;
+	text-transform: uppercase;
+	font-size: 1.9em;
+	color: rgba(0,0,0,0.6);
+	text-shadow: 0px 1px 1px rgba(255,255,255,0.25);
+}
+div p {
+	font-size: 1em;
+	line-height: 1.3em;
+	color: #fff;
+}
+a {
+	text-decoration: none;
+	color: #FFF;
+	font-weight: bold;
+	font-size: 1em;
+}
+.ui-autocomplete-loading {
+	background: white url('images/ui-anim_basic_16x16.gif') right center no-repeat;
+}
+ul.ui-autocomplete {
+	width: 500px;
+	z-index: 12345 !important;
+}
+.ui-autocomplete {
+	max-height: 200px;
+	overflow-y: auto;
+	/* prevent horizontal scrollbar */
+	overflow-x: hidden;
+	/* add padding to account for vertical scrollbar */
+	padding-right: 20px;
+}
+/* IE 6 doesn't support max-height
+ * we use height instead, but this forces the menu to always be this tall
+ */
+* html .ui-autocomplete {
+	height: 200px;
+}
+.ui-widget {
+	font-size: 12px;
+}
+li.ui-menu-item a {
+	font-size: 1em;
+}
+span.reccount {
+	color: #91bd09;
+	float: right;
+}
+#content {
+	padding: 0 15px;
+}
+#specieswrapper, #speciesinfo {
+	padding-bottom: 20px;
+}
+#species {
+	width: 250px;
+}
+#map {
+	width: 800px;
+	height: 600px;
+	padding: 10px;
+}
