@@ -203,7 +203,7 @@
         //$("#lyrcls").text(item.classification1 + (item.classification2)?(" > " + item.classification2):"");
         $("#lyrcls").text(item.classification1 + " > " + item.classification2);
         $("#lyrwmsgm").text(wmsLayer.getFullRequestString(""));
-        $("#lyrleg").text("http://spatial.ala.org.au/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=ALA:"+item.name);
+        $("#lyrleg").text("http://spatial-dev.ala.org.au/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=ALA:"+item.name);
 
     }
 
@@ -213,7 +213,7 @@
                 layers : 'ALA:'+name
             });
         } else {
-            wmsLayer = new OpenLayers.Layer.WMS("Spatial layer", "http://spatial.ala.org.au/geoserver/gwc/service/wms/reflect", {
+            wmsLayer = new OpenLayers.Layer.WMS("Spatial layer", "http://spatial-dev.ala.org.au/geoserver/gwc/service/wms/reflect", {
                 layers : 'ALA:'+name,
                 srs : 'EPSG:900913',
                 format : 'image/png',
