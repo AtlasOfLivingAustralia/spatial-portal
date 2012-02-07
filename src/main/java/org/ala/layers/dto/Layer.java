@@ -192,13 +192,13 @@ public class Layer {
         this.uid = uid;
     }
 
-    public Boolean isEnabled() {
-        return enabled;
-    }
-
-//    public Boolean getEnabled() {
+//    public Boolean isEnabled() {
 //        return enabled;
 //    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;

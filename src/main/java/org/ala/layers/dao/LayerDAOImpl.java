@@ -12,11 +12,12 @@
  *  implied. See the License for the specific language governing
  *  rights and limitations under the License.
  ***************************************************************************/
-
 package org.ala.layers.dao;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import org.ala.layers.dto.Layer;
@@ -80,7 +81,7 @@ public class LayerDAOImpl implements LayerDAO {
         logger.info("Getting enabled layer info for name = " + name);
         String sql = "select * from layers where enabled=true and name = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
-        System.out.println("Searching for " + name + ": Found " + l.size() + " records. " );
+        System.out.println("Searching for " + name + ": Found " + l.size() + " records. ");
         if (l.size() > 0) {
             return l.get(0);
         } else {
@@ -122,7 +123,6 @@ public class LayerDAOImpl implements LayerDAO {
 
     @Override
     public List<Layer> getLayersByCriteria(String keywords) {
-        /*
         logger.info("Getting a list of all enabled layers by criteria: " + keywords);
         String sql = "";
         sql += "select * from layers where ";
@@ -135,7 +135,8 @@ public class LayerDAOImpl implements LayerDAO {
 
         keywords = "%" + keywords.toLowerCase() + "%";
 
-        List list = hibernateTemplate.find(sql, new String[]{keywords, keywords, keywords}); // keywords,
+        //List list = hibernateTemplate.find(sql, new String[]{keywords, keywords, keywords}); // keywords,
+        List<Layer> list = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), keywords, keywords, keywords);
 
         //remove duplicates if any
         Set setItems = new LinkedHashSet(list);
@@ -143,12 +144,10 @@ public class LayerDAOImpl implements LayerDAO {
         list.addAll(setItems);
 
         return list;//no duplicates now
-         *
-         */
-        logger.info("Getting a list of all enabled layers");
-        String sql = "select * from layers where enabled=true";
-        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class));
-        return l;
+//        logger.info("Getting a list of all enabled layers");
+//        String sql = "select * from layers where enabled=true";
+//        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class));
+//        return l;
 
     }
 
@@ -196,7 +195,7 @@ public class LayerDAOImpl implements LayerDAO {
         parameters.remove("id");
         Number newId = insertLayer.execute(parameters);
         layer.setId(newId.longValue());
-        layer.setUid(newId.longValue()+"");
+        layer.setUid(newId.longValue() + "");
         //updateLayer(layer);
     }
 
@@ -204,8 +203,6 @@ public class LayerDAOImpl implements LayerDAO {
     public void updateLayer(Layer layer) {
         logger.info("Updating layer metadata for " + layer.getName());
         String sql = "update layers set citation_date=:citation_date, classification1=:classification1, classification2=:classification2, datalang=:datalang, description=:description, displayname=:displayname, displaypath=:displaypath, enabled=:enabled, domain=:domain, environmentalvaluemax=:environmentalvaluemax, environmentalvaluemin=:environmentalvaluemin, environmentalvalueunits=:environmentalvalueunits, extents=:extents, keywords=:keywords, licence_link=:licence_link, licence_notes=:licence_notes, licence_level=:licence_level, lookuptablepath=:lookuptablepath, maxlatitude=:maxlatitude, maxlongitude=:maxlongitude, mddatest=:mddatest, mdhrlv=:mdhrlv, metadatapath=:metadatapath, minlatitude=:minlatitude, minlongitude=:minlongitude, name=:name, notes=:notes, path=:path, path_1km=:path_1km, path_250m=:path_250m, path_orig=:path_orig, pid=:pid, respparty_role=:respparty_role, scale=:scale, source=:source, source_link=:source_link, type=:type, uid=:uid where id=:id";
-        jdbcTemplate.update(sql, layer.toMap()); 
+        jdbcTemplate.update(sql, layer.toMap());
     }
-
-
 }
