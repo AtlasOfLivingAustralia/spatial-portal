@@ -9,6 +9,41 @@
 
         <link rel="stylesheet" type="text/css" href="css/map.css?" media="screen" >
         <link rel="stylesheet" type="text/css" href="css/mapprint.css?" media="print" >
+        <style type="text/css">
+            .z-loading {
+                left: 45% !important;
+                top: 50% !important;
+                vertical-align: middle;
+
+                background-color: #E3E3E3;
+                border: 1px solid #C7C7C7;
+                cursor: wait;
+                left: 0;
+                padding: 3px;
+                position: absolute;
+                top: 0;
+                white-space: nowrap;
+                z-index: 31000;
+
+                font-family: arial,sans-serif;
+                font-size: 12px;
+                font-weight: normal;
+            }
+            .z-loading-indicator {
+                background-color: #FFFFFF;
+                border: 1px solid #C7C7C7;
+                color: #102B6D;
+                padding: 6px;
+                white-space: nowrap;
+            }
+            .z-apply-loading-icon, .z-loading-icon, .z-renderdefer {
+                background: url("/webportal/zkau/web/da1ccf7c/zk/img/progress4.gif") no-repeat scroll center center transparent;
+                height: 16px;
+                width: 16px;
+                display: inline-block;
+                vertical-align: top;
+            }
+        </style>
 
         <!--
         <link rel="stylesheet" href="http://www.openlayers.org/dev/theme/default/style.css" type="text/css">
@@ -54,7 +89,7 @@
         </script>
 
         <style type="text/css">
-           /*.olLayerGoogleV3 {display: none;}*/
+            /*.olLayerGoogleV3 {display: none;}*/
         </style>
 
 
@@ -82,10 +117,13 @@
             <div id="gmaplyrStr"><a href="" onclick="changeBaseLayer('normal')">Normal</a></div>
         </div>
 
-        
+
         <div id="radiusDisplay">approximate radius: <span id="currradius">0</span> km</div>
+        <!--
         <div id="loader" style="position:absolute;top:50%;left:50%;display:none;z-index: 99;">
             <img src="img/loading.gif" alt="loading..."/>
         </div>
+        -->
+        <div style="left: 0px; top: 0px;" class="z-loading" id="loader"><div class="z-loading-indicator"><span class="z-loading-icon"></span> Loading...</div></div>
     </body>
 </html>
