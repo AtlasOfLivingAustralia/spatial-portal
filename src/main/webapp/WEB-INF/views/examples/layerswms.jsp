@@ -137,7 +137,7 @@
         $("#layer").autocomplete({
             source : function(request, response) {
                 $.ajax({
-                    url : "http://localhost:8080/layers-service/layers/search",
+                    url : "http://spatial-dev.ala.org.au/ws/layers/search",
                     dataType : "json",
                     data: {
                         q: request.term
