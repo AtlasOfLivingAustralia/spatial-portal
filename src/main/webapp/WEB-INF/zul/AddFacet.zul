@@ -23,7 +23,7 @@
                     <hbox>
                         <label value="Facet" style="font-weight:bold"/>
                         <separator orient="vertical" />
-                        <combobox id="cbColour" width="200px">
+                        <combobox id="cbColour" width="200px" autodrop="true">
                         </combobox>
                     </hbox>
                 </div>
@@ -38,8 +38,8 @@
                 <button id="clearSelection" label="Clear selection" sclass="goButton"/>
             </div>
             <div height="420px"  style="padding-left: 25px">
-            <listbox sclass="legendlist" id="legend" width="550px" height="100%" vflex="true" style="overflow: auto">
-                <listhead>
+            <listbox sclass="legendlist2" id="legend" width="550px" height="100%" vflex="true">
+                <listhead sizable="true">
                     <listheader label="   " width="20px" id="lhFirstColumn" />
                     <listheader label="group" width="300px" id="lhSecondColumn"></listheader>
                     <listheader label="colour" width="50px" id="lhThirdColumn" ></listheader>

@@ -1247,6 +1247,14 @@ div.z-listheader-cnt {
     border: 0px;
 }
 
+.legendlist2 .z-listheader-cnt input, .z-list-group-inner div input, .z-listheader-img  {
+ display: none;
+ }
+
+ .legendlist2 div.z-listcell-cnt {
+ font-size: 11px;
+ }
+
 .fUploadButton td.z-button-tl, .fUploadButton td.z-button-tm, .fUploadButton td.z-button-tr,
 .fUploadButton td.z-button-cl, .fUploadButton td.z-button-cr,
 .fUploadButton td.z-button-bl, .fUploadButton td.z-button-bm, .fUploadButton td.z-button-br {

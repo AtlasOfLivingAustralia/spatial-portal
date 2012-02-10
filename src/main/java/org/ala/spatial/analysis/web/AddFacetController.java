@@ -86,8 +86,8 @@ public class AddFacetController extends UtilityComposer {
     Combobox cbColour;
     SettingsSupplementary settingsSupplementary;
 
-    SelectedArea sa = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
-    //SelectedArea sa;
+    //SelectedArea sa = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
+    SelectedArea sa = new SelectedArea(null,CommonData.WORLD_WKT);
     Query q;
     MapLayer mapLayer = null;
     Map map = new HashMap();
