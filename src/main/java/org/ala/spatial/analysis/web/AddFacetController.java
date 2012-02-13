@@ -241,6 +241,7 @@ public class AddFacetController extends UtilityComposer {
                             @Override
                             public void onEvent(Event event) throws Exception {
                                 checkboxClick(event);
+                                btnOk.setDisabled(false);
                             }
                         });
                         //determineCheckboxState(cb, ss[0]);
@@ -440,10 +441,9 @@ public class AddFacetController extends UtilityComposer {
 
     void updateD() {
                 Facet f = Facet.parseFacet(getSelectionFacet());
-                
-                Query query = q.newFacet(f, true);
+                Query querynew = q.newFacet(f, true);
         //mc.mapSpecies(newq, "my layer", "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, sa.getWkt(), 0);
-        getMapComposer().mapSpecies(query,
+        getMapComposer().mapSpecies(querynew,
                 "My layer", "species", -1, LayerUtilities.SPECIES, null, 0);
         this.detach();
     }

@@ -69,7 +69,7 @@
         <div sclass="wButtons">
             <hbox>                
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
-                <button sclass="goButton" label="Next" id="btnOk" />
+                <button sclass="goButton" label="Next" id="btnOk" disabled="true" />
             </hbox>
         </div>
     </window>
