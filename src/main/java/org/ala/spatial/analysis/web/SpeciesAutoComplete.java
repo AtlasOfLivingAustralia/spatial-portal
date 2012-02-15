@@ -346,7 +346,7 @@ public class SpeciesAutoComplete extends Combobox {
                             //boolean commonNameMatch = true;
                             if(o.containsKey("commonName") && !o.getString("commonName").equals("none")
                                     && !o.getString("commonName").equals("null")) {
-                                commonName = o.getString("commonName");
+                                commonName = o.getString("commonName").replaceAll("\n", "");
                                 commonName = commonName.trim().replace("/",",");
                                 String [] cns  = commonName.split(",");
                                 String st = val.toLowerCase();

@@ -34,6 +34,7 @@ import com.vividsolutions.jts.io.WKTWriter;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.util.Collection;
+import org.ala.spatial.util.UserData;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.kml.KML;
 import org.geotools.kml.KMLConfiguration;
@@ -111,9 +112,13 @@ public class AreaUploadShapefile extends AreaToolComposer {
 //                    loadUserLayerKML(m.getName(), m.getStreamData());
 //                }
 //              }
+
+            UserData ud = new UserData(txtLayerName.getValue());
+            ud.setFilename(m.getName());
+
             byte[] kmldata = getKml(m);
             if (kmldata != null) {
-                loadUserLayerKML(m.getName(), kmldata);
+                loadUserLayerKML(m.getName(), kmldata, ud);
             } else if (m.getName().toLowerCase().endsWith("zip")) { //else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
                 // "/data/ala/runtime/output/layers/"
                 // "/Users/ajay/projects/tmp/useruploads/"
@@ -141,7 +146,23 @@ public class AreaUploadShapefile extends AreaToolComposer {
                         MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName, layerName);
                         mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                         //mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile. \n Used polygon: " + shape.get("id"));
-                        mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile.");
+                        //mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile.");
+
+                        ud.setUploadedTimeInMs(System.currentTimeMillis());
+                        ud.setType("shapefile");
+
+                        String metadata = "";
+                        metadata += "User uploaded Shapefile \n";
+                        metadata += "Name: " + ud.getName() + " <br />\n";
+                        metadata += "Filename: " + ud.getFilename() + " <br />\n";
+                        metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+
+                        MapLayerMetadata mlmd = mapLayer.getMapLayerMetadata();
+                        if (mlmd == null) {
+                            mlmd = new MapLayerMetadata();
+                        }
+                        mlmd.setMoreInfo(metadata);
+                        mapLayer.setMapLayerMetadata(mlmd);
 
                         ok = true;
                     }
@@ -209,7 +230,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
         return null;
     }
 
-    public void loadUserLayerKML(String name, InputStream data) {
+    public void loadUserLayerKML(String name, InputStream data, UserData ud) {
         try {
             String kmlData = "";
 
@@ -230,7 +251,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 kmlData = writer.toString();
             }
 
-            loadUserLayerKML(name, kmlData.getBytes());
+            loadUserLayerKML(name, kmlData.getBytes(), ud);
 
         } catch (Exception e) {
             getMapComposer().showMessage("Unable to load your file. Please try again.");
@@ -240,7 +261,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
         }
     }
 
-    public void loadUserLayerKML(String name, byte[] kmldata) {
+    public void loadUserLayerKML(String name, byte[] kmldata, UserData ud) {
         try {
 
             String id = String.valueOf(System.currentTimeMillis());
@@ -260,6 +281,22 @@ public class AreaUploadShapefile extends AreaToolComposer {
             layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
             String wkt = getKMLPolygonAsWKT(kmlstr);
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
+
+            ud.setUploadedTimeInMs(Long.parseLong(id));
+            ud.setType("kml");
+
+            String metadata = "";
+            metadata += "User uploaded KML area \n";
+            metadata += "Name: " + ud.getName() + " <br />\n";
+            metadata += "Filename: " + ud.getFilename() + " <br />\n";
+            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+
+            MapLayerMetadata mlmd = mapLayer.getMapLayerMetadata();
+            if (mlmd == null) {
+                mlmd = new MapLayerMetadata();
+            }
+            mlmd.setMoreInfo(metadata);
+            mapLayer.setMapLayerMetadata(mlmd);
 
             if (mapLayer == null) {
                 logger.debug("The layer " + name + " couldnt be created");

@@ -98,7 +98,7 @@
                                 <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
                         </vbox>
-                        <radio id="rMultiple" label="Search for multiple species by scientific or common name" />
+                        <radio id="rMultiple" value="multiple" label="Search for multiple species by scientific or common name" />
                         <vbox id="vboxMultiple" visible="false">
                             <separator />
                             <label value="Enter scientific names separated by a comma or new line." />
@@ -128,8 +128,8 @@
                             </listbox>
                             <separator height="20px"/>
                         </vbox>
+                        <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Import assemblage" />
                         <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import points" />
-                        <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Import LSIDs" />
                     </radiogroup>
                 </div>
 

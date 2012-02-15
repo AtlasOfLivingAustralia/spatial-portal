@@ -175,6 +175,7 @@ public class AddSpeciesController extends UtilityComposer {
             } else {
                 usc.setTbInstructions("3. Select file");
             }
+            usc.addToMap = true;
             usc.setDefineArea(chkArea.isChecked());
             usc.doModal();
         } catch (Exception e) {

@@ -498,7 +498,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
 
             if (StringUtils.isNotBlank(downloadPid)) {
-                ((Toolbarbutton) externalContentWindow.getFellow("download")).setHref(CommonData.satServer + "/ws/download/" + downloadPid);
+                String downloadUrl = CommonData.satServer + "/ws/download/" + downloadPid;
+                if (downloadPid.startsWith("http")) {
+                    downloadUrl = downloadPid; 
+                }
+                ((Toolbarbutton) externalContentWindow.getFellow("download")).setHref(downloadUrl);
                 ((Toolbarbutton) externalContentWindow.getFellow("download")).setVisible(true);
             } else {
                 ((Toolbarbutton) externalContentWindow.getFellow("download")).setHref("");
@@ -2541,7 +2545,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
 
             if (download.length() > 0) {
-                download = download.substring(4);
+                if (download.startsWith("pid")) {
+                    download = download.substring(4);
+                }
             }
 
             activateLink(url, header, false, download);
@@ -2875,6 +2881,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void onClick$btnAddScatterplot(Event event) {
         openModal("WEB-INF/zul/AddToolScatterplot.zul", null, "addtoolwindow");
+    }
+
+    public void runTabulation(Event event) {
+        openModal("WEB-INF/zul/AddToolTabulation.zul", null, "addtoolwindow");
     }
 
     public void onClick$btnAreaReport(Event event) {

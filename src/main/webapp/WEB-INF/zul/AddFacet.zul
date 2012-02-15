@@ -41,7 +41,7 @@
             <listbox sclass="legendlist2" id="legend" width="550px" height="100%" vflex="true">
                 <listhead sizable="true">
                     <listheader label="   " width="25px" id="lhFirstColumn" />
-                    <listheader label="group" width="300px" id="lhSecondColumn"></listheader>
+                    <listheader label="class" width="300px" id="lhSecondColumn"></listheader>
                     <listheader label="colour" width="50px" id="lhThirdColumn" ></listheader>
                     <listheader label="count" width="150px" align="right" id="lhFourthColumn"></listheader>
                 </listhead>

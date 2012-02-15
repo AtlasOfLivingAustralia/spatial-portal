@@ -92,35 +92,24 @@ public class AddToolGDMComposer extends AddToolComposer {
             getMapComposer().mapSpecies(query, "Species assemblage", "species", 0, LayerUtilities.SPECIES, null, -1);
         }
 
-        System.out.println("GDM Selected layers:");
-        System.out.println(getSelectedLayers());
-
         return rungdm();
+    }
+    
+    Vector<String> vSp = new Vector<String>();
+    private int getSpLoc(String sp) {
+        if (vSp.indexOf(sp) == -1) {
+            vSp.add(sp);
+        }
+
+        return vSp.indexOf(sp);
     }
     
     public boolean rungdm() {
         try {
             SelectedArea sa = getSelectedArea();
             Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
-
-//            String sbenvsel = "p01:p05:p09:p12:p18:p23:p30:p35";
-//            if (lbenvlayers.getSelectedCount() > 0) {
-//                sbenvsel = "";
-//                Iterator<Listitem> it = lbenvlayers.getSelectedItems().iterator();
-//                sbenvsel += "";
-//                while(it.hasNext()) {
-//                    Listitem li = it.next();
-//                    sbenvsel += li.getValue();
-//                    if (it.hasNext()) sbenvsel += ":";
-//                }
-//            }
-
             String sbenvsel = getSelectedLayers();
-
             String[] speciesData = getSpeciesData(query);
-
-            System.out.println("speciesData:\n");
-            System.out.println(speciesData);
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/gdm/process2?");
@@ -130,15 +119,15 @@ public class AddToolGDMComposer extends AddToolComposer {
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
 
-//            String area = null;
-//            if (sa.getMapLayer() != null && sa.getMapLayer().getData("envelope") != null) {
-//                area = "ENVELOPE(" + (String) sa.getMapLayer().getData("envelope") + ")";
-//            } else {
-//                area = sa.getWkt();
-//            }
-//            if (getSelectedArea() != null) {
-//                get.addParameter("area", area);
-//            }
+            String area = null;
+            if (sa.getMapLayer() != null && sa.getMapLayer().getData("envelope") != null) {
+                area = "ENVELOPE(" + (String) sa.getMapLayer().getData("envelope") + ")";
+            } else {
+                area = sa.getWkt();
+            }
+            if (getSelectedArea() != null) {
+                get.addParameter("area", area);
+            }
 
             //check for no data
             if (speciesData[0] == null) {
@@ -254,6 +243,9 @@ public class AddToolGDMComposer extends AddToolComposer {
                 qf.setStored(true);
                 fields.add(qf);
             }
+                QueryField qf2 = new QueryField("taxon_name");
+                qf2.setStored(true);
+                fields.add(qf2);
             double[] points = maxentQuery.getPoints(fields);
             StringBuilder sb = null;
             if (points != null) {
@@ -266,14 +258,19 @@ public class AddToolGDMComposer extends AddToolComposer {
                     if (qf != null) {
                         lsid = qf.getAsString(i / 2);
                         isSensitive = sensitiveLsids.contains(lsid);
-                    } 
+                    }
+                    String taxonname = "taxon_name";
+                    if (qf2 != null) {
+                        taxonname = qf2.getAsString(i / 2);
+                    }
                     if (!isSensitive) {
                         if (sb.length() == 0) {
                             //header
                             sb.append("\"X\",\"Y\",\"Code\"");
                         }
-                        sb.append("\n").append(points[i]).append(",").append(points[i + 1]).append(",").append(getLsidIndex(lsid)).append("");
-                        //sb.append("\n").append(points[i]).append(",").append(points[i + 1]).append(",\"").append(lsid).append("\"");
+                        //sb.append("\n").append(points[i]).append(",").append(points[i + 1]).append(",").append(getLsidIndex(lsid)).append("");
+                        sb.append("\n").append(points[i]).append(",").append(points[i + 1]).append(",\"").append(getSpLoc(taxonname)).append("\"");
+                        //sb.append("\n").append(points[i]).append(",").append(points[i + 1]).append(",\"").append(lsid).append(",\"").append(taxonname).append("\"");
                     }
                 }
                 sb.append("\n"); 

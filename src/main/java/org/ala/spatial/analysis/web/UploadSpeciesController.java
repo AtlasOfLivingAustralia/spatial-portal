@@ -88,6 +88,8 @@ public class UploadSpeciesController extends UtilityComposer {
 
             public void onEvent(Event event) throws Exception {
                 UserData ud = new UserData(tbName.getValue(), tbDesc.getValue(), "points");
+                addToMap = true;
+                defineArea = true;
                 doFileUpload(ud, event);
                 onClick$btnCancel(null);
             }
@@ -232,7 +234,13 @@ public class UploadSpeciesController extends UtilityComposer {
             }
 
             //call reset window on caller to perform refresh'
+            System.out.println("\n\n\nusc.addtoolwindow?: " + this.getParent().getId() + "\n\n\n");
             if (this.getParent().getId().equals("addtoolwindow")) {
+//                if (uploadLSID == null) {
+//                    String pid = String.valueOf(System.currentTimeMillis());
+//                    System.out.println("setting uploadLSID = '" + pid + "\t" + ud.getName() + "'");
+//                    uploadLSID = pid + "\t" + ud.getName();
+//                }
                 AddToolComposer analysisParent = (AddToolComposer) this.getParent();
                 analysisParent.resetWindowFromSpeciesUpload(uploadLSID, uploadType);
             }
@@ -246,12 +254,14 @@ public class UploadSpeciesController extends UtilityComposer {
     }
 
     public void loadUserPoints(UserData ud, Reader data) throws Exception {
+        System.out.println("\n\n\nin loadUserPoints");
             // Read a line in to check if it's a valid file
             // if it throw's an error, then it's not a valid csv file
             CSVReader reader = new CSVReader(data);
 
             List userPoints = reader.readAll();
 
+            System.out.println("userPoints.size(): " + userPoints.size());
             //if only one column treat it as a list of LSID's
             if(userPoints.size() == 0) {
                 throw(new RuntimeException("no data in csv"));
@@ -364,6 +374,10 @@ public class UploadSpeciesController extends UtilityComposer {
             }
             htUserSpecies.put(pid, ud);
             getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
+
+            System.out.println("addToMap: " + addToMap);
+            System.out.println("uploadLSID: " + uploadLSID);
+            System.out.println("metadata: " + metadata);
 
             if (addToMap) {
                 if (!defineArea) {
@@ -490,6 +504,7 @@ public class UploadSpeciesController extends UtilityComposer {
     */
     
     public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
+        System.out.println("\n\n\nin continueLoadUserLSIDs");
         try {
             //don't care if it has a header
 
@@ -510,18 +525,21 @@ public class UploadSpeciesController extends UtilityComposer {
             }
            
             String lsids = sb.toString();
-                       
-            AddSpeciesController window = (AddSpeciesController) Executions.createComponents("WEB-INF/zul/AddSpecies.zul", getMapComposer(), null);
-            try {
-                window.setMultipleSpecies(lsids);
-                window.doModal();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SuspendNotAllowedException ex) {
-                Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
-            }
 
-        
+            if (this.getParent().getId().equals("addtoolwindow")) {
+                uploadLSID = lsids;
+                uploadType = "assemblage"; 
+            } else {
+                AddSpeciesController window = (AddSpeciesController) Executions.createComponents("WEB-INF/zul/AddSpecies.zul", getMapComposer(), null);
+                try {
+                    window.setMultipleSpecies(lsids);
+                    window.doModal();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SuspendNotAllowedException ex) {
+                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }        
         }catch (Exception e) {
             getMapComposer().showMessage("Unable to load your file. Please try again.");
 

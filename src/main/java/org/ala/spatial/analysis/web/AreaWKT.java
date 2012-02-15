@@ -2,14 +2,16 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 
 
 
-import java.io.File;
-import org.apache.commons.io.FileUtils;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import org.zkoss.zk.ui.Page;
 
@@ -46,6 +48,23 @@ public class AreaWKT extends AreaToolComposer {
 
             layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
+
+            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(System.currentTimeMillis());
+
+            String metadata = "";
+            metadata += "User pasted WKT \n";
+            metadata += "Name: " + layerName + " <br />\n";
+            metadata += "Date: " + formatter.format(calendar.getTime()) + " <br />\n";
+            
+            MapLayerMetadata mlmd = mapLayer.getMapLayerMetadata();
+            if (mlmd == null) {
+                mlmd = new MapLayerMetadata();
+            }
+            mlmd.setMoreInfo(metadata);
+            mapLayer.setMapLayerMetadata(mlmd);
+
 
             //reapply layer name
             getMapComposer().getMapLayer(layerName).setDisplayName(txtLayerName.getValue());

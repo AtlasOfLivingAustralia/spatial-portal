@@ -323,7 +323,8 @@ function runScatterPlot(){
 function runTabulation(){
 //  uncomment this to trigger an error window
 //    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onSearchSpeciesPoint', null));
-    alert("Run Tabulation");
+    //alert("Run Tabulation");
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'runTabulation', null));
 }
 
 function runGDM(){
