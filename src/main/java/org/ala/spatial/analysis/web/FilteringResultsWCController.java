@@ -668,12 +668,12 @@ public class FilteringResultsWCController extends UtilityComposer {
             sbProcessUrl.append("/distribution/" + spcode);
 
             HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.layersServer + sbProcessUrl.toString()); // testurl
+            GetMethod get = new GetMethod(CommonData.layersServer + sbProcessUrl.toString()); // testurl
             System.out.println(CommonData.layersServer + sbProcessUrl.toString());
-            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(post);
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
             if (result == 200) {
-                String txt = post.getResponseBodyAsString();
+                String txt = get.getResponseBodyAsString();
                 JSONObject jo = JSONObject.fromObject(txt);
                 if (jo == null) {
                     return null;
