@@ -33,7 +33,9 @@ public class AreaToolComposer extends UtilityComposer {
     SettingsSupplementary settingsSupplementary;
     RemoteLogger remoteLogger;
     boolean isAnalysisChild = false;
+    boolean isFacetChild = false;
     AddToolComposer analysisParent = null;
+    AddFacetController facetParent = null;
     Map winProps = null;
     public boolean ok = false;
 
@@ -50,8 +52,12 @@ public class AreaToolComposer extends UtilityComposer {
         if (parent.getId().equals("addtoolwindow")) {
             analysisParent = (AddToolComposer) this.getParent();
             isAnalysisChild = true;
-        } else {
+        } else if (parent.getId().equals("addfacetwindow")) {
+            facetParent = (AddFacetController) this.getParent();
+            isFacetChild = true;
+        }else {
             isAnalysisChild = false;
+            isFacetChild = false;
         }
     }
 
@@ -79,6 +85,14 @@ public class AreaToolComposer extends UtilityComposer {
         if (isAnalysisChild) {
             //analysisParent.hasCustomArea = true;
             analysisParent.resetWindow(ok?layerName:null);
+            try {
+                remoteLogger.logMapArea(layerName, areatype, getMapComposer().getMapLayer(layerName).getWKT());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if (isFacetChild) {
+            //analysisParent.hasCustomArea = true;
+            facetParent.resetWindow(ok?layerName:null);
             try {
                 remoteLogger.logMapArea(layerName, areatype, getMapComposer().getMapLayer(layerName).getWKT());
             } catch (Exception e) {

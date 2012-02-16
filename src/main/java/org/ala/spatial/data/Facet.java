@@ -114,9 +114,13 @@ public class Facet implements Serializable {
             } else {
                 //range
                 String[] n = v.substring(1, v.length() - 1).split(" TO ");
-                double[] d = {n[0].equals("*") ? Double.NEGATIVE_INFINITY : Double.parseDouble(n[0]),
+                /*
+                 * double[] d = {n[0].equals("*") ? Double.NEGATIVE_INFINITY : Double.parseDouble(n[0]),
                     n[1].equals("*") ? Double.POSITIVE_INFINITY : Double.parseDouble(n[1])};
                 facets[i] = new Facet(f, d[0], d[1], invert != (offset == 0));
+                * 
+                */
+                facets[i] = new Facet(f, n[0], n[1], invert != (offset == 0));
             }
         }
 
@@ -155,6 +159,22 @@ public class Facet implements Serializable {
 
         String strMin = Double.isInfinite(min)?"*":(min==(int)min)?String.format("%d",(int)min):String.valueOf(min);
         String strMax = Double.isInfinite(max)?"*":(max==(int)max)?String.format("%d",(int)max):String.valueOf(max);
+
+        this.value = "[" + strMin + " TO " + strMax + "]";
+
+        this.valueArray = null;
+
+        this.parameter = (includeRange?"":"-") + this.field + ":" + this.value;
+    }
+    
+    public Facet(String field, String strMin, String strMax, boolean includeRange) {
+        this.field = field;
+        
+        double[] d = {strMin.equals("*") ? Double.NEGATIVE_INFINITY : Double.parseDouble(strMin),
+                    strMax.equals("*") ? Double.POSITIVE_INFINITY : Double.parseDouble(strMax)};
+        this.min = d[0];
+        this.max = d[1];
+        this.includeRange = includeRange;
 
         this.value = "[" + strMin + " TO " + strMax + "]";
 

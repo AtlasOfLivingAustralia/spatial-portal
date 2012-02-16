@@ -135,7 +135,12 @@ public class AddAreaController extends UtilityComposer {
             AddToolComposer analysisParent = (AddToolComposer) this.getParent();
             //analysisParent.hasCustomArea = true;
             analysisParent.resetWindow(getMapComposer().getNextAreaLayerName("My Area"));
+        } else if (this.getParent().getId().equals("addfacetwindow")) {
+            AddFacetController analysisParent = (AddFacetController) this.getParent();
+            //analysisParent.hasCustomArea = true;
+            analysisParent.resetWindow(getMapComposer().getNextAreaLayerName("My Area"));
         }
+        
         if(cbAreaSelection.getSelectedItem() != null) {
             mc.setAttribute("addareawindow", cbAreaSelection.getSelectedItem().getId());
         }

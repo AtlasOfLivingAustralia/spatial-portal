@@ -1,64 +1,40 @@
 package org.ala.spatial.analysis.web;
 
 import au.com.bytecode.opencsv.CSVReader;
-import au.org.emii.portal.composer.LayerLegendComposer2;
 import au.org.emii.portal.composer.MapComposer;
-
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.databinding.ActiveLayerRenderer;
-import au.org.emii.portal.javascript.OpenLayersJavascript;
-import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.motd.MOTD;
-import au.org.emii.portal.net.HttpConnection;
-import au.org.emii.portal.request.DesktopState;
-import au.org.emii.portal.session.PortalSession;
-import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
-import au.org.emii.portal.util.GeoJSONUtilities;
-import au.org.emii.portal.util.LayerSelection;
 import au.org.emii.portal.util.LayerUtilities;
-import au.org.emii.portal.util.PortalSessionUtilities;
-import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
-import au.org.emii.portal.wms.RemoteMap;
-import java.awt.Color;
 import java.io.IOException;
-import java.util.List;
 import java.io.StringReader;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.zkoss.zk.ui.Executions;
-import org.zkoss.zul.Listbox;
-import org.zkoss.zul.Listcell;
-import org.zkoss.zul.Listitem;
-import org.zkoss.zul.ListitemRenderer;
-import org.zkoss.zul.SimpleListModel;
-import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.data.*;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.LegendMaker;
 import org.ala.spatial.util.SelectedArea;
-import org.zkoss.zk.ui.Component;
-import org.zkoss.zk.ui.HtmlMacroComponent;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.*;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 
 public class AddFacetController extends UtilityComposer {
-
+    String winTop = "300px";
+    String winLeft = "500px";
+    Map<String, Object> params;
+    int currentStep = 1, totalSteps = 2;
+    String selectedMethod = "";
+    Button btnCancel, btnOk, btnBack, clearSelection;
+    
     int SLIDER_MAX = 500;
     Query query;
     String pid;
     String imagePath = "";
     public Listbox legend;
     Button createInGroup;
-    Button clearSelection,btnOk;
     ArrayList<String> legend_lines;
     
     Rangeslider dslider;
@@ -85,9 +61,12 @@ public class AddFacetController extends UtilityComposer {
     Listheader lhFourthColumn;
     Combobox cbColour;
     SettingsSupplementary settingsSupplementary;
+    boolean hasCustomArea = false;
+    Radiogroup rgArea, rgAreaHighlight, rgSpecies, rgSpeciesBk;
 
     //SelectedArea sa = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
-    SelectedArea sa = new SelectedArea(null,CommonData.WORLD_WKT);
+    //SelectedArea sa = new SelectedArea(null,CommonData.WORLD_WKT);
+    SelectedArea sa;
     Query q;
     MapLayer mapLayer = null;
     Map map = new HashMap();
@@ -95,25 +74,120 @@ public class AddFacetController extends UtilityComposer {
     boolean readonly=true;
     boolean checkmarks=true;
     MapComposer mc = getMapComposer();
-    Radiogroup rgArea;
     Radio rAreaWorld, rAreaCustom, rAreaSelected, rAreaAustralia;
+    MapLayer prevTopArea = null;
     
     @Override
     public void afterCompose() {
         super.afterCompose();
-        cbColour.setFocus(true);
-        q = QueryUtil.queryFromSelectedArea(query, sa, false);
-        if (q != null) {
-            ArrayList<QueryField> fields = q.getFacetFieldList();
-            for (int i = 0; i < fields.size(); i++) {
-                Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
-                ci.setValue(fields.get(i).getName());
-                ci.setParent(cbColour);
-            }
-        }
-        //rgArea.setFocus(true);
+        winTop = this.getTop();
+        winLeft = this.getLeft();
+        setupDefaultParams();
+        setParams(Executions.getCurrent().getArg());
+        selectedMethod = "Add facet";
+        updateWindowTitle();
+        fixFocus();
+        btnOk.setDisabled(true);
     }
     
+    private void setupDefaultParams() {
+        Hashtable<String, Object> p = new Hashtable<String, Object>();
+        p.put("step1", "Select area");
+        p.put("step2", "Select facet");
+
+        if (params == null) {
+            params = p;
+        } else {
+            setParams(p);
+        }
+
+        Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
+        //btnOk.setLabel("Next >");
+        btnOk.setDisabled(true);
+    }
+    
+    public void setParams(Map<String, Object> params) {
+        // iterate thru' the passed params and load them into the
+        // existing default params
+        if (params == null) {
+            setupDefaultParams();
+        }
+        if (params != null && params.keySet() != null && params.keySet().iterator() != null) {
+            Iterator<String> it = params.keySet().iterator();
+            while (it.hasNext()) {
+                String key = it.next();
+                this.params.put(key, params.get(key));
+            }
+        } else {
+            this.params = params;
+        }
+    }
+    
+    public void updateWindowTitle() {
+        this.setTitle("Step " + currentStep + " of " + totalSteps + " - " + selectedMethod);
+    }
+    
+    void fixFocus() {
+        switch (currentStep) {           
+            case 1:
+                rgArea.setFocus(true);
+                break;
+            case 2:
+                cbColour.setFocus(true);
+                break;    
+           
+        }
+    }
+    
+    public void onCheck$rgArea(Event event) {
+        if (rgArea == null) {
+            return;
+        }
+        //setCustomArea = false;
+        hasCustomArea = false;
+        rAreaSelected = rgArea.getSelectedItem();
+        try {
+            rAreaSelected = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+        } catch (Exception e) {
+        }
+        if (rAreaSelected == rAreaCustom) {
+            //setCustomArea = true;
+            hasCustomArea = false;
+        }
+        btnOk.setDisabled(false);
+    }
+    
+    public SelectedArea getSelectedArea() {
+        String area = rAreaSelected.getValue();
+        SelectedArea selectedarea = null;
+        try {
+            if (area.equals("current")) {
+                selectedarea = new SelectedArea(null, getMapComposer().getViewArea());
+            } else if (area.equals("australia")) {
+                selectedarea = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
+            } else if (area.equals("world")) {
+                selectedarea = new SelectedArea(null, CommonData.WORLD_WKT);
+            } else {
+                List<MapLayer> layers = getMapComposer().getPolygonLayers();
+                for (MapLayer ml : layers) {
+                    if (area.equals(ml.getWKT())) {
+                        selectedarea = new SelectedArea(ml, null);
+                        break;
+                    }
+                }
+
+                //for 'all areas'
+                if (selectedarea == null) {
+                    selectedarea = new SelectedArea(null, area);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to retrieve selected area");
+            e.printStackTrace(System.out);
+        }
+
+        return selectedarea;
+    }
     
     public void onSelect$cbColour(Event event) {
         colourmode = (String) cbColour.getSelectedItem().getValue();
@@ -123,11 +197,10 @@ public class AddFacetController extends UtilityComposer {
         //    checkmarks = true;
         //}
         
-
         try {
             LegendObject lo = ((Query)q).getLegend(colourmode);
             //mapLayer.setData("legendobject", lo);
-            if(lo != null) {
+            if(lo != null && "coordinate_uncertainty".equals(colourmode)) {
                 mapLayer.setData("legendobject", lo);
             }
         } catch (Exception e) {
@@ -139,7 +212,7 @@ public class AddFacetController extends UtilityComposer {
         
         pid = (String) (Executions.getCurrent().getArg().get("pid"));
 
-        disableselection = (Executions.getCurrent().getArg().get("disableselection")) != null;
+        //disableselection = (Executions.getCurrent().getArg().get("disableselection")) != null;
         //if(disableselection) {
          //   dCreateButtons.setVisible(false);
         //    lhFirstColumn.setWidth("0px");
@@ -154,11 +227,10 @@ public class AddFacetController extends UtilityComposer {
     
     void buildLegend() {
         try {
-            String slist = null;
+            String slist;
 
             if (q != null) {
                 if (colourmode.equals("grid")) {
-                    System.out.println("colourmode.equals grid="+colourmode);
                     slist = "name,red,green,blue,count";
                     for (int i = 0; i < 600; i += 100) {
                         if (i == 1) {
@@ -175,13 +247,12 @@ public class AddFacetController extends UtilityComposer {
             } else {
                 return;
             }
-            System.out.println("slist="+slist);
             String[] lines = slist.split("\r\n");
             if (lines.length == 1) {
                 lines = slist.split("\n");
             }
             legend_lines = new ArrayList<String>();
-            int i = 0;
+            int i;
             for (i = 1; i < lines.length; i++) {
                 if (lines[i].split(",").length > 3) {
                     legend_lines.add(lines[i]);
@@ -233,7 +304,6 @@ public class AddFacetController extends UtilityComposer {
                     }
 
                     Checkbox cb = null;
-                    
                     if (checkmarks) {
                         cb = new Checkbox();
                         cb.addEventListener("onCheck", new EventListener() {
@@ -303,17 +373,6 @@ public class AddFacetController extends UtilityComposer {
         }
     }
     
-    public void onClick$btnOk(Event event) {
-        int[] state = getState();
-                if (state[0] > 1) {
-                    setEnableContinousControls(false);
-                } 
-                //else {
-                    updateD();
-                //}
-        
-    }
-
     String getSelectionFacet() {
         StringBuilder values = new StringBuilder();
 
@@ -325,6 +384,7 @@ public class AddFacetController extends UtilityComposer {
                 if (legend_facets != null) {
                     if (v.equals("Unknown") ||v.contains("year") || v.contains("uncertainty")) {
                         //keep unchanged
+                        divContinous.setVisible(true);
                     } else {
                         v = legend_facets.get(v);
                     }
@@ -464,7 +524,16 @@ public class AddFacetController extends UtilityComposer {
         legend_facets = new HashMap<String, String>();
         try {
             divContinous.setVisible(!disableselection && true);
-            LegendObject lo = (LegendObject) mapLayer.getData("legendobject");
+            LegendObject lo;
+            /*
+             * if ("coordinate_uncertainty".equals(colourmode)) {
+                lo = (LegendObject) mapLayer.getData("legendobject");
+            } else {
+                lo = ((Query)q).getLegend(colourmode);
+            }
+            * 
+            */
+            lo = ((Query)q).getLegend(colourmode);
             if (lo.getFieldType() == QueryField.FieldType.INT
                     || lo.getFieldType() == QueryField.FieldType.LONG) {
                 intContinous = true;
@@ -512,7 +581,6 @@ public class AddFacetController extends UtilityComposer {
                     legend_facets.put("Unknown", v);
                 } else {
                     String[] ss = s.split(" ");
-
                     double[] cutoffs = lo.getNumericLegend().getCutoffdoubles();
                     double[] cutoffMins = lo.getNumericLegend().getCutoffMindoubles();
                     String range, strFacet;
@@ -561,7 +629,8 @@ public class AddFacetController extends UtilityComposer {
         legend_facets = new HashMap<String, String>();
 
         //checkmarks = false;
-        LegendObject lo = (LegendObject) mapLayer.getData("legendobject");
+        //LegendObject lo = (LegendObject) mapLayer.getData("legendobject");
+        LegendObject lo = ((Query)q).getLegend(colourmode);
         if (lo != null) {
             //enable sliders
             divContinous.setVisible(!disableselection && true);
@@ -812,12 +881,12 @@ public class AddFacetController extends UtilityComposer {
                     e.printStackTrace();
                 }
             } else {
-                Facet facet = Facet.parseFacet(f);
-                if (facet != null) {
+                Facet facetlocal = Facet.parseFacet(f);
+                if (facetlocal != null) {
                     if (value == null || value.length() == 0 || ((q instanceof BiocacheQuery || divContinous.isVisible()) && value.equals("Unknown"))) {
-                        cb.setChecked(facet.isValid(""));
+                        cb.setChecked(facetlocal.isValid(""));
                     } else {
-                        cb.setChecked(facet.isValid(value));
+                        cb.setChecked(facetlocal.isValid(value));
                     }
                 } else {
                     System.out.println("Error parsing: " + mapLayer.getHighlight());
@@ -829,6 +898,7 @@ public class AddFacetController extends UtilityComposer {
     public void onClick$clearSelection(Event e) {
 
         uncheckAll();
+        btnOk.setDisabled(true);
 
         if (divContinous.isVisible()) {
             setEnableContinousControls(true);
@@ -859,5 +929,440 @@ public class AddFacetController extends UtilityComposer {
     
     public void onClick$btnCancel(Event event) {
         this.detach();
+    }
+    
+    public void onClick$btnOk(Event event) {
+        if (btnOk.isDisabled()) {
+            return;
+        }
+        try {
+            if (!hasCustomArea && (isAreaCustom() || isAreaHighlightCustom())) {
+                this.doOverlapped();
+                this.setTop("-9999px");
+                this.setLeft("-9999px");
+
+                Map<String, Object> winProps = new HashMap<String, Object>();
+                winProps.put("parent", this);
+                winProps.put("parentname", "AddTool");
+                winProps.put("selectedMethod", selectedMethod);
+
+                List<MapLayer> layers = getMapComposer().getPolygonLayers();
+                if (layers != null && layers.size() > 0) {
+                    prevTopArea = layers.get(0);
+                } else {
+                    prevTopArea = null;
+                }
+
+                Window window = (Window) Executions.createComponents("WEB-INF/zul/AddArea.zul", this, winProps);
+                window.setAttribute("winProps", winProps, true);
+                window.doModal();
+
+                return;
+            }
+            
+            Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
+            Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
+            Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep + 1))) : null;
+
+            if (!currentDiv.getZclass().contains("last")) {
+                currentDiv.setVisible(false);
+                nextDiv.setVisible(true);
+
+                Image previousStepCompletedImg = (Image) getFellowIfAny("imgCompletedStep" + (currentStep));
+                previousStepCompletedImg.setVisible(true);
+
+                Label previousStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep));
+                previousStepLabel.setStyle("font-weight:normal");
+
+                Label currentStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep + 1));
+                currentStepLabel.setStyle("font-weight:bold");
+
+                // now include the extra options for step 4
+                //if (nextDiv != null) {
+                //    btnOk.setLabel("Next >");
+                //}
+
+                currentStep++;
+                updateWindowTitle();
+                fixFocus();
+                sa = getSelectedArea();
+                q = QueryUtil.queryFromSelectedArea(query, sa, false);
+                if (q != null) {
+                    ArrayList<QueryField> fields = q.getFacetFieldList();
+                    for (int i = 0; i < fields.size(); i++) {
+                        Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
+                        ci.setValue(fields.get(i).getName());
+                        ci.setParent(cbColour);
+                    }
+                }
+                btnBack.setDisabled(false);
+                btnOk.setDisabled(true);
+            } else {
+                int[] state = getState();
+                if (state[0] == 0) {
+                    btnOk.setDisabled(true);
+                }
+                //if (state[0] > 1) {
+                //    setEnableContinousControls(false);
+                //} 
+                updateD();
+            }
+
+        } catch (Exception ex) {
+            Logger.getLogger(AddToolComposer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        fixFocus();
+    }
+    
+    public void onClick$btnBack(Event event) {
+
+        Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
+        Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
+        Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep - 1))) : null;
+
+
+
+        if (currentDiv.getZclass().contains("first")) {
+            btnBack.setDisabled(true);
+        } else {
+            currentDiv.setVisible(false);
+            previousDiv.setVisible(true);
+
+            Image currentStepCompletedImg = (Image) getFellowIfAny("imgCompletedStep" + (currentStep - 1));
+            currentStepCompletedImg.setVisible(false);
+
+            Label nextStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep));
+            nextStepLabel.setStyle("font-weight:normal");
+
+            Label currentStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep - 1));
+            currentStepLabel.setStyle("font-weight:bold");
+
+            currentStep--;
+
+            if (previousDiv != null) {
+                btnBack.setDisabled(((!previousDiv.getZclass().contains("first")) ? false : true));
+            }
+        }
+
+        //btnOk.setLabel("Next >");
+        btnOk.setDisabled(false);
+        updateWindowTitle();
+
+    }
+    
+    private boolean isAreaHighlightTab() {
+        return rgAreaHighlight != null && rgAreaHighlight.getParent().isVisible();
+    }
+
+    boolean isAreaTab() {
+        return rgArea != null && rgArea.getParent().isVisible();
+    }
+
+    boolean isAreaCustom() {
+        return isAreaTab() && rAreaCustom != null && rAreaCustom.isSelected();
+    }
+
+    boolean isAreaHighlightCustom() {
+        return isAreaHighlightTab() && rgAreaHighlight != null
+                && rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight");
+    }
+    
+    public void onCheck$rgAreaHighlight(Event event) {
+        if (rgAreaHighlight == null) {
+            return;
+        }
+        //setCustomArea = false;
+        hasCustomArea = false;
+        if (rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight")) {
+            //setCustomArea = true;
+            hasCustomArea = false;
+        }
+    }
+    
+    public SelectedArea getSelectedAreaHighlight() {
+        String area = rgAreaHighlight.getSelectedItem().getValue();
+
+        SelectedArea selectedarea = null;
+        try {
+            if (area.equals("none")) {
+            } else if (area.equals("current")) {
+                selectedarea = new SelectedArea(null, getMapComposer().getViewArea());
+            } else if (area.equals("australia")) {
+                selectedarea = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
+            } else if (area.equals("world")) {
+                selectedarea = new SelectedArea(null, CommonData.WORLD_WKT);
+            } else {
+                List<MapLayer> layers = getMapComposer().getPolygonLayers();
+                for (MapLayer ml : layers) {
+                    if (area.equals(ml.getWKT())) {
+                        selectedarea = new SelectedArea(ml, null);
+                        break;
+                    }
+                }
+
+                //for 'all areas'
+                if (selectedarea == null) {
+                    selectedarea = new SelectedArea(null, area);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to retrieve selected area");
+            e.printStackTrace(System.out);
+        }
+
+        return selectedarea;
+    }
+    
+    public void loadAreaLayers() {
+        loadAreaLayers(null);
+    }
+
+    public void loadAreaLayers(String selectedAreaName) {
+        try {
+            Radiogroup rgArealocal = (Radiogroup) getFellowIfAny("rgArea");
+            //remove all radio buttons that don't have an id
+            for (int i = rgArealocal.getItemCount() - 1; i >= 0; i--) {
+                String id = ((Radio) rgArealocal.getItems().get(i)).getId();
+                if (id == null || id.length() == 0) {
+                    rgArealocal.removeItemAt(i);
+                } else {
+                    rgArealocal.getItemAtIndex(i).setSelected(false);
+                }
+            }
+
+            Radio rAreaCurrent = (Radio) getFellowIfAny("rAreaCurrent");
+
+            String selectedLayerName = (String) params.get("polygonLayerName");
+            Radio rSelectedLayer = null;
+
+            StringBuilder allWKT = new StringBuilder();
+            int count_not_envelopes = 0;
+            List<MapLayer> layers = getMapComposer().getPolygonLayers();
+            for (int i = 0; i < layers.size(); i++) {
+                MapLayer lyr = layers.get(i);
+                Radio rAr = new Radio(lyr.getDisplayName());
+                rAr.setValue(lyr.getWKT());
+
+                if (!lyr.getWKT().contains("ENVELOPE")) {
+                    if (count_not_envelopes > 0) {
+                        allWKT.append(',');
+                    }
+                    count_not_envelopes++;
+                    String wkt = lyr.getWKT();
+                    if (wkt.startsWith("GEOMETRYCOLLECTION(")) {
+                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length() - 1);
+                    }
+                    allWKT.append(wkt);
+                }
+
+                rAr.setParent(rgArealocal);
+                rgArealocal.insertBefore(rAr, rAreaCurrent);
+
+                if (selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
+                    rSelectedLayer = rAr;
+                    rAreaSelected = rAr;
+                }
+            }
+
+            if (!layers.isEmpty() && count_not_envelopes > 1) {
+                Radio rAr = new Radio("All area layers"
+                        + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
+                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
+                rAr.setParent(rgArealocal);
+                rgArealocal.insertBefore(rAr, rAreaCurrent);
+            }
+
+            if (selectedAreaName != null && !selectedAreaName.equals("")) {
+                for (int i = 0; i < rgArealocal.getItemCount(); i++) {
+                    if (rgArealocal.getItemAtIndex(i).isVisible() && rgArealocal.getItemAtIndex(i).getLabel().equals(selectedAreaName)) {
+                        rAreaSelected = rgArealocal.getItemAtIndex(i);
+                        System.out.println("2.resetting indexToSelect = " + i);
+                        rgArealocal.setSelectedItem(rAreaSelected);
+                        break;
+                    }
+                }
+            } else if (rSelectedLayer != null) {
+                rAreaSelected = rSelectedLayer;
+                rgArealocal.setSelectedItem(rAreaSelected);
+            } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
+                rgArealocal.setSelectedItem(rAreaWorld);
+                rAreaSelected = rAreaWorld;
+                rgArealocal.setSelectedItem(rAreaSelected);
+            } else {
+                for (int i = 0; i < rgArealocal.getItemCount(); i++) {
+                    if (rgArealocal.getItemAtIndex(i).isVisible()) {
+                        rAreaSelected = rgArealocal.getItemAtIndex(i);
+                        rgArealocal.setSelectedItem(rAreaSelected);
+                        break;
+                    }
+                }
+            }
+            Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
+
+        } catch (Exception e) {
+            System.out.println("Unable to load active area layers:");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void loadAreaHighlightLayers(String selectedAreaName) {
+        try {
+            Radiogroup rgArealocal = (Radiogroup) getFellowIfAny("rgAreaHighlight");
+            //remove all radio buttons that don't have an id
+            for (int i = rgArealocal.getItemCount() - 1; i >= 0; i--) {
+                String id = ((Radio) rgArealocal.getItems().get(i)).getId();
+                if (id == null || id.length() == 0) {
+                    rgArealocal.removeItemAt(i);
+                } else {
+                    rgArealocal.getItemAtIndex(i).setSelected(false);
+                }
+            }
+
+            Radio rAreaCurrentHighlight = (Radio) getFellowIfAny("rAreaCurrentHighlight");
+
+            String selectedLayerName = (String) params.get("polygonLayerName");
+            Radio rSelectedLayer = null;
+
+            StringBuilder allWKT = new StringBuilder();
+            int count_not_envelopes = 0;
+            List<MapLayer> layers = getMapComposer().getPolygonLayers();
+            for (int i = 0; i < layers.size(); i++) {
+                MapLayer lyr = layers.get(i);
+                Radio rAr = new Radio(lyr.getDisplayName());
+                rAr.setValue(lyr.getWKT());
+
+                if (!lyr.getWKT().contains("ENVELOPE")) {
+                    if (count_not_envelopes > 0) {
+                        allWKT.append(',');
+                    }
+                    count_not_envelopes++;
+                    String wkt = lyr.getWKT();
+                    if (wkt.startsWith("GEOMETRYCOLLECTION(")) {
+                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length() - 1);
+                    }
+                    allWKT.append(wkt);
+                }
+
+
+                rAr.setParent(rgArealocal);
+                rgArealocal.insertBefore(rAr, rAreaCurrentHighlight);
+
+                if (selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
+                    rSelectedLayer = rAr;
+                    //rAreaSelected = rAr;
+                }
+            }
+
+            if (!layers.isEmpty() && count_not_envelopes > 1) {
+                Radio rAr = new Radio("All area layers"
+                        + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
+                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
+                rAr.setParent(rgArealocal);
+                rgArealocal.insertBefore(rAr, rAreaCurrentHighlight);
+            }
+
+            if (selectedAreaName != null && !selectedAreaName.equals("")) {
+                for (int i = 0; i < rgArealocal.getItemCount(); i++) {
+                    if (rgArealocal.getItemAtIndex(i).isVisible() && rgArealocal.getItemAtIndex(i).getLabel().equals(selectedAreaName)) {
+                        System.out.println("2.resetting indexToSelect = " + i);
+                        rgArealocal.setSelectedItem(rgArealocal.getItemAtIndex(i));
+                        break;
+                    }
+                }
+            } else if (rSelectedLayer != null) {
+                rgArealocal.setSelectedItem(rAreaSelected);
+            } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
+                rgArealocal.setSelectedItem(rAreaWorld);
+            } else {
+                for (int i = 0; i < rgArealocal.getItemCount(); i++) {
+                    if (rgArealocal.getItemAtIndex(i).isVisible()) {
+                        //rAreaSelected = rgArea.getItemAtIndex(i);
+                        rgArealocal.setSelectedItem(rgArealocal.getItemAtIndex(i));
+                        break;
+                    }
+                }
+            }
+            Clients.evalJavaScript("jq('#" + rgArealocal.getSelectedItem().getUuid() + "-real').attr('checked', true);");
+
+        } catch (Exception e) {
+            System.out.println("Unable to load active area layers:");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void loadAreaLayersHighlight() {
+        try {
+
+            Radiogroup rgArealocal = (Radiogroup) getFellowIfAny("rgAreaHighlight");
+            Radio rAreaCurrent = (Radio) getFellowIfAny("rAreaCurrentHighlight");
+            Radio rAreaNone = (Radio) getFellowIfAny("rAreaNoneHighlight");
+
+            List<MapLayer> layers = getMapComposer().getPolygonLayers();
+            for (int i = 0; i < layers.size(); i++) {
+                MapLayer lyr = layers.get(i);
+                Radio rAr = new Radio(lyr.getDisplayName());
+                rAr.setId(lyr.getName().replaceAll(" ", ""));
+                rAr.setValue(lyr.getWKT());
+                rAr.setParent(rgArealocal);
+                rgArealocal.insertBefore(rAr, rAreaCurrent);
+            }
+
+            rAreaNone.setSelected(true);
+        } catch (Exception e) {
+            System.out.println("Unable to load active area layers:");
+            e.printStackTrace(System.out);
+        }
+    }
+    
+    public void resetWindow(String selectedArea) {
+        try {
+
+            if (selectedArea == null) {
+                hasCustomArea = false;
+            } else if (selectedArea.trim().equals("")) {
+                hasCustomArea = false;
+            } else {
+                hasCustomArea = true;
+            }
+
+            boolean ok = false;
+            if (hasCustomArea) {
+                MapLayer curTopArea = null;
+                List<MapLayer> layers = getMapComposer().getPolygonLayers();
+                if (layers != null && layers.size() > 0) {
+                    curTopArea = layers.get(0);
+                } else {
+                    curTopArea = null;
+                }
+
+                if (curTopArea != prevTopArea) {
+                    if (isAreaHighlightTab()) {
+                        loadAreaHighlightLayers(curTopArea.getDisplayName());
+                    } else if (isAreaTab()) {
+                        loadAreaLayers(curTopArea.getDisplayName());
+                    }
+
+                    ok = true;
+                }
+            }
+            this.setTop(winTop);
+            this.setLeft(winLeft);
+
+            this.doModal();
+
+            if (ok) {
+                onClick$btnOk(null);
+                hasCustomArea = false;
+            }
+
+            fixFocus();
+        } catch (InterruptedException ex) {
+            System.out.println("InterruptedException when resetting analysis window");
+            ex.printStackTrace(System.out);
+        } catch (SuspendNotAllowedException ex) {
+            System.out.println("Exception when resetting analysis window");
+            ex.printStackTrace(System.out);
+        }
     }
 }

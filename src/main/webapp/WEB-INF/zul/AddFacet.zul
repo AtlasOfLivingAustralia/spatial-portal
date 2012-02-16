@@ -1,9 +1,9 @@
-<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
-<?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
-<zk>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addfacetwindow" use="org.ala.spatial.analysis.web.AddFacetController"
-    apply="org.ala.spatial.analysis.web.AddFacetController" title="Add facets" width="620px" height="670px"
-         xmlns:n="http://www.zkoss.org/2005/zk/native">
+    apply="org.ala.spatial.analysis.web.AddFacetController" width="758px" height="650px"
+    xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -13,13 +13,45 @@
         <n:div class="fancybox-bg" id="fancybox-bg-s" />
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="addfacetwindow.onClick$btnCancel(null)" style="display: inline" />
-        <n:a class="fancybox-help" n:onClick="loadHelp('sampling-tools')" style="display: inline" />
-
+        <n:a class="fancybox-help" n:onClick="loadHelp('layers-add-to-map')" style="display: inline" />
+        
         
         <separator />
-        
-        <separator spacing = "15px"/>
-                <div id="colourChooser" style="padding-left: 25px">
+        <hbox id="stepCounter">
+            <vbox style="padding-left: 25px">
+                <grid width="150px">
+                    <columns>
+                        <column width="120px"/>
+                        <column />
+                    </columns>
+                    <rows>                       
+                        <row>
+                            <label id="lblStep1" style="font-weight:bold" value="1. Apply to an area"/>
+                            <image id="imgCompletedStep1" visible="false" src="img/accept.png"/>
+                        </row>
+                        <row>
+                            <label id="lblStep2" value="2. Select facet"/>
+                            <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
+                        </row>                      
+                    </rows>        
+                </grid>
+            </vbox>
+            <vbox style="padding-left: 5px" >
+                <div id="atstep1" visible="true" zclass="first optional" sclass="atstep" style="padding:5px;">
+                    <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
+                    <label id="atstep1_label" value="" />
+                    <separator />
+                    <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
+                        <radio id="rAreaCurrent" label="Current extent" value="current" />
+                        <radio id="rAreaAustralia" label="Australia" value="australia" />
+                        <radio id="rAreaWorld" label="World" value="world"/>
+                        <radio id="rAreaCustom" label="Define new area" value="custom" />
+                    </radiogroup>
+                </div>
+                <div id="atstep2" visible="false" zclass="last optional" sclass="atstep"  width="560px" height="600px" style="padding:5px;">
+                    <label id="atstep2_desc" value="" sclass="wSubLabel"/>
+                    <label id="atstep2_label" value="" />
+                <div id="colourChooser">
                     <hbox>
                         <label value="Facet" style="font-weight:bold"/>
                         <separator orient="vertical" />
@@ -29,15 +61,16 @@
                 </div>
                 
                 <separator spacing="10px" />
-                    <div width="60px" style="padding-left: 25px">
+                    <div width="60px" >
                         <label value="Legend" style="font-weight:bold" />
                     </div>
-            <div id="dCreateButtons" height="20px" style="bottom: 0px;right: 0px;margin: 0px 5px 5px 0px;padding: 0px 5px 5px 0px;" >
+            <!--div id="dCreateButtons"  height="20px" style="bottom: 0px; right: 100px 5px 5px 100px;padding: 0px 5px 5px 0px;"-->
+            <div id="dCreateButtons"  height="25px" align="right">
                 <button id="selectAll" label="Select all" sclass="goButton" />
                 <!--button id="createInGroup" label="Create layer" sclass="goButton"/-->
                 <button id="clearSelection" label="Clear selection" sclass="goButton"/>
             </div>
-            <div height="420px"  style="padding-left: 25px">
+            <div height="420px"  >
             <listbox sclass="legendlist2" id="legend" width="550px" height="100%" vflex="true">
                 <listhead sizable="true">
                     <listheader label="   " width="25px" id="lhFirstColumn" />
@@ -64,12 +97,16 @@
                     <checkbox id="dunknown" label="Select Unknown" checked="false" />
                  </div>
             </vbox>
-
-       
-        <div sclass="wButtons">
-            <hbox>                
-                <button sclass="goButton" label="Cancel" id="btnCancel"/>
-                <button sclass="goButton" label="Next" id="btnOk" disabled="true" />
+            </div>
+            </vbox>
+        </hbox>
+        <div sclass="wizButtonContainer">
+            <hbox>
+                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
+                <button sclass="goButton" label="Cancel" id="btnCancel" />
+                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
+                <button sclass="goButton" label="Next &gt;" id="btnOk" disabled="true" />
+                
             </hbox>
         </div>
     </window>
