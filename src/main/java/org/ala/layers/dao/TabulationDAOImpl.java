@@ -63,20 +63,20 @@ public class TabulationDAOImpl implements TabulationDAO {
                     * 
                     */
             /* before "tabulation" table is updated with column "occurrences", to just make sure column "area" is all good */
-            String sql = "SELECT i.pid1, i.pid2, i.fid1, i.fid2, i.area, o1.name as name1, o2.name as name2 FROM "
-                    + "(SELECT * FROM tabulation WHERE fid1= ? AND fid2 = ? ) i, "
-                    + "(SELECT * FROM objects WHERE fid= ? ) o1, "
-                    + "(SELECT * FROM objects WHERE fid= ? ) o2 "
+            String sql = "SELECT i.pid1, i.pid2, i.fid1, i.fid2, i.area, o1.name as name1, o2.name as name2, i.occurrences, i.species FROM "
+                    + "(SELECT pid1, pid2, fid1, fid2, area, occurrences, species FROM tabulation WHERE fid1= ? AND fid2 = ? ) i, "
+                    + "(SELECT pid, name FROM objects WHERE fid= ? ) o1, "
+                    + "(SELECT pid, name FROM objects WHERE fid= ? ) o2 "
                     + "WHERE i.pid1=o1.pid AND i.pid2=o2.pid ;";
             
             return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Tabulation.class), min, max, min, max);
             
         } else {
-            String sql = "SELECT fid1, pid1, fid2, pid2, ST_AsText(newgeom) as geometry, name1, name2 FROM "
-                    + "(SELECT fid1, pid1, fid2, pid2, (ST_INTERSECTION(ST_GEOMFROMTEXT( ? ,4326), i.the_geom)) as newgeom, o1.name as name1, o2.name as name2 FROM "
+            String sql = "SELECT fid1, pid1, fid2, pid2, ST_AsText(newgeom) as geometry, name1, name2, occurrences, species FROM "
+                    + "(SELECT fid1, pid1, fid2, pid2, (ST_INTERSECTION(ST_GEOMFROMTEXT( ? ,4326), i.the_geom)) as newgeom, o1.name as name1, o2.name as name2, i.occurrences, i.species FROM "
                         + "(SELECT * FROM tabulation WHERE fid1= ? AND fid2 = ? ) i, "
-                        + "(SELECT * FROM objects WHERE fid= ? ) o1, "
-                        + "(SELECT * FROM objects WHERE fid= ? ) o2 "
+                        + "(SELECT pid, name FROM objects WHERE fid= ? ) o1, "
+                        + "(SELECT pid, name FROM objects WHERE fid= ? ) o2 "
                         + "WHERE i.pid1=o1.pid AND i.pid2=o2.pid) a "
                     + "WHERE a.newgeom is not null AND ST_Area(a.newgeom) > 0;";
 
