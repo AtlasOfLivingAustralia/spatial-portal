@@ -157,13 +157,13 @@
                     <vbox>
                         <label value="Environmental layers" sclass="wSubLabel" />
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px"
+                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="560px"
                     height="430px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
                             <listhead>
-                                <listheader label="category"  />
-                                <listheader label="name" />
-                                <listheader label=" "  />
-                                <listheader label=" " width="10px" />
+                                <listheader label="category" hflex="min"/>
+                                <listheader label="name"  />
+                                <listheader label=" "  width="25px"/>
+                                <listheader label=" " width="14px" />
                             </listhead>
                         </listbox>
                         <hbox>

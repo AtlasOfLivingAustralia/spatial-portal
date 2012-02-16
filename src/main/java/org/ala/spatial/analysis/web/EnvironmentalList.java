@@ -32,6 +32,7 @@ public class EnvironmentalList extends Listbox {
     String satServer;
     boolean environmentalOnly;
     boolean includeAnalysisLayers;
+    boolean isPrediction;
 
     public void init(MapComposer mc, String sat_url, boolean environmental_only, boolean includeAnalysisLayers) {
         mapComposer = mc;
@@ -40,7 +41,7 @@ public class EnvironmentalList extends Listbox {
         
         try {
 
-            if (environmentalOnly) {
+            /*if (environmentalOnly) {
                 listEntries = CommonData.getListEntriesEnv();
                 distances = CommonData.getDistances();
                 layerNames = CommonData.getLayerNamesEnv();
@@ -50,6 +51,11 @@ public class EnvironmentalList extends Listbox {
                 listEntries = CommonData.getListEntriesAll();
                 layerNames = CommonData.getLayerNamesAll();
             }
+            * 
+            */
+            distances = CommonData.getDistances();
+            listEntries = CommonData.getListEntriesAll();
+            layerNames = CommonData.getLayerNamesAll();
                         
 
             if(includeAnalysisLayers != this.includeAnalysisLayers) {
@@ -60,7 +66,6 @@ public class EnvironmentalList extends Listbox {
                         i--;
                     }
                 }
-
                 //add
                 if(includeAnalysisLayers) {         //add
                     for(MapLayer ml : mc.getAnalysisLayers()) {
@@ -82,7 +87,7 @@ public class EnvironmentalList extends Listbox {
             }
             this.includeAnalysisLayers = includeAnalysisLayers;
 
-            setupEnvironmentalLayers(layerNames, distances);
+            setupEnvironmentalLayers(layerNames, distances,environmental_only);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -90,7 +95,7 @@ public class EnvironmentalList extends Listbox {
 
     }
 
-    public void setupEnvironmentalLayers(String[] aslist, float[][] assocMx) {
+    public void setupEnvironmentalLayers(String[] aslist, float[][] assocMx,final boolean environmental_only) {
         try {
             if (aslist.length > 0) {
 
@@ -104,6 +109,26 @@ public class EnvironmentalList extends Listbox {
                         Listcell lc = new Listcell();
                         lc.setParent(li);
                         lc.setValue(((ListEntry) data).uid);
+                        
+                        String type = ((ListEntry) data).type;
+                        String name = ((ListEntry) data).name;
+                        if (!isPrediction) {
+                            if (environmental_only && type.equalsIgnoreCase("contextual")) {
+                                li.setDisabled(true);
+                            } 
+                        } else {
+                            if (environmental_only && type.equalsIgnoreCase("contextual") 
+                                    && !name.equalsIgnoreCase("landcover")
+                                    && !name.equalsIgnoreCase("landuse")
+                                    && !name.equalsIgnoreCase("vast")
+                                    && !name.equalsIgnoreCase("native_veg")
+                                    && !name.equalsIgnoreCase("present_veg")) {
+                                li.setDisabled(true);
+                            }
+                        }
+                        
+                        
+                        
                         Image img = new Image();
                         img.setSrc("/img/information.png");
 
@@ -125,7 +150,7 @@ public class EnvironmentalList extends Listbox {
                         });
                         img.setParent(lc);
                         
-                        String type = ((ListEntry) data).type;
+                        //String type = ((ListEntry) data).type;
                             
                         if (type.equalsIgnoreCase("environmental")){
                             float value = ((ListEntry) data).value;
@@ -147,6 +172,8 @@ public class EnvironmentalList extends Listbox {
                 setModel(listModel);
 
                 renderAll();
+                
+                
             }
         } catch (Exception e) {
             System.out.println("error setting up env list");

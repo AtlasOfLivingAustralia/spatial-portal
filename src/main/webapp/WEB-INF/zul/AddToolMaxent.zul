@@ -157,13 +157,13 @@
                     <vbox>
                         <label value="Environmental layers" sclass="wSubLabel" />
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px"
-                    height="300px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
+                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="560px"
+                    height="430px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
                             <listhead>
-                                <listheader label="category"  />
-                                <listheader label="name" />
-                                <listheader label=" "  />
-                                <listheader label=" " width="10px" />
+                                <listheader label="category" hflex="min"/>
+                                <listheader label="name"  />
+                                <listheader label=" "  width="25px"/>
+                                <listheader label=" " width="14px" />
                             </listhead>
                         </listbox>
                         <hbox>
@@ -180,7 +180,7 @@
                         <label id="atstep4_desc" value="Select one or more contextual layers" sclass="wSubLabel"/>
                         <label id="atstep4_label" value="" />
                         -->
-                        <separator />
+                        <!--separator />
                         <vbox>
                             <label value="Contextual layers" sclass="wSubLabel" />
                             <listbox sclass="envlist" fixedLayout="false" id="lbListLayersCtx" width="500px"
@@ -218,7 +218,7 @@
                                 </listitem>
                             </listbox>
                             <button id="btnClearSelectionCtx" label="Clear layers"  sclass="goButton" style="float:left" />
-                        </vbox>
+                        </vbox-->
                 </div>
 
                 <!--

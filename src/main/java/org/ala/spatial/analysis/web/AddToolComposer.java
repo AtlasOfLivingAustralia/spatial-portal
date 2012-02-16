@@ -573,6 +573,9 @@ public class AddToolComposer extends UtilityComposer {
     public void loadGridLayers(boolean environmentalOnly, boolean fullList) {
         this.environmentalOnly = environmentalOnly;
         this.fullList = fullList;
+        if (selectedMethod.equals("Prediction")) {
+            lbListLayers.isPrediction = true;
+        }
 
         if (selectedLayersCombobox != null) {
             selectedLayersCombobox.init(getMapComposer().getLayerSelections(), getMapComposer(), false);
@@ -791,6 +794,8 @@ public class AddToolComposer extends UtilityComposer {
             if (selectedMethod.equalsIgnoreCase("Prediction") && currentStep == 3) {
                 tlinfo.setVisible(true);
             } else if (selectedMethod.equalsIgnoreCase("Classification") && currentStep == 2) {
+                tlinfo.setVisible(true);
+            } else if (selectedMethod.equalsIgnoreCase("GDM") && currentStep == 3) {
                 tlinfo.setVisible(true);
             } else {
                 tlinfo.setVisible(false);
