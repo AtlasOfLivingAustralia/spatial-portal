@@ -995,7 +995,7 @@ public class AddToolComposer extends UtilityComposer {
                                 mpLayer1.removeChild(mpLayer1.getFirstChild());
                             }
                             while (mpLayer2.getChildren().size() > 0) {
-                                mpLayer2.removeChild(mpLayer1.getFirstChild());
+                                mpLayer2.removeChild(mpLayer2.getFirstChild());
                             }
                             //add
                             for (MapLayer ml : getMapComposer().getGridLayers()) {
