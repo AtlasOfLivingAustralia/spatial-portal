@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addlayerwindow" use="org.ala.spatial.analysis.web.AddLayerController"
-    apply="org.ala.spatial.analysis.web.AddLayerController" width="786px" height="700px"
+    apply="org.ala.spatial.analysis.web.AddLayerController" width="800px" height="700px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -18,7 +18,7 @@
         
         <separator />
         <hbox id="stepCounter">
-            <vbox style="padding-left: 25px">
+            <vbox style="padding-left: 20px">
                 <grid width="150px">
                     <columns>
                         <column width="120px"/>
@@ -74,7 +74,7 @@
                         <label value="" />
                         
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="560px" height="430px" multiple="true"
+                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="605px" height="430px" multiple="true"
                     checkmark="true" onOK="addlayerwindow.onClick$btnOk(null)">
                         <listhead>
                             <listheader label="category" hflex="min"/>
