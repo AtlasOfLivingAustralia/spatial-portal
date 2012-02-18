@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolSamplingComposer"
-    apply="org.ala.spatial.analysis.web.AddToolSamplingComposer" width="800px" height="700px"
+    apply="org.ala.spatial.analysis.web.AddToolSamplingComposer" width="810px" height="700px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -44,6 +44,12 @@
 </rows>
 
              </grid>
+             <div id="tlinfo" visible="false">
+                    <separator spacing="100px" />
+                    <label value="The colours against the layers are like traffic lights. Green implies the layer is uncorrelated to all selected layers, orange implies some correlation while red implies high correlation. As you select layers, the colours change to reflect correlation with already selected layers. For example a red layer implies high correlation with at least one selected layer while a green layer implies little or no correlation to any selected layer" />
+                    <separator />
+                    <label value="Note: The correlations are currently based on full layer spatial extents and not any selected sub-area." />
+                </div>
         </vbox>
         <vbox style="padding-left: 10px" >
 
@@ -86,7 +92,7 @@
                                 <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
                         </vbox>
-                    <radio id="rMultiple" label="Create assemblage" value="multiple" />
+                    <radio id="rMultiple" label="Search for multiple species by scientific or common name" value="multiple" />
                     <vbox id="vboxMultiple" visible="false">
                         <separator />
                         <label value="Enter scientific names separated by a comma or new line." />
@@ -116,8 +122,8 @@
                         </listbox>
                         <separator height="20px"/>
                     </vbox>
-                    <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Import assemblage" />
                     <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import points" />
+                    <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Import LSIDs" />
                 </radiogroup>
             </div>
 
@@ -144,7 +150,7 @@
                 <separator />
                 <vbox>
                     <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="605px" height="450px" multiple="true"
+                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="610px" height="450px" multiple="true"
                     checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
                         <listhead>
                             <listheader label="category" hflex="min" />

@@ -797,6 +797,8 @@ public class AddToolComposer extends UtilityComposer {
                 tlinfo.setVisible(true);
             } else if (selectedMethod.equalsIgnoreCase("GDM") && currentStep == 3) {
                 tlinfo.setVisible(true);
+            } else if (selectedMethod.equalsIgnoreCase("Sampling") && currentStep == 3) {
+                tlinfo.setVisible(true);
             } else {
                 tlinfo.setVisible(false);
             }
