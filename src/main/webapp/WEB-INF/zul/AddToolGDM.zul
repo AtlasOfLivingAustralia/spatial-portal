@@ -98,7 +98,7 @@
                                 <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
                         </vbox>
-                        <radio id="rMultiple" label="Search for multiple species by scientific or common name" value="multiple" />
+                        <radio id="rMultiple" label="Create assemblage" value="multiple" />
                         <vbox id="vboxMultiple" visible="false">
                             <separator />
                             <label value="Enter scientific names separated by a comma or new line." />

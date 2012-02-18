@@ -342,6 +342,11 @@ public class SpeciesAutoComplete extends Combobox {
                                 slist.append("\n");
                             }
 
+                            String matchedName = o.getString("name").replace("/",",");
+                            if (o.containsKey("matchedNames") && !o.getString("matchedNames").equals("null")
+                                     && !o.getString("matchedNames").equals("[]")) {
+                                matchedName = o.getJSONArray("matchedNames").getString(0);
+                            }
                             String commonName = null;
                             //boolean commonNameMatch = true;
                             if(o.containsKey("commonName") && !o.getString("commonName").equals("none")
@@ -366,14 +371,16 @@ public class SpeciesAutoComplete extends Combobox {
                             //swap name and common name if it is a common name match
                             if(o.containsKey("commonNameMatches") && !o.getString("commonNameMatches").equals("null")
                                      && !o.getString("commonNameMatches").equals("[]")) {
-                                slist.append(commonName).append(" /");
+                                //slist.append(commonName).append(" /");
+                                slist.append(matchedName).append(" /");
                                 slist.append(o.getString("guid")).append("/");
                                 slist.append(o.getString("rankString"));
                                 slist.append(", ").append(o.getString("name").replace("/",","));
                                 slist.append("/found ");
                                 slist.append(count);
                             } else {
-                                slist.append(o.getString("name").replace("/",",")).append(" /");
+                                //slist.append(o.getString("name").replace("/",",")).append(" /");
+                                slist.append(matchedName).append(" /");
                                 slist.append(o.getString("guid")).append("/");
                                 slist.append(o.getString("rankString"));
                                 if(commonName != null) slist.append(", ").append(commonName);

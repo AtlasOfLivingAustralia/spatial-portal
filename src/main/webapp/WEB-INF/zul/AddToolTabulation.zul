@@ -38,26 +38,26 @@
                     <label id="atstep1_label" value="" />
                     <separator />
 
-                    <label value="X: " />
+                    <label value="Layer 1: " />
                     <combobox id="cbTabLayers1" width="300px" autodrop="true" readonly="true" />
                     <separator />
-                    <label value="Y: " />
+                    <label value="Layer 2: " />
                     <combobox id="cbTabLayers2" width="300px" autodrop="true" readonly="true" />
                     <separator />
                     <label value="Type: " />
                     <combobox id="cbTabType" width="200px" autodrop="true" readonly="true">
                         <comboitem value="area" label="Area" />
-                        <comboitem value="areap" label="Area %" />
-                        <comboitem value="arearp" label="Area row %" />
-                        <comboitem value="areacp" label="Area column %" />
+                        <comboitem value="areatotal" label="Area %" />
+                        <comboitem value="arearow" label="Area row %" />
+                        <comboitem value="areacolumn" label="Area column %" />
                         <comboitem value="species" label="Species" />
-                        <comboitem value="speciesp" label="Species %" />
-                        <comboitem value="speciesrp" label="Species row %" />
-                        <comboitem value="speciescp" label="Species column %" />
-                        <comboitem value="occurrence" label="Occurrence" />
-                        <comboitem value="occurrencep" label="Occurrence %" />
-                        <comboitem value="occurrencerp" label="Occurrence row %" />
-                        <comboitem value="occurrencecp" label="Occurrence column %" />
+                        <comboitem value="speciestotal" label="Species %" />
+                        <comboitem value="speciesrow" label="Species row %" />
+                        <comboitem value="speciescolumn" label="Species column %" />
+                        <comboitem value="occurrences" label="Occurrences" />
+                        <comboitem value="occurrencestotal" label="Occurrences %" />
+                        <comboitem value="occurrencesrow" label="Occurrences row %" />
+                        <comboitem value="occurrencescolumn" label="Occurrences column %" />
                     </combobox>
 
                 </div>

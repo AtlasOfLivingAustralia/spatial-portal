@@ -483,6 +483,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <doublebox id="eastReal" visible="false" />
 
         <textbox id="baseMap" visible="false" />
+        <textbox id="currentLayerExtent" visible="false" />
 
         <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
         <label id="geoserver_url" value="${settingsSupplementary.values.geoserver_url}" visible="false" />

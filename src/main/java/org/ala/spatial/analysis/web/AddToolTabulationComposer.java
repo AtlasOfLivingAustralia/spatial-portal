@@ -59,6 +59,7 @@ public class AddToolTabulationComposer extends AddToolComposer {
                 Field f1 = new Field(jo.getString("fid1"), jo.getString("name1"), "");
                 Field f2 = new Field(jo.getString("fid2"), jo.getString("name2"), "");
                 load(f1, f2);
+                load(f2, f1);
             }
 
             Iterator<Field> it = tabLayers.keySet().iterator();
@@ -100,10 +101,6 @@ public class AddToolTabulationComposer extends AddToolComposer {
         }
     }
 
-    public void onChange$cbTabType(Event event) {
-        System.out.println("Selected type: " + cbTabType.getSelectedItem().getValue());
-        System.out.println("type: " + (String)event.getData());
-    }
     public void onChange$cbTabLayer1(Event event) {
 
         Field f1 = (Field) cbTabLayers1.getSelectedItem().getValue();
@@ -129,40 +126,19 @@ public class AddToolTabulationComposer extends AddToolComposer {
         Field f1 = (Field) cbTabLayers1.getSelectedItem().getValue();
         Field f2 = (Field) cbTabLayers2.getSelectedItem().getValue();
 
-        System.out.println("2.Selected type: " + cbTabType.getSelectedItem().getValue());
-
-        String tabfor = "area";
-        if (cbTabType.getSelectedItem().getValue().equals("area")) {
-            tabfor = "area";
-        } else if (cbTabType.getSelectedItem().getValue().equals("arearp")) {
-            tabfor = "area/row";
-        } else if (cbTabType.getSelectedItem().getValue().equals("areacp")) {
-            tabfor = "area/column";
-        } else if (cbTabType.getSelectedItem().getValue().equals("species")) {
-            tabfor = "species";
-        } else if (cbTabType.getSelectedItem().getValue().equals("speciesrp")) {
-            tabfor = "species/row";
-        } else if (cbTabType.getSelectedItem().getValue().equals("speciescp")) {
-            tabfor = "species/column";
-        } else if (cbTabType.getSelectedItem().getValue().equals("occurrence")) {
-            tabfor = "occurrences";
-        } else if (cbTabType.getSelectedItem().getValue().equals("occurrencerp")) {
-            tabfor = "occurrences/row";
-        } else if (cbTabType.getSelectedItem().getValue().equals("occurrencecp")) {
-            tabfor = "occurrences/column";
-        }
-
         StringBuilder sb = new StringBuilder();
-        sb.append(CommonData.layersServer + "/tabulation/" + tabfor + "/" + f1.name + "/" + f2.name + "/html");
+        sb.append(CommonData.layersServer + "/tabulation/" + cbTabType.getSelectedItem().getValue() + "/" + f1.name + "/" + f2.name + "/html");
         sb.append("\n").append("Tabulation").append("\n");
-        sb.append(CommonData.layersServer + "/tabulation/" + tabfor + "/" + f1.name + "/" + f2.name + "/csv");
+        sb.append(CommonData.layersServer + "/tabulation/" + cbTabType.getSelectedItem().getValue() + "/" + f1.name + "/" + f2.name + "/csv");
         //sb.append("Tabulation for " + f1.display_name + " and " + f2.display_name);
 
 
         Event e = new Event("tabulation", this, sb.toString());
         getMapComposer().openUrl(e);
 
-        //this.detach();
+        remoteLogger.logMapAnalysis("Tabulation", "Tool - Tabulation", "", "", f1.name + ":" + f2.name, "", ((String)cbTabType.getSelectedItem().getValue()), "STARTED");
+
+        this.detach();
 
         return true;
     }

@@ -109,6 +109,7 @@ import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Messagebox;
+import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Toolbarbutton;
 import org.zkoss.zul.Window;
 
@@ -166,6 +167,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     String tbxLayerLoaded;
     HashMap<String, EventListener> layerLoadedChangeEvents = new HashMap<String, EventListener>();
     RemoteLogger remoteLogger;
+    Textbox currentLayerExtent;
 
     void motd() {
         if (motd.isMotdEnabled()) {
@@ -481,6 +483,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 //update linked button
                 ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setVisible(false);
+
+                externalContentWindow.setContentStyle("overflow:auto");
             } else {
                 //url
                 iframe.setHeight("100%");
@@ -495,6 +499,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 //update linked button
                 ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setHref(uri);
                 ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setVisible(true);
+
+                externalContentWindow.setContentStyle("overflow:visible");
             }
 
             if (StringUtils.isNotBlank(downloadPid)) {
@@ -1918,6 +1924,32 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         List<Double> bb = query.getBBox();
 
         md.setBbox(bb);
+    }
+
+    public String getLayerBoundingBox(MapLayer ml) {
+        String bbox = null;
+
+        if (ml.getMapLayerMetadata().getBboxString() != null) {
+            bbox = ml.getMapLayerMetadata().getBboxString();
+        } else {
+            Clients.evalJavaScript("jq('$currentLayerExtent')[0].innerHTML=map.getLayersByName('" + ml.getName() + "')[0].getExtent().transform(map.getProjectionObject(),new OpenLayers.Projection('EPSG:4326')).toString();");
+            String bboxstr = currentLayerExtent.getValue();
+            System.out.println("Got bboxstr: " + bboxstr);
+            if (bboxstr != null) {
+                String[] b = bboxstr.split(",");
+                ArrayList<Double> bb = new ArrayList<Double>();
+                bb.add(Double.parseDouble(b[0]));
+                bb.add(Double.parseDouble(b[1]));
+                bb.add(Double.parseDouble(b[2]));
+                bb.add(Double.parseDouble(b[3]));
+
+                ml.getMapLayerMetadata().setBbox(bb);
+
+                bbox = bboxstr;
+            }
+        }
+
+        return bbox;
     }
 
     private void loadDistributionMap(String lsids, String taxon, String wkt) {

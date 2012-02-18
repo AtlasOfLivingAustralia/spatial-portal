@@ -46,7 +46,6 @@ public class AddToolMaxentComposer extends AddToolComposer {
     private Checkbox chkJackknife;
     private Checkbox chkRCurves;
     private Textbox txtTestPercentage;
-    private Listbox lbListLayersCtx;
 //    private String taxon = "";
 
     @Override
@@ -64,17 +63,11 @@ public class AddToolMaxentComposer extends AddToolComposer {
     }
 
     public void onClick$btnClearSelectionCtx(Event event) {
-        lbListLayersCtx.clearSelection();
-
         // check if lbListLayers is empty as well,
         // if so, then disable the next button
         if (lbListLayers.getSelectedCount() == 0) {
             btnOk.setDisabled(true);
         }
-    }
-
-    public void onSelect$lbListLayersCtx(Event event) {
-        btnOk.setDisabled(lbListLayersCtx.getSelectedCount() < 1);
     }
 
     @Override
@@ -103,19 +96,6 @@ public class AddToolMaxentComposer extends AddToolComposer {
         System.out.println("Maxent Selected layers:");
         System.out.println(getSelectedLayers());
 
-        System.out.println("\nSelected contextuals: ("+ lbListLayersCtx.getSelectedCount() +")");
-        try {
-            if (lbListLayersCtx.getSelectedCount() > 0) {
-                Iterator<Listitem> it = lbListLayersCtx.getSelectedItems().iterator();
-                while (it.hasNext()) {
-                    System.out.println(it.next().getValue());
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Unable to retrieve selected layers");
-            e.printStackTrace(System.out);
-        }
-
         return runmaxent();
     }
 
@@ -125,17 +105,6 @@ public class AddToolMaxentComposer extends AddToolComposer {
             Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
 
             String sbenvsel = getSelectedLayers();
-
-            if (lbListLayersCtx.getSelectedCount() > 0) {
-                Iterator<Listitem> it = lbListLayersCtx.getSelectedItems().iterator();
-                while (it.hasNext()) {
-                    //System.out.println(it.next().getValue());
-                    if (sbenvsel.length()>0) {
-                        sbenvsel += ":";
-                    }
-                    sbenvsel += it.next().getValue();
-                }
-            }
 
             //String area = getSelectedArea();
             //String taxonlsid = taxon;
@@ -201,9 +170,9 @@ public class AddToolMaxentComposer extends AddToolComposer {
             } else {
                 System.out.println("available");
             }
-            System.out.println("displaying species data: '");
-            System.out.println(speciesData[0]);
-            System.out.println("'");
+//            System.out.println("displaying species data: '");
+//            System.out.println(speciesData[0]);
+//            System.out.println("'");
 
             get.addParameter("species", speciesData[0]);
             if (speciesData[1] != null) {
