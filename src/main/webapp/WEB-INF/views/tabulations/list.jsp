@@ -3,9 +3,9 @@
     Created on : Sep 26, 2011, 9:52:39 PM
     Author     : ajay
 --%>
-
 <%@ page contentType="text/html" pageEncoding="UTF-8" %><%@
-taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%><%@
+taglib uri="/tld/ala.tld" prefix="ala" %>
 <%@include file="../common/top.jsp" %>
 <header id="page-header">
     <div class="inner">
@@ -39,14 +39,14 @@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
                     <a href='tabulation/area/${layer.fid1}/${layer.fid2}/json'>json</a>
                 </td>
                 <td>
-                    <a href='tabulation/area/rows/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/area/rows/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/area/rows/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/area/row/${layer.fid1}/${layer.fid2}/html'>html</a>
+                    <a href='tabulation/area/row/${layer.fid1}/${layer.fid2}/csv'>csv</a>
+                    <a href='tabulation/area/row/${layer.fid1}/${layer.fid2}/json'>json</a>
                 </td>
                 <td>
-                    <a href='tabulation/area/columns/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/area/columns/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/area/columns/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/area/column/${layer.fid1}/${layer.fid2}/html'>html</a>
+                    <a href='tabulation/area/column/${layer.fid1}/${layer.fid2}/csv'>csv</a>
+                    <a href='tabulation/area/column/${layer.fid1}/${layer.fid2}/json'>json</a>
                 </td>
                 <!--<td><a href="../tabulation/${layer.fid1}/${layer.fid2}/html">table</a></td>-->
             </tr>

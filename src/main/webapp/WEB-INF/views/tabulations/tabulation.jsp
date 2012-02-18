@@ -6,7 +6,8 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8" %><%@
 taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%><%@
 taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%><%@
-taglib uri="http://java.sun.com/jsp/jstl/fmt"  prefix="fmt" %>
+taglib uri="http://java.sun.com/jsp/jstl/fmt"  prefix="fmt" %><%@
+taglib uri="/tld/ala.tld" prefix="ala" %>
 <%-- <%@include file="../common/top.jsp" %> --%>
 <jsp:include page="../common/top.jsp?fluid=true" />
 <header id="page-header">
@@ -14,7 +15,7 @@ taglib uri="http://java.sun.com/jsp/jstl/fmt"  prefix="fmt" %>
         <nav id="breadcrumb"><ol><li><a href="http://www.ala.org.au">Home</a></li> <li><a href="http://spatial.ala.org.au">Mapping &#038; analysis</a></li> <li class="last">Spatial Web Services</li></ol></nav>
         <section id="content-search">
             <h1>Spatial Web Services</h1>
-            <p>${title}</p>
+            <p>${title} for ${tabulationDescription}</p>
         </section>
     </div><!--inner-->
 

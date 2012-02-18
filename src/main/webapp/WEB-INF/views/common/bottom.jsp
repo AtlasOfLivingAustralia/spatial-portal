@@ -1,3 +1,4 @@
+<%--
 <footer>
     <nav id="nav-footer-site">
         <ol><li id="menu-item-24746" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-24746"><a href="http://www.ala.org.au/about/">About the Atlas</a></li>
@@ -30,5 +31,9 @@
     /* ]]> */
 </script>
 <script type='text/javascript' src='http://www.ala.org.au/wp-content/plugins/wp-jquery-lightbox/jquery.lightbox.min.js?ver=1.2'></script>
+--%>
+<ala:footer />
+        <ala:analytics />
+
 </body>
 </html>

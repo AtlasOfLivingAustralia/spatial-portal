@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
+<%@taglib uri="/tld/ala.tld" prefix="ala" %>
 <%@include file="../common/top.jsp" %>
 <header id="page-header">
     <div class="inner">
@@ -17,7 +18,8 @@
             <div>
                 <p>
 						This is a demo of the Atlas of Living Australia's spatial
-                        layers. The GetCapabilities document is available 
+                        layers. A full layer list is available <a href="http://spatial.ala.org.au/layers">here</a>.
+                        The GetCapabilities document is available
                         <a href="http://spatial.ala.org.au/geoserver/wms?request=getCapabilities">here</a>
                         for inclusion in your own WMS client such as
                         <a href="http://udig.refractions.net/" target="_blank">uDig</a>
@@ -122,6 +124,7 @@
         width:100%;
         height:600px;
     }
+    .olLayerGooglePoweredBy {display: none;}
 
 </style>
 

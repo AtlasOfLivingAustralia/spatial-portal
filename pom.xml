@@ -15,6 +15,12 @@
         <org.slf4j.version>1.5.10</org.slf4j.version>
     </properties>
     <repositories>
+        <!-- ALA repository  -->
+        <repository>
+            <id>ala-repository</id>
+            <name>ala-repository</name>
+            <url>http://maven.ala.org.au/repository</url>
+        </repository>
         <repository>
             <id>java.net2</id>
             <name>Repository hosting the jee6 artifacts</name>
@@ -28,12 +34,18 @@
             <groupId>org.ala.layers</groupId>
             <artifactId>layers-store</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <!--exclusions>
+            <exclusions>
                 <exclusion>
                     <groupId>postgresql</groupId>
                     <artifactId>postgresql</artifactId>
                 </exclusion>
-            </exclusions-->
+            </exclusions>
+        </dependency>
+        <!-- ALA header and tails -->
+        <dependency>
+            <groupId>au.org.ala</groupId>
+            <artifactId>ala-header-and-tails</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <!--  Spring Framework -->
@@ -159,15 +171,15 @@
                         <id>surefire-itest</id>
                         <phase>integration-test</phase>
                         <goals>
-                        <goal>test</goal>
+                            <goal>test</goal>
                         </goals>
                         <configuration>
-                        <excludes>
-                            <exclude>none</exclude>
-                        </excludes>
-                        <includes>
-                            <include>**/*IntegrationTest.java</include>
-                        </includes>
+                            <excludes>
+                                <exclude>none</exclude>
+                            </excludes>
+                            <includes>
+                                <include>**/*IntegrationTest.java</include>
+                            </includes>
                         </configuration>
                     </execution>
                 </executions>
