@@ -140,7 +140,7 @@
         <dependency>
             <groupId>jboss</groupId>
             <artifactId>jboss-serialization</artifactId>
-            <version>1.0.3.GA</version>
+            <version>4.2.2.GA</version>
         </dependency>
         <dependency>
             <groupId>trove</groupId>
@@ -372,7 +372,7 @@
         <!-- For JSR 303 and Hibernate Validator only - Encourage JBoss to publish these artifacts to Maven Central! -->
         <repository>
             <id>org.jboss.repository.maven</id>
-            <url>http://repository.jboss.org/maven2</url>
+            <url>http://repository.jboss.org/</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>

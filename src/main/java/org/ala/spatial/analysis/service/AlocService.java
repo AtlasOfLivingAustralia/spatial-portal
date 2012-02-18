@@ -117,7 +117,7 @@ public class AlocService {
             fw.append("<body>");
             fw.append("<h1>").append("Classification").append("</h1>");
 
-            fw.append("<p> <span class=\"title\">Reference number:</span> <br /> ");
+            fw.append("<p> <span class=\"title\">Model reference number:</span> <br /> ");
             fw.append(pid);
             fw.append("</p>");
 

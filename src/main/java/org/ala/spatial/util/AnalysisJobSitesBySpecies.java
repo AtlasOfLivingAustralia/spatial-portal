@@ -419,7 +419,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         FileWriter fw = new FileWriter(filename);
         fw.append("<html><h1>").append(title).append("</h1>");
         fw.append("<table>");
-        fw.append("<tr><td>Analysis id: " + getName() + "</td></tr>");
+        fw.append("<tr><td>Model reference number: " + getName() + "</td></tr>");
         fw.append("<tr><td>Species selection " + qname + "</td></tr>");
         fw.append("<tr><td>Grid resolution " + gridsize + " degrees</td></tr>");
         fw.append("<tr><td>" + records.getSpeciesSize() + " species</td></tr>");
