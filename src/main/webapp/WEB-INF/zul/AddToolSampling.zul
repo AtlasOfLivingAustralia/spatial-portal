@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolSamplingComposer"
-    apply="org.ala.spatial.analysis.web.AddToolSamplingComposer" width="750px" height="700px"
+    apply="org.ala.spatial.analysis.web.AddToolSamplingComposer" width="800px" height="700px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -144,13 +144,13 @@
                 <separator />
                 <vbox>
                     <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="500px" height="450px" multiple="true"
+                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="605px" height="450px" multiple="true"
                     checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
                         <listhead>
-                            <listheader label="category"  />
-                            <listheader label="name" />
-                            <listheader label=" "  />
-                            <listheader label=" " width="10px" visible="false" />
+                            <listheader label="category" hflex="min" />
+                            <listheader label="name" hflex="max"/>
+                            <listheader label=" "   width="25px"/>
+                            <listheader label=" " width="14px"/>
                         </listhead>
                     </listbox>
                     <hbox>
