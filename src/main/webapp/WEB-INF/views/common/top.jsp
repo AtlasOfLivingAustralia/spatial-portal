@@ -3,7 +3,10 @@
     Created on : Dec 7, 2011, 10:33:50 AM
     Author     : ajay
 --%>
-<%@taglib uri="/tld/ala.tld" prefix="ala" %><!DOCTYPE html>
+<%@ page contentType="text/html" pageEncoding="UTF-8" %><%@
+taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%><%@
+taglib uri="/tld/ala.tld" prefix="ala" %>
+<!DOCTYPE html>
 <html dir="ltr" lang="en-US">
 
     <head profile="http://gmpg.org/xfn/11">
@@ -59,12 +62,12 @@
                 text-decoration: line-through;
             }</style>	<script src="http://cdn.jquerytools.org/1.2.6/full/jquery.tools.min.js"></script>
 
-        <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/jquery.dimensions.js"></script>
-        <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/jquery.mousewheel.min.js"></script>
-        <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/hoverintent-min.js"></script>
-        <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/superfish/superfish.js"></script>
-        <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/jquery.autocomplete.js"></script>
-        <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/uservoice.js"></script>
+        <script type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/jquery.dimensions.js"></script>
+        <script type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/jquery.mousewheel.min.js"></script>
+        <script type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/hoverintent-min.js"></script>
+        <script type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/superfish/superfish.js"></script>
+        <script type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/jquery.autocomplete.js"></script>
+        <script type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/uservoice.js"></script>
 
         <script type="text/javascript">
 

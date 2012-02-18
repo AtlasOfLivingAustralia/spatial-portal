@@ -54,7 +54,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
 
                 <li>Intersect<ul>
                         <li><strong>Intersect a layer(s) at a given set of coordinates. Multiple field ids or layer names can be specified separated by a comma (e.g. cl22,cl23):</strong> /ws/intersect/{id}/{latitude}/{longitude} e.g. <a href="/ws/intersect/cl22/-29.911/132.769">/ws/intersect/cl22/-29.911/132.769</a></li>
-                        <li><strong>Batch intersect a layer(s) at given coordinates. Multiple field ids or layer names can be specified separated by a comma (e.g. cl22,cl23).  Limited to 1000 coordinates.:</strong> /ws/intersect/batch e.g. <a href="/ws/intersect/batch?fids=cl22&points=-29.911,132.769,-20.911,122.769">/ws/intersect/batch?fids=cl22&points=-29.911,132.769,-20.911,122.769</a></li>
+                        <li><strong>Batch intersect a layer(s) at given coordinates. Multiple field ids or layer names can be specified separated by a comma (e.g. cl22,cl23).  Limited to 1000 coordinates.:</strong> /ws/intersect/batch e.g. <a href="/ws/intersect/batch?fids=cl22&points=-29.911,132.769,-20.911,122.769">/ws/intersect/batch?fids=cl22&amp;points=-29.911,132.769,-20.911,122.769</a></li>
                         <li><strong>Check batch intersect status with a batchId:</strong> /ws/intersect/batch/{batchId} e.g. /ws/intersect/batch/1234</li>
                         <li><strong>Download a finished batch intersect with a batchId as zipped file 'sample.csv':</strong> /ws/intersect/batch/download/{batchId} e.g. /ws/intersect/batch/download/1234</li>
                     </ul></li>
@@ -77,8 +77,8 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
 
             <h3>Occurrences</h3>
             <ul>
-                <li><strong>Static Species Density Heatmap </strong><a href="http://biocache.ala.org.au/ws/density/map?q=*:*">http://biocache.ala.org.au/ws/density/map?q=*:*</a> <a href="http://biocache.ala.org.au/ws/density/map?q=Sarcophilus%20harrisii">http://biocache.ala.org.au/ws/density/map?q=Sarcophilus%20harrisii</a></li> - returns heatmap image (optional param forceRefresh=true will regenerate the image)</li>
-                <li><strong>Static Species Density Legend: </strong><a href="http://biocache.ala.org.au/ws/density/legend?q=*:*">http://biocache.ala.org.au/ws/density/legend?q=*:*</a></li> - returns associated legend image (optional param forceRefresh=true will regenerate the image)</li>
+                <li><strong>Static Species Density Heatmap </strong><a href="http://biocache.ala.org.au/ws/density/map?q=*:*">http://biocache.ala.org.au/ws/density/map?q=*:*</a> <a href="http://biocache.ala.org.au/ws/density/map?q=Sarcophilus%20harrisii">http://biocache.ala.org.au/ws/density/map?q=Sarcophilus%20harrisii</a></li> - returns heatmap image (optional param forceRefresh=true will regenerate the image)
+                <li><strong>Static Species Density Legend: </strong><a href="http://biocache.ala.org.au/ws/density/legend?q=*:*">http://biocache.ala.org.au/ws/density/legend?q=*:*</a></li> - returns associated legend image (optional param forceRefresh=true will regenerate the image)
             </ul>
 
             <h3>Webportal Services</h3>
@@ -95,29 +95,29 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
 
                 <li><strong>Short Query Parameters:</strong>
                     <ul>
-                        <li><strong>Construction:</strong> /webportal/params <br>
-                            POST service.<br>
-                            Stores q and wkt parameters.<br>
+                        <li><strong>Construction:</strong> /webportal/params <br />
+                            POST service.<br />
+                            Stores q and wkt parameters.<br />
                             Returns a short <b>value</b> that can be used as the initial q value in other services for webportal. e.g. q=qid:<b>value</b>
                         </li>
                         <li><strong>Test: </strong> /webportal/params/<b>value</b>
-                            Test if a short query parameter is valid.<br>
+                            Test if a short query parameter is valid.<br />
                             Returns true or false</li>
                     </ul>
                 </li>
-                <li><strong>Occurrences Bounding Box:</strong> /webportal/bbox <br>
+                <li><strong>Occurrences Bounding Box:</strong> /webportal/bbox <br />
                     Returns CSV of bounding box of occurrences eg. <a href="http://biocache.ala.org.au/ws/webportal/bbox?q=macropus">http://biocache.ala.org.au/ws/webportal/bbox?q=macropus</a></li>
                 <li><strong>Data Providers</strong> /webportal/dataProviders eg. <a href="http://biocache.ala.org.au/ws/webportal/dataProviders?q=macropus">http://biocache.ala.org.au/ws/webportal/dataProviders?q=macropus</a></li>
                 <li><strong>Species List:</strong>
                     <ul>
-                        <li><strong>Get species list:</strong> /webportal/species eg. <a href="http://biocache.ala.org.au/ws/webportal/species?q=macropus&pageSize=100">http://biocache.ala.org.au/ws/webportal/species?q=macropus&pageSize=100</a></li>
-                        <li><strong>Get species list as CSV:</strong> /webportal/species.csv eg. <a href="http://biocache.ala.org.au/ws/webportal/species.csv?q=macropus&wkt=POLYGON((140:-37,151:-37,151:-26,140.1310:-26,140:-37))&pageSize=100">http://biocache.ala.org.au/ws/webportal/species.csv?q=macropus&wkt=POLYGON((140:-37,151:-37,151:-26,140.1310:-26,140:-37))&pageSize=100</a></li>
+                        <li><strong>Get species list:</strong> /webportal/species eg. <a href="http://biocache.ala.org.au/ws/webportal/species?q=macropus&pageSize=100">http://biocache.ala.org.au/ws/webportal/species?q=macropus&amp;pageSize=100</a></li>
+                        <li><strong>Get species list as CSV:</strong> /webportal/species.csv eg. <a href="http://biocache.ala.org.au/ws/webportal/species.csv?q=macropus&wkt=POLYGON((140:-37,151:-37,151:-26,140.1310:-26,140:-37))&pageSize=100">http://biocache.ala.org.au/ws/webportal/species.csv?q=macropus&amp;wkt=POLYGON((140:-37,151:-37,151:-26,140.1310:-26,140:-37))&amp;pageSize=100</a></li>
                     </ul>
                 </li>
                 <li><strong>Occurrences:</strong>
                     <ul>
                         <li><strong>Get occurrences:</strong> /webportal/occurrences eg. <a href="http://biocache.ala.org.au/ws/webportal/occurrences?q=macropus">http://biocache.ala.org.au/ws/webportal/occurrences?q=macropus</a></li>
-                        <li><strong>Get occurrences as gzipped CSV:</strong> /webportal/occurrences.gz eg. <a href="http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=macropus&fl=longitude,latitude">http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=macropus&fl=longitude,latitude</a></li>
+                        <li><strong>Get occurrences as gzipped CSV:</strong> /webportal/occurrences.gz eg. <a href="http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=macropus&fl=longitude,latitude">http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=macropus&amp;fl=longitude,latitude</a></li>
                     </ul>
                 </li>
             </ul>
@@ -127,7 +127,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
             <ul>
                 <li><strong>Tile:</strong> /webportal/wms/reflect
                     <ul>
-                        <li>BBOX - EPSG900913 bounding box. e.g. &BBOX=12523443.0512,-2504688.2032,15028131.5936,0.3392000021413</li>
+                        <li>BBOX - EPSG900913 bounding box. e.g. &amp;BBOX=12523443.0512,-2504688.2032,15028131.5936,0.3392000021413</li>
                         <li>WIDTH - width in pixels</li>
                         <li>HEIGHT - height in pixels</li>
                         <li>CQL_FILTER - query parameter</li>
@@ -138,7 +138,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                                 <li>opacity - opacity value 0 - 1</li>
                                 <li>sel - fq parameter applied to CQL_FILTER.  Matching occurrences will be highlighted on the map in a Red circle</li>
                                 <li>uncertainty - presence of the uncertainty parameter draws uncertainty circles to a fixed maximum of 30km</li>
-                                <li>colormode - facet colouring type.  <br>
+                                <li>colormode - facet colouring type.  <br />
                                     <table>
                                         <tr><td>colourmode</td><td>description</td></tr>
                                         <tr><td>-1</td><td>(default) use color value</td></tr>
@@ -153,8 +153,8 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                             </ul>
                         </li>
                     </ul>
-                <li><strong>Legend:</strong> /webportal/legend <br>
-                    Get a CSV legend.<br>
+                <li><strong>Legend:</strong> /webportal/legend <br />
+                    Get a CSV legend.<br />
                     Parameters:
                     <ul>
                         <li>q - CQL_FILTER value</li>
@@ -196,7 +196,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                         <li>chkJackKnife - optional parameter to enable/disable Jacknifing.  E.g. “Y”.</li>
                         <li>chkResponseCurves – optional parameter to enable/disable plots of response curves.  E.g. “Y”.</li>
                     </ul>
-                    <br>
+                    <br />
                     <p>Returns: analysis id.  E.g. “123”.</p>
                 </li>
                 <li><strong>Classification (ALOC)</strong>
@@ -212,7 +212,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                             </ul>
                         </li>
                     </ul>
-                    <br>
+                    <br />
                     <p>Returns: analysis id.  E.g. “123”.</p>
                 </li>
                 <li><strong>Sites by Species, Occurrence density, Species richness</strong>
@@ -223,46 +223,46 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                         <li>qname - Data name that appears in the output.  E.g. “Macropus”.</li>
                         <li>area - Bounding area in Well Known Text (WKT) format.  E.g.  “POLYGON((118 -30,146 -30,146 -11,118 -11,118 -30))”.</li>
                         <li>gridsize - Size of output grid cells in decimal degrees.  E.g. "0.1"</li>
-                        <li>movingaveragesize - Size of output moving average window for occurrence density and species density layers.  E.g. for a 9x9 grid cell window use "&movingaveragesize=9"</li>
-                        <li>sitesbyspecies - (optional) Include this parameter to produce a sites by species list.  E.g. "&sitesbyspecies=1"</li>
-                        <li>occurrencedensity - (optional) Include this parameter to produce an occurrence density layer.  E.g. "&occurrencedensity=1"</li>
-                        <li>speciesdensity - (optional) Include this parameter to produce a species richness layer.  E.g. "&speciesdensity=1"</li>
+                        <li>movingaveragesize - Size of output moving average window for occurrence density and species density layers.  E.g. for a 9x9 grid cell window use "&amp;movingaveragesize=9"</li>
+                        <li>sitesbyspecies - (optional) Include this parameter to produce a sites by species list.  E.g. "&amp;sitesbyspecies=1"</li>
+                        <li>occurrencedensity - (optional) Include this parameter to produce an occurrence density layer.  E.g. "&amp;occurrencedensity=1"</li>
+                        <li>speciesdensity - (optional) Include this parameter to produce a species richness layer.  E.g. "&amp;speciesdensity=1"</li>
 
                     </ul>
-                    <br>
+                    <br />
                     <p>Returns: analysis id.  E.g. “123”.</p>
                 </li>
                 <li><strong>Monitor Analysis</strong>
                     <ul>
                         <li>/ws/jobs/state?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/state?pid=123
-                            <br>returns one of "WAITING", "RUNNING", "SUCCESSFUL", "FAILED", "CANCELLED", </li>
+                            <br />returns one of "WAITING", "RUNNING", "SUCCESSFUL", "FAILED", "CANCELLED", </li>
                         <li>/ws/jobs/message?pid=&lt;analysis id>&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/message?pid=123
-                            <br>returns any associated message or "job does not exist".</li>
+                            <br />returns any associated message or "job does not exist".</li>
                         <li>/ws/jobs/status?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/status?pid=123
-                            <br>returns status text that may contain an estimate of time remaining or "job does not exist".</li>
+                            <br />returns status text that may contain an estimate of time remaining or "job does not exist".</li>
                         <li>/ws/jobs/progress?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/progress?pid=123
-                            <br>returns analysis job progress as a number between 0 and 1 or "job does not exist".</li>
+                            <br />returns analysis job progress as a number between 0 and 1 or "job does not exist".</li>
                         <li>/ws/jobs/log?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/log?pid=123
-                            <br>returns analysis job log or "job does not exist".</li>
+                            <br />returns analysis job log or "job does not exist".</li>
                         <li>/ws/jobs/cancel?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/cancel?pid=123
-                            <br>returns nothing if successful or "job does not exist"</li>
+                            <br />returns nothing if successful or "job does not exist"</li>
                     </ul>
                 </li>
-                <br>
+                <br />
                 <li><strong>Retrieving Results</strong>
                     <ul>
                         <li>/ws/download/&lt;analysis id&gt;.  E.g. .  E.g. http://spatial.ala.org.au/alaspatial/ws/download/123
-                            <br>downloads the zipped output of "SUCCESSFUL" analysis.</li>
-                        <li>ALOC WMS service for the layer is /geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_&lt;analysis id&gt;&styles=alastyles&FORMAT=image%2Fpng.
-                            <br> E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:aloc_123&height=200&width=200
-                        <li>Maxent WMS service for the layer is /geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_&lt;analysis id&gt;&styles=alastyles&FORMAT=image%2Fpng.
-                            <br>E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:species_123&height=200&width=200
+                            <br />downloads the zipped output of "SUCCESSFUL" analysis.</li>
+                        <li>ALOC WMS service for the layer is /geoserver/wms?service=WMS&amp;version=1.1.0&amp;request=GetMap&amp;layers=ALA:aloc_&lt;analysis id&gt;&amp;styles=alastyles&amp;FORMAT=image%2Fpng.
+                            <br /> E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:aloc_123&amp;height=200&amp;width=200
+                        <li>Maxent WMS service for the layer is /geoserver/wms?service=WMS&amp;version=1.1.0&amp;request=GetMap&amp;layers=ALA:species_&lt;analysis id&gt;&amp;styles=alastyles&amp;FORMAT=image%2Fpng.
+                            <br />E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:species_123&amp;height=200&amp;width=200
                         </li>
-                        <li>Occurrence Density WMS service for the layer is /geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:odensity_&lt;analysis id&gt;&styles=alastyles&FORMAT=image%2Fpng.
-                            <br>E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:odensity_123&height=200&width=200
+                        <li>Occurrence Density WMS service for the layer is /geoserver/wms?service=WMS&amp;version=1.1.0&amp;request=GetMap&amp;layers=ALA:odensity_&lt;analysis id&gt;&amp;styles=alastyles&amp;FORMAT=image%2Fpng.
+                            <br />E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:odensity_123&amp;height=200&amp;width=200
                         </li>
-                        <li>Species Richness WMS service for the layer is /geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:srichness_&lt;analysis id&gt;&styles=alastyles&FORMAT=image%2Fpng.
-                            <br>E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:srichness_123&height=200&width=200
+                        <li>Species Richness WMS service for the layer is /geoserver/wms?service=WMS&amp;version=1.1.0&amp;request=GetMap&amp;layers=ALA:srichness_&lt;analysis id&gt;&amp;styles=alastyles&amp;FORMAT=image%2Fpng.
+                            <br />E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:srichness_123&amp;height=200&amp;width=200
                         </li>
                     </ul>
                 </li>
