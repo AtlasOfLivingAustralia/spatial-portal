@@ -224,8 +224,8 @@
                         </listbox>
                         <separator height="20px"/>
                     </vbox>
-                    <radio id="rSpeciesUploadSpeciesBk" value="uploadSpecies" label="Upload points" />
-                    <radio id="rSpeciesUploadLSIDBk" value="uploadLsid" label="Upload LSIDs" />
+                    <radio id="rSpeciesUploadLSIDBk" value="uploadLsid" label="Import assemblage" />
+                    <radio id="rSpeciesUploadSpeciesBk" value="uploadSpecies" label="Import points" />
                 </radiogroup>
             </div>
 
