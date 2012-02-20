@@ -661,8 +661,9 @@ public class AddToolComposer extends UtilityComposer {
 
             if (selectedItem == rSpeciesUploadSpecies
                     || selectedItem == rSpeciesUploadLSID) {
-                btnOk.setVisible(false);
-                fileUpload.setVisible(true);
+                //btnOk.setVisible(false);
+                //fileUpload.setVisible(true);
+                btnOk.setVisible(true);
                 vboxMultiple.setVisible(false);
             } else if (rMultiple != null && rMultiple.isSelected()) {
                 vboxMultiple.setVisible(true);
@@ -704,8 +705,9 @@ public class AddToolComposer extends UtilityComposer {
             }
 
             if (selectedItem == rSpeciesUploadSpeciesBk || selectedItem == rSpeciesUploadLSIDBk) {
-                btnOk.setVisible(false);
-                fileUpload.setVisible(true);
+                //btnOk.setVisible(false);
+                //fileUpload.setVisible(true);
+                btnOk.setVisible(true);
             }
 
             if (rMultipleBk != null && rMultipleBk.isSelected()) {
@@ -914,7 +916,13 @@ public class AddToolComposer extends UtilityComposer {
             Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
             Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep + 1))) : null;
 
-            if (!currentDiv.getZclass().contains("last")) {
+            if (!currentDiv.getZclass().contains("last")) {                
+                if (currentDiv.getZclass().contains("species") && (rSpeciesUploadLSID.isSelected() || rSpeciesUploadSpecies.isSelected())) {
+                    Boolean test = currentDiv.getZclass().contains("species") && (rSpeciesUploadLSID.isSelected() || rSpeciesUploadSpecies.isSelected());
+                    System.out.println("test="+test);
+                        onClick$btnUpload(event);
+                    
+                } else {
                 currentDiv.setVisible(false);
                 nextDiv.setVisible(true);
 
@@ -940,6 +948,7 @@ public class AddToolComposer extends UtilityComposer {
                 currentStep++;
 
                 successful = true;
+                }
             } else {
                 saveLayerSelection();
 
@@ -1404,7 +1413,8 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     void toggles() {
-        btnOk.setDisabled(true);
+        //btnOk.setDisabled(true);
+        btnOk.setDisabled(false);
         btnOk.setVisible(true);
 
         if (fileUpload != null) {
@@ -2244,5 +2254,26 @@ public class AddToolComposer extends UtilityComposer {
 
     public void setIncludeAnalysisLayersForAnyQuery(boolean includeAnalysisLayersForAnyQuery) {
         this.includeAnalysisLayersForAnyQuery = includeAnalysisLayersForAnyQuery;
+    }
+    
+    public void onClick$btnUpload(Event event) {
+        try {
+            System.out.println("onClick$btnUpload(Event event)");
+            UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", this, null);
+
+            if (rSpeciesUploadSpecies.isSelected()) {
+                usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
+            } else if (rSpeciesUploadLSID.isSelected()) {
+                usc.setTbInstructions("3. Select file (text file, one LSID or name per line)");
+            } else {
+                usc.setTbInstructions("3. Select file");
+            }
+            usc.addToMap = true;
+            //usc.setDefineArea(chkArea.isChecked());
+            usc.doModal();
+            return;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

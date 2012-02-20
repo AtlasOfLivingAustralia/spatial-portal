@@ -33,7 +33,7 @@
                             <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
                         </row>
                         <row>
-                            <label id="lblStep3" value="3. Species to Grid options"/>
+                            <label id="lblStep3" value="3. Points to Grid options"/>
                             <image id="imgCompletedStep3" visible="false" src="img/accept.png"/>            
                         </row>                    
                     </rows>
@@ -119,12 +119,12 @@
                             <separator height="20px"/>
                         </vbox>
                         <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Import assemblage" />
-                        <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import points" visible="false" />
+                        <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import points" />
                     </radiogroup>
                 </div>
 
                 <div id="atstep3" visible="false" zclass="last optional">
-                    <label id="atstep3_desc" value="Species to Grid options." sclass="wSubLabel"/>
+                    <label id="atstep3_desc" value="Points to Grid options." sclass="wSubLabel"/>
                     <label id="atstep3_label" value="" />
                     <separator height="15px" />
                     <hbox>

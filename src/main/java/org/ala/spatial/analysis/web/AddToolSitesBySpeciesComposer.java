@@ -44,7 +44,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
     public void afterCompose() {
         super.afterCompose();
 
-        this.selectedMethod = "Species To Grid";
+        this.selectedMethod = "Points To Grid";
         this.totalSteps = 3;
 
         this.loadAreaLayers();
