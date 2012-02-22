@@ -127,9 +127,9 @@ public class AddToolTabulationComposer extends AddToolComposer {
         Field f2 = (Field) cbTabLayers2.getSelectedItem().getValue();
 
         StringBuilder sb = new StringBuilder();
-        sb.append(CommonData.layersServer + "/tabulation/" + cbTabType.getSelectedItem().getValue() + "/" + f1.name + "/" + f2.name + "/html");
+        sb.append(CommonData.layersServer + "/tabulation/" + cbTabType.getSelectedItem().getValue() + "/" + f1.name + "/" + f2.name + "/data.html");
         sb.append("\n").append("Tabulation").append("\n");
-        sb.append(CommonData.layersServer + "/tabulation/" + cbTabType.getSelectedItem().getValue() + "/" + f1.name + "/" + f2.name + "/csv");
+        sb.append(CommonData.layersServer + "/tabulation/" + cbTabType.getSelectedItem().getValue() + "/" + f1.name + "/" + f2.name + "/data.csv");
         //sb.append("Tabulation for " + f1.display_name + " and " + f2.display_name);
 
 
