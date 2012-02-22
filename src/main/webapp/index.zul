@@ -134,10 +134,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             <n:a href="">Import</n:a>
                             <n:ul>
                                 <n:li>
-                                    <n:a href="#" n:onClick="runImportSpecies();">Points</n:a>
+                                    <n:a href="#" n:onClick="runImportSpecies('points');">Points</n:a>
                                 </n:li>
                                 <n:li>
-                                    <n:a href="#" n:onClick="runImportSpecies();">Assemblage</n:a>
+                                    <n:a href="#" n:onClick="runImportSpecies('assemblage');">Assemblage</n:a>
                                 </n:li>
                                 <n:li>
                                     <n:a href="#" n:onClick="runImportAreas();">Areas</n:a>

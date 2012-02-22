@@ -553,7 +553,7 @@ public class UploadSpeciesController extends UtilityComposer {
         this.eventListener = eventListener;
     }
 
-    void setTbInstructions(String instructions) {
+    public void setTbInstructions(String instructions) {
         tbInstructions.setValue(instructions);
         if (instructions.contains("longitude")) {
             lsidinfo.setVisible(false);

@@ -331,8 +331,8 @@ function runGDM(){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddGDM', null));
 }
 
-function runImportSpecies(){
-    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'importSpecies', null));
+function runImportSpecies(type){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'importSpecies', type));
 }
 
 function runImportAreas(){
