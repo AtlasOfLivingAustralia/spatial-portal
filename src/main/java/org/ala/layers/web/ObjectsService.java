@@ -55,7 +55,6 @@ public class ObjectsService {
     
     /**This method returns a single object, provided a UUID
      * 
-     * @param uuid
      * @param req
      * @return 
      */

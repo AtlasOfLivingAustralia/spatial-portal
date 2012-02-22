@@ -60,9 +60,28 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                     </ul></li>
 
                 <li>Distributions<ul>
-                        <li><strong>Get a list of all distributions:</strong> <a href="/ws/distributions">/ws/distributions</a></li>
-                        <li><strong>Get information about a specific distribution, given a spcode:</strong> /ws/distribution/{spcode} e.g. <a href="/ws/distribution/37031044">/ws/distribution/37031044</a></li>
-                    </ul></li>
+                    <li><strong>Get a list of all distributions:</strong> <a href="/ws/distributions">/ws/distributions</a>
+                        <ul>
+                            <li><strong>min_depth</strong> - min depth in metres</li>
+                            <li><strong>max_depth</strong> - max depth in metres</li>
+                            <li><strong>wkt</strong> - well known text string to use to intersect distributions</li>
+                            <li><strong>fid</strong> - the id for the alayer</li>
+                            <li><strong>objectName</strong> - the name of the object in the layer used to intersect distributions</li>
+                        </ul>
+                    </li>
+                    <li><strong>Get a list of all distributions for radius:</strong> <a href="/ws/distributions/radius">/ws/distributions/radius</a>
+                        <ul>
+                            <li><strong>lat</strong> - latitude</li>
+                            <li><strong>lon</strong> - longitude</li>
+                            <li><strong>radius</strong> - radius in metres</li>
+                            <li><strong>min_depth</strong> - min depth in metres</li>
+                            <li><strong>max_depth</strong> - max depth in metres</li>
+                        </ul>
+                    </li>
+                    <li><strong>Get information about a specific distribution, given a spcode:</strong> /ws/distribution/{spcode} e.g. <a href="/ws/distribution/37031044">/ws/distribution/37031044</a> (Arafura Skate)</li>
+                    <li><strong>Get information about a specific distribution, given a LSID:</strong> /ws/distribution/{lsid} e.g. <a href="/ws/distribution/urn:lsid:biodiversity.org.au:afd.taxon:2386db84-1fdd-4c33-a2ea-66e13bfc8cf8">/ws/distribution/urn:lsid:biodiversity.org.au:afd.taxon:2386db84-1fdd-4c33-a2ea-66e13bfc8cf8</a> (Kapala Stingaree)</li>
+                </ul></li>
+
 
                 <li>Tabulation<ul>
                         <li><strong>Get a list of tabulations:</strong> <a href="/ws/tabulations">/ws/tabulations</a></li>
