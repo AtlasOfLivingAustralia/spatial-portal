@@ -55,66 +55,66 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                 <td>${layer.name2}</td>
                 <!-- area -->
                 <td>
-                    <a href='tabulation/area/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/area/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/area/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/area/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/area/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/area/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
                 <td>
-                    <a href='tabulation/area/total/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/area/total/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/area/total/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/area/total/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/area/total/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/area/total/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
                 <td>
-                    <a href='tabulation/area/row/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/area/row/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/area/row/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/area/row/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/area/row/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/area/row/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
                 <td>
-                    <a href='tabulation/area/column/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/area/column/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/area/column/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/area/column/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/area/column/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/area/column/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
                 <!-- species -->
                 <td>
-                    <a href='tabulation/species/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/species/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/species/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/species/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/species/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/species/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
                 <td>
-                    <a href='tabulation/species/total/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/species/total/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/species/total/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/species/total/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/species/total/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/species/total/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
                 <td>
-                    <a href='tabulation/species/row/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/species/row/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/species/row/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/species/row/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/species/row/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/species/row/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
                 <td>
-                    <a href='tabulation/species/column/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/species/column/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/species/column/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/species/column/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/species/column/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/species/column/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
                 <!-- occurrences -->
                 <td>
-                    <a href='tabulation/occurrences/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/occurrences/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/occurrences/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/occurrences/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/occurrences/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/occurrences/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
                 <td>
-                    <a href='tabulation/occurrences/total/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/occurrences/total/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/occurrences/total/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/occurrences/total/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/occurrences/total/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/occurrences/total/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
                 <td>
-                    <a href='tabulation/occurrences/row/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/occurrences/row/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/occurrences/row/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/occurrences/row/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/occurrences/row/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/occurrences/row/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
                 <td>
-                    <a href='tabulation/occurrences/column/${layer.fid1}/${layer.fid2}/html'>html</a>
-                    <a href='tabulation/occurrences/column/${layer.fid1}/${layer.fid2}/csv'>csv</a>
-                    <a href='tabulation/occurrences/column/${layer.fid1}/${layer.fid2}/json'>json</a>
+                    <a href='tabulation/occurrences/column/${layer.fid1}/${layer.fid2}/data.html'>html</a>
+                    <a href='tabulation/occurrences/column/${layer.fid1}/${layer.fid2}/data.csv'>csv</a>
+                    <a href='tabulation/occurrences/column/${layer.fid1}/${layer.fid2}/data.json'>json</a>
                 </td>
             </tr>
         </c:forEach>

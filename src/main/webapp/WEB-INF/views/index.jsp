@@ -69,8 +69,8 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                         <!-- <li><strong>Get a list of tabulations as HTML:</strong> <a href="/ws/tabulations/html">/ws/tabulations/html</a></li> -->
                         <li><strong>Get tabulation for a single layer as HTML:</strong> /ws/tabulation/cl22/html?wkt={valid wkt polygon geometry} e.g. <a href="/ws/tabulation/cl22/html.html?wkt=POLYGON((130%20-24,138%20-24,138%20-20,130%20-20,130%20-24))">/ws/tabulation/cl22/html.html?wkt=POLYGON((130 -24,138 -24,138 -20,130 -20,130 -24))</a></li>
                         <li><strong>Get area tabulation for 2 layers, given their id's:</strong> /ws/tabulation/area/{id}/{id} e.g. <a href="/ws/tabulation/area/cl22/cl23">/ws/tabulation/area/cl22/cl23</a></li>
-                        <li><strong>Get area tabulation as CSV for 2 layers, given their id's:</strong> /ws/tabulation/area/{id}/{id}/csv e.g. <a href="/ws/tabulation/area/cl22/cl23/csv">/ws/tabulation/area/cl22/cl23/csv</a></li>
-                        <li><strong>Get area tabulation as HTML for 2 layers, given their id's:</strong> /ws/tabulation/area/{id}/{id}/html e.g. <a href="/ws/tabulation/area/cl22/cl23/html">/ws/tabulation/area/cl22/cl23/html</a></li>
+                        <li><strong>Get area tabulation as CSV for 2 layers, given their id's:</strong> /ws/tabulation/area/{id}/{id}/data.csv e.g. <a href="/ws/tabulation/area/cl22/cl23/data.csv">/ws/tabulation/area/cl22/cl23/data.csv</a></li>
+                        <li><strong>Get area tabulation as HTML for 2 layers, given their id's:</strong> /ws/tabulation/area/{id}/{id}/data.html e.g. <a href="/ws/tabulation/area/cl22/cl23/data.html">/ws/tabulation/area/cl22/cl23/data.html</a></li>
                         <li><strong>Get tabulation within an area as HTML for 2 layers, given their id's:</strong> /ws/tabulation/{id}/{id}/html?wkt={valid wkt polygon geometry} e.g. <a href="/ws/tabulation/cl22/cl23/html.html?wkt=POLYGON((130%20-24,138%20-24,138%20-20,130%20-20,130%20-24))">/ws/tabulation/cl22/cl23/html.html?wkt=POLYGON((130 -24,138 -24,138 -20,130 -20,130 -24))</a></li>
                     </ul></li>
             </ul>

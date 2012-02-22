@@ -83,7 +83,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/{fid2}/html", method = {RequestMethod.GET, RequestMethod.POST})    
+    @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/{fid2}/data.html", method = {RequestMethod.GET, RequestMethod.POST})    
     public ModelAndView displayTabulation(@PathVariable("func1") String func1, @PathVariable("func2") String func2, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -91,7 +91,7 @@ public class TabulationService {
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
         return generateTabulation(tabulations,func,fid1,fid2,wkt);
     }
-    @RequestMapping(value = "/tabulation/{func1}/{fid1}/{fid2}/html", method = {RequestMethod.GET, RequestMethod.POST})    
+    @RequestMapping(value = "/tabulation/{func1}/{fid1}/{fid2}/data.html", method = {RequestMethod.GET, RequestMethod.POST})    
     public ModelAndView displayTabulation(@PathVariable("func1") String func1, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -548,7 +548,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})    
+    @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/{fid2}/data.{type}", method = {RequestMethod.GET, RequestMethod.POST})    
     public void displayTabulationCSVHTML(@PathVariable("func1") String func1, @PathVariable("func2") String func2, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,@PathVariable("type") String type,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -556,7 +556,7 @@ public class TabulationService {
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
         generateTabulationCSVHTML(tabulations,resp,func,fid1,fid2,wkt,type);
     }
-    @RequestMapping(value = "/tabulation/{func1}/{fid1}/{fid2}/{type}", method = {RequestMethod.GET, RequestMethod.POST})    
+    @RequestMapping(value = "/tabulation/{func1}/{fid1}/{fid2}/data.{type}", method = {RequestMethod.GET, RequestMethod.POST})    
     public void displayTabulationCSVHTML(@PathVariable("func1") String func1, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,@PathVariable("type") String type,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -612,7 +612,8 @@ public class TabulationService {
         //write to csv or json
         StringBuilder sb = new StringBuilder();
         if (type.equals("csv")) {
-            resp.setContentType("text/plain");
+            //resp.setContentType("text/plain");
+            resp.setContentType("text/comma-separated-values");
             for (int i = 0; i < grid.length; i++) {
                 if (i > 0) {
                     sb.append("\n");
@@ -671,13 +672,16 @@ public class TabulationService {
                                 sb.append(grid[i][j]);
                             }
                             else if (func.equals("arearow")|| func.equals("occurrencesrow") || func.equals("speciesrow")){
-                                sb.append(gridRowPercentage[i-1][j-1]/100.00);
+                                //sb.append(gridRowPercentage[i-1][j-1]/100.00);
+                                sb.append(gridRowPercentage[i-1][j-1]+"%");
                             }
                             else if (func.equals("areacolumn")|| func.equals("occurrencescolumn") || func.equals("speciescolumn")){
-                                sb.append(gridColumnPercentage[i-1][j-1]/100.00);
+                                //sb.append(gridColumnPercentage[i-1][j-1]/100.00);
+                                sb.append(gridColumnPercentage[i-1][j-1]+"%");
                             }
                             else if (func.equals("areatotal")|| func.equals("occurrencestotal") || func.equals("speciestotal")){
-                                sb.append(gridTotalPercentage[i-1][j-1]/100.00);
+                                //sb.append(gridTotalPercentage[i-1][j-1]/100.00);
+                                sb.append(gridTotalPercentage[i-1][j-1]+"%");
                             }
                         }
                     }
@@ -707,7 +711,8 @@ public class TabulationService {
                         sb.append("," + sumOfColumns[i - 1]);
                     }
                     else if (func.equals("arearow")|| func.equals("occurrencesrow") || func.equals("speciesrow")){
-                        sb.append(","+ sumOfColumnsGridPercentage[i - 1]);
+                        //sb.append(","+ sumOfColumnsGridPercentage[i - 1]/100.00);
+                        sb.append(","+ sumOfColumnsGridPercentage[i - 1]+"%");
                     }
                     else if (func.equals("areacolumn")|| func.equals("occurrencescolumn") || func.equals("speciescolumn")){
                         int numOfNonzeroClasses = 0;
@@ -716,10 +721,12 @@ public class TabulationService {
                                 numOfNonzeroClasses = numOfNonzeroClasses + 1;
                             }                            
                         }
-                        sb.append(","+ AveragePercentageOverColumns[i - 1]);
+                        //sb.append(","+ AveragePercentageOverColumns[i - 1]/100.00);
+                        sb.append(","+ AveragePercentageOverColumns[i - 1]+"%");
                     }
                     else if (func.equals("areatotal")|| func.equals("occurrencestotal") || func.equals("speciestotal")){
-                        sb.append(","+ sumOfColumnsGridPercentage[i - 1]);
+                        //sb.append(","+ sumOfColumnsGridPercentage[i - 1]/100.00);
+                        sb.append(","+ sumOfColumnsGridPercentage[i - 1]+"%");
                     }
                 }
             }
@@ -747,18 +754,22 @@ public class TabulationService {
                     sb.append("," + sumOfRows[j - 1]);
                 }
                 else if (func.equals("arearow")|| func.equals("occurrencesrow") || func.equals("speciesrow")){
-                    sb.append(","+ AveragePercentageOverRows[j - 1]);
+                    //sb.append(","+ AveragePercentageOverRows[j - 1]/100.00);
+                    sb.append(","+ AveragePercentageOverRows[j - 1]+"%");
                 }
                 else if (func.equals("areacolumn")|| func.equals("occurrencescolumn") || func.equals("speciescolumn")){                    
-                    sb.append(","+ sumOfRowsGridPercentage[j - 1]);
+                    //sb.append(","+ sumOfRowsGridPercentage[j - 1]/100.00);
+                    sb.append(","+ sumOfRowsGridPercentage[j - 1]+"%");
                 }
                 else if (func.equals("areatotal")|| func.equals("occurrencestotal") || func.equals("speciestotal")){
-                    sb.append(","+ sumOfRowsGridPercentage[j - 1]);
+                    //sb.append(","+ sumOfRowsGridPercentage[j - 1]/100.00);
+                    sb.append(","+ sumOfRowsGridPercentage[j - 1]+"%");
                 }                
             }
             if (func.equals("areatotal")|| func.equals("occurrencestotal")|| func.equals("speciestotal")) {
                 
-                sb.append(","+ TotalPercentage);
+                //sb.append(","+ TotalPercentage/100.00);
+                sb.append(","+ TotalPercentage+"%");
             }
             else if (func.equals("area") || func.equals("occurrences") ||func.equals("species")){
                 sb.append(","+ Total);
@@ -776,7 +787,19 @@ public class TabulationService {
                 for (int j = 1; j < grid[i].length; j++) {
                     if (grid[i][j] != null) {
                         sb.append("\"").append(grid[0][j].replace("\"", "\"\"")).append("\":");
-                        sb.append(grid[i][j]);
+                        //sb.append(grid[i][j]);
+                        if (func.equals("area")||func.equals("occurrences")||func.equals("species")){
+                                sb.append(grid[i][j]);
+                            }
+                            else if (func.equals("arearow")|| func.equals("occurrencesrow") || func.equals("speciesrow")){
+                                sb.append(gridRowPercentage[i-1][j-1]/100.00);
+                            }
+                            else if (func.equals("areacolumn")|| func.equals("occurrencescolumn") || func.equals("speciescolumn")){
+                                sb.append(gridColumnPercentage[i-1][j-1]/100.00);
+                            }
+                            else if (func.equals("areatotal")|| func.equals("occurrencestotal") || func.equals("speciestotal")){
+                                sb.append(gridTotalPercentage[i-1][j-1]/100.00);
+                            }
                         sb.append(",");
                     }
                 }
@@ -790,13 +813,13 @@ public class TabulationService {
                     sb.append("\"Total species (non unique)\":"+sumOfColumns[i - 1]);
                 }
                 else if (func.equals("arearow")||func.equals("occurrencesrow")||func.equals("speciesrow")){
-                    sb.append("\"Total\":"+sumOfColumnsGridPercentage[i - 1]);
+                    sb.append("\"Total\":"+sumOfColumnsGridPercentage[i - 1]/100);
                 }
                 else if (func.equals("areacolumn")||func.equals("occurrencescolumn")||func.equals("speciescolumn")){
-                    sb.append("\"Average\":"+AveragePercentageOverColumns[i - 1]);
+                    sb.append("\"Average\":"+AveragePercentageOverColumns[i - 1]/100);
                 }
                 else if (func.equals("areatotal")||func.equals("occurrencestotal")||func.equals("speciestotal")){
-                    sb.append("\"Total\":"+sumOfColumnsGridPercentage[i - 1]);
+                    sb.append("\"Total\":"+sumOfColumnsGridPercentage[i - 1]/100);
                 }
                 
                 if (sb.toString().endsWith(",")) {
@@ -835,17 +858,17 @@ public class TabulationService {
                     sb.append(sumOfRows[j - 1]+",");
                 }
                 else if (func.equals("arearow") || func.equals("occurrencesrow") || func.equals("speciesrow")) {
-                sb.append(AveragePercentageOverColumns[j - 1]+",");
+                    sb.append(AveragePercentageOverRows[j - 1]/100+",");
                 }
                 else if (func.equals("areacolumn") || func.equals("occurrencescolumn") || func.equals("speciescolumn")) {
-                    sb.append(sumOfRowsGridPercentage[j - 1]+",");
+                    sb.append(sumOfRowsGridPercentage[j - 1]/100+",");
                 }
                 else if (func.equals("areatotal")|| func.equals("occurrencestotal")|| func.equals("speciestotal")) {
-                    sb.append(sumOfRowsGridPercentage[j - 1]+","); 
+                    sb.append(sumOfRowsGridPercentage[j - 1]/100+","); 
                 }
             }
             if (func.equals("areatotal")|| func.equals("occurrencestotal")|| func.equals("speciestotal")) {
-                sb.append("\"%\":"+TotalPercentage+",");
+                sb.append("\"%\":"+TotalPercentage/100+",");
             }
             else if (func.equals("area") || func.equals("occurrences") ||func.equals("species")){
                 if (func.equals("area")){
@@ -874,7 +897,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/html", method = {RequestMethod.GET, RequestMethod.POST})    
+    @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/data.html", method = {RequestMethod.GET, RequestMethod.POST})    
     public ModelAndView displayTabulationSingle(@PathVariable("func1") String func1, @PathVariable("func2") String func2, @PathVariable("fid1") String fid1,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -882,7 +905,7 @@ public class TabulationService {
         List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1,wkt);
         return generateTabulation(tabulations,func,fid1,null,wkt);
     }
-    @RequestMapping(value = "/tabulation/{func1}/{fid1}/html", method = {RequestMethod.GET, RequestMethod.POST})    
+    @RequestMapping(value = "/tabulation/{func1}/{fid1}/data.html", method = {RequestMethod.GET, RequestMethod.POST})    
     public ModelAndView displayTabulationSingle(@PathVariable("func1") String func1, @PathVariable("fid1") String fid1,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {       
@@ -892,7 +915,7 @@ public class TabulationService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/{type}", method = {RequestMethod.GET, RequestMethod.POST})    
+    @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/data.{type}", method = {RequestMethod.GET, RequestMethod.POST})    
     public void displayTabulationSingleCSVHTML(@PathVariable("func1") String func1, @PathVariable("func2") String func2, @PathVariable("fid1") String fid1,@PathVariable("type") String type,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -900,7 +923,7 @@ public class TabulationService {
         List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1,wkt);
         generateTabulationCSVHTML(tabulations,resp,func,fid1,null,wkt,type);
     }
-    @RequestMapping(value = "/tabulation/{func1}/{fid1}/{type}", method = {RequestMethod.GET, RequestMethod.POST})    
+    @RequestMapping(value = "/tabulation/{func1}/{fid1}/data.{type}", method = {RequestMethod.GET, RequestMethod.POST})    
     public void displayTabulationSingleCSVHTML(@PathVariable("func1") String func1, @PathVariable("fid1") String fid1, @PathVariable("type") String type,
             @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
             HttpServletRequest req, HttpServletResponse resp) throws IOException {
