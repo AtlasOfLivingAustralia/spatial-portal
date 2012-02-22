@@ -33,4 +33,5 @@ public interface ObjectDAO {
     public Objects getObjectByIdAndLocation(String fid, Double lng, Double lat);
     public List<Objects> getNearestObjectByIdAndLocation(String fid, int limit, Double lng, Double lat);
     public void streamObjectsGeometryById(OutputStream os, String id, String geomtype) throws IOException;
+    public List<Objects> getObjectByFidAndName(String fid, String name);
 }

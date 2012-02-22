@@ -557,4 +557,11 @@ public class ObjectDAOImpl implements ObjectDAO {
 
         return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), lng, lat, lng, lat, fid, new Integer(limit));
     }
+
+    @Override
+    public List<Objects> getObjectByFidAndName(String fid, String name) {
+        logger.info("Getting object info for fid = " + fid + " and name: (" + name + ") ");
+        String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km, ST_AsText(the_geom) as geometry from objects o, fields f where o.fid = ? and o.name like ? and o.fid = f.id";
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[]{fid, name});
+    }
 }
