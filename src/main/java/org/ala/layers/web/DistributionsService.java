@@ -118,8 +118,8 @@ public class DistributionsService {
     * get distribution by id
     */
     @RequestMapping(value = WS_DISTRIBUTION_LSID, method = RequestMethod.GET)
-    public @ResponseBody Distribution getDistribution(@PathVariable String taxonID, HttpServletResponse response) throws Exception{
-        List<Distribution> distributions =  distributionDao.getDistributionByLSID(new String[]{taxonID});
+    public @ResponseBody Distribution getDistribution(@PathVariable String lsid, HttpServletResponse response) throws Exception{
+        List<Distribution> distributions =  distributionDao.getDistributionByLSID(new String[]{lsid});
         if(distributions != null && !distributions.isEmpty()) {
             return distributions.get(0);
         } else {
