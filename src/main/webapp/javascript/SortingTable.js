@@ -32,7 +32,7 @@ sorttable = {
     // Safari doesn't support table.tHead, sigh
     if (table.tHead == null) table.tHead = table.getElementsByTagName('thead')[0];
     
-    if (table.tHead.rows.length != 1) return; // can't cope with two header rows
+    //if (table.tHead.rows.length != 1) return; // can't cope with two header rows
     
     // Sorttable v1 put rows with a class of "sortbottom" at the bottom (as
     // "total" rows, for example). This is B&R, since what you're supposed
@@ -151,7 +151,7 @@ sorttable = {
     for (var i=0; i<table.tBodies[0].rows.length; i++) {
       text = sorttable.getInnerText(table.tBodies[0].rows[i].cells[column]);
       if (text != '') {
-        if (text.match(/^-?[£$¤]?[\d,.]+%?$/)) {
+        if (text.match(/^-?[ï¿½$ï¿½]?[\d,.]+%?$/)) {
           return sorttable.sort_numeric;
         }
         // check for a date: dd/mm/yyyy or dd/mm/yy 

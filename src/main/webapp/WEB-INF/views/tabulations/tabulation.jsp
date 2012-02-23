@@ -25,7 +25,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
 
         <script type="text/javascript" src="/layers-service/javascript/SortingTable.js"></script>
             
-       <table class="table-borders" style="width:100%">
+       <table class="sortable table-borders" style="width:100%">
            <c:forEach items="${grid}" var="row" varStatus="counter">
                <tr>
                <c:forEach items="${row}" var="cell" varStatus="rowcounter">
