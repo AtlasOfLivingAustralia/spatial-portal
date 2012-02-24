@@ -707,7 +707,10 @@ public class TabulationService {
                     }
                 } 
                 else {
-                    if (func.equals("area")||func.equals("occurrences")||func.equals("species")){
+                    if (func.equals("area")){
+                        sb.append("," + sumOfColumns[i - 1]*1000000.00);
+                    }
+                    else if (func.equals("occurrences")||func.equals("species")){
                         sb.append("," + sumOfColumns[i - 1]);
                     }
                     else if (func.equals("arearow")|| func.equals("occurrencesrow") || func.equals("speciesrow")){
@@ -750,7 +753,10 @@ public class TabulationService {
                 sb.append("\"Total\"");
             }
             for (int j = 1; j < grid[0].length; j++) {
-                if (func.equals("area")||func.equals("occurrences")||func.equals("species")){
+                if (func.equals("area")){
+                    sb.append("," + sumOfRows[j - 1]*1000000.00);
+                }
+                else if (func.equals("occurrences")||func.equals("species")){
                     sb.append("," + sumOfRows[j - 1]);
                 }
                 else if (func.equals("arearow")|| func.equals("occurrencesrow") || func.equals("speciesrow")){
@@ -771,7 +777,10 @@ public class TabulationService {
                 //sb.append(","+ TotalPercentage/100.00);
                 sb.append(","+ TotalPercentage+"%");
             }
-            else if (func.equals("area") || func.equals("occurrences") ||func.equals("species")){
+            else if (func.equals("area")){
+                sb.append(","+ Total*1000000.00);
+            }
+            else if (func.equals("occurrences") ||func.equals("species")){
                 sb.append(","+ Total);
             }
             else {
@@ -807,7 +816,7 @@ public class TabulationService {
                     }
                 }
                 if (func.equals("area")){
-                    sb.append("\"Total area\":"+sumOfColumns[i - 1]);
+                    sb.append("\"Total area\":"+sumOfColumns[i - 1]*1000000.00);
                 }
                 else if (func.equals("occurrences")){
                     sb.append("\"Total occurrences\":"+sumOfColumns[i - 1]);
@@ -857,7 +866,10 @@ public class TabulationService {
             sb.append("{");
             for (int j = 1; j < grid[0].length; j++) {
                 sb.append("\"").append(grid[0][j].replace("\"", "\"\"")).append("\":");
-                if (func.equals("area")||func.equals("occurrences")||func.equals("species")) {
+                if (func.equals("area")) {
+                    sb.append(sumOfRows[j - 1]*1000000.00+",");
+                }
+                else if (func.equals("occurrences")||func.equals("species")) {
                     sb.append(sumOfRows[j - 1]+",");
                 }
                 else if (func.equals("arearow") || func.equals("occurrencesrow") || func.equals("speciesrow")) {
@@ -875,7 +887,7 @@ public class TabulationService {
             }
             else if (func.equals("area") || func.equals("occurrences") ||func.equals("species")){
                 if (func.equals("area")){
-                    sb.append("\"Total area\":"+Total+",");
+                    sb.append("\"Total area\":"+Total*1000000.00+",");
                 }
                 else if (func.equals("occurrences") ){
                     sb.append("\"Total occurrences\":"+Total+",");
