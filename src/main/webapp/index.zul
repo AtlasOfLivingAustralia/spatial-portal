@@ -108,22 +108,22 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <n:a href="#" n:onClick="runNearestLocality();">Nearest locality</n:a>
                                 </n:li>
                                 <n:li>
+                                    <n:a href="#" n:onClick="runSitesBySpecies();">Points to Grid</n:a>
+                                </n:li>
+                                <n:li>
                                     <n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a>
+                                </n:li>
+                                <n:li>
+                                    <n:a href="#" n:onClick="runTabulation();">Tabulate</n:a>
+                                </n:li>
+                                <n:li>
+                                    <n:a href="#" n:onClick="runGDM();">GDM</n:a>
                                 </n:li>
                                 <n:li>
                                     <n:a href="#" n:onClick="runClassification();">Classify</n:a>
                                 </n:li>
                                 <n:li>
                                     <n:a href="#" n:onClick="runPrediction();">Predict</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runGDM();">GDM</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runTabulation();">Tabulate</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runSitesBySpecies();">Points to Grid</n:a>
                                 </n:li>
                                 <n:li>
                                     <n:a href="#" n:onClick="runImportAnalysis();">Restore prior analysis</n:a>
