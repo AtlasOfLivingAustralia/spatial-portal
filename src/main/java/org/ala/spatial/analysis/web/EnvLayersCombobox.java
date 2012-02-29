@@ -31,6 +31,7 @@ public class EnvLayersCombobox extends Combobox {
 
     String[] validLayers = null;
     boolean includeAnalysisLayers = false;
+    String includeLayers;
 
     public EnvLayersCombobox() {
         refresh(""); //init the child comboitems
@@ -98,6 +99,7 @@ public class EnvLayersCombobox extends Combobox {
 
                     String displayName = jo.getString("displayname");
                     String type = jo.getString("type");
+                    String name = jo.getString("name");
 
                     //if (!type.equalsIgnoreCase("environmental")) {
                     //    continue;
@@ -121,7 +123,20 @@ public class EnvLayersCombobox extends Combobox {
                         c2 = jo.getString("classification2") + ": ";
                     }
                     myci.setDescription(jo.getString("classification1") + ": " + c2 + type);
-                    myci.setDisabled(false);
+                    
+                    if (!type.equalsIgnoreCase("environmental") && this.getIncludeLayers() == "EnvironmentalLayers") {
+                        myci.setDisabled(true);
+                    } else if (!type.equalsIgnoreCase("environmental") && this.getIncludeLayers() == "MixLayers" 
+                                    && !name.equalsIgnoreCase("landcover")
+                                    && !name.equalsIgnoreCase("landuse")
+                                    && !name.equalsIgnoreCase("vast")
+                                    && !name.equalsIgnoreCase("native_veg")
+                                    && !name.equalsIgnoreCase("present_veg")) {
+                                myci.setDisabled(true);
+                    } else {
+                        myci.setDisabled(false);
+                    }
+                    //myci.setDisabled(false);
                     myci.setValue(jo);
                 }
             }
@@ -222,6 +237,14 @@ public class EnvLayersCombobox extends Combobox {
 
     public void setIncludeAnalysisLayers(boolean includeAnalysisLayers) {
         this.includeAnalysisLayers = includeAnalysisLayers;
+    }
+    public String getIncludeLayers() {
+        return includeLayers;
+    }
+
+    public void setIncludeLayers(String includeLayers) {
+        this.includeLayers = includeLayers;
+        System.out.println("this.includeLayers="+this.includeLayers);
     }
 
     public MapComposer getMapComposer() {

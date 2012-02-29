@@ -151,7 +151,7 @@
                     <separator />
                     <hbox>
                         <label value="Add from search:" />
-                        <combobox id="cbLayer" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" />
+                        <combobox id="cbLayerEnvironmentalOnly" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" />
                     </hbox>
                     <separator />
                     <vbox>

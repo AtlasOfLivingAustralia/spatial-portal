@@ -99,7 +99,7 @@ public class AddToolComposer extends UtilityComposer {
     Div tlinfo;
     Textbox tLayerList;
     Div dLayerSummary;
-    EnvLayersCombobox cbLayer;
+    EnvLayersCombobox cbLayer,cbLayerEnvironmentalOnly,cbLayerMix;
     Button bLayerListDownload1;
     Button bLayerListDownload2;
     Label lLayersSelected;
@@ -147,6 +147,28 @@ public class AddToolComposer extends UtilityComposer {
         }
         if (mSearchSpeciesAutoBk != null) {
             mSearchSpeciesAutoBk.setBiocacheOnly(true);
+        }
+        
+        //init includeLayers
+        if (cbLayer != null) {
+            cbLayer.setIncludeLayers("AllLayers");
+            cbLayer.refresh("");
+        }
+        if (cbLayerEnvironmentalOnly != null) {
+            cbLayerEnvironmentalOnly.setIncludeLayers("EnvironmentalLayers");
+            cbLayerEnvironmentalOnly.refresh("");
+        }
+        if (cbLayer1 != null) {
+            cbLayer1.setIncludeLayers("EnvironmentalLayers");
+            cbLayer1.refresh("");
+        }
+        if (cbLayer2 != null) {
+            cbLayer2.setIncludeLayers("EnvironmentalLayers");
+            cbLayer2.refresh("");
+        }
+        if (cbLayerMix != null) {
+            cbLayerMix.setIncludeLayers("MixLayers");
+            cbLayerMix.refresh("");
         }
     }
 
@@ -989,6 +1011,11 @@ public class AddToolComposer extends UtilityComposer {
                                 cbLayer.setIncludeAnalysisLayers(test);
                             }
                         }
+                        if (cbLayerEnvironmentalOnly != null) {
+                            if ((cbLayerEnvironmentalOnly.getIncludeAnalysisLayers()) != test) {
+                                cbLayerEnvironmentalOnly.setIncludeAnalysisLayers(test);
+                            }
+                        }
                         if (cbLayer1 != null) {
                             if ((cbLayer1.getIncludeAnalysisLayers()) != test) {
                                 cbLayer1.setIncludeAnalysisLayers(test);
@@ -997,6 +1024,11 @@ public class AddToolComposer extends UtilityComposer {
                         if (cbLayer2 != null) {
                             if ((cbLayer2.getIncludeAnalysisLayers()) != test) {
                                 cbLayer2.setIncludeAnalysisLayers(test);
+                            }
+                        }
+                        if (cbLayerMix != null) {
+                            if ((cbLayerMix.getIncludeAnalysisLayers()) != test) {
+                                cbLayerMix.setIncludeAnalysisLayers(test);
                             }
                         }
                         if (mpLayer1 != null && mpLayer2 != null
@@ -1656,6 +1688,26 @@ public class AddToolComposer extends UtilityComposer {
         //seek to and select the same layer in the list
         if (lbListLayers != null && cbLayer.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) cbLayer.getSelectedItem().getValue();
+            String[] layer = jo.getString("name").split("/");
+            lbListLayers.selectLayers(layer);
+        }
+        toggles();
+    }
+    
+    public void onChange$cbLayerEnvironmentalOnly(Event event) {
+        //seek to and select the same layer in the list
+        if (lbListLayers != null && cbLayerEnvironmentalOnly.getSelectedItem() != null) {
+            JSONObject jo = (JSONObject) cbLayerEnvironmentalOnly.getSelectedItem().getValue();
+            String[] layer = jo.getString("name").split("/");
+            lbListLayers.selectLayers(layer);
+        }
+        toggles();
+    }
+    
+    public void onChange$cbLayerMix(Event event) {
+        //seek to and select the same layer in the list
+        if (lbListLayers != null && cbLayerMix.getSelectedItem() != null) {
+            JSONObject jo = (JSONObject) cbLayerMix.getSelectedItem().getValue();
             String[] layer = jo.getString("name").split("/");
             lbListLayers.selectLayers(layer);
         }
