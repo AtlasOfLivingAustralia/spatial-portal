@@ -246,7 +246,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <div height="39px" />
 
                                     <div id="activeLayersHolder"  width="400px" style="overflow: auto;background:white" height="180px">
-                                        <listbox id="activeLayersList" />
+                                        <listbox id="activeLayersList" width="100%" />
                                     </div>
 
                                     <div width="100%" height="1px" sclass="selectedLayerDiv" />
