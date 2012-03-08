@@ -680,3 +680,16 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     display: none; 
 }
 
+#addPanoramio {
+    position: absolute;
+    background-repeat: no-repeat;
+    /*background-image: url('http://www.gisandchips.org/demos/j3m/panoramio/panoramio-marker.png');*/
+    background-image: url('../img/panoramio-marker.png');
+    width: 16px! important;
+    height: 16px! important;
+    cursor: pointer;
+
+    z-index: 110;
+    top: 370px! important;
+    left: 23px! important;
+}

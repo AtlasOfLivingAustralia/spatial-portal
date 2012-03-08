@@ -73,6 +73,7 @@ var autoBaseLayerSwitch = false;
 // 2 = auto-switch 
 var baseLayerSwitchStatus = 0;
 var activeAreaPresent = false;
+var shownPicture = false;
 
 
 function stopCheckingLibraryLoaded() {
@@ -146,9 +147,8 @@ function checkLibraryLoaded() {
 
 var bLayer,bLayer2,bLayer3,bLayer4;
 function loadBaseMap() {
-
     goToLocation(134, -25, 4);
-
+    
     // Google.v3 uses EPSG:900913 as projection, so we have to
     // transform our coordinates
     //    map.setCenter(
@@ -160,7 +160,6 @@ function loadBaseMap() {
 //    $(window).resize(function() {
 //        setTimeout("map.pan(1,1);",500);
 //    });
-
 }
 function goToLocation(lon, lat, zoom) {
     // Google.v3 uses EPSG:900913 as projection, so we have to
@@ -281,7 +280,7 @@ function buildMapReal() {
     parent.bLayer4 = bLayer4;
 
     loadBaseMap();
-
+    //loadPanoramio();
     // create a new event handler for single click query
     clickEventHandler = new OpenLayers.Handler.Click({
         'map': map
@@ -1735,3 +1734,145 @@ function getOccurrenceUploaded(layer, query, lat, lon, start, pos, dotradius) {
     }
 }
 
+function checkIfLoadPanoramio() {
+    var vectorLayer;
+    if (!shownPicture){
+        loadPanoramio();
+    }
+    else {
+        removePanoramio();
+    }
+}
+
+function loadPanoramio() {
+      
+   //document.getElementById("addPanoramio").style.backgroundImage = "url('img/panoramio-marker.png')";
+   var popup, selectControl, selectedFeature;
+   var panoramio_style;
+    //Obtain Bbox coords
+   var proj = new OpenLayers.Projection("EPSG:900913");
+   var ext = map.getMaxExtent().transform(map.getProjectionObject(), proj); 
+   var minx = ext.left;
+   var miny = ext.bottom;
+   var maxx = ext.right;
+   var maxy = ext.top;
+
+   url = "http://www.panoramio.com/map/get_panoramas.php";
+   var parameters = {
+        order:'popularity',
+        set:'full',
+        from:0,
+        to:40,
+        minx: minx,
+        miny: miny,
+        maxx: maxx,
+        maxy: maxy,
+        size:'thumbnail'
+   };
+
+   OpenLayers.loadURL(url, parameters, this, showPhotos);
+   
+   function showPhotos(response) {
+      var json = new OpenLayers.Format.JSON();
+      var panoramio = json.read(response.responseText);
+      var features = new Array(panoramio.photos.length);
+
+      for (var i = 0; i < panoramio.photos.length; i++)
+      {
+        var upload_date = panoramio.photos[i].upload_date;
+        var owner_name = panoramio.photos[i].owner_name;
+        var photo_id = panoramio.photos[i].photo_id;
+        var longitude =panoramio.photos[i].longitude;
+        var latitude = panoramio.photos[i].latitude;
+        var pheight = panoramio.photos[i].height;
+        var pwidth = panoramio.photos[i].width;
+        var photo_title = panoramio.photos[i].photo_title;
+        var owner_url = panoramio.photos[i].owner_url;
+        var owner_id = panoramio.photos[i].owner_id;
+        var photo_file_url = panoramio.photos[i].photo_file_url;
+        var photo_url = panoramio.photos[i].photo_url;
+
+       var fpoint = new OpenLayers.Geometry.Point(longitude,latitude);
+       fpoint.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
+       var attributes = {
+           'upload_date' : upload_date,
+           'owner_name':owner_name,
+           'photo_id':photo_id,
+           'longitude':longitude,
+           'latitude':latitude,
+           'pheight':pheight,
+           'pwidth':pwidth,
+           'pheight':pheight,
+           'photo_title':photo_title,
+           'owner_url':owner_url,
+           'owner_id':owner_id,
+           'photo_file_url':photo_file_url,
+           'photo_url':photo_url
+       }
+
+       features[i] = new OpenLayers.Feature.Vector(fpoint,attributes);
+
+      }//Outside for loop
+      panoramio_style = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults({
+         pointRadius: 7,
+         fillColor: "red",
+         fillOpacity: 1,
+         strokeColor: "black",
+         //externalGraphic: "http://www.gisandchips.org/demos/j3m/panoramio/panoramio-marker.png"
+         externalGraphic: "img/panoramio-marker.png"
+      }, OpenLayers.Feature.Vector.style["default"]));
+
+       vectorLayer = new OpenLayers.Layer.Vector("Panoramio Photos", {
+          styleMap: panoramio_style
+       });
+       vectorLayer.addFeatures(features);
+       this.map.addLayer(vectorLayer);
+       selectControl = new OpenLayers.Control.SelectFeature(vectorLayer, {onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
+       this.map.addControl(selectControl);
+       selectControl.activate();
+       shownPicture = true;
+     }//End showPhotos
+
+       // popups
+       function onPopupClose(evt) {
+          selectControl.unselect(selectedFeature);
+       }
+
+       function onFeatureSelect(feature) {
+          selectedFeature = feature;
+
+          // HTML PopUp
+          var html = "<h2>"+feature.attributes.photo_title +"</h2> <p>" +" <Img src ='http://mw2.google.com/mw-panoramio/photos/small/"+feature.attributes.photo_id + ".jpg ' border = '3' alt ='' />";
+          //var html = "<h2>"+feature.attributes.photo_title +"</h2> <p>" +"<Img src='"+feature.attributes.photo_file_url+"' border = '0' alt =''/>";
+          popup = new OpenLayers.Popup("featurePopup",
+             feature.geometry.getBounds().getCenterLonLat(),
+             //null,
+             new OpenLayers.Size(250,325),
+             html,
+             true, 
+             onPopupClose);
+          /*popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+             feature.geometry.getBounds().getCenterLonLat(),
+             //null,
+             new OpenLayers.Size(250,325),
+             html,
+             null,
+             true, 
+             onPopupClose); */
+          
+          feature.popup = popup;
+          this.map.addPopup(popup);
+       }
+
+       function onFeatureUnselect(feature) {
+          this.map.removePopup(feature.popup);
+          feature.popup.destroy();
+          feature.popup = null;
+       }       
+    }
+
+    function removePanoramio() {
+        this.map.removeLayer(vectorLayer);
+        shownPicture = false;
+        
+    }
