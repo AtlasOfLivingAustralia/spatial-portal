@@ -1762,7 +1762,7 @@ function loadPanoramio() {
         order:'popularity',
         set:'full',
         from:0,
-        to:40,
+        to:3298,
         minx: minx,
         miny: miny,
         maxx: maxx,
@@ -1771,7 +1771,7 @@ function loadPanoramio() {
    };
 
    OpenLayers.loadURL(url, parameters, this, showPhotos);
-   
+
    function showPhotos(response) {
       var json = new OpenLayers.Format.JSON();
       var panoramio = json.read(response.responseText);
@@ -1843,7 +1843,7 @@ function loadPanoramio() {
 
           // HTML PopUp
           var html = "<h2>"+feature.attributes.photo_title +"</h2> <p>" +" <Img src ='http://mw2.google.com/mw-panoramio/photos/small/"+feature.attributes.photo_id + ".jpg ' border = '3' alt ='' />";
-          //var html = "<h2>"+feature.attributes.photo_title +"</h2> <p>" +"<Img src='"+feature.attributes.photo_file_url+"' border = '0' alt =''/>";
+          //var html = "<h2>"+feature.attributes.photo_title +"</h2> <p>" +" <a href='photo/"+feature.attributes.photo_id+"'><Img src ='http://mw2.google.com/mw-panoramio/photos/small/"+feature.attributes.photo_id + ".jpg ' border = '3' alt ='' /></a>";
           popup = new OpenLayers.Popup("featurePopup",
              feature.geometry.getBounds().getCenterLonLat(),
              //null,
