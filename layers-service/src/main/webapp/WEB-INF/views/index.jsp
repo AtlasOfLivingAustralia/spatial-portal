@@ -67,6 +67,11 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                             <li><strong>wkt</strong> - well known text string to use to intersect distributions</li>
                             <li><strong>fid</strong> - the id for the alayer</li>
                             <li><strong>objectName</strong> - the name of the object in the layer used to intersect distributions</li>
+                            <li><strong>coastal</strong> - Values are true/false or null (= not entered); false = non-estuarine, true = coastal </li>
+                            <li><strong>desmersal</strong> - Values are true/false or null (= not entered); false = non-estuarine, true = desmersal </li>
+                            <li><strong>estuarine</strong> - Values are true/false or null (= not entered); false = non-estuarine, true = estuarine </li>
+                            <li><strong>pelagic</strong> - Values are true/false or null</li>
+                            <li><strong>groupName</strong> - e.g. "sharks", "rays", "chimaeras"</li>
                         </ul>
                     </li>
                     <li><strong>Get a list of all distributions for radius:</strong> <a href="/ws/distributions/radius">/ws/distributions/radius</a>
@@ -76,10 +81,15 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                             <li><strong>radius</strong> - radius in metres</li>
                             <li><strong>min_depth</strong> - min depth in metres</li>
                             <li><strong>max_depth</strong> - max depth in metres</li>
+                            <li><strong>coastal</strong> - Values are true/false or null (= not entered); false = non-estuarine, true = coastal </li>
+                            <li><strong>desmersal</strong> - Values are true/false or null (= not entered); false = non-estuarine, true = desmersal </li>
+                            <li><strong>estuarine</strong> - Values are true/false or null (= not entered); false = non-estuarine, true = estuarine </li>
+                            <li><strong>pelagic</strong> - Values are true/false or null</li>
+                            <li><strong>groupName</strong> - e.g. "sharks", "rays", "chimaeras"</li>
                         </ul>
                     </li>
                     <li><strong>Get information about a specific distribution, given a spcode:</strong> /ws/distribution/{spcode} e.g. <a href="/ws/distribution/37031044">/ws/distribution/37031044</a> (Arafura Skate)</li>
-                    <li><strong>Get information about a specific distribution, given a LSID:</strong> /ws/distribution/lsid/{lsid} e.g. <a href="/ws/distribution/lsidurn:lsid:biodiversity.org.au:afd.taxon:2386db84-1fdd-4c33-a2ea-66e13bfc8cf8">/ws/distribution/lsidurn:lsid:biodiversity.org.au:afd.taxon:2386db84-1fdd-4c33-a2ea-66e13bfc8cf8</a> (Kapala Stingaree)</li>
+                    <li><strong>Get information about a specific distribution, given a LSID:</strong> /ws/distribution/lsid/{lsid} e.g. <a href="/ws/distribution/lsid/urn:lsid:biodiversity.org.au:afd.taxon:2386db84-1fdd-4c33-a2ea-66e13bfc8cf8">/ws/distribution/lsid/urn:lsid:biodiversity.org.au:afd.taxon:2386db84-1fdd-4c33-a2ea-66e13bfc8cf8</a> (Kapala Stingaree)</li>
                 </ul></li>
 
 

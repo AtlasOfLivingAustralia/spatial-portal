@@ -43,15 +43,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class DistributionsService {
 
     private final String WS_DISTRIBUTIONS = "/distributions";
-    private final String WS_DISTRIBUTIONS_POST = "/distributions/post";
-    private final String WS_DISTRIBUTIONS_INTERSECTS = "/distributions/intersects";
     private final String WS_DISTRIBUTIONS_RADIUS = "/distributions/radius";
     private final String WS_DISTRIBUTION_ID = "/distribution/{spcode}";
-    private final String WS_DISTRIBUTION_LSID = "/distribution/lsid/{lsid}";
+    private final String WS_DISTRIBUTION_LSID = "/distribution/lsid/{lsid:.+}";
+    private final String WS_DISTRIBUTION_OVERVIEWMAP = "/distribution/map/{lsid:.+}";
 
-    /**
-     * Log4j instance
-     */
+    /** Log4j instance */
     protected Logger logger = Logger.getLogger(this.getClass());
 
     @Resource(name="distributionDao")
@@ -72,6 +69,11 @@ public class DistributionsService {
             @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx,
             @RequestParam(value = "fid", required = false) String fid,
             @RequestParam(value = "objectName", required = false) String objectName,
+            @RequestParam(value = "pelagic", required = false) Boolean pelagic,
+            @RequestParam(value = "coastal", required = false) Boolean coastal,
+            @RequestParam(value = "estuarine", required = false) Boolean estuarine,
+            @RequestParam(value = "desmersal", required = false) Boolean desmersal,
+            @RequestParam(value = "groupName", required = false) String groupName,
             HttpServletResponse response) {
 
         if(StringUtils.isEmpty(wkt) && fid != null && objectName != null){
@@ -89,7 +91,9 @@ public class DistributionsService {
                 return null;
             }
         }
-        return distributionDao.queryDistributions(wkt, min_depth, max_depth, geom_idx, lsids, Distribution.EXPERT_DISTRIBUTION);
+        return distributionDao.queryDistributions(wkt, min_depth, max_depth,
+                pelagic,coastal,estuarine,desmersal,groupName,
+                geom_idx, lsids, Distribution.EXPERT_DISTRIBUTION);
     }
 
     @RequestMapping(value = WS_DISTRIBUTIONS_RADIUS, method = {RequestMethod.GET, RequestMethod.POST} )
@@ -100,17 +104,23 @@ public class DistributionsService {
             @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx,
             @RequestParam(value = "lon", required = true) Float longitude,
             @RequestParam(value = "lat", required = true) Float latitude,
-            @RequestParam(value = "radius", required = true) Float radius) {
-
-        return distributionDao.queryDistributionsByRadius(longitude, latitude, radius, min_depth, max_depth, geom_idx, lsids, Distribution.EXPERT_DISTRIBUTION);
+            @RequestParam(value = "radius", required = true) Float radius,
+            @RequestParam(value = "pelagic", required = false) Boolean pelagic,
+            @RequestParam(value = "coastal", required = false) Boolean coastal,
+            @RequestParam(value = "estuarine", required = false) Boolean estuarine,
+            @RequestParam(value = "desmersal", required = false) Boolean desmersal,
+            @RequestParam(value = "groupName", required = false) String groupName
+            ) {
+        return distributionDao.queryDistributionsByRadius(longitude, latitude, radius, min_depth, max_depth,
+                pelagic,coastal,estuarine,desmersal,groupName,
+                geom_idx, lsids, Distribution.EXPERT_DISTRIBUTION);
     }
 
     /*
      * get distribution by id
      */
     @RequestMapping(value = WS_DISTRIBUTION_ID, method = RequestMethod.GET)
-    public @ResponseBody Distribution getDistribution(@PathVariable Long spcode,
-            HttpServletRequest req) {
+    public @ResponseBody Distribution getDistribution(@PathVariable Long spcode) {
         return distributionDao.getDistributionBySpcode(spcode, Distribution.EXPERT_DISTRIBUTION);
     }
 
@@ -127,4 +137,30 @@ public class DistributionsService {
             return null;
         }
     }
+
+    /*
+    * get distribution by id
+    */
+    @RequestMapping(value = WS_DISTRIBUTION_OVERVIEWMAP, method = RequestMethod.GET)
+    public void getDistributionOverviewMap(
+            @PathVariable String lsid,
+            @RequestParam(value = "height", required = false, defaultValue = "504") Integer height,
+            @RequestParam(value = "width", required = false, defaultValue = "512") Integer width,
+            HttpServletResponse response) throws Exception{
+        List<Distribution> distributions =  distributionDao.getDistributionByLSID(new String[]{lsid});
+        if(distributions != null && !distributions.isEmpty()) {
+            Distribution distribution = distributions.get(0);
+            logger.info("Sending redirect to WMS request for: " + lsid);
+            //FIXME remove the URL hardcoding and load from properties file
+            response.sendRedirect("http://spatial-dev.ala.org.au/geoserver/ALA/wms?service=WMS&version=1.1.0&request=GetMap" +
+                    "&layers=ALA:aus1,ALA:copy_distributions&styles=" +
+                    "&bbox=112.911,-54.778,159.113,-9.221" +
+                    "&width="+width+"&height="+height+"&srs=EPSG:4326" +
+                    "&format=image/png" +
+                    "&viewparams=s:" + distribution.getGeom_idx());
+        } else {
+            logger.info("Unrecognised LSID for distribution: " + lsid);
+            response.sendError(404);
+        }
+    }    
 }
