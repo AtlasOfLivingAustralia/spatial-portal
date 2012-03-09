@@ -12,10 +12,12 @@
  *  implied. See the License for the specific language governing
  *  rights and limitations under the License.
  ***************************************************************************/
-
 package org.ala.layers.tabulation;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -24,9 +26,19 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.ala.layers.client.Client;
+import org.ala.layers.dao.FieldDAO;
+import org.ala.layers.dao.LayerDAO;
+import org.ala.layers.dao.LayerIntersectDAO;
+import org.ala.layers.dao.ObjectDAO;
 import org.ala.layers.dao.Records;
+import org.ala.layers.dto.Field;
+import org.ala.layers.dto.Layer;
+import org.ala.layers.dto.Objects;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
 
@@ -35,6 +47,7 @@ import org.ala.layers.intersect.SimpleShapeFile;
  * @author Adam
  */
 public class TabulationGenerator {
+
     static int CONCURRENT_THREADS = 6;
     static String db_url = "jdbc:postgresql://localhost:5432/layersdb";
     //static String db_url = "jdbc:postgresql://ala-devmaps-db.vm.csiro.au:5432/layersdb";
@@ -64,15 +77,22 @@ public class TabulationGenerator {
                 + "\n args[3] = password,"
                 + "\n args[4] = (optional) specify one step to run, "
                 + "'1' pair objects, '3' delete invalid objects, '4' area, '5' occurrences"
-                + "\n args[4] = (optional) specify one step to run, ");
-        if(args.length >= 5) {
+                + "\n args[5] = (required when args[4]=5) path to records file");
+//        args = new String[] {
+//            "6",
+//            "jdbc:postgresql://localhost:5432/layersdb",
+//            "postgres",
+//            "postgres",
+//            "5",
+//            "e:\\_records.csv\\_records.csv"};
+        if (args.length >= 5) {
             CONCURRENT_THREADS = Integer.parseInt(args[0]);
             db_url = args[1];
             db_usr = args[2];
             db_pwd = args[3];
         }
 
-        if(args.length <= 5) {
+        if (args.length < 5) {
             updatePairObjects();
 
 //            updateSingleObjects();
@@ -83,25 +103,35 @@ public class TabulationGenerator {
             while (updateArea() > 0) {
                 System.out.println("time since start= " + (System.currentTimeMillis() - start) + "ms");
             }
-        } else if(args[4].equals("1")) {
+        } else if (args[4].equals("1")) {
             updatePairObjects();
-        } else if(args[4].equals("2")) {
+        } else if (args[4].equals("2")) {
 //            updateSingleObjects();
-        } else if(args[4].equals("3")) {
+        } else if (args[4].equals("3")) {
             deleteInvalidObjects();
-        } else if(args[4].equals("4")) {
+        } else if (args[4].equals("4")) {
             long start = System.currentTimeMillis();
             while (updateArea() > 0) {
                 System.out.println("time since start= " + (System.currentTimeMillis() - start) + "ms");
             }
-        } else if(args[4].equals("5")) {
-            long start = System.currentTimeMillis();
+        } else if (args[4].equals("5")) {
+            //some init
+            FieldDAO fieldDao = Client.getFieldDao();
+            LayerDAO layerDao = Client.getLayerDao();
+            ObjectDAO objectDao = Client.getObjectDao();
+            LayerIntersectDAO layerIntersectDao = Client.getLayerIntersectDao();
+
+            //test fieldDao
+            System.out.println("TEST: " + fieldDao.getFields());
+            System.out.println("RECORDS FILE: " + args[5]);
+
             File f = new File(args[5]);
             if (f.exists()) {
                 Records records = new Records(f.getAbsolutePath());
-                while (updateOccurrencesSpecies(records) > 0) {
-                    System.out.println("time since start= " + (System.currentTimeMillis() - start) + "ms");
-                }
+//                while (updateOccurrencesSpecies(records) > 0) {
+//                    System.out.println("time since start= " + (System.currentTimeMillis() - start) + "ms");
+//                }
+                updateOccurrencesSpecies2(records, CONCURRENT_THREADS);
             } else {
                 System.out.println("Please provide a valid path to the species occurrence file");
             }
@@ -154,7 +184,7 @@ public class TabulationGenerator {
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            if(conn != null) {
+            if (conn != null) {
                 try {
                     conn.close();
                 } catch (Exception e) {
@@ -220,14 +250,13 @@ public class TabulationGenerator {
 //            }
 //        }
 //    }
-
     private static int updateArea() {
         Connection conn = null;
         try {
             conn = getConnection();
             String sql = "SELECT pid1, pid2, ST_AsText(the_geom) as wkt FROM tabulation WHERE pid1 is not null AND area is null "
                     + " limit 100";
-            if(conn == null) {
+            if (conn == null) {
                 System.out.println("connection is null");
             } else {
                 System.out.println("connection is not null");
@@ -270,7 +299,7 @@ public class TabulationGenerator {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if(conn != null) {
+            if (conn != null) {
                 try {
                     conn.close();
                 } catch (Exception e) {
@@ -287,14 +316,14 @@ public class TabulationGenerator {
             conn = getConnection();
             String sql = "SELECT pid1, pid2, ST_AsText(the_geom) as wkt FROM tabulation WHERE pid1 is not null AND occurrences is null "
                     + " limit 100";
-            if(conn == null) {
+            if (conn == null) {
                 System.out.println("connection is null");
             } else {
                 System.out.println("connection is not null");
             }
             Statement s1 = conn.createStatement();
             ResultSet rs1 = s1.executeQuery(sql);
-            
+
             LinkedBlockingQueue<String[]> data = new LinkedBlockingQueue<String[]>();
             while (rs1.next()) {
                 data.put(new String[]{rs1.getString("pid1"), rs1.getString("pid2"), rs1.getString("wkt")});
@@ -309,12 +338,12 @@ public class TabulationGenerator {
             }
 
             CountDownLatch cdl = new CountDownLatch(data.size());
-            
-            
+
+
 
             OccurrencesSpeciesThread[] threads = new OccurrencesSpeciesThread[CONCURRENT_THREADS];
             for (int j = 0; j < CONCURRENT_THREADS; j++) {
-                
+
                 threads[j] = new OccurrencesSpeciesThread(data, cdl, getConnection().createStatement(), records);
                 threads[j].start();
             }
@@ -333,7 +362,7 @@ public class TabulationGenerator {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if(conn != null) {
+            if (conn != null) {
                 try {
                     conn.close();
                 } catch (Exception e) {
@@ -343,7 +372,189 @@ public class TabulationGenerator {
         }
         return 0;
     }
-    
+
+    private static int updateOccurrencesSpecies2(Records records, int threadCount) {
+        FieldDAO fieldDao = Client.getFieldDao();
+        LayerDAO layerDao = Client.getLayerDao();
+        ObjectDAO objectDao = Client.getObjectDao();
+        LayerIntersectDAO layerIntersectDao = Client.getLayerIntersectDao();
+
+        //reduce points
+        HashSet<String> uniquePoints = new HashSet<String>();
+        for (int i = 0; i < records.getRecordsSize(); i++) {
+            uniquePoints.add(records.getLongitude(i) + " " + records.getLatitude(i));
+        }
+        ArrayList<String> pts = new ArrayList<String>(uniquePoints);
+        java.util.Collections.sort(pts);
+        uniquePoints = null;
+        double[][] points = new double[pts.size()][2];
+        for (int i = 0; i < points.length; i++) {
+            String[] p = pts.get(i).split(" ");
+            points[i][0] = Double.NaN;
+            points[i][1] = Double.NaN;
+            try {
+                points[i][0] = Double.parseDouble(p[0]);
+                points[i][1] = Double.parseDouble(p[1]);
+            } catch (Exception e) {
+            }
+        }
+
+        int[] pointIdx = new int[records.getRecordsSize()];
+        for (int i = 0; i < records.getRecordsSize(); i++) {
+            pointIdx[i] = java.util.Collections.binarySearch(pts, records.getLongitude(i) + " " + records.getLatitude(i));
+        }
+
+        ArrayList<Field> fields = new ArrayList<Field>();
+        ArrayList<File> files = new ArrayList<File>();
+
+        //perform sampling, only for layers with a shape file requiring an intersection
+        for (Field f : fieldDao.getFields()) {
+            if (f.isIntersect()) {
+                try {
+                    String fieldName = f.getSid();
+                    Layer l = layerDao.getLayerById(Integer.valueOf(f.getSpid()));
+                    String filename = layerIntersectDao.getConfig().getLayerFilesPath() + File.separator + l.getPath_orig();
+
+                    System.out.println(filename);
+
+                    SimpleShapeFile ssf = null;
+                    if (layerIntersectDao.getConfig().getShapeFileCache() != null) {
+                        ssf = layerIntersectDao.getConfig().getShapeFileCache().get(filename);
+                    }
+                    if (ssf == null) {
+                        ssf = new SimpleShapeFile(filename, fieldName);
+                    }
+
+                    String[] catagories;
+                    int column_idx = ssf.getColumnIdx(fieldName);
+                    catagories = ssf.getColumnLookup(column_idx);
+                    int[] values = ssf.intersect(points, catagories, column_idx, threadCount);
+
+                    //catagories to pid
+                    List<Objects> objects = objectDao.getObjectsById(f.getId());
+                    int[] catToPid = new int[catagories.length];
+                    for (int j = 0; j < objects.size(); j++) {
+                        for (int i = 0; i < catagories.length; i++) {
+                            if ((catagories[i] == null || objects.get(j).getId() == null)
+                                    && catagories[i] == objects.get(j).getId()) {
+                                catToPid[i] = j;
+                                break;
+                            } else if (catagories[i] != null && objects.get(j).getId() != null
+                                    && catagories[i].compareTo(objects.get(j).getId()) == 0) {
+                                catToPid[i] = j;
+                                break;
+                            }
+                        }
+                    }
+
+                    //export pids in points order
+                    FileWriter fw = null;
+                    try {
+                        File tmp = File.createTempFile(f.getId(), "tabulation_generator");
+                        System.out.println("**** tmp file **** > " + tmp.getPath());
+                        fields.add(f);
+                        files.add(tmp);
+                        fw = new FileWriter(tmp);
+                        if (values != null) {
+                            for (int i = 0; i < values.length; i++) {
+                                if (i > 0) {
+                                    fw.append("\n");
+                                }
+                                if (values[i] >= 0) {
+                                    fw.append(objects.get(catToPid[values[i]]).getPid());
+                                } else {
+                                    fw.append("n/a");
+                                }
+                            }
+                        }
+                        System.out.println("**** OK ***** > " + l.getPath_orig());
+                    } catch (Exception e) {
+                        System.out.println("problem with sampling: " + l.getPath_orig());
+                        e.printStackTrace();
+                    } finally {
+                        if (fw != null) {
+                            try {
+                                fw.close();
+                            } catch (Exception e) {
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("problem with sampling: " + f.getId());
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        //evaluate and write
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            Statement statement = conn.createStatement();
+
+            //operate on each pid pair
+            for (int i = 0; i < fields.size(); i++) {
+                //load file for i
+                String[] s1 = loadFile(files.get(i), pts.size());
+
+                for (int j = i + 1; j < fields.size(); j++) {
+                    //load file for j
+                    String[] s2 = loadFile(files.get(j), pts.size());
+
+                    //compare
+                    ArrayList<String> sqlUpdates = compare(records, pointIdx, s1, s2);
+
+                    //batch
+                    StringBuilder sb = new StringBuilder();
+                    for (String s : sqlUpdates) {
+                        sb.append(s).append(";\n");
+                    }
+
+                    //commit
+                    statement.execute(sb.toString());
+                    System.out.println(sb.toString());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        try {
+            for (int i = 0; i < files.size(); i++) {
+                System.out.println("FILE: " + files.get(i).getPath());
+                files.get(i).delete();
+            }
+        } catch (Exception e) {
+        }
+        return 0;
+    }
+
+    static String[] loadFile(File f, int size) {
+        String[] s = new String[size];
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(f));
+            String line;
+            int i = 0;
+            while ((line = br.readLine()) != null) {
+                s[i] = line;
+                i++;
+            }
+            br.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return s;
+    }
+
     private static void deleteInvalidObjects() {
         Connection conn = null;
         try {
@@ -353,7 +564,7 @@ public class TabulationGenerator {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if(conn != null) {
+            if (conn != null) {
                 try {
                     conn.close();
                 } catch (Exception e) {
@@ -362,8 +573,45 @@ public class TabulationGenerator {
             }
         }
     }
-    
-    
+
+    private static ArrayList<String> compare(Records records, int[] pointIdx, String[] s1, String[] s2) {
+        ArrayList<String> sqlUpdates = new ArrayList<String>();
+        BitSet bitset;
+        Integer count;
+        String key;
+        HashMap<String, BitSet> species = new HashMap<String, BitSet>();
+        HashMap<String, Integer> occurrences = new HashMap<String, Integer>();
+
+        for (int i = 0; i < pointIdx.length; i++) {
+            key = s1[pointIdx[i]] + " " + s2[pointIdx[i]];
+
+            bitset = species.get(key);
+            if (bitset == null) {
+                bitset = new BitSet();
+            }
+            bitset.set(records.getSpeciesNumber(i));
+            species.put(key, bitset);
+
+            count = occurrences.get(key);
+            if (count == null) {
+                count = 0;
+            }
+            count = count + 1;
+            occurrences.put(key, count);
+        }
+
+        //produce sql update statements
+        for (String k : species.keySet()) {
+            String[] pids = k.split(" ");
+            sqlUpdates.add("UPDATE tabulation SET "
+                    + "species = " + species.get(k).cardinality() + ", "
+                    + "occurrences = " + occurrences.get(k)
+                    + " WHERE (pid1='" + pids[0] + "' AND pid2='" + pids[1] + "') "
+                    + "OR (pid1='" + pids[1] + "' AND pid2='" + pids[0] + "')");
+        }
+
+        return sqlUpdates;
+    }
 }
 
 class DistributionThread extends Thread {
@@ -478,44 +726,45 @@ class AreaThread extends Thread {
 /*
  * class OccurrencesSpeciesThread extends Thread {
 
-    Statement s;
-    LinkedBlockingQueue<String[]> lbq;
-    CountDownLatch cdl;
+Statement s;
+LinkedBlockingQueue<String[]> lbq;
+CountDownLatch cdl;
 
-    public OccurrencesSpeciesThread(LinkedBlockingQueue<String[]> lbq, CountDownLatch cdl, Statement s) {
-        this.s = s;
-        this.cdl = cdl;
-        this.lbq = lbq;
-    }
-
-    @Override
-    public void run() {
-        try {
-            while (true) {
-
-                try {
-                    String[] data = lbq.take();
-                    Records records = new Records("/Users/fan03c/biochache_records/biochache_records.csv", data[2]);
-                    int occurrences = records.getRecordsSize();
-                    int species = records.getSpeciesSize();
-
-                    String sqlUpdate = "UPDATE tabulation SET occurrences = " + occurrences + ", species = " + species + " WHERE pid1='" + data[0] + "' AND pid2='" + data[1] + "';";
-
-                    int update = s.executeUpdate(sqlUpdate);
-                    
-                } catch (InterruptedException e) {
-                    break;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                cdl.countDown();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+public OccurrencesSpeciesThread(LinkedBlockingQueue<String[]> lbq, CountDownLatch cdl, Statement s) {
+this.s = s;
+this.cdl = cdl;
+this.lbq = lbq;
 }
-*/
+
+@Override
+public void run() {
+try {
+while (true) {
+
+try {
+String[] data = lbq.take();
+Records records = new Records("/Users/fan03c/biochache_records/biochache_records.csv", data[2]);
+int occurrences = records.getRecordsSize();
+int species = records.getSpeciesSize();
+
+String sqlUpdate = "UPDATE tabulation SET occurrences = " + occurrences + ", species = " + species + " WHERE pid1='" + data[0] + "' AND pid2='" + data[1] + "';";
+
+int update = s.executeUpdate(sqlUpdate);
+
+} catch (InterruptedException e) {
+break;
+} catch (Exception e) {
+e.printStackTrace();
+}
+cdl.countDown();
+}
+} catch (Exception e) {
+e.printStackTrace();
+}
+}
+}
+ */
+
 class OccurrencesSpeciesThread extends Thread {
 
     Statement s;
@@ -537,40 +786,40 @@ class OccurrencesSpeciesThread extends Thread {
 
                 try {
                     String[] data = lbq.take();
-                    
+
                     SimpleRegion areaWorking = SimpleShapeFile.parseWKT(data[2]);
-                    int recordsLength = r.getRecordsSize();                    
+                    int recordsLength = r.getRecordsSize();
                     int occurrences = 0;
-                    
+
                     /*ArrayList<String> speciesName = new ArrayList<String>();
                     for (int i = 0;i < recordsLength;i++){
-                        double longitude = r.getLongitude(i);
-                        double latitude = r.getLatitude(i);
-                        if (areaWorking.isWithin(longitude, latitude)){
-                            occurrences++;
-                            if (speciesName.contains(r.getSpecies(i))==false){
-                                speciesName.add(r.getSpecies(i));
-                            }                            
-                        }
+                    double longitude = r.getLongitude(i);
+                    double latitude = r.getLatitude(i);
+                    if (areaWorking.isWithin(longitude, latitude)){
+                    occurrences++;
+                    if (speciesName.contains(r.getSpecies(i))==false){
+                    speciesName.add(r.getSpecies(i));
+                    }
+                    }
                     }
                     int species = speciesName.size();
-                    * 
-                    */
+                     *
+                     */
                     BitSet speciesSet = new BitSet(r.getSpeciesSize());
-                    for (int i = 0;i < recordsLength;i++){
+                    for (int i = 0; i < recordsLength; i++) {
                         double longitude = r.getLongitude(i);
                         double latitude = r.getLatitude(i);
-                        if (areaWorking.isWithin(longitude, latitude)){
+                        if (areaWorking.isWithin(longitude, latitude)) {
                             occurrences++;
-                            speciesSet.set(r.getSpeciesNumber(i));                       
+                            speciesSet.set(r.getSpeciesNumber(i));
                         }
                     }
                     int species = speciesSet.cardinality();
-                                        
+
                     String sqlUpdate = "UPDATE tabulation SET occurrences = " + occurrences + ", species = " + species + " WHERE pid1='" + data[0] + "' AND pid2='" + data[1] + "';";
 
                     int update = s.executeUpdate(sqlUpdate);
-                    
+
                 } catch (InterruptedException e) {
                     break;
                 } catch (Exception e) {

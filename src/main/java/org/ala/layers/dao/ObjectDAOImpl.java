@@ -24,7 +24,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,7 +39,6 @@ import org.ala.layers.dto.GridClass;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.dto.Objects;
 import org.ala.layers.intersect.Grid;
-import org.ala.layers.tabulation.TabulationUtil;
 import org.apache.log4j.Logger;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -56,6 +58,13 @@ import org.springframework.stereotype.Service;
 @Service("objectDao")
 public class ObjectDAOImpl implements ObjectDAO {
 
+    //sld substitution strings
+    private static final String SUB_LAYERNAME = "*layername*";
+    private static final String SUB_COLOUR = "0xff0000"; //"*colour*";
+    private static final String SUB_MIN_MINUS_ONE = "*min_minus_one*";
+    private static final String SUB_MIN = "*min*";
+    private static final String SUB_MAX = "*max*";
+    private static final String SUB_MAX_PLUS_ONE = "*max_plus_one*";
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(ObjectDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
@@ -65,6 +74,47 @@ public class ObjectDAOImpl implements ObjectDAO {
     @Resource(name = "dataSource")
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
+    }
+    static final String objectWmsUrl = "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:<pid>";
+    static final String gridPolygonWmsUrl = "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:" + SUB_LAYERNAME + "&format=image/png&sld_body=";
+    static final String gridPolygonSld;
+    static final String gridClassSld;
+
+    static {
+        String polygonSld =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\">"
+                + "<NamedLayer><Name>ALA:" + SUB_LAYERNAME + "</Name>"
+                + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
+                + "<ColorMap>"
+                + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"0\" quantity=\"" + SUB_MIN_MINUS_ONE + "\"/>"
+                + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"1\" quantity=\"" + SUB_MIN + "\"/>"
+                + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"0\" quantity=\"" + SUB_MAX_PLUS_ONE + "\"/>"
+                + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
+
+        String classSld =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\">"
+                + "<NamedLayer><Name>ALA:" + SUB_LAYERNAME + "</Name>"
+                + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
+                + "<ColorMap>"
+                + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"0\" quantity=\"" + SUB_MIN_MINUS_ONE + "\"/>"
+                + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"1\" quantity=\"" + SUB_MIN + "\"/>"
+                + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"1\" quantity=\"" + SUB_MAX + "\"/>"
+                + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"0\" quantity=\"" + SUB_MAX_PLUS_ONE + "\"/>"
+                + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
+        try {
+            polygonSld = URLEncoder.encode(polygonSld, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            logger.fatal("Invalid polygon sld string defined in ObjectDAOImpl.");
+        }
+        try {
+            classSld = URLEncoder.encode(classSld, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            logger.fatal("Invalid class sld string defined in ObjectDAOImpl.");
+        }
+
+        gridPolygonSld = polygonSld;
+        gridClassSld = classSld;
+
     }
 
     @Override
@@ -83,6 +133,8 @@ public class ObjectDAOImpl implements ObjectDAO {
         String sql = "select o.pid as pid, o.id as id, o.name as name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from objects o, fields f where o.fid = ? and o.fid = f.id";
         List<Objects> objects = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), id);
 
+        updateObjectWms(objects);
+
         //get grid classes
         if (objects == null || objects.isEmpty()) {
             objects = new ArrayList<Objects>();
@@ -98,6 +150,7 @@ public class ObjectDAOImpl implements ObjectDAO {
                         o.setFieldname(f.getFieldName());
                         o.setBbox(c.getValue().getBbox());
                         o.setArea_km(c.getValue().getArea_km());
+                        o.setWmsurl(getGridClassWms(f.getLayerName(), c.getValue()));
                         objects.add(o);
                     } else {                                //polygon pid
                         try {
@@ -144,6 +197,9 @@ public class ObjectDAOImpl implements ObjectDAO {
                                         + +maxx + " " + miny + ","
                                         + +minx + " " + miny + "))");
                                 o.setArea_km(1.0 * area);
+
+                                o.setWmsurl(getGridPolygonWms(f.getLayerName(), n));
+
                                 objects.add(o);
                             }
                             raf.close();
@@ -162,151 +218,21 @@ public class ObjectDAOImpl implements ObjectDAO {
     @Override
     public String getObjectsGeometryById(String id, String geomtype) {
         logger.info("Getting object info for id = " + id + " and geometry as " + geomtype);
-        String sql = "";
-        if ("kml".equals(geomtype)) {
-            sql = "SELECT ST_AsKml(the_geom) as geometry FROM objects WHERE pid=?;";
-        } else if ("wkt".equals(geomtype)) {
-            sql = "SELECT ST_AsText(the_geom) as geometry FROM objects WHERE pid=?;";
-        } else if ("geojson".equals(geomtype)) {
-            sql = "SELECT ST_AsGeoJSON(the_geom) as geometry FROM objects WHERE pid=?;";
-        }
 
-        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), id);
-
-        String geometry = null;
-        if (l.size() > 0) {
-            geometry = l.get(0).getGeometry();
-        }
-
-        //get grid classes
-        if (geometry == null && id.length() > 0) {
-            //grid class pids are, 'layerPid:gridClassNumber'
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            streamObjectsGeometryById(baos, id, geomtype);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
             try {
-                String[] s = id.split(":");
-                if (s.length >= 2) {
-                    int n = Integer.parseInt(s[1]);
-                    IntersectionFile f = layerIntersectDao.getConfig().getIntersectionFile(s[0]);
-                    if (f != null && f.getClasses() != null) {
-                        GridClass gc = f.getClasses().get(n);
-                        if (gc != null
-                                && ("kml".equals(geomtype)
-                                || "wkt".equals(geomtype)
-                                || "geojson".equals(geomtype))) {
-                            if (f.getType().equals("a") || s.length == 2) {           //class
-                                File file = new File(f.getFilePath() + File.separator + s[1] + "." + geomtype + ".zip");
-                                if (file.exists()) {
-                                    ZipInputStream zis = new ZipInputStream(new FileInputStream(file));
-                                    zis.getNextEntry();
-                                    BufferedReader br = new BufferedReader(new InputStreamReader(zis));
-                                    String line;
-                                    StringBuilder sb = new StringBuilder();
-                                    while ((line = br.readLine()) != null) {
-                                        if (sb.length() > 0) {
-                                            sb.append("\n");
-                                        }
-                                        sb.append(line);
-                                    }
-                                    br.close();
-                                    zis.close();
-                                    geometry = sb.toString();
-                                }
-                            } else {                                //polygon
-                                BufferedReader br = null;
-                                RandomAccessFile raf = null;
-                                try {
-                                    String[] cells = null;
-
-//                                    br = new BufferedReader(new FileReader(f.getFilePath() + File.separator + s[1] + ".wkt.index"));
-//                                    String line;
-//                                    while((line = br.readLine()) != null) {
-//                                        if(line.length() > 0) {
-//                                            cells = line.split(",");
-//                                            if(cells[0].equals(s[2])) {
-//                                                break;
-//                                            }
-//                                        }
-//                                    }
-//                                    br.close();
-
-                                    raf = new RandomAccessFile(f.getFilePath() + File.separator + s[1] + ".wkt.index.dat", "r");
-                                    long len = raf.length() / (4 + 4 + 4 * 4 + 4); //group number, character offset, minx, miny, maxx, maxy, area sq km
-                                    int s2 = Integer.parseInt(s[2]);
-                                    for (int i = 0; i < len; i++) {
-                                        int gn = raf.readInt();
-                                        int charoffset = raf.readInt();
-                                        /*float minx =*/ raf.readFloat();
-                                        /*float miny =*/ raf.readFloat();
-                                        /*float maxx =*/ raf.readFloat();
-                                        /*float maxy =*/ raf.readFloat();
-                                        /*float area =*/ raf.readFloat();
-                                        if (gn == s2) {
-                                            cells = new String[]{String.valueOf(gn), String.valueOf(charoffset)};
-                                        }
-                                    }
-                                    raf.close();
-
-                                    if (cells != null) {
-                                        //get polygon wkt string
-                                        File file = new File(f.getFilePath() + File.separator + s[1] + ".wkt.zip");
-                                        ZipInputStream zis = new ZipInputStream(new FileInputStream(file));
-                                        zis.getNextEntry();
-                                        InputStreamReader isr = new InputStreamReader(zis);
-                                        isr.skip(Long.parseLong(cells[1]));
-                                        char[] buffer = new char[1024];
-                                        int size;
-                                        StringBuilder sb = new StringBuilder();
-                                        sb.append("POLYGON");
-                                        int end = -1;
-                                        while (end < 0 && (size = isr.read(buffer)) > 0) {
-                                            sb.append(buffer, 0, size);
-                                            end = sb.toString().indexOf("))");
-                                        }
-                                        end += 2;
-
-                                        String wkt = sb.toString().substring(0, end);
-
-                                        if (geomtype.equals("wkt")) {
-                                            geometry = wkt;
-                                        } else {
-                                            WKTReader r = new WKTReader();
-                                            Geometry g = r.read(wkt);
-
-                                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                            if (geomtype.equals("kml")) {
-                                                Encoder encoder = new Encoder(new KMLConfiguration());
-                                                encoder.setIndenting(true);
-                                                encoder.encode(geometry, KML.Geometry, baos);
-                                            } else if (geomtype.equals("geojson")) {
-                                                FeatureJSON fjson = new FeatureJSON();
-                                                final SimpleFeatureType TYPE = DataUtilities.createType("class", "the_geom:MultiPolygon,name:String");
-                                                SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(TYPE);
-                                                featureBuilder.add(geometry);
-                                                featureBuilder.add(gc.getName());
-                                                fjson.writeFeature(featureBuilder.buildFeature(null), baos);
-                                            }
-                                            return new String(baos.toByteArray());
-                                        }
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                } finally {
-                                    if (br != null) {
-                                        br.close();
-                                    }
-                                    if (raf != null) {
-                                        raf.close();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
+                baos.close();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        return geometry;
+        return new String(baos.toByteArray());
     }
 
     @Override
@@ -322,7 +248,7 @@ public class ObjectDAOImpl implements ObjectDAO {
         }
 
         List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), id);
-        
+
         if (l.size() > 0) {
             os.write(l.get(0).getGeometry().getBytes());
         } else {
@@ -342,17 +268,17 @@ public class ObjectDAOImpl implements ObjectDAO {
                                     || "geojson".equals(geomtype))) {
                                 //TODO: enable for type 'a' after implementation of fields table defaultLayer field
                                 /*if (f.getType().equals("a") || s.length == 2) {           //class
-                                    File file = new File(f.getFilePath() + File.separator + s[1] + "." + geomtype + ".zip");
-                                    if (file.exists()) {
-                                        ZipInputStream zis = new ZipInputStream(new FileInputStream(file));
-                                        zis.getNextEntry();
-                                        byte[] buffer = new byte[1024];
-                                        int size;
-                                        while ((size = zis.read(buffer)) > 0) {
-                                            os.write(buffer, 0, size);
-                                        }
-                                        zis.close();
-                                    }
+                                File file = new File(f.getFilePath() + File.separator + s[1] + "." + geomtype + ".zip");
+                                if (file.exists()) {
+                                ZipInputStream zis = new ZipInputStream(new FileInputStream(file));
+                                zis.getNextEntry();
+                                byte[] buffer = new byte[1024];
+                                int size;
+                                while ((size = zis.read(buffer)) > 0) {
+                                os.write(buffer, 0, size);
+                                }
+                                zis.close();
+                                }
                                 } else*/ {                                //polygon
                                     BufferedReader br = null;
                                     RandomAccessFile raf = null;
@@ -370,23 +296,9 @@ public class ObjectDAOImpl implements ObjectDAO {
 //                                        }
 //                                    }
 
-                                        raf = new RandomAccessFile(f.getFilePath() + File.separator + s[1] + ".wkt.index.dat", "r");
-                                        long len = raf.length() / (4 + 4 + 4 * 4 + 4); //group number, character offset, minx, miny, maxx, maxy, area sq km
-                                        int s2 = Integer.parseInt(s[2]);
-                                        for (int i = 0; i < len; i++) {
-                                            int gn = raf.readInt();
-                                            int charoffset = raf.readInt();
-                                            /*float minx =*/ raf.readFloat();
-                                            /*float miny =*/ raf.readFloat();
-                                            /*float maxx =*/ raf.readFloat();
-                                            /*float maxy =*/ raf.readFloat();
-                                            /*float area =*/ raf.readFloat();
-                                            if (gn == s2) {
-                                                cells = new String[]{String.valueOf(gn), String.valueOf(charoffset)};
-                                            }
-                                        }
-                                        raf.close();
+                                        HashMap<String, Object> map = getGridIndexEntry(f.getFilePath() + File.separator + s[1], s[2]);
 
+                                        cells = new String[]{s[2], String.valueOf(map.get("charoffset"))};
                                         if (cells != null) {
                                             //get polygon wkt string
                                             File file = new File(f.getFilePath() + File.separator + s[1] + ".wkt.zip");
@@ -474,16 +386,22 @@ public class ObjectDAOImpl implements ObjectDAO {
                             o.setFid(f.getFieldId());
                             o.setFieldname(f.getFieldName());
 
-                            if (f.getType().equals("a") || s.length == 2) {
+                            if (/*f.getType().equals("a") ||*/s.length == 2) {
                                 o.setBbox(gc.getBbox());
                                 o.setArea_km(gc.getArea_km());
+                                o.setWmsurl(getGridClassWms(f.getLayerName(), gc));
                             } else {
-                                String wkt = getObjectsGeometryById(pid, "wkt");
-                                if (wkt != null) {
-                                    WKTReader r = new WKTReader();
-                                    o.setBbox(r.read(wkt).getEnvelope().toText().replace(" (", "(").replace(", ", ","));
+                                HashMap<String, Object> map = getGridIndexEntry(f.getFilePath() + File.separator + s[1], s[2]);
+                                if (!map.isEmpty()) {
+                                    o.setBbox("POLYGON(" + map.get("minx") + " " + map.get("miny") + ","
+                                            + map.get("minx") + " " + map.get("maxy") + ","
+                                            + map.get("maxx") + " " + map.get("maxy") + ","
+                                            + map.get("maxx") + " " + map.get("miny") + ","
+                                            + map.get("minx") + " " + map.get("miny") + ")");
 
-                                    o.setArea_km(TabulationUtil.calculateArea(wkt) / 1000.0 / 1000.0);
+                                    o.setArea_km(((Float) map.get("area")).doubleValue());
+
+                                    o.setWmsurl(getGridPolygonWms(f.getLayerName(), Integer.parseInt(s[2])));
                                 }
                             }
 
@@ -563,5 +481,60 @@ public class ObjectDAOImpl implements ObjectDAO {
         logger.info("Getting object info for fid = " + fid + " and name: (" + name + ") ");
         String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km, ST_AsText(the_geom) as geometry from objects o, fields f where o.fid = ? and o.name like ? and o.fid = f.id";
         return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[]{fid, name});
+    }
+
+    private String getGridPolygonWms(String layername, int n) {
+        return layerIntersectDao.getConfig().getGeoserverUrl() + gridPolygonWmsUrl.replace(SUB_LAYERNAME, layername)
+                + formatSld(gridPolygonSld, layername, String.valueOf(n - 1), String.valueOf(n), String.valueOf(n), String.valueOf(n + 1));
+    }
+
+    private String getGridClassWms(String layername, GridClass gc) {
+        return layerIntersectDao.getConfig().getGeoserverUrl() + gridPolygonWmsUrl.replace(SUB_LAYERNAME, layername)
+                + formatSld(gridClassSld, layername, String.valueOf(gc.getMinShapeIdx() - 1), String.valueOf(gc.getMinShapeIdx()), String.valueOf(gc.getMaxShapeIdx()), String.valueOf(gc.getMaxShapeIdx() + 1));
+    }
+
+    private String formatSld(String sld, String layername, String min_minus_one, String min, String max, String max_plus_one) {
+        return sld.replace(SUB_LAYERNAME, layername).replace(SUB_MIN_MINUS_ONE, min_minus_one).replace(SUB_MIN, min).replace(SUB_MAX, max).replace(SUB_MAX_PLUS_ONE, max_plus_one);
+    }
+
+    private void updateObjectWms(List<Objects> objects) {
+        for (Objects o : objects) {
+            o.setWmsurl(layerIntersectDao.getConfig().getGeoserverUrl() + objectWmsUrl + o.getPid());
+        }
+    }
+
+    private HashMap<String, Object> getGridIndexEntry(String path, String objectId) {
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        RandomAccessFile raf = null;
+        try {
+            raf = new RandomAccessFile(path + ".wkt.index.dat", "r");
+
+            int s2 = Integer.parseInt(objectId);
+
+            //it is all in order, seek to the record
+            int recordSize = 4 * 7; //2 int + 5 float
+            int start = raf.readInt();
+            raf.seek(recordSize * (s2 - start));
+
+            map.put("gn", raf.readInt());
+            map.put("charoffset", raf.readInt());
+            map.put("minx", raf.readFloat());
+            map.put("miny", raf.readFloat());
+            map.put("maxx", raf.readFloat());
+            map.put("maxy", raf.readFloat());
+            map.put("area", raf.readFloat());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (raf != null) {
+                    raf.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return map;
     }
 }

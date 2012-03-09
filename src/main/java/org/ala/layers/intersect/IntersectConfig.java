@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.logging.Level;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.layers.dao.FieldDAO;
@@ -37,8 +36,6 @@ import org.ala.layers.grid.GridClassBuilder;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
@@ -52,6 +49,7 @@ public class IntersectConfig {
     private static final Logger logger = Logger.getLogger(IntersectConfig.class);
     static final String ALASPATIAL_OUTPUT_PATH = "ALASPATIAL_OUTPUT_PATH";
     static final String LAYER_FILES_PATH = "LAYER_FILES_PATH";
+    static final String ANALYSIS_LAYER_FILES_PATH = "ANALYSIS_LAYER_FILES_PATH";
     static final String LAYER_INDEX_URL = "LAYER_INDEX_URL";
     static final String BATCH_THREAD_COUNT = "BATCH_THREAD_COUNT";
     static final String CONFIG_RELOAD_WAIT = "CONFIG_RELOAD_WAIT";
@@ -60,11 +58,15 @@ public class IntersectConfig {
     static final String GRID_CACHE_PATH = "GRID_CACHE_PATH";
     static final String GRID_CACHE_READER_COUNT = "GRID_CACHE_READER_COUNT";
     static final String LOCAL_SAMPLING = "LOCAL_SAMPLING";
+    static final String GEOSERVER_URL = "GEOSERVER_URL";
+    static final String GDAL_PATH = "GDAL_PATH";
+    static final String ANALYSIS_RESOLUTIONS = "ANALYSIS_RESOLUTIONS";
     static final String LAYER_PROPERTIES = "layer.properties";
     static ObjectMapper mapper = new ObjectMapper();
     private FieldDAO fieldDao;
     private LayerDAO layerDao;
     String layerFilesPath;
+    String analysisLayerFilesPath;
     String alaspatialOutputPath;
     String layerIndexUrl;
     int batchThreadCount;
@@ -78,6 +80,9 @@ public class IntersectConfig {
     int gridCacheReaderCount;
     HashMap<String, HashMap<Integer, GridClass>> classGrids;
     boolean localSampling;
+    String geoserverUrl;
+    String gdalPath;
+    List<Double> analysisResolutions;
 
     public IntersectConfig(FieldDAO fieldDao, LayerDAO layerDao) {
         this.fieldDao = fieldDao;
@@ -103,6 +108,7 @@ public class IntersectConfig {
         }
 
         layerFilesPath = getProperty(LAYER_FILES_PATH, properties, null);
+        analysisLayerFilesPath = getProperty(ANALYSIS_LAYER_FILES_PATH, properties, null);
         alaspatialOutputPath = getProperty(ALASPATIAL_OUTPUT_PATH, properties, null);
         layerIndexUrl = getProperty(LAYER_INDEX_URL, properties, null);
         batchThreadCount = (int) getPositiveLongProperty(BATCH_THREAD_COUNT, properties, 1);
@@ -112,6 +118,9 @@ public class IntersectConfig {
         gridCachePath = getProperty(GRID_CACHE_PATH, properties, null);
         gridCacheReaderCount = (int) getPositiveLongProperty(GRID_CACHE_READER_COUNT, properties, 10);
         localSampling = getProperty(LOCAL_SAMPLING, properties, "true").toLowerCase().equals("true");
+        geoserverUrl = getProperty(GEOSERVER_URL, properties, null);
+        gdalPath = getProperty(GDAL_PATH, properties, null);
+        analysisResolutions = getDoublesFrom(getProperty(ANALYSIS_RESOLUTIONS, properties, "0.5"));
 
         try {
             updateIntersectionFiles();
@@ -216,9 +225,9 @@ public class IntersectConfig {
                 JSONObject jo = fields.getJSONObject(i);
                 String spid = jo.getString("spid");
                 if (layerPathOrig.get(spid) == null) {
-                        logger.error("cannot find layer with id '" + spid + "'");
-                        continue;
-                    }
+                    logger.error("cannot find layer with id '" + spid + "'");
+                    continue;
+                }
                 HashMap<Integer, GridClass> gridClasses =
                         getGridClasses(layerFilesPath + layerPathOrig.get(spid), layerType.get(spid));
 
@@ -434,7 +443,7 @@ public class IntersectConfig {
             } else {
                 logger.info("building " + gridClassesFile.getPath());
                 long start = System.currentTimeMillis();
-                classes = GridClassBuilder.buildFromGrid(filePath);                
+                classes = GridClassBuilder.buildFromGrid(filePath);
                 logger.info("finished building " + gridClassesFile.getPath() + " in " + (System.currentTimeMillis() - start) + " ms");
             }
         } else {
@@ -467,5 +476,41 @@ public class IntersectConfig {
             }
         }
         return fields;
+    }
+
+    public String getGeoserverUrl() {
+        return geoserverUrl;
+    }
+
+    public String getAnalysisLayerFilesPath() {
+        return analysisLayerFilesPath;
+    }
+
+    public String getGdalPath() {
+        return gdalPath;
+    }
+
+    public List<Double> getAnalysisResolutions() {
+        return analysisResolutions;
+    }
+
+    private List<Double> getDoublesFrom(String property) {
+        List<Double> l = new ArrayList<Double>();
+        if (property != null) {
+            for (String s : property.split(",")) {
+                try {
+                    Double d = Double.parseDouble(s.trim());
+                    if (d != null && !d.isNaN()) {
+                        l.add(d);
+                    } else {
+                        logger.warn("Cannot parse '" + s + "' to Double");
+                    }
+                } catch (Exception e) {
+                    logger.warn("Cannot parse '" + s + "' to Double", e);
+                }
+            }
+        }
+        java.util.Collections.sort(l);
+        return l;
     }
 }

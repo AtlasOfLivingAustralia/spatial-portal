@@ -12,7 +12,6 @@
  *  implied. See the License for the specific language governing
  *  rights and limitations under the License.
  ***************************************************************************/
-
 package org.ala.layers.dto;
 
 import java.util.Date;
@@ -30,59 +29,44 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  *
  * @author ajay
  */
-
 @Entity
 @Table(name = "fields")
 //@XStreamAlias("field")
-@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_DEFAULT)
 public class Field {
+
     @Id
     @Column(name = "id", insertable = false, updatable = false)
     private String id;
-
     @Column(name = "name")
     private String name;
-
     @Column(name = "desc")
-    private String description;
-
+    private String desc;
     @Column(name = "type")
     private String type;
-
     @Column(name = "spid")
     private String spid;
-
     @Column(name = "sid")
-    private String sourceId;
-
+    private String sid;
     @Column(name = "sname")
     private String sname;
-
     @Column(name = "sdesc")
-    private String sourceDescription;
-
+    private String sdesc;
     @Column(name = "indb")
     private Boolean indb;
-
     @Column(name = "enabled")
     private Boolean enabled;
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "last_update")
     private Date lastUpdated;
-
     @Column(name = "namesearch")
     private Boolean namesearch;
-
     @Column(name = "defaultlayer")
     private Boolean defaultlayer;
-
     @Column(name = "intersect")
     private Boolean intersect;
-
     @Column(name = "layerbranch")
     private Boolean layerbranch;
-
     private List<Objects> objects;
 
     public List<Objects> getObjects() {
@@ -109,12 +93,12 @@ public class Field {
         this.defaultlayer = defaultLayer;
     }
 
-    public String getDescription() {
-        return description;
+    public String getDesc() {
+        return desc;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setDesc(String desc) {
+        this.desc = desc;
     }
 
     public Boolean isEnabled() {
@@ -157,20 +141,20 @@ public class Field {
         this.namesearch = nameSearch;
     }
 
-    public String getSourceDescription() {
-        return sourceDescription;
+    public String getSdesc() {
+        return sdesc;
     }
 
-    public void setSourceDescription(String sourceDescription) {
-        this.sourceDescription = sourceDescription;
+    public void setSdesc(String sdesc) {
+        this.sdesc = sdesc;
     }
 
-    public String getSourceId() {
-        return sourceId;
+    public String getSid() {
+        return sid;
     }
 
-    public void setSourceId(String sourceId) {
-        this.sourceId = sourceId;
+    public void setSid(String sid) {
+        this.sid = sid;
     }
 
     public String getSname() {
@@ -212,5 +196,4 @@ public class Field {
     public void setLayerbranch(Boolean layerbranch) {
         this.layerbranch = layerbranch;
     }
-
 }

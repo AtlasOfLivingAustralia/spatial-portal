@@ -12,7 +12,6 @@
  *  implied. See the License for the specific language governing
  *  rights and limitations under the License.
  ***************************************************************************/
-
 package org.ala.layers.dto;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
@@ -23,11 +22,11 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  *
  * @author ajay
  */
-
 //@XmlRootElement(name="objects")
 //@XStreamAlias("objects")
-@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_DEFAULT)
 public class Objects {
+
     private String id;
     private String pid;
     private String description;
@@ -38,9 +37,9 @@ public class Objects {
     private int name_id;
     private String bbox;
     private Double area_km;
-
     private Double degrees;
     private Double distance;
+    private String wmsurl;
 
     public String getDescription() {
         return description;
@@ -57,11 +56,11 @@ public class Objects {
     public void setFid(String fid) {
         this.fid = fid;
     }
-    
+
     public String getFieldname() {
         return fieldname;
     }
-    
+
     public void setFieldname(String fieldname) {
         this.fieldname = fieldname;
     }
@@ -136,5 +135,13 @@ public class Objects {
 
     public void setDegrees(Double degrees) {
         this.degrees = degrees;
+    }
+
+    public void setWmsurl(String wmsurl) {
+        this.wmsurl = wmsurl;
+    }
+
+    public String getWmsurl() {
+        return wmsurl;
     }
 }

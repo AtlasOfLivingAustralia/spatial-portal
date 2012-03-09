@@ -1,3 +1,17 @@
+/**************************************************************************
+ *  Copyright (C) 2010 Atlas of Living Australia
+ *  All Rights Reserved.
+ *
+ *  The contents of this file are subject to the Mozilla Public
+ *  License Version 1.1 (the "License"); you may not use this file
+ *  except in compliance with the License. You may obtain a copy of
+ *  the License at http://www.mozilla.org/MPL/
+ *
+ *  Software distributed under the License is distributed on an "AS
+ *  IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ *  implied. See the License for the specific language governing
+ *  rights and limitations under the License.
+ ***************************************************************************/
 package org.ala.layers.stats;
 
 import java.sql.Connection;
@@ -16,7 +30,7 @@ import org.ala.layers.tabulation.TabulationUtil;
 public class ObjectsStatsGenerator {
 
     static int CONCURRENT_THREADS = 10;
-    static String db_url = "jdbc:postgresql://localhost:2344/layersdb";
+    static String db_url = "jdbc:postgresql://localhost:5432/layersdb";
     static String db_usr = "postgres";
     static String db_pwd = "postgres";
 
@@ -53,7 +67,7 @@ public class ObjectsStatsGenerator {
         try {
             Statement s = c.createStatement();
             ResultSet rs = s.executeQuery(count_sql);
-             while (rs.next()) {
+            while (rs.next()) {
                 count = rs.getInt("cnt");
             }
         } catch (Exception e) {
@@ -64,7 +78,7 @@ public class ObjectsStatsGenerator {
         System.out.println("Breaking into " + iter + " iterations");
         for (int i = 0; i <= iter; i++) {
             long iterStart = System.currentTimeMillis();
-          //  updateBbox();
+            //  updateBbox();
             updateArea();
             System.out.println("iteration " + i + " completed after " + (System.currentTimeMillis() - iterStart) + "ms");
             System.out.println("total time taken is " + (System.currentTimeMillis() - start) + "ms");
@@ -206,7 +220,7 @@ class AreaThread extends Thread {
         try {
             while (true) {
                 String pid = "";
-                double area = 0;                
+                double area = 0;
                 try {
                     String data = lbq.take();
                     pid = data;
@@ -216,14 +230,14 @@ class AreaThread extends Thread {
                     while (rs.next()) {
                         wkt = rs.getString("wkt");
                     }
-                    
+
                     area = TabulationUtil.calculateArea(wkt) / 1000.0 / 1000.0;
 
                     sql = "UPDATE objects SET area_km = " + area + " WHERE pid='" + pid + "'";
                     int update = s.executeUpdate(sql);
                     System.out.println(pid + " has area " + area + " sq km");
                     rs.close();
-                }catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     break;
                 } catch (Exception e) {
                     System.out.println("ERROR PROCESSING PID " + pid);

@@ -1404,6 +1404,10 @@ class DBFRecord extends Object implements Serializable {
      * TODO: make use of this
      */
     int deletionflag;
+    /**
+     * tmp values
+     */
+    String[] fieldValues;
 
     /**
      * constructs new DBFRecord from bytebuffer and list of fields
@@ -1440,32 +1444,35 @@ class DBFRecord extends Object implements Serializable {
     DBFRecord(ByteBuffer buffer, ArrayList<DBFField> fields, int[] columnIdx) {
         deletionflag = (0xFF & buffer.get());
         record = new String[1];
+        fieldValues = new String[fields.size()];
 
         /* iterate through each record to fill */
         for (int i = 0; i < fields.size(); i++) {
             DBFField f = fields.get(i);
             byte[] data = f.getDataBlock();		//get pre-built byte[]
             buffer.get(data);
-            for (int j = 0; j < columnIdx.length; j++) {
-                if (i == columnIdx[j]) {
-                    if (record[0] == null) {
-                        record[0] = "";
-                    } else if (record[0].length() > 0) {
-                        record[0] += ", ";
-                    }
-                    try {
-                        switch (f.getType()) {
-                            case 'C':			//string
-                                record[0] += (new String(data, "US-ASCII")).trim();
-                                break;
-                            case 'N':			//number as string
-                                record[0] += (new String(data, "US-ASCII")).trim();
-                                break;
-                        }
-                    } catch (Exception e) {
-                    }
+
+            try {
+                switch (f.getType()) {
+                    case 'C':			//string
+                        fieldValues[i] = (new String(data, "US-ASCII")).trim();
+                        break;
+                    case 'N':			//number as string
+                        fieldValues[i] = (new String(data, "US-ASCII")).trim();
+                        break;
                 }
+            } catch (Exception e) {
             }
+        }
+
+        for (int j = 0; j < columnIdx.length; j++) {
+            if (record[0] == null) {
+                record[0] = "";
+            } else if (record[0].length() > 0) {
+                record[0] += ", ";
+            }
+
+            record[0] += fieldValues[columnIdx[j]];
         }
     }
 
