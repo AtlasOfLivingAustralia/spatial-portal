@@ -34,12 +34,12 @@
             <groupId>org.ala.layers</groupId>
             <artifactId>layers-store</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <exclusions>
+            <!--exclusions>
                 <exclusion>
                     <groupId>postgresql</groupId>
                     <artifactId>postgresql</artifactId>
                 </exclusion>
-            </exclusions>
+            </exclusions-->
         </dependency>
         <!-- ALA header and tails -->
         <dependency>
