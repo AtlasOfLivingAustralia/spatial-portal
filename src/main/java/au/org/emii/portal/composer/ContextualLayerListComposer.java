@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.TreeMap;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.ala.spatial.analysis.web.AreaMapPolygon;
 import org.ala.spatial.analysis.web.ContextualLayerSelection;
 import org.ala.spatial.util.CommonData;
 import org.zkoss.zk.ui.Page;
@@ -96,7 +95,9 @@ public class ContextualLayerListComposer extends UtilityComposer {
 //                        stn = new SimpleTreeNode(jo, classNodes);
 //                    }
                     stn = new SimpleTreeNode(jo, empty);
-                    addToMap(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
+                    String c1 = jo.containsKey("classification1") ? jo.getString("classification1"): "";
+                    String c2 = jo.containsKey("classification2") ? jo.getString("classification2"): "";
+                    addToMap(htCat1, htCat2, c1, c2, stn);
                 }
             }
 
@@ -260,7 +261,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                         @Override
                         public void onEvent(Event event) throws Exception {
                             JSONObject jo = JSONObject.fromObject(event.getTarget().getParent().getParent().getAttribute("lyr"));
-                            String s = jo.getString("uid");
+                            String s = jo.getString("id");
                             String metadata = CommonData.satServer + "/layers/" + s;
                             mc.activateLink(metadata, "Metadata", false);
                         }
@@ -357,7 +358,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                                 //Filtered requests don't work on
                                 displaypath = displaypath.replace("gwc/service/", "");
                                 // Messagebox.show(displaypath);
-                                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("id");
                                 initALC();
                                 contextualLayerSelection.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
 
@@ -366,7 +367,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
 //                                        (float) 0.75, metadata);
                             }
 
-//                            mc.updateUserLogMapLayer("env - tree - add", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
+//                            mc.updateUserLogMapLayer("env - tree - add", joLayer.getString("id")+"|"+joLayer.getString("displayname"));
 
                             //close parent if it is 'addlayerwindow'
 //                            try {
@@ -385,11 +386,11 @@ public class ContextualLayerListComposer extends UtilityComposer {
                             Treecell tc = (Treecell) event.getTarget();
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
 
-                            String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
+                            String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("id");
 
                             mc.activateLink(metadata, "Metadata", false);
 
-                            mc.updateUserLogMapLayer("env - tree - info", joLayer.getString("uid") + "|" + joLayer.getString("displayname"));
+                            mc.updateUserLogMapLayer("env - tree - info", joLayer.getString("id") + "|" + joLayer.getString("displayname"));
 
                         }
                     });

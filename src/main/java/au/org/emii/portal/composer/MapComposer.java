@@ -2002,6 +2002,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
                 }
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 

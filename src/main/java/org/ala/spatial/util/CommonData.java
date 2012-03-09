@@ -394,14 +394,14 @@ public class CommonData {
     }
 
     static void initLayerCatagories(ArrayList<ListEntry> listEntries, boolean environmentalOnly) {
-        try {
             JSONArray layerlist = copy_layerlistJSON;
             for (int i = 0; i < layerlist.size(); i++) {
                 JSONObject jo = layerlist.getJSONObject(i);
-                String uid = jo.getString("uid");
+                try {
+                String uid = jo.getString("id");
                 String type = jo.getString("type");
-                String c1 = jo.getString("classification1");
-                String c2 = jo.getString("classification2");
+                String c1 = jo.containsKey("classification1") ? jo.getString("classification1") : "";
+                String c2 = jo.containsKey("classification2") ? jo.getString("classification2") : "";
                 String name = jo.getString("name");
                 String displayname = StringUtils.capitalize(jo.getString("displayname"));
 
@@ -421,10 +421,12 @@ public class CommonData {
                 }
 
                 listEntries.add(new ListEntry(name, displayname, c1, c2, type, 1, -1, -1, uid));
+                 } catch (Exception e) {
+                     System.out.println("failed to init for layer: " + jo);
+                    e.printStackTrace();
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        
 
         java.util.Collections.sort(listEntries, new Comparator<ListEntry>() {
 
@@ -476,14 +478,14 @@ public class CommonData {
                     }
                 }
 
-                //remove if missing
-                if (copy_listEntriesAll.get(i).row_in_distances < 0) {
-                    //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
-                    copy_listEntriesAll.remove(i);
-                    i--;
-                } else {
+//                //remove if missing
+//                if (copy_listEntriesAll.get(i).row_in_distances < 0) {
+//                    //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
+//                    copy_listEntriesAll.remove(i);
+//                    i--;
+//                } else {
                     copy_listEntriesAll.get(i).row_in_list = i;
-                }
+//                }
             }
         } catch (Exception e) {
             copy_layerNamesAll = null;
@@ -498,7 +500,7 @@ public class CommonData {
 
     static void initLayerList() {
         try {
-            String layersListURL = satServer + "/ws/layers/list";
+            String layersListURL = layersServer + "/layers";
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(layersListURL);
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");

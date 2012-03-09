@@ -226,6 +226,10 @@ public class EnvironmentalList extends Listbox {
     }
 
     private float getDistance(int row, int row0) {
+        if(row < 0 || row0 < 0) {
+            return 2;   //> maximum distance (max = 1) when there is no association
+        }
+        
         //diagonal
         if (row == row0) {
             return 0;

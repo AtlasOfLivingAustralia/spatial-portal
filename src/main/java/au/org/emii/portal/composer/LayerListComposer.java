@@ -1,7 +1,6 @@
 package au.org.emii.portal.composer;
 
 import org.ala.spatial.analysis.web.AddLayerTreeController;
-import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import java.util.ArrayList;
@@ -17,11 +16,9 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
-import org.zkoss.zul.Popup;
 import org.zkoss.zul.SimpleTreeModel;
 import org.zkoss.zul.SimpleTreeNode;
 import org.zkoss.zul.Space;
-import org.zkoss.zul.Toolbarbutton;
 import org.zkoss.zul.Tree;
 import org.zkoss.zul.Treecell;
 import org.zkoss.zul.Treeitem;
@@ -90,8 +87,10 @@ public class LayerListComposer extends UtilityComposer {
                     stn = new SimpleTreeNode(jo, empty);
                 } else {
                     stn = new SimpleTreeNode(jo, classNodes);
-                }                
-                addToMap2(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
+                }
+                String c1 = jo.containsKey("classification1") ? jo.getString("classification1"): "";
+                String c2 = jo.containsKey("classification2") ? jo.getString("classification2"): "";
+                addToMap2(htCat1, htCat2, c1, c2, stn);
             }
 
             Iterator it1 = htCat1.keySet().iterator();
@@ -259,8 +258,8 @@ public class LayerListComposer extends UtilityComposer {
                         public void onEvent(Event event) throws Exception {                            
                             JSONObject jo = JSONObject.fromObject(event.getTarget().getParent().getParent().getAttribute("lyr"));
 
-                            if(jo.containsKey("uid")) {
-                                String s = jo.getString("uid");
+                            if(jo.containsKey("id")) {
+                                String s = jo.getString("id");
                                 String metadata = CommonData.satServer + "/layers/" + s;
                                 mc.activateLink(metadata, "Metadata", false);
                             }
@@ -305,7 +304,7 @@ public class LayerListComposer extends UtilityComposer {
                             JSONObject joLayer = JSONObject.fromObject(tree.getSelectedItem().getTreerow().getAttribute("lyr"));
                             if (joLayer.getString("type") != null && !joLayer.getString("type").contentEquals("class")) {
 
-                                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("id");
 
                                 initALC();
 //                                alc.setLayer(joLayer.getString("name"), joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
@@ -318,7 +317,7 @@ public class LayerListComposer extends UtilityComposer {
 //                                //Filtered requests don't work on
 //                                displaypath = displaypath.replace("gwc/service/", "");
                                 // Messagebox.show(displaypath);
-                                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("id");
                                 
                                 String displaypath = CommonData.geoServer
                                         + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
@@ -340,11 +339,11 @@ public class LayerListComposer extends UtilityComposer {
                             Treecell tc = (Treecell) event.getTarget();
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
 
-                            String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
+                            String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("id");
 
                             mc.activateLink(metadata, "Metadata", false);
 
-                            mc.updateUserLogMapLayer("env - tree - info", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
+                            mc.updateUserLogMapLayer("env - tree - info", joLayer.getString("id")+"|"+joLayer.getString("displayname"));
 
                         }
                     });

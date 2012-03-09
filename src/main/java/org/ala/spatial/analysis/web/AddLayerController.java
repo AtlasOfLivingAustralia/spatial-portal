@@ -4,53 +4,18 @@
  */
 package org.ala.spatial.analysis.web;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
-import au.org.emii.portal.wms.WMSStyle;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.ala.spatial.data.Facet;
-import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.data.QueryField;
-import org.ala.spatial.data.QueryUtil;
-import org.ala.spatial.data.BiocacheQuery;
-import org.ala.spatial.data.UploadQuery;
-import org.ala.spatial.sampling.SimpleShapeFile;
-import org.ala.spatial.util.ListEntry;
-import org.ala.spatial.util.SelectedArea;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zul.Checkbox;
-import org.zkoss.zul.Filedownload;
-import org.zkoss.zul.Listbox;
-import org.zkoss.zul.Listitem;
-import org.zkoss.zul.Textbox;
-import org.zkoss.zul.api.Window;
 
 /**
  *
  * @author YUAN
  */
 public class AddLayerController extends AddToolComposer {
-
-    int generation_count = 1;
-    static JSONArray layerlistJSON = null;
-    static JSONArray copy_layerlistJSON = null;
 
     @Override
     public void afterCompose() {
@@ -64,12 +29,7 @@ public class AddLayerController extends AddToolComposer {
         //this.loadAreaLayers();
         this.loadGridLayers(false, true);
         this.updateWindowTitle();
-        
-        
-
     }
-
-
 
     @Override
     public void onLastPanel() {
@@ -78,8 +38,6 @@ public class AddLayerController extends AddToolComposer {
         //this.updateName(getMapComposer().getNextAreaLayerName("My layer"));
 
     }
-
-    
 
     @Override
     void fixFocus() {
@@ -128,7 +86,7 @@ public class AddLayerController extends AddToolComposer {
                         JSONObject jo = layerlist.getJSONObject(j);
                         String name = jo.getString("name");
                         if (name.equals(s)) {
-                            uid = jo.getString("uid");
+                            uid = jo.getString("id");
                             type = jo.getString("type");
                             treeName = StringUtils.capitalize(jo.getString("displayname"));
                             treePath = CommonData.geoServer + "/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:"+s+"&format=image/png&styles=";
@@ -165,20 +123,13 @@ public class AddLayerController extends AddToolComposer {
     public String getUid(String name) {
         String uid="";
         try {   
-            HttpClient client = new HttpClient();
-            String layersListURL = "http://spatial-dev.ala.org.au/alaspatial/ws/layers/list";
-            GetMethod get = new GetMethod(layersListURL);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
-            String copy_layerlist = get.getResponseBodyAsString();
-            copy_layerlistJSON = JSONArray.fromObject(copy_layerlist);
-            JSONArray layerlist = copy_layerlistJSON;
+            JSONArray layerlist = CommonData.getLayerListJSONArray();
             for (int j = 0; j < layerlist.size(); j++) {
                  JSONObject jo = layerlist.getJSONObject(j);
                  String n = jo.getString("name");
                  if (name.equals(n)) {
-                       uid = jo.getString("uid");
-                       System.out.println("uid="+uid);
+                       uid = jo.getString("id");
+                       System.out.println("id="+uid);
                        break;
                  } else {
                        continue;

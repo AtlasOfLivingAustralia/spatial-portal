@@ -42,7 +42,7 @@ public class ContextualLayerSelection extends AreaToolComposer {
                     treePath,
                     (float) 0.75, treeMetadata, null, treeSubType, null, null);
 
-            getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/ "|" + treeName);
+            getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("id")+*/ "|" + treeName);
 
             String activeLayerName = treePath.replaceAll("^.*ALA:", "").replaceAll("&.*", "");
 
@@ -74,7 +74,7 @@ public class ContextualLayerSelection extends AreaToolComposer {
             JSONObject jo = (JSONObject) autoCompleteLayers.getSelectedItem().getValue();
             String metadata = "";
 
-            metadata = CommonData.satServer + "/layers/" + jo.getString("uid");
+            metadata = CommonData.layersServer + "/layers/" + jo.getString("id");
 
             setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata,
                     jo.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
@@ -90,7 +90,7 @@ public class ContextualLayerSelection extends AreaToolComposer {
             JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
             if (!joLayer.getString("type").contentEquals("class")) {
 
-                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
+                String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("id");
 
                 setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
                         joLayer.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
@@ -105,7 +105,7 @@ public class ContextualLayerSelection extends AreaToolComposer {
                 //Filtered requests don't work on
                 displaypath = displaypath.replace("gwc/service/", "");
                 // Messagebox.show(displaypath);
-                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
+                String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("id");
 
                 setLayer(layer + " - " + classValue, displaypath, metadata,
                         joLayer.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);

@@ -125,7 +125,7 @@ public class AddLayerTreeController extends UtilityComposer {
                 
             }
 
-            getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/ "|" + treeName);
+            getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("id")+*/ "|" + treeName);
             //remoteLogger.logMapArea(treeName, "env - tree - add", "");
         } else if (searchName != null) {
             System.out.println("treeName null");
@@ -138,7 +138,7 @@ public class AddLayerTreeController extends UtilityComposer {
             System.out.println("searchPath: "+searchPath);
             System.out.println("searchSubType: "+searchSubType);
 
-            getMapComposer().updateUserLogMapLayer("env - search - add", /*joLayer.getString("uid")+*/ "|" + searchName);
+            getMapComposer().updateUserLogMapLayer("env - search - add", /*joLayer.getString("id")+*/ "|" + searchName);
             if (!rTree.isChecked()) {
                 //JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
                 String lyrSubType = "";
@@ -171,7 +171,7 @@ public class AddLayerTreeController extends UtilityComposer {
             JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
             String metadata = "";
 
-            metadata = CommonData.satServer + "/layers/" + jo.getString("uid");
+            metadata = CommonData.layersServer + "/layers/" + jo.getString("id");
 
             setLayer(jo.getString("name"), jo.getString("displayname"), jo.getString("displaypath"), metadata,
                     jo.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);

@@ -64,7 +64,7 @@ public class ContextualLayersAutoComplete extends Combobox {
             return;
         }
 
-        String baseUrl = CommonData.satServer + "/ws/layers/";
+        String baseUrl = CommonData.layersServer + "/layers/";
         try {
 
             //System.out.println("bringing in layers:");
@@ -90,10 +90,9 @@ public class ContextualLayersAutoComplete extends Combobox {
             JSONArray results = null;
             String lsurl = baseUrl;
             if (val.length() == 0) {
-                lsurl += "list";
                 results = CommonData.getLayerListJSONArray();
             } else {
-                lsurl += "search/" + URLEncoder.encode(val, "UTF-8");            
+                lsurl += "search/?q=" + URLEncoder.encode(val, "UTF-8");
 
                 System.out.println("nsurl: " + lsurl);
 
@@ -138,10 +137,14 @@ public class ContextualLayersAutoComplete extends Combobox {
                         myci.setParent(this);
                     }
                     String c2 = "";
-                    if (!jo.getString("classification2").equals("null")) {
+                    if (jo.containsKey("classification2") && !jo.getString("classification2").equals("null")) {
                         c2 = jo.getString("classification2") + ": ";
                     }
-                    myci.setDescription(jo.getString("classification1") + ": " + c2 + type);
+                    String c1 = "";
+                    if (jo.containsKey("classification1") && !jo.getString("classification1").equals("null")) {
+                        c1 = jo.getString("classification1") + ": ";
+                    }
+                    myci.setDescription(c1 + c2 + type);
                     myci.setDisabled(false);
                     myci.setValue(jo);
                 }

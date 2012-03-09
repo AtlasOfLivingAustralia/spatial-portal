@@ -205,10 +205,12 @@ public class AreaMapPolygon extends AreaToolComposer {
 
                         //add feature to the map as a new layer
                         String wkt = readUrl(CommonData.layersServer + "/shape/wkt/" + feature.get("pid"));
+                        JSONObject obj = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
                         if (wkt.contentEquals("none")) {
                             continue;
                             //  break;
                         } else {
+
                             searchComplete = true;
                             if (wkt.length() > 200) {
                                 displayGeom.setValue(wkt.substring(0, 200) + "...");
@@ -223,9 +225,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                             System.out.println("**********************************");
                             MapLayer mapLayer;
                             if (displayAsWms.isChecked()) {
-                                String url = CommonData.geoServer
-                                        + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
-                                        + feature.get("pid");
+                                String url = obj.getString("wmsurl");
                                 mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(txtLayerName.getValue()),txtLayerName.getValue(), url, 0.6f, /*metadata url*/ null,
                                         null, LayerUtilities.WKT, null, null);
                                 mapLayer.setWKT(wkt);
