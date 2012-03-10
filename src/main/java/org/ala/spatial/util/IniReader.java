@@ -1,7 +1,13 @@
 package org.ala.spatial.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Provides read only access to an ini file.
@@ -52,6 +58,12 @@ public class IniReader{
 			int i;
 			while(in.ready()){
 				String line = in.readLine().trim();//don't care about whitespace
+
+                // ignore the comments
+                if (line.startsWith("#") || line.startsWith(";")) {
+                    continue;
+                }
+                
 				if(line.length() > 2 && line.charAt(0) == '['){
 					i = line.lastIndexOf("]");
 					if(i <= 0 && line.length() > 1) { //last brace might be missing
@@ -141,4 +153,37 @@ public class IniReader{
 	public boolean valueExists(String section, String key){
 		return  document.get(section + "\\" + key) != null;
 	}
+
+    public void setValue(String section, String key, String value) {
+        document.put(section+"\\"+key,value);
+    }
+
+    public void write(String filename) {
+        write(document, filename);
+    }
+
+    public void write(Map<String, String>doc, String filename) {
+        try {
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(filename)));
+
+            TreeMap<String,String> pmap = new TreeMap<String, String>(doc);
+            Iterator<String> it = pmap.keySet().iterator();
+            String currentSection = "";
+            while (it.hasNext()) {
+                String key = it.next();
+                String[] sectionkey = key.split("\\\\");
+                if (!currentSection.equals(sectionkey[0])) {
+                    currentSection = sectionkey[0];
+                    out.println("\n");
+                    out.println("[" + sectionkey[0] + "]");
+                }
+                out.println(sectionkey[1] + "=" + pmap.get(key));
+            }            
+            out.close();
+
+        } catch (Exception e) {
+            System.out.println("Unable to write ini to " + filename);
+            e.printStackTrace(System.out);
+        }
+    }
 }
