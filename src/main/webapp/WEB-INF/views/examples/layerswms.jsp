@@ -134,13 +134,14 @@
 <script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"></script>
 <script src="http://spatial.ala.org.au/scripts/OpenLayers-2.11.js" type="text/javascript"></script>
 <script type="text/javascript">
+    var SERVER_BASE = "http://spatial-dev.ala.org.au";
     var options, map, layer, wmsLayer, ejq;
     $(function() {
 
         $("#layer").autocomplete({
             source : function(request, response) {
                 $.ajax({
-                    url : "http://spatial-dev.ala.org.au/ws/layers/search",
+                    url : SERVER_BASE+"/ws/layers/search",
                     dataType : "json",
                     data: {
                         q: request.term
@@ -206,7 +207,7 @@
         //$("#lyrcls").text(item.classification1 + (item.classification2)?(" > " + item.classification2):"");
         $("#lyrcls").text(item.classification1 + " > " + item.classification2);
         $("#lyrwmsgm").text(wmsLayer.getFullRequestString(""));
-        $("#lyrleg").text("http://spatial-dev.ala.org.au/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=ALA:"+item.name);
+        $("#lyrleg").text(SERVER_BASE+"/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=ALA:"+item.name);
 
     }
 
@@ -216,7 +217,7 @@
                 layers : 'ALA:'+name
             });
         } else {
-            wmsLayer = new OpenLayers.Layer.WMS("Spatial layer", "http://spatial-dev.ala.org.au/geoserver/gwc/service/wms/reflect", {
+            wmsLayer = new OpenLayers.Layer.WMS("Spatial layer", SERVER_BASE+"/geoserver/gwc/service/wms/reflect", {
                 layers : 'ALA:'+name,
                 srs : 'EPSG:900913',
                 format : 'image/png',
