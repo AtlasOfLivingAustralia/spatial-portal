@@ -301,6 +301,22 @@
                         </hbox>
                     </vbox>-->
                     <vbox>
+
+                        <vbox>
+                            Select a threshold to help generate the site pairs.
+                            <listbox sclass="envlist" fixedLayout="false" id="cutpoint" width="300px" height="200px" multiple="false" checkmark="true">
+                                <listhead>
+                                    <listheader label="Records Per Cell"  />
+                                    <listheader label="Frequency" />
+                                    <listheader label="Cummulative %"  />
+                                </listhead>
+                                <listitem value="0">
+                                    <listcell>0</listcell>
+                                    <listcell>All records</listcell>
+                                    <listcell>All records</listcell>
+                                </listitem>
+                            </listbox>
+                        </vbox>
                         <hbox>
                             <label value="Generate quantile from:  Data" />
                     <!--
@@ -314,24 +330,34 @@
                 <!--<checkbox id="useDistance" label="Use geographic (Euclidean) distance" />-->
                         <hbox>
                             <label value="Use geographic distance as additional predictor:" />
-                            <radiogroup>
-                                <radio value="yes" label="yes" />
-                                <radio value="no" label="no" selected="true" />
+                            <radiogroup id="rgdistance">
+                                <radio value="1" label="yes" />
+                                <radio value="0" label="no" selected="true" />
                             </radiogroup>
                         </hbox>
-
-                        <hbox visible="false">
-                    Sites weighted:
-                            <combobox id="weighting" readonly="true" value="equally">
-                                <comboitem label="equally" value="equally" />
-                                <comboitem label="by number of species" />
-                            </combobox>
-                        </hbox>
+                            <separator spacing="20px" />
 
                         <hbox>
-                            <checkbox id="useSubSample" label="Use all site pairs" checked="true" disabled="true" />
-                            <textbox id="sitePairsSize" disabled="true" value="1000000" />
+                    Sites weighted:
+                            <combobox id="weighting" readonly="true" value="equally">
+                                <comboitem value="0" label="equally" />
+                                <comboitem value="1" label="by number of species" />
+                            </combobox>
                         </hbox>
+                            <separator spacing="20px" />
+
+                        <vbox>
+                            <hbox>
+                                <checkbox id="useSubSample" label="Use all site pairs" checked="true" />
+                                <textbox id="sitePairsSize" value="1000000" disabled="true" />
+                                (Default: <label value="1000000" id="sitessliderdef" />)
+                            </hbox>
+                            <hbox id="sliderbox" visible="false">
+                                <label value="0" id="sitesslidermin" />
+                                <slider id="sitesslider" width="250px" />
+                                <label value="1000000" id="sitesslidermax" />
+                            </hbox>
+                        </vbox>
 
                     </vbox>
 
