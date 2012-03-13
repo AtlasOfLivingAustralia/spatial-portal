@@ -87,7 +87,12 @@ public class AddFacetController extends UtilityComposer {
         selectedMethod = "Add facet";
         updateWindowTitle();
         fixFocus();
-        btnOk.setDisabled(true);
+        loadAreaLayers();
+        if (rgArea.getSelectedItem()!=null) {
+            btnOk.setDisabled(false);
+        } else {
+            btnOk.setDisabled(true);
+        }        
     }
     
     private void setupDefaultParams() {
@@ -1117,7 +1122,7 @@ public class AddFacetController extends UtilityComposer {
     public void loadAreaLayers() {
         loadAreaLayers(null);
     }
-
+    
     public void loadAreaLayers(String selectedAreaName) {
         try {
             Radiogroup rgArealocal = (Radiogroup) getFellowIfAny("rgArea");
