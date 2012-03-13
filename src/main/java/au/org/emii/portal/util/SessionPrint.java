@@ -4,12 +4,13 @@
  */
 package au.org.emii.portal.util;
 
-import au.org.emii.portal.composer.MapComposer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import org.ala.spatial.util.CommonData;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -25,6 +26,7 @@ public class SessionPrint {
     final double page_width = 8.27;  //A4 width
     final double page_height = 11.69;//A4 height
     String server;
+    String query;
     String height;
     String width;
     String htmlpthfilename;
@@ -41,10 +43,10 @@ public class SessionPrint {
     String format;
     double grid;
     double scaleBy;
-    MapComposer mc;
 
-    public SessionPrint(String server, String height, String width, String htmlpth, String htmlurl, String uid, String jsessionid, String zoom, String header, double grid, String format, int resolution, MapComposer mc_) {
+    public SessionPrint(String server, String height, String width, String htmlpth, String htmlurl, String uid, String jsessionid, String zoom, String header, double grid, String format, int resolution) {
         this.server = server;
+        this.query = null;
         this.height = height;
         this.width = width;
         this.htmlpth = htmlpth;
@@ -60,7 +62,6 @@ public class SessionPrint {
         this.resolution = resolution;
         this.format = format;
         this.grid = grid;
-        this.mc = mc_;
 
         //resolution == 0 (current)
         //resolution == 1 (print: width up to 4962px, height up to 7014px = A4 600dpi)
@@ -89,6 +90,37 @@ public class SessionPrint {
             this.height = String.valueOf((int) h);
 
         } else {
+            scaleBy = 1.0;
+        }
+    }
+
+    public SessionPrint(String server, String query, String height, String width, String htmlpth, String htmlurl, String uid, String zoom, String header, double grid, String format) {
+        this.server = server;
+        this.query = query;
+        this.height = height;
+        this.width = width;
+        this.htmlpth = htmlpth;
+        this.htmlpthfilename = htmlpth + uid + ".html";
+        this.htmlurlfilename = htmlurl + uid + ".html";
+        this.imgFilename = htmlpth + uid + ".png";
+        this.pdfFilename = htmlpth + uid + ".pdf";
+        this.jpgFilename = htmlpth + uid + ".jpg";
+        this.uid = uid;
+        this.sessionid = null;
+        this.zoom = zoom;
+        this.header = header;
+        
+        this.format = format;
+        this.grid = grid;
+
+        double h = Double.parseDouble(height);
+        double w = Double.parseDouble(width);
+        int sizelimit = 1200*600;
+        if(h*w > sizelimit) {
+            this.resolution = 1;
+            scaleBy = h*w / sizelimit;
+        } else {
+            this.resolution = 0;
             scaleBy = 1.0;
         }
     }
@@ -138,6 +170,9 @@ public class SessionPrint {
         }
         html.append("<iframe style='border:none' src='");
         html.append(server + "?p=" + width + "," + height + "," + zoom + "," + grid);
+        if(query != null) {
+            html.append(query);
+        }
 
         //if printing put out scale factor
         if (resolution > 0) {
@@ -156,7 +191,7 @@ public class SessionPrint {
         //write html to load to a file
         try {
             FileWriter fw = new FileWriter(htmlpthfilename);
-            fw.append(getHtmlContent(true));
+            fw.append(getHtmlContent(sessionid != null));
             fw.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -177,10 +212,10 @@ public class SessionPrint {
     private void makeImageOfHtmlFile() {
         int delay = 15000;
         if (resolution == 1) { //print resolution
-            delay += 25000;
+            delay += 35000;
         }
         //TODO: dynamic path and settings
-        String cmd = mc.getSettingsSupplementary().getValue("wkhtmltoimage_cmd")
+        String cmd = CommonData.wkhtmltoimage_cmd
                 + " --debug-javascript"
                 + " --load-error-handling ignore"
                 + " --javascript-delay " + delay //delay 15s for tiles to load
@@ -210,7 +245,7 @@ public class SessionPrint {
                 if (resolution == 1) { //print resolution
                     now += 25000;
                 }
-                while (now > System.currentTimeMillis() && !img.exists());
+                while (now > System.currentTimeMillis() && !img.exists()) Thread.currentThread().yield();
 
                 //int exitVal = proc.waitFor(); //should work here but does not
 
@@ -229,7 +264,7 @@ public class SessionPrint {
             if (resolution == 1) { //print resolution
                 now += 15000;
             }
-            while (now > System.currentTimeMillis());
+            while (now > System.currentTimeMillis()) Thread.currentThread().yield();
 
             return;
         } catch (Exception e) {
@@ -244,17 +279,15 @@ public class SessionPrint {
         }
 
 
-        //TODO: dynamic path and settings
-        //String cmd = "/mnt/ala/printing/wkhtmltoimage"
         String[][] cmdsScreen = {
-            {mc.getSettingsSupplementary().getValue("convert_cmd"), imgFilename, imgFilename},
-            {mc.getSettingsSupplementary().getValue("convert_cmd"), imgFilename, jpgFilename},
-            {mc.getSettingsSupplementary().getValue("convert_cmd"), imgFilename, pdfFilename}};
+            {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, imgFilename},
+            {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, jpgFilename},
+            {CommonData.convert_cmd, imgFilename, pdfFilename}}; 
 
         String[][] cmdsPrint = {
-            {mc.getSettingsSupplementary().getValue("convert_cmd"), imgFilename, imgFilename},
-            {mc.getSettingsSupplementary().getValue("convert_cmd"), imgFilename, jpgFilename},
-            {mc.getSettingsSupplementary().getValue("convert_cmd"), "-density", dpi + "x" + dpi, "-units", "pixelsperinch", imgFilename, pdfFilename}};
+            {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, imgFilename},
+            {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, jpgFilename},
+            {CommonData.convert_cmd, "-density", dpi + "x" + dpi, "-units", "pixelsperinch", imgFilename, pdfFilename}}; 
 
         try {
             String[][] cmds = cmdsScreen;
@@ -262,7 +295,20 @@ public class SessionPrint {
                 cmds = cmdsPrint;
             }
 
+            if(format.equals("png")) {
+                cmds[1] = cmds[2] = null;
+            }
+            if(format.equals("jpg")) {
+                cmds[0] = cmds[2] = null;
+            }
+            if(format.equals("pdf")) {
+                cmds[1] = null;
+            }
+
             for (String[] cmd : cmds) {
+                if(cmd == null) {
+                    continue;
+                }
                 System.out.println("running cmd: " + cmd[0] + " " + cmd[1] + " " + cmd[2]);
 
                 Runtime runtime = Runtime.getRuntime();
@@ -277,7 +323,22 @@ public class SessionPrint {
                 if (resolution == 1) { //print resolution
                     now += 2000;
                 }
-                while (now > System.currentTimeMillis());
+                while (now > System.currentTimeMillis()) Thread.currentThread().yield();
+
+                //manage for potential crop output file renaming
+                try {
+                    File f = new File(imgFilename.replace(".png", "-0.png"));
+                    if(f.exists()) {
+                        try {new File(imgFilename).delete();}catch(Exception e){}
+                        FileUtils.moveFile(f, new File(imgFilename));
+                    }
+                    f = new File(jpgFilename.replace(".jpg", "-0.jpg"));
+                    if(f.exists()) {
+                        try {new File(jpgFilename).delete();}catch(Exception e){}
+                        FileUtils.moveFile(f, new File(jpgFilename));
+                    }
+                } catch (Exception e) {
+                }
             }
 
             return;

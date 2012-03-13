@@ -5,11 +5,13 @@
 package org.ala.spatial.wms;
 
 import au.org.emii.portal.config.ConfigurationLoaderStage1;
+import au.org.emii.portal.util.SessionPrint;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -25,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.ala.spatial.data.Facet;
 import org.ala.spatial.data.Legend;
 import org.ala.spatial.data.QueryField;
+import org.ala.spatial.util.CommonData;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -425,5 +428,51 @@ public class WMSService {
         //was it successful?
 
         return html.toString();
+    }
+
+    @RequestMapping(value = "/image", method = RequestMethod.GET)
+    public void image(
+            @RequestParam(value = "type", required = false, defaultValue = "jpg") String type,
+            @RequestParam(value = "bbox", required = false, defaultValue = "0,0,0,0") String bbox,
+            @RequestParam(value = "width", required = false, defaultValue = "800") String width,
+            @RequestParam(value = "height", required = false, defaultValue = "640") String height,
+            @RequestParam(value = "basemap", required = false, defaultValue = "outline") String basemap,
+
+            HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        //zoom (minlong, minlat, maxlong, maxlat, lhs width, basemap
+        String zoom = "n"  + bbox + ",0," + basemap;
+
+        //unique id
+        String uid = String.valueOf(System.currentTimeMillis());
+        String htmlpth = CommonData.print_output_path;
+        String htmlurl = CommonData.print_output_url;
+
+        SessionPrint sp = new SessionPrint(
+                CommonData.webportalServer, "&" + request.getQueryString(),
+                height, width, 
+                htmlpth, htmlurl, uid, 
+                zoom, "", 0, type);
+
+        sp.print();
+
+        response.setHeader("Cache-Control", "max-age=86400"); //age == 1 day
+        if (type.equalsIgnoreCase("png")) {
+            response.setContentType("image/png");
+        } else if (type.equalsIgnoreCase("pdf")) {
+            response.setContentType("application/pdf");
+        } else {
+            response.setContentType("image/jpeg");
+        }
+
+        OutputStream os = response.getOutputStream();
+        FileInputStream fis = new FileInputStream(sp.getImageFilename());
+        byte [] buffer = new byte[1024];
+        int n;
+        while((n = fis.read(buffer)) > 0) {
+            os.write(buffer, 0, n);
+        }
+        fis.close();
+        os.close();
     }
 }

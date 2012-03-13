@@ -5,6 +5,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.util.LayerUtilities;
 import java.io.StringReader;
 import java.net.URL;
@@ -127,7 +128,7 @@ public class AddToolGDMComposer extends AddToolComposer {
         if (searchSpeciesAuto.getSelectedItem() != null) {
             getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea());
         } else if (query != null && rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue().equals("multiple")) {
-            getMapComposer().mapSpecies(query, "Species assemblage", "species", 0, LayerUtilities.SPECIES, null, -1);
+            getMapComposer().mapSpecies(query, "Species assemblage", "species", 0, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
         }
 
         return rungdm();

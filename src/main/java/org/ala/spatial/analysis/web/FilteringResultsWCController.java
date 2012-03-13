@@ -1,6 +1,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
@@ -406,7 +407,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             Query query = QueryUtil.queryFromSelectedArea(null, sa, true);
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);
-            getMapComposer().mapSpecies(query, activeAreaLayerName, "species", -1, LayerUtilities.SPECIES, null, -1);
+            getMapComposer().mapSpecies(query, activeAreaLayerName, "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
 
             //getMapComposer().updateUserLogAnalysis("Sampling", query.getName(), "", CommonData.satServer + "/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {

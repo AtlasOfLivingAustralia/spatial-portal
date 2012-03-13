@@ -130,6 +130,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public static final String POINTS_CLUSTER_THRESHOLD = "points_cluster_threshold";
     private static final long serialVersionUID = 1L;
     private RemoteMap remoteMap = null;
+    public static final int DEFAULT_POINT_SIZE = 3;
+    public static final float DEFAULT_POINT_OPACITY = 0.6f;
+    public static final String DEFAULT_POINT_TYPE = "auto";
 
     /*
      * Autowired controls
@@ -360,7 +363,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Query query = QueryUtil.get(lsid, this, false);
         Query q = QueryUtil.queryFromSelectedArea(query, sa, false);
 
-        mapSpecies(q, taxon, rank, 0, LayerUtilities.SPECIES, sa.getWkt(), -1);
+        mapSpecies(q, taxon, rank, 0, LayerUtilities.SPECIES, sa.getWkt(), -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, nextColour());
 
         System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
     }
@@ -1289,7 +1292,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void echoMapSpeciesByLSID(Event event) {
         String lsid = (String) event.getData();
         try {
-            mapSpecies(QueryUtil.get(lsid, this, true), null, "species", -1, LayerUtilities.SPECIES, null, -1);
+            mapSpecies(QueryUtil.get(lsid, this, true), null, "species", -1, LayerUtilities.SPECIES, null, -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, nextColour());
         } catch (Exception e) {
             //try again
             Events.echoEvent("echoMapSpeciesByLSID", this, lsid);
@@ -1325,7 +1328,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String bs = null;
             String ws = null;
             String wkt = null;
+            int size = 3;
+            float opacity = 0.6f;
+            int colour = 0xff0000;
+            String pointtype = "auto";
+            String bb = null;
             int count = 0;
+            boolean allTermFound = false;
             if (userParams != null) {
                 for (int i = 0; i < userParams.size(); i++) {
                     String key = userParams.get(i).getKey();
@@ -1341,6 +1350,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     } else {
                         if (key.equals("q") || key.equals("fq")) {
                             if (value.equals("*:*")) {
+                                allTermFound = true;
                                 continue;
                             }
                             if (sb.length() > 0) {
@@ -1376,6 +1386,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             ws = value;
                         } else if (key.equals("wkt")) {
                             wkt = value;
+                        } else if (key.equals("psize")) {
+                            size = Integer.parseInt(value);
+                        } else if (key.equals("popacity")) {
+                            opacity = Float.parseFloat(value);
+                        } else if (key.equals("pcolour")) {
+                            colour = Integer.parseInt(value, 16);
+                        } else if (key.equals("ptype")) {
+                            pointtype = value;
+                        } else if (key.equals("bbox")) {
+                            bb = value;
                         }
                     }
                 }
@@ -1385,6 +1405,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     String s = sb.toString();
                     sb = new StringBuilder();
                     sb.append(s.substring(1, s.length() - 1));
+                } else if (count == 0 && allTermFound) {
+                    sb.append("*:*");
                 }
 
                 System.out.println("url query: " + sb.toString());
@@ -1411,15 +1433,36 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //                                    + q.getOccurrenceCount() + " occurrences with valid coordinates found.");
                         }
 
-                        List<Double> bbox = q.getBBox();
-                        String script = "map.zoomToExtent(new OpenLayers.Bounds("
-                                + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")"
-                                + ".transform("
-                                + "  new OpenLayers.Projection('EPSG:4326'),"
-                                + "  map.getProjectionObject()));";
-                        openLayersJavascript.setAdditionalScript(script);
+                        if (bb == null) {
+                            List<Double> bbox = q.getBBox();
+                            String script = "map.zoomToExtent(new OpenLayers.Bounds("
+                                    + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")"
+                                    + ".transform("
+                                    + "  new OpenLayers.Projection('EPSG:4326'),"
+                                    + "  map.getProjectionObject()), true);";
+                            openLayersJavascript.setAdditionalScript(script);
+                        } else {                        
+//                            if(bb.startsWith("n")) {
+//                                openLayersJavascript.setAdditionalScript("map.zoomToExtent(new OpenLayers.Bounds("
+//                                    + bb.substring(1) + ")"
+//                                    + ".transform("
+//                                    + "  new OpenLayers.Projection('EPSG:4326'),"
+//                                    + "  map.getProjectionObject()), true);");
+//                            } else {
+//                                openLayersJavascript.setAdditionalScript("map.zoomToExtent(new OpenLayers.Bounds("
+//                                    + bb.substring(1) + "), true);");
+//                            }
+                        }
 
-                        return mapSpecies(q, q.getSolrName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, -1);
+                        //mappable attributes
+                        int setGrid = -1;
+                        if (pointtype.equals("grid")) {
+                            setGrid = 1;
+                        } else if (pointtype.equals("point")) {
+                            setGrid = 0;
+                        }
+
+                        return mapSpecies(q, q.getSolrName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, setGrid, size, opacity, colour);
                     }
                 }
             }
@@ -1854,7 +1897,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         menus.setSplittable(!maximise);
     }
 
-    public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid) {
+    public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid, int size, float opacity, int colour) {
 
         if (species == null) {
             species = sq.getName();
@@ -1874,7 +1917,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             grid = sq.getOccurrenceCount() > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD);
         }
-        MapLayer ml = mapSpeciesFilter(sq, species, rank, count, subType, wkt, grid);
+        MapLayer ml = mapSpeciesFilter(sq, species, rank, count, subType, wkt, grid, size, opacity, colour);
 
         if (ml != null) {
             MapLayerMetadata md = ml.getMapLayerMetadata();
@@ -2173,7 +2216,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    MapLayer mapSpeciesFilter(Query q, String species, String rank, int count, int subType, String wkt, boolean grid) {
+    MapLayer mapSpeciesFilter(Query q, String species, String rank, int count, int subType, String wkt, boolean grid, int size, float opacity, int colour) {
         String filter = q.getQ();
 
         if (q instanceof BiocacheQuery) {
@@ -2183,7 +2226,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         }
 
-        MapLayer ml = mapSpeciesWMSByFilter(getNextAreaLayerName(species), filter, subType, q, grid);
+        MapLayer ml = mapSpeciesWMSByFilter(getNextAreaLayerName(species), filter, subType, q, grid, size, opacity, colour);
 
         if (ml != null) {
             addToSession(ml.getName(), filter);
@@ -2210,21 +2253,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return ml;
     }
 
-    MapLayer mapSpeciesWMSByFilter(String label, String filter, int subType, Query query, boolean grid) {
+    MapLayer mapSpeciesWMSByFilter(String label, String filter, int subType, Query query, boolean grid, int size, float opacity, int colour) {
         String uri;
-        String layerName = "ALA:occurrences";
-        String sld = "species_point";
 
-        //int hash = Math.abs(label.hashCode());
-        int hash = nextColour();
-        int r = (hash >> 16) & 0x000000ff;
-        int g = (hash >> 8) & 0x000000ff;
-        int b = (hash) & 0x000000ff;
+        int r = (colour >> 16) & 0x000000ff;
+        int g = (colour >> 8) & 0x000000ff;
+        int b = (colour) & 0x000000ff;
 
         int uncertaintyCheck = 0; //0 == false default
-
-        int size = 3;
-        float opacity = (float) 0.6;
 
         if (activeLayerMapProperties != null) {
             r = ((Integer) activeLayerMapProperties.get("red")).intValue();
@@ -2494,7 +2530,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String htmlurl = settingsSupplementary.getValue("print_output_url");
 
         try {
-            SessionPrint pp = new SessionPrint(server, height, width, htmlpth, htmlurl, uid, jsessionid, zoom, header, grid, format, resolution, this);
+            SessionPrint pp = new SessionPrint(server, height, width, htmlpth, htmlurl, uid, jsessionid, zoom, header, grid, format, resolution);
 
             if (!preview) {
                 pp.print();
@@ -2744,7 +2780,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void loadScatterplot(ScatterplotData data, String lyrName) {
-        MapLayer ml = mapSpecies(data.getQuery(), data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT, null, 0);
+        MapLayer ml = mapSpecies(data.getQuery(), data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT, null, 0, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, nextColour());
         ml.setDisplayName(lyrName);
         ml.setSubType(LayerUtilities.SCATTERPLOT);
         ml.setData("scatterplotData", data);
@@ -2796,7 +2832,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             mapLayer = mapSpecies(data.getQuery(), data.getSpeciesName(),
                     (mapLayer != null && mapLayer.getMapLayerMetadata() != null) ? mapLayer.getMapLayerMetadata().getSpeciesRank() : "species",
                     (mapLayer != null && mapLayer.getMapLayerMetadata() != null) ? mapLayer.getMapLayerMetadata().getOccurrencesCount() : 0,
-                    LayerUtilities.SPECIES, null, -1);
+                    LayerUtilities.SPECIES, null, -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, nextColour());
             if (mapLayer != null) {
                 MapLayerMetadata md = mapLayer.getMapLayerMetadata();
                 if (md == null) {
@@ -3335,7 +3371,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
     static int currentColourIdx = 0;
 
-    public int nextColour() {
+    public static int nextColour() {
         int colour = LegendObject.colours[currentColourIdx % LegendObject.colours.length];
 
         currentColourIdx++;
@@ -3447,7 +3483,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void importSpecies(Event event) {
-        UploadSpeciesController usc = (UploadSpeciesController) openModal("WEB-INF/zul/UploadSpecies.zul", null, "uploadspecieswindow");;
+        UploadSpeciesController usc = (UploadSpeciesController) openModal("WEB-INF/zul/UploadSpecies.zul", null, "uploadspecieswindow");
+
         String type = (String) event.getData();
         if (type != null && type.length() > 0) {
             if ("assemblage".equalsIgnoreCase(type)) {
@@ -3457,8 +3494,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             usc.addToMap = true;
         }
-        
-
     }
 
     public void importAreas(Event event) {

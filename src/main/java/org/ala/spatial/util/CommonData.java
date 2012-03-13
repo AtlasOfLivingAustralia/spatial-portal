@@ -114,6 +114,10 @@ public class CommonData {
     static public LsidCounts lsidCounts;
     static public String biocacheQc;
     static public ArrayList<LayerSelection> analysisLayerSets;
+    static public String wkhtmltoimage_cmd;
+    static public String convert_cmd;
+    static public String print_output_path;
+    static public String print_output_url;
 
     /*
      * initialize common data from geoserver and satserver
@@ -135,6 +139,11 @@ public class CommonData {
         if (biocacheQc == null) {
             biocacheQc = "";
         }
+        wkhtmltoimage_cmd = settings.get("wkhtmltoimage_cmd");
+        convert_cmd = settings.get("convert_cmd");
+        print_output_path = settings.get("print_output_path");
+        print_output_url = settings.get("print_output_url");
+
         setupAnalysisLayerSets();
 
         //(1) for LayersUtil

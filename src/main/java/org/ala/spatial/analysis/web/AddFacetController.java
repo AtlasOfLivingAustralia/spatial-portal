@@ -509,7 +509,7 @@ public class AddFacetController extends UtilityComposer {
                 Query querynew = q.newFacet(f, true);
         //mc.mapSpecies(newq, "my layer", "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, sa.getWkt(), 0);
         getMapComposer().mapSpecies(querynew,
-                "My facet", "species", -1, LayerUtilities.SPECIES, null, 0);
+                "My facet", "species", -1, LayerUtilities.SPECIES, null, 0, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
         this.detach();
     }
 

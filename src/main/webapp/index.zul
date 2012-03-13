@@ -381,7 +381,11 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         h1[i] = h1[i].substring(2,h1[i].length);
                         var h2 = h1[i].split(",");
                         if(h2.length > 5){
-                            fixExtent(1*h2[2],1*h2[3],1*h2[4],1*h2[5]);
+                            if(h2[2].substring(0,1) == 'n') {
+                                fixExtent4326(1*(h2[2].substring(1,h2[2].length)),1*h2[3],1*h2[4],1*h2[5]);
+                            } else {
+                                fixExtent(1*h2[2],1*h2[3],1*h2[4],1*h2[5]);
+                            }
                             //map.zoomToExtent(new OpenLayers.Bounds(1*h2[2],1*h2[3],1*h2[4],1*h2[5]), true);
 
                             while(map.controls.length > 0){
@@ -392,7 +396,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             window.frames["mapFrame"].document.getElementById('controlPanZoom').style.display = "none";
                         }
 
+console.log(currentbaselayertxt);
                         if(h2.length > 7 && currentbaselayertxt != h2[7]) {
+                        console.log(h2[7]);
                             changeBaseLayer(h2[7]);
                         }
 
@@ -429,12 +435,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             var vl = map.getLayersByClass("OpenLayers.Layer.Vector");
                             for (var i = 0; i < vl.length; i++) {
                                 var f = vl[i].features;
-                                if(vl[i].style.pointRadius != undefined) {
+                                if(vl[i].style != undefined && vl[i].style.pointRadius != undefined) {
                                     vl[i].style.pointRadius *= scaleby;
                                 }
                                 for(var j=0;j<f.length;j++){
                                     if(f[j].geometry.toString().indexOf('POINT') == 0) {
-                                        if(f[j].style.pointRadius != undefined) {
+                                        if(f[j].style != undefined && f[j].style.pointRadius != undefined) {
                                             f[j].style.pointRadius *= scaleby;
                                         }
                                     }

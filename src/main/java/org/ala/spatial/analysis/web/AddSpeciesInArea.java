@@ -1,5 +1,6 @@
 package org.ala.spatial.analysis.web;
 
+import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
@@ -169,14 +170,14 @@ public class AddSpeciesInArea extends UtilityComposer {
                 }
             }
             if (byLsid) {
-                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1);
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
             } else if (filter) {
-                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1);
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
             } else if (filterGrid) {
-                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1);
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
             } else if (rank != null && taxon != null && q != null) {
                 //String sptaxon = taxon+";"+lsid;
-                ml = getMapComposer().mapSpecies(q, taxon, rank, -1, LayerUtilities.SPECIES, sa.getWkt(), -1);
+                ml = getMapComposer().mapSpecies(q, taxon, rank, -1, LayerUtilities.SPECIES, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
                 setupMetadata = false;
             } else {
                 int results_count_occurrences = q.getOccurrenceCount();
@@ -195,7 +196,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                             layerName = "Species assemblage";
                         }
                     }
-                    ml = getMapComposer().mapSpecies(q, layerName, "species", results_count_occurrences, LayerUtilities.SPECIES, sa.getWkt(), -1);
+                    ml = getMapComposer().mapSpecies(q, layerName, "species", results_count_occurrences, LayerUtilities.SPECIES, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
 
                     //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/" + sbProcessUrl.toString(), pid, "map species in area");
                 } else {

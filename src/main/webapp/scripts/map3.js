@@ -312,21 +312,24 @@ function buildMapReal() {
     map.events.register("zoomend" , map, function (e) {
         Event.stop(e);
 
-        if (map.zoom > 15) {
-            autoBaseLayerSwitch = true;
-            if (baseLayerSwitchStatus != 1) {
-                baseLayerSwitchStatus = 2; 
+        //don't do change base layer if this is a 'print'
+        if(parent.location.href.indexOf("?p=") < 0 && parent.location.href.indexOf("&p=") < 0) {
+            if (map.zoom > 15) {
+                autoBaseLayerSwitch = true;
+                if (baseLayerSwitchStatus != 1) {
+                    baseLayerSwitchStatus = 2;
+                }
+                changeBaseLayer('hybrid');
             }
-            changeBaseLayer('hybrid');
-        }
-        else {
-            //if (autoBaseLayerSwitch) {
-            //    changeBaseLayer('normal');
-            //    autoBaseLayerSwitch = false;
-            //}
-            if (baseLayerSwitchStatus == 2) {
-                changeBaseLayer('normal');
-                baseLayerSwitchStatus = 0;
+            else {
+                //if (autoBaseLayerSwitch) {
+                //    changeBaseLayer('normal');
+                //    autoBaseLayerSwitch = false;
+                //}
+                if (baseLayerSwitchStatus == 2) {
+                    changeBaseLayer('normal');
+                    baseLayerSwitchStatus = 0;
+                }
             }
         }
     });

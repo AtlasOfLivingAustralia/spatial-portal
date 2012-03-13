@@ -4,6 +4,7 @@
  */
 package org.ala.spatial.analysis.web;
 
+import au.org.emii.portal.composer.MapComposer;
 import org.zkoss.zk.ui.Component;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
@@ -133,7 +134,7 @@ public class AreaToolComposer extends UtilityComposer {
                             , (String) winProps.get("s")
                             , (Integer) winProps.get("featureCount")
                             , (Integer) winProps.get("type")
-                            , wkt, -1);
+                            , wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();
@@ -149,7 +150,7 @@ public class AreaToolComposer extends UtilityComposer {
                             , (String) winProps.get("s")
                             , (Integer) winProps.get("featureCount")
                             , (Integer) winProps.get("type")
-                            , wkt, -1);
+                            , wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();
@@ -165,7 +166,7 @@ public class AreaToolComposer extends UtilityComposer {
                             , (String) winProps.get("s")
                             , (Integer) winProps.get("featureCount")
                             , (Integer) winProps.get("type")
-                            , wkt, -1);
+                            , wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();
@@ -179,7 +180,7 @@ public class AreaToolComposer extends UtilityComposer {
                             (String) winProps.get("taxon"),
                             (String) winProps.get("rank"),
                             0, LayerUtilities.SPECIES
-                            , wkt, -1);
+                            , wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
                     //remoteLogger.logMapSpecies((String) winProps.get("taxon"), ml.getMapLayerMetadata().getSpeciesDisplayLsid(), layerName + "__" + wkt, "");
                 }
                 if(getMapComposer().getMapLayer(layerName) != null) {
@@ -229,7 +230,7 @@ public class AreaToolComposer extends UtilityComposer {
                         , "species"
                         , results_count_occurrences
                         , LayerUtilities.SPECIES
-                        , wkt, -1);
+                        , wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
 
                 //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/" + sbProcessUrl.toString(), pid, "map species in area");
                 //String extra = sq.getWS() + "|" + sq.getBS() + "|" + sq.getFullQ(false);

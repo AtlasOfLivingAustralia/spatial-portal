@@ -1,6 +1,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.emii.portal.composer.MapComposer;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
@@ -101,7 +102,8 @@ public class ClassificationLegend extends UtilityComposer {
 
     public void onClick$createInGroup(Event e) {
         getMapComposer().mapSpecies(query.newFacet(facet, true),
-                "Facet of " + mapLayer.getDisplayName(), "species", -1, LayerUtilities.SPECIES, null, -1);
+                "Facet of " + mapLayer.getDisplayName(), "species", -1, LayerUtilities.SPECIES, null, -1
+                , MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
     }
 
     int[] getState() {

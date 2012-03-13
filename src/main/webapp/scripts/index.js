@@ -148,6 +148,17 @@ function roundNumber(num, dec) {
                 setTimeout(function() {fixExtent(a,b,c,d);}, 2000);
             }
         }
+        function fixExtent4326(a,b,c,d) {
+            map.zoomToExtent(new OpenLayers.Bounds(a,b,c,d).transform(
+                new OpenLayers.Projection("EPSG:4326"),
+                map.getProjectionObject()),true);
+
+            //does not always stick
+            if(retryFixExtent < 1) {
+                retryFixExtent++;
+                setTimeout(function() {fixExtent4326(a,b,c,d);}, 2000);
+            }
+        }
 
 
 

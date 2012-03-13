@@ -710,7 +710,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     void addUserLayer(Query query, String layername, String description, int numRecords) {
         layername = StringUtils.capitalize(layername);
 
-        getMapComposer().mapSpecies(query, layername, "species", -1, LayerUtilities.SPECIES, null, -1);
+        getMapComposer().mapSpecies(query, layername, "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
     }
 
     public void onClick$addNewLayers(Event event) {

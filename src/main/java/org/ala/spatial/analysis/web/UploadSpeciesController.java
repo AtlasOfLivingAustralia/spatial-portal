@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.UtilityComposer;
 import org.zkoss.zul.Textbox;
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.menu.MapLayerMetadata;
@@ -393,13 +394,13 @@ public class UploadSpeciesController extends UtilityComposer {
                     if (defineArea) {
                         mapFilterGrid(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
                     } else {
-                        ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1);
+                        ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
                     }
                 } else {
                     if (defineArea) {
                         mapFilter(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
                     } else {
-                        ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1);
+                        ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
                     }
                 }
                 if (ml != null) {
