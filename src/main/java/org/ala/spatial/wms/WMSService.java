@@ -6,21 +6,29 @@ package org.ala.spatial.wms;
 
 import au.org.emii.portal.config.ConfigurationLoaderStage1;
 import au.org.emii.portal.util.SessionPrint;
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +36,7 @@ import org.ala.spatial.data.Facet;
 import org.ala.spatial.data.Legend;
 import org.ala.spatial.data.QueryField;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.Util;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -418,6 +427,7 @@ public class WMSService {
     }
 
     @RequestMapping(value = "/admin/reloadconfig", method = RequestMethod.GET)
+    @ResponseBody
     public String reloadConfig() {
         //signal for reload
         ConfigurationLoaderStage1.loaders.get(0).interrupt();
@@ -428,6 +438,91 @@ public class WMSService {
         //was it successful?
 
         return html.toString();
+    }
+
+    @RequestMapping(value = "/image2", method = RequestMethod.GET)
+    public void image2(
+            @RequestParam(value = "type", required = false, defaultValue = "jpg") String type,
+            @RequestParam(value = "extents", required = true) String bbox,
+            @RequestParam(value = "pixelwidth", required = false, defaultValue = "800") Integer width,
+            @RequestParam(value = "psize", required = false, defaultValue = "3") Integer pointSize,
+            @RequestParam(value = "pcolour", required = false, defaultValue = "FF0000") String pointColour,
+            @RequestParam(value = "popacity", required = false, defaultValue = "0.6") Double pointOpacity,
+            @RequestParam(value = "basemap", required = false, defaultValue = "world") String basemap,
+            @RequestParam(value = "legend", required = false, defaultValue = "off") String legend,
+            @RequestParam(value = "bs", required = false) String biocacheServer,
+
+            HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+        try {
+            String [] bb = bbox.split(",");
+            int pminx = Utils.convertLngToPixel(Double.parseDouble(bb[0]));
+            int pminy = Utils.convertLatToPixel(Double.parseDouble(bb[1]));
+            int pmaxx = Utils.convertLngToPixel(Double.parseDouble(bb[2]));
+            int pmaxy = Utils.convertLatToPixel(Double.parseDouble(bb[3]));
+            int height = (int) Math.round(width * ((pminy - pmaxy) / (double)(pmaxx - pminx)));
+
+            double [] extents = Util.transformBbox4326To900913(Double.parseDouble(bb[0]),Double.parseDouble(bb[1]),Double.parseDouble(bb[2]),Double.parseDouble(bb[3]));
+
+            //"http://biocache.ala.org.au/ws/webportal/wms/reflect?
+            //q=macropus&ENV=color%3Aff0000%3Bname%3Acircle%3Bsize%3A3%3Bopacity%3A1
+            //&BBOX=12523443.0512,-2504688.2032,15028131.5936,0.33920000120997&WIDTH=256&HEIGHT=256");
+            String speciesAddress = ((biocacheServer == null) ? CommonData.biocacheServer : biocacheServer)
+                    + "/webportal/wms/reflect?"
+                    + "ENV=color%3A" + pointColour
+                    + "%3Bname%3Acircle%3Bsize%3A" + pointSize
+                    + "%3Bopacity%3A" + pointOpacity
+                    + "&BBOX=" + extents[0] + "," + extents[1] + "," + extents[2] + "," + extents[3]
+                    + "&WIDTH=" + width + "&HEIGHT=" + height
+                    + "&" + request.getQueryString();
+            System.out.println(speciesAddress);
+            URL speciesURL = new URL(speciesAddress);
+
+            BufferedImage speciesImage = ImageIO.read(speciesURL);
+
+            //"http://spatial.ala.org.au/geoserver/wms/reflect?
+            //LAYERS=ALA%3Aworld&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=
+            //&FORMAT=image%2Fjpeg&SRS=EPSG%3A900913&BBOX=12523443.0512,-1252343.932,13775787.3224,0.33920000004582&WIDTH=256&HEIGHT=256"
+            String basemapAddress = CommonData.geoServer + "/wms/reflect?"
+                    + "LAYERS=ALA%3A" + basemap
+                    + "&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES="
+                    + "&FORMAT=image%2Fjpeg&SRS=EPSG%3A900913"
+                    + "&BBOX=" + extents[0] + "," + extents[1] + "," + extents[2] + "," + extents[3]
+                    + "&WIDTH=" + width + "&HEIGHT=" + height
+                    + (!legend.equals("off")?"&format_options=layout:legend":"");
+            System.out.println(basemapAddress);
+            URL basemapURL = new URL(basemapAddress);
+            BufferedImage basemapImage = ImageIO.read(basemapURL);
+
+            BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D combined = (Graphics2D) img.getGraphics();
+
+            combined.drawImage(basemapImage, 0, 0, Color.WHITE, null);
+            combined.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f));
+            combined.drawImage(speciesImage, null, 0, 0);
+            combined.dispose();
+
+            //response.setHeader("Cache-Control", "max-age=3600"); //age == 1hr
+
+            if (type.equalsIgnoreCase("png")) {
+                response.setContentType("image/png");
+                OutputStream os = response.getOutputStream();
+                ImageIO.write(img, type, os);
+                os.close();
+            } else {
+                //handle jpeg + BufferedImage.TYPE_INT_ARGB
+                BufferedImage img2;
+                Graphics2D c2;
+                (c2 = (Graphics2D) (img2 = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)).getGraphics()).drawImage(img, 0,0,Color.WHITE, null);
+                c2.dispose();
+                OutputStream os = response.getOutputStream();
+                ImageIO.write(img2, type, os);
+                os.close();
+                response.setContentType("image/jpeg");
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @RequestMapping(value = "/image", method = RequestMethod.GET)

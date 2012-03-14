@@ -127,6 +127,65 @@ public class Util {
 
     }
 
+    static public double [] transformBbox4326To900913(double minx, double miny, double maxx, double maxy) {
+        double [] bbox = new double[4];
+        try {
+            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+
+//            CoordinateReferenceSystem dataCRS = CRS.decode("EPSG:4326");
+//            CoordinateReferenceSystem googleCRS = CRS.decode("EPSG:900913");
+            String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\","
+                    + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
+                    + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]],"
+                    + "  PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],"
+                    + "  UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]],"
+                    + "  AXIS[\"Lat\",NORTH]," + "  AXIS[\"Long\",EAST],"
+                    + "  AUTHORITY[\"EPSG\",\"4326\"]]";
+            String wkt900913 = "PROJCS[\"WGS84 / Google Mercator\", "
+                    + "  GEOGCS[\"WGS 84\", "
+                    + "   DATUM[\"World Geodetic System 1984\", "
+                    + "   SPHEROID[\"WGS 84\", 6378137.0, 298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], "
+                    + "  AUTHORITY[\"EPSG\",\"6326\"]], "
+                    + " PRIMEM[\"Greenwich\", 0.0, AUTHORITY[\"EPSG\",\"8901\"]], "
+                    + " UNIT[\"degree\", 0.017453292519943295], "
+                    + " AXIS[\"Longitude\", EAST], "
+                    + " AXIS[\"Latitude\", NORTH], "
+                    + " AUTHORITY[\"EPSG\",\"4326\"]], "
+                    + " PROJECTION[\"Mercator_1SP\"], "
+                    + " PARAMETER[\"semi_minor\", 6378137.0], "
+                    + " PARAMETER[\"latitude_of_origin\", 0.0],"
+                    + " PARAMETER[\"central_meridian\", 0.0], "
+                    + " PARAMETER[\"scale_factor\", 1.0], "
+                    + " PARAMETER[\"false_easting\", 0.0], "
+                    + " PARAMETER[\"false_northing\", 0.0], "
+                    + " UNIT[\"m\", 1.0], "
+                    + " AXIS[\"x\", EAST], "
+                    + " AXIS[\"y\", NORTH], "
+                    + " AUTHORITY[\"EPSG\",\"900913\"]] ";
+            CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
+            CoordinateReferenceSystem googleCRS = CRS.parseWKT(wkt900913);
+            MathTransform transform = CRS.findMathTransform(wgsCRS, googleCRS);
+
+            Point point = geometryFactory.createPoint(new Coordinate(miny, minx));
+            Geometry geom = JTS.transform(point, transform);
+            Point gPoint = geometryFactory.createPoint(new Coordinate(geom.getCoordinate()));
+            bbox[0] = gPoint.getCoordinate().x;
+            bbox[1] = gPoint.getCoordinate().y;
+
+            point = geometryFactory.createPoint(new Coordinate(maxy, maxx));
+            geom = JTS.transform(point, transform);
+            gPoint = geometryFactory.createPoint(new Coordinate(geom.getCoordinate()));
+            bbox[2] = gPoint.getCoordinate().x;
+            bbox[3] = gPoint.getCoordinate().y;
+
+        } catch (Exception e) {
+            System.out.println("failed to convert: " + minx + "," + miny + "," + maxx + "," + maxy);
+            e.printStackTrace();
+            return null;
+        }
+        return bbox;
+    }
+
     static private String readGeoJSON(String feature) {
         StringBuffer content = new StringBuffer();
 
