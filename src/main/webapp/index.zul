@@ -458,6 +458,7 @@ console.log(currentbaselayertxt);
             //use session state extents for printing
             if (!printing) {
                 window.mapFrame.loadBaseMap();
+                $(".login-bubble").show().delay(8000).fadeOut(2000);
             }
 
             map.signalLayerLoaded = function (layerName) {

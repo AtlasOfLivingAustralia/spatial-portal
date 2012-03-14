@@ -10,7 +10,7 @@ if (readCookie('ALA-Auth')) {
 } else {
     $(".not_logged_in").show();
     $(".logged_in").hide();
-    $(".login-bubble").show().delay(8000).fadeOut(2000);
+    //$(".login-bubble").show().delay(8000).fadeOut(2000);
 }
 
 
