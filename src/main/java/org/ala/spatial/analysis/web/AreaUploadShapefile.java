@@ -15,33 +15,35 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
-import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.util.Zipper;
-import org.apache.commons.io.FileUtils;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
-import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Textbox;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.ala.spatial.util.UserData;
-import org.geotools.geometry.jts.JTSFactoryFinder;
-import org.geotools.kml.KML;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
+import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
 import org.geotools.kml.KMLConfiguration;
-import org.geotools.xml.Encoder;
 import org.geotools.xml.Parser;
 import org.opengis.feature.simple.SimpleFeature;
+import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Window;
 
 /**
  *
@@ -119,7 +121,18 @@ public class AreaUploadShapefile extends AreaToolComposer {
             byte[] kmldata = getKml(m);
             if (kmldata != null) {
                 loadUserLayerKML(m.getName(), kmldata, ud);
-            } else if (m.getName().toLowerCase().endsWith("zip")) { //else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
+            //} else if (m.getName().equalsIgnoreCase("MEOW2.zip") || m.getName().equalsIgnoreCase("singlepolygon.zip")) {
+            } else if (m.getName().toLowerCase().endsWith("zip")) {
+                Map args = new HashMap();
+                args.put("layername", txtLayerName.getValue());
+                args.put("media", m);
+                Window window = (Window) Executions.createComponents("WEB-INF/zul/AreaUploadShapefileWizard.zul", this.getParent(), args);
+                try {
+                    window.doModal();
+                } catch (SuspendNotAllowedException e) {
+                    // we are really closing the window without opening/displaying to the user                
+                }
+            } else if (m.getName().toLowerCase().endsWith("zip_removeme")) { //else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
                 // "/data/ala/runtime/output/layers/"
                 // "/Users/ajay/projects/tmp/useruploads/"
                 Map input = Zipper.unzipFile(m.getName(), m.getStreamData(), "/data/ala/runtime/output/layers/");

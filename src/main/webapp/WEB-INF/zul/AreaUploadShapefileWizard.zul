@@ -1,0 +1,40 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="shapewizard" use="org.ala.spatial.analysis.web.AreaUploadShapefileWizardController"
+    apply="org.ala.spatial.analysis.web.AreaUploadShapefile"  xmlns:n="http://www.zkoss.org/2005/zk/native"
+        width="90%" sizable="true" contentStyle="overflow:auto">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="shapewizard.detach()" style="display: inline" />
+
+        <caption label="Import Shapefile" />
+        <separator />
+        <hbox width="100%" style="float:left;margin-left:10px">
+            <div>
+                <image id="img"/>
+            </div>
+            <vbox width="250px">
+                <combobox id="cbAttributes" width="100%" autodrop="true" readonly="true" />
+                <listbox id="lbData" width="100%" multiple="true" checkmark="true" height="550px">
+                    <listhead>
+                        <listheader label="Value" id="lhSecondColumn"></listheader>
+                    </listhead>
+                </listbox>
+
+                <hbox>
+                    <button sclass="goButton" label="Refresh" id="btnRefresh" />
+                    <button sclass="goButton" label="Cancel" id="btnCancel" />
+                    <button sclass="goButton" label="Next" id="btnNext" />
+                </hbox>
+            </vbox>
+        </hbox>
+
+    </window>
+</zk>
+
