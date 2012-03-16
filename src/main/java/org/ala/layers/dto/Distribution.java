@@ -52,6 +52,83 @@ public class Distribution {
     Double area_km;
     String notes;
     Long geom_idx;
+    //additional fields
+    String group_name;
+    String family_lsid;
+    String genus_lsid;
+    Boolean estuarine_fl;
+    Boolean coastal_fl;
+    Boolean desmersal_fl;
+    String caab_species_number;
+    String caab_family_number;
+
+    public String getFamily_lsid() {
+        return family_lsid;
+    }
+
+    public void setFamily_lsid(String family_lsid) {
+        this.family_lsid = family_lsid;
+    }
+
+    public String getGenus_lsid() {
+        return genus_lsid;
+    }
+
+    public void setGenus_lsid(String genus_lsid) {
+        this.genus_lsid = genus_lsid;
+    }
+
+    public Boolean getEstuarine_fl() {
+        return estuarine_fl;
+    }
+
+    public void setEstuarine_fl(Integer estuarine_fl) {
+        this.estuarine_fl = estuarine_fl !=null &&  estuarine_fl >0 ? true : false ;
+    }
+
+    public Boolean getCoastal_fl() {
+        return coastal_fl;
+    }
+
+    public void setCoastal_fl(Integer coastal_fl) {
+        this.coastal_fl = coastal_fl !=null &&  coastal_fl >0 ? true : false ;
+    }
+
+    public Boolean getDesmersal_fl() {
+        return desmersal_fl;
+    }
+
+    public void setEstuarine_fl(Boolean estuarine_fl) {
+        this.estuarine_fl = estuarine_fl;
+    }
+
+    public void setCoastal_fl(Boolean coastal_fl) {
+        this.coastal_fl = coastal_fl;
+    }
+
+    public void setDesmersal_fl(Boolean desmersal_fl) {
+        this.desmersal_fl = desmersal_fl;
+    }
+
+    public void setDesmersal_fl(Integer desmersal_fl) {
+        this.desmersal_fl = desmersal_fl !=null &&  desmersal_fl >0 ? true : false ;
+    }
+
+    public String getCaab_species_number() {
+        return caab_species_number;
+    }
+
+    public void setCaab_species_number(String caab_species_number) {
+        this.caab_species_number = caab_species_number;
+    }
+
+    public String getCaab_family_number() {
+        return caab_family_number;
+    }
+
+    public void setCaab_family_number(String caab_family_number) {
+        this.caab_family_number = caab_family_number;
+    }
 
     public void setGid(Long gid) {
         this.gid = gid;
@@ -82,7 +159,6 @@ public class Distribution {
     public String getScientific() {
         return scientific;
     }
-
 
     public void setAuthority_(String authority) {
         this.authority_ = authority;
@@ -234,5 +310,13 @@ public class Distribution {
 
     public Long getGeom_idx() {
         return geom_idx;
+    }
+
+    public String getGroup_name() {
+        return group_name;
+    }
+
+    public void setGroup_name(String group_name) {
+        this.group_name = group_name;
     }
 }

@@ -34,86 +34,43 @@ public class DistributionDAOImpl implements DistributionDAO {
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(DistributionDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
+    private String viewName = "copy_distributions";
+    private final String SELECT_CLAUSE =  "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth," +
+            "max_depth,pelagic_fl,coastal_fl,desmersal_fl,estuarine_fl,family_lsid,genus_lsid,caab_species_number," +
+            "caab_family_number,group_name,metadata_u,wmsurl,lsid,type,area_name,pid,checklist_name,area_km, notes, geom_idx";
 
-    @Resource(name = "dataSource")
-    public void setDataSource(DataSource dataSource) {
-        this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
+    @Override
+    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth,
+                                                 Integer geomIdx, String lsids, String type) {
+        return queryDistributions(wkt, min_depth, max_depth, null, null, null, null, null, geomIdx, lsids, type);
     }
 
     @Override
-    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, Integer geomIdx, String lsids, String type) {
+    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth,
+                                                 Boolean pelagic, Boolean coastal, Boolean estuarine,Boolean desmersal,
+                                                 String groupName,
+                                                 Integer geomIdx, String lsids, String type) {
         logger.info("Getting distributions list");
 
-        ArrayList<Object> params = new ArrayList<Object>();
-        StringBuilder where = new StringBuilder();
-
-        if (geomIdx != null && geomIdx >= 0) {
-            where.append(" geom_idx = ? ");
-            params.add(geomIdx);
-        }
-
-        if (lsids != null && lsids.length() > 0) {
-            if (where.length() > 0) {
-                where.append(" AND ");
-            }
-            where.append(" ? LIKE '% '||lsid||' %'  ");
-            params.add(" " + lsids.replace(",", " ") + " ");
-        }
-
-        if (min_depth != -1 && max_depth != -1) {
-            if (where.length() > 0) {
-                where.append(" AND ");
-            }
-            where.append("min_depth<= ? AND max_depth>= ? ");
-            params.add(new Double(max_depth));
-            params.add(new Double(min_depth));
-        } else if (min_depth != -1) {
-            if (where.length() > 0) {
-                where.append(" AND ");
-            }
-            where.append("max_depth>= ? ");
-            params.add(new Double(min_depth));
-        } else if (max_depth != -1) {
-            if (where.length() > 0) {
-                where.append(" AND ");
-            }
-            where.append("min_depth<= ? ");
-            params.add(new Double(max_depth));
-        }
+        StringBuilder whereClause = new StringBuilder();
+        Map<String, Object> params = new HashMap<String,Object>();
+        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName,geomIdx, lsids, type, params, whereClause);
 
         if (wkt != null && wkt.length() > 0) {
-            if (where.length() > 0) {
-                where.append(" AND ");
+            if (whereClause.length() > 0) {
+                whereClause.append(" AND ");
             }
-            where.append("ST_INTERSECTS(the_geom, ST_GEOMFROMTEXT( ? ))");
-            params.add(wkt);
+            whereClause.append("ST_INTERSECTS(the_geom, ST_GEOMFROMTEXT( :wkt , 4326))");
+            params.put("wkt", wkt) ;
         }
 
-        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid,checklist_name,area_km, notes, geom_idx from distributions ";
-        if (where.length() > 0) {
-            sql += " WHERE " + where.toString() + " AND type = ? ";
-        } else {
-            sql += " WHERE type= ? ";
+        String sql = SELECT_CLAUSE + " from " + viewName;
+        if (whereClause.length() > 0) {
+            sql += " WHERE " + whereClause.toString();
         }
 
-        List<Distribution> distributions = null;
-
-        if (params.size() == 0) {
-            distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), type);
-        } else if (params.size() == 1) {
-            distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), type);
-        } else if (params.size() == 2) {
-            distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), params.get(1), type);
-        } else if (params.size() == 3) {
-            distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), params.get(1), params.get(2), type);
-        } else if (params.size() == 4) {
-            distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), params.get(1), params.get(2), params.get(3), type);
-        } else if (params.size() == 5) {
-            distributions = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params.get(0), params.get(1), params.get(2), params.get(3), params.get(4), type);
-        }
-
-        return distributions;
-    }
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params);
+    }        
 
     @Override
     public Distribution getDistributionBySpcode(long spcode, String type) {
@@ -125,33 +82,46 @@ public class DistributionDAOImpl implements DistributionDAO {
         return null;
     }
 
+    public List<Distribution> queryDistributionsByRadius(float longitude, float latitude, float radiusInMetres,
+                                                         double min_depth, double max_depth, Integer geomIdx,
+                                                         String lsids, String type){
+        return queryDistributionsByRadius(longitude, latitude, radiusInMetres, min_depth, max_depth, null, null, null,
+                null, null, geomIdx, lsids, type);
+    }
+
     /**
      * Query by radius
      * @return set of species with distributions intersecting the radius
      */
-    public List<Distribution> queryDistributionsByRadius(float longitude, float latitude, float radiusInMetres, double min_depth, double max_depth, Integer geomIdx, String lsids, String type){
+    public List<Distribution> queryDistributionsByRadius(float longitude, float latitude, float radiusInMetres,
+                                                         double min_depth, double max_depth, Boolean pelagic,
+                                                         Boolean coastal, Boolean estuarine, Boolean desmersal,
+                                                         String groupName,
+                                                         Integer geomIdx, String lsids, String type){
         logger.info("Getting distributions list with a radius");
 
         Map<String, Object> params = new HashMap<String,Object>();
-        params.put("longitude", longitude);
-        params.put("latitude", latitude);
         params.put("radius", radiusInMetres);
         params.put("type", type);
+        String pointGeom =  "POINT(" + longitude + " " + latitude + ")";
 
-        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid,checklist_name,area_km, notes, geom_idx from distributions where ST_DWithin(the_geom, ST_MakePoint(:longitude,:latitude),:radius) AND type = :type ";
+        String sql = SELECT_CLAUSE + " from " + viewName + " " +
+                "where ST_Distance_Sphere(the_geom, ST_GeomFromText('"+pointGeom+"', 4326)) <= :radius";
 
         //add additional criteria
         StringBuilder whereClause = new StringBuilder();
-        constructWhereClause(min_depth, max_depth, geomIdx, lsids, params, whereClause);
+        
+        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids, type, params, whereClause);
+        
         if(whereClause.length()>0){
-            sql += "AND " + whereClause.toString();
+            sql += " AND " + whereClause.toString();
         }
         return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params);
     }
 
     @Override
     public List<Distribution> getDistributionByLSID(String[] lsids) {
-        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid,checklist_name,area_km, notes, geom_idx from distributions where lsid IN (:lsids)";
+            String sql = SELECT_CLAUSE + " from " + viewName + " where lsid IN (:lsids)";
         Map<String, Object> params = new HashMap<String,Object>();
         params.put("lsids", Arrays.asList(lsids));
         params.put("type", Distribution.EXPERT_DISTRIBUTION);
@@ -167,7 +137,10 @@ public class DistributionDAOImpl implements DistributionDAO {
      * @param params
      * @param where
      */
-    private void constructWhereClause(double min_depth, double max_depth, Integer geomIdx, String lsids, Map<String,Object> params, StringBuilder where) {
+    private void constructWhereClause(double min_depth, double max_depth, Boolean pelagic,
+                                      Boolean coastal, Boolean estuarine, Boolean desmersal,
+                                      String groupName, Integer geomIdx, String lsids, String type, Map<String,Object> params,
+                                      StringBuilder where) {
         if (geomIdx != null && geomIdx >= 0) {
             where.append(" geom_idx = :geom_idx ");
             params.put("geom_idx", geomIdx);
@@ -201,5 +174,65 @@ public class DistributionDAOImpl implements DistributionDAO {
             where.append("min_depth<= :min_depth ");
             params.put("min_depth", new Double(max_depth));
         }
+
+        if (pelagic !=null) {
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
+            if(pelagic){
+                where.append("pelagic_fl > 0 ");
+            } else {
+                where.append("pelagic_fl = 0 ");
+            }
+        }
+
+        if (coastal !=null) {
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
+            where.append("coastal_fl = :coastal ");
+            params.put("coastal", coastal ? 1 : 0);
+        }
+
+        if (estuarine !=null) {
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
+            where.append("estuarine_fl = :estuarine ");
+            params.put("estuarine", estuarine ? 1 : 0);
+        }
+
+        if (desmersal !=null) {
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
+            where.append("desmersal_fl = :desmersal ");
+            params.put("desmersal", desmersal ? 1 : 0);
+        }
+
+        if (type !=null) {
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
+            where.append("type = :distribution_type ");
+            params.put("distribution_type", type);
+        }
+
+        if (groupName !=null) {
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
+            where.append("group_name = :groupName ");
+            params.put("groupName", groupName);
+        }
+    }
+
+    @Resource(name = "dataSource")
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
+    }
+
+    public void setViewName(String viewName) {
+        this.viewName = viewName;
     }
 }
