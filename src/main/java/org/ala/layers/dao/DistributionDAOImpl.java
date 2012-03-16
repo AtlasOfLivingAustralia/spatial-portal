@@ -34,7 +34,7 @@ public class DistributionDAOImpl implements DistributionDAO {
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(DistributionDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
-    private String viewName = "copy_distributions";
+    private String viewName = "distributions";
     private final String SELECT_CLAUSE =  "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth," +
             "max_depth,pelagic_fl,coastal_fl,desmersal_fl,estuarine_fl,family_lsid,genus_lsid,caab_species_number," +
             "caab_family_number,group_name,metadata_u,wmsurl,lsid,type,area_name,pid,checklist_name,area_km, notes, geom_idx";
