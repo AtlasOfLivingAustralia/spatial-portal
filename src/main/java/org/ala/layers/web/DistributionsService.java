@@ -152,8 +152,8 @@ public class DistributionsService {
             Distribution distribution = distributions.get(0);
             logger.info("Sending redirect to WMS request for: " + lsid);
             //FIXME remove the URL hardcoding and load from properties file
-            response.sendRedirect("http://spatial-dev.ala.org.au/geoserver/ALA/wms?service=WMS&version=1.1.0&request=GetMap" +
-                    "&layers=ALA:aus1,ALA:copy_distributions&styles=" +
+            response.sendRedirect("http://spatial.ala.org.au/geoserver/ALA/wms?service=WMS&version=1.1.0&request=GetMap" +
+                    "&layers=ALA:aus1,ALA:distributions&styles=" +
                     "&bbox=112.911,-54.778,159.113,-9.221" +
                     "&width="+width+"&height="+height+"&srs=EPSG:4326" +
                     "&format=image/png" +
