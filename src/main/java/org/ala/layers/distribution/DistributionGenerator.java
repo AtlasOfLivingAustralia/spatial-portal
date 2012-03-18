@@ -21,7 +21,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.ala.layers.tabulation.TabulationUtil;
+import org.ala.layers.util.SpatialUtil;
 
 /**
  *
@@ -144,7 +144,7 @@ class AreaThread extends Thread {
                 try {
                     String[] data = lbq.take();
 
-                    double area = TabulationUtil.calculateArea(data[1]) / 1000.0 / 1000.0;
+                    double area = SpatialUtil.calculateArea(data[1]) / 1000.0 / 1000.0;
 
                     String sql = "UPDATE distributionshapes SET area_km = " + area + " WHERE id='" + data[0] + "';";
 

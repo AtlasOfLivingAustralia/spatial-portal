@@ -20,6 +20,7 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 import org.ala.layers.dto.Tabulation;
 import org.ala.layers.tabulation.TabulationUtil;
+import org.ala.layers.util.SpatialUtil;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
@@ -35,7 +36,9 @@ public class TabulationDAOImpl implements TabulationDAO {
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(TabulationDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
-    
+
+    @Resource(name = "layerIntersectDao")
+    private LayerIntersectDAO layerIntersectDao;
 
     @Resource(name = "dataSource")
     public void setDataSource(DataSource dataSource) {
@@ -84,9 +87,9 @@ public class TabulationDAOImpl implements TabulationDAO {
 
             for(Tabulation t : tabulations) {
                 try {
-                    t.setArea(TabulationUtil.calculateArea(t.getGeometry()));                    
-                    t.setOccurrences(TabulationUtil.calculateOccurrences(t.getGeometry()));
-                    t.setSpecies(TabulationUtil.calculateSpecies(t.getGeometry()));
+                    t.setArea(SpatialUtil.calculateArea(t.getGeometry()));
+                    t.setOccurrences(TabulationUtil.calculateOccurrences(layerIntersectDao.getConfig().getOccurrenceSpeciesRecordsFilename(), t.getGeometry()));
+                    t.setSpecies(TabulationUtil.calculateSpecies(layerIntersectDao.getConfig().getOccurrenceSpeciesRecordsFilename(), t.getGeometry()));
                 } catch (Exception e) {
                     logger.error("fid1:" + fid1 + " fid2:" + fid2 + " wkt:" + wkt, e);
                 }
@@ -126,7 +129,7 @@ public class TabulationDAOImpl implements TabulationDAO {
 
             for(Tabulation t : tabulations) {
                 try {
-                    t.setArea(TabulationUtil.calculateArea(t.getGeometry()));
+                    t.setArea(SpatialUtil.calculateArea(t.getGeometry()));
                 } catch (Exception e) {
                     logger.error("fid:" + fid + " wkt:" + wkt, e);
                 }

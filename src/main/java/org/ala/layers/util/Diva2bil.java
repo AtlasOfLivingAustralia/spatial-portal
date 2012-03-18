@@ -31,7 +31,8 @@ public class Diva2bil {
         diva2bil(args[0], args[1]);
     }
 
-    static public void diva2bil(String divaFilename, String bilFilename) {
+    static public boolean diva2bil(String divaFilename, String bilFilename) {
+        boolean ret = true;
 
         try {
             File dataFile = new File(divaFilename + ".gri");
@@ -83,8 +84,10 @@ public class Diva2bil {
 
             System.out.println("finished\n");
         } catch (Exception e) {
+            ret = false;
             e.printStackTrace();
         }
+        return ret;
     }
 
     static String getType(String datatype) {

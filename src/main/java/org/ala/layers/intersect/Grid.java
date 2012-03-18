@@ -41,7 +41,7 @@ public class Grid { //  implements Serializable
      * Log4j instance
      */
     protected Logger logger = Logger.getLogger(this.getClass());
-    final static int maxGridsLoaded = 0;
+    final static int maxGridsLoaded = 1;
     static ArrayList<Grid> all_grids = new ArrayList<Grid>();
     final double noDataValueDefault = -3.4E38;
     public Boolean byteorderLSB = true; // true if file is LSB (Intel)

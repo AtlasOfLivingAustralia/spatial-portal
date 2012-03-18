@@ -61,6 +61,7 @@ public class IntersectConfig {
     static final String GEOSERVER_URL = "GEOSERVER_URL";
     static final String GDAL_PATH = "GDAL_PATH";
     static final String ANALYSIS_RESOLUTIONS = "ANALYSIS_RESOLUTIONS";
+    static final String OCCURRENCE_SPECIES_RECORDS_FILENAME = "OCCURRENCE_SPECIES_RECORDS_FILENAME";
     static final String LAYER_PROPERTIES = "layer.properties";
     static ObjectMapper mapper = new ObjectMapper();
     private FieldDAO fieldDao;
@@ -83,6 +84,7 @@ public class IntersectConfig {
     String geoserverUrl;
     String gdalPath;
     List<Double> analysisResolutions;
+    String occurrenceSpeciesRecordsFilename;
 
     public IntersectConfig(FieldDAO fieldDao, LayerDAO layerDao) {
         this.fieldDao = fieldDao;
@@ -121,6 +123,7 @@ public class IntersectConfig {
         geoserverUrl = getProperty(GEOSERVER_URL, properties, null);
         gdalPath = getProperty(GDAL_PATH, properties, null);
         analysisResolutions = getDoublesFrom(getProperty(ANALYSIS_RESOLUTIONS, properties, "0.5"));
+        occurrenceSpeciesRecordsFilename = getProperty(OCCURRENCE_SPECIES_RECORDS_FILENAME, properties, null);
 
         try {
             updateIntersectionFiles();
@@ -512,5 +515,9 @@ public class IntersectConfig {
         }
         java.util.Collections.sort(l);
         return l;
+    }
+
+    public String getOccurrenceSpeciesRecordsFilename() {
+        return occurrenceSpeciesRecordsFilename;
     }
 }

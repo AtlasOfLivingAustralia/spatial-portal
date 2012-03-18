@@ -33,7 +33,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.ala.layers.dto.GridClass;
 import org.ala.layers.intersect.Grid;
-import org.ala.layers.tabulation.TabulationUtil;
+import org.ala.layers.util.SpatialUtil;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
@@ -142,7 +142,7 @@ public class GridClassBuilder {
                 zos.write(((String) wktIndexed.get("wkt")).getBytes());
                 zos.close();
                 System.out.println("wkt written to file");
-                gc.setArea_km(TabulationUtil.calculateArea((String) wktIndexed.get("wkt")) / 1000.0 / 1000.0);
+                gc.setArea_km(SpatialUtil.calculateArea((String) wktIndexed.get("wkt")) / 1000.0 / 1000.0);
 
                 //store map
                 wktMap = (int[]) wktIndexed.get("map");
@@ -179,7 +179,7 @@ public class GridClassBuilder {
                         raf.writeFloat((float) g.getEnvelopeInternal().getMinY());
                         raf.writeFloat((float) g.getEnvelopeInternal().getMaxX());
                         raf.writeFloat((float) g.getEnvelopeInternal().getMaxY());
-                        raf.writeFloat((float) (TabulationUtil.calculateArea(polygonWkt) / 1000.0 / 1000.0));
+                        raf.writeFloat((float) (SpatialUtil.calculateArea(polygonWkt) / 1000.0 / 1000.0));
                     }
                 }
                 raf.close();

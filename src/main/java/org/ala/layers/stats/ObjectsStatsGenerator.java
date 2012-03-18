@@ -20,7 +20,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.ala.layers.tabulation.TabulationUtil;
+import org.ala.layers.util.SpatialUtil;
 
 /**
  * This class generates bbox and area_km attributes for entries in the objects table.
@@ -231,7 +231,7 @@ class AreaThread extends Thread {
                         wkt = rs.getString("wkt");
                     }
 
-                    area = TabulationUtil.calculateArea(wkt) / 1000.0 / 1000.0;
+                    area = SpatialUtil.calculateArea(wkt) / 1000.0 / 1000.0;
 
                     sql = "UPDATE objects SET area_km = " + area + " WHERE pid='" + pid + "'";
                     int update = s.executeUpdate(sql);

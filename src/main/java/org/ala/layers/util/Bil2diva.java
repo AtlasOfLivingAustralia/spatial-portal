@@ -37,7 +37,8 @@ public class Bil2diva {
         bil2diva(args[0], args[1], args[2]);
     }
 
-    static public void bil2diva(String bilFilename, String divaFilename, String unitsString) {
+    static public boolean bil2diva(String bilFilename, String divaFilename, String unitsString) {
+        boolean ret = true;
         try {
             File headerFile = new File(bilFilename + ".hdr");
             File bilFile = new File(bilFilename + ".bil");
@@ -130,8 +131,8 @@ public class Bil2diva {
                 fw.write("ByteOrder=MSB\n");
             }
 
-            double missingValue = Double.parseDouble(map.get("nodata"));
-            String noDataValue = map.get("nodata");
+            String noDataValue = (map.get("nodata") != null) ? map.get("nodata") : "0";
+            double missingValue = Double.parseDouble(noDataValue);
             if (noDataValue == null) {
                 noDataValue = String.valueOf(Double.MAX_VALUE * -1);
             }
@@ -160,8 +161,10 @@ public class Bil2diva {
             fis.close();
             fos.close();
         } catch (Exception e) {
+            ret = false;
             e.printStackTrace();
         }
+        return ret;
     }
 
     static double[] getMinMax(int nbits, String datatype, int nrows, int ncols, String byteOrder, double missingValue, File bilFile) {

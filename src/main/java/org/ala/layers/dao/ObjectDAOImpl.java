@@ -217,8 +217,6 @@ public class ObjectDAOImpl implements ObjectDAO {
 
     @Override
     public String getObjectsGeometryById(String id, String geomtype) {
-        logger.info("Getting object info for id = " + id + " and geometry as " + geomtype);
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             streamObjectsGeometryById(baos, id, geomtype);
@@ -367,6 +365,8 @@ public class ObjectDAOImpl implements ObjectDAO {
         logger.info("Getting object info for pid = " + pid);
         String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from objects o, fields f where o.pid = ? and o.fid = f.id";
         List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), pid);
+
+        updateObjectWms(l);
 
         //get grid classes
         if ((l == null || l.isEmpty()) && pid.length() > 0) {

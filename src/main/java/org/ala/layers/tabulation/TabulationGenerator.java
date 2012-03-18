@@ -41,6 +41,7 @@ import org.ala.layers.dto.Layer;
 import org.ala.layers.dto.Objects;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
+import org.ala.layers.util.SpatialUtil;
 
 /**
  *
@@ -706,7 +707,7 @@ class AreaThread extends Thread {
                 try {
                     String[] data = lbq.take();
 
-                    double area = TabulationUtil.calculateArea(data[2]);
+                    double area = SpatialUtil.calculateArea(data[2]);
 
                     String sql = "UPDATE tabulation SET area = " + area + " WHERE pid1='" + data[0] + "' AND pid2='" + data[1] + "';";
 
