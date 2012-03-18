@@ -499,7 +499,7 @@ public class ObjectDAOImpl implements ObjectDAO {
 
     private void updateObjectWms(List<Objects> objects) {
         for (Objects o : objects) {
-            o.setWmsurl(layerIntersectDao.getConfig().getGeoserverUrl() + objectWmsUrl + o.getPid());
+            o.setWmsurl(layerIntersectDao.getConfig().getGeoserverUrl() + objectWmsUrl.replace("<pid>",o.getPid()));
         }
     }
 
