@@ -918,7 +918,7 @@ public class AddFacetController extends UtilityComposer {
     }
     
     public void onClick$selectAll(Event event) {
-        if(legend != null) {
+        if(legend != null && legend.getItemCount() > 0) {
             for (Listitem li : (List<Listitem>) legend.getItems()) {
                 if (li.getFirstChild().getChildren().size() > 0
                         && !((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
@@ -928,7 +928,10 @@ public class AddFacetController extends UtilityComposer {
             //updateD();
             //mapLayer.setHighlight(getSelectionFacet());
             //getMapComposer().applyChange(mapLayer);
-            dCreateButtons.setVisible(true);
+            //dCreateButtons.setVisible(true);
+            
+            checkboxClick(event);
+            btnOk.setDisabled(false);
         }
     }
     
@@ -1195,13 +1198,16 @@ public class AddFacetController extends UtilityComposer {
                 rAreaSelected = rAreaWorld;
                 rgArealocal.setSelectedItem(rAreaSelected);
             } else {
-                for (int i = 0; i < rgArealocal.getItemCount(); i++) {
-                    if (rgArealocal.getItemAtIndex(i).isVisible()) {
-                        rAreaSelected = rgArealocal.getItemAtIndex(i);
-                        rgArealocal.setSelectedItem(rAreaSelected);
-                        break;
-                    }
-                }
+//                for (int i = 0; i < rgArealocal.getItemCount(); i++) {
+//                    if (rgArealocal.getItemAtIndex(i).isVisible()) {
+//                        rAreaSelected = rgArealocal.getItemAtIndex(i);
+//                        rgArealocal.setSelectedItem(rAreaSelected);
+//                        break;
+//                    }
+//                }
+                rAreaSelected = rAreaWorld;
+                rgArealocal.setSelectedItem(rAreaSelected);
+
             }
             Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
 

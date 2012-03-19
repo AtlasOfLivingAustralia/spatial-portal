@@ -41,7 +41,7 @@
                     <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                     <label id="atstep1_label" value="" />
                     <separator />
-                    <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
+                    <radiogroup id="rgArea" orient="vertical" onOK="addfacetwindow.onClick$btnOk(null)">
                         <radio id="rAreaCurrent" label="Current extent" value="current" />
                         <radio id="rAreaAustralia" label="Australia" value="australia" />
                         <radio id="rAreaWorld" label="World" value="world"/>
