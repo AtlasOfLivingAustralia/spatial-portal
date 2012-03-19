@@ -286,7 +286,7 @@ function buildMapReal() {
         'map': map
     }, {
         'click': function(e) {
-            envLayerInspection(e);
+            //envLayerInspection(e);
         }
     });
     clickEventHandler.activate();
