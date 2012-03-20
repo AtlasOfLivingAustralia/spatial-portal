@@ -306,6 +306,10 @@ function buildMapReal() {
 
     map.events.register("moveend" , map, function (e) {
         parent.setExtent();
+        if (shownPicture){
+            removePanoramio();
+            loadPanoramio(0,49);
+        }
         Event.stop(e);
     });
 
@@ -1740,21 +1744,21 @@ function getOccurrenceUploaded(layer, query, lat, lon, start, pos, dotradius) {
 function checkIfLoadPanoramio() {
     var vectorLayer;
     if (!shownPicture){
-        loadPanoramio();
+        loadPanoramio(0,49);
     }
     else {
         removePanoramio();
     }
 }
 
-function loadPanoramio() {
+function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
       
    //document.getElementById("addPanoramio").style.backgroundImage = "url('img/panoramio-marker.png')";
    var popup, selectControl, selectedFeature;
    var panoramio_style;
     //Obtain Bbox coords
-   var proj = new OpenLayers.Projection("EPSG:900913");
-   var ext = map.getMaxExtent().transform(map.getProjectionObject(), proj); 
+   var proj = new OpenLayers.Projection("EPSG:4326");
+   var ext = map.getExtent().transform(map.getProjectionObject(), proj);
    var minx = ext.left;
    var miny = ext.bottom;
    var maxx = ext.right;
@@ -1764,8 +1768,8 @@ function loadPanoramio() {
    var parameters = {
         order:'popularity',
         set:'full',
-        from:0,
-        to:3298,
+        from:pictureIndexFrom,
+        to:pictureIndexTo,
         minx: minx,
         miny: miny,
         maxx: maxx,
@@ -1817,12 +1821,12 @@ function loadPanoramio() {
 
       }//Outside for loop
       panoramio_style = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults({
-         pointRadius: 7,
+         pointRadius: 15,
          fillColor: "red",
          fillOpacity: 1,
          strokeColor: "black",
-         //externalGraphic: "http://www.gisandchips.org/demos/j3m/panoramio/panoramio-marker.png"
-         externalGraphic: "img/panoramio-marker.png"
+         externalGraphic: "${photo_file_url}"
+         //externalGraphic: "img/panoramio-marker.png"
       }, OpenLayers.Feature.Vector.style["default"]));
 
        vectorLayer = new OpenLayers.Layer.Vector("Panoramio Photos", {
