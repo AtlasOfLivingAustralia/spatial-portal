@@ -57,6 +57,7 @@ public class Grid { //  implements Serializable
     byte nbytes;
     public String filename;
     float[] grid_data = null;
+    public String units;
 
     /**
      * loads grd for gri file reference
@@ -317,6 +318,7 @@ public class Grid { //  implements Serializable
             }// default is windows (LSB), not linux or Java (MSB)
         }
 
+        units = ir.getStringValue("Data", "Units");
     }
 
     public float[] getGrid() {
