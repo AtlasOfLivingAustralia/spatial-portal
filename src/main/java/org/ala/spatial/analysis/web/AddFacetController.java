@@ -136,6 +136,7 @@ public class AddFacetController extends UtilityComposer {
         switch (currentStep) {           
             case 1:
                 rgArea.setFocus(true);
+                rgArea.setSelectedItem(rAreaWorld);
                 break;
             case 2:
                 cbColour.setFocus(true);
