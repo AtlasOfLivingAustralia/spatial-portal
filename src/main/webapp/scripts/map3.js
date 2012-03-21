@@ -54,6 +54,7 @@ var featureSelectLayer = null;
 var featureSpeciesSelectLayer = null;
 var areaSelectOn = false;
 var layersLoading = 0;
+var panoramioLoading = 0;
 var layername; // current layer name
 
 var attempts = 0;
@@ -74,6 +75,7 @@ var autoBaseLayerSwitch = false;
 var baseLayerSwitchStatus = 0;
 var activeAreaPresent = false;
 var shownPicture = false;
+var vectorLayer;
 
 
 function stopCheckingLibraryLoaded() {
@@ -98,7 +100,7 @@ function loadEnd() {
         toggleLoadingImage("none");
     }
 //signal webportal
-
+    
 }
 
 function toggleLoadingImage(display) {
@@ -1742,8 +1744,9 @@ function getOccurrenceUploaded(layer, query, lat, lon, start, pos, dotradius) {
 }
 
 function checkIfLoadPanoramio() {
-    var vectorLayer;
     if (!shownPicture){
+        panoramioLoading++;
+        panoramioLoadingImage("block");
         loadPanoramio(0,49);
     }
     else {
@@ -1832,8 +1835,9 @@ function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
        vectorLayer = new OpenLayers.Layer.Vector("Panoramio Photos", {
           styleMap: panoramio_style
        });
+       registerPanoramio(vectorLayer);
        vectorLayer.addFeatures(features);
-       this.map.addLayer(vectorLayer);
+       this.map.addLayer(vectorLayer);       
        selectControl = new OpenLayers.Control.SelectFeature(vectorLayer, {onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
        this.map.addControl(selectControl);
        selectControl.activate();
@@ -1878,8 +1882,43 @@ function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
        }       
     }
 
-    function removePanoramio() {
-        this.map.removeLayer(vectorLayer);
-        shownPicture = false;
-        
+function removePanoramio() {
+    this.map.removeLayer(vectorLayer);
+    shownPicture = false;        
+}
+    
+function registerPanoramio(vectorLayer) {
+    vectorLayer.events.register('beforefeaturesadded', this, panoramioloadStart);
+    vectorLayer.events.register('featuresadded', this, panoramioloadEnd);
+    //vectorLayer.events.on({"loadstart":panoramioloadStart,"loadend":panoramioloadStart});
+}
+
+function panoramioloadStart() {
+    panoramioLoading++;
+    if (panoramioLoading > 0) {
+        panoramioLoadingImage("block");
     }
+    
+}
+
+function panoramioloadEnd() {
+    panoramioLoading--;
+    panoramioLoading--;
+    if (panoramioLoading == 0) {
+        panoramioLoadingImage("none");
+    } 
+}
+    
+function panoramioLoadingImage(display) {
+    var div = document.getElementById("panoramioLoader");
+    if (div != null) {
+        if (display == "none") {
+            jQuery("#panoramioLoader").hide(2000);
+        }
+        else {
+                if (panoramioLoading > 0) {
+                    div.style.display=display;
+                }
+        }
+    }
+}

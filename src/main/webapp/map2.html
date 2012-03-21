@@ -105,7 +105,9 @@
         <div id="areaTool"></div>
         <div id="hoverTool" onClick="toggleActiveHover()"></div>
         <div id="addPanoramio" onClick="checkIfLoadPanoramio()"></div>
-        <!--div id="addPanoramio" onClick="loadPanoramio()"></div-->
+        <div id="panoramioLoader" style="position:absolute;top:50%;left:50%;display:none;z-index: 99;">
+            <img src="img/ajax-loader.gif" alt="loading..."/>
+        </div>
         <div id="mapinfo">
             <div id="mapscale"></div>
             <div id="mapcoords"></div>
