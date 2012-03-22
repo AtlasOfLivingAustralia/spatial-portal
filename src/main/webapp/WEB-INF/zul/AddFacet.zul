@@ -60,9 +60,7 @@
                     </hbox>
                     <separator spacing="10px" />
                     <hbox>
-                        <label value="Please refer to " />
-                        <a href="resources/FacetFields.htm" target="_blank" label="facet fields"/>
-                        <label value=" if needed." />
+                        <a href="resources/FacetFields.htm" target="_blank" label="Facet Fields and definitions"/>
                     </hbox>
                 </div>
                 
