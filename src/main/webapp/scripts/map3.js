@@ -309,7 +309,7 @@ function buildMapReal() {
     map.events.register("moveend" , map, function (e) {
         parent.setExtent();
         if (shownPicture){
-            removePanoramio("moveend");
+            removePanoramio();
             loadPanoramio(0,49);
         }
         Event.stop(e);
@@ -1750,7 +1750,7 @@ function checkIfLoadPanoramio() {
         loadPanoramio(0,49);
     }
     else {
-        removePanoramio(null);
+        removePanoramio();
         document.getElementById("addPanoramio").style.backgroundImage = "url('img/panoramio-marker-off.png')";
     }
 }
@@ -1883,7 +1883,7 @@ function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
        }       
     }
 
-function removePanoramio(source) {
+function removePanoramio() {
     if (this.map.popups[0]!=null) {
         this.map.removePopup(this.map.popups[0]);
     }
