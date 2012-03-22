@@ -1745,17 +1745,18 @@ function getOccurrenceUploaded(layer, query, lat, lon, start, pos, dotradius) {
 
 function checkIfLoadPanoramio() {
     if (!shownPicture){
-        panoramioLoading++;
+        document.getElementById("addPanoramio").style.backgroundImage = "url('img/panoramio-marker.png')";
         panoramioLoadingImage("block");
         loadPanoramio(0,49);
     }
     else {
         removePanoramio();
+        document.getElementById("addPanoramio").style.backgroundImage = "url('img/panoramio-marker-off.png')";
     }
 }
 
 function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
-      
+   panoramioLoading++;
    //document.getElementById("addPanoramio").style.backgroundImage = "url('img/panoramio-marker.png')";
    var popup, selectControl, selectedFeature;
    var panoramio_style;
@@ -1884,7 +1885,8 @@ function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
 
 function removePanoramio() {
     this.map.removeLayer(vectorLayer);
-    shownPicture = false;        
+    shownPicture = false;
+    panoramioLoading = 0;
 }
     
 function registerPanoramio(vectorLayer) {
@@ -1894,7 +1896,6 @@ function registerPanoramio(vectorLayer) {
 }
 
 function panoramioloadStart() {
-    panoramioLoading++;
     if (panoramioLoading > 0) {
         panoramioLoadingImage("block");
     }
@@ -1902,7 +1903,6 @@ function panoramioloadStart() {
 }
 
 function panoramioloadEnd() {
-    panoramioLoading--;
     panoramioLoading--;
     if (panoramioLoading == 0) {
         panoramioLoadingImage("none");

@@ -684,7 +684,7 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     position: absolute;
     background-repeat: no-repeat;
     /*background-image: url('http://www.gisandchips.org/demos/j3m/panoramio/panoramio-marker.png');*/
-    background-image: url('../img/panoramio-marker.png');
+    background-image: url('../img/panoramio-marker-off.png');
     width: 16px! important;
     height: 16px! important;
     cursor: pointer;
