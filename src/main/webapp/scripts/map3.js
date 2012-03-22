@@ -1884,7 +1884,7 @@ function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
     }
 
 function removePanoramio(source) {
-    if (source==null) {
+    if (this.map.popups[0]!=null) {
         this.map.removePopup(this.map.popups[0]);
     }
     this.map.removeLayer(vectorLayer);
