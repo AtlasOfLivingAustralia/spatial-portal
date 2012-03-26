@@ -2202,15 +2202,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 System.out.println("failed to parse wkt in : " + url);
                 e.printStackTrace();
             }
-//            try {
-//                if (jo.containsKey("pid") && jo.containsKey("area_name")) {
-//                    String fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
-//                    String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
-//                    md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
         } catch (Exception e) {
             e.printStackTrace();
         }

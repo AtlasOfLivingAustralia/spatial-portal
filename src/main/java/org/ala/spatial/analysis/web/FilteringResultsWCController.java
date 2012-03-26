@@ -409,76 +409,11 @@ public class FilteringResultsWCController extends UtilityComposer {
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);
             getMapComposer().mapSpecies(query, activeAreaLayerName, "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
 
-            //getMapComposer().updateUserLogAnalysis("Sampling", query.getName(), "", CommonData.satServer + "/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-//    private String getInfo(String urlPart) {
-//        try {
-//            HttpClient client = new HttpClient();
-//
-//            GetMethod get = new GetMethod(CommonData.satServer + "/ws" + urlPart); // testurl
-//            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-//
-//            int result = client.executeMethod(get);
-//
-//            //TODO: confirm result
-//            String slist = get.getResponseBodyAsString();
-//
-//            return slist;
-//        } catch (Exception ex) {
-//            //TODO: error message
-//            System.out.println("getInfo.error:");
-//            ex.printStackTrace(System.out);
-//        }
-//        return null;
-//    }
-
-//    private String postInfo(String urlPart) {
-//        try {
-//            HttpClient client = new HttpClient();
-//
-//            PostMethod post = new PostMethod(CommonData.satServer + "/ws" + urlPart); // testurl
-//
-//            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-//            post.addParameter("area", shape);
-//
-//            System.out.println("satServer:" + CommonData.satServer + " ** postInfo:" + urlPart + " ** " + shape);
-//
-//            int result = client.executeMethod(post);
-//
-//            //TODO: confirm result
-//            String slist = post.getResponseBodyAsString();
-//
-//            return slist;
-//        } catch (Exception ex) {
-//            //TODO: error message
-//            System.out.println("getInfo.error:");
-//            ex.printStackTrace(System.out);
-//        }
-//        return null;
-//    }
-
-//    boolean updateParameters() {
-//        //extract 'shape' and 'pid' from composer
-//        String area = reportArea;
-//
-//        if (area.contains("ENVELOPE(")) {
-//            shape = "none";
-//            pid = area.substring(9, area.length() - 1);
-//            return true;
-//        } else {
-//            pid = "none";
-//            if (shape == null || !shape.equalsIgnoreCase(area)) {
-//                shape = area;
-//                return true;
-//            } else {
-//                return false;
-//            }
-//        }
-//    }
     static public void open(SelectedArea sa, String name, String displayName, String areaSqKm, double[] boundingBox) {
         FilteringResultsWCController win = (FilteringResultsWCController) Executions.createComponents(
                 "/WEB-INF/zul/AnalysisFilteringResults.zul", null, null);

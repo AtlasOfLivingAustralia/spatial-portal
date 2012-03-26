@@ -96,7 +96,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                 ma = (String) cbMovingAverageSize.getSelectedItem().getValue();
             }
             int movingAverageSize = Integer.parseInt(ma);
-            if (movingAverageSize % 2 == 0 || movingAverageSize <= 1 || movingAverageSize >= 16) {
+            if (movingAverageSize % 2 == 0 || movingAverageSize <= 0 || movingAverageSize >= 16) {
                 getMapComposer().showMessage("Moving average size " + movingAverageSize + " is not valid.  Must be odd and between 1 and 15.", this);
                 return false;
             }
@@ -131,7 +131,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/ws/sitesbyspecies/processgeoq?");
+            sbProcessUrl.append(CommonData.satServer + "/ws/sitesbyspecies?");
 
             sbProcessUrl.append("speciesq=" + URLEncoder.encode(query.getQ(), "UTF-8"));
 

@@ -110,7 +110,9 @@ public class AddToolComposer extends UtilityComposer {
     SpeciesAutoComplete mSearchSpeciesAuto, mSearchSpeciesAutoBk;
     Textbox tMultiple, tMultipleBk;
     Listbox lMultiple, lMultipleBk;
-    boolean environmentalOnly = false;
+    boolean includeAnalysisLayers = true;
+    boolean includeContextualLayers = false;
+    boolean singleLayerDomain = true;
     boolean fullList = false;
     boolean includeAnalysisLayersForUploadQuery = false;
     boolean includeAnalysisLayersForAnyQuery = false;
@@ -592,12 +594,11 @@ public class AddToolComposer extends UtilityComposer {
         }
     }
 
-    public void loadGridLayers(boolean environmentalOnly, boolean fullList) {
-        this.environmentalOnly = environmentalOnly;
-        this.fullList = fullList;
-        if (selectedMethod.equals("Prediction")) {
-            lbListLayers.isPrediction = true;
-        }
+    public void loadGridLayers(boolean includeAnalysisLayers, boolean includeContextualLayers, boolean singleLayerDomain) {
+        this.includeAnalysisLayers = includeAnalysisLayers;
+        this.includeContextualLayers = includeContextualLayers;
+        this.singleLayerDomain = singleLayerDomain;
+        this.fullList = true;
 
         if (selectedLayersCombobox != null) {
             selectedLayersCombobox.init(getMapComposer().getLayerSelections(), getMapComposer(), false);
@@ -605,7 +606,7 @@ public class AddToolComposer extends UtilityComposer {
         try {
 
             if (fullList) {
-                lbListLayers.init(getMapComposer(), CommonData.satServer, environmentalOnly, false);
+                lbListLayers.init(getMapComposer(), includeAnalysisLayers, !includeContextualLayers, singleLayerDomain);
                 lbListLayers.updateDistances();
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
@@ -996,7 +997,7 @@ public class AddToolComposer extends UtilityComposer {
                         if (lbListLayers != null) {
                             if ((lbListLayers.getIncludeAnalysisLayers()) != test) {
                                 String[] selectedLayers = lbListLayers.getSelectedLayers();
-                                lbListLayers.init(getMapComposer(), CommonData.satServer, environmentalOnly, test);
+                                lbListLayers.init(getMapComposer(), test, !includeContextualLayers, singleLayerDomain);
                                 lbListLayers.updateDistances();
 
                                 if (selectedLayers != null && selectedLayers.length > 0) {

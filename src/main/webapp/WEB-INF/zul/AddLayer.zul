@@ -93,7 +93,8 @@
                             </vbox>
                         </hbox>
                     </vbox>
-                </div>               
+                </div>
+                <textbox id="tToolName" visible="false"/>
                 <!--<div id="atstep3" visible="false" zclass="last optional" sclass="atstep" width="550px" height="500px">
                     <label id="atstep3_desc" value="List of selected layers" sclass="wSubLabel"/>
                     <label id="atstep3_label" value="" />

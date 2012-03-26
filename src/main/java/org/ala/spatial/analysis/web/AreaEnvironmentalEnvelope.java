@@ -93,7 +93,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         //get the current MapComposer instance
         mc = getThisMapComposer();
 
-        layersUtil = new LayersUtil(mc, CommonData.satServer);
+        layersUtil = new LayersUtil(mc);
 
         selectedLayers = new Vector<String>();
         selectedLayersUrl = new Vector<String>();
@@ -866,27 +866,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
         return mapComposer;
     }
-
-    /**
-     * populate sampling screen with values from active layers
-     * 
-     * only operates if no filter layers present
-     * 
-     * TODO: run this on 'tab' open
-     */
-    public void callPullFromActiveLayers() {
-        //already has layers applied, do nothing
-        if (lbSelLayers.getItemCount() != 0) {
-            return;
-        }
-
-        //get top env layer
-        String layer = layersUtil.getFirstEnvLayer();
-
-        if (layer != null) {
-            //   doAdd(layer);
-        }
-    }
+    
     boolean state_visible = true;
 
     /**

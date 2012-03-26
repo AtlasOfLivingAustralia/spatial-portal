@@ -58,7 +58,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
         this.loadAreaLayers();
         this.loadSpeciesLayers();
-        this.loadGridLayers(true, true);
+        this.loadGridLayers(true, true, true);
         this.updateWindowTitle();
 
     }
@@ -129,7 +129,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
             System.out.println("Test per: " + txtTestPercentage.getValue());
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/ws/maxent/processgeoq?");
+            sbProcessUrl.append(CommonData.satServer + "/ws/maxent?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(query.getName(), "UTF-8"));
             sbProcessUrl.append("&taxonlsid=" + URLEncoder.encode(query.getQ(), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));

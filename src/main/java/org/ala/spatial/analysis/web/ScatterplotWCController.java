@@ -128,7 +128,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     public void afterCompose() {
         super.afterCompose();
 
-        layersUtil = new LayersUtil(getMapComposer(), CommonData.satServer);
+        layersUtil = new LayersUtil(getMapComposer());
 
         this.addEventListener("onSize", new EventListener() {
 
@@ -832,6 +832,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
                 sbProcessUrl.append("&xaxis=").append(URLEncoder.encode(env1, "UTF-8")).append(",").append(min1).append(",").append(max1);
                 sbProcessUrl.append("&yaxis=").append(URLEncoder.encode(env2, "UTF-8")).append(",").append(min2).append(",").append(max2);
+
+                //TODO: add the filter region
 
                 System.out.println(sbProcessUrl.toString());
 

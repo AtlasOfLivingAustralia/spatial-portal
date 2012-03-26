@@ -32,7 +32,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
 
         this.loadAreaLayers();
         this.loadSpeciesLayers();
-        this.loadGridLayers(false, true);
+        this.loadGridLayers(true, true, false);
         this.updateWindowTitle();
 
     }
@@ -89,15 +89,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
             if (url != null) {
                 System.out.println("Sending file to user: " + url);
 
-                //TODO: find some way to do this nicely.
-                //Events.echoEvent("openHTML", getMapComposer(), "Download\n<a href='" + url + "' >click to start download</a>");
                 Events.echoEvent("openHTML", getMapComposer(), "Download\n" + url);
-
-                //Would clients still treat this as a popup if it were on prod?
-                //getMapComposer().openHTML(event)Clients.evalJavaScript("window.open('" + url + "','download','')");
-
-                //TODO: fix logging
-                //getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + slist, pid, "Sampling results for species: " + taxon);
 
                 try {
                     remoteLogger.logMapAnalysis("species sampling", "Export - Species Sampling", sa.getWkt(), query.getName(), envlayers, pid, "", "download");
@@ -106,12 +98,6 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 }
                 this.detach();
             } else {
-//                byte [] b = query.getDownloadBytes(layers);
-//                if(b != null) {
-//                    Filedownload.save(new ByteArrayInputStream(b), "application/zip", query.getName() + ".zip");
-//                } else {
-//                    Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
-//                }
 
                 //download byte data.  Requires a progress bar to prevent timeout issues.
                 Component c = getMapComposer().getFellowIfAny("samplingprogress");

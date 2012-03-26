@@ -5,6 +5,8 @@
 
 package org.ala.spatial.util;
 
+import net.sf.json.JSONObject;
+
 /**
  *
  * @author Adam
@@ -16,20 +18,22 @@ public class ListEntry {
     public String catagory2;
     public String type;
     public float value;
-    public int row_in_list;
-    public int row_in_distances;
-    public String uid;
+    public JSONObject layerObject;
+    public String domain;
 
-    public ListEntry(String name_, String displayname_, String catagory1_, String catagory2_, String type_, float value_, int row_list, int row_distances, String uid_) {
+    public ListEntry(String name_, String displayname_, String catagory1_, String catagory2_, String type_, String domain, JSONObject layerObject) {
         name = name_;
-        value = value_;
-        row_in_list = row_list;
-        row_in_distances = row_distances;
         catagory1 = catagory1_;
         catagory2 = catagory2_;
         displayname = displayname_;
         type = type_; 
-        uid = uid_;
+        this.layerObject = layerObject;
+        this.domain = domain;
+        value = 0;
+    }
+
+    public ListEntry(String string, String displayName, String string0, String string1, String string2, Object object) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     public String catagoryNames() {

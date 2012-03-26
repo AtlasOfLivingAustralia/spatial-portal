@@ -71,7 +71,7 @@ public class AddToolGDMComposer extends AddToolComposer {
 
         this.loadAreaLayers();
         this.loadSpeciesLayers();
-        this.loadGridLayers(true, true);
+        this.loadGridLayers(true, false, true);
         this.updateWindowTitle();
 
         try {

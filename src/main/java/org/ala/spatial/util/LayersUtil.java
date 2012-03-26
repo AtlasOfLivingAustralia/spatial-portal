@@ -1,20 +1,16 @@
 package org.ala.spatial.util;
 
-import java.net.URLEncoder;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * joins active layer names to
@@ -70,21 +66,17 @@ import org.apache.commons.lang.StringUtils;
      */
     MapComposer mc;
     /**
-     * SAT server url
-     */
-    String satServer;
-    /**
      * list of contextual layer names
      *
      * populated on first getContextualLayers call
      */
-    String[] contextualLayerNames = null;
+//    String[] contextualLayerNames = null;
     /**
      * list of environmental layer names
      *
      * populated on first getEnvironmentalLayers call
      */
-    String[] environmentalLayerNames = null;
+//    String[] environmentalLayerNames = null;
     private static String[] commonTaxonRanks = new String[]{
         "cultivar",
         "superfamily",
@@ -106,11 +98,9 @@ import org.apache.commons.lang.StringUtils;
      * constructor
      *
      * @param mc_ current MapComposer
-     * @param satServer_ SAT server url as String
      */
-    public LayersUtil(MapComposer mc_, String satServer_) {
+    public LayersUtil(MapComposer mc_) {
         mc = mc_;
-        satServer = satServer_;
     }
 
     /**
@@ -128,124 +118,44 @@ import org.apache.commons.lang.StringUtils;
         return null;
     }
 
-    /**
-     * gets whole list of environmental or contextual layers
-     * that appear in the active layers list
-     *
-     * @return list of layer names as String [] or null if none
-     * found
-     */
-    public String[] getActiveEnvCtxLayers() {
-        List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
-        ArrayList<String> layers = new ArrayList<String>();
-        for (MapLayer ml : activeLayers) {
-            if (isEnvCtxLayer(ml.getName())) {
-                layers.add(ml.getName());
-            }
-        }
-        if (layers.size() == 0) {
-            return null;
-        }
-        String[] ret = new String[layers.size()];
-        layers.toArray(ret);
-        return ret;
-    }
-
-    /**
-     * gets first environmental layer that appears in the
-     * active layers list
-     *
-     * @return name of first environmental layer as String or null
-     * if none found
-     */
-    public String getFirstEnvLayer() {
-        List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
-        for (MapLayer ml : activeLayers) {
-            if (isEnvLayer(ml.getName())) {
-                return ml.getName();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * tests if a String is a species name
-     * (or valid autocomplete box higher order value)
-     *
-     * uses SAT autocomplete service call
-     *
-     * @param val text value to test as String
-     * @return true iff val is an exact match with a
-     * species autocomplete value.  Note that false is
-     * returned if there is error communicating with SAT
-     */
-//    public boolean isSpeciesName(String val) {
-//        String snUrl = satServer + "/species/taxon/";
-//        // get rid of the common name if present
-//        if (val.contains(" (")) {
-//            val = StringUtils.substringBefore(val, " (");
-//        }
-//
-//        val = val.trim();
-//        try {
-//
-//            String nsurl = snUrl + URLEncoder.encode(val, "UTF-8");
-//
-//            HttpClient client = new HttpClient();
-//            GetMethod get = new GetMethod(nsurl);
-//            get.addRequestHeader("Content-type", "text/plain");
-//
-//            int result = client.executeMethod(get);
-//            String slist = get.getResponseBodyAsString();
-//
-//            System.out.println("Response status code: " + result);
-//
-//            String[] aslist = slist.split("\n");
-//
-//            if (aslist.length > 0) {		//only interested in first match from autocomplete search
-//                String[] spVal = aslist[0].split("/");
-//                String taxon = spVal[0].trim();
-//                if (taxon.equalsIgnoreCase(val)) {
-//                    return true;
-//                }
+//    /**
+//     * gets whole list of environmental or contextual layers
+//     * that appear in the active layers list
+//     *
+//     * @return list of layer names as String [] or null if none
+//     * found
+//     */
+//    public String[] getActiveEnvCtxLayers() {
+//        List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
+//        ArrayList<String> layers = new ArrayList<String>();
+//        for (MapLayer ml : activeLayers) {
+//            if (isEnvCtxLayer(ml.getName())) {
+//                layers.add(ml.getName());
 //            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace(System.out);
 //        }
-//        return false;
+//        if (layers.size() == 0) {
+//            return null;
+//        }
+//        String[] ret = new String[layers.size()];
+//        layers.toArray(ret);
+//        return ret;
 //    }
 
-    /**
-     * tests if a Species is sensitive
-     *
-     * @param lsid text value to test as String
-     * @return String 0: non-sensitive, 1: sensitive, -1: cannot be determined
-     */
-//    public String isSensitiveSpecies(String lsid) {
-//        try {
-//
-//            lsid = StringUtils.replace(lsid, ".", "__");
-//            lsid = URLEncoder.encode(lsid, "UTF-8");
-//
-//            String snUrl = satServer + "/species/lsid/" + lsid + "/sensitivity";
-//
-//            HttpClient client = new HttpClient();
-//            GetMethod get = new GetMethod(snUrl);
-//            get.addRequestHeader("Content-type", "text/plain");
-//
-//            int result = client.executeMethod(get);
-//            String slist = get.getResponseBodyAsString().trim();
-//
-//            if (slist.equals("0") || slist.equals("1")) {
-//                return slist;
-//            } else {
-//                return "-1";
+//    /**
+//     * gets first environmental layer that appears in the
+//     * active layers list
+//     *
+//     * @return name of first environmental layer as String or null
+//     * if none found
+//     */
+//    public String getFirstEnvLayer() {
+//        List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
+//        for (MapLayer ml : activeLayers) {
+//            if (isEnvLayer(ml.getName())) {
+//                return ml.getName();
 //            }
-//        } catch (Exception e) {
-//            e.printStackTrace(System.out);
 //        }
-//        return "-1";
+//        return null;
 //    }
 
     /**
@@ -343,99 +253,99 @@ import org.apache.commons.lang.StringUtils;
         return null;
     }
 
-    /**
-     * tests if a String is an environmental layer name
-     *
-     * uses SAT environmental list service call
-     *
-     * @param val text value to test as String
-     * @return true iff val is an exact match with an
-     * environmental layer name. Note that false is
-     * returned if there is error communicating with SAT
-     */
-    public boolean isEnvLayer(String val) {
-        String[] layers = getEnvironmentalLayers();
-        if (layers == null) {
-            return false;
-        }
-        val = val.trim();
-        for (String s : layers) {
-            if (s.equalsIgnoreCase(val)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * tests if a String is a contextual layer name
-     *
-     * uses SAT contextual list service call
-     *
-     * @param val text value to test as String
-     * @return true iff val is an exact match with a
-     * contextual layer name. Note that false is
-     * returned if there is error communicating with SAT
-     */
-    private boolean isCtxLayer(String val) {
-        String[] layers = getContextualLayers();
-        if (layers == null) {
-            return false;
-        }
-        val = val.trim();
-        for (String s : layers) {
-            if (s.equalsIgnoreCase(val)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * tests if a String is an environmental
-     * or contextual layer name
-     *
-     * @param val text value to test as String
-     * @return true iff val is an exact match with an
-     * environmental or a contextual layer name
-     */
-    public boolean isEnvCtxLayer(String val) {
-        return isEnvLayer(val) || isCtxLayer(val);
-    }
-
-    /**
-     * gets list of environmental layers from SAT server by
-     * layer name
-     *
-     * @return environmental layer names as String[] or null on error
-     */
-    public String[] getEnvironmentalLayers() {
-        /* return previously generated list if available */
-        if (environmentalLayerNames != null) {
-            return environmentalLayerNames;
-        }
-
-        environmentalLayerNames = CommonData.getEnvironmentalLayers();
-
-        return environmentalLayerNames;
-    }
-
-    /**
-     * gets list of contextual layers from SAT server by
-     * layer name
-     *
-     * @return contextual layer names as String[] or null on error
-     */
-    public String[] getContextualLayers() {
-        /* return previously generated list if available */
-        if (contextualLayerNames != null) {
-            return contextualLayerNames;
-        }
-
-        contextualLayerNames = CommonData.getContextualLayers();
-
-        return contextualLayerNames;
-    }
+//    /**
+//     * tests if a String is an environmental layer name
+//     *
+//     * uses SAT environmental list service call
+//     *
+//     * @param val text value to test as String
+//     * @return true iff val is an exact match with an
+//     * environmental layer name. Note that false is
+//     * returned if there is error communicating with SAT
+//     */
+//    public boolean isEnvLayer(String val) {
+//        String[] layers = getEnvironmentalLayers();
+//        if (layers == null) {
+//            return false;
+//        }
+//        val = val.trim();
+//        for (String s : layers) {
+//            if (s.equalsIgnoreCase(val)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+//
+//    /**
+//     * tests if a String is a contextual layer name
+//     *
+//     * uses SAT contextual list service call
+//     *
+//     * @param val text value to test as String
+//     * @return true iff val is an exact match with a
+//     * contextual layer name. Note that false is
+//     * returned if there is error communicating with SAT
+//     */
+//    private boolean isCtxLayer(String val) {
+//        String[] layers = getContextualLayers();
+//        if (layers == null) {
+//            return false;
+//        }
+//        val = val.trim();
+//        for (String s : layers) {
+//            if (s.equalsIgnoreCase(val)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+//
+//    /**
+//     * tests if a String is an environmental
+//     * or contextual layer name
+//     *
+//     * @param val text value to test as String
+//     * @return true iff val is an exact match with an
+//     * environmental or a contextual layer name
+//     */
+//    public boolean isEnvCtxLayer(String val) {
+//        return isEnvLayer(val) || isCtxLayer(val);
+//    }
+//
+//    /**
+//     * gets list of environmental layers from SAT server by
+//     * layer name
+//     *
+//     * @return environmental layer names as String[] or null on error
+//     */
+//    public String[] getEnvironmentalLayers() {
+//        /* return previously generated list if available */
+//        if (environmentalLayerNames != null) {
+//            return environmentalLayerNames;
+//        }
+//
+//        environmentalLayerNames = CommonData.getEnvironmentalLayers();
+//
+//        return environmentalLayerNames;
+//    }
+//
+//    /**
+//     * gets list of contextual layers from SAT server by
+//     * layer name
+//     *
+//     * @return contextual layer names as String[] or null on error
+//     */
+//    public String[] getContextualLayers() {
+//        /* return previously generated list if available */
+//        if (contextualLayerNames != null) {
+//            return contextualLayerNames;
+//        }
+//
+//        contextualLayerNames = CommonData.getContextualLayers();
+//
+//        return contextualLayerNames;
+//    }
 
     public Entry<String, UserData> getUserData(String displayName) {
         //check against user uploaded records

@@ -1317,6 +1317,10 @@ div.z-window-modal-header, div.z-window-overlapped-header {
  font-size: 10px;
  }
 
+ .lcWhite {
+ background: #ffffff;
+ }
+
  .lcRed {
  background: #bb2222;
  }

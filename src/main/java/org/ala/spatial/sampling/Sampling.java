@@ -32,7 +32,7 @@ public class Sampling {
         } else {
             //look for an analysis layer
             File maxent = new File(CommonData.settings.get("analysis_output_dir") + "maxent/" + facetName + "/" + facetName + ".grd");
-            File aloc = new File(CommonData.settings.get("analysis_output_dir") + "aloc/" + facetName + "/" + facetName + ".grd");
+            File aloc = new File(CommonData.settings.get("analysis_output_dir") + "aloc/" + facetName + "/" + "aloc" + ".grd");
             String [] split = facetName.split("_");
             File sxsSRichness = null;
             File sxsODensity = null;

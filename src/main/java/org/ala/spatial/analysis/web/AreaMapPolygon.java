@@ -263,7 +263,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                                 //md.setMoreInfo(LayersUtil.getMetadataForWKT("User selected map polygon", wkt));
                                 String fid = getStringValue(null, "fid", readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
                                 String spid = getStringValue("\"id\":\"" + fid + "\"", "spid", readUrl(CommonData.layersServer + "/fields"));
-                                md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
+                                md.setMoreInfo(CommonData.layersServer + "/layers/" + spid);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

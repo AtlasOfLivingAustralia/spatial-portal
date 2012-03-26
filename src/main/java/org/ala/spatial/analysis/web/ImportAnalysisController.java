@@ -161,25 +161,7 @@ public class ImportAnalysisController extends UtilityComposer {
     }
 
     public void loadMapAloc(Event event) {
-        String uri = CommonData.satServer + "/output/layers/" + pid + "/img.png";
-        float opacity = Float.parseFloat("0.75");
-
-        List<Double> bbox = new ArrayList<Double>();
-
-        double[] d = getExtents();
-        bbox.add(d[2]);
-        bbox.add(d[3]);
-        bbox.add(d[4]);
-        bbox.add(d[5]);
-
         String layerLabel = "Classification - " + pid;
-
-        String legendPath = "";
-        try {
-            legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            ex.printStackTrace();
-        }
 
         String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_" + pid + "&FORMAT=image%2Fpng";
         String legendurl = CommonData.geoServer
@@ -194,9 +176,9 @@ public class ImportAnalysisController extends UtilityComposer {
             style.setName("Default");
             style.setDescription("Default style");
             style.setTitle("Default");
-            style.setLegendUri(legendPath);
+            style.setLegendUri(legendurl);
 
-            System.out.println("legend:" + legendPath);
+            System.out.println("legend:" + legendurl);
             mapLayer.addStyle(style);
             mapLayer.setSelectedStyleIndex(1);
 

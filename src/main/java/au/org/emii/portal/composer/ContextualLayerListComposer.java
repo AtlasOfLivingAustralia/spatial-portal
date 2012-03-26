@@ -34,9 +34,6 @@ import org.zkoss.zul.Treerow;
 public class ContextualLayerListComposer extends UtilityComposer {
 
     public Tree tree;
-    private Popup pupLayerAction;
-    private Toolbarbutton llAdd;
-    private Toolbarbutton llInfo;
     private ArrayList empty = new ArrayList();
     private MapComposer mc;
     ContextualLayerSelection contextualLayerSelection;
@@ -85,8 +82,21 @@ public class ContextualLayerListComposer extends UtilityComposer {
                 }
 
                 List classNodes = new ArrayList();
+
                 if (jo.getString("type").equalsIgnoreCase("Contextual")) {
-                    classNodes = getContextualClasses(jo);
+//                    if(jo.containsKey("fields")) {
+//                        JSONArray ja = jo.getJSONArray("fields");
+//                        for(int j=0;j<ja.size();j++) {
+//                            if(ja.getJSONObject(j).containsKey("layerbranch")
+//                                    && ja.getJSONObject(j).getString("layerbranch").equalsIgnoreCase("true")
+//                                    && ja.getJSONObject(j).containsKey("classes")) {
+//                                JSONArray classes = ja.getJSONObject(j).getJSONArray("classes");
+//                                for(int k=0;k<classes.size();k++) {
+//                                    classNodes.add(classes.getJSONObject(k));
+//                                }
+//                            }
+//                        }
+//                    }
 
                     SimpleTreeNode stn;
 //                    if (classNodes.isEmpty()) {
@@ -139,10 +149,6 @@ public class ContextualLayerListComposer extends UtilityComposer {
             e.printStackTrace();
         }
 
-    }
-
-    private List getContextualClasses(JSONObject joLayer) {
-        return CommonData.getContextualClasses(joLayer);
     }
 
     private void addToMap(TreeMap htCat1, TreeMap htCat2, String cat1, String cat2, SimpleTreeNode treeNode) {
@@ -262,7 +268,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                         public void onEvent(Event event) throws Exception {
                             JSONObject jo = JSONObject.fromObject(event.getTarget().getParent().getParent().getAttribute("lyr"));
                             String s = jo.getString("id");
-                            String metadata = CommonData.satServer + "/layers/" + s;
+                            String metadata = CommonData.layersServer + "/layers/" + s;
                             mc.activateLink(metadata, "Metadata", false);
                         }
                     });
@@ -338,7 +344,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                             JSONObject joLayer = JSONObject.fromObject(tree.getSelectedItem().getTreerow().getAttribute("lyr"));
                             if (!joLayer.getString("type").contentEquals("class")) {
 
-                                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("uid");
 
                                 initALC();
                                 contextualLayerSelection.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
@@ -358,7 +364,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                                 //Filtered requests don't work on
                                 displaypath = displaypath.replace("gwc/service/", "");
                                 // Messagebox.show(displaypath);
-                                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("id");
+                                String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("id");
                                 initALC();
                                 contextualLayerSelection.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
 

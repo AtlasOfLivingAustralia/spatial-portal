@@ -11,9 +11,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import net.sf.json.JSONArray;
@@ -23,8 +21,6 @@ import org.ala.spatial.data.QueryField;
 import org.ala.spatial.sampling.SimpleShapeFileCache;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.lang.StringUtils;
-import org.zkoss.zul.SimpleTreeNode;
 
 /**
  * common data store
@@ -53,30 +49,15 @@ public class CommonData {
     static final String MAX_Q_LENGTH = "max_q_length";
     static final String BIOCACHE_QC = "biocache_qc";
     static final String ANALYSIS_LAYER_SETS = "analysis_layer_sets";
-    //(1) for LayersUtil
-    static String[] environmentalLayerNames = null;
-    static String[] contextualLayerNames = null;
-    static String[] copy_environmentalLayerNames = null;
-    static String[] copy_contextualLayerNames = null;
+
     //(2) for EnvironmentalList
-    static ArrayList<ListEntry> listEntriesAll;
-    static String[] layerNamesAll;
-    static ArrayList<ListEntry> listEntriesEnv;
-    static String[] layerNamesEnv;
-    static float[][] distances;
-    static ArrayList<ListEntry> copy_listEntriesAll;
-    static String[] copy_layerNamesAll;
-    static ArrayList<ListEntry> copy_listEntriesEnv;
-    static String[] copy_layerNamesEnv;
-    static float[][] copy_distances;
+    static JSONObject distances;
+    static HashMap<String, HashMap<String, Double>> distances_map;
+    static JSONObject copy_distances;
+    static HashMap<String, HashMap<String, Double>> copy_distances_map;
     //(3) for layer list json
-    static String layerlist = null;
     static JSONArray layerlistJSON = null;
-    static HashMap<JSONObject, List> contextualClasses = null;
-    static private ArrayList empty = new ArrayList();
-    static String copy_layerlist = null;
     static JSONArray copy_layerlistJSON = null;
-    static HashMap<JSONObject, List> copy_contextualClasses = null;
     static String defaultFieldString = null;
     public static SimpleShapeFileCache ssfCache;
     //(4) species with distribution layres
@@ -146,17 +127,10 @@ public class CommonData {
 
         setupAnalysisLayerSets();
 
-        //(1) for LayersUtil
-        initEnvironmentalLayers();
-        initContextualLayers();
+        initLayerDistances();
 
         //(3) for layer list json
         initLayerList();
-        initContextualClasses();
-
-        //(2) for EnvironmentalList - uses layer list json, so run after
-        initEnvironmentalOnlyList();
-        initEnvironmentalAllList();
 
         //(4) for species wms layers
         initSpeciesWMSLayers();
@@ -176,40 +150,18 @@ public class CommonData {
         //(8) cache shape files used during coordinate uploads
         initSimpleShapeFileCache(defaultFieldString.split(","));
 
-        //(1) for LayersUtil
-        if (copy_environmentalLayerNames != null) {
-            environmentalLayerNames = copy_environmentalLayerNames;
-        }
-        if (copy_contextualLayerNames != null) {
-            contextualLayerNames = copy_contextualLayerNames;
-        }
-
         //(2) for EnvironmentalList
-        if (copy_listEntriesAll != null) {
-            listEntriesAll = copy_listEntriesAll;
-        }
-        if (copy_layerNamesAll != null) {
-            layerNamesAll = copy_layerNamesAll;
-        }
-        if (copy_listEntriesEnv != null) {
-            listEntriesEnv = copy_listEntriesEnv;
-        }
-        if (copy_layerNamesEnv != null) {
-            layerNamesEnv = copy_layerNamesEnv;
-        }
         if (copy_distances != null) {
             distances = copy_distances;
         }
 
-        //(3) for layer list json
-        if (copy_layerlist != null) {
-            layerlist = copy_layerlist;
+        if (copy_distances_map != null) {
+            distances_map = copy_distances_map;
         }
+
+        //(3) for layer list json        
         if (copy_layerlistJSON != null) {
             layerlistJSON = copy_layerlistJSON;
-        }
-        if (copy_contextualClasses != null) {
-            contextualClasses = copy_contextualClasses;
         }
 
         //(4) for species wms distributions & checklists
@@ -239,275 +191,57 @@ public class CommonData {
         }
     }
 
-    /**
-     * gets list of environmental layers from SAT server by
-     * layer name
-     *
-     * @return environmental layer names as String[] or null on error
-     */
-    static public String[] getEnvironmentalLayers() {
-        return environmentalLayerNames;
-    }
-
-    static void initEnvironmentalLayers() {
-        System.out.println("CommonData::initEnvironmentalLayers");
-        String[] aslist = null;
-        try {
-            String envurl = satServer + "/ws/spatial/settings/layers/environmental/string";
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(envurl);
-            get.addRequestHeader("Content-type", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            aslist = slist.split("\n");
-
-            for (int i = 0; i < aslist.length; i++) {
-                aslist[i] = aslist[i].trim();
-            }
-
-        } catch (Exception e) {
-            System.out.println("error setting up env list");
-            aslist = null;
-            e.printStackTrace(System.out);
-        }
-
-        /* retain list for future calls */
-        copy_environmentalLayerNames = aslist;
-    }
-
-    /**
-     * gets list of contextual layers from SAT server by
-     * layer name
-     *
-     * @return contextual layer names as String[] or null on error
-     */
-    static public String[] getContextualLayers() {
-        return contextualLayerNames;
-    }
-
-    static void initContextualLayers() {
-        System.out.println("CommonData::initContextualLayers()");
-        String[] aslist = null;
-        try {
-            String envurl = satServer + "/ws/spatial/settings/layers/contextual/string";
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(envurl);
-            get.addRequestHeader("Content-type", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            aslist = slist.split("\n");
-
-            for (int i = 0; i < aslist.length; i++) {
-                aslist[i] = aslist[i].trim();
-            }
-
-        } catch (Exception e) {
-            System.out.println("error setting up ctx list");
-            aslist = null;
-            e.printStackTrace(System.out);
-        }
-
-        /* retain for future calls */
-        copy_contextualLayerNames = aslist;
-    }
-
-    static public ArrayList<ListEntry> getListEntriesAll() {
-        return listEntriesAll;
-    }
-
-    static public String[] getLayerNamesAll() {
-        return layerNamesAll;
-    }
-
-    static public ArrayList<ListEntry> getListEntriesEnv() {
-        return listEntriesEnv;
-    }
-
-    static public String[] getLayerNamesEnv() {
-        return layerNamesEnv;
-    }
-
-    static public float[][] getDistances() {
+    static public JSONObject getDistances() {
         return distances;
     }
 
-    static public void initEnvironmentalOnlyList() {
-        System.out.println("CommonData::initEnvironmentalOnlyList()");
+    static public void initLayerDistances() {
+        copy_distances = null;
+        copy_distances_map = null;
+        System.out.println("CommonData::initLayerDistances()");
         try {
             //environmental only
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/layers/analysis/inter_layer_association_rawnames.csv");
+            sbProcessUrl.append(satServer + "/ws/layerdistances");
 
             System.out.println(sbProcessUrl.toString());
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
 
-            get.addRequestHeader("Accept", "text/plain");
-
             int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
 
-            String[] rows = slist.split("\n");
+            if(result == 200) {
+                copy_distances = JSONObject.fromObject(get.getResponseBodyAsString());
 
-            //got a csv, put into column names, etc
-            copy_layerNamesEnv = new String[rows.length]; //last row is empty
-            copy_distances = new float[rows.length - 1][rows.length - 1];
+                //make map
+                copy_distances_map = new HashMap<String, HashMap<String, Double>>();
+                for(Object okey : copy_distances.keySet()) {
+                    Double d = copy_distances.getDouble((String)okey);
+                    String [] parts = ((String)okey).split(" ");
 
-            String[] line = rows[0].split(",");
-            copy_layerNamesEnv[0] = line[1];
-            for (int i = 1; i < rows.length; i++) {   //last row is empty
-                line = rows[i].split(",");
-                copy_layerNamesEnv[i] = line[0];
-                for (int j = 1; j < line.length; j++) {
-                    try {
-                        copy_distances[i - 1][j - 1] = Float.parseFloat(line[j]);
-                    } catch (Exception e) {
-                    }
-                }
-            }
+                    HashMap<String, Double> part = copy_distances_map.get(parts[0]);
+                    if(part == null) copy_distances_map.put(parts[0], part = new HashMap<String, Double>());
+                    part.put(parts[1], d);
 
-            copy_listEntriesEnv = new ArrayList<ListEntry>();
-            initLayerCatagories(copy_listEntriesEnv, true);
 
-            //match up listEntries
-            for (int i = 0; i < copy_listEntriesEnv.size(); i++) {
-                String entryName = copy_listEntriesEnv.get(i).name;
-                for (int j = 0; j < copy_layerNamesEnv.length; j++) {
-                    if (copy_layerNamesEnv[j].equalsIgnoreCase(entryName)) {
-                        copy_listEntriesEnv.get(i).row_in_distances = j;
-                        break;
-                    }
-                }
-
-                //remove if missing
-                if (copy_listEntriesEnv.get(i).row_in_distances < 0) {
-                    //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
-                    copy_listEntriesEnv.remove(i);
-                    i--;
-                } else {
-                    copy_listEntriesEnv.get(i).row_in_list = i;
+                    part = copy_distances_map.get(parts[1]);
+                    if(part == null) copy_distances_map.put(parts[1], part = new HashMap<String, Double>());
+                    part.put(parts[0], d);
                 }
             }
         } catch (Exception e) {
-            copy_layerNamesEnv = null;
             copy_distances = null;
-
+            copy_distances_map = null;
             e.printStackTrace();
         }
     }
 
-    static void initLayerCatagories(ArrayList<ListEntry> listEntries, boolean environmentalOnly) {
-            JSONArray layerlist = copy_layerlistJSON;
-            for (int i = 0; i < layerlist.size(); i++) {
-                JSONObject jo = layerlist.getJSONObject(i);
-                try {
-                String uid = jo.getString("id");
-                String type = jo.getString("type");
-                String c1 = jo.containsKey("classification1") ? jo.getString("classification1") : "";
-                String c2 = jo.containsKey("classification2") ? jo.getString("classification2") : "";
-                String name = jo.getString("name");
-                String displayname = StringUtils.capitalize(jo.getString("displayname"));
-
-                if (!jo.getBoolean("enabled")) {
-                    continue;
-                }
-
-                if (environmentalOnly && type.equalsIgnoreCase("Contextual")) {
-                    continue;
-                }
-
-                if (c1 == null || c1.equalsIgnoreCase("null")) {
-                    c1 = "";
-                }
-                if (c2 == null || c2.equalsIgnoreCase("null")) {
-                    c2 = "";
-                }
-
-                listEntries.add(new ListEntry(name, displayname, c1, c2, type, 1, -1, -1, uid));
-                 } catch (Exception e) {
-                     System.out.println("failed to init for layer: " + jo);
-                    e.printStackTrace();
-                }
-            }
-        
-
-        java.util.Collections.sort(listEntries, new Comparator<ListEntry>() {
-
-            public int compare(ListEntry e1, ListEntry e2) {
-                //type, then catagory 1, then catagory 2, then display name
-                int c = -1 * e1.type.compareTo(e2.type);
-                if (c == 0) {
-                    c = e1.catagory1.compareTo(e2.catagory1);
-                    if (c == 0) {
-                        c = e1.catagory2.compareTo(e2.catagory2);
-                        if (c == 0) {
-                            c = e1.displayname.compareTo(e2.displayname);
-                        }
-                    }
-                }
-
-                return c;
-            }
-        });
-
-    }
-
-    static void initEnvironmentalAllList() {
-        System.out.println("CommonData::initEnvironmentalAllList()");
-        //contextual and environmental
-        try {
-            String[] ctx = copy_contextualLayerNames;
-            ;
-            String[] env = copy_environmentalLayerNames;
-
-            copy_layerNamesAll = new String[ctx.length + env.length];
-            for (int i = 0; i < env.length; i++) {
-                copy_layerNamesAll[i] = env[i];
-            }
-            for (int i = 0; i < ctx.length; i++) {
-                copy_layerNamesAll[i + env.length] = ctx[i];
-            }
-
-            copy_listEntriesAll = new ArrayList<ListEntry>();
-            initLayerCatagories(copy_listEntriesAll, false);
-
-            //match up listEntries
-            for (int i = 0; i < copy_listEntriesAll.size(); i++) {
-                String entryName = copy_listEntriesAll.get(i).name;
-                for (int j = 0; j < copy_layerNamesAll.length; j++) {
-                    if (copy_layerNamesAll[j].equalsIgnoreCase(entryName)) {
-                        copy_listEntriesAll.get(i).row_in_distances = j;
-                        break;
-                    }
-                }
-
-//                //remove if missing
-//                if (copy_listEntriesAll.get(i).row_in_distances < 0) {
-//                    //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
-//                    copy_listEntriesAll.remove(i);
-//                    i--;
-//                } else {
-                    copy_listEntriesAll.get(i).row_in_list = i;
-//                }
-            }
-        } catch (Exception e) {
-            copy_layerNamesAll = null;
-            copy_listEntriesAll = null;
-            e.printStackTrace();
-        }
-    }
-
-    public static String getLayerList() {
-        return layerlist;
+    static public HashMap<String, HashMap<String, Double>> getDistancesMap() {
+        return distances_map;
     }
 
     static void initLayerList() {
+        copy_layerlistJSON = null;
         try {
             String layersListURL = layersServer + "/layers";
             HttpClient client = new HttpClient();
@@ -515,113 +249,102 @@ public class CommonData {
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
             int result = client.executeMethod(get);
-            copy_layerlist = get.getResponseBodyAsString();
-            copy_layerlistJSON = JSONArray.fromObject(copy_layerlist);
+
+            if(result == 200) {
+                copy_layerlistJSON = JSONArray.fromObject(get.getResponseBodyAsString());
+            }
+
+            addFieldsToLayers(copy_layerlistJSON);
         } catch (Exception e) {
-            copy_layerlist = null;
-            copy_layerlistJSON = null;
             e.printStackTrace();
+            copy_layerlistJSON = null;
         }
+    }
+
+    static void addFieldsToLayers(JSONArray joLayers) throws Exception {
+        //get field id with classes
+        String fieldsURL = layersServer + "/fields";
+        HttpClient client = new HttpClient();
+        GetMethod get = new GetMethod(fieldsURL);
+        int result = client.executeMethod(get);
+        if(result != 200) {
+            throw new Exception("cannot retrive field list: " + fieldsURL);
+        }
+        String fields = get.getResponseBodyAsString();
+        JSONArray ja = JSONArray.fromObject(fields);
+
+        //attach to a new JSONArray in joLayers named "fields"
+        for(int j=0;j<joLayers.size();j++) {
+            JSONObject layer = joLayers.getJSONObject(j);
+            if(layer.containsKey("id")) {
+                for(int i=0;i<ja.size();i++) {
+                    JSONObject jo = ja.getJSONObject(i);
+                    if(jo.containsKey("spid") && jo.getString("spid").equals(layer.getString("id"))) {
+                        //add to layer
+                        if(!layer.containsKey("fields")) {
+                            layer.put("fields", new JSONArray());
+                        }
+                        layer.getJSONArray("fields").add(jo);
+
+                        //add classes to this field
+                        if(jo.containsKey("id") &&
+                                jo.containsKey("type") && jo.getString("type").equalsIgnoreCase("c")
+                                && jo.containsKey("analysis") && jo.getString("analysis").equalsIgnoreCase("true")) {
+                            System.out.println("getting classes for: " + jo.getString("id"));
+                            JSONArray classes = getFieldClasses(jo.getString("id"));
+                            if(classes != null) {
+                                jo.put("classes", classes);
+                            }
+                        }                        
+                    }
+                }
+            }
+        }
+    }
+
+    static private JSONArray getFieldClasses(String fieldId) {
+        JSONArray classes = null;
+        String url = layersServer + "/objects/" + fieldId;
+        try {
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(url);
+            int result = client.executeMethod(get);
+
+            if(result == 200) {
+                classes = JSONArray.fromObject(get.getResponseBodyAsString());
+
+//                if(ja != null) {
+//                    for (int i = 0;i<ja.size();i++) {
+//                        JSONObject jo = ja.getJSONObject(i);
+//
+//                        String info = "{displayname:'"
+//                                + jo.getString("name")
+//                                + "',type:'class',displaypath:'"
+//                                + jo.getString("pid")
+//                                + "',uid:'"
+//                                + id
+//                                + "',classname:'"
+//                                + ""
+//                                + "',layername:'"
+//                                + jo.getString("fieldname")
+//                                + "'}";
+//
+//                        JSONObject joClass = JSONObject.fromObject(info);
+//                        classNodes.add(new SimpleTreeNode(joClass, empty));
+//                    }
+//                }
+            } else {
+                System.out.println("Unsuccessful: " + url + " returned " + result);
+            }
+        } catch (Exception e) {
+            System.out.println("Failure to get contextual classes for field: " + fieldId);
+        }
+
+        return classes;
     }
 
     static public JSONArray getLayerListJSONArray() {
         return layerlistJSON;
-    }
-
-    static public List getContextualClasses(JSONObject layer) {
-        return contextualClasses.get(layer);
-    }
-
-    static void initContextualClasses() {
-        System.out.println("CommonData::initContextualClasses()");
-
-        try {
-            copy_contextualClasses = new HashMap<JSONObject, List>();
-
-            for (int i = 0; i < copy_layerlistJSON.size(); i++) {
-                JSONObject jo = copy_layerlistJSON.getJSONObject(i);
-
-                if (!jo.getBoolean("enabled")) {
-                    continue;
-                }
-
-                List classNodes = new ArrayList();
-                if (jo.getString("type").equalsIgnoreCase("Contextual")) {
-                    classNodes = getContextualClassesInit(jo);
-                    copy_contextualClasses.put(jo, classNodes);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            copy_contextualClasses = null;
-        }
-    }
-
-    static List getContextualClassesInit(JSONObject joLayer) {
-        String layerName = joLayer.getString("name");
-        String layerDisplayName = joLayer.getString("displayname");
-        String id = joLayer.getString("id");
-
-        //get field id with classes
-        String fid = null;
-        String classesURL = layersServer + "/fields";
-        HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(classesURL);
-        try {
-            int result = client.executeMethod(get);
-            String classes = get.getResponseBodyAsString();
-            JSONArray ja = JSONArray.fromObject(classes);
-            for(int i=0;i<ja.size();i++) {
-                JSONObject jo = ja.getJSONObject(i);
-                if(jo.containsKey("spid") && jo.getString("spid").equals(id)
-                        && jo.containsKey("layerbranch")
-                        && jo.getString("layerbranch").equalsIgnoreCase("true")) {
-                    fid = jo.getString("id");
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        List<String> classList = new ArrayList();
-        List classNodes = new ArrayList();
-
-        if(fid != null) {
-            try {
-                client = new HttpClient();
-                get = new GetMethod(layersServer + "/objects/" + fid);
-                int result = client.executeMethod(get);
-                String classes = get.getResponseBodyAsString();
-
-                JSONArray ja = JSONArray.fromObject(classes);
-
-                if(ja != null) {
-                    for (int i = 0;i<ja.size();i++) {
-                        JSONObject jo = ja.getJSONObject(i);
-
-                        String info = "{displayname:'"
-                                + jo.getString("name")
-                                + "',type:'class',displaypath:'"
-                                + jo.getString("pid")
-                                + "',uid:'"
-                                + id
-                                + "',classname:'"
-                                + ""
-                                + "',layername:'"
-                                + jo.getString("fieldname")
-                                + "'}";
-
-                        JSONObject joClass = JSONObject.fromObject(info);
-                        classNodes.add(new SimpleTreeNode(joClass, empty));
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("Failure to get contextual classes for: " + layerName);
-            }
-        }
-
-        return classNodes;
     }
 
     public static String covertMillisecondsToDate(long ms) {

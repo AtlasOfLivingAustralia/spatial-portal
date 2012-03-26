@@ -46,7 +46,7 @@ public class AddToolALOCComposer extends AddToolComposer {
         this.totalSteps = 4;
 
         this.loadAreaLayers();
-        this.loadGridLayers(true, true);
+        this.loadGridLayers(true, false, true);
         this.updateWindowTitle();
         //this.updateName("Classification #" + generation_count + " - " + groupCount.getValue() + " groups");
         //this.updateName("My Classification #" + generation_count);
@@ -85,17 +85,6 @@ public class AddToolALOCComposer extends AddToolComposer {
 
     @Override
     public void loadMap(Event event) {
-        String uri = CommonData.satServer + "/output/layers/" + pid + "/img.png";
-        float opacity = Float.parseFloat("0.75");
-
-        List<Double> bbox = new ArrayList<Double>();
-
-        double[] d = getExtents();
-        bbox.add(d[2]);
-        bbox.add(d[3]);
-        bbox.add(d[4]);
-        bbox.add(d[5]);
-
         //get job inputs
         try {
             for (String s : getJob("inputs").split(";")) {
@@ -114,18 +103,13 @@ public class AddToolALOCComposer extends AddToolComposer {
             layerLabel = "My Classification " + generation_count;
             generation_count++;
         }
-        legendPath = "";
-        try {
-            legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            ex.printStackTrace();
-        }
 
         String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_" + pid + "&FORMAT=image%2Fpng";
         String legendurl = CommonData.geoServer
                 + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:aloc_" + pid;
         System.out.println(legendurl);
+        legendPath = legendurl;
         getMapComposer().addWMSLayer(pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
         
         MapLayer mapLayer = getMapComposer().getMapLayer(pid);
@@ -135,7 +119,7 @@ public class AddToolALOCComposer extends AddToolComposer {
             style.setName("Default");
             style.setDescription("Default style");
             style.setTitle("Default");
-            style.setLegendUri(legendPath);
+            style.setLegendUri(legendurl);
 
             System.out.println("legend:" + legendPath);
             mapLayer.addStyle(style);
@@ -146,7 +130,7 @@ public class AddToolALOCComposer extends AddToolComposer {
                 md = new MapLayerMetadata();
             }
 
-            String infoUrl = CommonData.satServer + "/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:" + pid;
+            String infoUrl = CommonData.satServer + "/output/aloc/" + pid + "/classification.html" + "\nClassification output\npid:" + pid;
             md.setMoreInfo(infoUrl);
             md.setId(Long.valueOf(pid));
 
@@ -263,7 +247,7 @@ public class AddToolALOCComposer extends AddToolComposer {
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/ws/aloc/processgeoq?");
+            sbProcessUrl.append(CommonData.satServer + "/ws/aloc?");
             sbProcessUrl.append("gc=" + URLEncoder.encode(String.valueOf(groupCount.getValue()), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
 

@@ -372,7 +372,7 @@ public class DistributionsWCController extends UtilityComposer {
                     String fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
                     String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
                     if(spid != null) {
-                        html += "<tr class='" + lastClass + "'><td class='md_th'>More about this area: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + CommonData.satServer + "/layers/" + spid + "'>link</a></td></tr>";
+                        html += "<tr class='" + lastClass + "'><td class='md_th'>More about this area: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + CommonData.layersServer + "/layers/" + spid + "'>link</a></td></tr>";
                         lastClass = lastClass.length() == 0? "md_grey-bg": "";
                     }
                 }

@@ -29,7 +29,6 @@ import org.zkoss.zul.Comboitem;
  */
 public class EnvLayersCombobox extends Combobox {
 
-    String[] validLayers = null;
     boolean includeAnalysisLayers = false;
     String includeLayers;
 
@@ -55,10 +54,6 @@ public class EnvLayersCombobox extends Combobox {
     }
 
     public void refresh(String val) {
-        if (validLayers == null) {
-            makeValidLayers();
-        }
-
         String baseUrl = CommonData.layersServer + "/layers/";
         try {
             Iterator it = getItems().iterator();
@@ -214,24 +209,6 @@ public class EnvLayersCombobox extends Combobox {
         mapComposer = (MapComposer) page.getFellow("mapPortalPage");
 
         return mapComposer;
-    }
-
-    void makeValidLayers() {
-        String[] ctx = CommonData.getContextualLayers();
-        String[] env = CommonData.getEnvironmentalLayers();
-        validLayers = new String[ctx.length + env.length];
-        for (int i = 0; i < env.length; i++) {
-            validLayers[i] = env[i].toLowerCase();
-        }
-        for (int i = 0; i < ctx.length; i++) {
-            validLayers[i + env.length] = ctx[i].toLowerCase();
-        }
-        java.util.Arrays.sort(validLayers);
-    }
-
-    boolean isValidLayer(String name) {
-        int pos = java.util.Arrays.binarySearch(validLayers, name.toLowerCase());
-        return (pos >= 0 && pos < validLayers.length);
     }
 
     public boolean getIncludeAnalysisLayers() {

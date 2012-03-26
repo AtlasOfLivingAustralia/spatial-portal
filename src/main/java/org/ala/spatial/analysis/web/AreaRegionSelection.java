@@ -121,7 +121,7 @@ public class AreaRegionSelection extends AreaToolComposer {
                 System.out.println("failed to parse: " + mapLayer.getWKT());
                 e.printStackTrace();
             }
-            md.setMoreInfo(CommonData.satServer + "/layers/" + spid);
+            md.setMoreInfo(CommonData.layersServer + "/layers/" + spid);
 
             Facet facet = null;
             if(!point) {
