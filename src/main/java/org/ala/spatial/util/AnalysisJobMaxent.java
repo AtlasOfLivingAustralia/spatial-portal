@@ -16,10 +16,13 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Hashtable;
+import org.ala.layers.client.Client;
+import org.ala.layers.dao.LayerDAO;
+import org.ala.layers.intersect.Grid;
+import org.ala.layers.intersect.SimpleRegion;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
-import org.ala.spatial.analysis.service.SamplingService;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -41,23 +44,24 @@ public class AnalysisJobMaxent extends AnalysisJob {
     int cells;
     Layer[] layers;
     int speciesCount;
+    String resolution;
 
-    public AnalysisJobMaxent(String pid, String currentPath_, String taxon_, String envlist_, SimpleRegion region_, LayerFilter[] filter_, Layer[] layers_, String txtTestPercentage_, String chkJackknife_, String chkResponseCurves_) {
+    public AnalysisJobMaxent(String pid, String currentPath_, String taxon_, String envlist_, SimpleRegion region_, LayerFilter[] filter_, String txtTestPercentage_, String chkJackknife_, String chkResponseCurves_, String resolution_) {
         super(pid);
         currentPath = currentPath_;
         taxon = taxon_;
         region = region_;
         envelope = filter_;
-        layers = layers_;
         txtTestPercentage = txtTestPercentage_;
         chkJackknife = chkJackknife_;
         chkResponseCurves = chkResponseCurves_;
         envlist = envlist_;
+        resolution = resolution_;
 
         //TODO: remove rough estimate
         if (region != null) {
-            cells = (int) Math.ceil(region.getWidth() / TabulationSettings.grd_xdiv
-                    * region.getHeight() / TabulationSettings.grd_ydiv);
+            cells = (int) Math.ceil(region.getWidth() / Double.parseDouble(resolution)
+                    * region.getHeight() / Double.parseDouble(resolution));
         } else {
             cells = 1000000; //or something
         }
@@ -76,7 +80,6 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
     @Override
     public void run() {
-        SpatialSettings ssets = new SpatialSettings();
 
         try {
             setCurrentState(RUNNING);
@@ -110,17 +113,14 @@ public class AnalysisJobMaxent extends AnalysisJob {
             setProgress(0, "preparing input files and run parameters");
 
             String[] envnameslist = envlist.split(":");
-            String[] envpathlist = getEnvFiles(envlist);
 
-            String cutDataPath = ssets.getEnvDataPath();
-
-            cutDataPath = GridCutter.cut(layers, region, envelope, null);
+            String cutDataPath = GridCutter.cut2(envnameslist, resolution, region, envelope, null);
 
             System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
 
             MaxentSettings msets = new MaxentSettings();
-            msets.setMaxentPath(ssets.getMaxentCmd());
-            msets.setEnvList(Arrays.asList(envpathlist));
+            msets.setMaxentPath(AlaspatialProperties.getAnalysisMaxentCmd());
+            msets.setEnvList(Arrays.asList(envnameslist));
             msets.setRandomTestPercentage(Integer.parseInt(txtTestPercentage));
             msets.setEnvPath(cutDataPath);          //use (possibly) cut layers
 
@@ -209,8 +209,10 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     String paramlist = "Model reference number: " + getName()
                             + "<br>Species: " + taxon //+ " (" + scirank + ")"
                             + "<br>Layers: <ul>";
+
+                    LayerDAO layerDao = Client.getLayerDao();
                     for (int ei = 0; ei < envnameslist.length; ei++) {
-                        paramlist += "<li>" + Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + " (" + envpathlist[ei] + ")</li>";
+                        paramlist += "<li>" + layerDao.getLayerByName(envnameslist[ei]).getDisplayname() + " (" + envnameslist[ei] + ")</li>";
                     }
                     paramlist += "</ul>";
 
@@ -228,11 +230,11 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     if (chkResponseCurves != null) {
                         StringBuffer sbTable = new StringBuffer();
                         String[] ctxlist = msets.getEnvVarToggler().split(" ");
-                        if(msets.getEnvVarToggler().length() > 0) {
+                        if (msets.getEnvVarToggler().length() > 0) {
                             sbTable.append("<pre>");
                             for (String ctx : ctxlist) {
-                                sbTable.append("<span style='font-weight: bold; text-decoration: underline'>"+ctx+" legend</span><br />");
-                                sbTable.append(IOUtils.toString(new FileInputStream(TabulationSettings.environmental_data_path + ctx + ".txt")));
+                                sbTable.append("<span style='font-weight: bold; text-decoration: underline'>" + ctx + " legend</span><br />");
+                                sbTable.append(IOUtils.toString(new FileInputStream(/*TabulationSettings.environmental_data_path + ctx + ".txt"*/ "")));
                                 sbTable.append("<br /><br />");
                             }
                             sbTable.append("</pre>");
@@ -272,13 +274,11 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
                     writeProjectionFile(msets.getOutputPath());
 
-                    Hashtable htGeoserver = ssets.getGeoserverSettings();
-
                     // if generated successfully, then add it to geoserver
-                    String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/maxent_" + getName() + "/file.arcgrid?coverageName=species_" + getName();
+                    String url = AlaspatialProperties.getGeoserverUrl() + "/rest/workspaces/ALA/coveragestores/maxent_" + getName() + "/file.arcgrid?coverageName=species_" + getName();
                     String extra = "";
-                    String username = (String) htGeoserver.get("geoserver_username");
-                    String password = (String) htGeoserver.get("geoserver_password");
+                    String username = AlaspatialProperties.getGeoserverUsername();
+                    String password = AlaspatialProperties.getGeoserverPassword();
 
                     // first zip up the file as it's going to be sent as binary
                     //String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
@@ -342,17 +342,17 @@ public class AnalysisJobMaxent extends AnalysisJob {
         long t1 = 0, t2 = 0, t3 = 0;
 
         if (stage <= 0) { //data load; 0 to 0.2
-            t1 += (cells * TabulationSettings.maxent_timing_0) * layers.length; //default
+            t1 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult0()) * layers.length; //default
             t1 = t1 + progTime - stageTimes[0];
         }
         if (stage <= 1) { //running; 0.2 to 0.9
-            t2 += (cells * TabulationSettings.maxent_timing_1) * layers.length; //default
+            t2 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult1()) * layers.length; //default
             if (stage == 1) {
                 t2 = t2 + progTime - stageTimes[1];
             }
         }
         if (stage > 1) { //data export + done
-            t3 += 5000 * TabulationSettings.maxent_timing_2; //default
+            t3 += 5000 * AlaspatialProperties.getAnalysisMaxentEstimateMult2(); //default
             if (stage == 2) {
                 t3 = t3 + progTime - stageTimes[2];
             }
@@ -391,7 +391,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
         //progress is [time passed] / [time expected]
         if (stage <= 0) { //data load; 0 to 0.2
-            t1 += (cells * TabulationSettings.maxent_timing_0) * layers.length; //default
+            t1 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult0()) * layers.length; //default
             d1 = (currentTime - stageTimes[0]) / (double) t1;
             if (d1 > 0.9) {
                 d1 = 0.9;
@@ -401,7 +401,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
             d1 = 0.2;
         }
         if (stage <= 1) { //running; 0.2 to 0.9
-            t2 += (cells * TabulationSettings.maxent_timing_1) * layers.length; //default
+            t2 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult1()) * layers.length; //default
             if (stage == 1) {
                 d2 = (currentTime - stageTimes[1]) / (double) t2;
             } else {
@@ -415,7 +415,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
             d2 = 0.7;
         }
         if (stage > 1) { //data export + done
-            t3 += 5000 * TabulationSettings.maxent_timing_2; //default
+            t3 += 5000 * AlaspatialProperties.getAnalysisMaxentEstimateMult2(); //default
             if (stage == 2) {
                 d3 = (currentTime - stageTimes[2]) / (double) t3;
             } else {
@@ -477,18 +477,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
         return sb.toString();
     }
 
-    private String[] getEnvFiles(String envNames) {
-        String[] nameslist = envNames.split(":");
-        String[] pathlist = new String[nameslist.length];
-
-        for (int j = 0; j < nameslist.length; j++) {
-            pathlist[j] = Layers.layerDisplayNameToName(nameslist[j]);
-        }
-
-        return pathlist;
-    }
-
-    public void readReplace(String fname, String oldPattern, String replPattern) {
+    static public void readReplace(String fname, String oldPattern, String replPattern) {
         String line;
         StringBuffer sb = new StringBuffer();
         try {
@@ -602,8 +591,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
     AnalysisJob copy() {
         return new AnalysisJobMaxent(String.valueOf(System.currentTimeMillis()),
-                currentPath, taxon, envlist, region, envelope, layers,
-                txtTestPercentage, chkJackknife, chkResponseCurves);
+                currentPath, taxon, envlist, region, envelope, txtTestPercentage, chkJackknife, chkResponseCurves, resolution);
     }
 
     private String getMaxentError(File file, int count) {

@@ -18,7 +18,4 @@
 	<!-- Configures Spring MVC -->
 	<import resource="mvc-config.xml" />
 
-        <!-- Configures hibernate -->
-	<import resource="data-config.xml" />
-
 </beans>

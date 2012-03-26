@@ -2,7 +2,8 @@ package org.ala.spatial.analysis.maxent;
 
 import java.util.Iterator;
 import java.util.List;
-import org.ala.spatial.util.TabulationSettings;
+import org.ala.spatial.util.AlaspatialProperties;
+import org.ala.spatial.util.Layers;
 
 /**
  * Settings for the MaxEnt process. Sets up the basic/default settings
@@ -133,6 +134,9 @@ public class MaxentSettings {
     }
 
     public void setEnvList(List<String> envList) {
+        for(int i=0;i<envList.size();i++) {
+            envList.set(i, Layers.getFieldId(envList.get(i)));
+        }
         this.envList = envList;
     }
 
@@ -155,7 +159,7 @@ public class MaxentSettings {
         cmd += defaultCmdVars;
 
         // set thread count
-        cmd += " threads=" + TabulationSettings.analysis_threads;
+        cmd += " threads=" + AlaspatialProperties.getAnalysisThreadCount();
 
         // add the random test percentage
         cmd += " -X " + randomTestPercentage;

@@ -12,7 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import org.ala.spatial.util.TabulationSettings;
+import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.Zipper;
 import org.apache.commons.io.IOUtils;
 import org.zkoss.util.media.Media;
@@ -33,15 +33,13 @@ public class FilesZK extends GenericForwardComposer {
 
     private Fileupload btnFileUpload;
     private Label lblmsg;
-
     private String UPLOAD_PATH = "/Users/ajay/projects/tmp/useruploads/";
 
     @Override
     public void doAfterCompose(Component comp) throws Exception {
         super.doAfterCompose(comp);
 
-        TabulationSettings.load();
-        UPLOAD_PATH = TabulationSettings.base_files_dir;
+        UPLOAD_PATH = AlaspatialProperties.getBaseOutputDir();
     }
 
     /**
@@ -87,8 +85,8 @@ public class FilesZK extends GenericForwardComposer {
                 byte buffer[] = new byte[1024];
                 int ch = in.read(buffer);
                 while (ch != -1) {
-                    out.write(buffer, 0, ch);
-                    ch = in.read(buffer);
+                out.write(buffer, 0, ch);
+                ch = in.read(buffer);
                 }
                  *
                  */
@@ -105,7 +103,7 @@ public class FilesZK extends GenericForwardComposer {
                             //System.out.println("got user response: " + event.getName());
                             //System.out.println("data: " + event.getData() + " ( " + Messagebox.YES + " | " + Messagebox.NO + " )");
                             try {
-                                int response = ((Integer)event.getData()).intValue();
+                                int response = ((Integer) event.getData()).intValue();
                                 if (response == Messagebox.YES) {
                                     System.out.println("unzipping file to: " + UPLOAD_PATH);
                                     boolean success = Zipper.unzipFile(filename, new FileInputStream(file), UPLOAD_PATH, false);
@@ -154,6 +152,4 @@ public class FilesZK extends GenericForwardComposer {
             e.printStackTrace(System.out);
         }
     }
-
-
 }

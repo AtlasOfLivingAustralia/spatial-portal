@@ -5,26 +5,21 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import javax.imageio.ImageIO;
-import org.ala.spatial.analysis.index.LayerFilter;
+import org.ala.layers.intersect.Grid;
 import org.ala.spatial.analysis.method.Aloc;
 import org.ala.spatial.analysis.method.Pca;
 import org.ala.spatial.util.AnalysisJob;
 import org.ala.spatial.util.AnalysisJobAloc;
-import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.GridCutter;
 import org.ala.spatial.util.Layer;
-import org.ala.spatial.util.SimpleRegion;
-import org.ala.spatial.util.SpatialLogger;
-import org.ala.spatial.util.SpatialSettings;
-import org.ala.spatial.util.TabulationSettings;
-import org.ala.spatial.util.UploadSpatialResource;
-import org.ala.spatial.util.Zipper;
+import org.ala.spatial.util.AlaspatialProperties;
 
 /**
  * entry into running Aloc
@@ -35,20 +30,6 @@ import org.ala.spatial.util.Zipper;
  *
  */
 public class AlocService {
-
-    /**
-     * runs an ALOC classification
-     * @param filename output filename for image out
-     * @param layers list of layers to include in ALOC as Layer[]
-     * @param numberofgroups number groups to generate as int
-     * @param region option restrictive region as SimpleRegion
-     * @param envelope option restrictive envelope of LayerFilter[]
-     * @param id session id as String
-     * @return groups as int[]
-     */
-    public static int[] run(String filename, Layer[] layers, int numberofgroups, SimpleRegion region, LayerFilter[] envelope, String id) {
-        return run(filename, layers, numberofgroups, region, envelope, id, null);
-    }
 
     /**
      * exports means and colours of a classification (ALOC) into
@@ -134,7 +115,7 @@ public class AlocService {
             }
             fw.append("</p>");
 
-            fw.append("<p> <a href=\"" + TabulationSettings.base_output_url + "/files/inter_layer_association.csv\" >");
+            fw.append("<p> <a href=\"" + AlaspatialProperties.getBaseOutputURL() + "/files/inter_layer_association.csv\" >");
             fw.append("<span class=\"title\">Inter-layer dissimilarity matrix (csv)</span>  ");
             fw.append("</a>");
             fw.append("</p>");
@@ -226,23 +207,49 @@ public class AlocService {
         }
     }
 
-    private static void exportExtents(String filename, int width, int height, double minx, double miny, double maxx, double maxy) {
-        try {
-            FileWriter fw = new FileWriter(filename);
-            fw.append(String.valueOf(width)).append("\n");
-            fw.append(String.valueOf(height)).append("\n");
-            fw.append(String.valueOf(minx)).append("\n");
-            fw.append(String.valueOf(miny)).append("\n");
-            fw.append(String.valueOf(maxx)).append("\n");
-            fw.append(String.valueOf(maxy)).append("\n");
-            fw.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+    private static int getGroupRange(int[] groups) {
+        if (groups == null) {
+            return 0;
         }
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        for (int i = 0; i < groups.length; i++) {
+            if (groups[i] < min) {
+                min = groups[i];
+            }
+            if (groups[i] > max) {
+                max = groups[i];
+            }
+        }
+        if (min > max) {
+            min = 0;
+            max = 0;
+        }
+        return max - min;
     }
 
-    public static int[] run(String filename, Layer[] layers, int numberOfGroups, SimpleRegion region, LayerFilter[] envelope, String name, AnalysisJobAloc job) {
-        TabulationSettings.load();
+    public static void main(String[] args) {
+//        args = new String[]{
+//                    "e:\\mnt\\ala\\data\\index\\tabulation\\1329792717628\\",
+//                    "20",
+//                    "4",
+//                    "d:\\"
+//                };
+        System.out.println("args[0] = grid files directory\n"
+                + "args[1] = number of groups\n"
+                + "args[2] = number of threads\n"
+                + "args[3] = output path\n");
+
+        String gridfilepath = args[0];
+        int numberOfGroups = Integer.parseInt(args[1]);
+        int numberOfThreads = Integer.parseInt(args[2]);
+        String outputpath = args[3];
+
+        String filename = outputpath + File.separator + "aloc.png";
+
+        String name = "aloc";
+
+        AnalysisJob job = null;
 
         if (job != null) {
             job.log("start ALOC");
@@ -252,20 +259,13 @@ public class AlocService {
         int i, j;
         j = 0;
         int width = 0, height = 0;
-        String layerPath = TabulationSettings.environmental_data_path;
-        if (layerPath == null) {
-            layerPath = "";
-        }
-        //TODO: # piecies decided by memory available / memory required / threadcount
-        int pieces = TabulationSettings.analysis_threads * 4;
-        ArrayList<Object> data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope, job);
+
+        int pieces = numberOfThreads * 4;
+
+        ArrayList<Object> data_pieces = GridCutter.loadCutGridsForAloc(gridfilepath, outputpath + "extents.txt", pieces, job);
 
         //number of pieces may have changed
         pieces = data_pieces.size() - 2;
-
-        if (job != null) {
-            job.setCells(((int[][]) data_pieces.get(data_pieces.size() - 2)).length);
-        }
 
         if (job != null) {
             job.log("set cells length");
@@ -275,26 +275,33 @@ public class AlocService {
         width = (int) extents[0];
         height = (int) extents[1];
 
+        //identify grid files
+        File[] files = new File(gridfilepath).listFiles(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".grd") || name.endsWith(".GRD");
+            }
+        });
+        Layer[] layers = new Layer[files.length];
+        for (i = 0; i < files.length; i++) {
+            layers[i] = new Layer(files[i].getName(), files[i].getName(), "", "");
+        }
 
         /* run aloc
          * Note: requested number of groups may not always equal request
-         */      
-        int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, layers, job);
-        if(groups == null || getGroupRange(groups) < 2) {
-            if(job != null && job.getCurrentState() != null && !job.getCurrentState().equals(AnalysisJob.FAILED)) {
+         */
+        int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, layers, null, numberOfThreads);
+        if (groups == null || getGroupRange(groups) < 2) {
+            if (job != null && job.getCurrentState() != null && !job.getCurrentState().equals(AnalysisJob.FAILED)) {
                 job.setCurrentState(AnalysisJobAloc.FAILED);
                 job.setMessage("Classification failed to generate groups");
             }
-        }
-        if (job != null && job.isCancelled()) {
-            return null;
         }
 
         if (job != null) {
             job.log("identified groups");
         }
-
-        SpatialLogger.log("done gower metric");
 
         /* recalculate group counts */
         int newNumberOfGroups = 0;
@@ -346,24 +353,21 @@ public class AlocService {
 
 
         /* export means + colours */
-        exportMeansColours(filename.replace("aloc.png","classification_means.csv"), group_means, colours, layers);
+        exportMeansColours(filename.replace("aloc.png", "classification_means.csv"), group_means, colours, layers);
         if (job != null) {
             job.log("exported group means and colours");
         }
 
         /* export metadata html */
-        String pth = "output" + File.separator + "aloc" + File.separator;
-        int pos = filename.indexOf(pth);
-        String f = filename.substring(pos + pth.length());
-        String urlpth = TabulationSettings.alaspatial_path + "output/aloc/" + f.replace("\\", "/").replace("aloc.png","classification_means.csv");
-        exportMetadata(filename.replace("aloc.png","classification") + ".html", numberOfGroups, layers,
-                (job != null) ? job.getName() : "",
+        String urlpth = AlaspatialProperties.getBaseOutputURL() + "aloc/<insert job number here>/classification_means.csv";
+        exportMetadata(filename.replace("aloc.png", "classification") + ".html", numberOfGroups, layers,
+                (job != null) ? job.getName() : "<insert job number here>",
                 urlpth,
-                (job != null) ? job.area : "",
+                "", //(job != null) ? job.area : "",
                 width, height, extents[2], extents[3], extents[4], extents[5]);
 
         /* export geoserver sld file for legend */
-        //exportSLD(filename + ".sld", group_means, colours, layers, id);
+        exportSLD(filename + ".sld", group_means, colours, layers, "");
 
         /* map back as colours, grey scale for now */
         BufferedImage image = new BufferedImage(width, height,
@@ -398,7 +402,7 @@ public class AlocService {
             ImageIO.write(image, "png",
                     new File(filename));
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
 
         if (job != null) {
@@ -410,8 +414,8 @@ public class AlocService {
         }
 
         //write grid file
-        double [] grid_data = new double[height * width];
-        for(i=0;i<grid_data.length;i++) {
+        double[] grid_data = new double[height * width];
+        for (i = 0; i < grid_data.length; i++) {
             grid_data[i] = Double.NaN;
         }
         for (i = 0; i < groups.length; i++) {
@@ -421,16 +425,18 @@ public class AlocService {
             grid_data[cells[i][0] + (height - cells[i][1] - 1) * width] = groups[i];
         }
         Grid g = new Grid(null);
-        g.writeGrid(filename.replace("aloc.png",name), grid_data, extents[2], extents[3], extents[4], extents[5],
-                TabulationSettings.grd_xdiv, TabulationSettings.grd_ydiv,
+        float res = (float) ((extents[4] - extents[2]) / width);
+        g.writeGrid(filename.replace("aloc.png", name), grid_data, extents[2], extents[3], extents[4], extents[5],
+                res, res,
                 height, width);
 
         //export sld
         exportSLD(filename.replace("aloc.png",name + ".sld"), group_means, colours, layers, "0");
 
         //export ASCGRID
+        BufferedWriter fw = null;
         try {
-            BufferedWriter fw = new BufferedWriter(
+            fw = new BufferedWriter(
                     new OutputStreamWriter(
                         new FileOutputStream(filename.replace("aloc.png",name + ".asc"))
                         , "US-ASCII"));
@@ -438,7 +444,7 @@ public class AlocService {
             fw.append("nrows ").append(String.valueOf(height)).append("\n");
             fw.append("xllcorner ").append(String.valueOf(extents[2])).append("\n");
             fw.append("yllcorner ").append(String.valueOf(extents[3])).append("\n");
-            fw.append("cellsize ").append(String.valueOf(TabulationSettings.grd_xdiv)).append("\n");
+            fw.append("cellsize ").append(String.valueOf(res)).append("\n");
 
             fw.append("NODATA_value ").append(String.valueOf(-1));
 
@@ -455,51 +461,32 @@ public class AlocService {
                     }
                 }
             }
-
             fw.append("\n");
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        } finally {
+            if(fw != null) {
+                try {
+                    fw.close();
+                } catch (Exception e) {
+                    e.printStackTrace(System.out);
+                }
+            }
+        }
+    }
 
-            fw.close();
+    static String readFile(String file) {
+        String s = null;
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "r");
+            byte[] b = new byte[(int) raf.length()];
+            raf.read(b);
+            raf.close();
+            s = new String(b, "UTF-8");
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        //projection file
-        writeProjectionFile(filename.replace("aloc.png",name + ".prj"));
-
-        //publish layer
-        Hashtable htGeoserver = new SpatialSettings().getGeoserverSettings();
-        // if generated successfully, then add it to geoserver
-        String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/aloc_" + name + "/file.arcgrid?coverageName=aloc_" + name;
-        String extra = "";
-        String username = (String) htGeoserver.get("geoserver_username");
-        String password = (String) htGeoserver.get("geoserver_password");
-        String[] infiles = {filename.replace("aloc.png",name + ".asc"), filename.replace("aloc.png",name + ".prj")};
-        String ascZipFile = filename.replace("aloc.png",name + ".asc.zip");
-        Zipper.zipFiles(infiles, ascZipFile);
-
-        // Upload the file to GeoServer using REST calls
-        System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
-        UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
-
-        //Create style
-        url = (String) htGeoserver.get("geoserver_url") + "/rest/styles/";
-        UploadSpatialResource.loadCreateStyle(url, extra, username, password, "aloc_" + name);
-
-        //Upload sld
-        url = (String) htGeoserver.get("geoserver_url") + "/rest/styles/aloc_" + name;
-        UploadSpatialResource.loadSld(url, extra, username, password, filename.replace("aloc.png",name + ".sld"));
-
-        //Apply style
-        String data = "<layer><enabled>true</enabled><defaultStyle><name>aloc_" + name + "</name></defaultStyle></layer>";
-        url = (String) htGeoserver.get("geoserver_url") + "/rest/layers/ALA:aloc_" + name;
-        UploadSpatialResource.assignSld(url, extra, username, password, data);
-
-         //Enable browser caching, FIX for zoom to extent required.
-//        data = "<coverage><metadata><entry key=\"cacheAgeMax\">3600</entry><entry key=\"cachingEnabled\">true</entry><entry key=\"dirName\">aloc_" + name + "_" + name + "</entry></metadata></coverage>";
-//        url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/aloc_" + name + "/coverages/aloc_" + name + ".xml";
-//        UploadSpatialResource.assignSld(url, extra, username, password, data);
-
-        return groups;
+        return s;
     }
 
     private static void writeProjectionFile(String filename) {
@@ -526,23 +513,22 @@ public class AlocService {
             //Logger.getLogger(MaxentServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("error writing species file:");
             ex.printStackTrace(System.out);
-        }
+}
     }
 
-    private static int getGroupRange(int[] groups) {
-        if(groups == null) {
-            return 0;
-        }
-        int min = Integer.MAX_VALUE;
-        int max = Integer.MIN_VALUE;
-        for(int i=0;i<groups.length;i++) {
-            if(groups[i] < min) min = groups[i];
-            if(groups[i] > max) max = groups[i];
-        }
-        if(min > max) {
-            min = 0;
-            max = 0;
-        }
-        return max - min;
-    }
+   
+
+//    static String readFile(String file) {
+//        String s = null;
+//        try {
+//            RandomAccessFile raf = new RandomAccessFile(file, "r");
+//            byte[] b = new byte[(int) raf.length()];
+//            raf.read(b);
+//            raf.close();
+//            s = new String(b, "UTF-8");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return s;
+//    }
 }

@@ -21,7 +21,7 @@ public class CoordinateTransformer {
         Runtime runtime = Runtime.getRuntime();
         try {
 
-            String gdal_path = TabulationSettings.gdal_apps_dir;
+            String gdal_path = AlaspatialProperties.getGdalDir();
             //if (!gdal_path.endsWith("/")) gdal_path += "/";
 
             System.out.println("Got gdal_path: " + gdal_path);
@@ -89,7 +89,7 @@ public class CoordinateTransformer {
         Runtime runtime = Runtime.getRuntime();
         try {
 
-            String gdal_path = TabulationSettings.gdal_apps_dir;
+            String gdal_path = AlaspatialProperties.getGdalDir();
 
             System.out.println("Got gdal_path: " + gdal_path);
 
@@ -141,7 +141,7 @@ public class CoordinateTransformer {
 
             Runtime runtime = Runtime.getRuntime();
 
-            String command = TabulationSettings.convert_path + " " + srcImgPath + " " + destImgPath;
+            String command = AlaspatialProperties.getImageMagickDir() + " " + srcImgPath + " " + destImgPath;
             System.out.println("Exec'ing " + command);
             Process proc = runtime.exec(command);
 
@@ -238,7 +238,7 @@ public class CoordinateTransformer {
         Runtime runtime = Runtime.getRuntime();
         try {
 
-            String gdal_path = TabulationSettings.gdal_apps_dir;
+            String gdal_path = AlaspatialProperties.getGdalDir();
 
             System.out.println("Got gdal_path: " + gdal_path);
 

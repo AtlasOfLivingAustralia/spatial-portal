@@ -18,26 +18,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
+import org.ala.layers.client.Client;
+import org.ala.layers.dao.LayerDAO;
+import org.ala.layers.intersect.IniReader;
+import org.ala.layers.intersect.SimpleRegion;
+import org.ala.layers.intersect.SimpleShapeFile;
 import org.ala.spatial.analysis.index.LayerFilter;
-import org.ala.spatial.analysis.service.FilteringService;
+import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.GridCutter;
-import org.ala.spatial.util.IniReader;
-import org.ala.spatial.util.Layer;
-import org.ala.spatial.util.SimpleRegion;
-import org.ala.spatial.util.SimpleShapeFile;
-import org.ala.spatial.util.SpatialSettings;
-import org.ala.spatial.util.TabulationSettings;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -80,19 +74,19 @@ public class GDMWSController {
             String speciesdata = req.getParameter("speciesdata");
             String area = req.getParameter("area");
 
-            Layer[] layers = getEnvFilesAsLayers(envlist);
+            //Layer[] layers = getEnvFilesAsLayers(envlist);
 
             LayerFilter[] filter = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
-                filter = FilteringService.getFilters(area);
+                filter = LayerFilter.parseLayerFilters(area);
             } else {
                 region = SimpleShapeFile.parseWKT(area);
             }
 
             // 1. create work/output directory
             //outputdir = TabulationSettings.base_output_dir + currTime + "/";
-            outputdir = TabulationSettings.base_output_dir + "output" + File.separator + "gdm" + File.separator + currTime + File.separator;
+            outputdir = AlaspatialProperties.getBaseOutputDir() + "output" + File.separator + "gdm" + File.separator + currTime + File.separator;
             File outdir = new File(outputdir);
             outdir.mkdirs();
 
@@ -106,10 +100,14 @@ public class GDMWSController {
 
             // 3. cut environmental layers
             //String cutDataPath = GridCutter.cut(layers, region, filter, null);
-            SpatialSettings ssets = new SpatialSettings();
-            String cutDataPath = ssets.getEnvDataPath();
+            //SpatialSettings ssets = new SpatialSettings();
+            //String cutDataPath = ssets.getEnvDataPath();
 
-            cutDataPath = GridCutter.cut(layers, region, filter, null);
+            String resolution = req.getParameter("res");
+            if (resolution == null) {
+                resolution = "0.01";
+            }
+            String cutDataPath = GridCutter.cut2(envlist.split(":"), resolution, region, filter, null);
 
             System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
 
@@ -119,7 +117,7 @@ public class GDMWSController {
             //DomainGrid.generate(cutDataPath, layers, region, outputdir);
 
             // 5. build parameters files for GDM
-            String params = generateStep1Paramfile(layers, cutDataPath, speciesFile, outputdir);
+            String params = generateStep1Paramfile(envlist.split(":"), cutDataPath, speciesFile, outputdir);
 
             
             // 6. run GDM
@@ -176,14 +174,14 @@ public class GDMWSController {
             String useSubSample = req.getParameter("useSubSample");
             String sitePairsSize = req.getParameter("sitePairsSize");
 
-            outputdir = TabulationSettings.base_output_dir + "output" + File.separator + "gdm" + File.separator + pid + File.separator;
+            outputdir = AlaspatialProperties.getBaseOutputDir() + "output" + File.separator + "gdm" + File.separator + pid + File.separator;
 
 
             Properties props = new Properties();
             props.load(new FileInputStream(outputdir + "ala.properties"));
             String envlist = props.getProperty("envlist");
             String area = props.getProperty("area");
-            Layer[] layers = getEnvFilesAsLayers(envlist);
+            //Layer[] layers = getEnvFilesAsLayers(envlist);
 
 
             // 5. build parameters files for GDM
@@ -201,7 +199,7 @@ public class GDMWSController {
 
             // 7.1 generate/display charts
             generateCharts(outputdir);
-            generateMetadata(layers, area, pid, outputdir);
+            generateMetadata(envlist.split(":"), area, pid, outputdir);
 
             // 7.2 generate/display transform grid
 
@@ -237,12 +235,12 @@ public class GDMWSController {
             String speciesdata = req.getParameter("speciesdata");
             String area = req.getParameter("area");
 
-            Layer[] layers = getEnvFilesAsLayers(envlist);
+            //Layer[] layers = getEnvFilesAsLayers(envlist);
 
             LayerFilter[] filter = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
-                filter = FilteringService.getFilters(area);
+                filter = LayerFilter.parseLayerFilters(area);
             } else {
                 region = SimpleShapeFile.parseWKT(area);
             }
@@ -250,7 +248,7 @@ public class GDMWSController {
 
             // 1. create work/output directory
             //outputdir = TabulationSettings.base_output_dir + currTime + "/";
-            outputdir = TabulationSettings.base_output_dir + "output" + File.separator + "gdm" + File.separator + currTime + File.separator;
+            outputdir = AlaspatialProperties.getBaseOutputDir() + "output" + File.separator + "gdm" + File.separator + currTime + File.separator;
             File outdir = new File(outputdir);
             outdir.mkdirs();
 
@@ -264,10 +262,14 @@ public class GDMWSController {
 
             // 3. cut environmental layers
             //String cutDataPath = GridCutter.cut(layers, region, filter, null);
-            SpatialSettings ssets = new SpatialSettings();
-            String cutDataPath = ssets.getEnvDataPath();
+            //SpatialSettings ssets = new SpatialSettings();
+            //String cutDataPath = ssets.getEnvDataPath();
 
-            cutDataPath = GridCutter.cut(layers, region, filter, null);
+             String resolution = req.getParameter("res");
+            if (resolution == null) {
+                resolution = "0.01";
+            }
+            String cutDataPath = GridCutter.cut2(envlist.split(":"), resolution, region, filter, null);
 
             System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
 
@@ -277,7 +279,7 @@ public class GDMWSController {
             //DomainGrid.generate(cutDataPath, layers, region, outputdir);
 
             // 5. build parameters files for GDM
-            String params = generateParamfile(layers, cutDataPath, useDistance, speciesFile, outputdir);
+            String params = generateParamfile(envlist.split(":"), cutDataPath, useDistance, speciesFile, outputdir);
 
             //System.out.println("gdm.params: \n-------------------------\n" + params + "\n-------------------------\n");
             System.out.println("gdm.params: " + params);
@@ -291,7 +293,7 @@ public class GDMWSController {
 
             // 7.1 generate/display charts
             generateCharts(outputdir);
-            generateMetadata(layers, area, area, outputdir);
+            generateMetadata(envlist.split(":"), area, area, outputdir);
 
             // 7.2 generate/display transform grid
 
@@ -328,14 +330,15 @@ public class GDMWSController {
         return null;
     }
 
-    private String generateStep1Paramfile(Layer[] layers, String layersPath, String speciesfile, String outputdir) {
+    private String generateStep1Paramfile(String[] layers, String layersPath, String speciesfile, String outputdir) {
         try {
+            LayerDAO layerDao = Client.getLayerDao();
             StringBuilder envLayers = new StringBuilder();
             StringBuilder useEnvLayers = new StringBuilder();
             StringBuilder predSpline = new StringBuilder();
             for (int i = 0; i < layers.length; i++) {
-                envLayers.append("EnvGrid").append(i + 1).append("=").append(layersPath).append(layers[i].name).append("\n");
-                envLayers.append("EnvGridName").append(i + 1).append("=").append(layers[i].display_name).append("\n");
+                envLayers.append("EnvGrid").append(i + 1).append("=").append(layersPath).append(layers[i]).append("\n");
+                envLayers.append("EnvGridName").append(i + 1).append("=").append(layerDao.getLayerByName(layers[i]).getDisplayname()).append("\n");
                 useEnvLayers.append("UseEnv").append(i + 1).append("=1").append("\n");
                 predSpline.append("PredSpl").append(i + 1).append("=3").append("\n");
             }
@@ -371,14 +374,15 @@ public class GDMWSController {
         return "";
     }
     
-    private String generateParamfile(Layer[] layers, String layersPath, String useEuclidean, String speciesfile, String outputdir) {
+    private String generateParamfile(String[] layers, String layersPath, String useEuclidean, String speciesfile, String outputdir) {
         try {
+            LayerDAO layerDao = Client.getLayerDao();
             StringBuilder envLayers = new StringBuilder();
             StringBuilder useEnvLayers = new StringBuilder();
             StringBuilder predSpline = new StringBuilder();
             for (int i = 0; i < layers.length; i++) {
-                envLayers.append("EnvGrid").append(i + 1).append("=").append(layersPath).append(layers[i].name).append("\n");
-                envLayers.append("EnvGridName").append(i + 1).append("=").append(layers[i].display_name).append("\n");
+                envLayers.append("EnvGrid").append(i + 1).append("=").append(layersPath).append(layers[i]).append("\n");
+                envLayers.append("EnvGridName").append(i + 1).append("=").append(layerDao.getLayerByName(layers[i]).getDisplayname()).append("\n");
                 useEnvLayers.append("UseEnv").append(i + 1).append("=1").append("\n");
                 predSpline.append("PredSpl").append(i + 1).append("=3").append("\n");
             }
@@ -431,31 +435,31 @@ public class GDMWSController {
         return outputdir + "gdm_params.txt";
     }
 
-    private Layer[] getEnvFilesAsLayers(String envNames) {
-        try {
-            envNames = URLDecoder.decode(envNames, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            ex.printStackTrace(System.out);
-        }
-        String[] nameslist = envNames.split(":");
-        Layer[] sellayers = new Layer[nameslist.length];
-
-        Layer[] _layerlist = TabulationSettings.environmental_data_files;
-
-        for (int j = 0; j < nameslist.length; j++) {
-            for (int i = 0; i < _layerlist.length; i++) {
-                if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])
-                        || _layerlist[i].name.equalsIgnoreCase(nameslist[j])) {
-                    sellayers[j] = _layerlist[i];
-                    //sellayers[j].name = _layerPath + sellayers[j].name;
-                    System.out.println("Adding layer for GDM: " + sellayers[j].name);
-                    continue;
-                }
-            }
-        }
-
-        return sellayers;
-    }
+//    private Layer[] getEnvFilesAsLayers(String envNames) {
+//        try {
+//            envNames = URLDecoder.decode(envNames, "UTF-8");
+//        } catch (UnsupportedEncodingException ex) {
+//            ex.printStackTrace(System.out);
+//        }
+//        String[] nameslist = envNames.split(":");
+//        Layer[] sellayers = new Layer[nameslist.length];
+//
+//        Layer[] _layerlist = TabulationSettings.environmental_data_files;
+//
+//        for (int j = 0; j < nameslist.length; j++) {
+//            for (int i = 0; i < _layerlist.length; i++) {
+//                if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])
+//                        || _layerlist[i].name.equalsIgnoreCase(nameslist[j])) {
+//                    sellayers[j] = _layerlist[i];
+//                    //sellayers[j].name = _layerPath + sellayers[j].name;
+//                    System.out.println("Adding layer for GDM: " + sellayers[j].name);
+//                    continue;
+//                }
+//            }
+//        }
+//
+//        return sellayers;
+//    }
 
     private int runGDM(String params) {
         return runGDM(0, params);
@@ -468,7 +472,7 @@ public class GDMWSController {
         int exitValue = -1;
 
         try {
-            String command = TabulationSettings.gdm_cmdpth + " -g" + level + " " + params;
+            String command = AlaspatialProperties.getAnalysisGdmCmd() + " -g" + level + " " + params;
             System.out.println("Running gdm: " + command);
 
 //            return 111;
@@ -840,8 +844,9 @@ public class GDMWSController {
         ChartUtilities.saveChartAsPNG(new File(outputdir + "plots/" + filename + ".png"), jChart, 900, 500);
     }
 
-    private void generateMetadata(Layer[] layers, String area, String pid, String outputdir) {
+    private void generateMetadata(String[] layers, String area, String pid, String outputdir) {
         try {
+            LayerDAO layerDao = Client.getLayerDao();
             int i = 0;
             System.out.println("Generating metadata...");
             StringBuilder sbMetadata = new StringBuilder();
@@ -858,7 +863,7 @@ public class GDMWSController {
 
             sbMetadata.append("<li>Layers: <ul>");
             for (i = 0; i < layers.length; i++) {
-                sbMetadata.append("<li>").append(layers[i].display_name).append("</li>");
+                sbMetadata.append("<li>").append(layerDao.getLayerByName(layers[i]).getDisplayname()).append("</li>");
             }
             sbMetadata.append("</li></ul></li></ul></section>");
 

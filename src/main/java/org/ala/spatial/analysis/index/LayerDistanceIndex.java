@@ -6,17 +6,25 @@ package org.ala.spatial.analysis.index;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.ala.spatial.util.Grid;
-import org.ala.spatial.util.Layer;
-import org.ala.spatial.util.SpatialLogger;
-import org.ala.spatial.util.TabulationSettings;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.ala.layers.intersect.Grid;
+import org.ala.spatial.util.AlaspatialProperties;
+import org.ala.spatial.util.GridCutter;
 
 /**
  *
@@ -24,224 +32,211 @@ import org.ala.spatial.util.TabulationSettings;
  */
 public class LayerDistanceIndex {
 
-    final public static String LAYER_DISTANCE_FILE = "layerDistances.dat";
-    final public static String LAYER_DISTANCE_FILE_CSV = "layerDistances.csv";
-    final public static String LAYER_DISTANCE_FILE_CSV_RAWNAMES = "layerDistancesRawNames.csv";
+    final public static String LAYER_DISTANCE_FILE = "layerDistances.properties";
     double[][] min;
     double[][] max;
     double[][] range;
     static double[][] all_measures;
 
-    public void occurancesUpdate() {
-        //env grid vs env grid
-        Layer[] layers = TabulationSettings.environmental_data_files;
+    public void occurrencesUpdate() throws InterruptedException {
 
-        double[][] measures = new double[layers.length][layers.length];
+        Map<String, Double> map = loadDistances();
 
-//        min = new double[TabulationSettings.grd_nrows][TabulationSettings.grd_ncols];
-//        max = new double[TabulationSettings.grd_nrows][TabulationSettings.grd_ncols];
-//        range = new double[TabulationSettings.grd_nrows][TabulationSettings.grd_ncols];
-//        for (int i = 0; i < min.length; i++) {
-//            for (int j = 0; j < min[i].length; j++) {
-//                min[i][j] = Double.MAX_VALUE;
-//                max[i][j] = Double.MAX_VALUE * -1;
-//                range[i][j] = Double.NaN;
-//            }
-//        }
-//
-        for (int i = 0; i < measures.length; i++) {
-            for (int j = 0; j < measures[i].length; j++) {
-                measures[i][j] = Double.NaN;
+        LinkedBlockingQueue<String> todo = new LinkedBlockingQueue();
+
+        //find all environmental layer analysis files
+        File root = new File(AlaspatialProperties.getAnalysisLayersDir());
+        File [] dirs = root.listFiles(new FileFilter() {
+
+            @Override
+            public boolean accept(File pathname) {
+                return pathname != null && pathname.isDirectory();
             }
-        }
 
-//        System.out.println("updating min/max");
-//        for (int i = 0; i < layers.length; i++) {
-//            updateMinMax(layers[i].name);
-//        }
-//        for (int i = 0; i < min.length; i++) {
-//            for (int j = 0; j < min[i].length; j++) {
-//                if (max[i][j] != Double.MAX_VALUE * -1) {
-//                    range[i][j] = max[i][j] - min[i][j];
-//                } else {
-//                    range[i][j] = 0;
-//                }
-//            }
-//        }
+        });
+        for(File dir : dirs) {
+            //iterate through files
+            File[] files = new File(dir.getPath()).listFiles(new FileFilter() {
 
-        //do distance calculations in blocks to reduce grids being loaded
-        SpatialLogger.log("calculating distances");
-        ArrayList<int[]> comparisons = new ArrayList<int[]>();
-        int inc = TabulationSettings.max_grids_load - TabulationSettings.analysis_threads;
-        for (int span = 0; span < layers.length; span += inc) {
-            for (int j = span; j < layers.length; j++) {
-                for (int i = span; i < span + inc && i < layers.length; i++) {
-                    if (i < j) {
-                        int[] c = new int[2];
-                        c[0] = i;
-                        c[1] = j;
-                        comparisons.add(c);
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.getName().endsWith(".grd") && pathname.getName().startsWith("el");
+                }
+            });
+
+            for (int i = 0; i < files.length; i++) {
+                for (int j = i + 1; j < files.length; j++) {
+                    String file1 = files[i].getName().replace(".grd", "");
+                    String file2 = files[j].getName().replace(".grd", "");
+
+                    String key = (file1.compareTo(file2) < 0) ? file1 + " " + file2 : file2 + " " + file1;
+
+                    if (!map.containsKey(key)) {
+                        todo.put(key);
                     }
                 }
             }
         }
 
-        LinkedBlockingQueue<int[]> lbq = new LinkedBlockingQueue(comparisons);
-
-        int threadcount = TabulationSettings.analysis_threads;
-        CalculateDistanceThread[] cdts = new CalculateDistanceThread[threadcount];
-        for (int i = 0; i < cdts.length; i++) {
-            cdts[i] = new CalculateDistanceThread(lbq, range, min, measures, layers);
+        LinkedBlockingQueue<String> toDisk = new LinkedBlockingQueue<String>();
+        int threadcount = 4;
+        CountDownLatch cdl = new CountDownLatch(todo.size());
+        CalcThread [] threads = new CalcThread[threadcount];
+        for(int i=0;i<threadcount;i++) {
+            threads[i] = new CalcThread(cdl,todo, toDisk);
+            threads[i].start();
         }
 
-        try {
-            boolean finished = false;
-            while (!finished) {
-                finished = true;
-                for (int i = 0; i < cdts.length; i++) {
-                    if (cdts[i].isAlive()) {
-                        finished = false;
-                        break;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        ToDiskThread toDiskThread = new ToDiskThread(AlaspatialProperties.getAnalysisWorkingDir()
+                    + LAYER_DISTANCE_FILE, toDisk);
+        toDiskThread.start();
+
+        cdl.await();
+
+        for(int i=0;i<threadcount;i++) {
+            threads[i].interrupt();
         }
 
-        SpatialLogger.log("finsihed calculating distances");
-
-        //object output
-        try {
-            FileOutputStream fos = new FileOutputStream(
-                    TabulationSettings.index_path
-                    + LAYER_DISTANCE_FILE);
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(measures);
-            oos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //csv output, lower asymetric, layer display names
-        try {
-            FileWriter fw = new FileWriter(
-                    TabulationSettings.index_path
-                    + LAYER_DISTANCE_FILE_CSV);
-
-            fw.append(",");
-            for (int i = 0; i < measures.length - 1; i++) {
-                fw.append(layers[i].display_name).append(",");
-            }
-            for (int i = 1; i < measures.length; i++) {
-                fw.append("\r\n");
-                fw.append(layers[i].display_name);
-                for (int j = 0; j < i; j++) {
-                    fw.append(",").append(String.valueOf(measures[i][j]));
-                }
-            }
-            fw.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //csv output, lower asymetric, layer names
-        try {
-            FileWriter fw = new FileWriter(
-                    TabulationSettings.index_path
-                    + LAYER_DISTANCE_FILE_CSV_RAWNAMES);
-
-            fw.append(",");
-            for (int i = 0; i < measures.length - 1; i++) {
-                fw.append(layers[i].name).append(",");
-            }
-            for (int i = 1; i < measures.length; i++) {
-                fw.append("\r\n");
-                fw.append(layers[i].name);
-                for (int j = 0; j < i; j++) {
-                    fw.append(",").append(String.valueOf(measures[i][j]));
-                }
-            }
-            fw.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        //wait 10s and then close
+        wait(10*1000);
+        toDiskThread.interrupt();
     }
 
-    static public void load() {
-        try {
-            FileInputStream fis = new FileInputStream(
-                    TabulationSettings.index_path
-                    + LAYER_DISTANCE_FILE);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            all_measures = (double[][]) ois.readObject();
-            ois.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    static public double getMeasure(String layer1, String layer2) {
-        Layer[] layers = TabulationSettings.environmental_data_files;
-        int i, j;
-        for (i = 0; i < layers.length; i++) {
-            if (layer1.equalsIgnoreCase(layers[i].name)) {
-                break;
-            }
-        }
-        for (j = 0; j < layers.length; j++) {
-            if (layer2.equalsIgnoreCase(layers[j].name)) {
-                break;
-            }
-        }
-        if (j < layers.length && i < layers.length) {
-            return all_measures[i][j];
-        }
-
-        return Double.NaN;
-    }
-
-    void updateMinMax(String layer) {
-        Grid g = Grid.getGrid(TabulationSettings.getPath(layer));
-
-        float[] d = g.getGrid();
-
-        double longitude;
-        double latitude;
-        int p;
-        double v;
-
-        for (int i = 0; i < TabulationSettings.grd_nrows; i++) {
-            for (int j = 0; j < TabulationSettings.grd_ncols; j++) {
-                longitude = TabulationSettings.grd_xmin + TabulationSettings.grd_xdiv * j;
-                latitude = TabulationSettings.grd_ymin + TabulationSettings.grd_ydiv * i;
-
-                p = g.getcellnumber(longitude, latitude);
-
-                if (p >= 0 && p < d.length) {
-                    v = (d[p] - g.minval) / (g.maxval - g.minval);
-                } else {
-                    continue;
-                }
-
-                if (max[i][j] < v) {
-                    max[i][j] = v;
-                }
-                if (min[i][j] > v) {
-                    min[i][j] = v;
-                }
-            }
-        }
-    }
-
-    static public void main(String[] args) {
-        TabulationSettings.load();
-
+    static public void main(String[] args) throws InterruptedException {
         LayerDistanceIndex ldi = new LayerDistanceIndex();
-        ldi.occurancesUpdate();
+        ldi.occurrencesUpdate();
+    }
+
+    static public Map<String, Double> loadDistances() {
+        Map<String, Double> map = new ConcurrentHashMap<String, Double>();
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(AlaspatialProperties.getAnalysisWorkingDir()
+                    + LAYER_DISTANCE_FILE));
+
+            String line;
+            while((line = br.readLine()) != null) {
+                if(line.length() > 0) {
+                    String [] keyvalue = line.split("=");
+                    double d = Double.NaN;
+                    try {
+                        d = Double.parseDouble(keyvalue[1]);
+                    } catch (Exception e) {
+                        System.out.println("cannot parse value in " + line);
+                    }
+                    map.put(keyvalue[0], d);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        } finally {
+            if(br != null) {
+                try {
+                    br.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return map;
     }
 }
 
+class CalcThread extends Thread {
+    CountDownLatch cdl;
+    LinkedBlockingQueue<String> lbq;
+    LinkedBlockingQueue<String> toDisk;
 
+    public CalcThread(CountDownLatch cdl, LinkedBlockingQueue<String> lbq, LinkedBlockingQueue<String> toDisk) {
+        this.cdl = cdl;
+        this.lbq = lbq;
+        this.toDisk = toDisk;
+    }
+
+    public void run() {
+        try {
+            while(true) {
+                String key = lbq.take();
+                String [] layers = key.split(" ");
+
+                try {
+                    Double distance = calculateDistance(layers[0], layers[1]);
+                    System.out.println(key + "=" + distance);
+                    toDisk.put(key + "=" + distance);
+                } catch (Exception e) {
+                    System.out.println(key + ":error");
+                    e.printStackTrace(System.out);
+                }
+
+                cdl.countDown();
+            }
+        } catch (InterruptedException e) {
+        }
+    }
+
+    private Double calculateDistance(String layer1, String layer2) {
+        Grid g1 = Grid.getGridStandardized(GridCutter.getLayerPath(AlaspatialProperties.getLayerResolutionDefault(), layer1));
+        Grid g2 = Grid.getGridStandardized(GridCutter.getLayerPath(AlaspatialProperties.getLayerResolutionDefault(), layer2));
+
+        double minx = Math.max(g1.xmin, g2.xmin);
+        double maxx = Math.min(g1.xmax, g2.xmax);
+        double miny = Math.max(g1.ymin, g2.ymin);
+        double maxy = Math.min(g1.ymax, g2.ymax);
+
+        float[] d1 = g1.getGrid();
+        float[] d2 = g2.getGrid();
+
+        int count = 0;
+        double sum = 0;
+        double v1, v2;
+
+        for (double x = minx + g1.xres / 2.0; x < maxx; x += g1.xres) {
+            for (double y = miny + g1.yres / 2.0; y < maxy; y += g1.xres) {
+                v1 = d1[g1.getcellnumber(x, y)];
+                v2 = d2[g2.getcellnumber(x, y)];
+                if (!Double.isNaN(v1) && !Double.isNaN(v2)) {
+                    count++;
+                    sum += java.lang.Math.abs(v1 - v2);
+                }
+            }
+        }
+        return sum / count;
+    }
+}
+
+class ToDiskThread extends Thread {
+    String filename;
+    LinkedBlockingQueue<String> toDisk;
+
+    public ToDiskThread(String filename, LinkedBlockingQueue<String> toDisk) {
+        this.filename = filename;
+        this.toDisk = toDisk;
+    }
+
+    public void run() {
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(filename, true);
+            try {
+                while(true) {
+                    String s = toDisk.take();
+                    fw.append(s);
+                    fw.append("\n");
+                    fw.flush();
+                }
+            } catch (InterruptedException e) {
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ToDiskThread.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if(fw != null) {
+                try {
+                    fw.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}

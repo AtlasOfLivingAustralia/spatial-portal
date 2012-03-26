@@ -1,29 +1,30 @@
-package org.ala.spatial.analysis.maxent;
+package org.ala.spatial.analysis.service;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import org.ala.spatial.util.AnalysisJobMaxent;
+import org.ala.spatial.analysis.maxent.MaxentService;
+import org.ala.spatial.util.AnalysisJobAloc;
 
 /**
- * Gets the submitted parameters and runs a maxent model
+ * Gets the submitted parameters and runs a Aloc model
  * 
  * @author ajayr
  */
-public class MaxentServiceImpl implements MaxentService {
+public class AlocServiceImpl implements MaxentService {
 
-    MaxentSettings cmdMaxent = null;
+    AlocSettings cmdAloc = null;
 
-    public MaxentServiceImpl() {
-        cmdMaxent = new MaxentSettings();
+    public AlocServiceImpl() {
+        cmdAloc = new AlocSettings();
     }
 
-    public MaxentSettings getMaxentSettings() {
-        return cmdMaxent;
+    public AlocSettings getAlocSettings() {
+        return cmdAloc;
     }
 
-    public void setMaxentSettings(MaxentSettings cmdMaxent) {
-        this.cmdMaxent = cmdMaxent;
+    public void setAlocSettings(AlocSettings cmdAloc) {
+        this.cmdAloc = cmdAloc;
     }
 
     /**
@@ -46,13 +47,13 @@ public class MaxentServiceImpl implements MaxentService {
     }
 
     /**
-     * The process method sets up the parameters and runs the maxent process
+     * The process method sets up the parameters and runs the Aloc process
      *
      * @return success int value if the process was successful
      */
     @Override
     public int process() {
-        return runCommand(cmdMaxent.toString());
+        return runCommand(cmdAloc.toString());
     }
 
     /**
@@ -125,8 +126,8 @@ public class MaxentServiceImpl implements MaxentService {
         return 1;
     }
 
-    public int process(AnalysisJobMaxent job) {
-        MaxentThread mt = new MaxentThread(cmdMaxent.toString());
+    public int process(AnalysisJobAloc job) {
+        AlocThread mt = new AlocThread(cmdAloc.toString());
         mt.start();
 
         while (mt.isAlive() && (job == null || !job.isCancelled())) {
@@ -138,7 +139,7 @@ public class MaxentServiceImpl implements MaxentService {
         }
 
         try {
-            mt.kill(); //in case it is still running, MaxentThread will end now
+            mt.kill(); //in case it is still running, AlocThread will end now
         } catch (Exception e) {
         }
 
@@ -146,13 +147,13 @@ public class MaxentServiceImpl implements MaxentService {
     }
 }
 
-class MaxentThread extends Thread {
+class AlocThread extends Thread {
 
     public int exitValue = -1;
     String command;
     Process proc;
 
-    public MaxentThread(String command_) {
+    public AlocThread(String command_) {
         command = command_;
         setPriority(Thread.MIN_PRIORITY);
     }

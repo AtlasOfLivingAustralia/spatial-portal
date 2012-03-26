@@ -29,10 +29,6 @@ public class Layer extends Object implements Serializable {
      * catagory of 'contextual' or 'environmental'
      */
     public String type;
-    /**
-     * associated table fields
-     */
-    public Field[] fields;
 
     /**
      * Constructor for this data structure
@@ -44,13 +40,11 @@ public class Layer extends Object implements Serializable {
      * @param _fields array of accessible table fields as Field []
      * @see Field
      */
-    public Layer(String _name, String _display_name, String _description,
-            String _type, Field[] _fields) {
+    public Layer(String _name, String _display_name, String _description,String _type) {
         name = _name;
         display_name = _display_name;
         description = _description;
         type = _type;
-        fields = _fields;
     }
 
     @Override

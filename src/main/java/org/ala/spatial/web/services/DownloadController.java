@@ -10,7 +10,7 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.util.Iterator;
 import javax.servlet.http.HttpServletResponse;
-import org.ala.spatial.util.TabulationSettings;
+import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.Zipper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
@@ -38,8 +38,6 @@ public class DownloadController {
             File dir = findFile(pid);
 
             if (dir != null) {
-                //System.out.println("Found session data: " + dir.getAbsolutePath());
-                //return "Found session data: " + dir.getAbsolutePath();
 
                 String parentName = "ALA_";
                 String parentPath = dir.getParent().substring(dir.getParent().lastIndexOf("/") + 1);
@@ -104,7 +102,7 @@ public class DownloadController {
             // the 'pid's are unique, so lets figure out
             // which directory they live under.
 
-            String basedir = TabulationSettings.base_output_dir + File.separator + "output" + File.separator;
+            String basedir = AlaspatialProperties.getBaseOutputDir() + File.separator + "output" + File.separator;
             File baseDir = new File(basedir);
             FilenameFilter ff = DirectoryFileFilter.DIRECTORY;
             File[] files = baseDir.listFiles(ff);

@@ -38,7 +38,7 @@ public class AnalysisQueue {
         initDone = true;
 
         //search for saved jobs to load
-        File f = new File(TabulationSettings.index_path);
+        File f = new File(AlaspatialProperties.getAnalysisWorkingDir());
         String[] js = f.list(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.startsWith("JOB");
@@ -241,7 +241,7 @@ public class AnalysisQueue {
     public static void saveJob(AnalysisJob j) {
         try {
             FileOutputStream fos = new FileOutputStream(
-                    TabulationSettings.index_path
+                    AlaspatialProperties.getAnalysisWorkingDir()
                     + "JOB" + j.getName());
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -256,7 +256,7 @@ public class AnalysisQueue {
         AnalysisJob j = null;
         try {
             FileInputStream fis = new FileInputStream(
-                    TabulationSettings.index_path
+                    AlaspatialProperties.getAnalysisWorkingDir()
                     + "JOB" + pid);
             BufferedInputStream bis = new BufferedInputStream(fis);
             ObjectInputStream ois = new ObjectInputStream(bis);
@@ -358,7 +358,7 @@ class AnalysisJobConsumer extends Thread {
     public void run() {
         while (true) {
             try {
-                while (runningJobs.size() >= TabulationSettings.jobs_maximum) {
+                while (runningJobs.size() >= AlaspatialProperties.GetAnalysisMaxJobs()) {
                     Thread.sleep(1000);
                 }
                 AnalysisJob j = jobs.take();

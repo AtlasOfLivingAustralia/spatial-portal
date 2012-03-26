@@ -43,7 +43,7 @@ public class AnalysisJob extends Thread implements Serializable {
     }
 
     public long smoothEstimate(long nextEstimate){
-        int estimates_length = TabulationSettings.process_estimate_smoothing * 2;
+        int estimates_length = (int) (AlaspatialProperties.getAnalysisEstimateSmoothing() * 2);
         long difference = -1 * progressTime;
         long currentTime = System.currentTimeMillis();
         difference += currentTime;

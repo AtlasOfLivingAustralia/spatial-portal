@@ -53,67 +53,15 @@
         <rule>
 		<from>/layers/analysis/inter_layer_association.pdf</from>
 		<to>/output/inter_layer_association.pdf</to>
-	</rule>
-	<rule>
-		<from>/maxent2.zul</from>
-		<to>/maxent2.zul</to>
-	</rule>
-	<rule>
-		<from>/maxent2</from>
-		<to>/maxent2.zul</to>
-	</rule>
-	<rule>
-		<from>/maxentw</from>
-		<to>/maxentwizard.zul</to>
-	</rule>
-	<rule>
-		<from>/maxentwizard.zul</from>
-		<to>/maxentwizard.zul</to>
-	</rule>
+	</rule>	
         <rule>
 		<from>/jobs.zul</from>
 		<to>/jobs.zul</to>
-	</rule>
-	<rule>
-		<from>/speciesList.zul</from>
-		<to>/speciesList.zul</to>
-	</rule>
-	<rule>
-		<from>/speciesList2.zul</from>
-		<to>/speciesList2.zul</to>
-	</rule>
-	<rule>
-		<from>/sampling.zul</from>
-		<to>/sampling.zul</to>
-	</rule>
-	<rule>
-		<from>/ALOC.zul</from>
-		<to>/ALOC.zul</to>
-	</rule>
-	<rule>
-		<from>/gdm.zul</from>
-		<to>/gdm.zul</to>
-	</rule>
-	<rule>
-		<from>/logs.zul</from>
-		<to>/logs.zul</to>
-	</rule>
+	</rule>	
         <rule>
             <from>/files.zul</from>
             <to>/files.zul</to>
-        </rule>
-	<rule>
-		<from>/filtering_cl.html</from>
-		<to>/filtering_cl.html</to>
-	</rule>
-	<rule>
-		<from>/tabulation.zul</from>
-		<to>/tabulation.zul</to>
-	</rule>
-        <rule>
-		<from>/scatterplot.html</from>
-		<to>/scatterplot.html</to>
-	</rule>
+        </rule>	
 	<rule>
 		<from>/images/**</from>
 		<to>/images/$1</to>

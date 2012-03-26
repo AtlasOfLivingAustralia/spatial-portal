@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import org.ala.layers.intersect.Grid;
 
 /**
  * Zipper helper class to zip up files.
@@ -117,7 +118,7 @@ public class Zipper {
                     continue;
                 }
                 FileInputStream fis = new FileInputStream(f);
-                String fileToAdd = f.getAbsolutePath().substring(parentDir.length()+1); 
+                String fileToAdd = f.getAbsolutePath().substring(parentDir.length() + 1);
                 ZipEntry anEntry = new ZipEntry(fileToAdd);
                 System.out.println("adding: " + anEntry.getName());
                 zos.putNextEntry(anEntry);

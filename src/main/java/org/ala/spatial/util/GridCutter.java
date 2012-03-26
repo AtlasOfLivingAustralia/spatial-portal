@@ -6,8 +6,14 @@ package org.ala.spatial.util;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.BitSet;
+import java.util.TreeMap;
+import org.ala.layers.client.Client;
+import org.ala.layers.dao.LayerIntersectDAO;
+import org.ala.layers.dto.Field;
+import org.ala.layers.intersect.Grid;
+import org.ala.layers.intersect.SimpleRegion;
 import org.ala.spatial.analysis.index.LayerFilter;
 
 /**
@@ -15,431 +21,36 @@ import org.ala.spatial.analysis.index.LayerFilter;
  *
  * @author adam
  */
-public class GridCutter {
+public class GridCutter {    
 
-    /**
-     * exports a list of layers cut against a region
-     * 
-     * Cut layer files generated are input layers with
-     * grid cells outside of region set as missing.
-     * 
-     * Headers are copied, for test data only.
-     * 
-     * @param layers list of layers to cut as Layer
-     * @param region 
-     * @return
-     */
-    public static String cut(Layer[] layers, SimpleRegion region, LayerFilter[] envelopes, String extentsFilename) {
-        TabulationSettings.load();
-
-        //mkdir in index location
-        String newPath = null;
-        try {
-            newPath = TabulationSettings.index_path + System.currentTimeMillis() + java.io.File.separator;
-            File directory = new File(newPath);
-            directory.mkdir();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        /* get data, remove missing values, restrict by optional region */
-        int i;
-        int width;
-        int height;
-        int xmin;
-        int ymin;
-        int xmax;
-        int ymax;
-        String layerPath = TabulationSettings.environmental_data_path;
-        if (layerPath == null) {
-            layerPath = "";
-        }
-        Grid grid = null;
-
-        //- all grids sit on the same grid, although origin
-        // may not be aligned
-
-        //identify cells to keep
-        int[][] cells = null;
-        if (envelopes == null) {
-            cells = (int[][]) region.getAttribute("cells");
-//            if(cells == null){
-//                cells = region.getOverlapGridCells_EPSG900913(
-//                        TabulationSettings.grd_xmin, TabulationSettings.grd_ymin,
-//                        TabulationSettings.grd_xmax, TabulationSettings.grd_ymax,
-//                        TabulationSettings.grd_ncols, TabulationSettings.grd_nrows,
-//                        null);
-//            }
-            int th = TabulationSettings.grd_nrows;
-            int tw = TabulationSettings.grd_ncols;
-            int tp = 0;
-            int[][] tcells = new int[tw * th][2];
-            double[][] bb = region.getBoundingBox();
-            if (bb[0][0] < TabulationSettings.grd_xmin) {
-                bb[0][0] = TabulationSettings.grd_xmin;
-            }
-            if (bb[1][0] > TabulationSettings.grd_xmax) {
-                bb[1][0] = TabulationSettings.grd_xmax;
-            }
-            if (bb[0][1] < TabulationSettings.grd_ymin) {
-                bb[0][1] = TabulationSettings.grd_ymin;
-            }
-            if (bb[1][1] > TabulationSettings.grd_ymax) {
-                bb[1][1] = TabulationSettings.grd_ymax;
-            }
-            int startj = (int) Math.max(0, (bb[0][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
-            int endj = (int) Math.min(tw, (bb[1][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
-            int starti = (int) Math.max(0, (bb[0][1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
-            int endi = (int) Math.min(tw, (bb[1][1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
-            for (i = starti; i < endi; i++) {
-                for (int j = startj; j < endj; j++) {
-                    double tx = (j + 0.5) * TabulationSettings.grd_xdiv + TabulationSettings.grd_xmin;
-                    double ty = (i + 0.5) * TabulationSettings.grd_ydiv + TabulationSettings.grd_ymin;
-                    if (region.isWithin_EPSG900913(tx, ty)) {
-                        tcells[tp][0] = j;
-                        tcells[tp][1] = i;
-                        tp++;
-                    }
-                }
-            }
-            cells = new int[tp][2];
-            System.arraycopy(tcells, 0, cells, 0, tp);
-
-        } else {
-
-            cells = getOverlapGridCells(envelopes,
-                    TabulationSettings.grd_xmin, TabulationSettings.grd_ymin,
-                    TabulationSettings.grd_xmax, TabulationSettings.grd_ymax);
-        }
-
-
-        //find minx, miny, width and height
-        xmin = TabulationSettings.grd_ncols;
-        ymin = TabulationSettings.grd_nrows;
-        xmax = 0;
-        ymax = 0;
-        for (i = 0; i < cells.length; i++) {
-            if (cells[i][0] < xmin) {
-                xmin = cells[i][0];
-            }
-            if (cells[i][1] < ymin) {
-                ymin = cells[i][1];
-            }
-            if (cells[i][0] > xmax) {
-                xmax = cells[i][0];
-            }
-            if (cells[i][1] > ymax) {
-                ymax = cells[i][1];
-            }
-        }
-
-        width = xmax - xmin + 1;
-        height = ymax - ymin + 1;
-
-        //layer output container
-        double[] dfiltered = new double[width * height];
-
-        //process layers
-        for (Layer l : layers) {
-            grid = Grid.getGrid(layerPath + l.name);
-
-            float[] d = grid.getGrid(); //get whole layer
-
-            //set all as missing values
-            for (i = 0; i < dfiltered.length; i++) {
-                dfiltered[i] = Double.NaN;
-            }
-
-            //Translate between data source grid and output grid
-            int xoff = (int) ((grid.xmin - (xmin * TabulationSettings.grd_xdiv + TabulationSettings.grd_xmin)) / TabulationSettings.grd_xdiv);
-            int yoff = (int) ((grid.ymin - (TabulationSettings.grd_ymin + ymin * TabulationSettings.grd_ydiv)) / TabulationSettings.grd_ydiv);
-
-            //popuplate non-missing values
-            if (cells == null) {
-                //TODO: common grids source
-                //grid.writeGrid(newPath + l.name, d,xmin,ymin,xmax,ymax, TabulationSettings.grd_xdiv, TabulationSettings.grd_ydiv,height,width);
-            } else {
-                for (i = 0; i < cells.length; i++) {
-                    int x = cells[i][0] - xmin - xoff;
-                    int y = cells[i][1] - ymin - yoff;
-                    if (x >= 0 && x < grid.ncols
-                            && y >= 0 && y < grid.nrows) {
-                        int pSrc = x + (grid.nrows - y - 1) * grid.ncols;
-                        int pDest = (cells[i][0] - xmin) + (height - (cells[i][1] - ymin) - 1) * width;
-                        dfiltered[pDest] = d[pSrc];
-                    }
-                }
-
-                double minx = Math.rint(xmin + TabulationSettings.grd_xmin / TabulationSettings.grd_xdiv) * TabulationSettings.grd_xdiv;
-                double miny = Math.rint(ymin + TabulationSettings.grd_ymin / TabulationSettings.grd_ydiv) * TabulationSettings.grd_ydiv;
-                double maxx = Math.rint(width + minx / TabulationSettings.grd_xdiv) * TabulationSettings.grd_xdiv;
-                double maxy = Math.rint(height + miny / TabulationSettings.grd_ydiv) * TabulationSettings.grd_ydiv;
-                grid.writeGrid(newPath + l.name, dfiltered,
-                        minx,
-                        miny,
-                        maxx,
-                        maxy,
-                        TabulationSettings.grd_xdiv, TabulationSettings.grd_ydiv, height, width);
-
-                //write extents into a file now
-                if (extentsFilename != null && l == layers[0]) {
-                    try {
-                        FileWriter fw = new FileWriter(extentsFilename);
-                        fw.append(String.valueOf(width)).append("\n");
-                        fw.append(String.valueOf(height)).append("\n");
-                        fw.append(String.valueOf(minx)).append("\n");
-                        fw.append(String.valueOf(miny)).append("\n");
-                        fw.append(String.valueOf(maxx)).append("\n");
-                        fw.append(String.valueOf(maxy));
-                        fw.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-
-        return newPath;
-    }
-
-    /**
-     * exports a list of layers cut against an environmental envelope
-     *
-     * Cut layer files generated are input layers with
-     * grid cells outside of region set as missing.
-     *
-     * Headers are copied, for test data only.
-     *
-     * @param layers list of layers to cut as Layer
-     * @param envelope environmental layer filters list as LayerFilter[]
-     * @return
-     */
-    public static String cut(Layer[] layers, LayerFilter[] envelope) {
-        TabulationSettings.load();
-
-        //mkdir in index location
-        String newPath = null;
-        try {
-            newPath = TabulationSettings.index_path + System.currentTimeMillis() + File.separator;
-            File directory = new File(newPath);
-            directory.mkdir();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        /* get data, remove missing values, restrict by optional region */
-        int i, j;
-        j = 0;
-        String layerPath = TabulationSettings.environmental_data_path;
-        if (layerPath == null) {
-            layerPath = "";
-        }
-        Grid grid = null;
-
-        double[] missingCells = null;
-
-        /* make list of missing cells */
-        int k;
-        for (k = 0; k < envelope.length; k++) {
-            System.out.println("cutting with: " + envelope[k].layer.name);
-            grid = Grid.getGrid(layerPath + envelope[k].layer.name);
-
-            float[] d = grid.getGrid();
-
-            if (missingCells == null) {
-                //init missing cells
-                missingCells = new double[d.length];
-                for (j = 0; j < missingCells.length; j++) {
-                    missingCells[j] = 0;
-                }
-            }
-
-            //apply filter for this envelope
-            LayerFilter lf = envelope[k];
-            for (i = 0; i < d.length && i < missingCells.length; i++) {
-                if (!(lf.maximum_value >= d[i] && lf.minimum_value <= d[i])) {
-                    missingCells[i] = Float.NaN;
-                }
-            }
-        }
-
-        /* process provided layers */
-        for (Layer l : layers) {
-            grid = Grid.getGrid(layerPath + l.name);
-
-            float[] d = grid.getGrid();
-            double[] dfiltered = new double[d.length];
-
-            //set all as missing values
-            for (i = 0; i < dfiltered.length; i++) {
-                dfiltered[i] = Double.NaN;
-            }
-
-            //popuplate non-missing values
-            if (missingCells == null) {
-                grid.writeGrid(newPath + l.name, d,
-                        TabulationSettings.grd_xmin, TabulationSettings.grd_ymin,
-                        TabulationSettings.grd_xmax, TabulationSettings.grd_ymax,
-                        TabulationSettings.grd_xdiv, TabulationSettings.grd_ydiv,
-                        TabulationSettings.grd_nrows, TabulationSettings.grd_ncols);
-            } else {
-                for (i = 0; i < d.length; i++) {
-                    if (!Double.isNaN(missingCells[i])) {
-                        //TODO: test for min/max extents
-
-                        dfiltered[i] = d[i];
-                    }
-                }
-
-                //write to filtered data
-                grid.writeGrid(newPath + l.name, dfiltered,
-                        TabulationSettings.grd_xmin, TabulationSettings.grd_ymin,
-                        TabulationSettings.grd_xmax, TabulationSettings.grd_ymax,
-                        TabulationSettings.grd_xdiv, TabulationSettings.grd_ydiv,
-                        TabulationSettings.grd_nrows, TabulationSettings.grd_ncols);
-            }
-        }
-
-        return newPath;
-    }
-
-    public static int[][] getOverlapGridCells(LayerFilter[] envelope, double xmin, double ymin, double xmax, double ymax) {
-        TabulationSettings.load();
-
-        int xrange = (int) Math.ceil((xmax - xmin) / TabulationSettings.grd_xdiv);
-        int yrange = (int) Math.ceil((ymax - ymin) / TabulationSettings.grd_ydiv);
-
-        //output structure; false == passes filter, true == does not pass filter
-        BitSet bs = new BitSet(xrange * yrange);
-        double[][] points = new double[xrange * yrange][2];
-        for (int i = 0; i < xrange; i++) {
-            for (int j = 0; j < yrange; j++) {
-                points[i + j * xrange][0] = (double) (xmin + i * TabulationSettings.grd_xdiv + TabulationSettings.grd_xdiv / 2);
-                points[i + j * xrange][1] = (double) (ymin + j * TabulationSettings.grd_ydiv + TabulationSettings.grd_ydiv / 2);
-            }
-        }
-        for (int k = 0; k < envelope.length; k++) {
-            System.out.println("cutting with: " + envelope[k].layer.name);
-            Grid grid = Grid.getGrid(TabulationSettings.getPath(envelope[k].layer.name));
-
-            float[] d = grid.getValues2(points);
-            //float[] d = grid.getValues2(xmin, xmax, ymin, ymax);
-
-            LayerFilter lf = envelope[k];
-            for (int i = 0; i < d.length; i++) {
-                if (Float.isNaN(d[i]) || lf.maximum_value < d[i] || lf.minimum_value > d[i]) {
-                    bs.set(i);
-                }
-            }
-        }
-
-        //make output
-        int size = 0;
-        for (int i = 0; i < bs.size(); i++) {
-            if (!bs.get(i)) {
-                size++;
-            }
-        }
-        int pos = 0;
-        int[][] cells = new int[size][2];
-        for (int i = 0; i < bs.size(); i++) {
-            if (!bs.get(i)) {
-                cells[pos][0] = i % xrange;
-                cells[pos][1] = (int) (i / xrange);
-                pos++;
-            }
-        }
-
-        return cells;
-    }
-
-    public static Object[] getOverlapGridCells2(LayerFilter[] envelope) {
-        TabulationSettings.load();
-
-        //output structure; false == passes filter, true == does not pass filter
-        int length = TabulationSettings.grd_nrows * TabulationSettings.grd_ncols;
-        BitSet bs = new BitSet(length);
-        for (int k = 0; k < envelope.length; k++) {
-            //analysis grids are aligned
-            System.out.println("cutting with: " + envelope[k].layer.name);
-            Grid grid = Grid.getGrid(TabulationSettings.getPath(envelope[k].layer.name));
-            float[] d = grid.getGrid();
-
-            LayerFilter lf = envelope[k];
-            for (int i = 0; i < d.length; i++) {
-                if (Float.isNaN(d[i]) || lf.maximum_value < d[i] || lf.minimum_value > d[i]) {
-                    bs.set(i);
-                }
-            }
-        }
-
-        //determine output bbox as rows & columns
-        int[] bbox = new int[4];
-        int count = 0;
-        for (int i = 0; i < bs.size(); i++) {
-            if (!bs.get(i)) {
-                int x = i % TabulationSettings.grd_ncols;
-                int y = i / TabulationSettings.grd_ncols;
-
-
-                if (count == 0 || bbox[0] > x) {
-                    bbox[0] = x;
-                }
-                if (count == 0 || bbox[2] < x) {
-                    bbox[2] = x;
-                }
-                if (count == 0 || bbox[1] > y) {
-                    bbox[1] = y;
-                }
-                if (count == 0 || bbox[3] < y) {
-                    bbox[3] = y;
-                }
-
-                count++;
-            }
-        }
-
-        //make output
-        int rows = bbox[3] - bbox[1] + 1;
-        int cols = bbox[2] - bbox[0] + 1;
-        byte[] grid = new byte[rows * cols];
-        for (int i = 0; i < bs.size(); i++) {
-            if (!bs.get(i)) {
-                int x = i % TabulationSettings.grd_ncols;
-                int y = i / TabulationSettings.grd_ncols;
-
-                int pos = x - bbox[0] + cols * (y - bbox[1]);
-                grid[pos] = 1;
-            }
-        }
-
-        Object[] ret = new Object[4];
-        ret[0] = grid;
-        ret[1] = bbox;
-        ret[2] = new int[]{rows, cols};
-        ret[3] = new double[]{TabulationSettings.grd_xmin + bbox[0] * TabulationSettings.grd_xdiv, TabulationSettings.grd_ymin + TabulationSettings.grd_ydiv * (TabulationSettings.grd_nrows - bbox[3] - 2)};
-
-        return ret;
-    }
-
-    public static ArrayList<Object> cut(Layer[] layers, SimpleRegion region, int pieces, String extentsFilename, LayerFilter[] envelopes) {
-        return cut(layers, region, pieces, extentsFilename, envelopes, null);
-    }
-
-    public static ArrayList<Object> cut(Layer[] layers, SimpleRegion region, int pieces, String extentsFilename, LayerFilter[] envelopes, AnalysisJob job) {
+    public static ArrayList<Object> loadCutGridsForAloc(String directory, String extentsFilename, int pieces, AnalysisJob job) {
         ArrayList<Object> data = new ArrayList<Object>();
 
         if (job != null) {
             job.setProgress(0);
         }
 
+        //identify grid files
+        File[] files = new File(directory).listFiles(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".grd") || name.endsWith(".GRD");
+            }
+        });
+
         //determine outer bounds of layers
         double xmin = Double.MAX_VALUE;
         double ymin = Double.MAX_VALUE;
         double xmax = Double.MAX_VALUE * -1;
         double ymax = Double.MAX_VALUE * -1;
-        for (Layer l : layers) {
-            Grid g = Grid.getGrid(TabulationSettings.getPath(l.name));
+        double xres = 0.01;
+        double yres = 0.01;
+        for (File f : files) {
+            String gridFilename = f.getPath().substring(0, f.getPath().length() - 4);
+            Grid g = new Grid(gridFilename);
+            xres = g.xres;
+            yres = g.xres;
             if (xmin > g.xmin) {
                 xmin = g.xmin;
             }
@@ -454,29 +65,11 @@ public class GridCutter {
             }
         }
 
-        //restrict bounds by region
-        if (region != null) {
-            xmax = Math.min(xmax, region.getBoundingBox()[1][0]);
-            ymax = Math.min(ymax, region.getBoundingBox()[1][1]);
-            xmin = Math.max(xmin, region.getBoundingBox()[0][0]);
-            ymin = Math.max(ymin, region.getBoundingBox()[0][1]);
-        }
-
-        //transform x/y min/max to grid size
-        xmin = TabulationSettings.grd_xmin + TabulationSettings.grd_xdiv
-                * Math.floor((xmin - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
-        ymin = TabulationSettings.grd_ymin + TabulationSettings.grd_ydiv
-                * Math.floor((ymin - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
-        xmax = TabulationSettings.grd_xmin + TabulationSettings.grd_xdiv
-                * Math.ceil((xmax - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
-        ymax = TabulationSettings.grd_ymin + TabulationSettings.grd_ydiv
-                * Math.ceil((ymax - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
-
         //determine range and width's
         double xrange = xmax - xmin;
         double yrange = ymax - ymin;
-        int width = (int) Math.ceil(xrange / TabulationSettings.grd_xdiv);
-        int height = (int) Math.ceil(yrange / TabulationSettings.grd_ydiv);
+        int width = (int) Math.ceil(xrange / xres);
+        int height = (int) Math.ceil(yrange / yres);
 
         //write extents into a file now
         if (extentsFilename != null) {
@@ -499,67 +92,16 @@ public class GridCutter {
         }
 
         //make cells list for outer bounds
-        int[][] cells;
-        if (envelopes == null) {
-            cells = (int[][]) region.getAttribute("cells");
-            if (cells == null) {
-//                cells = region.getOverlapGridCells_EPSG900913(xmin, ymin, xmax, ymax,
-//                    width, height, null);
-                int th = TabulationSettings.grd_nrows;
-                int tw = TabulationSettings.grd_ncols;
-                int tp = 0;
-                int[][] tcells = new int[tw * th][2];
-                double[][] bb = region.getBoundingBox();
-                if (bb[0][0] < TabulationSettings.grd_xmin) {
-                    bb[0][0] = TabulationSettings.grd_xmin;
-                }
-                if (bb[1][0] > TabulationSettings.grd_xmax) {
-                    bb[1][0] = TabulationSettings.grd_xmax;
-                }
-                if (bb[0][1] < TabulationSettings.grd_ymin) {
-                    bb[0][1] = TabulationSettings.grd_ymin;
-                }
-                if (bb[1][1] > TabulationSettings.grd_ymax) {
-                    bb[1][1] = TabulationSettings.grd_ymax;
-                }
-                int startj = (int) Math.max(0, (bb[0][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
-                int endj = (int) Math.min(tw, (bb[1][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
-                int starti = (int) Math.max(0, (bb[0][1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
-                int endi = (int) Math.min(tw, (bb[1][1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
-                for (int i = starti; i < endi; i++) {
-                    for (int j = startj; j < endj; j++) {
-                        double tx = (j + 0.5) * TabulationSettings.grd_xdiv + TabulationSettings.grd_xmin;
-                        double ty = (i + 0.5) * TabulationSettings.grd_ydiv + TabulationSettings.grd_ymin;
-                        if (region.isWithin_EPSG900913(tx, ty)) {
-                            tcells[tp][0] = j - startj;
-                            tcells[tp][1] = i - starti;
-                            tp++;
-                        }
-                    }
-                }
-                cells = new int[tp][2];
-                System.arraycopy(tcells, 0, cells, 0, tp);
-            } else {
-                //translate to xmin, ymin ,xmax, ymax, width, height
-                int dx = (int) Math.round((TabulationSettings.grd_xmin - xmin) / TabulationSettings.grd_xdiv);
-                int dy = (int) Math.round((TabulationSettings.grd_ymin - ymin) / TabulationSettings.grd_ydiv);
-                int pos = 0;
-                int x, y;
-                for (int i = 0; i < cells.length; i++) {
-                    x = cells[i][0] + dx;
-                    y = cells[i][1] + dy;
-                    //only use cells within extents
-                    if (x >= 0 && x < width && y >= 0 && y < height) {
-                        cells[pos][0] = x;
-                        cells[pos][1] = y;
-                        pos++;
-                    }
-                }
-                cells = java.util.Arrays.copyOf(cells, pos);
+        int th = height;
+        int tw = width;
+        int tp = 0;
+        int[][] cells = new int[tw * th][2];
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                cells[tp][0] = j;
+                cells[tp][1] = i;
+                tp++;
             }
-
-        } else {
-            cells = getOverlapGridCells(envelopes, xmin, ymin, xmax, ymax);
         }
 
         if (job != null) {
@@ -572,8 +114,8 @@ public class GridCutter {
         //transform cells numbers to long/lat numbers
         double[][] points = new double[cells.length][2];
         for (int i = 0; i < cells.length; i++) {
-            points[i][0] = xmin + cells[i][0] * TabulationSettings.grd_xdiv;
-            points[i][1] = ymin + cells[i][1] * TabulationSettings.grd_ydiv;
+            points[i][0] = xmin + cells[i][0] * xres;
+            points[i][1] = ymin + cells[i][1] * yres;
         }
 
         //initialize data structure to hold everything
@@ -584,17 +126,18 @@ public class GridCutter {
         int step = (int) Math.floor(remainingLength / (double) pieces);
         for (int i = 0; i < pieces; i++) {
             if (i == pieces - 1) {
-                data.add(new float[remainingLength * layers.length]);
+                data.add(new float[remainingLength * files.length]);
             } else {
-                data.add(new float[step * layers.length]);
+                data.add(new float[step * files.length]);
                 remainingLength -= step;
             }
         }
 
         //iterate for layers
-        double[] layerExtents = new double[layers.length * 2];
-        for (int j = 0; j < layers.length; j++) {
-            Grid g = Grid.getGrid(TabulationSettings.getPath(layers[j].name));
+        double[] layerExtents = new double[files.length * 2];
+        for (int j = 0; j < files.length; j++) {
+            String gridFilename = files[j].getPath().substring(0, files[j].getPath().length() - 4);
+            Grid g = new Grid(gridFilename);
             float[] v = g.getValues2(points);
 
             //row range standardization
@@ -624,13 +167,13 @@ public class GridCutter {
             //iterate for pieces
             for (int i = 0; i < pieces; i++) {
                 float[] d = (float[]) data.get(i);
-                for (int k = j, n = i * step; k < d.length; k += layers.length, n++) {
+                for (int k = j, n = i * step; k < d.length; k += files.length, n++) {
                     d[k] = v[n];
                 }
             }
 
             if (job != null) {
-                job.setProgress(0.2 + j / (double) layers.length * 7 / 10.0, layers[j].name);
+                job.setProgress(0.2 + j / (double) files.length * 7 / 10.0, "");
             }
         }
 
@@ -644,20 +187,20 @@ public class GridCutter {
         for (int i = 0; i < pieces; i++) {
             float[] d = (float[]) data.get(i);
             int newPos = 0;
-            for (int k = 0; k < d.length; k += layers.length) {
+            for (int k = 0; k < d.length; k += files.length) {
                 int nMissing = 0;
-                for (int j = 0; j < layers.length; j++) {
+                for (int j = 0; j < files.length; j++) {
                     if (Float.isNaN(d[k + j])) {
                         nMissing++;
                     }
                 }
-                if (nMissing < layers.length) {
+                if (nMissing < files.length) {
                     if (newPos < k) {
-                        for (int j = 0; j < layers.length; j++) {
+                        for (int j = 0; j < files.length; j++) {
                             d[newPos + j] = d[k + j];
                         }
                     }
-                    newPos += layers.length;
+                    newPos += files.length;
                     if (newCellPos < currentCellPos) {
                         cells[newCellPos][0] = cells[currentCellPos][0];
                         cells[newCellPos][1] = cells[currentCellPos][1];
@@ -703,67 +246,305 @@ public class GridCutter {
         return data;
     }
 
-    static int countCells(SimpleRegion region, LayerFilter[] envelopes) {
-        long start = System.currentTimeMillis();
+    /**
+     * exports a list of layers cut against a region
+     *
+     * Cut layer files generated are input layers with
+     * grid cells outside of region set as missing.
+     *
+     * Headers are copied, for test data only.
+     *
+     * @param layers list of layers to cut as Layer
+     * @param region 
+     * @return
+     */
+    public static String cut2(String[] layers, String resolution, SimpleRegion region, LayerFilter[] envelopes, String extentsFilename) {
 
-        //determine outer bounds of layers
-        double xmin = Double.MAX_VALUE;
-        double ymin = Double.MAX_VALUE;
-        double xmax = Double.MAX_VALUE * -1;
-        double ymax = Double.MAX_VALUE * -1;
-        if (envelopes != null) {
-            for (LayerFilter lf : envelopes) {
-                Grid g = new Grid(TabulationSettings.getPath(lf.layer.name));
-                if (xmin > g.xmin) {
-                    xmin = g.xmin;
-                }
-                if (xmax < g.xmax) {
-                    xmax = g.xmax;
-                }
-                if (ymin > g.ymin) {
-                    ymin = g.ymin;
-                }
-                if (ymax < g.ymax) {
-                    ymax = g.ymax;
+        //get extents for all layers
+        double[][] extents = getLayerExtents(resolution, layers[0]);
+        for (int i = 1; i < layers.length; i++) {
+            extents = internalExtents(extents, getLayerExtents(resolution, layers[i]));
+            if (!isValidExtents(extents)) {
+                return null;
+            }
+        }
+
+        //get mask and adjust extents for filter
+        byte[][] mask;
+        int w, h;
+        double res = Double.parseDouble(resolution);
+        if (region != null) {
+            extents = internalExtents(extents, region.getBoundingBox());
+            if (!isValidExtents(extents)) {
+                return null;
+            }
+
+            h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
+            w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
+            mask = getRegionMask(res, extents, w, h, region);
+        } else if (envelopes != null) {h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
+            h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
+            w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);            
+            mask = getEnvelopeMaskAndUpdateExtents(resolution, res, extents, w, h, envelopes);
+            h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
+            w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
+        } else {
+            h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
+            w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
+            mask = getMask(res, extents, w, h);
+        }        
+
+        //mkdir in index location
+        String newPath = null;
+        try {
+            newPath = AlaspatialProperties.getAnalysisWorkingDir() + System.currentTimeMillis() + java.io.File.separator;
+            System.out.println("cut2 path: " + newPath);
+            File directory = new File(newPath);
+            directory.mkdir();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //apply mask
+        for (int i = 0; i < layers.length; i++) {
+            applyMask(newPath, resolution, extents, w, h, mask, layers[i]);
+        }
+        
+        //write extents file
+        writeExtents(extentsFilename, extents, w, h);
+
+        return newPath;
+    }
+
+    static double[][] internalExtents(double[][] e1, double[][] e2) {
+        double[][] internalExtents = new double[2][2];
+
+        internalExtents[0][0] = Math.max(e1[0][0], e2[0][0]);
+        internalExtents[0][1] = Math.max(e1[0][1], e2[0][1]);
+        internalExtents[1][0] = Math.min(e1[1][0], e2[1][0]);
+        internalExtents[1][1] = Math.min(e1[1][1], e2[1][1]);
+
+        return internalExtents;
+    }
+
+    static boolean isValidExtents(double[][] e) {
+        return e[0][0] < e[1][0] && e[0][1] < e[1][1];
+    }
+
+    static double[][] getLayerExtents(String resolution, String layer) {
+        double[][] extents = new double[2][2];
+        Grid g = Grid.getGrid(getLayerPath(resolution, layer));
+
+        extents[0][0] = g.xmin;
+        extents[0][1] = g.ymin;
+        extents[1][0] = g.xmax;
+        extents[1][1] = g.ymax;
+
+        return extents;
+    }
+
+    public static String getLayerPath(String resolution, String layer) {
+        String field = Layers.getFieldId(layer);
+
+        File file = new File(AlaspatialProperties.getAnalysisLayersDir() + File.separator + resolution + File.separator + field + ".grd");
+
+        //move up a resolution when the file does not exist at the target resolution
+        if(!file.exists()) {
+            TreeMap<Double, String> resolutionDirs = new TreeMap<Double, String>();
+            for (File dir : new File(AlaspatialProperties.getAnalysisLayersDir()).listFiles()) {
+                if(dir.isDirectory()) {
+                    try {
+                        resolutionDirs.put(Double.parseDouble(dir.getName()), dir.getName());
+                    } catch (Exception e) {}
                 }
             }
-        } else if (region != null) {
-            //restrict bounds by region
-            xmax = region.getBoundingBox()[1][0];
-            ymax = region.getBoundingBox()[1][1];
-            xmin = region.getBoundingBox()[0][0];
-            ymin = region.getBoundingBox()[0][1];
+
+            resolution = resolutionDirs.higherEntry(Double.parseDouble(resolution)).getValue();
         }
-
-        //transform x/y min/max to grid size
-        xmin = TabulationSettings.grd_xmin + TabulationSettings.grd_xdiv
-                * Math.floor((xmin - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
-        ymin = TabulationSettings.grd_ymin + TabulationSettings.grd_ydiv
-                * Math.floor((ymin - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
-        xmax = TabulationSettings.grd_xmin + TabulationSettings.grd_xdiv
-                * Math.ceil((xmax - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
-        ymax = TabulationSettings.grd_ymin + TabulationSettings.grd_ydiv
-                * Math.ceil((ymax - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
-
-        //determine range and width's
-        double xrange = xmax - xmin;
-        double yrange = ymax - ymin;
-        int width = (int) Math.ceil(xrange / TabulationSettings.grd_xdiv);
-        int height = (int) Math.ceil(yrange / TabulationSettings.grd_ydiv);
-
-
-        int[][] cells;
-        if (envelopes == null) {
-            cells = region.getOverlapGridCells_EPSG900913(xmin, ymin, xmax, ymax,
-                    width, height, null);
-        } else {
-            cells = getOverlapGridCells(envelopes, xmin, ymin, xmax, ymax);
-        }
-
-        long end = System.currentTimeMillis();
-
-        System.out.println("counted grid cells in: " + (end - start) + "ms");
-
-        return cells.length;
+        
+        return AlaspatialProperties.getAnalysisLayersDir() + File.separator + resolution + File.separator + field;
     }
+
+    static void applyMask(String dir, String resolution, double[][] extents, int w, int h, byte[][] mask, String layer) {
+        //layer output container
+        double[] dfiltered = new double[w * h];
+
+        //open grid and get all data
+        Grid grid = Grid.getGrid(getLayerPath(resolution, layer));
+        float[] d = grid.getGrid(); //get whole layer
+
+        //set all as missing values
+        for (int i = 0; i < dfiltered.length; i++) {
+            dfiltered[i] = Double.NaN;
+        }
+
+        //Translate between data source grid and output grid
+        int xoff = (int) ((grid.xmin - extents[0][0]) / grid.xres);
+        int yoff = (int) ((grid.ymin - extents[0][1]) / grid.xres);
+
+        for (int i = 0; i < mask.length; i++) {
+            for (int j = 0; j < mask[0].length; j++) {
+                if (mask[i][j] > 0) {
+                    int x = j - xoff;
+                    int y = i - yoff;
+                    if (x >= 0 && x < grid.ncols
+                            && y >= 0 && y < grid.nrows) {
+                        int pSrc = x + (grid.nrows - y - 1) * grid.ncols;
+                        int pDest = j + (h - i - 1) * w;
+                        dfiltered[pDest] = d[pSrc];
+                    }
+                }
+            }
+        }
+
+        grid.writeGrid(dir + layer, dfiltered,
+                extents[0][0],
+                extents[0][1],
+                extents[1][0],
+                extents[1][1],
+                grid.xres, grid.yres, h, w);
+    }
+
+    static void writeExtents(String filename, double[][] extents, int w, int h) {
+        if(filename != null) {
+            try {
+                FileWriter fw = new FileWriter(filename);
+                fw.append(String.valueOf(w)).append("\n");
+                fw.append(String.valueOf(h)).append("\n");
+                fw.append(String.valueOf(extents[0][0])).append("\n");
+                fw.append(String.valueOf(extents[0][1])).append("\n");
+                fw.append(String.valueOf(extents[1][0])).append("\n");
+                fw.append(String.valueOf(extents[1][1]));
+                fw.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static byte[][] getRegionMask(double res, double [][] extents, int w, int h, SimpleRegion region) {
+        byte [][] mask = new byte[h][w];
+        for (int i = 0; i < h; i++) {
+            for(int j=0;j<w;j++) {
+                double tx = (j + 0.5) * res + extents[0][0];
+                double ty = (i + 0.5) * res + extents[0][1];
+                if (region.isWithin_EPSG900913(tx, ty)) {
+                    mask[i][j] = 1;
+                }
+            }
+        }
+        return mask;
+    }
+
+    private static byte[][] getMask(double res, double [][] extents, int w, int h) {
+        byte [][] mask = new byte[h][w];
+        for (int i = 0; i < h; i++) {
+            for(int j=0;j<w;j++) {
+                mask[i][j] = 1;
+            }
+        }
+        return mask;
+    }
+
+    private static byte[][] getEnvelopeMaskAndUpdateExtents(String resolution, double res, double[][] extents, int h, int w, LayerFilter[] envelopes) {
+        byte [][] mask = new byte[h][w];
+
+        double[][] points = new double[h * w][2];
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                points[i + j * w][0] = (double) (extents[0][0] + (i + 0.5) * res);
+                points[i + j * w][1] = (double) (extents[0][1] + (j + 0.5) * res);
+                mask[j][i] = 1;
+            }
+        }
+
+        for (int k = 0; k < envelopes.length; k++) {
+            LayerFilter lf = envelopes[k];
+
+            Grid grid = Grid.getGrid(getLayerPath(resolution, lf.getLayername()));
+
+            float[] d = grid.getValues2(points);
+            
+            for (int i = 0; i < d.length; i++) {
+                if (lf.isValid(d[i])) {
+                    mask[i/w][i%w] = 0;
+                }
+            }
+        }
+
+        //find internal extents
+        int minx = w;
+        int maxx = -1;
+        int miny = h;
+        int maxy = -1;
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                if(mask[j][i] > 0) {
+                    if(minx > i) minx = i;
+                    if(maxx < i) maxx = i;
+                    if(miny > j) miny = j;
+                    if(maxy < j) maxy = j;
+                }
+            }
+        }
+
+        //reduce the size of the mask
+        int nw = maxx - minx + 1;
+        int nh = maxy - miny + 1;
+        byte [][] smallerMask = new byte[nw][nh];
+        for (int i = minx; i <= maxx; i++) {
+            for (int j = miny; j < maxy; j++) {
+                smallerMask[j - miny][i - minx] = mask[j][i];
+            }
+        }
+
+        //update extents
+        extents[0][0] += minx * res;
+        extents[1][0] -= (w - maxx - 1) * res;
+        extents[0][1] += miny * res;
+        extents[1][1] -= (h - maxy - 1) * res;
+        
+        return smallerMask;
+    }
+    
+     public static boolean makeEnvelope(String filename, String resolution, LayerFilter[] envelopes) {
+
+        //get extents for all layers
+        double[][] extents = getLayerExtents(resolution, envelopes[0].getLayername());
+        for (int i = 1; i < envelopes.length; i++) {
+            extents = internalExtents(extents, getLayerExtents(resolution, envelopes[i].getLayername()));
+            if (!isValidExtents(extents)) {
+                return false;
+            }
+        }
+
+        //get mask and adjust extents for filter
+        byte[][] mask;
+        int w, h;
+        double res = Double.parseDouble(resolution);
+        h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
+        w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
+        mask = getEnvelopeMaskAndUpdateExtents(resolution, res, extents, w, h, envelopes);
+
+        float [] values = new float[w*h];
+        int pos = 0;
+        for(int i=0;i<h;i++) {
+            for(int j=0;j<w;j++) {
+                values[pos] = mask[i][j];
+                pos++;
+            }
+        }
+
+        Grid grid = new Grid(getLayerPath(resolution, envelopes[0].getLayername()));
+
+        grid.writeGrid(filename, values,
+                extents[0][0],
+                extents[0][1],
+                extents[1][0],
+                extents[1][1],
+                grid.xres, grid.yres, h, w);
+
+        return true;
+    }
+
 }

@@ -10,14 +10,15 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
+import org.ala.layers.intersect.Grid;
+import org.ala.layers.intersect.SimpleRegion;
+import org.ala.layers.legend.Legend;
+import org.ala.layers.legend.LegendEqualArea;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.layers.OccurrenceDensity;
 import org.ala.spatial.analysis.layers.Records;
 import org.ala.spatial.analysis.layers.SitesBySpecies;
 import org.ala.spatial.analysis.layers.SpeciesDensity;
-import org.ala.spatial.analysis.legend.Legend;
-import org.ala.spatial.analysis.legend.LegendEqualArea;
-import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -69,8 +70,6 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                 return;
             }
 
-            SpatialSettings ssets = new SpatialSettings();
-
             setCurrentState(RUNNING);
             setStage(0);
 
@@ -92,10 +91,10 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                     / (gridsize * gridsize));
             System.out.println("SitesBySpecies for " + occurrenceCount + " occurrences in up to " + boundingboxcellcount + " grid cells.");
             String error = null;
-            if (boundingboxcellcount > TabulationSettings.sxs_max_grid_cells) {
+            if (boundingboxcellcount > AlaspatialProperties.getAnalysisLimitGridCells()) {
                 error = "Too many potential output grid cells.  Decrease area or increase resolution.";
-            } else if (occurrenceCount > TabulationSettings.sxs_max_occurrences) {
-                error = "Too many occurrences for the selected species.  " + occurrenceCount + " occurrences found, must be less than " + TabulationSettings.sxs_max_occurrences;
+            } else if (occurrenceCount > AlaspatialProperties.getAnalysisLimitOccurrences()) {
+                error = "Too many occurrences for the selected species.  " + occurrenceCount + " occurrences found, must be less than " + AlaspatialProperties.getAnalysisLimitOccurrences();
             } else if (occurrenceCount == 0) {
                 error = "No occurrences found";
             }
@@ -121,18 +120,17 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
             if (occurrencedensity) {
                 setProgress(0.3, "building occurrence density layer");
                 OccurrenceDensity od = new OccurrenceDensity(movingAverageSize, gridsize, bbox);
-                od.write(records, currentPath + File.separator, "occurrence_density", TabulationSettings.analysis_threads, true, true);
+                od.write(records, currentPath + File.separator, "occurrence_density", AlaspatialProperties.getAnalysisThreadCount(), true, true);
 
                 writeProjectionFile(currentPath + File.separator + "occurrence_density.prj");
 
 //                CoordinateTransformer.transformAscToGeotif(currentPath + File.separator + "occurrence_density.asc");
 
-                Hashtable htGeoserver = ssets.getGeoserverSettings();
                 // if generated successfully, then add it to geoserver
-                String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/odensity_" + getName() + "/file.arcgrid?coverageName=odensity_" + getName();
+                String url = AlaspatialProperties.getGeoserverUrl() + "/rest/workspaces/ALA/coveragestores/odensity_" + getName() + "/file.arcgrid?coverageName=odensity_" + getName();
                 String extra = "";
-                String username = (String) htGeoserver.get("geoserver_username");
-                String password = (String) htGeoserver.get("geoserver_password");
+                String username = AlaspatialProperties.getGeoserverUsername();
+                String password = AlaspatialProperties.getGeoserverPassword();
                 // first zip up the file as it's going to be sent as binary
                 //String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
                 String[] infiles = {currentPath + "occurrence_density.asc", currentPath + "occurrence_density.prj"};
@@ -146,13 +144,13 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                 occurrencesLegend = produceSld(currentPath + File.separator + "occurrence_density");
                 //UploadSpatialResource.loadSld(url, extra, username, password, currentPath + File.separator + "occurrence_density.sld");
                 //geoserver/rest/styles/add_nrm_style
-                url = (String) htGeoserver.get("geoserver_url") + "/rest/styles/";
+                url = AlaspatialProperties.getGeoserverUrl() + "/rest/styles/";
                 UploadSpatialResource.loadCreateStyle(url, extra, username, password, "odensity_" + getName());
-                url = (String) htGeoserver.get("geoserver_url") + "/rest/styles/odensity_" + getName();
+                url = AlaspatialProperties.getGeoserverUrl() + "/rest/styles/odensity_" + getName();
                 UploadSpatialResource.loadSld(url, extra, username, password, currentPath + File.separator + "occurrence_density.sld");
                 //Apply style
                 String data = "<layer><enabled>true</enabled><defaultStyle><name>odensity_" + getName() + "</name></defaultStyle></layer>";
-                url = (String) htGeoserver.get("geoserver_url") + "/rest/layers/ALA:odensity_" + getName();
+                url = AlaspatialProperties.getGeoserverUrl() + "/rest/layers/ALA:odensity_" + getName();
                 UploadSpatialResource.assignSld(url, extra, username, password, data);
                 //Enable browser caching, FIX for zoom to extent required.
 //                data = "<coverage><metadata><entry key=\"cacheAgeMax\">3600</entry><entry key=\"cachingEnabled\">true</entry><entry key=\"dirName\">odensity_" + getName() + "_occurrence_density</entry></metadata></coverage>";
@@ -170,19 +168,18 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
             if (speciesdensity) {
                 setProgress(0.6, "building species richness layer");
                 SpeciesDensity sd = new SpeciesDensity(movingAverageSize, gridsize, bbox);
-                sd.write(records, currentPath + File.separator, "species_richness", TabulationSettings.analysis_threads, true, true);
+                sd.write(records, currentPath + File.separator, "species_richness", AlaspatialProperties.getAnalysisThreadCount(), true, true);
 
                 writeProjectionFile(currentPath + File.separator + "species_richness.prj");
 
 //                CoordinateTransformer.transformAscToGeotif(currentPath + File.separator + "species_richness.asc");
 
-                Hashtable htGeoserver = ssets.getGeoserverSettings();
                 // if generated successfully, then add it to geoserver
-                String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/srichness_" + getName() + "/file.arcgrid?coverageName=srichness_" + getName();
+                String url = AlaspatialProperties.getGeoserverUrl() + "/rest/workspaces/ALA/coveragestores/srichness_" + getName() + "/file.arcgrid?coverageName=srichness_" + getName();
 //                String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/srichness_" + getName() + "/external.geotiff?coverageName=srichness_" + getName();
                 String extra = "";
-                String username = (String) htGeoserver.get("geoserver_username");
-                String password = (String) htGeoserver.get("geoserver_password");
+                String username = AlaspatialProperties.getGeoserverUsername();
+                String password = AlaspatialProperties.getGeoserverPassword();
                 // first zip up the file as it's going to be sent as binary
                 String[] infiles = {currentPath + "species_richness.asc", currentPath + "species_richness.prj"};
                 String ascZipFile = currentPath + "species_richness.zip";
@@ -195,13 +192,13 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                 //sld
                 speciesLegend = produceSld(currentPath + File.separator + "species_richness");
                 //geoserver/rest/styles/add_nrm_style
-                url = (String) htGeoserver.get("geoserver_url") + "/rest/styles/";
+                url = AlaspatialProperties.getGeoserverUrl() + "/rest/styles/";
                 UploadSpatialResource.loadCreateStyle(url, extra, username, password, "srichness_" + getName());
-                url = (String) htGeoserver.get("geoserver_url") + "/rest/styles/srichness_" + getName();
+                url = AlaspatialProperties.getGeoserverUrl() + "/rest/styles/srichness_" + getName();
                 UploadSpatialResource.loadSld(url, extra, username, password, currentPath + File.separator + "species_richness.sld");
                 //Apply style
                 String data = "<layer><enabled>true</enabled><defaultStyle><name>srichness_" + getName() + "</name></defaultStyle></layer>";
-                url = (String) htGeoserver.get("geoserver_url") + "/rest/layers/ALA:srichness_" + getName();
+                url = AlaspatialProperties.getGeoserverUrl() + "/rest/layers/ALA:srichness_" + getName();
                 UploadSpatialResource.assignSld(url, extra, username, password, data);
                 ///Enable browser caching, FIX for zoom to extent required.
 //                data = "<coverage><metadata><entry key=\"cacheAgeMax\">3600</entry><entry key=\"cachingEnabled\">true</entry><entry key=\"dirName\">srichness_" + getName() + "_species_richness</entry></metadata></coverage>";

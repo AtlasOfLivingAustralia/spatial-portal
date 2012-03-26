@@ -5,11 +5,9 @@ import java.io.FilenameFilter;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
-import org.ala.spatial.analysis.index.DatasetMonitor;
-import org.ala.spatial.util.DataDumper;
+import org.ala.spatial.util.AlaspatialProperties;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.ala.spatial.util.TabulationSettings;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.FileUtils;
 import org.zkoss.zk.ui.Component;
@@ -25,11 +23,10 @@ public class JobsZK extends GenericForwardComposer {
 
     //Memory tab
     Label lMemUsage;
-
     //Analysis tab
     Listbox lbwaiting;
     Listbox lbrunning;
-    Listbox lbfinished;    
+    Listbox lbfinished;
     Textbox selectedJob;
     Textbox joblog;
     Textbox jobparameters;
@@ -38,16 +35,13 @@ public class JobsZK extends GenericForwardComposer {
     String pid;
     Textbox newjob;
     Textbox cmdtext;
-    Textbox txtloggingurl; 
-
+    Textbox txtloggingurl;
     //Other tab
     Label lCachedImageCount;
 
     @Override
     public void doAfterCompose(Component comp) throws Exception {
         super.doAfterCompose(comp);
-
-        TabulationSettings.load();
 
         System.out.println("***************** ***********");
         setMemoryLabel();
@@ -62,31 +56,18 @@ public class JobsZK extends GenericForwardComposer {
         if (!cmdtext.getValue().trim().equals("")) {
             String[] cmds = cmdtext.getValue().split("\n");
 
-            Map<String,String> cmd = new HashMap<String,String>();
-            for (String c:cmds) {
-                String key = c.substring(0,c.indexOf("="));
-                String value = c.substring(c.indexOf("=")+1);
+            Map<String, String> cmd = new HashMap<String, String>();
+            for (String c : cmds) {
+                String key = c.substring(0, c.indexOf("="));
+                String value = c.substring(c.indexOf("=") + 1);
                 System.out.println("Adding " + key + " => " + value);
-                cmd.put(key, value); 
+                cmd.put(key, value);
             }
-
-            DataDumper.generateSpeciesList(new File(cmd.get("shape")), cmd.get("output"));
-        }
-        
-    }
-
-    public void onClick$btnProcessLogs(Event e) {
-        if (txtloggingurl.getValue().trim().equals("")) {
-            LogsZK.processLogFiles();
-        } else {
-            //LogsZK.processLogFiles(txtloggingurl.getValue());
-            System.out.println("calling processLogFilesAsLines");
-            LogsZK.processLogFilesAsLines(txtloggingurl.getValue());
         }
     }
 
     public void onClick$refreshButton(Event e) {
-        String [] s = get("listwaiting").split("\n");
+        String[] s = get("listwaiting").split("\n");
         java.util.Arrays.sort(s);
         lbwaiting.setModel(new SimpleListModel(s));
         s = get("listrunning").split("\n");
@@ -146,18 +127,20 @@ public class JobsZK extends GenericForwardComposer {
     void refreshInfo() {
         pid = selectedJob.getValue();
         joblog.setValue(get("log"));
-        jobparameters.setValue(get("inputs").replace(";","\r\n"));
+        jobparameters.setValue(get("inputs").replace(";", "\r\n"));
         String imgsrc = get("image");
-        if(imgsrc == null) imgsrc = "";
+        if (imgsrc == null) {
+            imgsrc = "";
+        }
         //jobimage.setSrc(TabulationSettings.alaspatial_path + imgsrc);
         imgpth.setText(imgsrc);
-        jobimage.setSrc(TabulationSettings.base_output_url + "/" + imgsrc);
+        jobimage.setSrc(AlaspatialProperties.getBaseOutputURL() + "/" + imgsrc);
     }
 
     String get(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(TabulationSettings.alaspatial_path + "ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(AlaspatialProperties.getAlaspatialUrl() + "ws/jobs/").append(type).append("?pid=").append(pid);
 
             System.out.println(sbProcessUrl.toString());
             HttpClient client = new HttpClient();
@@ -184,51 +167,53 @@ public class JobsZK extends GenericForwardComposer {
         refreshInfo();
     }
 
-    public void onClick$btnMemoryClean(Event event){
+    public void onClick$btnMemoryClean(Event event) {
         System.gc();
         setMemoryLabel();
     }
-    
-    void setMemoryLabel(){
-        lMemUsage.setValue("Memory usage (total/used/free):" + (Runtime.getRuntime().totalMemory()/1024/1024) + "MB / " + (Runtime.getRuntime().totalMemory()/1024/1024 - Runtime.getRuntime().freeMemory()/1024/1024) + "MB / " + (Runtime.getRuntime().freeMemory()/1024/1024) + "MB");
+
+    void setMemoryLabel() {
+        lMemUsage.setValue("Memory usage (total/used/free):" + (Runtime.getRuntime().totalMemory() / 1024 / 1024) + "MB / " + (Runtime.getRuntime().totalMemory() / 1024 / 1024 - Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB / " + (Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB");
     }
 
-    public void onClick$btnNewClassification(Event event){
+    public void onClick$btnNewClassification(Event event) {
         String txt = newjob.getText();
 
-        try{
+        try {
             int pos = 0;
-            while(true){
-                int p1 = txt.indexOf("pid:",pos);
-                if(p1 < 0) {
+            while (true) {
+                int p1 = txt.indexOf("pid:", pos);
+                if (p1 < 0) {
                     break;
                 }
-                int p2 = txt.indexOf("gc:",pos);
-                int p3 = txt.indexOf("area:",pos);
-                int p4 = txt.indexOf("envlist:",pos);
-                int p5 = txt.indexOf("pid:",p1 + 4);
-                if(p5 < 0) p5 = txt.length();
+                int p2 = txt.indexOf("gc:", pos);
+                int p3 = txt.indexOf("area:", pos);
+                int p4 = txt.indexOf("envlist:", pos);
+                int p5 = txt.indexOf("pid:", p1 + 4);
+                if (p5 < 0) {
+                    p5 = txt.length();
+                }
 
                 pos = p5 - 5;
 
-                String pid = txt.substring(p1+4,p2).trim();
-                String gc = txt.substring(p2+3,p3).trim();
-                String area = txt.substring(p3+5,p4).trim();
-                String envlist = txt.substring(p4+8,p5).trim();
+                String pid = txt.substring(p1 + 4, p2).trim();
+                String gc = txt.substring(p2 + 3, p3).trim();
+                String area = txt.substring(p3 + 5, p4).trim();
+                String envlist = txt.substring(p4 + 8, p5).trim();
 
                 System.out.println("got [" + pid + "][" + gc + "][" + area + "][" + envlist + "]");
 
                 StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(TabulationSettings.alaspatial_path + "ws/aloc/processgeoq?");
+                sbProcessUrl.append(AlaspatialProperties.getAlaspatialUrl() + "ws/aloc/processgeoq?");
                 sbProcessUrl.append("gc="
-                                + URLEncoder.encode(gc, "UTF-8"));
+                        + URLEncoder.encode(gc, "UTF-8"));
                 sbProcessUrl.append("&envlist="
-                                + URLEncoder.encode(envlist, "UTF-8"));
+                        + URLEncoder.encode(envlist, "UTF-8"));
 
                 HttpClient client = new HttpClient();
                 PostMethod get = new PostMethod(sbProcessUrl.toString());
 
-                get.addParameter("area",URLEncoder.encode(area, "UTF-8"));
+                get.addParameter("area", URLEncoder.encode(area, "UTF-8"));
 
                 get.addRequestHeader("Accept", "text/plain");
 
@@ -238,44 +223,41 @@ public class JobsZK extends GenericForwardComposer {
                 System.out.println("Got response from ALOCWSController: \n" + slist);
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void onClick$btnClearCache(Event event){
-        DatasetMonitor dm = new DatasetMonitor();
-        dm.start();
-
-        String pth = TabulationSettings.base_output_dir + "output" + File.separator + "sampling" + File.separator;
+    public void onClick$btnClearCache(Event event) {
+        String pth = AlaspatialProperties.getBaseOutputDir() + "output" + File.separator + "sampling" + File.separator;
         File dir = new File(pth);
-        String [] f = dir.list(new FilenameFilter() {
+        String[] f = dir.list(new FilenameFilter() {
+
             public boolean accept(File dir, String name) {
                 return name.endsWith("png");
             }
         });
-        for(int i=0;i<f.length;i++){
+        for (int i = 0; i < f.length; i++) {
             FileUtils.deleteQuietly(new File(pth + f[i]));
         }
 
         updateCachedImageCount();
     }
 
-    void updateCachedImageCount(){
-        File dir = new File(TabulationSettings.base_output_dir + "output" + File.separator + "sampling"  + File.separator);
-        String [] f = dir.list(new FilenameFilter() {
+    void updateCachedImageCount() {
+        File dir = new File(AlaspatialProperties.getBaseOutputDir() + "output" + File.separator + "sampling" + File.separator);
+        String[] f = dir.list(new FilenameFilter() {
+
             public boolean accept(File dir, String name) {
                 return name.endsWith("png");
             }
         });
 
-        if(f == null){
+        if (f == null) {
             lCachedImageCount.setValue("0");
-        }else {
+        } else {
             lCachedImageCount.setValue(String.valueOf(f.length));
         }
 
     }
-
-
 }

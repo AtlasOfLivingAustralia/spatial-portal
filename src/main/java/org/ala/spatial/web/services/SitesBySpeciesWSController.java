@@ -4,12 +4,11 @@ import java.io.File;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.index.LayerFilter;
-import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.util.AnalysisJobSitesBySpecies;
 import org.ala.spatial.util.AnalysisQueue;
-import org.ala.spatial.util.SimpleRegion;
-import org.ala.spatial.util.SimpleShapeFile;
-import org.ala.spatial.util.TabulationSettings;
+import org.ala.layers.intersect.SimpleRegion;
+import org.ala.layers.intersect.SimpleShapeFile;
+import org.ala.spatial.util.AlaspatialProperties;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,20 +19,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author ajay
  */
 @Controller
-@RequestMapping("/ws/sitesbyspecies/")
 public class SitesBySpeciesWSController {
 
-    @RequestMapping(value = "/processgeoq", method = RequestMethod.POST)
+    @RequestMapping(value = "/ws/sitesbyspecies", method = RequestMethod.POST)
     public
     @ResponseBody
     String processgeoq(HttpServletRequest req) {
 
         try {
-            TabulationSettings.load();
 
             long currTime = System.currentTimeMillis();
 
-            String currentPath = TabulationSettings.base_output_dir + "output" + File.separator + "sitesbyspecies";
+            String currentPath = AlaspatialProperties.getBaseOutputDir() + "output" + File.separator + "sitesbyspecies";
             String qname = URLDecoder.decode(req.getParameter("qname"), "UTF-8").replace("__", ".");
             String speciesq = URLDecoder.decode(req.getParameter("speciesq"), "UTF-8").replace("__", ".");
             String area = req.getParameter("area");
@@ -47,7 +44,7 @@ public class SitesBySpeciesWSController {
             LayerFilter[] filter = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
-                filter = FilteringService.getFilters(area);
+                filter = LayerFilter.parseLayerFilters(area);
             } else {
                 region = SimpleShapeFile.parseWKT(area);
             }
@@ -62,13 +59,13 @@ public class SitesBySpeciesWSController {
             inputs.append(";speciesq:").append(speciesq);
             inputs.append(";gridsize:").append(gridsize);
             inputs.append(";area:").append(area);
-            if(occurrencedensity) {
+            if (occurrencedensity) {
                 inputs.append(";occurrencedensity:true").append(area);
             }
-            if(speciesdensity) {
+            if (speciesdensity) {
                 inputs.append(";speciesdensity:true").append(area);
             }
-            if(sitesbyspecies) {
+            if (sitesbyspecies) {
                 inputs.append(";sitesbyspecies:true").append(area);
             }
             sbs.setInputs(inputs.toString());
