@@ -67,6 +67,8 @@ public class Field {
     private Boolean intersect;
     @Column(name = "layerbranch")
     private Boolean layerbranch;
+    @Column(name = "analysis")
+    private Boolean analysis;
     private List<Objects> objects;
 
     public List<Objects> getObjects() {
@@ -195,5 +197,13 @@ public class Field {
 
     public void setLayerbranch(Boolean layerbranch) {
         this.layerbranch = layerbranch;
+    }
+
+    public Boolean isAnalysis() {
+        return analysis;
+    }
+
+    public void setAnalysis(Boolean analysis) {
+        this.analysis = analysis;
     }
 }

@@ -246,7 +246,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                 } else if (id.startsWith("aloc_")) {
                     //aloc layer
                     gid = id.substring("aloc_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + gid;
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + "aloc";
                     name = "Classification";
                 } else if (id.startsWith("odensity_")) {
                     //aloc layer

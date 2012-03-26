@@ -1362,4 +1362,147 @@ public class Grid { //  implements Serializable
 
         return bufferOffset;
     }
+
+     /**
+     *
+     * @param points input array for longitude and latitude
+     *                  double[number_of_points][2]
+     * @return calculated min and max values of a grid file as float [] where [0] is min and [1] is max.
+     */
+    public float[] calculatetMinMax() {
+
+        float[] ret = new float[2];
+        ret[0] = Float.MAX_VALUE;
+        ret[1] = Float.MAX_VALUE * -1;
+
+        long i;
+        int size;
+        byte[] b;
+        RandomAccessFile afile;
+
+        try { //read of random access file can throw an exception
+            File f2 = new File(filename + ".GRI");
+            if (!f2.exists()) {
+                afile = new RandomAccessFile(filename + ".gri", "r");
+            } else {
+                afile = new RandomAccessFile(filename + ".GRI", "r");
+            }
+
+            long length = ((long) nrows) * ((long) ncols);
+            float f;
+
+            if (datatype.equalsIgnoreCase("BYTE")) {
+                size = 1;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    f = afile.readByte();
+                    if(f != (float) nodatavalue) {
+                        ret[0] = Math.min(f, ret[0]);
+                        ret[1] = Math.max(f, ret[1]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("UBYTE")) {
+                size = 1;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    f = afile.readByte();
+                    if (f < 0) {
+                        f += 256;
+                    }
+                    if(f != (float) nodatavalue) {
+                        ret[0] = Math.min(f, ret[0]);
+                        ret[1] = Math.max(f, ret[1]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("SHORT")) {
+                size = 2;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    afile.read(b);
+                    if (byteorderLSB) {
+                        f = (short) (((0xFF & b[1]) << 8) | (b[0] & 0xFF));
+                    } else {
+                        f = (short) (((0xFF & b[0]) << 8) | (b[1] & 0xFF));
+                    }
+                    if(f != (float) nodatavalue) {
+                        ret[0] = Math.min(f, ret[0]);
+                        ret[1] = Math.max(f, ret[1]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("INT")) {
+                size = 4;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    afile.read(b);
+                    if (byteorderLSB) {
+                        f = ((0xFF & b[3]) << 24) | ((0xFF & b[2]) << 16) + ((0xFF & b[1]) << 8) + (b[0] & 0xFF);
+                    } else {
+                        f = ((0xFF & b[0]) << 24) | ((0xFF & b[1]) << 16) + ((0xFF & b[2]) << 8) + ((0xFF & b[3]) & 0xFF);
+                    }
+                    if(f != (float) nodatavalue) {
+                        ret[0] = Math.min(f, ret[0]);
+                        ret[1] = Math.max(f, ret[1]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("LONG")) {
+                size = 8;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                        afile.read(b);
+                    if (byteorderLSB) {
+                        f = ((long) (0xFF & b[7]) << 56) + ((long) (0xFF & b[6]) << 48)
+                                + ((long) (0xFF & b[5]) << 40) + ((long) (0xFF & b[4]) << 32)
+                                + ((long) (0xFF & b[3]) << 24) + ((long) (0xFF & b[2]) << 16)
+                                + ((long) (0xFF & b[1]) << 8) + (0xFF & b[0]);
+                    } else {
+                        f = ((long) (0xFF & b[0]) << 56) + ((long) (0xFF & b[1]) << 48)
+                                + ((long) (0xFF & b[2]) << 40) + ((long) (0xFF & b[3]) << 32)
+                                + ((long) (0xFF & b[4]) << 24) + ((long) (0xFF & b[5]) << 16)
+                                + ((long) (0xFF & b[6]) << 8) + (0xFF & b[7]);
+                    }
+                    if(f != (float) nodatavalue) {
+                        ret[0] = Math.min(f, ret[0]);
+                        ret[1] = Math.max(f, ret[1]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("FLOAT")) {
+                size = 4;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    afile.read(b);
+                    ByteBuffer bb = ByteBuffer.wrap(b);
+                    if (byteorderLSB) {
+                        bb.order(ByteOrder.LITTLE_ENDIAN);
+                    }
+                    f = bb.getFloat();
+                    if(f != (float) nodatavalue) {
+                        ret[0] = Math.min(f, ret[0]);
+                        ret[1] = Math.max(f, ret[1]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("DOUBLE")) {
+                size = 8;
+                b = new byte[8];
+                for (i = 0; i < length; i++) {
+                    afile.read(b);
+                    ByteBuffer bb = ByteBuffer.wrap(b);
+                    if (byteorderLSB) {
+                        bb.order(ByteOrder.LITTLE_ENDIAN);
+                    }
+                    f = (float) bb.getDouble();
+                    if(f != (float) nodatavalue) {
+                        ret[0] = Math.min(f, ret[0]);
+                        ret[1] = Math.max(f, ret[1]);
+                    }
+                }
+            } else {
+                logger.error("datatype not supported in Grid.getValues: " + datatype);
+            }
+
+            afile.close();
+        } catch (Exception e) {
+            logger.error(ExceptionUtils.getFullStackTrace(e));
+        }
+        return ret;
+    }
 }
