@@ -89,7 +89,7 @@ public class LayerDistancesWSController {
                 }
             }
             sb.append(",");
-            int size = (i == 0)?layerList.size()-1 : i + 1;
+            int size = (i == 0)?layerList.size()-1 : i;
             for(int j=0;j<size;j++) {
                 if(i == 0) {
                     if(type.equals("name")) {
@@ -99,7 +99,7 @@ public class LayerDistancesWSController {
                 }
                 } else {
                     String key = (layerList.get(i).compareTo(layerList.get(j)) < 0) ? layerList.get(i) + " " + layerList.get(j) : layerList.get(j) + " " + layerList.get(i);
-                    if(key != null && !key.equals("null")) {
+                    if(key != null && map.get(key) != null) {
                         sb.append(map.get(key));
                     }
                 }
