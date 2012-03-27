@@ -1,9 +1,16 @@
 package org.ala.spatial.web.services;
 
+import java.io.File;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.intersect.Grid;
+import org.ala.layers.intersect.SimpleRegion;
+import org.ala.layers.intersect.SimpleShapeFile;
 import org.ala.layers.util.SpatialUtil;
+import org.ala.spatial.analysis.index.LayerFilter;
+import org.ala.spatial.util.AlaspatialProperties;
+import org.ala.spatial.util.GridCutter;
+import org.ala.spatial.util.Layers;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -16,8 +23,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequestMapping("/ws/sampling/")
 public class SamplingWSController {
-
-    final static double RESOLUTION = 0.01;
 
     /**
      * chart basis: occurrence or area
@@ -91,81 +96,85 @@ public class SamplingWSController {
     @ResponseBody
     String chart(HttpServletRequest req) {
         try {
-            String filter = URLDecoder.decode(req.getParameter("wkt"), "UTF-8");
+            String wkt = (req.getParameter("wkt") == null) ? null : URLDecoder.decode(req.getParameter("wkt"), "UTF-8");
             String xaxis = URLDecoder.decode(req.getParameter("xaxis"), "UTF-8");
             String yaxis = URLDecoder.decode(req.getParameter("yaxis"), "UTF-8");
-            String sDivisions = URLDecoder.decode(req.getParameter("divisions"), "UTF-8");
+            String sDivisions = (req.getParameter("divisions") == null) ?  null : URLDecoder.decode(req.getParameter("divisions"), "UTF-8");
             int divisions = 20;
-            if(sDivisions != null) {
+            if (sDivisions != null) {
                 divisions = Integer.parseInt(sDivisions);
             }
 
-//            SimpleRegion region = null;
-//            if (filterArea != null && wkt.startsWith("ENVELOPE")) {
-//                records = FilteringService.getRecords(filterArea);
-//            } else {
-//                region = SimpleShapeFile.parseWKT(filterArea);
-//            }
-            
-                //bB
+            LayerFilter[] envelope = null;
+            SimpleRegion region = null;
+            if (wkt != null && wkt.startsWith("ENVELOPE")) {
+                envelope = LayerFilter.parseLayerFilters(wkt);
+            } else {
+                region = SimpleShapeFile.parseWKT(wkt);
+            }
 
-                //TODO: more than env layers
-                String[] layers = new String[2];
-                double[][] extents = new double[2][2];
-                String [] s = xaxis.split(",");
-                layers[0] = s[0];
-                extents[0][0] = Double.parseDouble(s[1]);
-                extents[0][1] = Double.parseDouble(s[2]);
-                s = yaxis.split(",");
-                layers[1] = s[0];
-                extents[1][0] = Double.parseDouble(s[1]);
-                extents[1][1] = Double.parseDouble(s[2]);
+            //bB
 
-                float[][] cutoffs = new float[2][divisions];
+            //TODO: more than env layers
+            String[] layers = new String[2];
+            double[][] extents = new double[2][2];
+            String[] s = xaxis.split(",");
+            layers[0] = s[0];
+            extents[0][0] = Double.parseDouble(s[1]);
+            extents[0][1] = Double.parseDouble(s[2]);
+            s = yaxis.split(",");
+            layers[1] = s[0];
+            extents[1][0] = Double.parseDouble(s[1]);
+            extents[1][1] = Double.parseDouble(s[2]);
 
-                //get linear cutoffs
-                for (int i = 0; i < layers.length; i++) {
-                    for(int j=0;j<divisions;j++){
-                        cutoffs[i][j] = (float)(extents[i][0] + (extents[i][1] - extents[i][0]) * ((j + 1) / (float) divisions));
-                    }
-                    cutoffs[i][divisions - 1] = (float)extents[i][1];  //set max
+            float[][] cutoffs = new float[2][divisions];
+
+            //get linear cutoffs
+            for (int i = 0; i < layers.length; i++) {
+                for (int j = 0; j < divisions; j++) {
+                    cutoffs[i][j] = (float) (extents[i][0] + (extents[i][1] - extents[i][0]) * ((j + 1) / (float) divisions));
                 }
+                cutoffs[i][divisions - 1] = (float) extents[i][1];  //set max
+            }
 
-                //build
-                float [][] data = new float[2][];
-                Grid g = null;
+            //get grid data
+            float[][] data = new float[2][];
+            String cutDataPath = GridCutter.cut2(layers, AlaspatialProperties.getLayerResolutionDefault(), region, envelope, null);
+            Grid g = new Grid(cutDataPath + File.separator + Layers.getFieldId(layers[0]));
+            data[0] = g.getGrid();
+            data[1] = new Grid(cutDataPath + File.separator + Layers.getFieldId(layers[1])).getGrid();
 
-                //TODO: get cut data
+            //TODO: delete cut grid files
 
-                int len = data[0].length;
-                int divs = 20;  //same as number of cutpoints in Legend
-                double[][] area = new double[divs][divs];
+            int len = data[0].length;
+            int divs = 20;  //same as number of cutpoints in Legend
+            double[][] area = new double[divs][divs];
 
-                for (int i = 0; i < len; i++) {
-                    if (Float.isNaN(data[0][i]) || Float.isNaN(data[1][i])) {
-                        continue;
-                    }
-                    int x = getPos(data[0][i], cutoffs[0]);
-                    int y = getPos(data[1][i], cutoffs[1]);
-
-                    area[x][y] += cellArea(RESOLUTION, (i / g.ncols) * g.yres);
+            for (int i = 0; i < len; i++) {
+                if (Float.isNaN(data[0][i]) || Float.isNaN(data[1][i])) {
+                    continue;
                 }
+                int x = getPos(data[0][i], cutoffs[0]);
+                int y = getPos(data[1][i], cutoffs[1]);
 
-                //to csv
-                StringBuilder sb = new StringBuilder();
-                sb.append(",").append(layers[1]).append("\n").append(layers[0]);
+                area[x][y] += cellArea(Double.parseDouble(AlaspatialProperties.getLayerResolutionDefault()), (i / g.ncols) * g.yres);
+            }
+
+            //to csv
+            StringBuilder sb = new StringBuilder();
+            sb.append(",").append(layers[1]).append("\n").append(layers[0]);
+            for (int j = 0; j < divs; j++) {
+                sb.append(",").append(cutoffs[1][j]);
+            }
+            for (int i = 0; i < divs; i++) {
+                sb.append("\n").append(cutoffs[0][i]);
                 for (int j = 0; j < divs; j++) {
-                    sb.append(",").append(cutoffs[1][j]);
+                    sb.append(",").append(area[i][j]);
                 }
-                for (int i = 0; i < divs; i++) {
-                    sb.append("\n").append(cutoffs[0][i]);
-                    for (int j = 0; j < divs; j++) {
-                        sb.append(",").append(area[i][j]);
-                    }
-                }
+            }
 
-                return sb.toString();
-            
+            return sb.toString();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -189,47 +198,6 @@ public class SamplingWSController {
         double miny = Math.floor(latitude / resolution) * resolution;
         double maxy = miny + resolution;
 
-        return SpatialUtil.calculateArea(new double [][] {{minx, miny},{minx, maxy},{maxx, maxy}, {maxx, miny}, {minx, miny}});
-    }
-
-    /**
-     * get values from string of the form:
-     * 
-     * name1:value2;name2;value2
-     * 
-     * ';' is not a valid value character and any recognised ';'+name+':'
-     * must be absent from values
-     * 
-     * @param get   name to look for as String
-     * @param list  String with name and value pairs
-     * @return value as String for the name, or null
-     */
-    private String getParam(String get, String list) {
-        //get name pos
-        int p1 = 0;
-
-        while (p1 >= 0 && p1 < list.length()) {
-            p1 = list.indexOf(get + ":", p1);
-            //failed to find it if -1
-            if (p1 < 0) {
-                return null;
-            } else if (p1 == 0 || list.charAt(p1 - 1) == ';') {
-                //found it, extract value
-                int start = p1 + get.length() + 1;
-                int end = list.indexOf(';', start);
-                if (end < 0) {
-                    end = list.length();
-                }
-                if (start >= 0 && start < list.length()
-                        && end >= start && end <= list.length()) {
-                    return list.substring(start, end);
-                }
-            } else {
-                //contine after moving p1 forward
-                p1 += get.length() + 1;
-            }
-        }
-
-        return null;
+        return SpatialUtil.calculateArea(new double[][]{{minx, miny}, {minx, maxy}, {maxx, maxy}, {maxx, miny}, {minx, miny}});
     }
 }

@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import org.ala.layers.client.Client;
 import org.ala.layers.dao.LayerDAO;
+import org.ala.layers.dto.Field;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.spatial.analysis.index.LayerFilter;
@@ -42,9 +43,9 @@ public class AnalysisJobMaxent extends AnalysisJob {
     LayerFilter[] envelope;
     SimpleRegion region;
     int cells;
-    Layer[] layers;
     int speciesCount;
     String resolution;
+    String[] envnameslist;
 
     public AnalysisJobMaxent(String pid, String currentPath_, String taxon_, String envlist_, SimpleRegion region_, LayerFilter[] filter_, String txtTestPercentage_, String chkJackknife_, String chkResponseCurves_, String resolution_) {
         super(pid);
@@ -57,6 +58,9 @@ public class AnalysisJobMaxent extends AnalysisJob {
         chkResponseCurves = chkResponseCurves_;
         envlist = envlist_;
         resolution = resolution_;
+        envnameslist = envlist.split(":");
+        System.out.println("ENVLIST*** " + envlist);
+
 
         //TODO: remove rough estimate
         if (region != null) {
@@ -112,25 +116,23 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
             setProgress(0, "preparing input files and run parameters");
 
-            String[] envnameslist = envlist.split(":");
-
             String cutDataPath = GridCutter.cut2(envnameslist, resolution, region, envelope, null);
 
             System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
 
             MaxentSettings msets = new MaxentSettings();
-            msets.setMaxentPath(AlaspatialProperties.getAnalysisMaxentCmd());
-            msets.setEnvList(Arrays.asList(envnameslist));
+            msets.setMaxentPath(AlaspatialProperties.getAnalysisMaxentCmd());            
             msets.setRandomTestPercentage(Integer.parseInt(txtTestPercentage));
             msets.setEnvPath(cutDataPath);          //use (possibly) cut layers
 
             String ctxVarToggler = "";
-            for (int l = 0; l < layers.length; l++) {
-                if (layers[l].type.equalsIgnoreCase("contextual")) {
-                    ctxVarToggler += layers[l].name + " ";
+            for (int l = 0; l < envnameslist.length; l++) {
+                if(Client.getLayerDao().getLayerByName(envnameslist[l]).getType().equals("contextual")) {
+                    ctxVarToggler += envnameslist[l] + " ";
                 }
             }
             msets.setEnvVarToggler(ctxVarToggler);
+            msets.setEnvList(Arrays.asList(envnameslist.clone()));
 
             //msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator));
             msets.setSpeciesFilepath(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species_points.csv");
@@ -212,7 +214,12 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
                     LayerDAO layerDao = Client.getLayerDao();
                     for (int ei = 0; ei < envnameslist.length; ei++) {
-                        paramlist += "<li>" + layerDao.getLayerByName(envnameslist[ei]).getDisplayname() + " (" + envnameslist[ei] + ")</li>";
+                        System.out.println("LAYER NAME: " + envnameslist[ei]);
+                        if(layerDao.getLayerByName(envnameslist[ei]) != null) {
+                            paramlist += "<li>" + layerDao.getLayerByName(envnameslist[ei]).getDisplayname() + " (" + envnameslist[ei] + ")</li>";
+                        } else {
+                            paramlist += "<li>" + envnameslist[ei] + "</li>";
+                        }
                     }
                     paramlist += "</ul>";
 
@@ -312,7 +319,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     setCurrentState(SUCCESSFUL);
 
                     //write out infor for adjusting input parameters
-                    System.out.println("MAXENT:" + cells + "," + layers.length + " " + speciesCount + " " + (stageTimes[1] - stageTimes[0]) + " " + (stageTimes[2] - stageTimes[0]) + " " + (stageTimes[3] - stageTimes[2]));
+                    System.out.println("MAXENT:" + cells + "," + envnameslist.length + " " + speciesCount + " " + (stageTimes[1] - stageTimes[0]) + " " + (stageTimes[2] - stageTimes[0]) + " " + (stageTimes[3] - stageTimes[2]));
                 }
             } else {
                 System.out.println("Failed 1");
@@ -342,11 +349,11 @@ public class AnalysisJobMaxent extends AnalysisJob {
         long t1 = 0, t2 = 0, t3 = 0;
 
         if (stage <= 0) { //data load; 0 to 0.2
-            t1 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult0()) * layers.length; //default
+            t1 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult0()) * envnameslist.length; //default
             t1 = t1 + progTime - stageTimes[0];
         }
         if (stage <= 1) { //running; 0.2 to 0.9
-            t2 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult1()) * layers.length; //default
+            t2 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult1()) * envnameslist.length; //default
             if (stage == 1) {
                 t2 = t2 + progTime - stageTimes[1];
             }
@@ -391,7 +398,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
         //progress is [time passed] / [time expected]
         if (stage <= 0) { //data load; 0 to 0.2
-            t1 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult0()) * layers.length; //default
+            t1 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult0()) * envnameslist.length; //default
             d1 = (currentTime - stageTimes[0]) / (double) t1;
             if (d1 > 0.9) {
                 d1 = 0.9;
@@ -401,7 +408,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
             d1 = 0.2;
         }
         if (stage <= 1) { //running; 0.2 to 0.9
-            t2 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult1()) * layers.length; //default
+            t2 += (cells * AlaspatialProperties.getAnalysisMaxentEstimateMult1()) * envnameslist.length; //default
             if (stage == 1) {
                 d2 = (currentTime - stageTimes[1]) / (double) t2;
             } else {
@@ -472,7 +479,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
         sb.append("; state=").append(getCurrentState());
         sb.append("; status=").append(getStatus());
         sb.append("; grid cell count=").append(cells);
-        sb.append("; number of layers=").append(layers.length);
+        sb.append("; number of layers=").append(envnameslist.length);
 
         return sb.toString();
     }
