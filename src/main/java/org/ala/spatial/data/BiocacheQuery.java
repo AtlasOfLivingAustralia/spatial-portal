@@ -781,11 +781,12 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("kingdom", "Kingdom", QueryField.FieldType.STRING));
             fields.add(new QueryField("species_group", "Lifeform", QueryField.FieldType.STRING));
             fields.add(new QueryField("rank", "Identified to Rank", QueryField.FieldType.STRING));
+            fields.add(new QueryField("interaction", "Species Interaction", QueryField.FieldType.INT));
             // Geospatial
             fields.add(new QueryField("coordinate_uncertainty", "Spatial Uncertainty(m)", QueryField.FieldType.INT));
             fields.add(new QueryField("sensitive", "Sensitive", QueryField.FieldType.STRING));
             fields.add(new QueryField("state_conservation", "State Conservation Status", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("raw_state_conservation", "State Conservation (unprocessed)", QueryField.FieldType.STRING));
+            fields.add(new QueryField("raw_state_conservation", "State Conservation (unprocessed)", QueryField.FieldType.STRING));
             fields.add(new QueryField("places", "LGA Boundaries", QueryField.FieldType.STRING));
             fields.add(new QueryField("state", "Australian States and Territories", QueryField.FieldType.STRING));
             fields.add(new QueryField("country", "Country Boundaries", QueryField.FieldType.STRING));
@@ -794,14 +795,16 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("cl918", "Dynamic Land Cover", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl617", "Vegetation types - native", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl620", "Vegetation types - present", QueryField.FieldType.STRING));
+            fields.add(new QueryField("geospatial_kosher", "Location Quality", QueryField.FieldType.STRING));
             // Temporal
             fields.add(new QueryField("month", "Month", QueryField.FieldType.STRING));
             fields.add(new QueryField("year", "Year", QueryField.FieldType.INT));
-            //fields.add(new QueryField("decade", "Decade", QueryField.FieldType.INT));
+            fields.add(new QueryField("decade", "Decade", QueryField.FieldType.INT));
             // Record details
             fields.add(new QueryField("basis_of_record", "Record Type", QueryField.FieldType.STRING));            
             fields.add(new QueryField("type_status", "Specimen Type", QueryField.FieldType.STRING));
-            fields.add(new QueryField("multimedia", "Images", QueryField.FieldType.STRING));
+            fields.add(new QueryField("multimedia", "Media", QueryField.FieldType.STRING));
+            fields.add(new QueryField("collector", "Collector", QueryField.FieldType.STRING));
             // Attribution
             fields.add(new QueryField("data_resource", "Dataset", QueryField.FieldType.STRING));
             fields.add(new QueryField("data_provider", "Data Provider", QueryField.FieldType.STRING));
@@ -812,12 +815,13 @@ public class BiocacheQuery implements Query, Serializable {
             //fields.add(new QueryField("institution_uid", "Institution", QueryField.FieldType.STRING));
             // Record Assertions
             fields.add(new QueryField("assertions", "Record Issues", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("", "Outlier Information", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("collector", "Collector", QueryField.FieldType.STRING));
+            fields.add(new QueryField("outlier_for_layer", "Outlier for Layer", QueryField.FieldType.STRING));
+            fields.add(new QueryField("outlier_layer_count", "Outlier Layer Count", QueryField.FieldType.STRING));
+            
             //fields.add(new QueryField("biogeographic_region", "Biogeographic Region", QueryField.FieldType.STRING));
             //fields.add(new QueryField("species_guid", "Species", QueryField.FieldType.STRING));
             //fields.add(new QueryField("interaction", "Species Interaction", QueryField.FieldType.INT));
-            //fields.add(new QueryField("geospatial_kosher", "Location Quality", QueryField.FieldType.STRING));
+            
             //fields.add(new QueryField("cl678", "Land use", QueryField.FieldType.STRING));
             //fields.add(new QueryField("cl619", "Vegetation - condition", QueryField.FieldType.STRING));
             for (int i = 0; i < fields.size(); i++) {
@@ -888,7 +892,6 @@ public class BiocacheQuery implements Query, Serializable {
                     + "&q=" + getQ()
                     + "&cm=" + translateFieldForSolr(colourmode)
                     + getQc();
-            System.out.println("lo empty");
             System.out.println(url);
             GetMethod get = new GetMethod(url);
 
@@ -897,7 +900,6 @@ public class BiocacheQuery implements Query, Serializable {
             try {
                 int result = client.executeMethod(get);
                 String s = get.getResponseBodyAsString();
-                System.out.println("s="+s);
                 //in the first line do field name replacement
                 String t = translateFieldForSolr(colourmode);
                 if (!colourmode.equals(t)) {
