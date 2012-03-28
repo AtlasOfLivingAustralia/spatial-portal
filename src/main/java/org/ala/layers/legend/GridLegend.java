@@ -130,8 +130,12 @@ public class GridLegend {
             minAsTransparent = args[3].equals("1");
         }
 
-        File file = new File(gridfilename);
-
+        generateGridLegend(gridfilename, outputfilename, scaleDown, minAsTransparent);
+    }
+    
+    public static boolean generateGridLegend(String gridfilename, String outputfilename, int scaleDown, boolean minAsTransparent) {
+        boolean ret = true;
+        
         String[] legendTypes = {"Equal Area"};
         //String [] legendTypes = {"Even Interval","Even Interval Log 10","Equal Size","Equal Area"};
 
@@ -147,8 +151,10 @@ public class GridLegend {
             fw.close();
         } catch (Exception e) {
             e.printStackTrace();
+            ret = false;
         }
-
+        
+        return ret;
     }
 }
 
