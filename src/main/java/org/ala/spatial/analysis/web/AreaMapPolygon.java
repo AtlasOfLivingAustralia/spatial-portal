@@ -64,7 +64,7 @@ public class AreaMapPolygon extends AreaToolComposer {
         ok = true;
         Clients.evalJavaScript("mapFrame.toggleClickHandler(true);");
 
-        
+
         String activeLayerName = "none";
         if (ml.getUri() != null) {
             activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
@@ -226,7 +226,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                             MapLayer mapLayer;
                             if (displayAsWms.isChecked()) {
                                 String url = obj.getString("wmsurl");
-                                mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(txtLayerName.getValue()),txtLayerName.getValue(), url, 0.6f, /*metadata url*/ null,
+                                mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(txtLayerName.getValue()), txtLayerName.getValue(), url, 0.6f, /*metadata url*/ null,
                                         null, LayerUtilities.WKT, null, null);
                                 mapLayer.setWKT(wkt);
                                 mapLayer.setPolygonLayer(true);
@@ -263,7 +263,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                                 //md.setMoreInfo(LayersUtil.getMetadataForWKT("User selected map polygon", wkt));
                                 String fid = getStringValue(null, "fid", readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
                                 String spid = getStringValue("\"id\":\"" + fid + "\"", "spid", readUrl(CommonData.layersServer + "/fields"));
-                                md.setMoreInfo(CommonData.layersServer + "/layers/" + spid);
+                                md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

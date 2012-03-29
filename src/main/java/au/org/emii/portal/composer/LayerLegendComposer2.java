@@ -188,7 +188,8 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         } else {
             cbColour.setDisabled(false);
             for (int i = 0; i < cbColour.getItemCount(); i++) {
-                if (cbColour.getItemAtIndex(i).getValue().equals(currentSelection.getColourMode())) {
+                if (cbColour.getItemAtIndex(i).getValue() != null
+                        && cbColour.getItemAtIndex(i).getValue().equals(currentSelection.getColourMode())) {
                     cbColour.setSelectedIndex(i);
                 }
             }
@@ -221,7 +222,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 
         try {
             LegendObject lo = query.getLegend(colourmode);
-            if(lo != null) {
+            if (lo != null) {
                 mapLayer.setData("legendobject", lo);
             }
         } catch (Exception e) {
@@ -263,7 +264,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         onScroll$sizeSlider();
 
         for (Comboitem item : (List<Comboitem>) cbColour.getItems()) {
-            if (item.getValue().equals(colourMode)) {
+            if (item.getValue() != null && item.getValue().equals(colourMode)) {
                 cbColour.setSelectedItem(item);
                 break;
             }
@@ -351,12 +352,12 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 
         String colourmode = (String) cbColour.getSelectedItem().getValue();
         if (!m.getColourMode().equals("grid")
-                &&query.getLegend(colourmode).getCategories() != null) {
+                && query.getLegend(colourmode).getCategories() != null) {
             map.put("checkmarks", "true");
         }
         try {
-            LegendObject lo = ((Query)m.getData("query")).getLegend(colourmode);
-            if(lo != null) {
+            LegendObject lo = ((Query) m.getData("query")).getLegend(colourmode);
+            if (lo != null) {
                 m.setData("legendobject", lo);
             }
         } catch (Exception e) {
@@ -575,46 +576,52 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         if (q != null) {
             ArrayList<QueryField> fields = q.getFacetFieldList();
             /*for (int i = 0; i < fields.size(); i++) {
-                Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
-                ci.setValue(fields.get(i).getName());
-                ci.setParent(cbColour);
+            Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
+            ci.setValue(fields.get(i).getName());
+            ci.setParent(cbColour);
             }
-            * 
-            */
+             *
+             */
             Comboitem seperator = new Comboitem("seperator");
             seperator.setLabel("------------------Taxonomic------------------");
             seperator.setParent(cbColour);
-                    for (int i = 0; i < fields.size(); i++) {
-                        Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
-                        ci.setValue(fields.get(i).getName());
-                        ci.setParent(cbColour);
+            seperator.setDisabled(true);
+            for (int i = 0; i < fields.size(); i++) {
+                Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
+                ci.setValue(fields.get(i).getName());
+                ci.setParent(cbColour);
 
-                        if (ci.getValue().equals("interaction")) {
-                            Comboitem seperator1 = new Comboitem("seperator");
-                            seperator1.setLabel("------------------Geospatial------------------");
-                            seperator1.setParent(cbColour);
-                        }
-                        if (ci.getValue().equals("geospatial_kosher") ) {
-                            Comboitem seperator2 = new Comboitem("seperator");
-                            seperator2.setLabel("------------------Temporal------------------");
-                            seperator2.setParent(cbColour);
-                        }
-                        if (ci.getValue().equals("decade")) {
-                            Comboitem seperator3 = new Comboitem("seperator");
-                            seperator3.setLabel("------------------Record Details------------------");
-                            seperator3.setParent(cbColour);
-                        }
-                        if (ci.getValue().equals("collector")) {
-                            Comboitem seperator4 = new Comboitem("seperator");
-                            seperator4.setLabel("------------------Attribution------------------");
-                            seperator4.setParent(cbColour);
-                        }
-                        if (ci.getValue().equals("institution_name")) {
-                            Comboitem seperator5 = new Comboitem("seperator");
-                            seperator5.setLabel("------------------Record Assertions------------------");
-                            seperator5.setParent(cbColour);
-                        }
-                    }
+                if (ci.getValue().equals("interaction")) {
+                    Comboitem seperator1 = new Comboitem("seperator");
+                    seperator1.setLabel("------------------Geospatial------------------");
+                    seperator1.setParent(cbColour);
+                    seperator1.setDisabled(true);
+                }
+                if (ci.getValue().equals("geospatial_kosher")) {
+                    Comboitem seperator2 = new Comboitem("seperator");
+                    seperator2.setLabel("------------------Temporal------------------");
+                    seperator2.setParent(cbColour);
+                    seperator2.setDisabled(true);
+                }
+                if (ci.getValue().equals("decade")) {
+                    Comboitem seperator3 = new Comboitem("seperator");
+                    seperator3.setLabel("------------------Record Details------------------");
+                    seperator3.setParent(cbColour);
+                    seperator3.setDisabled(true);
+                }
+                if (ci.getValue().equals("collector")) {
+                    Comboitem seperator4 = new Comboitem("seperator");
+                    seperator4.setLabel("------------------Attribution------------------");
+                    seperator4.setParent(cbColour);
+                    seperator4.setDisabled(true);
+                }
+                if (ci.getValue().equals("institution_name")) {
+                    Comboitem seperator5 = new Comboitem("seperator");
+                    seperator5.setLabel("------------------Record Assertions------------------");
+                    seperator5.setParent(cbColour);
+                    seperator5.setDisabled(true);
+                }
+            }
         }
     }
 }

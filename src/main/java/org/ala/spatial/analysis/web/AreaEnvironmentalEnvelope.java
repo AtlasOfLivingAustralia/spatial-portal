@@ -67,7 +67,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     private List<String> selectedLayers;
     private List<String> selectedLayersUrl;
     private Map<String, SPLFilter> selectedSPLFilterLayers;
-    private String pid = "";
     private MapComposer mc;
     LayersUtil layersUtil;
     Button filter_done;
@@ -99,9 +98,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         selectedLayersUrl = new Vector<String>();
         selectedSPLFilterLayers = new Hashtable<String, SPLFilter>();
 
-        // init the session on the server and get a pid (process_id)
-        pid = getInfo("/filtering/init");
-
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
     }
 
@@ -110,15 +106,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             return activeAreaSize;
         } else {
             return null;
-        }
-    }
-
-    public String getPid() {
-        if (selectedLayers.size() > 0) {
-            //TODO: 'apply' only if required  //applyFilter(true);
-            return pid;
-        } else {
-            return "";
         }
     }
 
@@ -315,17 +302,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
         label = selectedLayers.get(idx);
 
-        StringBuffer sbProcessUrl = new StringBuffer();
-        sbProcessUrl.append("/filtering/apply4");
-        sbProcessUrl.append("/pid/" + pid);
-        sbProcessUrl.append("/layers/none");
-        sbProcessUrl.append("/types/none");
-        sbProcessUrl.append("/val1s/none");
-        sbProcessUrl.append("/val2s/none");
-        sbProcessUrl.append("/depth/" + lbSelLayers.getItemCount());
-
-        getInfo(sbProcessUrl.toString());
-
         //not executing, echo
         //mc.removeLayer(getSPLFilter(label).layer.display_name);
         Events.echoEvent("removeLayer", this, getSPLFilter(label).layer.display_name);
@@ -363,17 +339,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         int idx = li.getIndex();
 
         label = selectedLayers.get(idx);
-
-        StringBuffer sbProcessUrl = new StringBuffer();
-        sbProcessUrl.append("/filtering/apply4");
-        sbProcessUrl.append("/pid/" + pid);
-        sbProcessUrl.append("/layers/none");
-        sbProcessUrl.append("/types/none");
-        sbProcessUrl.append("/val1s/none");
-        sbProcessUrl.append("/val2s/none");
-        sbProcessUrl.append("/depth/" + lbSelLayers.getItemCount());
-
-        getInfo(sbProcessUrl.toString());
 
         //not executing, echo
         //mc.removeLayer(getSPLFilter(label).layer.display_name);
@@ -518,7 +483,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         int mincursor = (int) ((popup_filter.minimum_value - popup_filter.minimum_initial)
                 / (range) * 100);
 
-        doApplyFilter(pid, getSPLFilter(layername).layer.display_name, layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), false);
+        doApplyFilter(getSPLFilter(layername).layer.display_name, layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), false);
 
         popup_slider_min.setCurpos(mincursor);
         popup_slider_max.setCurpos(maxcursor);
@@ -550,7 +515,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         int mincursor = (int) ((popup_filter.minimum_value - popup_filter.minimum_initial)
                 / (range) * 100);
 
-        doApplyFilter(pid, getSPLFilter(layername).layer.display_name, layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), false);
+        doApplyFilter(getSPLFilter(layername).layer.display_name, layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), false);
 
         popup_slider_min.setCurpos(mincursor);
         popup_slider_max.setCurpos(maxcursor);
@@ -559,28 +524,28 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     private void serverFilter(boolean commit) {
-        doApplyFilter(pid, popup_filter.layer.display_name, popup_filter.layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), commit);
+        doApplyFilter(popup_filter.layer.display_name, popup_filter.layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), commit);
     }
 
-    private void doApplyFilter(String pid, String layerdisplayname, String layername, String type, String val1, String val2, boolean commit) {
+    private void doApplyFilter(String layerdisplayname, String layername, String type, String val1, String val2, boolean commit) {
         try {
-            String urlPart = "";
-            if (commit) {
-                urlPart += "/filtering/apply4";
-            } else {
-                urlPart += "/filtering/apply3";
-            }
-            urlPart += "/pid/" + URLEncoder.encode(pid, "UTF-8");
-            urlPart += "/layers/" + URLEncoder.encode(layername, "UTF-8");
-            urlPart += "/types/" + URLEncoder.encode(type, "UTF-8");
-            urlPart += "/val1s/" + URLEncoder.encode(val1, "UTF-8");
-            urlPart += "/val2s/" + URLEncoder.encode(val2, "UTF-8");
-            urlPart += "/depth/" + lbSelLayers.getItemCount();
-
-            String imagefilepath = getInfo(urlPart);
-            MapLayer ml = loadMap(imagefilepath, LAYER_PREFIX + layerdisplayname);
-
-            selectedLayersUrl.set(lbSelLayers.getItemCount() - 1, imagefilepath);
+//            String urlPart = "";
+//            if (commit) {
+//                urlPart += "/filtering/apply4";
+//            } else {
+//                urlPart += "/filtering/apply3";
+//            }
+//            urlPart += "/pid/" + URLEncoder.encode(pid, "UTF-8");
+//            urlPart += "/layers/" + URLEncoder.encode(layername, "UTF-8");
+//            urlPart += "/types/" + URLEncoder.encode(type, "UTF-8");
+//            urlPart += "/val1s/" + URLEncoder.encode(val1, "UTF-8");
+//            urlPart += "/val2s/" + URLEncoder.encode(val2, "UTF-8");
+//            urlPart += "/depth/" + lbSelLayers.getItemCount();
+//
+//            String imagefilepath = getInfo(urlPart);
+//            MapLayer ml = loadMap(imagefilepath, LAYER_PREFIX + layerdisplayname);
+//
+//            selectedLayersUrl.set(lbSelLayers.getItemCount() - 1, imagefilepath);
 
         } catch (Exception e) {
             //TODO: error message
@@ -594,8 +559,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         applyFilterEvented();
 
         try {
-            String urlPart = "/filtering/merge";
-            urlPart += "/pid/" + URLEncoder.encode(pid, "UTF-8");
+            String urlPart = "/ws/envelope";
 
             String[] imagefilepath = getInfo(urlPart).split("\n");
 
@@ -628,7 +592,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             getMapComposer().setAttribute("mappolygonlayer", sb.toString());
 
             try {
-                final_wkt = getWkt(pid);
+//                final_wkt = getWkt(pid);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -687,7 +651,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             if (lbSelLayers.getItemCount() > 0) {
 
                 java.util.Map args = new java.util.HashMap();
-                args.put("pid", pid);
+//                args.put("pid", pid);
                 Window win = (Window) Executions.createComponents(
                         "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
                 win.doModal();
@@ -817,7 +781,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     private MapLayer loadMap(String filename, String layername, boolean final_layer) {
         //String label = "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount();
         //label = selectedLayers.get(selectedLayers.size() - 1);
-        String uri = CommonData.satServer + "/output/filtering/" + pid + "/" + filename;
+        String uri = null;//CommonData.satServer + "/output/filtering/" + pid + "/" + filename;
         float opacity = Float.parseFloat("0.75");
 
         List<Double> bbox = new ArrayList<Double>();
@@ -830,15 +794,16 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         //bbox.add(17143201.58216413);
         //bbox.add(-1006021.0627551343);
 
-        MapLayer ml = mc.addImageLayer(pid, layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
-        if(final_layer) {
-            ml.setWKT(final_wkt);
-            ml.setData("envelope", pid);
-            ml.setData("area", activeAreaSize);
-            ml.setData("facets", getFacets());
-        }
+//        MapLayer ml = mc.addImageLayer(pid, layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
+//        if(final_layer) {
+//            ml.setWKT(final_wkt);
+//            ml.setData("envelope", pid);
+//            ml.setData("area", activeAreaSize);
+//            ml.setData("facets", getFacets());
+//        }
 
-        return ml;
+//        return ml;
+        return null;
 
     }
 

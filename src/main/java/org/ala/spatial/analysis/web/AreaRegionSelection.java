@@ -67,14 +67,14 @@ public class AreaRegionSelection extends AreaToolComposer {
             logger.info(label + " | " + url);
             mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, url, 0.6f, /*metadata url*/ null,
                     null, LayerUtilities.WKT, null, null);
-            if(mapLayer == null) {
+            if (mapLayer == null) {
                 return;
             }
             mapLayer.setWKT(Util.readUrl(CommonData.layersServer + link.replace("/geojson/", "/wkt/")));
             mapLayer.setPolygonLayer(true);
         } else {
             mapLayer = getMapComposer().addGeoJSON(label, CommonData.layersServer + link);
-            if(mapLayer == null) {
+            if (mapLayer == null) {
                 return;
             }
         }
@@ -84,7 +84,7 @@ public class AreaRegionSelection extends AreaToolComposer {
         boolean point = false;
         if (mapLayer.getWKT().startsWith("POINT")) {
             point = true;
-            String coords = mapLayer.getWKT().replace("POINT(", "").replace(")","");
+            String coords = mapLayer.getWKT().replace("POINT(", "").replace(")", "");
 
             double radius = dRadius.getValue() * 1000.0;
 
@@ -106,7 +106,7 @@ public class AreaRegionSelection extends AreaToolComposer {
             }
             try {
                 double[][] bb = null;
-                if(point) {
+                if (point) {
                     bb = SimpleShapeFile.parseWKT(mapLayer.getWKT()).getBoundingBox();
                 } else {
                     bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
@@ -121,10 +121,10 @@ public class AreaRegionSelection extends AreaToolComposer {
                 System.out.println("failed to parse: " + mapLayer.getWKT());
                 e.printStackTrace();
             }
-            md.setMoreInfo(CommonData.layersServer + "/layers/" + spid);
+            md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
 
             Facet facet = null;
-            if(!point) {
+            if (!point) {
                 facet = Util.getFacetForObject(link.substring(link.lastIndexOf('/') + 1), label);
             }
             if (facet != null) {

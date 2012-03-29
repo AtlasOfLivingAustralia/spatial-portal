@@ -105,8 +105,8 @@ public class ContextualLayerListComposer extends UtilityComposer {
 //                        stn = new SimpleTreeNode(jo, classNodes);
 //                    }
                     stn = new SimpleTreeNode(jo, empty);
-                    String c1 = jo.containsKey("classification1") ? jo.getString("classification1"): "";
-                    String c2 = jo.containsKey("classification2") ? jo.getString("classification2"): "";
+                    String c1 = jo.containsKey("classification1") ? jo.getString("classification1") : "";
+                    String c2 = jo.containsKey("classification2") ? jo.getString("classification2") : "";
                     addToMap(htCat1, htCat2, c1, c2, stn);
                 }
             }
@@ -268,7 +268,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                         public void onEvent(Event event) throws Exception {
                             JSONObject jo = JSONObject.fromObject(event.getTarget().getParent().getParent().getAttribute("lyr"));
                             String s = jo.getString("id");
-                            String metadata = CommonData.layersServer + "/layers/" + s;
+                            String metadata = CommonData.layersServer + "/layers/view/more/" + s;
                             mc.activateLink(metadata, "Metadata", false);
                         }
                     });
@@ -344,7 +344,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                             JSONObject joLayer = JSONObject.fromObject(tree.getSelectedItem().getTreerow().getAttribute("lyr"));
                             if (!joLayer.getString("type").contentEquals("class")) {
 
-                                String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.layersServer + "/layers/view/more/" + joLayer.getString("uid");
 
                                 initALC();
                                 contextualLayerSelection.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
@@ -364,7 +364,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                                 //Filtered requests don't work on
                                 displaypath = displaypath.replace("gwc/service/", "");
                                 // Messagebox.show(displaypath);
-                                String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("id");
+                                String metadata = CommonData.layersServer + "/layers/view/more/" + joLayer.getString("id");
                                 initALC();
                                 contextualLayerSelection.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
 
@@ -392,7 +392,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                             Treecell tc = (Treecell) event.getTarget();
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
 
-                            String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("id");
+                            String metadata = CommonData.layersServer + "/layers/view/more/" + joLayer.getString("id");
 
                             mc.activateLink(metadata, "Metadata", false);
 

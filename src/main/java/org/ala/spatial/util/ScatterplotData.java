@@ -49,6 +49,8 @@ public class ScatterplotData implements Serializable {
     double[][] backgroundData;
     int missingCount;
     LegendObject legend;
+    public double[][] gridData;
+    public double[][] gridCutoffs;
 
     public ScatterplotData() {
         enabled = false;

@@ -74,23 +74,23 @@ public class ContextualLayerSelection extends AreaToolComposer {
             JSONObject jo = (JSONObject) autoCompleteLayers.getSelectedItem().getValue();
             String metadata = "";
 
-            metadata = CommonData.layersServer + "/layers/" + jo.getString("id");
+            metadata = CommonData.layersServer + "/layers/view/more/" + jo.getString("id");
 
             setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata,
                     jo.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
         } else {
-            
+
             // if the autocomplete has been type, but before selecting an option,
             // the focus is lost (eg, clicking on the next button or on tree)
             // it generates an error. This should fix it. 
             if (llc.tree.getSelectedItem() == null) {
-                return; 
+                return;
             }
 
             JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
             if (!joLayer.getString("type").contentEquals("class")) {
 
-                String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("id");
+                String metadata = CommonData.layersServer + "/layers/view/more/" + joLayer.getString("id");
 
                 setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
                         joLayer.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
@@ -105,7 +105,7 @@ public class ContextualLayerSelection extends AreaToolComposer {
                 //Filtered requests don't work on
                 displaypath = displaypath.replace("gwc/service/", "");
                 // Messagebox.show(displaypath);
-                String metadata = CommonData.layersServer + "/layers/" + joLayer.getString("id");
+                String metadata = CommonData.layersServer + "/layers/view/more/" + joLayer.getString("id");
 
                 setLayer(layer + " - " + classValue, displaypath, metadata,
                         joLayer.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);

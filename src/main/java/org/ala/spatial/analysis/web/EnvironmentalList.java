@@ -37,7 +37,7 @@ public class EnvironmentalList extends Listbox {
         this.includeAnalysisLayers = includeAnalysisLayers;
         this.disableContextualLayers = disableContextualLayers;
         this.singleDomain = singleDomain;
-        
+
         try {
             setupListEntries();
 
@@ -49,104 +49,106 @@ public class EnvironmentalList extends Listbox {
     }
 
     void setupListEntries() {
-            listEntries = new ArrayList<ListEntry>();
-            JSONArray ja = CommonData.getLayerListJSONArray();
-            for(int i=0;i<ja.size();i++) {
-                JSONObject jo = ja.getJSONObject(i);
-                listEntries.add(
-                        new ListEntry(jo.getString("name"),
-                        (jo.containsKey("displayname") ? jo.getString("displayname") : jo.getString("name")),
-                        (jo.containsKey("classification1") ? jo.getString("classification1") : ""),
-                        (jo.containsKey("classification2") ? jo.getString("classification2") : ""),
-                        (jo.containsKey("type") ? jo.getString("type") : ""),
-                         (jo.containsKey("domain") ? jo.getString("domain") : ""),
-                        jo));
+        listEntries = new ArrayList<ListEntry>();
+        JSONArray ja = CommonData.getLayerListJSONArray();
+        for (int i = 0; i < ja.size(); i++) {
+            JSONObject jo = ja.getJSONObject(i);
+            listEntries.add(
+                    new ListEntry(jo.getString("name"),
+                    (jo.containsKey("displayname") ? jo.getString("displayname") : jo.getString("name")),
+                    (jo.containsKey("classification1") ? jo.getString("classification1") : ""),
+                    (jo.containsKey("classification2") ? jo.getString("classification2") : ""),
+                    (jo.containsKey("type") ? jo.getString("type") : ""),
+                    (jo.containsKey("domain") ? jo.getString("domain") : ""),
+                    jo));
         }
 
-                if(includeAnalysisLayers) {         //add
-                    for(MapLayer ml : mapComposer.getAnalysisLayers()) {
-                        ListEntry le = null;
-                        if(ml.getSubType() == LayerUtilities.ALOC) {
-                            le = new ListEntry((String)ml.getData("pid"), ml.getDisplayName(), "Analysis", "Classification", "Contextual", null, null);
-                        } else if(ml.getSubType() == LayerUtilities.MAXENT) {
-                            le = new ListEntry((String)ml.getData("pid"), ml.getDisplayName(), "Analysis", "Prediction", "Environmental", null, null);
-                        } else if(ml.getSubType() == LayerUtilities.GDM) {
-                            le = new ListEntry((String)ml.getData("pid"), ml.getDisplayName(), "Analysis", "GDM", "Environmental", null, null);
-                        } else if(ml.getSubType() == LayerUtilities.ODENSITY) {
-                            le = new ListEntry((String)ml.getData("pid"), ml.getDisplayName(), "Analysis", "Occurrence Density", "Environmental" ,null, null);
-                        } else if(ml.getSubType() == LayerUtilities.SRICHNESS) {
-                            le = new ListEntry((String)ml.getData("pid"), ml.getDisplayName(), "Analysis", "Species Richness", "Environmental", null, null);
-                        }
-                        if(le != null) {
-                            listEntries.add(le);
-                        }
-                    }
+        if (includeAnalysisLayers) {         //add
+            for (MapLayer ml : mapComposer.getAnalysisLayers()) {
+                ListEntry le = null;
+                if (ml.getSubType() == LayerUtilities.ALOC) {
+                    le = new ListEntry((String) ml.getData("pid"), ml.getDisplayName(), "Analysis", "Classification", "Contextual", null, null);
+                } else if (ml.getSubType() == LayerUtilities.MAXENT) {
+                    le = new ListEntry((String) ml.getData("pid"), ml.getDisplayName(), "Analysis", "Prediction", "Environmental", null, null);
+                } else if (ml.getSubType() == LayerUtilities.GDM) {
+                    le = new ListEntry((String) ml.getData("pid"), ml.getDisplayName(), "Analysis", "GDM", "Environmental", null, null);
+                } else if (ml.getSubType() == LayerUtilities.ODENSITY) {
+                    le = new ListEntry((String) ml.getData("pid"), ml.getDisplayName(), "Analysis", "Occurrence Density", "Environmental", null, null);
+                } else if (ml.getSubType() == LayerUtilities.SRICHNESS) {
+                    le = new ListEntry((String) ml.getData("pid"), ml.getDisplayName(), "Analysis", "Species Richness", "Environmental", null, null);
+                }
+                if (le != null) {
+                    listEntries.add(le);
+                }
             }
+        }
     }
 
     public void setupList() {
         try {
-                setItemRenderer(new ListitemRenderer() {
+            setItemRenderer(new ListitemRenderer() {
 
-                    @Override
-                    public void render(Listitem li, Object data) {
-                        new Listcell(((ListEntry) data).catagoryNames()).setParent(li);
-                        new Listcell(((ListEntry) data).displayname).setParent(li);
+                @Override
+                public void render(Listitem li, Object data) {
+                    new Listcell(((ListEntry) data).catagoryNames()).setParent(li);
+                    new Listcell(((ListEntry) data).displayname).setParent(li);
 
-                        Listcell lc = new Listcell();
+                    Listcell lc = new Listcell();
+                    lc.setParent(li);
+                    lc.setValue(((ListEntry) data));
+
+                    String type = ((ListEntry) data).type;
+                    if (disableContextualLayers && type.equalsIgnoreCase("contextual")) {
+                        li.setDisabled(true);
+                    }
+
+                    Image img = new Image();
+                    img.setSrc("/img/information.png");
+
+                    img.addEventListener("onClick", new EventListener() {
+
+                        @Override
+                        public void onEvent(Event event) throws Exception {
+                            //re-toggle the checked flag (issue 572)
+                            Listitem li = (Listitem) event.getTarget().getParent().getParent();
+                            li.getListbox().toggleItemSelection(li);
+                            EnvironmentalList el = (EnvironmentalList) li.getParent();
+                            el.updateDistances();
+
+                            String s = ((ListEntry) ((Listcell) event.getTarget().getParent()).getValue()).name;
+                            String metadata = CommonData.layersServer + "/layer/" + s;
+                            mapComposer.activateLink(metadata, "Metadata", false);
+
+                        }
+                    });
+                    img.setParent(lc);
+
+                    //String type = ((ListEntry) data).type;
+
+                    if (type.equalsIgnoreCase("environmental")) {
+                        float value = ((ListEntry) data).value;
+                        lc = new Listcell(" ");
+                        if (threasholds[0] > value) {
+                            lc.setSclass("lcRed");//setStyle("background: #bb2222;");
+                        } else if (threasholds[1] > value) {
+                            lc.setSclass("lcYellow");//lc.setStyle("background: #ffff22;");
+                        } else if (1 >= value) {
+                            lc.setSclass("lcGreen");//lc.setStyle("background: #22aa22;");
+                        } else {
+                            lc.setSclass("lcWhite");//setStyle("background: #ffffff;");
+                        }
                         lc.setParent(li);
-                        lc.setValue(((ListEntry) data));
-                        
-                        String type = ((ListEntry) data).type;
-                        if (disableContextualLayers && type.equalsIgnoreCase("contextual")) {
-                            li.setDisabled(true);
-                        }   
-                        
-                        Image img = new Image();
-                        img.setSrc("/img/information.png");
+                    }
+                }
 
-                        img.addEventListener("onClick", new EventListener() {
+                ;
+            });
 
-                            @Override
-                            public void onEvent(Event event) throws Exception {
-                                //re-toggle the checked flag (issue 572)
-                                Listitem li = (Listitem) event.getTarget().getParent().getParent();
-                                li.getListbox().toggleItemSelection(li);
-                                EnvironmentalList el = (EnvironmentalList) li.getParent();
-                                el.updateDistances();
+            listModel = new SimpleListModel(listEntries);
+            setModel(listModel);
 
-                                String s = ((ListEntry) ((Listcell) event.getTarget().getParent()).getValue()).name;
-                                String metadata = CommonData.layersServer + "/layer/" + s;
-                                mapComposer.activateLink(metadata, "Metadata", false);
+            renderAll();
 
-                            }
-                        });
-                        img.setParent(lc);
-                        
-                        //String type = ((ListEntry) data).type;
-                            
-                        if (type.equalsIgnoreCase("environmental")){
-                            float value = ((ListEntry) data).value;
-                            lc = new Listcell(" ");
-                            if (threasholds[0] > value) {
-                                lc.setSclass("lcRed");//setStyle("background: #bb2222;");
-                            } else if (threasholds[1] > value) {
-                                lc.setSclass("lcYellow");//lc.setStyle("background: #ffff22;");
-                            } else if (1 >= value) {
-                                lc.setSclass("lcGreen");//lc.setStyle("background: #22aa22;");
-                            } else {
-                                lc.setSclass("lcWhite");//setStyle("background: #ffffff;");
-                            }
-                            lc.setParent(li);
-                        }                        
-                    };
-                });
-
-                listModel = new SimpleListModel(listEntries);
-                setModel(listModel);
-
-                renderAll();
-            
         } catch (Exception e) {
             System.out.println("error setting up env list");
             e.printStackTrace(System.out);
@@ -160,28 +162,40 @@ public class EnvironmentalList extends Listbox {
     }
 
     public void updateDistances() {
-        if(listEntries == null) {
+        if (listEntries == null) {
             return;
         }
 
+        String fieldId;
+
         for (ListEntry le : listEntries) {
-            le.value = 2;
+            //set to 2 for contextual and 'no association distance'
+            if (le.type.equalsIgnoreCase("contextual")
+                    || le.layerObject == null
+                    || !le.layerObject.containsKey("fields")
+                    || (fieldId = getFieldId(le.layerObject)) == null
+                    || CommonData.getDistancesMap().get(fieldId) == null) {
+                le.value = 2;
+            } else {
+                le.value = 1;
+            }
         }
 
-        String fieldId;
         for (Object o : getSelectedItems()) {
+
             ListEntry l = listEntries.get(((Listitem) o).getIndex());
-            if(l.type.equalsIgnoreCase("environmental")
-                    && l.layerObject != null && l.layerObject.get("fields") != null
+            if (l.type.equalsIgnoreCase("environmental")
+                    && l.layerObject != null && l.layerObject.containsKey("fields")
                     && (fieldId = getFieldId(l.layerObject)) != null
                     && CommonData.getDistancesMap().get(fieldId) != null) {
                 for (ListEntry le : listEntries) {
-                    if(le.layerObject != null && le.layerObject.get("fields") != null) {
+                    if (le.layerObject != null && le.layerObject.containsKey("fields")
+                            && isSameDomain(getDomain(le.layerObject), getDomain(l.layerObject))) {
                         String fieldId2 = getFieldId(le.layerObject);
 
                         Double d = CommonData.getDistancesMap().get(fieldId).get(fieldId2);
-                        if(d != null) {
-                            le.value = (float)Math.min(le.value, d.doubleValue());
+                        if (d != null) {
+                            le.value = (float) Math.min(le.value, d.doubleValue());
                         }
                     }
                 }
@@ -192,7 +206,7 @@ public class EnvironmentalList extends Listbox {
             float value = listEntries.get(i).value;
             String type = listEntries.get(i).type;
             Listcell lc = (Listcell) (getItemAtIndex(i).getLastChild());
-            if (type.equalsIgnoreCase("environmental")){
+            if (type.equalsIgnoreCase("environmental")) {
                 if (!getSelectedItems().isEmpty() && threasholds[0] > value) {
                     lc.setSclass("lcRed");//setStyle("background: #bb2222;");
                 } else if (!getSelectedItems().isEmpty() && threasholds[1] > value) {
@@ -204,15 +218,73 @@ public class EnvironmentalList extends Listbox {
                 }
             }
         }
+
+        forceDomain();
+    }
+
+    void forceDomain() {
+        String[] firstDomain = getFirstDomain();
+        String[] thisDomain;
+
+        if (!singleDomain || firstDomain == null) {
+            return;
+        }
+
+        for (int i = 0; i < listEntries.size(); i++) {
+            ListEntry l = listEntries.get(i);
+            if (l.layerObject != null
+                    && (thisDomain = getDomain(l.layerObject)) != null) {
+                boolean match = false;
+                for (String d1 : firstDomain) {
+                    for (String d2 : thisDomain) {
+                        if (d1.equalsIgnoreCase(d2)) {
+                            match = true;
+                        }
+                    }
+                }
+                getItemAtIndex(i).setDisabled(!match);
+                if (!match && getItemAtIndex(i).isSelected()) {
+                    toggleItemSelection(getItemAtIndex(i));
+                }
+            }
+        }
+    }
+
+    String[] getFirstDomain() {
+        String[] domain = null;
+
+        for (Object o : getSelectedItems()) {
+            ListEntry l = listEntries.get(((Listitem) o).getIndex());
+            if (l.type.equalsIgnoreCase("environmental")
+                    && l.layerObject != null) {
+                domain = getDomain(l.layerObject);
+                if (domain != null) {
+                    break;
+                }
+            }
+        }
+
+        return domain;
+    }
+
+    String[] getDomain(JSONObject layerObject) {
+        if (!layerObject.containsKey("domain")) {
+            return null;
+        }
+        String[] d = layerObject.getString("domain").split(",");
+        for (int i = 0; i < d.length; i++) {
+            d[i] = d[i].trim();
+        }
+        return d;
     }
 
     String getFieldId(JSONObject layerObject) {
         String fieldId = null;
         try {
-            JSONArray ja = (JSONArray)layerObject.get("fields");
-            for(int i=0;i<ja.size();i++) {
-                JSONObject jo = (JSONObject)ja.get(i);
-                if(true) { //jo.getString("analysis").equalsIgnoreCase("true")) {
+            JSONArray ja = (JSONArray) layerObject.get("fields");
+            for (int i = 0; i < ja.size(); i++) {
+                JSONObject jo = (JSONObject) ja.get(i);
+                if (true) { //jo.getString("analysis").equalsIgnoreCase("true")) {
                     fieldId = jo.getString("id");
                     break;
                 }
@@ -241,33 +313,47 @@ public class EnvironmentalList extends Listbox {
         return selected;
     }
 
-    void selectLayers(String[] layers) {
-        //HashSet<Listitem> items = new HashSet<Listitem>();
+    public void selectLayers(String[] layers) {
+        String[] firstDomain = getFirstDomain();
+
         for (int i = 0; i < listEntries.size(); i++) {
             for (int j = 0; j < layers.length; j++) {
                 if (listEntries.get(i).displayname.equalsIgnoreCase(layers[j])
                         || listEntries.get(i).name.equalsIgnoreCase(layers[j])) {
-//                    items.add(getItemAtIndex(i));
-                    if(!getItemAtIndex(i).isSelected()) {
+                    if (!getItemAtIndex(i).isSelected() && isSameDomain(firstDomain, getDomain(listEntries.get(i).layerObject))) {
                         toggleItemSelection(getItemAtIndex(i));
                     }
                     break;
                 }
             }
         }
-//        if (items.size() > 0) {
-//            setSelectedItems(items);
-//        }
+
         updateDistances();
     }
 
     @Override
     public void clearSelection() {
         updateDistances();
-        super.clearSelection();        
+        super.clearSelection();
     }
 
     public boolean getIncludeAnalysisLayers() {
         return includeAnalysisLayers;
+    }
+
+    private boolean isSameDomain(String[] domain1, String[] domain2) {
+        if (domain1 == null || domain2 == null) {
+            return true;
+        }
+
+        for (String s1 : domain1) {
+            for (String s2 : domain2) {
+                if (s1.equalsIgnoreCase(s2)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

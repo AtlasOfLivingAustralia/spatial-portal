@@ -59,7 +59,6 @@ import org.jfree.chart.renderer.LookupPaintScale;
 import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.chart.renderer.xy.XYShapeRenderer;
-import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.xy.DefaultXYZDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleAnchor;
@@ -351,7 +350,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             refreshMapLayer();
 
             Facet f = getFacetIn();
-            if(f != null) {
+            if (f != null) {
                 mapLayer.setHighlight(f.toString());
             } else {
                 mapLayer.setHighlight(null);
@@ -397,7 +396,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 && data.getLayer1() != null && data.getLayer1().length() > 0
                 && data.getLayer2() != null && data.getLayer2().length() > 0
                 && xyzDataset != null) {
-            if(data != null && cbHighlightArea.getItemCount() == 0) {
+            if (data != null && cbHighlightArea.getItemCount() == 0) {
                 updateCbHighlightArea();
             }
 
@@ -576,10 +575,10 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 Facet f = getFacetIn();
 
                 int count = 0;
-                if(f != null) {
+                if (f != null) {
                     Query q = data.getQuery().newFacet(f, false);
                     count = q.getOccurrenceCount();
-                } 
+                }
                 updateCount(String.valueOf(count));
             }
         } catch (Exception e) {
@@ -698,7 +697,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
     public void onClick$addSelectedRecords(Event event) {
         Facet f = getFacetIn();
-        if(f != null) {
+        if (f != null) {
             addUserLayer(data.getQuery().newFacet(getFacetIn(), true), "IN " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
         }
     }
@@ -739,21 +738,28 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         //make output csv; id, series, layer1, layer2, highlight
         StringBuilder sb = new StringBuilder();
         sb.append("id,series," + data.getLayer1Name() + "," + data.getLayer2Name());
+        if (data.gridData != null) {
+            sb.append(",environmental envelope area (sq km)");
+        }
         String[] series = data.getSeries();
         String[] ids = data.getIds();
-        //double [][] points = data.getPoints();
         double[][] d = data.getData();
-//        SimpleRegion r = null;
-//        if(data.getHighlightWkt() != null) {
-//            sb.append(",area highlight");
-//            r = SimpleShapeFile.parseWKT(data.getHighlightWkt());
-//        }
         for (int i = 0; i < series.length; i++) {
             sb.append("\n\"").append(ids[i].replace("\"", "\"\"")).append("\",\"").append(series[i].replace("\"", "\"\"")).append("\",").append(String.valueOf(d[i][0])).append(",").append(String.valueOf(d[i][1]));
-//            if(r != null) {
-//                String highlight = r.isWithin(points[i][0],points[i][1])?"true":"false";
-//                sb.append(",").append(highlight).append(",")
-//            }
+            if (data.gridData != null) {
+                int pos1 = java.util.Arrays.binarySearch(data.gridCutoffs[0], d[i][0]);
+                if (pos1 < 0) {
+                    pos1 = (pos1 * -1) - 1;
+                }
+                int pos2 = java.util.Arrays.binarySearch(data.gridCutoffs[1], d[i][1]);
+                if (pos2 < 0) {
+                    pos2 = (pos2 * -1) - 1;
+                }
+                if (pos1 >= 0 && pos1 < data.gridData.length
+                        && pos2 >= 0 && pos2 < data.gridData[pos1].length) {
+                    sb.append(",").append(data.gridData[pos1][pos2]);
+                }
+            }
         }
 
         Filedownload.save(sb.toString(), "text/plain", "scatterplot.csv");
@@ -796,7 +802,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             refreshMapLayer();
 
             Facet f = getFacetIn();
-            if(f == null) {
+            if (f == null) {
                 mapLayer.setHighlight(null);
             } else {
                 mapLayer.setHighlight(f.toString());
@@ -823,17 +829,17 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         if (prevBlockPlot == null || !prevBlockPlot.equals(thisBlockPlot)) {
             prevBlockPlot = thisBlockPlot;
             //get data
-            double[][] data = null;
+            double[][] d = null;
             double min = Double.MAX_VALUE, max = Double.MAX_VALUE * -1;
             int countNonZero = 0;
             try {
+                int divisions = 20;
                 StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(CommonData.satServer).append("/ws/sampling/chart?basis=layer&filter=lsid:none;area:none");
+                sbProcessUrl.append(CommonData.satServer).append("/ws/chart?&divisions=").append(divisions);
+                sbProcessUrl.append("&wkt=").append(URLEncoder.encode(data.getFilterSa().getWkt(), "UTF-8"));
 
                 sbProcessUrl.append("&xaxis=").append(URLEncoder.encode(env1, "UTF-8")).append(",").append(min1).append(",").append(max1);
                 sbProcessUrl.append("&yaxis=").append(URLEncoder.encode(env2, "UTF-8")).append(",").append(min2).append(",").append(max2);
-
-                //TODO: add the filter region
 
                 System.out.println(sbProcessUrl.toString());
 
@@ -844,21 +850,31 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 int result = client.executeMethod(get);
                 String slist = get.getResponseBodyAsString();
 
+                //get linear cutoffs
+                double[][] cutoffs = new double[2][divisions];
+                for (int j = 0; j < divisions; j++) {
+                    cutoffs[0][j] = (float) (min1 + (max1 - min1) * ((j + 1) / (float) divisions));
+                    cutoffs[1][j] = (float) (min2 + (max2 - min2) * ((j + 1) / (float) divisions));
+                }
+                cutoffs[0][divisions - 1] = max1;  //set max
+                cutoffs[1][divisions - 1] = max2;  //set max
+                data.gridCutoffs = cutoffs;
+
+                d = new double[divisions][divisions];
+                data.gridData = d;
+
                 String[] rows = slist.split("\n");
                 for (int i = 2; i < rows.length; i++) {
                     String[] column = rows[i].split(",");
-                    if (data == null) {
-                        data = new double[rows.length - 2][column.length - 1];
-                    }
                     for (int j = 1; j < column.length; j++) {
-                        data[i - 2][j - 1] = Double.parseDouble(column[j]);
-                        if (data[i - 2][j - 1] > 0) {
+                        d[i - 2][j - 1] = Double.parseDouble(column[j]);
+                        if (d[i - 2][j - 1] > 0) {
                             countNonZero++;
-                            if (data[i - 2][j - 1] < min) {
-                                min = data[i - 2][j - 1];
+                            if (d[i - 2][j - 1] < min) {
+                                min = d[i - 2][j - 1];
                             }
-                            if (data[i - 2][j - 1] > max) {
-                                max = data[i - 2][j - 1];
+                            if (d[i - 2][j - 1] > max) {
+                                max = d[i - 2][j - 1];
                             }
                         }
                     }
@@ -868,21 +884,20 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             }
 
             double range = max - min;
-
-            double xdiv = (max1 - min1) / data.length;
-            double ydiv = (max2 - min2) / data[0].length;
+            double xdiv = (max1 - min1) / d.length;
+            double ydiv = (max2 - min2) / d[0].length;
 
             DefaultXYZDataset defaultXYZDataset = new DefaultXYZDataset();
 
             double[][] dat = new double[3][countNonZero];
             int pos = 0;
 
-            for (int i = 0; i < data.length; i++) {
-                for (int j = 0; j < data.length; j++) {
-                    if (data[i][j] > 0) {
+            for (int i = 0; i < d.length; i++) {
+                for (int j = 0; j < d.length; j++) {
+                    if (d[i][j] > 0) {
                         dat[0][pos] = min1 + i * xdiv;
                         dat[1][pos] = min2 + j * ydiv;
-                        dat[2][pos] = Math.log10(data[i][j] + 1);
+                        dat[2][pos] = Math.log10(d[i][j] + 1);
                         pos++;
                     }
                 }
@@ -949,8 +964,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 xyzDataset.addSeries(seriesNames[i], sd);
             }
         }
-        
-        if(xyzDataset.getSeriesCount() == 0) {
+
+        if (xyzDataset.getSeriesCount() == 0) {
             int i = 4;
             i++;
         }
@@ -1258,10 +1273,10 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                             series[pos / 2] = csv.get(i)[seriesColumn];
 
                             //why is this required only sometimes?
-                            String s = series[pos/2];
-                            if(s != null && s.length() > 2
-                                    && s.charAt(0) == '[' && s.charAt(s.length()-1) == ']') {
-                                series[pos/2] = s.substring(1,s.length()-1);
+                            String s = series[pos / 2];
+                            if (s != null && s.length() > 2
+                                    && s.charAt(0) == '[' && s.charAt(s.length() - 1) == ']') {
+                                series[pos / 2] = s.substring(1, s.length() - 1);
                             }
                         }
                         try {
@@ -1409,7 +1424,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         double size = data.size + 10;
         double delta = size / 2;
         renderer.setSeriesShape(0, new Ellipse2D.Double(-delta, -delta, size, size));
-        
+
         return renderer;
     }
 
@@ -1556,9 +1571,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         String e1 = CommonData.getLayerFacetName(data.getLayer1());
         String e2 = CommonData.getLayerFacetName(data.getLayer2());
 
-         if (chkSelectMissingRecords.isChecked() && prevSelection == null) {
-             fq = "-(" + e1 + ":[* TO *] AND " + e2 + ":[* TO *])";
-         } else if(prevSelection != null) {
+        if (chkSelectMissingRecords.isChecked() && prevSelection == null) {
+            fq = "-(" + e1 + ":[* TO *] AND " + e2 + ":[* TO *])";
+        } else if (prevSelection != null) {
             double x1 = prevSelection[0];
             double x2 = prevSelection[1];
             double y1 = prevSelection[2];
@@ -1580,18 +1595,18 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     private Facet getFacetOut() {
         String fq = "*:*";
         String e1 = CommonData.getLayerFacetName(data.getLayer1());
-            String e2 = CommonData.getLayerFacetName(data.getLayer2());
+        String e2 = CommonData.getLayerFacetName(data.getLayer2());
         if (chkSelectMissingRecords.isChecked() && prevSelection == null) {
-             fq = e1 + ":[* TO *] AND " + e2 + ":[* TO *]";
-        } else if(prevSelection !=  null) {
+            fq = e1 + ":[* TO *] AND " + e2 + ":[* TO *]";
+        } else if (prevSelection != null) {
             double x1 = prevSelection[0];
             double x2 = prevSelection[1];
             double y1 = prevSelection[2];
             double y2 = prevSelection[3];
 
             Facet f1 = new Facet(e1, y1, y2, true);
-            Facet f2 = new Facet(e2, x1, x2, true);            
-            if (chkSelectMissingRecords.isChecked()) {                
+            Facet f2 = new Facet(e2, x1, x2, true);
+            if (chkSelectMissingRecords.isChecked()) {
                 fq = "-(" + f1.toString() + " AND " + f2.toString() + ") AND " + e1 + ":[* TO *] AND " + e2 + ":[* TO *]";
             } else {
                 fq = "-(" + f1.toString() + " AND " + f2.toString() + ")";
@@ -1665,16 +1680,16 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     private void updateCbHighlightArea() {
-        for(int i=cbHighlightArea.getItemCount()-1;i>=0;i--) {
+        for (int i = cbHighlightArea.getItemCount() - 1; i >= 0; i--) {
             cbHighlightArea.removeItemAt(i);
         }
 
         boolean selectionSuccessful = false;
-        for(MapLayer ml : getMapComposer().getPolygonLayers()) {
+        for (MapLayer ml : getMapComposer().getPolygonLayers()) {
             Comboitem ci = new Comboitem(ml.getDisplayName());
             ci.setValue(ml);
             ci.setParent(cbHighlightArea);
-            if(data != null && data.getHighlightSa() != null
+            if (data != null && data.getHighlightSa() != null
                     && data.getHighlightSa().getMapLayer().getName().equals(ml.getName())) {
                 cbHighlightArea.setSelectedItem(ci);
                 selectionSuccessful = true;
@@ -1682,20 +1697,20 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         }
 
         //this may be a deleted layer or current view or au or world
-        if(!selectionSuccessful && data != null
-                && data.getHighlightSa() != null) {            
+        if (!selectionSuccessful && data != null
+                && data.getHighlightSa() != null) {
             MapLayer ml = data.getHighlightSa().getMapLayer();
-            if(ml != null) {
+            if (ml != null) {
                 Comboitem ci = new Comboitem(ml.getDisplayName() + " (DELETED LAYER)");
                 ci.setValue(ml);
                 ci.setParent(cbHighlightArea);
                 cbHighlightArea.setSelectedItem(ci);
             } else {
                 String name = "Previous area";
-                if(data.getHighlightSa().getWkt() != null) {
-                    if(data.getHighlightSa().getWkt().equals(CommonData.AUSTRALIA_WKT)) {
+                if (data.getHighlightSa().getWkt() != null) {
+                    if (data.getHighlightSa().getWkt().equals(CommonData.AUSTRALIA_WKT)) {
                         name = "Australia";
-                    } else if(data.getHighlightSa().getWkt().equals(CommonData.WORLD_WKT)) {
+                    } else if (data.getHighlightSa().getWkt().equals(CommonData.WORLD_WKT)) {
                         name = "World";
                     }
                 }
@@ -1708,9 +1723,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     public void onSelect$cbHighlightArea(Event event) {
-        if(cbHighlightArea.getSelectedItem() != null) {
-            if(cbHighlightArea.getSelectedItem().getValue() instanceof MapLayer) {
-                MapLayer ml = ((MapLayer)cbHighlightArea.getSelectedItem().getValue());
+        if (cbHighlightArea.getSelectedItem() != null) {
+            if (cbHighlightArea.getSelectedItem().getValue() instanceof MapLayer) {
+                MapLayer ml = ((MapLayer) cbHighlightArea.getSelectedItem().getValue());
                 SelectedArea sa = new SelectedArea(ml, ml.getWKT());
                 data.setHighlightSa(sa);
             } else {

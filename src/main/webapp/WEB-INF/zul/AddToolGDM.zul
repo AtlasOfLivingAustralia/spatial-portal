@@ -194,27 +194,27 @@
                             <listitem value="landcover">
                                 <listcell>Vegetation</listcell>
                                 <listcell>Land cover</listcell>
-                                <listcell value="618" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/618", "Metadata", false);'></listcell>
+                                <listcell value="618" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/more/618", "Metadata", false);'></listcell>
                             </listitem>
                             <listitem value="landuse">
                                 <listcell>Vegetation</listcell>
                                 <listcell>Land use</listcell>
-                                <listcell value="678" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/678", "Metadata", false);'></listcell>
+                                <listcell value="678" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/more/678", "Metadata", false);'></listcell>
                             </listitem>
                             <listitem value="vast">
                                 <listcell>Vegetation</listcell>
                                 <listcell>Vegetation condition</listcell>
-                                <listcell value="619" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/619", "Metadata", false);'></listcell>
+                                <listcell value="619" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/more/619", "Metadata", false);'></listcell>
                             </listitem>
                             <listitem value="native_veg">
                                 <listcell>Vegetation</listcell>
                                 <listcell>Vegetation types - native</listcell>
-                                <listcell value="617" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/617", "Metadata", false);'></listcell>
+                                <listcell value="617" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/more/617", "Metadata", false);'></listcell>
                             </listitem>
                             <listitem value="present_veg">
                                 <listcell>Vegetation</listcell>
                                 <listcell>Vegetation types - present</listcell>
-                                <listcell value="620" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/620", "Metadata", false);'></listcell>
+                                <listcell value="620" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/more/620", "Metadata", false);'></listcell>
                             </listitem>
                         </listbox>
                         <button id="btnClearSelectionCtx" label="Clear layers"  sclass="goButton" style="float:left" />

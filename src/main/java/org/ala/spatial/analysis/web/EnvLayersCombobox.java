@@ -95,9 +95,9 @@ public class EnvLayersCombobox extends Combobox {
                     String type = jo.getString("type");
                     String name = jo.getString("name");
 
-                    //if (!type.equalsIgnoreCase("environmental")) {
-                    //    continue;
-                    //}
+                    if (!type.equalsIgnoreCase("environmental")) {
+                        continue;
+                    }
 
 //                    if (!isValidLayer(jo.getString("name"))) {
 //                        continue;
@@ -121,52 +121,52 @@ public class EnvLayersCombobox extends Combobox {
                         c1 = jo.getString("classification1") + ": ";
                     }
                     myci.setDescription(c1 + c2 + type);
-                    
-                    if (!type.equalsIgnoreCase("environmental") && this.getIncludeLayers() == "EnvironmentalLayers") {
-                        myci.setDisabled(true);
+
+                    /*if (!type.equalsIgnoreCase("environmental") && this.getIncludeLayers() == "EnvironmentalLayers") {
+                    myci.setDisabled(true);
                     } else if (!type.equalsIgnoreCase("environmental") && this.getIncludeLayers() == "MixLayers" 
-                                    && !name.equalsIgnoreCase("landcover")
-                                    && !name.equalsIgnoreCase("landuse")
-                                    && !name.equalsIgnoreCase("vast")
-                                    && !name.equalsIgnoreCase("native_veg")
-                                    && !name.equalsIgnoreCase("present_veg")) {
-                                myci.setDisabled(true);
+                    && !name.equalsIgnoreCase("landcover")
+                    && !name.equalsIgnoreCase("landuse")
+                    && !name.equalsIgnoreCase("vast")
+                    && !name.equalsIgnoreCase("native_veg")
+                    && !name.equalsIgnoreCase("present_veg")) {
+                    myci.setDisabled(true);
                     } else {
-                        myci.setDisabled(false);
-                    }
+                    myci.setDisabled(false);
+                    }*/
                     //myci.setDisabled(false);
                     myci.setValue(jo);
                 }
             }
 
-            if(includeAnalysisLayers) {
-                for(MapLayer ml : getMapComposer().getAnalysisLayers()) {
+            if (includeAnalysisLayers) {
+                for (MapLayer ml : getMapComposer().getAnalysisLayers()) {
                     String displayName = ml.getDisplayName();
                     String type = null;
                     String name = null;
                     String classification1 = null;
                     String classification2 = null;
-                    if(ml.getSubType() == LayerUtilities.ALOC) {
+                    if (ml.getSubType() == LayerUtilities.ALOC) {
                         type = "contextual";
-                        name = (String)ml.getData("pid");
+                        name = (String) ml.getData("pid");
                         classification1 = "Analysis";
                         classification2 = "Classification";
                         continue;   //no contextuals
-                    } else if(ml.getSubType() == LayerUtilities.MAXENT) {
+                    } else if (ml.getSubType() == LayerUtilities.MAXENT) {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "Prediction";
-                        name = (String)ml.getData("pid");
-                    } else if(ml.getSubType() == LayerUtilities.ODENSITY) {
+                        name = (String) ml.getData("pid");
+                    } else if (ml.getSubType() == LayerUtilities.ODENSITY) {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "Occurrence Density";
-                        name = (String)ml.getData("pid");
-                    } else if(ml.getSubType() == LayerUtilities.SRICHNESS) {
+                        name = (String) ml.getData("pid");
+                    } else if (ml.getSubType() == LayerUtilities.SRICHNESS) {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "Species Richness";
-                        name = (String)ml.getData("pid");
+                        name = (String) ml.getData("pid");
                     } else {
                         continue;
                     }
@@ -218,19 +218,17 @@ public class EnvLayersCombobox extends Combobox {
     public void setIncludeAnalysisLayers(boolean includeAnalysisLayers) {
         this.includeAnalysisLayers = includeAnalysisLayers;
     }
+
     public String getIncludeLayers() {
         return includeLayers;
     }
 
     public void setIncludeLayers(String includeLayers) {
         this.includeLayers = includeLayers;
-        System.out.println("this.includeLayers="+this.includeLayers);
+        System.out.println("this.includeLayers=" + this.includeLayers);
     }
 
     public MapComposer getMapComposer() {
-            return (MapComposer) Executions.getCurrent()
-                            .getDesktop()
-                                    .getPage("MapZul")
-                                            .getFellow("mapPortalPage");
+        return (MapComposer) Executions.getCurrent().getDesktop().getPage("MapZul").getFellow("mapPortalPage");
     }
 }

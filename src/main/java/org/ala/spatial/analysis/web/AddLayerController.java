@@ -43,83 +43,79 @@ public class AddLayerController extends AddToolComposer {
     void fixFocus() {
         System.out.println(currentStep);
         switch (currentStep) {
-            
+
             case 1:
                 selectedLayersCombobox.setFocus(true);
                 break;
-           
+
         }
     }
-    
+
     @Override
-    public void onClick$btnOk(Event event){
+    public void onClick$btnOk(Event event) {
         super.onClick$btnOk(event);
-        if (currentStep == 1){
+        if (currentStep == 1) {
             loadMap(event);
         }
     }
-    
+
     @Override
     public void loadMap(Event event) {
-         if (lbListLayers.getSelectedLayers().length > 0) {
+        if (lbListLayers.getSelectedLayers().length > 0) {
             String[] sellayers = lbListLayers.getSelectedLayers();
             int i = 0;
-                for (String s : sellayers) {
-                    i++;
-                    String uid="";
-                    String type="";
-                    String treeName="";
-                    String treePath = "";
-                    String legendurl = "";
-                    String metadata = "";
-                    JSONArray layerlist = CommonData.getLayerListJSONArray();
-                    for (int j = 0; j < layerlist.size(); j++) {
-                        JSONObject jo = layerlist.getJSONObject(j);
-                        String name = jo.getString("name");
-                        if (name.equals(s)) {
-                            uid = jo.getString("id");
-                            type = jo.getString("type");
-                            treeName = StringUtils.capitalize(jo.getString("displayname"));
-                            treePath = CommonData.geoServer + "/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:"+s+"&format=image/png&styles=";
-                            legendurl = CommonData.geoServer+ "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
-                            metadata  = CommonData.layersServer + "/layers/" +uid;
-                            break;
-                        } else {
-                            continue;
-                        }
+            for (String s : sellayers) {
+                i++;
+                String uid = "";
+                String type = "";
+                String treeName = "";
+                String treePath = "";
+                String legendurl = "";
+                String metadata = "";
+                JSONArray layerlist = CommonData.getLayerListJSONArray();
+                for (int j = 0; j < layerlist.size(); j++) {
+                    JSONObject jo = layerlist.getJSONObject(j);
+                    String name = jo.getString("name");
+                    if (name.equals(s)) {
+                        uid = jo.getString("id");
+                        type = jo.getString("type");
+                        treeName = StringUtils.capitalize(jo.getString("displayname"));
+                        treePath = CommonData.geoServer + "/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:" + s + "&format=image/png&styles=";
+                        legendurl = CommonData.geoServer + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
+                        metadata = CommonData.layersServer + "/layers/view/more/" + uid;
+                        break;
+                    } else {
+                        continue;
                     }
-                    
-                    getMapComposer().addWMSLayer(s, treeName,treePath,(float) 0.75, metadata, legendurl,type.equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL, null, null,null);
-                }         
+                }
+
+                getMapComposer().addWMSLayer(s, treeName, treePath, (float) 0.75, metadata, legendurl, type.equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL, null, null, null);
+            }
         }
         this.detach();
     }
-    
+
     public String getUid(String name) {
-        String uid="";
-        try {   
+        String uid = "";
+        try {
             JSONArray layerlist = CommonData.getLayerListJSONArray();
             for (int j = 0; j < layerlist.size(); j++) {
-                 JSONObject jo = layerlist.getJSONObject(j);
-                 String n = jo.getString("name");
-                 if (name.equals(n)) {
-                       uid = jo.getString("id");
-                       System.out.println("id="+uid);
-                       break;
-                 } else {
-                       continue;
-                 }
+                JSONObject jo = layerlist.getJSONObject(j);
+                String n = jo.getString("name");
+                if (name.equals(n)) {
+                    uid = jo.getString("id");
+                    System.out.println("id=" + uid);
+                    break;
+                } else {
+                    continue;
+                }
             }
             return uid;
-                        
+
         } catch (Exception e) {
             System.out.println("error setting up env list");
             e.printStackTrace(System.out);
             return null;
         }
     }
-
-    
-    
-    
 }
