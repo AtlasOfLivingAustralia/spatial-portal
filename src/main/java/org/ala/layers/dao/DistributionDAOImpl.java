@@ -18,6 +18,7 @@ import java.util.*;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import org.ala.layers.dto.Distribution;
+import org.ala.layers.intersect.IntersectConfig;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
@@ -69,13 +70,13 @@ public class DistributionDAOImpl implements DistributionDAO {
             sql += " WHERE " + whereClause.toString();
         }
 
-        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params);
+        return updateWMSUrl(jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params));
     }        
 
     @Override
     public Distribution getDistributionBySpcode(long spcode, String type) {
         String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid, ST_AsText(the_geom) as geometry, checklist_name, area_km, notes, geom_idx from distributions where spcode= ? and type= ? ";
-        List<Distribution> d = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), (double) spcode, type);
+        List<Distribution> d = updateWMSUrl(jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), (double) spcode, type));
         if (d.size() > 0) {
             return d.get(0);
         }
@@ -116,7 +117,7 @@ public class DistributionDAOImpl implements DistributionDAO {
         if(whereClause.length()>0){
             sql += " AND " + whereClause.toString();
         }
-        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params);
+        return updateWMSUrl(jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params));
     }
 
     @Override
@@ -125,7 +126,7 @@ public class DistributionDAOImpl implements DistributionDAO {
         Map<String, Object> params = new HashMap<String,Object>();
         params.put("lsids", Arrays.asList(lsids));
         params.put("type", Distribution.EXPERT_DISTRIBUTION);
-        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params);
+        return updateWMSUrl(jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params));
     }
 
     /**
@@ -234,5 +235,17 @@ public class DistributionDAOImpl implements DistributionDAO {
 
     public void setViewName(String viewName) {
         this.viewName = viewName;
+    }
+
+    private List<Distribution> updateWMSUrl(List<Distribution> distributions) {
+        if(distributions != null) {
+            for(Distribution distribution : distributions) {
+                if(distribution.getWmsurl() != null) {
+                    distribution.setWmsurl(distribution.getWmsurl().replace(IntersectConfig.GEOSERVER_URL_PLACEHOLDER, IntersectConfig.getGeoserverUrl()));
+                }
+            }
+        }
+
+        return distributions;
     }
 }

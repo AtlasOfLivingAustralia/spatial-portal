@@ -45,6 +45,8 @@ import org.codehaus.jackson.type.TypeReference;
  */
 public class IntersectConfig {
 
+    public static final String GEOSERVER_URL_PLACEHOLDER = "<COMMON_GEOSERVER_URL>";
+
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(IntersectConfig.class);
     static final String ALASPATIAL_OUTPUT_PATH = "ALASPATIAL_OUTPUT_PATH";
@@ -66,36 +68,27 @@ public class IntersectConfig {
     static ObjectMapper mapper = new ObjectMapper();
     private FieldDAO fieldDao;
     private LayerDAO layerDao;
-    String layerFilesPath;
-    String analysisLayerFilesPath;
-    String alaspatialOutputPath;
-    String layerIndexUrl;
-    int batchThreadCount;
-    long configReloadWait;
+    static String layerFilesPath;
+    static String analysisLayerFilesPath;
+    static String alaspatialOutputPath;
+    static String layerIndexUrl;
+    static int batchThreadCount;
+    static long configReloadWait;
     long lastReload;
-    String preloadedShapeFiles;
-    int gridBufferSize;
+    static String preloadedShapeFiles;
+    static int gridBufferSize;
     SimpleShapeFileCache shapeFileCache;
     HashMap<String, IntersectionFile> intersectionFiles;
-    String gridCachePath;
-    int gridCacheReaderCount;
+    static String gridCachePath;
+    static int gridCacheReaderCount;
     HashMap<String, HashMap<Integer, GridClass>> classGrids;
-    boolean localSampling;
-    String geoserverUrl;
-    String gdalPath;
-    List<Double> analysisResolutions;
-    String occurrenceSpeciesRecordsFilename;
+    static boolean localSampling;
+    static String geoserverUrl;
+    static String gdalPath;
+    static List<Double> analysisResolutions;
+    static String occurrenceSpeciesRecordsFilename;
 
-    public IntersectConfig(FieldDAO fieldDao, LayerDAO layerDao) {
-        this.fieldDao = fieldDao;
-        this.layerDao = layerDao;
-
-        load();
-    }
-
-    public void load() {
-        lastReload = System.currentTimeMillis();
-
+    static {
         Properties properties = new Properties();
         try {
             InputStream is = IntersectConfig.class.getResourceAsStream("/" + LAYER_PROPERTIES);
@@ -124,6 +117,17 @@ public class IntersectConfig {
         gdalPath = getProperty(GDAL_PATH, properties, null);
         analysisResolutions = getDoublesFrom(getProperty(ANALYSIS_RESOLUTIONS, properties, "0.5"));
         occurrenceSpeciesRecordsFilename = getProperty(OCCURRENCE_SPECIES_RECORDS_FILENAME, properties, null);
+    }
+
+    public IntersectConfig(FieldDAO fieldDao, LayerDAO layerDao) {
+        this.fieldDao = fieldDao;
+        this.layerDao = layerDao;
+
+        load();
+    }
+
+    public void load() {
+        lastReload = System.currentTimeMillis();
 
         try {
             updateIntersectionFiles();
@@ -135,7 +139,7 @@ public class IntersectConfig {
         }
     }
 
-    String getProperty(String property, Properties properties, String defaultValue) {
+    static String getProperty(String property, Properties properties, String defaultValue) {
         String p = System.getProperty(property);
         if (p == null) {
             p = properties.getProperty(property);
@@ -147,7 +151,7 @@ public class IntersectConfig {
         return p;
     }
 
-    long getPositiveLongProperty(String property, Properties properties, long defaultValue) {
+    static long getPositiveLongProperty(String property, Properties properties, long defaultValue) {
         String p = getProperty(property, properties, null);
         long l = defaultValue;
         try {
@@ -161,19 +165,19 @@ public class IntersectConfig {
         return l;
     }
 
-    public String getAlaspatialOutputPath() {
+    static public String getAlaspatialOutputPath() {
         return alaspatialOutputPath;
     }
 
-    public String getLayerFilesPath() {
+    static public String getLayerFilesPath() {
         return layerFilesPath;
     }
 
-    public String getLayerIndexUrl() {
+    static public String getLayerIndexUrl() {
         return layerIndexUrl;
     }
 
-    public int getThreadCount() {
+    static public int getThreadCount() {
         return batchThreadCount;
     }
 
@@ -420,15 +424,15 @@ public class IntersectConfig {
         return shapeFileCache;
     }
 
-    public int getGridBufferSize() {
+    static public int getGridBufferSize() {
         return gridBufferSize;
     }
 
-    public String getGridCachePath() {
+    static public String getGridCachePath() {
         return gridCachePath;
     }
 
-    public int getGridCacheReaderCount() {
+    static public int getGridCacheReaderCount() {
         return gridCacheReaderCount;
     }
 
@@ -455,7 +459,7 @@ public class IntersectConfig {
         return classes;
     }
 
-    public long getConfigReloadWait() {
+    static public long getConfigReloadWait() {
         return configReloadWait;
     }
 
@@ -481,23 +485,23 @@ public class IntersectConfig {
         return fields;
     }
 
-    public String getGeoserverUrl() {
+    static public String getGeoserverUrl() {
         return geoserverUrl;
     }
 
-    public String getAnalysisLayerFilesPath() {
+    static public String getAnalysisLayerFilesPath() {
         return analysisLayerFilesPath;
     }
 
-    public String getGdalPath() {
+    static public String getGdalPath() {
         return gdalPath;
     }
 
-    public List<Double> getAnalysisResolutions() {
+    static public List<Double> getAnalysisResolutions() {
         return analysisResolutions;
     }
 
-    private List<Double> getDoublesFrom(String property) {
+    static private List<Double> getDoublesFrom(String property) {
         List<Double> l = new ArrayList<Double>();
         if (property != null) {
             for (String s : property.split(",")) {
@@ -517,7 +521,7 @@ public class IntersectConfig {
         return l;
     }
 
-    public String getOccurrenceSpeciesRecordsFilename() {
+    static public String getOccurrenceSpeciesRecordsFilename() {
         return occurrenceSpeciesRecordsFilename;
     }
 }

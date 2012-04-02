@@ -16,7 +16,7 @@ package org.ala.layers.dao;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
-import java.util.zip.ZipInputStream;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import org.ala.layers.dto.GridClass;
@@ -122,7 +121,9 @@ public class ObjectDAOImpl implements ObjectDAO {
         //return hibernateTemplate.find("from Objects");
         logger.info("Getting a list of all objects");
         String sql = "select o.pid as pid, o.id as id, o.name as name, o.desc as description, o.fid as fid, f.name as fieldname from objects o, fields f where o.fid = f.id";
-        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class));
+        List<Objects> objects = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class));
+        updateObjectWms(objects);
+        return objects;
     }
 
     @Override
@@ -278,31 +279,19 @@ public class ObjectDAOImpl implements ObjectDAO {
                                 zis.close();
                                 }
                                 } else*/ {                                //polygon
-                                    BufferedReader br = null;
-                                    RandomAccessFile raf = null;
+                                    BufferedInputStream bis = null;
+                                    InputStreamReader isr = null;
                                     try {
                                         String[] cells = null;
-
-//                                    br = new BufferedReader(new FileReader(f.getFilePath() + File.separator + s[1] + ".wkt.index"));
-//                                    String line;
-//                                    while((line = br.readLine()) != null) {
-//                                        if(line.length() > 0) {
-//                                            cells = line.split(",");
-//                                            if(cells[0].equals(s[2])) {
-//                                                break;
-//                                            }
-//                                        }
-//                                    }
 
                                         HashMap<String, Object> map = getGridIndexEntry(f.getFilePath() + File.separator + s[1], s[2]);
 
                                         cells = new String[]{s[2], String.valueOf(map.get("charoffset"))};
                                         if (cells != null) {
                                             //get polygon wkt string
-                                            File file = new File(f.getFilePath() + File.separator + s[1] + ".wkt.zip");
-                                            ZipInputStream zis = new ZipInputStream(new FileInputStream(file));
-                                            zis.getNextEntry();
-                                            InputStreamReader isr = new InputStreamReader(zis);
+                                            File file = new File(f.getFilePath() + File.separator + s[1] + ".wkt");
+                                            bis = new BufferedInputStream(new FileInputStream(file));
+                                            isr = new InputStreamReader(bis);
                                             isr.skip(Long.parseLong(cells[1]));
                                             char[] buffer = new char[1024];
                                             int size;
@@ -341,11 +330,19 @@ public class ObjectDAOImpl implements ObjectDAO {
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     } finally {
-                                        if (br != null) {
-                                            br.close();
+                                        if (bis != null) {
+                                            try {
+                                                bis.close();
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
                                         }
-                                        if (raf != null) {
-                                            raf.close();
+                                        if (isr != null) {
+                                            try {
+                                                isr.close();
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
                                         }
                                     }
                                 }
@@ -426,6 +423,7 @@ public class ObjectDAOImpl implements ObjectDAO {
         logger.info("Getting object info for fid = " + fid + " at loc: (" + lng + ", " + lat + ") ");
         String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from objects o, fields f where o.fid = ? and ST_Within(ST_SETSRID(ST_Point(?,?),4326), o.the_geom) and o.fid = f.id";
         List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[]{fid, lng, lat});
+        updateObjectWms(l);
         if (l == null || l.isEmpty()) {
             //get grid classes intersection
             l = new ArrayList<Objects>();
@@ -445,6 +443,7 @@ public class ObjectDAOImpl implements ObjectDAO {
                         o.setId(f.getLayerPid() + ":" + gc.getId());
                         o.setBbox(gc.getBbox());
                         o.setArea_km(gc.getArea_km());
+                        o.setWmsurl(getGridClassWms(f.getLayerName(), gc));
                         l.add(o);
                     } else { // if(f.getType().equals("b")) {//polygon pid
                         Grid g = new Grid(f.getFilePath() + File.separator + "polygons");
@@ -473,14 +472,18 @@ public class ObjectDAOImpl implements ObjectDAO {
                 + "degrees(Azimuth( ST_SETSRID(ST_Point( ? , ? ),4326), the_geom)) as degrees "
                 + "from objects where fid= ? order by distance limit ? ";
 
-        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), lng, lat, lng, lat, fid, new Integer(limit));
+        List<Objects> objects = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), lng, lat, lng, lat, fid, new Integer(limit));
+        updateObjectWms(objects);
+        return objects;
     }
 
     @Override
     public List<Objects> getObjectByFidAndName(String fid, String name) {
         logger.info("Getting object info for fid = " + fid + " and name: (" + name + ") ");
         String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km, ST_AsText(the_geom) as geometry from objects o, fields f where o.fid = ? and o.name like ? and o.fid = f.id";
-        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[]{fid, name});
+        List<Objects> objects = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[]{fid, name});
+        updateObjectWms(objects);
+        return objects;
     }
 
     private String getGridPolygonWms(String layername, int n) {
@@ -499,7 +502,7 @@ public class ObjectDAOImpl implements ObjectDAO {
 
     private void updateObjectWms(List<Objects> objects) {
         for (Objects o : objects) {
-            o.setWmsurl(layerIntersectDao.getConfig().getGeoserverUrl() + objectWmsUrl.replace("<pid>",o.getPid()));
+            o.setWmsurl(layerIntersectDao.getConfig().getGeoserverUrl() + objectWmsUrl.replace("<pid>", o.getPid()));
         }
     }
 

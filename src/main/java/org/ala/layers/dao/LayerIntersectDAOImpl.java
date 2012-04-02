@@ -205,17 +205,17 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                         if (f != null && f.getClasses() != null) {
                             GridClass gc = f.getClasses().get((int) v[0]);
                             if (gc != null) {
-                                    m.put("value", (gc == null ? "n/a" : gc.getName()));
-                                    //TODO: re-enable intersection for type 'a' after correct implementation of 'defaultField' fields table column
+                                m.put("value", (gc == null ? "n/a" : gc.getName()));
+                                //TODO: re-enable intersection for type 'a' after correct implementation of 'defaultField' fields table column
 //                                    if (f.getType().equals("a")) {           //class pid
 //                                        m.put("pid", f.getLayerPid() + ":" + ((int) v[0]));
 //                                    } else { // if(f.getType().equals("b")) {//polygon pid
-                                        g = new Grid(f.getFilePath() + File.separator + "polygons");
-                                        if (g != null) {
-                                            int v0 = (int) v[0];
-                                            v = g.getValues(p);
-                                            m.put("pid", f.getLayerPid() + ":" + v0 + ":" + ((int) v[0]));
-                                        }
+                                g = new Grid(f.getFilePath() + File.separator + "polygons");
+                                if (g != null) {
+                                    int v0 = (int) v[0];
+                                    v = g.getValues(p);
+                                    m.put("pid", f.getLayerPid() + ":" + v0 + ":" + ((int) v[0]));
+                                }
 //                                }
                             }
                         }
@@ -249,15 +249,20 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                     filename = getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + "aloc";
                     name = "Classification";
                 } else if (id.startsWith("odensity_")) {
-                    //aloc layer
+                    //occurrence density layer
                     gid = id.substring("odensity_".length());
                     filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "occurrence_density";
                     name = "Occurrence Density";
                 } else if (id.startsWith("srichness_")) {
-                    //aloc layer
+                    //species richness layer
                     gid = id.substring("srichness_".length());
                     filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
                     name = "Species Richness";
+                } else if (id.startsWith("envelope_")) {
+                    //envelope layer
+                    gid = id.substring("envelope_".length());
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "envelope" + File.separator + gid + File.separator + "envelope";
+                    name = "Environmental Envelope";
                 }
 
                 if (filename != null) {
@@ -402,15 +407,19 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                 } else if (fid.startsWith("aloc_")) {
                     //aloc layer
                     gid = fid.substring("aloc_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + gid;
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + "aloc";
                 } else if (fid.startsWith("odensity_")) {
-                    //aloc layer
+                    //occurrence density layer
                     gid = fid.substring("odensity_".length());
                     filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "occurrence_density";
                 } else if (fid.startsWith("srichness_")) {
-                    //aloc layer
+                    //species richness layer
                     gid = fid.substring("srichness_".length());
                     filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
+                } else if (fid.startsWith("envelope_")) {
+                    //envelope layer
+                    gid = fid.substring("envelope_".length());
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "envelope" + File.separator + gid + File.separator + "envelope";
                 }
 
                 if (filename != null) {

@@ -21,6 +21,7 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import org.ala.layers.dto.Layer;
+import org.ala.layers.intersect.IntersectConfig;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -58,6 +59,7 @@ public class LayerDAOImpl implements LayerDAO {
         logger.info("Getting a list of all enabled layers");
         String sql = "select * from layers where enabled=true";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class));
+        updateDisplayPaths(l);
         return l;
     }
 
@@ -67,6 +69,7 @@ public class LayerDAOImpl implements LayerDAO {
         logger.info("Getting enabled layer info for id = " + id);
         String sql = "select * from layers where enabled=true and id = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), id);
+        updateDisplayPaths(l);
         if (l.size() > 0) {
             return l.get(0);
         } else {
@@ -81,6 +84,7 @@ public class LayerDAOImpl implements LayerDAO {
         logger.info("Getting enabled layer info for name = " + name);
         String sql = "select * from layers where enabled=true and name = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
+        updateDisplayPaths(l);
         System.out.println("Searching for " + name + ": Found " + l.size() + " records. ");
         if (l.size() > 0) {
             return l.get(0);
@@ -96,6 +100,7 @@ public class LayerDAOImpl implements LayerDAO {
         logger.info("Getting enabled layer info for name = " + name);
         String sql = "select * from layers where enabled=true and displayname = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
+        updateDisplayPaths(l);
         if (l.size() > 0) {
             return l.get(0);
         } else {
@@ -109,7 +114,9 @@ public class LayerDAOImpl implements LayerDAO {
         String type = "Environmental";
         logger.info("Getting a list of all enabled environmental layers");
         String sql = "select * from layers where enabled=true and type = ?";
-        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), type);
+        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), type);
+        updateDisplayPaths(l);
+        return l;
     }
 
     @Override
@@ -118,7 +125,9 @@ public class LayerDAOImpl implements LayerDAO {
         String type = "Contextual";
         logger.info("Getting a list of all enabled Contextual layers");
         String sql = "select * from layers where enabled=true and type = ?";
-        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), type);
+        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), type);
+        updateDisplayPaths(l);
+        return l;
     }
 
     @Override
@@ -143,6 +152,8 @@ public class LayerDAOImpl implements LayerDAO {
         list.clear();
         list.addAll(setItems);
 
+        updateDisplayPaths(list);
+
         return list;//no duplicates now
 //        logger.info("Getting a list of all enabled layers");
 //        String sql = "select * from layers where enabled=true";
@@ -157,6 +168,7 @@ public class LayerDAOImpl implements LayerDAO {
         logger.info("Getting enabled layer info for id = " + id);
         String sql = "select * from layers where id = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), id);
+        updateDisplayPaths(l);
         if (l.size() > 0) {
             return l.get(0);
         } else {
@@ -169,6 +181,7 @@ public class LayerDAOImpl implements LayerDAO {
         logger.info("Getting enabled layer info for name = " + name);
         String sql = "select * from layers where name = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
+        updateDisplayPaths(l);
         if (l.size() > 0) {
             return l.get(0);
         } else {
@@ -182,6 +195,7 @@ public class LayerDAOImpl implements LayerDAO {
         logger.info("Getting a list of all layers");
         String sql = "select * from layers";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class));
+        updateDisplayPaths(l);
         return l;
     }
 
@@ -204,5 +218,17 @@ public class LayerDAOImpl implements LayerDAO {
         logger.info("Updating layer metadata for " + layer.getName());
         String sql = "update layers set citation_date=:citation_date, classification1=:classification1, classification2=:classification2, datalang=:datalang, description=:description, displayname=:displayname, displaypath=:displaypath, enabled=:enabled, domain=:domain, environmentalvaluemax=:environmentalvaluemax, environmentalvaluemin=:environmentalvaluemin, environmentalvalueunits=:environmentalvalueunits, extents=:extents, keywords=:keywords, licence_link=:licence_link, licence_notes=:licence_notes, licence_level=:licence_level, lookuptablepath=:lookuptablepath, maxlatitude=:maxlatitude, maxlongitude=:maxlongitude, mddatest=:mddatest, mdhrlv=:mdhrlv, metadatapath=:metadatapath, minlatitude=:minlatitude, minlongitude=:minlongitude, name=:name, notes=:notes, path=:path, path_1km=:path_1km, path_250m=:path_250m, path_orig=:path_orig, pid=:pid, respparty_role=:respparty_role, scale=:scale, source=:source, source_link=:source_link, type=:type, uid=:uid where id=:id";
         jdbcTemplate.update(sql, layer.toMap());
+    }
+
+    private void updateDisplayPaths(List<Layer> layers) {
+        if (layers == null) {
+            return;
+        }
+
+        for (Layer layer : layers) {
+            if (layer.getDisplaypath() != null) {
+                layer.setDisplaypath(layer.getDisplaypath().replace(IntersectConfig.GEOSERVER_URL_PLACEHOLDER, IntersectConfig.getGeoserverUrl()));
+            }
+        }
     }
 }

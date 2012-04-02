@@ -17,6 +17,7 @@ package org.ala.layers.grid;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.io.WKTReader;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -58,6 +59,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
  * @author Adam
  */
 public class GridClassBuilder {
+
     final public static int[] colours = {0x003366CC, 0x00DC3912, 0x00FF9900, 0x00109618, 0x00990099, 0x000099C6, 0x00DD4477, 0x0066AA00, 0x00B82E2E, 0x00316395, 0x00994499, 0x0022AA99, 0x00AAAA11, 0x006633CC, 0x00E67300, 0x008B0707, 0x00651067, 0x00329262, 0x005574A6, 0x003B3EAC, 0x00B77322, 0x0016D620, 0x00B91383, 0x00F4359E, 0x009C5935, 0x00A9C413, 0x002A778D, 0x00668D1C, 0x00BEA413, 0x000C5922, 0x00743411};
 
     public static void main(String[] args) {
@@ -122,7 +124,7 @@ public class GridClassBuilder {
             }
         }
         java.util.Collections.sort(keys);
-        for(int j=0;j<keys.size();j++) {
+        for (int j = 0; j < keys.size(); j++) {
             int k = keys.get(j);
             String key = String.valueOf(k);
             try {
@@ -141,6 +143,9 @@ public class GridClassBuilder {
                 Map wktIndexed = Envelope.getGridSingleLayerEnvelopeAsWktIndexed(filePath + "," + key + "," + key, wktMap);
                 zos.write(((String) wktIndexed.get("wkt")).getBytes());
                 zos.close();
+                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath + File.separator + key + ".wkt"));
+                bos.write(((String) wktIndexed.get("wkt")).getBytes());
+                bos.close();
                 System.out.println("wkt written to file");
                 gc.setArea_km(SpatialUtil.calculateArea((String) wktIndexed.get("wkt")) / 1000.0 / 1000.0);
 
@@ -152,7 +157,7 @@ public class GridClassBuilder {
 
                 //for SLD
                 maxValues.add(gc.getMaxShapeIdx());
-                labels.add(name.replace("\"","'"));
+                labels.add(name.replace("\"", "'"));
 
                 //write wkt index
                 FileWriter fw = new FileWriter(filePath + File.separator + key + ".wkt.index");
@@ -277,7 +282,7 @@ public class GridClassBuilder {
         //write .classes.json
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(new File(filePath + ".classes.json"), classes);
-        
+
         return classes;
     }
 
@@ -330,10 +335,10 @@ public class GridClassBuilder {
 
     static String getHexColour(int colour) {
         String s = Integer.toHexString(colour);
-        while(s.length() > 6) {
+        while (s.length() > 6) {
             s = s.substring(1);
         }
-        while(s.length() < 6) {
+        while (s.length() < 6) {
             s = "0" + s;
         }
         return s;
@@ -366,5 +371,3 @@ public class GridClassBuilder {
         }
     }
 }
-
-
