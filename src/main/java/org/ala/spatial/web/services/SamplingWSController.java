@@ -2,6 +2,7 @@ package org.ala.spatial.web.services;
 
 import java.io.File;
 import java.net.URLDecoder;
+import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
@@ -10,7 +11,6 @@ import org.ala.layers.util.SpatialUtil;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.GridCutter;
-import org.ala.spatial.util.Layers;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -21,8 +21,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author ajay
  */
 @Controller
-@RequestMapping("/ws/sampling/")
 public class SamplingWSController {
+
+    static HashMap<Double, double[]> commonGridLatitudeArea = new HashMap<Double, double[]>();
 
     /**
      * chart basis: occurrence or area
@@ -91,7 +92,7 @@ public class SamplingWSController {
      * @param req
      * @return
      */
-    @RequestMapping(value = "/chart", method = RequestMethod.GET)
+    @RequestMapping(value = "/ws/chart", method = RequestMethod.GET)
     public
     @ResponseBody
     String chart(HttpServletRequest req) {
@@ -99,7 +100,7 @@ public class SamplingWSController {
             String wkt = (req.getParameter("wkt") == null) ? null : URLDecoder.decode(req.getParameter("wkt"), "UTF-8");
             String xaxis = URLDecoder.decode(req.getParameter("xaxis"), "UTF-8");
             String yaxis = URLDecoder.decode(req.getParameter("yaxis"), "UTF-8");
-            String sDivisions = (req.getParameter("divisions") == null) ?  null : URLDecoder.decode(req.getParameter("divisions"), "UTF-8");
+            String sDivisions = (req.getParameter("divisions") == null) ? null : URLDecoder.decode(req.getParameter("divisions"), "UTF-8");
             int divisions = 20;
             if (sDivisions != null) {
                 divisions = Integer.parseInt(sDivisions);
@@ -140,9 +141,9 @@ public class SamplingWSController {
             //get grid data
             float[][] data = new float[2][];
             String cutDataPath = GridCutter.cut2(layers, AlaspatialProperties.getLayerResolutionDefault(), region, envelope, null);
-            Grid g = new Grid(cutDataPath + File.separator + Layers.getFieldId(layers[0]));
+            Grid g = new Grid(cutDataPath + File.separator + layers[0]);
             data[0] = g.getGrid();
-            data[1] = new Grid(cutDataPath + File.separator + Layers.getFieldId(layers[1])).getGrid();
+            data[1] = new Grid(cutDataPath + File.separator + layers[1]).getGrid();
 
             //TODO: delete cut grid files
 
@@ -157,7 +158,10 @@ public class SamplingWSController {
                 int x = getPos(data[0][i], cutoffs[0]);
                 int y = getPos(data[1][i], cutoffs[1]);
 
-                area[x][y] += cellArea(Double.parseDouble(AlaspatialProperties.getLayerResolutionDefault()), (i / g.ncols) * g.yres);
+                if (x >= 0 && x <= area.length
+                        && y >= 0 && y <= area[x].length) {
+                    area[x][y] += cellArea(Double.parseDouble(AlaspatialProperties.getLayerResolutionDefault()), g.ymin + (i / g.ncols) * g.yres);
+                }
             }
 
             //to csv
@@ -190,14 +194,31 @@ public class SamplingWSController {
 
         return pos;
     }
-    static double[] commonGridLatitudeArea = null;
 
-    static double cellArea(double resolution, double latitude) {
-        double minx = 0;
-        double maxx = resolution;
-        double miny = Math.floor(latitude / resolution) * resolution;
-        double maxy = miny + resolution;
+    public static double cellArea(double resolution, double latitude) {
+        double[] areas = commonGridLatitudeArea.get(resolution);
 
-        return SpatialUtil.calculateArea(new double[][]{{minx, miny}, {minx, maxy}, {maxx, maxy}, {maxx, miny}, {minx, miny}});
+        if (areas == null) {
+            areas = buildCommonGridLatitudeArea(resolution);
+            commonGridLatitudeArea.put(resolution, areas);
+        }
+
+        return areas[(int) (Math.floor(latitude / resolution) * resolution)];
+    }
+
+    static double[] buildCommonGridLatitudeArea(double resolution) {
+        int parts = (int) Math.ceil(90 / resolution);
+        double[] areas = new double[parts];
+
+        for (int i = 0; i < parts; i++) {
+            double minx = 0;
+            double maxx = resolution;
+            double miny = resolution * i;
+            double maxy = miny + resolution;
+
+            areas[i] = SpatialUtil.calculateArea(new double[][]{{minx, miny}, {minx, maxy}, {maxx, maxy}, {maxx, miny}, {minx, miny}});
+        }
+
+        return areas;
     }
 }

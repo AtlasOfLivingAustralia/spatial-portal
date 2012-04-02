@@ -10,7 +10,6 @@ import java.io.FileReader;
 import java.util.Arrays;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.spatial.analysis.index.LayerFilter;
-import org.ala.spatial.analysis.service.AlocService;
 import org.ala.spatial.analysis.service.AlocServiceImpl;
 import org.ala.spatial.analysis.service.AlocSettings;
 
@@ -44,7 +43,7 @@ public class AnalysisJobAloc extends AnalysisJob {
         envelope = envelope_;
         area = area_;
         resolution = resolution_;
-        
+
         layerCount = envlist.split(":").length;
 
         //TODO: remove rough estimate
@@ -67,7 +66,7 @@ public class AnalysisJobAloc extends AnalysisJob {
         try {
             //get extents from aloc run
             StringBuffer extents = new StringBuffer();
-            BufferedReader br = new BufferedReader(new FileReader(filepath+ "extents.txt"));
+            BufferedReader br = new BufferedReader(new FileReader(filepath + "extents.txt"));
             int width = Integer.parseInt(br.readLine());
             int height = Integer.parseInt(br.readLine());
             double xmin = Double.parseDouble(br.readLine());
@@ -93,7 +92,7 @@ public class AnalysisJobAloc extends AnalysisJob {
             System.out.println("OUT2: " + outputfile);
             setProgress(0.4);
 
-            AnalysisJobMaxent.readReplace(filepath + "classification_means.csv", "<insert job number here>",getName());
+            AnalysisJobMaxent.readReplace(filepath + "classification_means.csv", "<insert job number here>", getName());
 
             /* register with LayerImgService */
             StringBuffer legend = new StringBuffer();
@@ -115,12 +114,12 @@ public class AnalysisJobAloc extends AnalysisJob {
             fmetadata.close();
 
             // generate the readme.txt file
-            CitationService.generateClassificationReadme(filepath,"Classification");
+            CitationService.generateClassificationReadme(filepath, "Classification");
 
             setProgress(0.5);
 
             //publish layer
-            String url = (String) AlaspatialProperties.getGeoserverUrl() 
+            String url = (String) AlaspatialProperties.getGeoserverUrl()
                     + "/rest/workspaces/ALA/coveragestores/aloc_"
                     + getName()
                     + "/file.arcgrid?coverageName=aloc_"
@@ -300,7 +299,7 @@ public class AnalysisJobAloc extends AnalysisJob {
             fDir.mkdir();
 
             String[] envnameslist = envlist.split(":");
-            String cutDataPath = GridCutter.cut2(envnameslist,resolution, region, envelope, null);
+            String cutDataPath = GridCutter.cut2(envnameslist, resolution, region, envelope, null);
             System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
 
             AlocSettings msets = new AlocSettings();

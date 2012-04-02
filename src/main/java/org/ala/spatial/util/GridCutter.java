@@ -9,19 +9,17 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.TreeMap;
-import org.ala.layers.client.Client;
-import org.ala.layers.dao.LayerIntersectDAO;
-import org.ala.layers.dto.Field;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.spatial.analysis.index.LayerFilter;
+import org.ala.spatial.web.services.SamplingWSController;
 
 /**
  * Class for region cutting test data grids
  *
  * @author adam
  */
-public class GridCutter {    
+public class GridCutter {
 
     public static ArrayList<Object> loadCutGridsForAloc(String directory, String extentsFilename, int pieces, AnalysisJob job) {
         ArrayList<Object> data = new ArrayList<Object>();
@@ -282,9 +280,10 @@ public class GridCutter {
             h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
             w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
             mask = getRegionMask(res, extents, w, h, region);
-        } else if (envelopes != null) {h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
+        } else if (envelopes != null) {
             h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
-            w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);            
+            h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
+            w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
             mask = getEnvelopeMaskAndUpdateExtents(resolution, res, extents, w, h, envelopes);
             h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
             w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
@@ -292,7 +291,7 @@ public class GridCutter {
             h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
             w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
             mask = getMask(res, extents, w, h);
-        }        
+        }
 
         //mkdir in index location
         String newPath = null;
@@ -309,7 +308,7 @@ public class GridCutter {
         for (int i = 0; i < layers.length; i++) {
             applyMask(newPath, resolution, extents, w, h, mask, layers[i]);
         }
-        
+
         //write extents file
         writeExtents(extentsFilename, extents, w, h);
 
@@ -349,20 +348,27 @@ public class GridCutter {
         File file = new File(AlaspatialProperties.getAnalysisLayersDir() + File.separator + resolution + File.separator + field + ".grd");
 
         //move up a resolution when the file does not exist at the target resolution
-        if(!file.exists()) {
+        if (!file.exists()) {
             TreeMap<Double, String> resolutionDirs = new TreeMap<Double, String>();
             for (File dir : new File(AlaspatialProperties.getAnalysisLayersDir()).listFiles()) {
-                if(dir.isDirectory()) {
+                if (dir.isDirectory()) {
                     try {
                         resolutionDirs.put(Double.parseDouble(dir.getName()), dir.getName());
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                    }
                 }
             }
 
             resolution = resolutionDirs.higherEntry(Double.parseDouble(resolution)).getValue();
         }
-        
-        return AlaspatialProperties.getAnalysisLayersDir() + File.separator + resolution + File.separator + field;
+
+        String layerPath = AlaspatialProperties.getAnalysisLayersDir() + File.separator + resolution + File.separator + field;
+
+        if (new File(layerPath + ".grd").exists()) {
+            return layerPath;
+        } else {
+            return null;
+        }
     }
 
     static void applyMask(String dir, String resolution, double[][] extents, int w, int h, byte[][] mask, String layer) {
@@ -406,7 +412,7 @@ public class GridCutter {
     }
 
     static void writeExtents(String filename, double[][] extents, int w, int h) {
-        if(filename != null) {
+        if (filename != null) {
             try {
                 FileWriter fw = new FileWriter(filename);
                 fw.append(String.valueOf(w)).append("\n");
@@ -422,10 +428,10 @@ public class GridCutter {
         }
     }
 
-    private static byte[][] getRegionMask(double res, double [][] extents, int w, int h, SimpleRegion region) {
-        byte [][] mask = new byte[h][w];
+    private static byte[][] getRegionMask(double res, double[][] extents, int w, int h, SimpleRegion region) {
+        byte[][] mask = new byte[h][w];
         for (int i = 0; i < h; i++) {
-            for(int j=0;j<w;j++) {
+            for (int j = 0; j < w; j++) {
                 double tx = (j + 0.5) * res + extents[0][0];
                 double ty = (i + 0.5) * res + extents[0][1];
                 if (region.isWithin_EPSG900913(tx, ty)) {
@@ -436,10 +442,10 @@ public class GridCutter {
         return mask;
     }
 
-    private static byte[][] getMask(double res, double [][] extents, int w, int h) {
-        byte [][] mask = new byte[h][w];
+    private static byte[][] getMask(double res, double[][] extents, int w, int h) {
+        byte[][] mask = new byte[h][w];
         for (int i = 0; i < h; i++) {
-            for(int j=0;j<w;j++) {
+            for (int j = 0; j < w; j++) {
                 mask[i][j] = 1;
             }
         }
@@ -447,7 +453,7 @@ public class GridCutter {
     }
 
     private static byte[][] getEnvelopeMaskAndUpdateExtents(String resolution, double res, double[][] extents, int h, int w, LayerFilter[] envelopes) {
-        byte [][] mask = new byte[h][w];
+        byte[][] mask = new byte[h][w];
 
         double[][] points = new double[h * w][2];
         for (int i = 0; i < w; i++) {
@@ -464,10 +470,10 @@ public class GridCutter {
             Grid grid = Grid.getGrid(getLayerPath(resolution, lf.getLayername()));
 
             float[] d = grid.getValues2(points);
-            
+
             for (int i = 0; i < d.length; i++) {
                 if (lf.isValid(d[i])) {
-                    mask[i/w][i%w] = 0;
+                    mask[i / w][i % w] = 0;
                 }
             }
         }
@@ -479,11 +485,19 @@ public class GridCutter {
         int maxy = -1;
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
-                if(mask[j][i] > 0) {
-                    if(minx > i) minx = i;
-                    if(maxx < i) maxx = i;
-                    if(miny > j) miny = j;
-                    if(maxy < j) maxy = j;
+                if (mask[j][i] > 0) {
+                    if (minx > i) {
+                        minx = i;
+                    }
+                    if (maxx < i) {
+                        maxx = i;
+                    }
+                    if (miny > j) {
+                        miny = j;
+                    }
+                    if (maxy < j) {
+                        maxy = j;
+                    }
                 }
             }
         }
@@ -491,7 +505,7 @@ public class GridCutter {
         //reduce the size of the mask
         int nw = maxx - minx + 1;
         int nh = maxy - miny + 1;
-        byte [][] smallerMask = new byte[nw][nh];
+        byte[][] smallerMask = new byte[nw][nh];
         for (int i = minx; i <= maxx; i++) {
             for (int j = miny; j < maxy; j++) {
                 smallerMask[j - miny][i - minx] = mask[j][i];
@@ -503,18 +517,18 @@ public class GridCutter {
         extents[1][0] -= (w - maxx - 1) * res;
         extents[0][1] += miny * res;
         extents[1][1] -= (h - maxy - 1) * res;
-        
+
         return smallerMask;
     }
-    
-     public static boolean makeEnvelope(String filename, String resolution, LayerFilter[] envelopes) {
+
+    public static double makeEnvelope(String filename, String resolution, LayerFilter[] envelopes) {
 
         //get extents for all layers
         double[][] extents = getLayerExtents(resolution, envelopes[0].getLayername());
         for (int i = 1; i < envelopes.length; i++) {
             extents = internalExtents(extents, getLayerExtents(resolution, envelopes[i].getLayername()));
             if (!isValidExtents(extents)) {
-                return false;
+                return -1;
             }
         }
 
@@ -526,12 +540,17 @@ public class GridCutter {
         w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
         mask = getEnvelopeMaskAndUpdateExtents(resolution, res, extents, w, h, envelopes);
 
-        float [] values = new float[w*h];
+        float[] values = new float[w * h];
         int pos = 0;
-        for(int i=0;i<h;i++) {
-            for(int j=0;j<w;j++) {
+        double areaSqKm = 0;
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < w; j++) {
                 values[pos] = mask[i][j];
                 pos++;
+
+                if (mask[i][j] > 0) {
+                    areaSqKm += SamplingWSController.cellArea(res, extents[0][1] + res * i);
+                }
             }
         }
 
@@ -544,7 +563,15 @@ public class GridCutter {
                 extents[1][1],
                 grid.xres, grid.yres, h, w);
 
-        return true;
+        return areaSqKm;
     }
 
+    public static boolean isValidLayerFilter(String resolution, LayerFilter[] filter) {
+        for (LayerFilter lf : filter) {
+            if (GridCutter.getLayerPath(resolution, lf.getLayername()) == null) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

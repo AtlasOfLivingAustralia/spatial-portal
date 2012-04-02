@@ -7,9 +7,12 @@ package org.ala.spatial.util;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import org.ala.layers.intersect.Grid;
 
 /**
  *
@@ -206,6 +209,27 @@ public class CoordinateTransformer {
             // sbWorldFile.append(yMin).append("\n");
             sbWorldFile.append(yMin).append("\n");
 
+            PrintWriter pgwout = new PrintWriter(new BufferedWriter(new FileWriter(outputpath + baseFilename + ".pgw")));
+            pgwout.write(sbWorldFile.toString());
+            pgwout.close();
+
+            generate4326prj(outputpath, baseFilename);
+
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+
+    }
+
+    public static void generate4326prj(String outputpath, String baseFilename) {
+        try {
+
+            if (!outputpath.endsWith(File.separator)) {
+                outputpath += File.separator;
+            }
+
+            System.out.println("Generating prj file for " + baseFilename + " under " + outputpath);
+
             StringBuffer sbProjection = new StringBuffer();
             sbProjection.append("GEOGCS[\"WGS 84\", ").append("\n");
             sbProjection.append("    DATUM[\"WGS_1984\", ").append("\n");
@@ -218,20 +242,12 @@ public class CoordinateTransformer {
             sbProjection.append("        AUTHORITY[\"EPSG\",\"9122\"]], ").append("\n");
             sbProjection.append("    AUTHORITY[\"EPSG\",\"4326\"]] ").append("\n");
 
-            PrintWriter pgwout = new PrintWriter(new BufferedWriter(new FileWriter(outputpath + baseFilename + ".pgw")));
-            pgwout.write(sbWorldFile.toString());
-            pgwout.close();
-
             PrintWriter prjout = new PrintWriter(new BufferedWriter(new FileWriter(outputpath + baseFilename + ".prj")));
             prjout.write(sbProjection.toString());
             prjout.close();
-
-
-
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
-
     }
 
     public static String transformAscToGeotiff(String src) {
@@ -285,5 +301,48 @@ public class CoordinateTransformer {
         }
 
         return null;
+    }
+
+    public static void diva2asc(String diva, String asc) {
+        Grid g = new Grid(diva);
+        float[] grid_data = g.getGrid();
+
+        //export ASCGRID
+        BufferedWriter fw = null;
+        try {
+            fw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(asc + ".asc"), "US-ASCII"));
+            fw.append("ncols ").append(String.valueOf(g.ncols)).append("\n");
+            fw.append("nrows ").append(String.valueOf(g.nrows)).append("\n");
+            fw.append("xllcorner ").append(String.valueOf(g.xmin)).append("\n");
+            fw.append("yllcorner ").append(String.valueOf(g.ymin)).append("\n");
+            fw.append("cellsize ").append(String.valueOf(g.xres)).append("\n");
+
+            fw.append("NODATA_value ").append(String.valueOf(-1));
+
+            for (int i = 0; i < g.nrows; i++) {
+                fw.append("\n");
+                for (int j = 0; j < g.ncols; j++) {
+                    if (j > 0) {
+                        fw.append(" ");
+                    }
+                    if (Double.isNaN(grid_data[i * g.ncols + j])) {
+                        fw.append("-1");
+                    } else {
+                        fw.append(String.valueOf(grid_data[i * g.ncols + j]));
+                    }
+                }
+            }
+            fw.append("\n");
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        } finally {
+            if (fw != null) {
+                try {
+                    fw.close();
+                } catch (Exception e) {
+                    e.printStackTrace(System.out);
+                }
+            }
+        }
     }
 }
