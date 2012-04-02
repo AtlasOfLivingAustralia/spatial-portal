@@ -158,8 +158,8 @@ public class SamplingWSController {
                 int x = getPos(data[0][i], cutoffs[0]);
                 int y = getPos(data[1][i], cutoffs[1]);
 
-                if (x >= 0 && x <= area.length
-                        && y >= 0 && y <= area[x].length) {
+                if (x >= 0 && x < area.length
+                        && y >= 0 && y < area[x].length) {
                     area[x][y] += cellArea(Double.parseDouble(AlaspatialProperties.getLayerResolutionDefault()), g.ymin + (i / g.ncols) * g.yres);
                 }
             }
@@ -203,7 +203,7 @@ public class SamplingWSController {
             commonGridLatitudeArea.put(resolution, areas);
         }
 
-        return areas[(int) (Math.floor(latitude / resolution) * resolution)];
+        return areas[(int) (Math.floor(Math.abs(latitude / resolution)) * resolution)];
     }
 
     static double[] buildCommonGridLatitudeArea(double resolution) {
