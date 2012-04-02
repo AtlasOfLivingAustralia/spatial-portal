@@ -11,20 +11,14 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.data.Facet;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.lang.ArrayUtils;
-import org.zkoss.zk.ui.Component;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
@@ -40,7 +34,6 @@ import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Slider;
 import org.zkoss.zul.Textbox;
-import org.zkoss.zul.Window;
 
 /**
  *
@@ -50,6 +43,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
     public static final String LAYER_PREFIX = "working envelope: ";
     private static final long serialVersionUID = -26560838825366347L;
+    private static final String[] FILTER_COLOURS = {"0x0000FF", "0x000FF00", "0x00FFFF", "0xFF00FF"};
     private EnvLayersCombobox cbEnvLayers;
     private Listbox lbSelLayers;
     public Div popup_continous;
@@ -64,8 +58,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     public Label label_continous;
     public Button apply_continous;
     String[] results = null;
-    private List<String> selectedLayers;
-    private List<String> selectedLayersUrl;
+    private List<JSONObject> selectedLayers;
     private Map<String, SPLFilter> selectedSPLFilterLayers;
     private MapComposer mc;
     LayersUtil layersUtil;
@@ -76,7 +69,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     SPLFilter popup_filter;
     Listcell popup_cell;
     Listitem popup_item;
-    String activeAreaUrl = null;
+    //String activeAreaUrl = null;
     String activeAreaExtent = null;
     String activeAreaMetadata = null;
     private String activeAreaSize = null;
@@ -94,8 +87,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
         layersUtil = new LayersUtil(mc);
 
-        selectedLayers = new Vector<String>();
-        selectedLayersUrl = new Vector<String>();
+        selectedLayers = new Vector<JSONObject>();
         selectedSPLFilterLayers = new Hashtable<String, SPLFilter>();
 
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
@@ -116,37 +108,34 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     public void onChange$popup_minimum(Event event) {
         isDirtyCount = true;
         System.out.println("popup_minimum=" + popup_minimum.getValue() + " " + event.getData());
-        serverFilter(false);
+        serverFilter();
 
     }
 
     public void onChange$popup_maximum(Event event) {
         isDirtyCount = true;
-        serverFilter(false);
+        serverFilter();
     }
 
     public void doAdd(String new_value) {
 
         try {
+            JSONObject layer = null;
             if (new_value.length() == 0) {
-                //new_value = cbEnvLayers.getValue();
-
                 if (cbEnvLayers.getItemCount() > 0 && cbEnvLayers.getSelectedItem() != null) {
-                    JSONObject jo = (JSONObject) cbEnvLayers.getSelectedItem().getValue();
-                    new_value = jo.getString("name");
+                    layer = (JSONObject) cbEnvLayers.getSelectedItem().getValue();
+                    new_value = layer.getString("name");
                     cbEnvLayers.setValue("");
                 }
-
             }
             if (new_value.equals("")) {
                 return;
             }
 
-            if (selectedLayers.contains(new_value)) {
+            if (selectedLayers.contains(layer)) {
                 //not a new value to add
             } else {
-                selectedLayers.add(new_value);
-                selectedLayersUrl.add(null);
+                selectedLayers.add(layer);
             }
 
             /* apply something to line onclick in lb */
@@ -154,11 +143,11 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
                 @Override
                 public void render(Listitem li, Object data) {
-                    String layername = (String) data;
-                    SPLFilter f = getSPLFilter(layername);
+                    JSONObject layer = (JSONObject) data;
+                    SPLFilter f = getSPLFilter(layer);
 
                     // Col 1: Add the layer name
-                    Listcell lname = new Listcell(f.layer.display_name);
+                    Listcell lname = new Listcell(f.layer.getString("displayname"));
                     lname.setStyle("white-space: normal;");
                     lname.setParent(li);
 
@@ -184,11 +173,10 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
             listFix();
 
-            showAdjustPopup(new_value, lc, li);
+            showAdjustPopup(layer, lc, li);
 
             filter_done.setDisabled(false);
         } catch (Exception e) {
-            //TODO: error message
             e.printStackTrace(System.out);
         }
 
@@ -196,98 +184,34 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         activeAreaSize = null;
     }
 
-    private SPLFilter getSPLFilter(String layername) {
+    private SPLFilter getSPLFilter(JSONObject layer) {
         SPLFilter splf = null;
 
         // First check if already present
-        splf = selectedSPLFilterLayers.get(layername.toLowerCase());
+        splf = selectedSPLFilterLayers.get(layer.getString("name"));
 
         // if splf is still null, then it must be new
         // so grab the details from the server
         if (splf == null) {
-            JSONObject jo = JSONObject.fromObject(getInfo(layername, "layerfilter"));
-
-            JSONObject lbean = jo.getJSONObject("layer");
-            Layer rLayer = new Layer(lbean.getString("name"), lbean.getString("display_name"), lbean.getString("description"), lbean.getString("type"), null);
             splf = new SPLFilter();
-            splf.setCount(jo.getInt("count"));
-            splf.setLayername(jo.getString("layername"));
-            splf.setLayer(rLayer);
-            splf.setMinimum_value(jo.getDouble("minimum_value"));
-            splf.setMaximum_value(jo.getDouble("maximum_value"));
-            splf.setMinimum_initial(jo.getDouble("minimum_initial"));
-            splf.setMaximum_initial(jo.getDouble("maximum_initial"));
-            splf.setChanged(jo.getBoolean("changed"));
+            splf.setCount(0);
+            splf.setLayername(layer.getString("name"));
+            splf.setLayer(layer);
+            splf.setMinimum_value(layer.getDouble("environmentalvaluemin"));
+            splf.setMaximum_value(layer.getDouble("environmentalvaluemax"));
+            splf.setMinimum_initial(layer.getDouble("environmentalvaluemin"));
+            splf.setMaximum_initial(layer.getDouble("environmentalvaluemax"));
+            splf.setChanged(false);
 
-            if (lbean.getString("type").equalsIgnoreCase("contextual")) {
-                JSONArray jaCatNames = jo.getJSONArray("catagory_names");
-                if (jaCatNames != null) {
-                    splf.setCatagory_names((String[]) jaCatNames.toArray(new String[0]));
-                }
-
-                JSONArray jaCatNums = jo.getJSONArray("catagories");
-                if (jaCatNums != null) {
-                    splf.setCatagories(ArrayUtils.toPrimitive((Integer[]) jaCatNums.toArray(new Integer[0])));
-                }
-            }
-
-            selectedSPLFilterLayers.put(layername.toLowerCase(), splf);
-        }
-
-        if (!layername.equals(splf.layer.name)) {
-            splf = getSPLFilter(splf.layer.name.toLowerCase());
+            selectedSPLFilterLayers.put(layer.getString("name"), splf);
         }
 
         return splf;
-
-    }
-
-    private String getInfo(String value, String type) {
-        try {
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer + "/ws/spatial/settings/layer/" + URLEncoder.encode(value, "UTF-8") + "/" + type); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, * /*");
-
-            int result = client.executeMethod(get);
-
-            //TODO: test results
-            String slist = get.getResponseBodyAsString();
-
-
-            return slist;
-        } catch (Exception ex) {
-            //TODO: error message
-            //Logger.getLogger(FilteringWCController.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("getInfo.error:");
-            ex.printStackTrace(System.out);
-        }
-        return null;
-    }
-
-    private String getInfo(String urlPart) {
-        try {
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer + "/ws" + urlPart); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-            int result = client.executeMethod(get);
-
-            //TODO: test results
-            String slist = get.getResponseBodyAsString();
-
-            return slist;
-        } catch (Exception ex) {
-            //TODO: error message
-            //Logger.getLogger(FilteringWCController.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("getInfo.error:");
-            ex.printStackTrace(System.out);
-        }
-        return null;
     }
 
     public void deleteSelectedFilters(Object o) {
         Listitem li;
-        String label;
+        JSONObject layer;
 
         popup_continous.setVisible(false);
 
@@ -300,14 +224,12 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         }
         int idx = li.getIndex();
 
-        label = selectedLayers.get(idx);
+        layer = selectedLayers.get(idx);
 
         //not executing, echo
-        //mc.removeLayer(getSPLFilter(label).layer.display_name);
-        Events.echoEvent("removeLayer", this, getSPLFilter(label).layer.display_name);
+        Events.echoEvent("removeLayer", this, layer.getString("name"));
 
-        selectedLayers.remove(label);
-        selectedLayersUrl.remove(idx);
+        selectedLayers.remove(layer);
 
         li.detach();
 
@@ -323,7 +245,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
     public void onClick$btnClearSelection(Event event) {
         Listitem li;
-        String label;
+        JSONObject layer;
 
         popup_continous.setVisible(false);
 
@@ -338,14 +260,12 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
         int idx = li.getIndex();
 
-        label = selectedLayers.get(idx);
+        layer = selectedLayers.get(idx);
 
         //not executing, echo
-        //mc.removeLayer(getSPLFilter(label).layer.display_name);
-        Events.echoEvent("removeLayerClearSelected", this, getSPLFilter(label).layer.display_name);
+        Events.echoEvent("removeLayerClearSelected", this, layer.getString("displayname"));
 
-        selectedLayers.remove(label);
-        selectedLayersUrl.remove(idx);
+        selectedLayers.remove(layer);
 
         li.detach();
 
@@ -365,12 +285,12 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         }
     }
 
-    public void removeLayer(Event event) {
+    public void removeLayers(Event event) {
         String all = (String) event.getData();
         String layername = all;
         int p = layername.indexOf('|');
         if (p > 0) {
-            Events.echoEvent("removeLayer", this, layername.substring(p + 1));
+            Events.echoEvent("removeLayers", this, layername.substring(p + 1));
             layername = layername.substring(0, p);
         }
         if (mc.getMapLayer(LAYER_PREFIX + layername) != null) {
@@ -380,6 +300,14 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         }
         if (p <= 0) {
             detach();
+        }
+    }
+
+    public void removeLayer(Event event) {
+        String all = (String) event.getData();
+        String layername = all;
+        if (mc.getMapLayer(LAYER_PREFIX + layername) != null) {
+            mc.removeLayer(LAYER_PREFIX + layername);
         }
     }
 
@@ -410,10 +338,9 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
             ((Listcell) popup_item.getChildren().get(1)).setLabel(popup_filter.getFilterString());
 
-            serverFilter(false);
+            serverFilter();
 
         } catch (Exception e) {
-            //TODO: error message
             System.out.println("slider change min:" + e.toString());
             e.printStackTrace(System.out);
         }
@@ -433,17 +360,14 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
             ((Listcell) popup_item.getChildren().get(1)).setLabel(popup_filter.getFilterString());
 
-            serverFilter(false);
+            serverFilter();
         } catch (Exception e) {
-            //TODO: error message
-
             System.out.println("slider change max:" + e.toString());
             e.printStackTrace(System.out);
         }
     }
 
     private void showAdjustPopup(Object o) {
-        String layername = "";
         if (o == null) {
 
             //get the Count cell
@@ -461,16 +385,15 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
         Listcell lc = (Listcell) o;
         Listitem li = (Listitem) lc.getParent();
-        layername = ((Listcell) li.getChildren().get(0)).getLabel();
-        //layername = (layername.equals("")) ? "" : layername.substring(0, layername.lastIndexOf("(")).trim();
+        JSONObject layer = (JSONObject) li.getValue();
 
-        popup_filter = getSPLFilter(layername);
-        popup_idx.setValue(layername);
+        popup_filter = getSPLFilter(layer);
+        popup_idx.setValue(layer.getString("displayname"));
 
         popup_cell = lc;
         popup_item = li;
 
-        label_continous.setValue("edit envelope for: " + getSPLFilter(layername).layer.display_name);
+        label_continous.setValue("edit envelope for: " + layer.getString("displayname"));
         String csv = String.format("%.4f", (float) popup_filter.minimum_initial) + " - " + String.format("%.4f", (float) popup_filter.maximum_initial);
         popup_range.setValue(csv);
 
@@ -483,7 +406,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         int mincursor = (int) ((popup_filter.minimum_value - popup_filter.minimum_initial)
                 / (range) * 100);
 
-        doApplyFilter(getSPLFilter(layername).layer.display_name, layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), false);
+        doApplyFilter(layer, Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value));
 
         popup_slider_min.setCurpos(mincursor);
         popup_slider_max.setCurpos(maxcursor);
@@ -494,14 +417,14 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
     }
 
-    private void showAdjustPopup(String layername, Listcell lc, Listitem li) {
-        popup_filter = getSPLFilter(layername);
-        popup_idx.setValue(layername);
+    private void showAdjustPopup(JSONObject layer, Listcell lc, Listitem li) {
+        popup_filter = getSPLFilter(layer);
+        popup_idx.setValue(layer.getString("displayname"));
 
         popup_cell = lc;
         popup_item = li;
 
-        label_continous.setValue("edit envelope for: " + getSPLFilter(layername).layer.display_name);
+        label_continous.setValue("edit envelope for: " + layer.getString("displayname"));
 
         String csv = String.format("%.4f", (float) popup_filter.minimum_value) + " - " + String.format("%.4f", (float) popup_filter.maximum_value);
         popup_range.setValue(csv);
@@ -515,7 +438,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         int mincursor = (int) ((popup_filter.minimum_value - popup_filter.minimum_initial)
                 / (range) * 100);
 
-        doApplyFilter(getSPLFilter(layername).layer.display_name, layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), false);
+        doApplyFilter(layer, Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value));
 
         popup_slider_min.setCurpos(mincursor);
         popup_slider_max.setCurpos(maxcursor);
@@ -523,32 +446,15 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         popup_continous.setVisible(true);
     }
 
-    private void serverFilter(boolean commit) {
-        doApplyFilter(popup_filter.layer.display_name, popup_filter.layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), commit);
+    private void serverFilter() {
+        doApplyFilter(popup_filter.layer, Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value));
     }
 
-    private void doApplyFilter(String layerdisplayname, String layername, String type, String val1, String val2, boolean commit) {
+    private void doApplyFilter(JSONObject layer, String val1, String val2) {
         try {
-//            String urlPart = "";
-//            if (commit) {
-//                urlPart += "/filtering/apply4";
-//            } else {
-//                urlPart += "/filtering/apply3";
-//            }
-//            urlPart += "/pid/" + URLEncoder.encode(pid, "UTF-8");
-//            urlPart += "/layers/" + URLEncoder.encode(layername, "UTF-8");
-//            urlPart += "/types/" + URLEncoder.encode(type, "UTF-8");
-//            urlPart += "/val1s/" + URLEncoder.encode(val1, "UTF-8");
-//            urlPart += "/val2s/" + URLEncoder.encode(val2, "UTF-8");
-//            urlPart += "/depth/" + lbSelLayers.getItemCount();
-//
-//            String imagefilepath = getInfo(urlPart);
-//            MapLayer ml = loadMap(imagefilepath, LAYER_PREFIX + layerdisplayname);
-//
-//            selectedLayersUrl.set(lbSelLayers.getItemCount() - 1, imagefilepath);
+            loadMap(layer, lbSelLayers.getItemCount() - 1, Double.parseDouble(val1), Double.parseDouble(val2), false);
 
         } catch (Exception e) {
-            //TODO: error message
             e.printStackTrace(System.out);
         }
     }
@@ -556,34 +462,38 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     public void onClick$filter_done(Event event) {
         ok = true;
 
-        applyFilterEvented();
-
         try {
-            String urlPart = "/ws/envelope";
+            //create the layer
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(CommonData.satServer).append("/ws/envelope?area=").append(getWkt());
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
 
-            String[] imagefilepath = getInfo(urlPart).split("\n");
+            get.addRequestHeader("Accept", "text/plain");
 
-            activeAreaUrl = imagefilepath[0];
-            activeAreaExtent = imagefilepath[1];
-            activeAreaSize = imagefilepath[2];
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            String[] list = slist.split("\n");
+            String pid = list[0];
+            String url = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:envelope_" + pid + "&FORMAT=image%2Fpng";
+            activeAreaExtent = list[1];
+            activeAreaSize = list[2];
 
-            int p = activeAreaSize.indexOf('.');
-            if (p > 0) {
-                activeAreaSize = activeAreaSize.substring(0, p);
-            }
+            //load the layer
+            MapLayer ml = mc.addWMSLayer(pid, txtLayerName.getText(), url, 0.75f, null, null, LayerUtilities.ENVIRONMENTAL_ENVELOPE, null, null);
 
             //make the metadata?
             StringBuilder sb = new StringBuilder();
             StringBuilder sbLayerList = new StringBuilder();
             sb.append("Environmental Envelope<br>");
             for (int i = 0; i < selectedLayers.size(); i++) {
-                String layername = (String) selectedLayers.get(i);
-                SPLFilter f = getSPLFilter(layername);
+                JSONObject layer = selectedLayers.get(i);
+                SPLFilter f = getSPLFilter(layer);
                 sb.append(f.layername).append(": ").append(f.getFilterString()).append("<br>");
 
                 sbLayerList.append(f.layername);
-                if (i < selectedLayers.size()-1) {
-                    sbLayerList.append(":"); 
+                if (i < selectedLayers.size() - 1) {
+                    sbLayerList.append(":");
                 }
             }
             activeAreaMetadata = LayersUtil.getMetadata(sb.toString());
@@ -592,7 +502,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             getMapComposer().setAttribute("mappolygonlayer", sb.toString());
 
             try {
-//                final_wkt = getWkt(pid);
+                final_wkt = getWkt();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -607,32 +517,23 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     void showActiveArea() {
-        if (activeAreaUrl != null) {
-            loadMap(activeAreaUrl, txtLayerName.getValue(), true);
-            MapLayer ml = mc.getMapLayer(txtLayerName.getValue());
-            if (ml.getMapLayerMetadata() == null) {
-                ml.setMapLayerMetadata(new MapLayerMetadata());
-            }
-            this.layerName = ml.getName();
-            List<Double> bb = new ArrayList<Double>(4);
-            String[] bs = activeAreaExtent.split(",");
-            for (int i = 0; i < 4; i++) {
-                bb.add(Double.parseDouble(bs[i]));
-            }
-            ml.getMapLayerMetadata().setBbox(bb);
-            ml.getMapLayerMetadata().setMoreInfo(activeAreaMetadata);
+        MapLayer ml = mc.getMapLayer(txtLayerName.getValue());
+        if (ml.getMapLayerMetadata() == null) {
+            ml.setMapLayerMetadata(new MapLayerMetadata());
         }
-    }
+        this.layerName = ml.getName();
+        List<Double> bb = new ArrayList<Double>(4);
+        String[] bs = activeAreaExtent.split(",");
+        for (int i = 0; i < 4; i++) {
+            bb.add(Double.parseDouble(bs[i]));
+        }
+        ml.getMapLayerMetadata().setBbox(bb);
+        ml.getMapLayerMetadata().setMoreInfo(activeAreaMetadata);
 
-    void updateActiveArea(boolean hide) {
-        //trigger update to 'active area'
-        Component c = getParent().getParent();
-        while (c != null && !c.getId().equals("selectionwindow")) {
-            c = c.getParent();
-        }
-        if (c != null) {
-            //((SelectionController) c).onEnvelopeDone(hide);
-        }
+        //ml.setWKT(final_wkt);
+        ml.setData("envelope", final_wkt); //not the actual WKT
+        ml.setData("area", activeAreaSize);
+        ml.setData("facets", getFacets());
     }
 
     public void onClick$apply_continous(Event event) {
@@ -645,22 +546,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         isDirtyCount = false;
     }
 
-    public void onClick$preview_continous(Event event) {
-        try {
-            applyFilterEvented();
-            if (lbSelLayers.getItemCount() > 0) {
-
-                java.util.Map args = new java.util.HashMap();
-//                args.put("pid", pid);
-                Window win = (Window) Executions.createComponents(
-                        "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
-                win.doModal();
-            }
-        } catch (Exception e) {
-            //TODO: error message
-        }
-    }
-
     private int getSpeciesCount() {
         Query q = new BiocacheQuery(null, null, null, getFacets(), false);
 
@@ -670,7 +555,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     public void onLater(Event event) throws Exception {
         applyFilterEvented();
         //Clients.showBusy("", false);
-        updateActiveArea(false);
 
         //int spcount = q.getSpeciesCount();
         speciescount = getSpeciesCount();
@@ -721,26 +605,15 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
         ((Listcell) popup_item.getChildren().get(1)).setLabel(popup_filter.getFilterString());
 
-        serverFilter(true);
+        serverFilter();
 
-        //String strCount = postInfo("/filtering/apply/pid/" + pid + "/species/count?area=none");
         String strCount = speciescount + "";
         if (isDirtyCount) {
 //            System.out.println("******************* is dirty count");
             Clients.showBusy("Updating species count....");
             strCount = getSpeciesCount() + "";
             Clients.clearBusy();
-            //applyFilter();
-//            System.out.println("**********************************");
-//            System.out.println("**********************************");
-//            System.out.println("strCount: " + strCount);
-//            System.out.println("**********************************");
-//            System.out.println("**********************************");
-
-        } else {
-//            System.out.println("******************* is not dirty count");
         }
-        //strCount = speciescount + "";
 
         //TODO: handle invalid counts/errors
         try {
@@ -752,69 +625,65 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         }
     }
 
-    private String postInfo(String urlPart) {
+    private MapLayer loadMap(JSONObject layer, int depth, double min, double max, boolean final_layer) {
+
+        String colour = final_layer ? "0xFF0000" : FILTER_COLOURS[depth % FILTER_COLOURS.length];
+        String filter =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\">"
+                + "<NamedLayer><Name>ALA:" + layer.getString("name") + "</Name>"
+                + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
+                + "<ColorMap>"
+                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"1\" quantity=\"" + (min - Math.abs(min * 0.0000001)) + "\"/>"
+                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"0\" quantity=\"" + min + "\"/>"
+                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"0\" quantity=\"" + max + "\"/>"
+                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"1\" quantity=\"" + (max + Math.abs(max * 0.0000001)) + "\"/>"
+                + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
+
         try {
-            HttpClient client = new HttpClient();
-
-            PostMethod get = new PostMethod(CommonData.satServer + "/ws" + urlPart); // testurl
-
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            //get.addParameter("area", URLEncoder.encode("none", "UTF-8"));
-
-            int result = client.executeMethod(get);
-
-            //TODO: confirm result
-            String slist = get.getResponseBodyAsString();
-
-            return slist;
-        } catch (Exception ex) {
-            //TODO: error message
-            System.out.println("getInfo.error:");
-            ex.printStackTrace(System.out);
+            filter = URLEncoder.encode(filter, "UTF-8");
+        } catch (Exception e) {
+            System.out.println("invalid filter sld");
+            e.printStackTrace();
         }
-        return null;
-    }
 
-    private MapLayer loadMap(String filename, String layername) {
-        return loadMap(filename, layername, false);
-    }
-    private MapLayer loadMap(String filename, String layername, boolean final_layer) {
-        //String label = "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount();
-        //label = selectedLayers.get(selectedLayers.size() - 1);
-        String uri = null;//CommonData.satServer + "/output/filtering/" + pid + "/" + filename;
-        float opacity = Float.parseFloat("0.75");
+        MapLayer ml = mc.getMapLayer(LAYER_PREFIX + layer.getString("name"));
+        if (ml == null) {
+            ml = getMapComposer().addWMSLayer(LAYER_PREFIX + layer.getString("name"),
+                    LAYER_PREFIX + layer.getString("displayname"),
+                    layer.getString("displaypath").replace("/gwc/service", "") + "&sld_body=" + filter,
+                    (float) 0.75,
+                    CommonData.layersServer + "/layers/view/more/" + layer.getString("id"),
+                    CommonData.geoServer + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + layer.getString("name"),
+                    LayerUtilities.ENVIRONMENTAL_ENVELOPE,
+                    null, null, null);
+        } else {
+            ml.setUri(layer.getString("displaypath").replace("/gwc/service", "") + "&sld_body=" + filter);
+            mc.reloadMapLayerNowAndIndexes(ml);
+        }
 
-        List<Double> bbox = new ArrayList<Double>();
-        bbox.add(112.0);
-        bbox.add(-44.0);
-        bbox.add(154.0);
-        bbox.add(-9.0);
-        //bbox.add(12467782.96884664);
-        //bbox.add(-5465442.183322753);
-        //bbox.add(17143201.58216413);
-        //bbox.add(-1006021.0627551343);
-
-//        MapLayer ml = mc.addImageLayer(pid, layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
-//        if(final_layer) {
-//            ml.setWKT(final_wkt);
-//            ml.setData("envelope", pid);
-//            ml.setData("area", activeAreaSize);
-//            ml.setData("facets", getFacets());
-//        }
-
-//        return ml;
-        return null;
-
+        return ml;
     }
 
     ArrayList<Facet> getFacets() {
         ArrayList<Facet> facets = new ArrayList<Facet>();
         for (int i = 0; i < selectedLayers.size(); i++) {
-            SPLFilter splf = selectedSPLFilterLayers.get(selectedLayers.get(i).toLowerCase());
+            SPLFilter splf = selectedSPLFilterLayers.get(selectedLayers.get(i).getString("name"));
             Facet f = new Facet(CommonData.getLayerFacetName(splf.layername), splf.minimum_value, splf.maximum_value, true);
             facets.add(f);
         }
         return facets;
+    }
+
+    String getWkt() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < selectedLayers.size(); i++) {
+            SPLFilter splf = selectedSPLFilterLayers.get(selectedLayers.get(i).getString("name"));
+            if (sb.length() > 0) {
+                sb.append(":");
+            }
+            sb.append(CommonData.getLayerFacetName(splf.layername)).append(",").append(splf.minimum_value).append(",").append(splf.maximum_value);
+        }
+        return sb.toString();
     }
 
     /**
@@ -831,8 +700,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
         return mapComposer;
     }
-    
-    boolean state_visible = true;
 
     /**
      * Remove all selected layers from the map.
@@ -840,73 +707,26 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
      * For use when disabling Environmental Envelope in Active Layers.
      */
     public void removeAllSelectedLayers(boolean showActiveArea) {
-        //if (state_visible) {
-        state_visible = false;
         StringBuffer sb = new StringBuffer();
-        if (activeAreaUrl != null && showActiveArea) {
+        if (showActiveArea) {
             sb.append("Active Area");
             if (selectedLayers.size() > 0) {
                 sb.append("|");
             }
         }
         for (int i = 0; i < selectedLayers.size(); i++) {
-            String label = selectedLayers.get(i);
-            sb.append(getSPLFilter(label).layer.display_name);
+            JSONObject layer = selectedLayers.get(i);
+            sb.append(layer.getString("name"));
             if (i < selectedLayers.size() - 1) {
                 sb.append("|");
             }
         }
         if (selectedLayers.size() > 0) {
-            Events.echoEvent("removeLayer", this, sb.toString());
-        }
-        //}
-    }
-
-    public void showAllSelectedLayers() {
-        state_visible = true;
-        StringBuffer sb = new StringBuffer();
-        if (selectedLayers.size() > 0) {
-            sb.append("hideActive Area|");
-        }
-        for (int i = 0; i < selectedLayers.size(); i++) {
-            String label = selectedLayers.get(i);
-            sb.append("show");
-            sb.append(String.valueOf(i));
-            if (i < selectedLayers.size() - 1) {
-                sb.append("|");
-            }
-        }
-        if (selectedLayers.size() > 0) {
-            Events.echoEvent("showLayer", this, sb.toString());
-        }
-    }
-
-    public void showLayer(Event event) {
-        String all = (String) event.getData();
-        String idx = all;
-        int p = idx.indexOf('|');
-        if (p > 0) {
-            Events.echoEvent("showLayer", this, idx.substring(p + 1));
-            idx = idx.substring(0, p);
-        }
-        //is it show or hide?
-        //show + idx to show
-        //hide + layername to hide
-        if (idx.startsWith("show")) {
-            int i = Integer.parseInt(idx.substring(4));
-            loadMap(selectedLayersUrl.get(i), LAYER_PREFIX + getSPLFilter(selectedLayers.get(i)).layer.display_name);
-        } else { //"hide"
-            if (mc.getMapLayer(LAYER_PREFIX + idx.substring(4)) != null) {
-                mc.removeLayer(LAYER_PREFIX + idx.substring(4));
-            }
+            Events.echoEvent("removeLayers", this, sb.toString());
         }
     }
 
     public void onClick$btnCancel(Event event) {
         removeAllSelectedLayers(false);
-    }
-
-    private String getWkt(String pid) {
-        return getInfo("/filtering/wkt/" + activeAreaExtent + "/" + pid);
     }
 }

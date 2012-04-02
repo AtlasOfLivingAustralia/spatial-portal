@@ -1,151 +1,148 @@
 package org.ala.spatial.util;
 
+import net.sf.json.JSONObject;
+
 /**
  *
  * @author ajay
  */
 public class SPLFilter {
-	public SPLFilter(){}
 
-	public SPLFilter(Layer _layer,
-			int[] _catagories, String [] _catagory_names,
-			double _minimum, double _maximum){
-		layer = _layer;
-		if(layer != null){
-			layername = _layer.name;
-		}
-		catagories = _catagories;
-		catagory_names = _catagory_names;
-		minimum_value = _minimum;
-		maximum_value = _maximum;
+    public SPLFilter() {
+    }
 
-		minimum_initial = _minimum;
-		maximum_initial = _maximum;
-	}
+    public SPLFilter(JSONObject _layer,
+            int[] _catagories, String[] _catagory_names,
+            double _minimum, double _maximum) {
+        layer = _layer;
+        if (layer != null) {
+            layername = _layer.getString("name");
+        }
+        catagories = _catagories;
+        catagory_names = _catagory_names;
+        minimum_value = _minimum;
+        maximum_value = _maximum;
 
-	public int count = 0;
+        minimum_initial = _minimum;
+        maximum_initial = _maximum;
+    }
+    public int count = 0;
+    public JSONObject layer;
+    public String layername = "";
+    public int[] catagories = null;		//use to maintain Set validity
+    public String[] catagory_names = null;
+    public double minimum_value = 0;
+    public boolean changed;
+    public String filterString;
 
-	public Layer layer;
-	public String layername = "";
+    public JSONObject getLayer() {
+        return layer;
+    }
 
-	public int [] catagories = null;		//use to maintain Set validity
-	public String [] catagory_names = null;
+    public String getLayername() {
+        return layername;
+    }
 
-	public double minimum_value = 0;
+    public int[] getCatagories() {
+        return catagories;
+    }
 
-        public boolean changed;
-        public String filterString;
+    public String[] getCatagory_names() {
+        return catagory_names;
+    }
 
-	public Layer getLayer() {
-		return layer;
-	}
+    public double getMinimum_value() {
+        return minimum_value;
+    }
 
-	public String getLayername() {
-		return layername;
-	}
+    public double getMaximum_value() {
+        return maximum_value;
+    }
 
-	public int[] getCatagories() {
-		return catagories;
-	}
+    public double getMinimum_initial() {
+        return minimum_initial;
+    }
 
-	public String[] getCatagory_names() {
-		return catagory_names;
-	}
+    public double getMaximum_initial() {
+        return maximum_initial;
+    }
+    public double maximum_value = 0;
+    public double minimum_initial = 0;
+    public double maximum_initial = 0;
 
-	public double getMinimum_value() {
-		return minimum_value;
-	}
+    /* only works if created with constructor and 'catagories' Set validity is maintained */
+    public boolean isChanged() {
+        if (minimum_value != minimum_initial
+                || maximum_value != maximum_initial
+                || (catagories != null && catagory_names != null
+                && catagories.length != catagory_names.length)) {
+            return true;
+        }
+        return false;
+    }
 
-	public double getMaximum_value() {
-		return maximum_value;
-	}
+    public boolean equals(SPLFilter f) {
+        if (layername != f.layername
+                || (catagories != null && f.catagories != null
+                && catagories.length != f.catagories.length)
+                || minimum_value != f.minimum_value
+                || maximum_value != f.maximum_value) {
+            return false;
+        }
+        return true;
+    }
 
-	public double getMinimum_initial() {
-		return minimum_initial;
-	}
+    public String getFilterString() {
+        /* TODO finish */
 
-	public double getMaximum_initial() {
-		return maximum_initial;
-	}
+        /*
+         * cases:
+         *
+         * catagorical
+         * - include all
+         * - include none
+         * - only; comma separated list of names
+         *
+         * continous
+         * - include all
+         * - include none
+         * - between x and y
+         *
+         */
 
-	public double maximum_value = 0;
+        if (catagory_names != null) {
+            if (catagories == null || catagories.length == 0) {
+                return "include none";
+            } else if (catagories.length == catagory_names.length) {
+                return "include all";
+            } else {
+                StringBuffer string = new StringBuffer();
+                for (int i : catagories) {
+                    if (string.length() == 0) {
+                        string.append("only; ");
+                        string.append(catagory_names[i]);
+                    } else {
+                        string.append(", ");
+                        string.append(catagory_names[i]);
+                    }
+                }
+                return string.toString();
+            }
+        } else {
+            /*if(minimum_value <= minimum_initial
+            && maximum_value >= maximum_initial){
+            return "include all";
+            }else if(minimum_value > maximum_value
+            || maximum_value < minimum_initial
+            || minimum_value > maximum_initial){
+            return "include none";
+            }else*/            {
+                return "between " + String.format("%.4f", ((float) minimum_value))
+                        + " and " + String.format("%.4f", ((float) maximum_value));
+            }
+        }
 
-	public double minimum_initial = 0;
-	public double maximum_initial = 0;
-
-	/* only works if created with constructor and 'catagories' Set validity is maintained */
-	public boolean isChanged(){
-		if(minimum_value != minimum_initial
-				|| maximum_value != maximum_initial
-				|| (catagories != null && catagory_names != null
-						&& catagories.length != catagory_names.length)){
-				return true;
-		}
-		return false;
-	}
-
-	public boolean equals(SPLFilter f){
-		if(layername != f.layername ||
-				(catagories != null && f.catagories != null &&
-						catagories.length != f.catagories.length)
-				|| minimum_value != f.minimum_value
-				|| maximum_value != f.maximum_value){
-			return false;
-		}
-		return true;
-	}
-
-	public String getFilterString(){
-		/* TODO finish */
-
-		/*
-		 * cases:
-		 *
-		 * catagorical
-		 * - include all
-		 * - include none
-		 * - only; comma separated list of names
-		 *
-		 * continous
-		 * - include all
-		 * - include none
-		 * - between x and y
-		 *
-		 */
-
-		if(catagory_names != null){
-			if(catagories == null || catagories.length == 0){
-				return "include none";
-			}else if(catagories.length == catagory_names.length){
-				return "include all";
-			}else{
-				StringBuffer string = new StringBuffer();
-				for(int i : catagories){
-					if(string.length() == 0){
-						string.append("only; ");
-						string.append(catagory_names[i]);
-					}else{
-						string.append(", ");
-						string.append(catagory_names[i]);
-					}
-				}
-				return string.toString();
-			}
-		}else{
-			/*if(minimum_value <= minimum_initial
-					&& maximum_value >= maximum_initial){
-				return "include all";
-			}else if(minimum_value > maximum_value
-					|| maximum_value < minimum_initial
-					|| minimum_value > maximum_initial){
-				return "include none";
-			}else*/{
-				return "between " + String.format("%.4f", ((float) minimum_value))
-				+ " and " + String.format("%.4f",((float)maximum_value));
-			}
-		}
-
-	}
+    }
 
     public void setCatagories(int[] catagories) {
         this.catagories = catagories;
@@ -159,7 +156,7 @@ public class SPLFilter {
         this.count = count;
     }
 
-    public void setLayer(Layer layer) {
+    public void setLayer(JSONObject layer) {
         this.layer = layer;
     }
 
@@ -190,6 +187,4 @@ public class SPLFilter {
     public void setFilterString(String filterString) {
         this.filterString = filterString;
     }
-
-        
 }

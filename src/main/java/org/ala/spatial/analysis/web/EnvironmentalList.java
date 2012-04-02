@@ -4,6 +4,7 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.util.LayerUtilities;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Set;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -82,6 +83,14 @@ public class EnvironmentalList extends Listbox {
                 }
             }
         }
+
+        java.util.Collections.sort(listEntries, new Comparator<ListEntry>() {
+
+            @Override
+            public int compare(ListEntry e1, ListEntry e2) {
+                return (e1.catagory1 + " " + e1.catagory2).compareTo(e2.catagory1 + " " + e2.catagory2);
+            }
+        });
     }
 
     public void setupList() {
@@ -182,15 +191,17 @@ public class EnvironmentalList extends Listbox {
         }
 
         for (Object o : getSelectedItems()) {
-
             ListEntry l = listEntries.get(((Listitem) o).getIndex());
+            l.value = 0;
+            String[] domain;
             if (l.type.equalsIgnoreCase("environmental")
                     && l.layerObject != null && l.layerObject.containsKey("fields")
                     && (fieldId = getFieldId(l.layerObject)) != null
-                    && CommonData.getDistancesMap().get(fieldId) != null) {
+                    && CommonData.getDistancesMap().get(fieldId) != null
+                    && (domain = getDomain(l.layerObject)) != null) {
                 for (ListEntry le : listEntries) {
                     if (le.layerObject != null && le.layerObject.containsKey("fields")
-                            && isSameDomain(getDomain(le.layerObject), getDomain(l.layerObject))) {
+                            && isSameDomain(getDomain(le.layerObject), domain)) {
                         String fieldId2 = getFieldId(le.layerObject);
 
                         Double d = CommonData.getDistancesMap().get(fieldId).get(fieldId2);
@@ -207,11 +218,11 @@ public class EnvironmentalList extends Listbox {
             String type = listEntries.get(i).type;
             Listcell lc = (Listcell) (getItemAtIndex(i).getLastChild());
             if (type.equalsIgnoreCase("environmental")) {
-                if (!getSelectedItems().isEmpty() && threasholds[0] > value) {
+                if (threasholds[0] > value) {
                     lc.setSclass("lcRed");//setStyle("background: #bb2222;");
-                } else if (!getSelectedItems().isEmpty() && threasholds[1] > value) {
+                } else if (threasholds[1] > value) {
                     lc.setSclass("lcYellow");//lc.setStyle("background: #ffff22;");
-                } else if (getSelectedItems().isEmpty() || 1 >= value) {
+                } else if (1 >= value) {
                     lc.setSclass("lcGreen");//lc.setStyle("background: #22aa22;");
                 } else {
                     lc.setSclass("lcWhite");//lc.setStyle("background: #ffffff;");

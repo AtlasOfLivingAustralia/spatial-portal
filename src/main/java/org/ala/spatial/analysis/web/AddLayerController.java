@@ -80,7 +80,7 @@ public class AddLayerController extends AddToolComposer {
                         uid = jo.getString("id");
                         type = jo.getString("type");
                         treeName = StringUtils.capitalize(jo.getString("displayname"));
-                        treePath = CommonData.geoServer + "/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:" + s + "&format=image/png&styles=";
+                        treePath = jo.getString("displaypath");
                         legendurl = CommonData.geoServer + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
                         metadata = CommonData.layersServer + "/layers/view/more/" + uid;
                         break;

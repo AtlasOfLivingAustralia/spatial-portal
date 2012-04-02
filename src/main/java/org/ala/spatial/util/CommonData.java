@@ -49,7 +49,6 @@ public class CommonData {
     static final String MAX_Q_LENGTH = "max_q_length";
     static final String BIOCACHE_QC = "biocache_qc";
     static final String ANALYSIS_LAYER_SETS = "analysis_layer_sets";
-
     //(2) for EnvironmentalList
     static JSONObject distances;
     static HashMap<String, HashMap<String, Double>> distances_map;
@@ -210,22 +209,26 @@ public class CommonData {
 
             int result = client.executeMethod(get);
 
-            if(result == 200) {
+            if (result == 200) {
                 copy_distances = JSONObject.fromObject(get.getResponseBodyAsString());
 
                 //make map
                 copy_distances_map = new HashMap<String, HashMap<String, Double>>();
-                for(Object okey : copy_distances.keySet()) {
-                    Double d = copy_distances.getDouble((String)okey);
-                    String [] parts = ((String)okey).split(" ");
+                for (Object okey : copy_distances.keySet()) {
+                    Double d = copy_distances.getDouble((String) okey);
+                    String[] parts = ((String) okey).split(" ");
 
                     HashMap<String, Double> part = copy_distances_map.get(parts[0]);
-                    if(part == null) copy_distances_map.put(parts[0], part = new HashMap<String, Double>());
+                    if (part == null) {
+                        copy_distances_map.put(parts[0], part = new HashMap<String, Double>());
+                    }
                     part.put(parts[1], d);
 
 
                     part = copy_distances_map.get(parts[1]);
-                    if(part == null) copy_distances_map.put(parts[1], part = new HashMap<String, Double>());
+                    if (part == null) {
+                        copy_distances_map.put(parts[1], part = new HashMap<String, Double>());
+                    }
                     part.put(parts[0], d);
                 }
             }
@@ -250,7 +253,7 @@ public class CommonData {
 
             int result = client.executeMethod(get);
 
-            if(result == 200) {
+            if (result == 200) {
                 copy_layerlistJSON = JSONArray.fromObject(get.getResponseBodyAsString());
             }
 
@@ -267,35 +270,35 @@ public class CommonData {
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(fieldsURL);
         int result = client.executeMethod(get);
-        if(result != 200) {
+        if (result != 200) {
             throw new Exception("cannot retrive field list: " + fieldsURL);
         }
         String fields = get.getResponseBodyAsString();
         JSONArray ja = JSONArray.fromObject(fields);
 
         //attach to a new JSONArray in joLayers named "fields"
-        for(int j=0;j<joLayers.size();j++) {
+        for (int j = 0; j < joLayers.size(); j++) {
             JSONObject layer = joLayers.getJSONObject(j);
-            if(layer.containsKey("id")) {
-                for(int i=0;i<ja.size();i++) {
+            if (layer.containsKey("id")) {
+                for (int i = 0; i < ja.size(); i++) {
                     JSONObject jo = ja.getJSONObject(i);
-                    if(jo.containsKey("spid") && jo.getString("spid").equals(layer.getString("id"))) {
+                    if (jo.containsKey("spid") && jo.getString("spid").equals(layer.getString("id"))) {
                         //add to layer
-                        if(!layer.containsKey("fields")) {
+                        if (!layer.containsKey("fields")) {
                             layer.put("fields", new JSONArray());
                         }
                         layer.getJSONArray("fields").add(jo);
 
                         //add classes to this field
-                        if(jo.containsKey("id") &&
-                                jo.containsKey("type") && jo.getString("type").equalsIgnoreCase("c")
-                                && jo.containsKey("analysis") && jo.getString("analysis").equalsIgnoreCase("true")) {
-                            System.out.println("getting classes for: " + jo.getString("id"));
-                            JSONArray classes = getFieldClasses(jo.getString("id"));
-                            if(classes != null) {
-                                jo.put("classes", classes);
-                            }
-                        }                        
+//                        if(jo.containsKey("id") &&
+//                                jo.containsKey("type") && jo.getString("type").equalsIgnoreCase("c")
+//                                && jo.containsKey("analysis") && jo.getString("analysis").equalsIgnoreCase("true")) {
+//                            System.out.println("getting classes for: " + jo.getString("id"));
+//                            JSONArray classes = getFieldClasses(jo.getString("id"));
+//                            if(classes != null) {
+//                                jo.put("classes", classes);
+//                            }
+//                        }
                     }
                 }
             }
@@ -310,7 +313,7 @@ public class CommonData {
             GetMethod get = new GetMethod(url);
             int result = client.executeMethod(get);
 
-            if(result == 200) {
+            if (result == 200) {
                 classes = JSONArray.fromObject(get.getResponseBodyAsString());
 
 //                if(ja != null) {
@@ -427,22 +430,22 @@ public class CommonData {
 
                     //others
                     String spcode = null;
-                    if(jo.containsKey("spcode")) {
+                    if (jo.containsKey("spcode")) {
                         spcode = jo.getString("spcode");
                     }
                     lsid = null;
-                    if(jo.containsKey("lsid")) {
+                    if (jo.containsKey("lsid")) {
                         lsid = jo.getString("lsid");
                     }
                     String pid = null;
-                    if(jo.containsKey("pid")) {
+                    if (jo.containsKey("pid")) {
                         pid = jo.getString("pid");
                     }
                     String type = null;
-                    if(jo.containsKey("type")) {
+                    if (jo.containsKey("type")) {
                         type = jo.getString("type");
                     }
-                    copy_species_wms_layers_by_spcode.put(spcode, new String[]{jo.getString("scientific"),jo.getString("wmsurl"), m, lsid,pid,type});
+                    copy_species_wms_layers_by_spcode.put(spcode, new String[]{jo.getString("scientific"), jo.getString("wmsurl"), m, lsid, pid, type});
                 }
             }
 
@@ -458,7 +461,7 @@ public class CommonData {
             copy_checklistspecies_spcode_layers = new HashMap<String, String[]>();
             copy_checklistspecies_wms_layers_by_spcode = new HashMap<String, String[]>();
 
-            if(result == 200) {
+            if (result == 200) {
                 slist = get.getResponseBodyAsString();
                 ja = JSONArray.fromObject(slist);
                 System.out.println(ja.size() + " species wms checklists");
@@ -515,7 +518,7 @@ public class CommonData {
 
                         //by spcode
                         String spcode = jo.getString("spcode");
-                        copy_checklistspecies_wms_layers_by_spcode.put(spcode, new String[]{jo.getString("scientific"),jo.getString("wmsurl"), m});
+                        copy_checklistspecies_wms_layers_by_spcode.put(spcode, new String[]{jo.getString("scientific"), jo.getString("wmsurl"), m});
                     }
                 }
             }
@@ -588,7 +591,8 @@ public class CommonData {
         }
         return wms;
     }
-     /**
+
+    /**
      * returns array of spcode species requests
      */
     static public String[] getSpeciesDistributionSpcode(String lsids) {
@@ -615,6 +619,7 @@ public class CommonData {
         }
         return wms;
     }
+
     /**
      * returns array of WMS species requests
      */
@@ -670,7 +675,8 @@ public class CommonData {
         }
         return wms;
     }
-     /**
+
+    /**
      * returns array of spcode species requests
      */
     static public String[] getSpeciesChecklistSpcode(String lsids) {
@@ -704,7 +710,7 @@ public class CommonData {
 
     public static String getLayerFacetName(String layer) {
         String facetName = layerToFacet.get(layer.toLowerCase());
-        if(facetName == null) {
+        if (facetName == null) {
             facetName = layer;
         }
         return facetName;
@@ -720,7 +726,7 @@ public class CommonData {
 
     public static String getFacetLayerDisplayName(String facet) {
         String displayName = facetToLayerDisplayName.get(facet);
-        if(displayName == null) {
+        if (displayName == null) {
             displayName = facet;
         }
         return displayName;
@@ -823,9 +829,9 @@ public class CommonData {
                 String[] list = settings.get(ANALYSIS_LAYER_SETS).split("\\|");
 
                 for (String row : list) {
-                    if(row.length() > 0) {
+                    if (row.length() > 0) {
                         String[] cells = row.split("//");
-                        if(cells.length == 2) {
+                        if (cells.length == 2) {
                             a.add(new LayerSelection(cells[0].trim(), cells[1].trim()));
                         }
                     }
@@ -838,16 +844,16 @@ public class CommonData {
         analysisLayerSets = a;
     }
 
-    public static String [] getSpeciesDistributionWMSFromSpcode(String spcode) {
-        if(species_wms_layers_by_spcode == null) {
+    public static String[] getSpeciesDistributionWMSFromSpcode(String spcode) {
+        if (species_wms_layers_by_spcode == null) {
             return null;
         }
 
         return species_wms_layers_by_spcode.get(spcode);
     }
 
-    public static String [] getSpeciesChecklistWMSFromSpcode(String spcode) {
-        if(checklistspecies_wms_layers_by_spcode == null) {
+    public static String[] getSpeciesChecklistWMSFromSpcode(String spcode) {
+        if (checklistspecies_wms_layers_by_spcode == null) {
             return null;
         }
 
@@ -856,10 +862,10 @@ public class CommonData {
 
     public static int getSpeciesChecklistCountByWMS(String lookForWMS) {
         int count = 0;
-        if(checklistspecies_wms_layers != null) {
-            for(String [] wms : checklistspecies_wms_layers.values()) {
-                for(int i=0;i<wms.length;i++) {
-                    if(wms[i].equals(lookForWMS)) {
+        if (checklistspecies_wms_layers != null) {
+            for (String[] wms : checklistspecies_wms_layers.values()) {
+                for (int i = 0; i < wms.length; i++) {
+                    if (wms[i].equals(lookForWMS)) {
                         count++;
                     }
                 }

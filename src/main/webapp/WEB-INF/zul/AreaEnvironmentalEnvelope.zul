@@ -71,7 +71,6 @@
                                     <hbox>
                                         <button label="Update species count" id="apply_continous" sclass="goButton" autodisable="self"/>
                                         <button label="Remove" id="remove_continous" sclass="goButton" />
-                                        <button label="preview results" id="preview_continous" visible="false"/>
                                     </hbox>
                                 </vbox>
                             </div>

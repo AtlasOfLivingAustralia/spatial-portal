@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.logger.client.RemoteLogger;
@@ -78,13 +77,11 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpRequest;
 import org.apache.log4j.MDC;
 import org.geotools.xml.Encoder;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
-import org.zkoss.zk.ui.IdSpace;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
@@ -93,8 +90,6 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.OpenEvent;
-import org.zkoss.zk.ui.ext.Scope;
-import org.zkoss.zk.ui.ext.ScopeListener;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zk.ui.util.SessionInit;
 import org.zkoss.zul.Caption;
@@ -321,7 +316,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    void reloadMapLayerNowAndIndexes(MapLayer selectedLayer) {
+    public void reloadMapLayerNowAndIndexes(MapLayer selectedLayer) {
         if (safeToPerformMapAction()) {
             PortalSession portalSession = (PortalSession) Executions.getCurrent().getDesktop().getSession().getAttribute("portalSession");
 
@@ -1441,7 +1436,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                                     + "  new OpenLayers.Projection('EPSG:4326'),"
                                     + "  map.getProjectionObject()), true);";
                             openLayersJavascript.setAdditionalScript(script);
-                        } else {                        
+                        } else {
 //                            if(bb.startsWith("n")) {
 //                                openLayersJavascript.setAdditionalScript("map.zoomToExtent(new OpenLayers.Bounds("
 //                                    + bb.substring(1) + ")"
