@@ -238,6 +238,10 @@ public class EnvironmentalList extends Listbox {
         String[] thisDomain;
 
         if (!singleDomain || firstDomain == null) {
+            for (int i = 0; i < listEntries.size(); i++) {
+                boolean defaultDisable = disableContextualLayers && listEntries.get(i).type.equalsIgnoreCase("contextual");
+                getItemAtIndex(i).setDisabled(defaultDisable);
+            }
             return;
         }
 
@@ -245,6 +249,7 @@ public class EnvironmentalList extends Listbox {
             ListEntry l = listEntries.get(i);
             if (l.layerObject != null
                     && (thisDomain = getDomain(l.layerObject)) != null) {
+                boolean defaultDisable = disableContextualLayers && listEntries.get(i).type.equalsIgnoreCase("contextual");
                 boolean match = false;
                 for (String d1 : firstDomain) {
                     for (String d2 : thisDomain) {
@@ -253,7 +258,7 @@ public class EnvironmentalList extends Listbox {
                         }
                     }
                 }
-                getItemAtIndex(i).setDisabled(!match);
+                getItemAtIndex(i).setDisabled(defaultDisable || !match);
                 if (!match && getItemAtIndex(i).isSelected()) {
                     toggleItemSelection(getItemAtIndex(i));
                 }
