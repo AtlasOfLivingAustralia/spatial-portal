@@ -260,6 +260,10 @@ public class MapLayerMetadata implements Serializable {
     }
 
     public void setBbox(List<Double> bbox) {
+        bbox.set(0,Math.max(-180.0,bbox.get(0)));
+        bbox.set(1,Math.max(-90.0,bbox.get(1)));
+        bbox.set(2,Math.min(180.0,bbox.get(2)));
+        bbox.set(3,Math.min(90.0,bbox.get(3)));
         this.bbox = bbox;
     }
 
