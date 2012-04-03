@@ -53,7 +53,7 @@ public class AddLayerController extends AddToolComposer {
 
     @Override
     public void onClick$btnOk(Event event) {
-        super.onClick$btnOk(event);
+        //super.onClick$btnOk(event);
         if (currentStep == 1) {
             loadMap(event);
         }
