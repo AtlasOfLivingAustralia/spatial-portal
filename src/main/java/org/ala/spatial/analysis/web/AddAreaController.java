@@ -8,6 +8,7 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.List;
 import java.util.Map;
 import org.ala.logger.client.RemoteLogger;
+import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -81,7 +82,7 @@ public class AddAreaController extends UtilityComposer {
         } else if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {
             windowName = "WEB-INF/zul/AreaEnvironmentalEnvelope.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {
-            String wkt = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
+            String wkt = CommonData.AUSTRALIA_WKT;
             String layerName = mc.getNextAreaLayerName("Australia Bounding Box");
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
@@ -92,8 +93,7 @@ public class AddAreaController extends UtilityComposer {
             md.setMoreInfo(LayersUtil.getMetadata("Australia " + wkt));
             remoteLogger.logMapArea(layerName, "Area - BoxAustralia", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
-            //String wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
-            String wkt = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 89.999,179.999 -89.999,-179.999 -89.999))";
+            String wkt = CommonData.WORLD_WKT;
             String layerName = mc.getNextAreaLayerName("World Bounding Box");
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
