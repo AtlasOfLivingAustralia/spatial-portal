@@ -258,6 +258,13 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                     gid = id.substring("srichness_".length());
                     filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
                     name = "Species Richness";
+                } else if (id.startsWith("gdm_")) {
+                    //gdm layer
+                    String[] gdmparts = id.split("_");
+                    gid = gdmparts[2];
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1];
+                    Layer tmpLayer = layerDao.getLayerByName(gdmparts[1].replaceAll("Tran", ""));
+                    name = "Transformed " + tmpLayer.getDisplayname();
                 } else if (id.startsWith("envelope_")) {
                     //envelope layer
                     gid = id.substring("envelope_".length());
@@ -416,6 +423,13 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                     //species richness layer
                     gid = fid.substring("srichness_".length());
                     filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
+                } else if (fid.startsWith("gdm_")) {
+                    //gdm layer
+                    String[] gdmparts = fid.split("_");
+                    gid = gdmparts[2];
+                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1];
+                    Layer tmpLayer = layerDao.getLayerByName(gdmparts[1].replaceAll("Tran", ""));
+                    filename = "Transformed " + tmpLayer.getDisplayname();
                 } else if (fid.startsWith("envelope_")) {
                     //envelope layer
                     gid = fid.substring("envelope_".length());
