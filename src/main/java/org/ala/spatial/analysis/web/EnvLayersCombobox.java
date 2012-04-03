@@ -95,7 +95,8 @@ public class EnvLayersCombobox extends Combobox {
                     String type = jo.getString("type");
                     String name = jo.getString("name");
 
-                    if (!type.equalsIgnoreCase("environmental")) {
+                    if (!type.equalsIgnoreCase("environmental") &&
+                            (includeLayers != null && !includeLayers.equalsIgnoreCase("AllLayers") && !includeLayers.equalsIgnoreCase("MixLayers"))) {
                         continue;
                     }
 

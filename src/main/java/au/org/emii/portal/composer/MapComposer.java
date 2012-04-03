@@ -1330,6 +1330,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String bb = null;
             int count = 0;
             boolean allTermFound = false;
+            Double lat = null;
+            Double lon = null;
+            Double radius = null;
             if (userParams != null) {
                 for (int i = 0; i < userParams.size(); i++) {
                     String key = userParams.get(i).getKey();
@@ -1371,6 +1374,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                                 value = value.substring(0, p + 1) + "\""
                                         + value.substring(p + 1) + "\"";
                             }
+
+                            //TODO: remove this when biocache is working
+                            if(value.contains("species_guid:")) {
+                                value = value.replace("\"", "");
+                            }
+
                             count++;
                             sb.append("(").append(value).append(")");
                         } else if (key.equals("qc")) {
@@ -1391,8 +1400,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             pointtype = value;
                         } else if (key.equals("bbox")) {
                             bb = value;
+                        } else if(key.equals("lat")) {
+                            lat = Double.parseDouble(value);
+                        } else if(key.equals("lon")) {
+                            lon = Double.parseDouble(value);
+                        } else if(key.equals("radius")) {
+                            radius = Double.parseDouble(value);
                         }
                     }
+                }
+
+                if(lat != null && lon != null && radius != null) {
+                    wkt = Util.createCircleJs(lon, lat, radius);
                 }
 
                 if (count == 1) {

@@ -425,10 +425,10 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 "var mapObj = window.frames.mapFrame.map;"
                 + "map.zoomToExtent("
                 + "	(new OpenLayers.Bounds("
-                + boundingBox.getMinLongitude() + ", "
-                + boundingBox.getMinLatitude() + ", "
-                + boundingBox.getMaxLongitude() + ", "
-                + boundingBox.getMaxLatitude()
+                + Math.max(-180, boundingBox.getMinLongitude()) + ", "
+                + Math.max(-85, boundingBox.getMinLatitude()) + ", "
+                + Math.min(180, boundingBox.getMaxLongitude()) + ", "
+                + Math.min(85, boundingBox.getMaxLatitude())
                 + ")).transform(mapObj.displayProjection, mapObj.projection) "
                 + "); ";
         return wrapWithSafeToProceed(script);

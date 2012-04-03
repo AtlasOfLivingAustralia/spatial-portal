@@ -305,7 +305,7 @@ public class DistributionsWCController extends UtilityComposer {
         html += "<tr class='md_grey-bg'><td class='md_th'>Max depth: </td><td class='md_spacer'/><td class='md_value'>" + row[8] + "</td></tr>";
         String lastClass = "";
         if (row[9] != null && row[9].length() > 0) {
-            html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + row[9] + "'>link</a></td></tr>";
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + row[9] + "'>" + row[9] + "'</a></td></tr>";
             lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
         }
         if (row[10] != null && row[10].length() > 0) {
@@ -355,7 +355,7 @@ public class DistributionsWCController extends UtilityComposer {
             lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
 
             if (jo != null && jo.containsKey("metadata_u")) {
-                html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + jo.getString("metadata_u") + "'>link</a></td></tr>";
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + jo.getString("metadata_u") + "'>" + jo.getString("metadata_u") + "</a></td></tr>";
                 lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
             }
             if (jo != null && jo.containsKey("area_name")) {
@@ -372,7 +372,8 @@ public class DistributionsWCController extends UtilityComposer {
                     String fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
                     String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
                     if (spid != null) {
-                        html += "<tr class='" + lastClass + "'><td class='md_th'>More about this area: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + CommonData.layersServer + "/layers/view/more/" + spid + "'>link</a></td></tr>";
+                        String layerInfoUrl = CommonData.layersServer + "/layers/view/more/" + spid;
+                        html += "<tr class='" + lastClass + "'><td class='md_th'>More about this area: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + layerInfoUrl + "'>" + layerInfoUrl + "</a></td></tr>";
                         lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
                     }
                 }

@@ -197,7 +197,7 @@ padding: 1px 0px 0px 5px;
                                     <vbox>
                                         <label value="Uncertainty Legend" />
                                         <hbox>
-                                            <image src="img/whitecircle.png" />
+                                            <image src="img/orangecircle.png" />
                                             <label value="&lt; 30km (mapped with actual radius)" />
                                         </hbox>
                                         <hbox>
