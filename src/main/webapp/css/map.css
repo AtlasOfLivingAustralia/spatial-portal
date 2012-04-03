@@ -684,7 +684,7 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     position: absolute;
     background-repeat: no-repeat;
     /*background-image: url('http://www.gisandchips.org/demos/j3m/panoramio/panoramio-marker.png');*/
-    background-image: url('../img/panoramio-marker-off.png');
+    /*background-image: url('../img/panoramio-marker-off.png');*/
     width: 16px! important;
     height: 16px! important;
     cursor: pointer;
@@ -692,4 +692,11 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     z-index: 110;
     top: 370px! important;
     left: 23px! important;
+}
+
+.imagesOn {
+    background-image: url('../img/images_on.png');
+}
+.imagesOff {
+    background-image: url('../img/images_off.png');
 }

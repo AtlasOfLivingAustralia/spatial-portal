@@ -6,6 +6,8 @@ package org.ala.spatial.analysis.web;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.composer.MapComposer;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
 import java.io.StringReader;
 import java.net.URL;
@@ -310,6 +312,8 @@ public class AddToolGDMComposer extends AddToolComposer {
 
             pid = get.getResponseBodyAsString();
 
+            loadMap(null);
+
             this.setVisible(false);
 
             getMapComposer().showMessage("Output for the GDM is available at http://spatial-dev.ala.org.au/output/gdm/" + pid + "/", getMapComposer());
@@ -386,6 +390,43 @@ public class AddToolGDMComposer extends AddToolComposer {
 
         return false;
     }
+
+    public void loadMap(Event event) {
+
+        String[] envlist = getSelectedLayers().split(":");
+
+        for (String env : envlist) {
+            String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:gdm_" + env + "Tran_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
+
+            String legendurl = CommonData.geoServer
+                    + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
+                    + "&LAYER=ALA:gdm_" + env + "Tran_" + pid
+                    + "&STYLE=alastyles";
+
+            System.out.println(legendurl);
+
+            String layername = "Tranformed " + CommonData.getFacetLayerDisplayName(env);
+            System.out.println("Converting " + env + " to " + CommonData.getFacetLayerDisplayName(env));
+            getMapComposer().addWMSLayer(pid+"_"+env, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.GDM, null, null);
+            MapLayer ml = getMapComposer().getMapLayer(pid+"_"+env);
+            ml.setData("pid", pid+"_"+env);
+            String infoUrl = CommonData.satServer + "/output/gdm/" + pid + "/gdm.html";
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                ml.setMapLayerMetadata(md);
+            }
+            md.setMoreInfo(infoUrl + "\nGDM Output\npid:" + pid);
+            md.setId(Long.valueOf(pid));
+        }
+
+        //this.detach();
+
+        //getMapComposer().showMessage("Reference number to retrieve results: " + pid);
+
+        //showInfoWindow("/output/maxent/" + pid + "/species.html");
+    }
+
 
     /**
      * get CSV of speciesName, longitude, latitude in [0] and

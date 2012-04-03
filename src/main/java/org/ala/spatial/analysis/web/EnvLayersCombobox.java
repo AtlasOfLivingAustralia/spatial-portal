@@ -157,8 +157,13 @@ public class EnvLayersCombobox extends Combobox {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "Prediction";
-                        name = (String) ml.getData("pid");
-                    } else if (ml.getSubType() == LayerUtilities.ODENSITY) {
+                        name = (String)ml.getData("pid");
+                    } else if(ml.getSubType() == LayerUtilities.GDM) {
+                        type = "environmental";
+                        classification1 = "Analysis";
+                        classification2 = "GDM";
+                        name = (String)ml.getData("pid");
+                    } else if(ml.getSubType() == LayerUtilities.ODENSITY) {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "Occurrence Density";

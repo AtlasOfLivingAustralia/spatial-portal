@@ -56,6 +56,8 @@ public class AddToolMaxentComposer extends AddToolComposer {
         this.selectedMethod = "Prediction";
         this.totalSteps = 5;
 
+        this.setIncludeAnalysisLayersForAnyQuery(true);
+
         this.loadAreaLayers();
         this.loadSpeciesLayers();
         this.loadGridLayers(true, true, true);

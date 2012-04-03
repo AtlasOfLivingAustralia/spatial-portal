@@ -229,7 +229,10 @@ padding: 1px 0px 0px 5px;
                     <label id="legendLabel" value="Click symbol to edit" />
                 </div>
                 <div  width="60%">
+                    <hbox>
                     <image id="legendImgUri" visible="false"/>
+                    <button id="btnActivateHover" label="Browse environmental point values" href="javascript:window.mapFrame.mytoggle(this);" visible="false" />
+                    </hbox>
                 </div>
                 <div id="legendHtml" visible="true"/>
             </div>

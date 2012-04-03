@@ -10,7 +10,6 @@ import au.org.emii.portal.menu.MapLayerMetadata;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import org.zkoss.zul.Image;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -18,9 +17,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Vector;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import org.ala.spatial.util.UserData;
 import org.ala.spatial.util.Zipper;
@@ -32,19 +34,28 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
+import org.geotools.referencing.CRS;
+import org.geotools.renderer.lite.RendererUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
+import org.opengis.filter.identity.FeatureId;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
+import org.xml.sax.helpers.NamespaceSupport;
 import org.zkoss.util.media.Media;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.MouseEvent;
 import org.zkoss.zul.Button;
-import org.zkoss.zul.Combobox;
-import org.zkoss.zul.Comboitem;
+import org.zkoss.zul.Imagemap;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
+import org.zkoss.zul.Listhead;
+import org.zkoss.zul.Listheader;
 import org.zkoss.zul.Listitem;
 
 /**
@@ -53,10 +64,9 @@ import org.zkoss.zul.Listitem;
  */
 public class AreaUploadShapefileWizardController extends UtilityComposer {
 
-    Image img;
+    Imagemap img;
     Media media;
-    Combobox cbAttributes;
-    Listbox lbData;
+    Listbox lAttributes;
     Button btnRefresh;
     Button btnNext;
     SimpleFeatureSource source;
@@ -67,49 +77,59 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        //loadShape();
-        //ShapefileRenderer.generateShapeImage("");
-        //loadRemoteShape();
-        //img.setSrc("http://localhost/~ajay/pages/meow_.jpg");
 
-        //System.out.println(ShapefileRenderer.generateShapeImage("/Users/ajay/Downloads/MEOW_zip/MEOW2/meow_ecos.shp", "Arctic", "/Users/ajay/Downloads/MEOW_zip/"));
-
-        //executeShapeImageRenderer();
-
-//        System.out.println("Via args");
 //        Map args = Executions.getCurrent().getArg();
-//        System.out.println("args.length: " + args.size());
-//        System.out.println("mblah: " + args.get("mblah"));
 //
-//        System.out.println("via args.attr");
-//        Map args2 = Executions.getCurrent().getAttributes();
-//        System.out.println("args.attr.length: " + args2.size());
+//        layername = (String) args.get("layername");
 //
-//        System.out.println("Via setAttributes");
+//        media = (Media) args.get("media");
+//        System.out.println("Got media in wizard");
+//        System.out.println("m.getName(): " + media.getName());
+//        System.out.println("getContentType: " + media.getContentType());
+//        System.out.println("getFormat: " + media.getFormat());
 //
-//        String blah = (String)getAttribute("blah");
-//        System.out.println("Blah = " + blah);
 //
+//        System.out.println("Layer name: " + layername);
+//
+//        processMedia();
 
-        Map args = Executions.getCurrent().getArg();
+        img.addEventListener("onClick", new EventListener() {
 
-        layername = (String) args.get("layername");
-
-        media = (Media) args.get("media");
-        System.out.println("Got media in wizard");
-        System.out.println("m.getName(): " + media.getName());
-        System.out.println("getContentType: " + media.getContentType());
-        System.out.println("getFormat: " + media.getFormat());
+            public void onEvent(Event event) throws Exception {
+                imageClicked(event);
+            }
+        });
 
 
-        System.out.println("Layer name: " + layername);
 
-        processMedia();
+//        System.out.println("\n\n\nStart. ShapefileRenderer.generateShapeImage\n\n\n");
+//        System.out.println(ShapefileRenderer.generateShapeImage("/Users/ajay/Downloads/MEOW_zip/MEOW2/meow_ecos.shp", "/Users/ajay/Downloads/MEOW_zip/", "ECOREGION", "Baltic Sea"));
+//        System.out.println("\n\n\nEnd  . ShapefileRenderer.generateShapeImage\n\n\n");
+//
+//
+//
+        try {
+            File imgFile = new File("/data/ala/runtime/output/layers/meow_ecos_none.jpg");
+            if (imgFile.exists()) {
+                BufferedImage bi;
+                bi = ImageIO.read(imgFile);
+                img.setContent(bi);
+
+
+                loadShape("/Users/ajay/Downloads/MEOW_zip/MEOW2/meow_ecos.shp");
+            }
+        } catch (IOException ex) {
+            System.out.println("IO Exception loading the test meow image");
+            ex.printStackTrace(System.out);
+        } catch (Exception ex) {
+            System.out.println("Exception loading the test meow image");
+            ex.printStackTrace(System.out);
+        }
 
     }
 
     private void processMedia() {
-        Map input = Zipper.unzipFile(media.getName(), media.getStreamData(), getMapComposer().getSettingsSupplementary().getValue("analysis_output_dir")+"layers/");
+        Map input = Zipper.unzipFile(media.getName(), media.getStreamData(), getMapComposer().getSettingsSupplementary().getValue("analysis_output_dir") + "layers/");
         String type = "";
         //String file = "";
         if (input.containsKey("type")) {
@@ -138,7 +158,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             //String shapeout = "/Users/ajay/Downloads/MEOW_zip/";
             String shapeimageexe = getMapComposer().getSettingsSupplementary().getValue("shapeimagepath");
             //String shapeout = outputdirbase + "/layers/";
-            String shapeout = shapepath.substring(0, shapepath.lastIndexOf("/")+1);
+            String shapeout = shapepath.substring(0, shapepath.lastIndexOf("/") + 1);
 
             if (StringUtils.isBlank(column)) {
                 column = "none";
@@ -195,32 +215,58 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             source = dataStore.getFeatureSource(typenames[0]);
             features = source.getFeatures();
 
+            System.out.println("features.getID(): " + features.getID());
+
+            Listhead lhd = new Listhead();
             SimpleFeatureType schema = features.getSchema();
             for (AttributeType at : schema.getTypes()) {
                 if (schema.getDescriptor(at.getName()) == null) {
                     continue;
                 }
-                Comboitem ci = new Comboitem(at.getName().toString());
-                ci.setValue(at.getName().toString());
-                ci.setParent(cbAttributes);
+                Listheader lh = new Listheader(at.getName().toString());
+                lh.setParent(lhd);
             }
-            cbAttributes.setSelectedIndex(0);
+            lhd.setParent(lAttributes);
+
+            SimpleFeatureIterator fi = features.features();
+            while (fi.hasNext()) {
+                SimpleFeature f = fi.next();
+                Listitem li = new Listitem();
+                Listcell lc = null;
+                String value = "";
+
+                for (AttributeType at : schema.getTypes()) {
+                    if (schema.getDescriptor(at.getName()) == null) {
+                        continue;
+                    }
+                    Object obj = f.getAttribute(at.getName());
+                    if (obj == null) {
+                        value = f.getID();
+                    } else {
+                        value = String.valueOf(obj);
+                    }
+                    lc = new Listcell(value);
+
+                    lc.setParent(li);
+                }
+                li.setValue(f.getIdentifier());
+                //li.setValue(value);
+                li.setParent(lAttributes);
+            }
+
 
             // loadFeatures
             // check if only a single feature,
             // if so, then select it and map it automatically
             System.out.println("features.size(): " + features.size());
             if (features.size() > 1) {
-                System.out.println("Loading all features...");
-                loadFeatures((String) cbAttributes.getSelectedItem().getValue());
-                System.out.println("Generating image...");
-                executeShapeImageRenderer(file, "none", "none");
+//                executeShapeImageRenderer(file, "none", "none");
             } else {
                 System.out.println("only a single feature, bypassing wizard...");
                 ArrayList<String> tmpList = new ArrayList<String>();
-                SimpleFeatureIterator fi = features.features();
-                tmpList.add(String.valueOf(fi.next().getAttribute(cbAttributes.getValue())));
-                loadOnMap(cbAttributes.getValue(), tmpList);
+                fi = features.features();
+                //tmpList.add(String.valueOf(fi.next().getAttribute(cbAttributes.getValue())));
+                //loadOnMap(tmpList);
                 this.detach();
             }
 
@@ -232,65 +278,11 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
         }
     }
 
-    private void loadFeatures(String attribute) {
-        try {
-            lbData.getItems().clear();
-
-            System.out.println("Loading values for '" + attribute + "'");
-
-            ArrayList<String> tmpList = new ArrayList<String>();
-
-            SimpleFeatureIterator fi = features.features();
-            while (fi.hasNext()) {
-                SimpleFeature f = fi.next();
-                //System.out.println(" > " + f.getID() + " - " + f.getAttribute("ECOREGION") + " - " + f.getAttribute("PROVINCE"));
-                Listitem li = new Listitem();
-                Listcell lc = null;
-                String value = "";
-                if (StringUtils.isBlank(attribute)) {
-                    lc = new Listcell(f.getID());
-                } else {
-                    Object obj = f.getAttribute(attribute);
-                    if (obj == null) {
-                        value = f.getID();
-                    } else {
-                        value = String.valueOf(obj);
-                    }
-                    lc = new Listcell(value);
-                }
-                // check if the value is already added,
-                // if so, let's ignore it.
-                if (!tmpList.contains(value)) {
-                    lc.setParent(li);
-                    //li.setValue(f.getID());
-                    li.setValue(value);
-                    li.setParent(lbData);
-                    tmpList.add(value);
-                }
-            }
-
-//            // check if only a single feature,
-//            // if so, then select it and map it automatically
-//            if (tmpList.size() == 1) {
-//                loadOnMap(cbAttributes.getValue(), tmpList);
-//                return;
-//            }
-
-        } catch (Exception e) {
-            System.out.println("Unable to load features");
-            e.printStackTrace(System.out);
-        }
-    }
-
-    public void onSelect$cbAttributes(Event event) {
-        loadFeatures(cbAttributes.getValue());
-    }
-
     public void onClick$btnRefresh(Event event) {
-        String column = cbAttributes.getValue();
+        String column = "fid";
         String filter = "";
 
-        Iterator<Listitem> it = lbData.getSelectedItems().iterator();
+        Iterator<Listitem> it = lAttributes.getSelectedItems().iterator();
         while (it.hasNext()) {
             Listitem li = it.next();
             filter += li.getValue();
@@ -304,32 +296,34 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
     }
 
     public void onClick$btnNext(Event event) {
-
-        Iterator<Listitem> it = lbData.getSelectedItems().iterator();
-        ArrayList<String> items = new ArrayList<String>();
-        while (it.hasNext()) {
-            Listitem li = it.next();
-            items.add((String) li.getValue());
+        try {
+            final FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
+            Iterator<Listitem> it = lAttributes.getSelectedItems().iterator();
+            Set<FeatureId> IDs = new HashSet<FeatureId>();
+            while (it.hasNext()) {
+                Listitem li = it.next();
+                IDs.add((FeatureId) li.getValue());
+            }
+            //loadOnMap(IDs);
+            Filter filter = ff.id(IDs);
+            SimpleFeatureCollection sff = source.getFeatures(filter);
+            SimpleFeatureIterator fif = sff.features();
+            while (fif.hasNext()) {
+                SimpleFeature f = fif.next();
+                System.out.println("Selected Feature: " + f.getID() + " -> " + f.getAttribute("ECOREGION"));
+            }
+            this.detach();
+        } catch (Exception ex) {
+            System.out.println("Error iterating thru' features");
+            ex.printStackTrace(System.out);
         }
-
-        loadOnMap(cbAttributes.getValue(), items);
-
-        this.detach();
     }
 
-    private void loadOnMap(String column, ArrayList<String> items) {
+    private void loadOnMap(Set<FeatureId> IDs) {
         try {
-            if (items.size() == 0 || StringUtils.isBlank(column)) {
-                return;
-            }
-            
+            String column = "fid"; 
             final FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
-            ArrayList<Filter> filters = new ArrayList<Filter>();
-            Iterator<String> it = items.iterator();
-            while (it.hasNext()) {
-                filters.add(ff.like(ff.property(column), it.next()));
-            }
-            Filter filter = ff.or(filters);
+            Filter filter = ff.id(IDs);
             SimpleFeatureCollection sff = source.getFeatures(filter);
             SimpleFeatureIterator fif = sff.features();
             StringBuilder sb = new StringBuilder();
@@ -338,6 +332,10 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             ArrayList<Geometry> geoms = new ArrayList<Geometry>();
             while (fif.hasNext()) {
                 SimpleFeature f = fif.next();
+
+                System.out.println("Selected Feature: " + f.getID() + " -> " + f.getAttribute("ECOREGION"));
+
+
                 //geoms.add((Geometry) f.getDefaultGeometry());
 
 
@@ -404,12 +402,12 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             metadata += "Name: " + ud.getName() + " <br />\n";
             metadata += "Filename: " + ud.getFilename() + " <br />\n";
             metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
-            metadata += "Selected polygons (" + cbAttributes.getValue() + "): <br />\n";
+            metadata += "Selected polygons (fid): <br />\n";
             metadata += "<ul>";
-            it = items.iterator();
-            while (it.hasNext()) {
-                metadata += "<li>"+it.next()+"</li>";
-            }
+//            it = items.iterator();
+//            while (it.hasNext()) {
+//                metadata += "<li>" + it.next() + "</li>";
+//            }
             metadata += "</ul>";
 
             MapLayerMetadata mlmd = mapLayer.getMapLayerMetadata();
@@ -431,5 +429,30 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         this.detach();
+    }
+
+    public void imageClicked(Event event) {
+        try {
+            System.out.println("*************************");
+            System.out.println("Image clicked.");
+            System.out.println(event.getClass().getCanonicalName());
+            System.out.println(event.getData());
+            if (event instanceof MouseEvent) {
+                MouseEvent me = (MouseEvent) event;
+                System.out.println(me.getX() + ", " + me.getY());
+            }
+            System.out.println("*************************");
+            String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\"," + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]]," + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]]," + "  PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]]," + "  UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]]," + "  AXIS[\"Lat\",NORTH]," + "  AXIS[\"Long\",EAST]," + "  AUTHORITY[\"EPSG\",\"4326\"]]";
+            CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
+            //RendererUtilities.worldToScreenTransform(null, null, wgsCRS);
+            //org.opengis.filter.expression.PropertyName.getNamespaceContext
+            //org.opengis.filter.expression.PropertyName pn = new AttributeExpressionImpl(new )
+            NamespaceSupport ns = new NamespaceSupport();
+            RendererUtilities.worldToScreenTransform(null, null, wgsCRS);
+        } catch (TransformException ex) {
+            Logger.getLogger(AreaUploadShapefileWizardController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (FactoryException ex) {
+            Logger.getLogger(AreaUploadShapefileWizardController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

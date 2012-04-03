@@ -84,6 +84,7 @@ public class ContextualMenu extends UtilityComposer {
                 }
             } else if (layers.get(i).isGridLayer()
                     && layers.get(i).getSubType() != LayerUtilities.MAXENT
+                    && layers.get(i).getSubType() != LayerUtilities.GDM
                     && layers.get(i).getSubType() != LayerUtilities.ALOC) {
                 //TODO: grid test
                 if (gridLayer == null) {
@@ -140,9 +141,14 @@ public class ContextualMenu extends UtilityComposer {
                     (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         }
 
-//        if(gridLayer != null){
-//            actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
-//        }
+        if(gridLayer != null){
+            //actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
+            actions.add(new Action("Browse environmental point values", new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
+        }
+        if(polygonLayer != null){
+            //actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
+            actions.add(new Action("Browse environmental point values", new GridLayerHoverEvent(getMapComposer(), polygonLayer.getName())));
+        }
 
 
         return actions;

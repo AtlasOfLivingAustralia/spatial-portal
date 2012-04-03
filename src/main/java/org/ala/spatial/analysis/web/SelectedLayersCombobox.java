@@ -69,6 +69,8 @@ public class SelectedLayersCombobox extends Combobox {
                     name = (String)ml.getData("pid");
                 } else if(ml.getSubType() == LayerUtilities.MAXENT) {
                     name = (String)ml.getData("pid");
+                } else if(ml.getSubType() == LayerUtilities.GDM) {
+                    name = (String)ml.getData("pid");
                 } else if(ml.getSubType() == LayerUtilities.ODENSITY) {
                     name = (String)ml.getData("pid");
                 } else if(ml.getSubType() == LayerUtilities.SRICHNESS) {

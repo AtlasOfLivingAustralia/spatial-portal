@@ -75,6 +75,7 @@ var autoBaseLayerSwitch = false;
 var baseLayerSwitchStatus = 0;
 var activeAreaPresent = false;
 var shownPicture = false;
+var shownPicturePopup = false;
 var vectorLayer;
 
 
@@ -151,13 +152,13 @@ var bLayer,bLayer2,bLayer3,bLayer4;
 function loadBaseMap() {
     goToLocation(134, -25, 4);
     
-    // Google.v3 uses EPSG:900913 as projection, so we have to
-    // transform our coordinates
-    //    map.setCenter(
-    //        new OpenLayers.LonLat(134, -25).transform(
-    //            new OpenLayers.Projection("EPSG:4326"),
-    //            map.getProjectionObject()),
-    //        4);
+// Google.v3 uses EPSG:900913 as projection, so we have to
+// transform our coordinates
+//    map.setCenter(
+//        new OpenLayers.LonLat(134, -25).transform(
+//            new OpenLayers.Projection("EPSG:4326"),
+//            map.getProjectionObject()),
+//        4);
 
 //    $(window).resize(function() {
 //        setTimeout("map.pan(1,1);",500);
@@ -288,7 +289,7 @@ function buildMapReal() {
         'map': map
     }, {
         'click': function(e) {
-            //envLayerInspection(e);
+        //envLayerInspection(e);
         }
     });
     clickEventHandler.activate();
@@ -308,8 +309,8 @@ function buildMapReal() {
 
     map.events.register("moveend" , map, function (e) {
         parent.setExtent();
-        if (shownPicture){
-            removePanoramio();
+        if (shownPicture && !shownPicturePopup){
+            removePanoramio(false);
             loadPanoramio(0,49);
         }
         Event.stop(e);
@@ -1469,7 +1470,7 @@ function envLayerNearest(e) {
                 var pointFeature = new OpenLayers.Feature.Vector(point);
                 pointFeature.attributes = {
                     name: ret[i].name
-                    };
+                };
                 try {
                     markers.addFeatures([pointFeature]);
                 } catch (err) {
@@ -1508,10 +1509,10 @@ function initMarkersLayer() {
                 labelYOffset: "0"
             }
         }),
-    renderers: renderer
+        renderers: renderer
     });
 
-map.addLayer(markers);
+    map.addLayer(markers);
 }
 var hovercontrol = null;
 var hovercontrolprevpos = null;
@@ -1745,32 +1746,32 @@ function getOccurrenceUploaded(layer, query, lat, lon, start, pos, dotradius) {
 
 function checkIfLoadPanoramio() {
     if (!shownPicture){
-        document.getElementById("addPanoramio").style.backgroundImage = "url('img/panoramio-marker.png')";
         panoramioLoadingImage("block");
         loadPanoramio(0,49);
     }
     else {
-        removePanoramio();
-        document.getElementById("addPanoramio").style.backgroundImage = "url('img/panoramio-marker-off.png')";
+        removePanoramio(true);
     }
+
+    $('#addPanoramio').toggleClass('imagesOff').toggleClass('imagesOn');
 }
 
 function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
-   panoramioLoading++;
-   //document.getElementById("addPanoramio").style.backgroundImage = "url('img/panoramio-marker.png')";
-   var popup, selectControl, selectedFeature;
-   var panoramio_style;
+    panoramioLoading++;
+    //document.getElementById("addPanoramio").style.backgroundImage = "url('img/panoramio-marker.png')";
+    var popup, selectControl, selectedFeature;
+    var panoramio_style;
     //Obtain Bbox coords
-   var proj = new OpenLayers.Projection("EPSG:4326");
-   var ext = map.getExtent().transform(map.getProjectionObject(), proj);
-   var minx = ext.left;
-   var miny = ext.bottom;
-   var maxx = ext.right;
-   var maxy = ext.top;
+    var proj = new OpenLayers.Projection("EPSG:4326");
+    var ext = map.getExtent().transform(map.getProjectionObject(), proj);
+    var minx = ext.left;
+    var miny = ext.bottom;
+    var maxx = ext.right;
+    var maxy = ext.top;
 
-   url = "http://www.panoramio.com/map/get_panoramas.php";
-   var parameters = {
-        order:'popularity',
+    url = "http://www.panoramio.com/map/get_panoramas.php";
+    var parameters = {
+        order:'public',
         set:'full',
         from:pictureIndexFrom,
         to:pictureIndexTo,
@@ -1778,124 +1779,146 @@ function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
         miny: miny,
         maxx: maxx,
         maxy: maxy,
-        size:'thumbnail'
-   };
+        size:'thumbnail',
+        mapfilter: true
+    };
 
-   OpenLayers.loadURL(url, parameters, this, showPhotos);
+    OpenLayers.loadURL(url, parameters, this, showPhotos);
 
-   function showPhotos(response) {
-      var json = new OpenLayers.Format.JSON();
-      var panoramio = json.read(response.responseText);
-      var features = new Array(panoramio.photos.length);
+    function showPhotos(response) {
+        var json = new OpenLayers.Format.JSON();
+        var panoramio = json.read(response.responseText);
+        var features = new Array(panoramio.photos.length);
 
-      for (var i = 0; i < panoramio.photos.length; i++)
-      {
-        var upload_date = panoramio.photos[i].upload_date;
-        var owner_name = panoramio.photos[i].owner_name;
-        var photo_id = panoramio.photos[i].photo_id;
-        var longitude =panoramio.photos[i].longitude;
-        var latitude = panoramio.photos[i].latitude;
-        var pheight = panoramio.photos[i].height;
-        var pwidth = panoramio.photos[i].width;
-        var photo_title = panoramio.photos[i].photo_title;
-        var owner_url = panoramio.photos[i].owner_url;
-        var owner_id = panoramio.photos[i].owner_id;
-        var photo_file_url = panoramio.photos[i].photo_file_url;
-        var photo_url = panoramio.photos[i].photo_url;
+        for (var i = 0; i < panoramio.photos.length; i++)
+        {
+            var upload_date = panoramio.photos[i].upload_date;
+            var owner_name = panoramio.photos[i].owner_name;
+            var photo_id = panoramio.photos[i].photo_id;
+            var longitude =panoramio.photos[i].longitude;
+            var latitude = panoramio.photos[i].latitude;
+            var pheight = panoramio.photos[i].height;
+            var pwidth = panoramio.photos[i].width;
+            var photo_title = panoramio.photos[i].photo_title;
+            var owner_url = panoramio.photos[i].owner_url;
+            var owner_id = panoramio.photos[i].owner_id;
+            var photo_file_url = panoramio.photos[i].photo_file_url;
+            var photo_url = panoramio.photos[i].photo_url;
 
-       var fpoint = new OpenLayers.Geometry.Point(longitude,latitude);
-       fpoint.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
-       var attributes = {
-           'upload_date' : upload_date,
-           'owner_name':owner_name,
-           'photo_id':photo_id,
-           'longitude':longitude,
-           'latitude':latitude,
-           'pheight':pheight,
-           'pwidth':pwidth,
-           'pheight':pheight,
-           'photo_title':photo_title,
-           'owner_url':owner_url,
-           'owner_id':owner_id,
-           'photo_file_url':photo_file_url,
-           'photo_url':photo_url
-       }
+            var fpoint = new OpenLayers.Geometry.Point(longitude,latitude);
+            fpoint.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
+            var attributes = {
+                'upload_date' : upload_date,
+                'owner_name':owner_name,
+                'photo_id':photo_id,
+                'longitude':longitude,
+                'latitude':latitude,
+                'pheight':pheight,
+                'pwidth':pwidth,
+                'pheight':pheight,
+                'photo_title':photo_title,
+                'owner_url':owner_url,
+                'owner_id':owner_id,
+                'photo_file_url':photo_file_url,
+                'photo_url':photo_url
+            }
 
-       features[i] = new OpenLayers.Feature.Vector(fpoint,attributes);
+            features[i] = new OpenLayers.Feature.Vector(fpoint,attributes);
 
-      }//Outside for loop
-      panoramio_style = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults({
-         pointRadius: 15,
-         fillColor: "red",
-         fillOpacity: 1,
-         strokeColor: "black",
-         externalGraphic: "${photo_file_url}"
-         //externalGraphic: "img/panoramio-marker.png"
-      }, OpenLayers.Feature.Vector.style["default"]));
+        }//Outside for loop
+        panoramio_style = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults({
+            pointRadius: 15,
+            fillColor: "red",
+            fillOpacity: 1,
+            strokeColor: "black",
+            externalGraphic: "${photo_file_url}",
+            select: {
+                fillColor: "red",
+                pointRadius: 20,
+                strokeColor: "yellow",
+                strokeWidth: 3
+            }
+        //externalGraphic: "img/panoramio-marker.png"
+        }, OpenLayers.Feature.Vector.style["default"]));
 
-       vectorLayer = new OpenLayers.Layer.Vector("Panoramio Photos", {
-          styleMap: panoramio_style
-       });
-       registerPanoramio(vectorLayer);
-       vectorLayer.addFeatures(features);
-       this.map.addLayer(vectorLayer);       
-       selectControl = new OpenLayers.Control.SelectFeature(vectorLayer, {onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
-       this.map.addControl(selectControl);
-       selectControl.activate();
-       shownPicture = true;
-     }//End showPhotos
+        vectorLayer = new OpenLayers.Layer.Vector("Panoramio Photos", {
+            styleMap: panoramio_style
+        });
+        registerPanoramio(vectorLayer);
+        vectorLayer.addFeatures(features);
+        this.map.addLayer(vectorLayer);
+        selectControl = new OpenLayers.Control.SelectFeature(vectorLayer, {
+            onSelect: onFeatureSelect,
+            onUnselect: onFeatureUnselect
+        });
+        this.map.addControl(selectControl);
+        selectControl.activate();
+        shownPicture = true;
+    }//End showPhotos
 
-       // popups
-       function onPopupClose(evt) {
-          selectControl.unselect(selectedFeature);
-       }
+    function onFeatureSelect(feature) {
+        selectedFeature = feature;
 
-       function onFeatureSelect(feature) {
-          selectedFeature = feature;
+        // HTML PopUp
+        var html = "<a href='http://www.panoramio.com/' target='_blank'><img src='img/panoramio_logo_small.gif' /></a><br />";
+        html += "<a href='"+feature.attributes.photo_url + "' target='_blank'>";
+        html += "<img src ='http://mw2.google.com/mw-panoramio/photos/small/"+feature.attributes.photo_id + ".jpg' border = '3' alt ='"+feature.attributes.photo_title +"' />";
+        html += "</a><br />";
+        html += "<a href='"+feature.attributes.photo_url + "' target='_blank'><strong>"+feature.attributes.photo_title +"</strong></a><br />";
+        html += "by <a href='"+feature.attributes.owner_url + "' target='_blank'>"+feature.attributes.owner_name +"</a><br />";
+        //var html = "<h2>"+feature.attributes.photo_title +"</h2> <p>" +" <a href='photo/"+feature.attributes.photo_id+"'><Img src ='http://mw2.google.com/mw-panoramio/photos/small/"+feature.attributes.photo_id + ".jpg ' border = '3' alt ='' /></a>";
+        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+            feature.geometry.getBounds().getCenterLonLat(),
+            new OpenLayers.Size(20,20),
+            "<div id='sppopup' style='width: 350px; height: 50px;'>" + "Loading..." + "</div>"
+            ,
+            null, true, onPopupClose);
 
-          // HTML PopUp
-          var html = "<h2>"+feature.attributes.photo_title +"</h2> <p>" +" <Img src ='http://mw2.google.com/mw-panoramio/photos/small/"+feature.attributes.photo_id + ".jpg ' border = '3' alt ='' />";
-          //var html = "<h2>"+feature.attributes.photo_title +"</h2> <p>" +" <a href='photo/"+feature.attributes.photo_id+"'><Img src ='http://mw2.google.com/mw-panoramio/photos/small/"+feature.attributes.photo_id + ".jpg ' border = '3' alt ='' /></a>";
-          popup = new OpenLayers.Popup("featurePopup",
-             feature.geometry.getBounds().getCenterLonLat(),
-             //null,
-             new OpenLayers.Size(250,325),
-             html,
-             true, 
-             onPopupClose);
-          /*popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-             feature.geometry.getBounds().getCenterLonLat(),
-             //null,
-             new OpenLayers.Size(250,325),
-             html,
-             null,
-             true, 
-             onPopupClose); */
-          
-          feature.popup = popup;
-          this.map.addPopup(popup);
-       }
+        var feat = popup;
+        feat.popup = popup;
+        popup.feature = feat;
+        map.addPopup(popup, true);
 
-       function onFeatureUnselect(feature) {
-          this.map.removePopup(feature.popup);
-          feature.popup.destroy();
-          feature.popup = null;
-       }       
+        infoHtml = "<div id='sppopup'>"
+        + html
+        + "</div>";
+
+        if (document.getElementById("sppopup") != null) {
+            document.getElementById("sppopup").innerHTML = infoHtml;
+        }
+
+        shownPicturePopup = true;
     }
 
-function removePanoramio() {
-    if (this.map.popups[0]!=null) {
-        this.map.removePopup(this.map.popups[0]);
+    function closePopup(evt) {
+        shownPicturePopup = false;
+        onPopupClose(evt);
+    }
+
+    function onFeatureUnselect(feature) {
+        //this.map.removePopup(feature.popup);
+        //feature.popup.destroy();
+        //feature.popup = null;
+        closePopup();
+    }
+}
+
+function removePanoramio(clearPopups) {
+    if (clearPopups) {
+        if (this.map.popups[0]!=null) {
+            this.map.removePopup(this.map.popups[0]);
+        }
     }
     this.map.removeLayer(vectorLayer);
     shownPicture = false;
+    shownPicturePopup = false;
     panoramioLoading = 0;
 }
     
 function registerPanoramio(vectorLayer) {
     vectorLayer.events.register('beforefeaturesadded', this, panoramioloadStart);
     vectorLayer.events.register('featuresadded', this, panoramioloadEnd);
-    //vectorLayer.events.on({"loadstart":panoramioloadStart,"loadend":panoramioloadStart});
+//vectorLayer.events.on({"loadstart":panoramioloadStart,"loadend":panoramioloadStart});
 }
 
 function panoramioloadStart() {
@@ -1913,15 +1936,16 @@ function panoramioloadEnd() {
 }
     
 function panoramioLoadingImage(display) {
-    var div = document.getElementById("panoramioLoader");
+    var div = document.getElementById("loader");
     if (div != null) {
         if (display == "none") {
-            jQuery("#panoramioLoader").hide(2000);
+            //jQuery("#panoramioLoader").hide(2000);
+            jQuery("#loader").hide(2000);
         }
         else {
-                if (panoramioLoading > 0) {
-                    div.style.display=display;
-                }
+            if (panoramioLoading > 0) {
+                div.style.display=display;
+            }
         }
     }
 }

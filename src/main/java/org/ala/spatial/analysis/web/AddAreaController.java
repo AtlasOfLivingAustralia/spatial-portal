@@ -118,9 +118,7 @@ public class AddAreaController extends UtilityComposer {
             windowName = "WEB-INF/zul/AreaWKT.zul";
         }
         if (!windowName.contentEquals("")) {
-            System.out.println("Executing JS");
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-            System.out.println("Opening window");
             Window window = (Window) Executions.createComponents(windowName, this.getParent(), args);
             try {
                 if (overlapped) {

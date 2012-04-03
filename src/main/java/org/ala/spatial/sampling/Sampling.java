@@ -37,11 +37,14 @@ public class Sampling {
             String[] split = facetName.split("_");
             File sxsSRichness = null;
             File sxsODensity = null;
-            if (split.length > 1) {
-                if (split[1].equals("srichness")) {
+            File gdmTransLayer = null;
+            if(split.length > 1) {
+                if(split[1].equals("srichness")) {
                     sxsSRichness = new File(CommonData.settings.get("analysis_output_dir") + "sitesbyspecies/" + split[0] + "/species_richness.grd");
-                } else {
+                } else if(split[1].equals("odensity")) {
                     sxsODensity = new File(CommonData.settings.get("analysis_output_dir") + "sitesbyspecies/" + split[0] + "/occurrence_density.grd");
+                } else {
+                    gdmTransLayer = new File(CommonData.settings.get("analysis_output_dir") + "gdm/" + split[0] + "/" + split[1] + "Tran.grd");
                 }
             }
             File envelope = new File(CommonData.settings.get("analysis_output_dir") + "envelope/" + split[0] + "/envelope.grd");
@@ -55,6 +58,9 @@ public class Sampling {
             if (sxsODensity != null) {
                 System.out.println(sxsODensity.getPath() + ", " + sxsODensity.exists());
             }
+            if (gdmTransLayer != null) {
+                System.out.println(gdmTransLayer.getPath() + ", " + gdmTransLayer.exists());
+            }
             System.out.println(envelope.getPath() + ", " + envelope.exists());
 
             File file = null;
@@ -66,6 +72,8 @@ public class Sampling {
                 file = sxsSRichness;
             } else if (sxsODensity != null && sxsODensity.exists()) {
                 file = sxsODensity;
+            } else if(gdmTransLayer != null && gdmTransLayer.exists()) {
+                file = gdmTransLayer;
             } else if (envelope.exists()) {
                 file = envelope;
             }

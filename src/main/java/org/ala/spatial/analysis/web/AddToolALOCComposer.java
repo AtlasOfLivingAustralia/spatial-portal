@@ -45,6 +45,8 @@ public class AddToolALOCComposer extends AddToolComposer {
         this.selectedMethod = "Classification";
         this.totalSteps = 4;
 
+        this.setIncludeAnalysisLayersForAnyQuery(true);
+
         this.loadAreaLayers();
         this.loadGridLayers(true, false, true);
         this.updateWindowTitle();
