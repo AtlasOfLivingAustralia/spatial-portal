@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -32,6 +33,10 @@ import org.ala.layers.intersect.SimpleShapeFile;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.GridCutter;
+import org.ala.spatial.util.SpatialTransformer;
+import org.ala.spatial.util.UploadSpatialResource;
+import org.ala.spatial.util.Zipper;
+import org.apache.commons.io.FileUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -61,7 +66,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class GDMWSController {
 
     @RequestMapping(value = "/step1", method = RequestMethod.POST)
-    public 
+    public
     @ResponseBody
     String processStep1(HttpServletRequest req) {
 
@@ -119,9 +124,9 @@ public class GDMWSController {
             // 5. build parameters files for GDM
             String params = generateStep1Paramfile(envlist.split(":"), cutDataPath, speciesFile, outputdir);
 
-            
+
             // 6. run GDM
-            int exit = runGDM(1,params);
+            int exit = runGDM(1, params);
             System.out.println("gdm.exit: " + exit);
 
             String output = "";
@@ -202,6 +207,7 @@ public class GDMWSController {
             generateMetadata(envlist.split(":"), area, pid, outputdir);
 
             // 7.2 generate/display transform grid
+            processTransformedGrids(pid, outputdir);
 
             return pid;
 
@@ -213,8 +219,6 @@ public class GDMWSController {
 
         return output;
     }
-
-
 
     @RequestMapping(value = "/process2", method = RequestMethod.POST)
     public
@@ -265,7 +269,7 @@ public class GDMWSController {
             //SpatialSettings ssets = new SpatialSettings();
             //String cutDataPath = ssets.getEnvDataPath();
 
-             String resolution = req.getParameter("res");
+            String resolution = req.getParameter("res");
             if (resolution == null) {
                 resolution = "0.01";
             }
@@ -342,25 +346,9 @@ public class GDMWSController {
                 useEnvLayers.append("UseEnv").append(i + 1).append("=1").append("\n");
                 predSpline.append("PredSpl").append(i + 1).append("=3").append("\n");
             }
-            
+
             StringBuilder sbOut = new StringBuilder();
-            sbOut.append("[GDMODEL]").append("\n")
-                    .append("WorkspacePath=" + outputdir).append("\n")
-                    .append("RespDataType=RD_SitePlusSpecies").append("\n")
-                    .append("PredDataType=ED_GridData").append("\n")
-                    .append("Quantiles=QUANTS_FromData").append("\n")
-                    .append("UseEuclidean=0").append("\n")
-                    .append("UseSubSample=1").append("\n")
-                    .append("NumSamples=10000").append("\n")
-                    .append("[RESPONSE]").append("\n")
-                    .append("InputData=" + speciesfile).append("\n")
-                    .append("UseWeights=0").append("\n")
-                    .append("[PREDICTORS]").append("\n") 
-                    .append("EuclSpl=3").append("\n")
-                    .append("NumPredictors=" + layers.length).append("\n")
-                    .append(envLayers).append("\n")
-                    .append(useEnvLayers).append("\n")
-                    .append(predSpline).append("\n");
+            sbOut.append("[GDMODEL]").append("\n").append("WorkspacePath=" + outputdir).append("\n").append("RespDataType=RD_SitePlusSpecies").append("\n").append("PredDataType=ED_GridData").append("\n").append("Quantiles=QUANTS_FromData").append("\n").append("UseEuclidean=0").append("\n").append("UseSubSample=1").append("\n").append("NumSamples=10000").append("\n").append("[RESPONSE]").append("\n").append("InputData=" + speciesfile).append("\n").append("UseWeights=0").append("\n").append("[PREDICTORS]").append("\n").append("EuclSpl=3").append("\n").append("NumPredictors=" + layers.length).append("\n").append(envLayers).append("\n").append(useEnvLayers).append("\n").append(predSpline).append("\n");
             PrintWriter spWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputdir + "gdm_params.txt")));
             spWriter.write(sbOut.toString());
             spWriter.close();
@@ -373,7 +361,7 @@ public class GDMWSController {
 
         return "";
     }
-    
+
     private String generateParamfile(String[] layers, String layersPath, String useEuclidean, String speciesfile, String outputdir) {
         try {
             LayerDAO layerDao = Client.getLayerDao();
@@ -387,23 +375,8 @@ public class GDMWSController {
                 predSpline.append("PredSpl").append(i + 1).append("=3").append("\n");
             }
             StringBuilder sbOut = new StringBuilder();
-            sbOut.append("[GDMODEL]").append("\n")
-                    .append("WorkspacePath=" + outputdir).append("\n")
-                    .append("RespDataType=RD_SitePlusSpecies").append("\n")
-                    .append("PredDataType=ED_GridData").append("\n")
-                    .append("Quantiles=QUANTS_FromData").append("\n")
-                    .append("UseEuclidean=0").append("\n")
-                    .append("UseSubSample=1").append("\n")
-                    .append("NumSamples=10000").append("\n")
-                    .append("[RESPONSE]").append("\n")
-                    .append("InputData=" + speciesfile).append("\n")
-                    .append("UseWeights=0").append("\n")
-                    .append("[PREDICTORS]").append("\n") //.append("DomainGrid=/data/ala/runtime/output/gdm/test/domain").append("\n")
-                    .append("EuclSpl=3").append("\n")
-                    .append("NumPredictors=" + layers.length).append("\n")
-                    .append(envLayers).append("\n")
-                    .append(useEnvLayers).append("\n")
-                    .append(predSpline).append("\n");
+            sbOut.append("[GDMODEL]").append("\n").append("WorkspacePath=" + outputdir).append("\n").append("RespDataType=RD_SitePlusSpecies").append("\n").append("PredDataType=ED_GridData").append("\n").append("Quantiles=QUANTS_FromData").append("\n").append("UseEuclidean=0").append("\n").append("UseSubSample=1").append("\n").append("NumSamples=10000").append("\n").append("[RESPONSE]").append("\n").append("InputData=" + speciesfile).append("\n").append("UseWeights=0").append("\n").append("[PREDICTORS]").append("\n") //.append("DomainGrid=/data/ala/runtime/output/gdm/test/domain").append("\n")
+                    .append("EuclSpl=3").append("\n").append("NumPredictors=" + layers.length).append("\n").append(envLayers).append("\n").append(useEnvLayers).append("\n").append(predSpline).append("\n");
             //File fDir = new File(outputdir);
             //fDir.mkdir();
             //File spFile = File.createTempFile("params_", ".csv", fDir);
@@ -421,11 +394,11 @@ public class GDMWSController {
     public static String updateParamfile(String cutpoint, String useDistance, String weighting, String useSubSample, String sitePairsSize, String outputdir) {
         try {
             IniReader ir = new IniReader(outputdir + "/gdm_params.txt");
-            ir.setValue("GDMODEL","UseEuclidean", useDistance);
-            ir.setValue("GDMODEL","UseSubSample",useSubSample);
-            ir.setValue("GDMODEL","NumSamples",sitePairsSize);
-            ir.setValue("GDMODEL","Cutpoint",cutpoint);
-            ir.setValue("RESPONSE","UseWeights", weighting);
+            ir.setValue("GDMODEL", "UseEuclidean", useDistance);
+            ir.setValue("GDMODEL", "UseSubSample", useSubSample);
+            ir.setValue("GDMODEL", "NumSamples", sitePairsSize);
+            ir.setValue("GDMODEL", "Cutpoint", cutpoint);
+            ir.setValue("RESPONSE", "UseWeights", weighting);
             ir.write(outputdir + "/gdm_params.txt");
         } catch (Exception e) {
             System.out.println("Unable to update params file");
@@ -460,10 +433,10 @@ public class GDMWSController {
 //
 //        return sellayers;
 //    }
-
     private int runGDM(String params) {
         return runGDM(0, params);
     }
+
     private int runGDM(int level, String params) {
         Runtime runtime = Runtime.getRuntime();
         Process proc;
@@ -515,6 +488,41 @@ public class GDMWSController {
         return exitValue;
     }
 
+    public static void processTransformedGrids(String pid, String outputdir) {
+        System.out.println("About to iterate thru' files in " + outputdir);
+        try {
+
+            String url = "";
+            String extra = "";
+            String username = AlaspatialProperties.getGeoserverUsername();
+            String password = AlaspatialProperties.getGeoserverPassword();
+
+            Iterator<File> files = FileUtils.iterateFiles(new File(outputdir), new String[]{"grd"}, false);
+            while (files.hasNext()) {
+                File f = files.next();
+                if (f.getName().startsWith("domain")) {
+                    continue;
+                }
+                String lyr = f.getName().substring(0, f.getName().length() - 4);
+                System.out.println("Converting " + lyr);
+                SpatialTransformer.convertDivaToAsc(outputdir+lyr, outputdir+lyr+".asc");
+
+                String[] infiles = {outputdir+lyr+".asc", outputdir+lyr+".prj"};
+                String ascZipFile = outputdir+lyr+".zip";
+                Zipper.zipFiles(infiles, ascZipFile);
+
+                url = AlaspatialProperties.getGeoserverUrl() + "/rest/workspaces/ALA/coveragestores/gdm_" + lyr + "_" + pid + "/file.arcgrid?coverageName=gdm_" + lyr + "_" + pid;
+                // Upload the file to GeoServer using REST calls
+                System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
+                UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Unable to generate and upload transformed grids");
+            e.printStackTrace(System.out);
+        }
+    }
+
     public static void generateCharts(String outputdir) {
 
         // Check if there is 'plots' dir. if not create it.
@@ -554,7 +562,7 @@ public class GDMWSController {
                 dataCht2[0][i - 1] = Double.parseDouble(row[5]) - intercept;
                 dataCht2[1][i - 1] = obs;
 
-                int obc = (int) Math.round(obs*10);
+                int obc = (int) Math.round(obs * 10);
                 obscount[obc]++;
             }
 
@@ -870,7 +878,7 @@ public class GDMWSController {
             sbMetadata.append("<section><h3>Response Histogram (observed dissimilarity class):</h3><p> The Response Histogram plots the distribution of site pairs within each observed dissimilarity class. The final column in the dissimilarity class > 1 represents the number of site pairs that are totally dissimilar from each other. This chart provides an overview of potential bias in the distribution of the response data. </p><p><img src='plots/resphist.png'/></p></section><section><h3>Observed versus predicted compositional dissimilarity (raw data plot):</h3><p> The 'Raw data' scatter plot presents the Observed vs Predicted degree of compositional dissimilarity for a given model run. Each dot on the chart represents a site-pair. The line represents the perfect 1:1 fit. (Note that the scale and range of values on the x and y axes differ). </p><p> This chart provides a snapshot overview of the degree of scatter in the data. That is, how well the predicted compositional dissimilarity between site pairs matches the actual compositional dissimilarity present in each site pair. </p><p><img src='plots/obspredissim.png'/></p></section><section><h3>Observed compositional dissimilarity vs predicted ecological distance (link function applied to the raw data plot):</h3><p> The 'link function applied' scatter plot presents the Observed compositional dissimilarity vs Predicted ecological distance. Here, the link function has been applied to the predicted compositional dissimilarity to generate the predicted ecological distance. Each dot represents a site-pair. The line represents the perfect 1:1 fit. The scatter of points signifies noise in the relationship between the response and predictor variables. </p><p><img src='plots/dissimdist.png'/></p></section><section><h3>Predictor Histogram:</h3><p> The Predictor Histogram plots the relative contribution (sum of coefficient values) of each environmental gradient layer that is relevant to the model. The sum of coefficient values is a measure of the amount of predicted compositional dissimilarity between site pairs. </p><p> Predictor variables that contribute little to explaining variance in compositional dissimilarity between site pairs have low relative contribution values. Predictor variables that do not make any contribution to explaining variance in compositional dissimilarity between site pairs (i.e., all coefficient values are zero) are not shown. </p><p><img src='plots/predhist.png'/></p></section><section><h3>Fitted Functions:</h3><p> The model output presents the response (compositional turnover) predicted by variation in each predictor. The shape of the predictor is represented by three I-splines, the values of which are defined by the environmental data distribution: min, max and median (i.e., 0, 50 and 100th percentiles). The GDM model estimates the coefficients of the I-splines for each predictor. The coefficient provides an indication of the total amount of compositional turnover correlated with each value at the 0, 50 and 100th percentiles. The sum of these coefficient values is an indicator of the relative importance of each predictor to compositional turnover. </p><p> The coefficients are applied to the ecological distance from the minimum percentile for a predictor. These plots of fitted functions show the sort of monotonic transformations that will take place to a predictor to render it in GDM space. The relative maximum y values (sum of coefficient values) indicate the amount of influence that each predictor makes to the total GDM prediction. </p><p><a href='plots/maxtx.png'><img src='plots/maxtx_thumb.png'/></a><a href='plots/minti.png'><img src='plots/minti_thumb.png'/></a><a href='plots/radnx.png'><img src='plots/radnx_thumb.png'/></a><a href='plots/rainx.png'><img src='plots/rainx_thumb.png'/></a></p></section></div><footer><p>&copy; <a href='http://www.ala.org.au/'>Atlas of Living Australia 2012</a></p></footer></div></body></html>");
             sbMetadata.append("");
 
-            File spFile = new File(outputdir + "metadata.html");
+            File spFile = new File(outputdir + "gdm.html");
             System.out.println("Writing metadata to: " + spFile.getAbsolutePath());
             PrintWriter spWriter;
             spWriter = new PrintWriter(new BufferedWriter(new FileWriter(spFile)));
@@ -881,12 +889,14 @@ public class GDMWSController {
         }
     }
 
-//    public static void main(String[] args) {
-//        //generateCharts("/Users/ajay/Downloads/1328584218973/");
-//        //generateCharts("/Users/ajay/Downloads/My_GDM_domain_sxs/");
-//        generateCharts("/Users/ajay/projects/ala/code/other/gdm/testdata/");
-//        //generateChart2and3("/Users/ajay/Downloads/My_GDM_domain_sxs/", Integer.parseInt(args[0]));
-//
-//        //updateParamfile("112", "1", "1", "0", "123456", "/Users/ajay/projects/ala/code/other/gdm/testdata/");
-//    }
+    public static void main(String[] args) {
+        //generateCharts("/Users/ajay/Downloads/1328584218973/");
+        //generateCharts("/Users/ajay/Downloads/My_GDM_domain_sxs/");
+        ////generateCharts("/Users/ajay/projects/ala/code/other/gdm/testdata/");
+        //generateChart2and3("/Users/ajay/Downloads/My_GDM_domain_sxs/", Integer.parseInt(args[0]));
+
+        //updateParamfile("112", "1", "1", "0", "123456", "/Users/ajay/projects/ala/code/other/gdm/testdata/");
+
+        processTransformedGrids("2", "/Users/ajay/projects/ala/code/other/gdm/testdata/");
+    }
 }
