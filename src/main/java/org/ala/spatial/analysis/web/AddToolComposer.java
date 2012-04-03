@@ -1179,6 +1179,7 @@ public class AddToolComposer extends UtilityComposer {
         } else {
             try {
                 System.out.println("getSelectedSpecies: " + species);
+                System.out.println("tool is: " + (tToolName == null? "null" : tToolName.getValue()));
                 if (species.equals("allspecies")) {
                     species = "none";
                     q = new BiocacheQuery(null, null, null, null, false);
