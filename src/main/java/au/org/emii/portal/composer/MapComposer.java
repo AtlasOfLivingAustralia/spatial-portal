@@ -1411,7 +1411,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
 
                 if(lat != null && lon != null && radius != null) {
-                    wkt = Util.createCircleJs(lon, lat, radius);
+                    wkt = Util.createCircleJs(lon, lat, radius * 1000); //m to km
                 }
 
                 if (count == 1) {

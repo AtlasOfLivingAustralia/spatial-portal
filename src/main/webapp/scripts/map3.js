@@ -320,28 +320,27 @@ function buildMapReal() {
         Event.stop(e);
 
         //don't do change base layer if this is a 'print'
-        if(parent.location.href.indexOf("?p=") < 0 && parent.location.href.indexOf("&p=") < 0) {
-            if (map.zoom > 15) {
-                autoBaseLayerSwitch = true;
-                if (baseLayerSwitchStatus != 1) {
-                    baseLayerSwitchStatus = 2;
-                }
-                changeBaseLayer('hybrid');
-            }
-            else {
-                //if (autoBaseLayerSwitch) {
-                //    changeBaseLayer('normal');
-                //    autoBaseLayerSwitch = false;
-                //}
-                if (baseLayerSwitchStatus == 2) {
-                    changeBaseLayer('normal');
-                    baseLayerSwitchStatus = 0;
-                }
-            }
+        if(parent.location.href.indexOf("?p=") < 0) {
+            autoSwitchBaseMap();
         }
     });
 
     registerSpeciesClick();
+}
+
+function autoSwitchBaseMap() {
+    if (map.zoom > 15) {
+        if (baseLayerSwitchStatus != 1) {
+            baseLayerSwitchStatus = 2;
+            changeBaseLayer('hybrid');
+        }
+    }
+    else {
+        if (baseLayerSwitchStatus == 2) {
+            changeBaseLayer('normal');
+            baseLayerSwitchStatus = 0;
+        }
+    }
 }
 
 var query_
