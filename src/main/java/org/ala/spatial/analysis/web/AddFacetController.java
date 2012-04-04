@@ -1123,6 +1123,8 @@ public class AddFacetController extends UtilityComposer {
                     Comboitem seperator = new Comboitem("seperator");
                     seperator.setLabel("------------------Taxonomic------------------");
                     seperator.setParent(cbColour);
+                    seperator.setDisabled(true);
+
                     for (int i = 0; i < fields.size(); i++) {
                         Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
                         ci.setValue(fields.get(i).getName());
@@ -1132,26 +1134,31 @@ public class AddFacetController extends UtilityComposer {
                             Comboitem seperator1 = new Comboitem("seperator");
                             seperator1.setLabel("------------------Geospatial------------------");
                             seperator1.setParent(cbColour);
+                            seperator1.setDisabled(true);
                         }
-                        if (ci.getValue().equals("geospatial_kosher") ) {
+                        if (ci.getValue().equals("cl620") ) {
                             Comboitem seperator2 = new Comboitem("seperator");
                             seperator2.setLabel("------------------Temporal------------------");
                             seperator2.setParent(cbColour);
+                            seperator2.setDisabled(true);
                         }
-                        if (ci.getValue().equals("decade")) {
+                        if (ci.getValue().equals("year")) {
                             Comboitem seperator3 = new Comboitem("seperator");
                             seperator3.setLabel("------------------Record Details------------------");
                             seperator3.setParent(cbColour);
+                            seperator3.setDisabled(true);
                         }
                         if (ci.getValue().equals("collector")) {
                             Comboitem seperator4 = new Comboitem("seperator");
                             seperator4.setLabel("------------------Attribution------------------");
                             seperator4.setParent(cbColour);
+                            seperator4.setDisabled(true);
                         }
                         if (ci.getValue().equals("institution_name")) {
                             Comboitem seperator5 = new Comboitem("seperator");
                             seperator5.setLabel("------------------Record Assertions------------------");
                             seperator5.setParent(cbColour);
+                            seperator5.setDisabled(true);
                         }
                     }
                 }

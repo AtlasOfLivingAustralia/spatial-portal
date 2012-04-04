@@ -1095,10 +1095,21 @@ div.z-listheader-cnt {
     padding: 5px 5px 7px;
 }
 
-.z-comboitem .z-comboitem-text {
+.z-comboitem .z-comboitem-text .z-comboitem-text-disd .z-comboitem-text-invalid .z-comboitem-cnt {
     color: #01716E;
 }
 
+.z-comboitem-disd, .z-comboitem-disd td {
+
+    opacity: 1;
+
+    background: white;
+
+    color: #01716E!important;
+
+    text-align:center;
+
+}
 .z-checkbox-cnt {
     color: #01716E;
 }

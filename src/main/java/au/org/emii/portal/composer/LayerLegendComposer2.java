@@ -600,13 +600,13 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                     seperator1.setParent(cbColour);
                     seperator1.setDisabled(true);
                 }
-                if (ci.getValue().equals("geospatial_kosher")) {
+                if (ci.getValue().equals("cl620")) {
                     Comboitem seperator2 = new Comboitem("seperator");
                     seperator2.setLabel("------------------Temporal------------------");
                     seperator2.setParent(cbColour);
                     seperator2.setDisabled(true);
                 }
-                if (ci.getValue().equals("decade")) {
+                if (ci.getValue().equals("year")) {
                     Comboitem seperator3 = new Comboitem("seperator");
                     seperator3.setLabel("------------------Record Details------------------");
                     seperator3.setParent(cbColour);
