@@ -522,7 +522,7 @@ console.log(currentbaselayertxt);
         function downloadSubmitButtonClick() {
         //e.preventDefault();
         var downloadUrl = $("input#downloadUrl").val().replace(/\\ /g, " ");
-        var reason = $("#reason").val();
+        var reason = $("#reasonTypeId").val();
         if(typeof reason == "undefined")
             reason = "";
         downloadUrl = downloadUrl + "&type=&email="+$("#email").val()+"&reason="+encodeURIComponent(reason)+"&file="+$("#filename").val();

@@ -439,9 +439,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 if (label.equalsIgnoreCase("download")) {
                     StringBuilder sbContent = new StringBuilder();
                     sbContent.append("<p id='termsOfUseDownload'>");
-                    sbContent.append("By downloading this content you are agreeing to use it in accordance with the Atlas");
-                    sbContent.append("<a href='http://www.ala.org.au/about/terms-of-use/#TOUusingcontent'>Terms of Use</a>");
-                    sbContent.append("and individual <a href=' http://www.ala.org.au/support/faq/#q29'>Data Provider Terms</a>.");
+                    sbContent.append("By downloading this content you are agreeing to use it in accordance ");
+                    sbContent.append("with the Atlas of Living Australia <a href='http://www.ala.org.au/about/terms-of-use/#TOUusingcontent'>Terms of Use</a>");
+                    sbContent.append(" and any Data Provider Terms associated with the data download. ");
                     sbContent.append("<br/><br/>");
                     sbContent.append("Please provide the following <b>optional</b> details before downloading:");
                     sbContent.append("</p>");
@@ -456,9 +456,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     sbContent.append("            <p><label for='filename'>File Name</label>");
                     sbContent.append("                <input type='text' name='filename' id='filename' value='data' size='30'  />");
                     sbContent.append("            </p>");
-                    sbContent.append("            <p><label for='reason' style='vertical-align: top'>Download Reason</label>");
-                    sbContent.append("                <textarea name='reason' rows='5' cols='30' id='reason'  ></textarea>");
-                    sbContent.append("            </p>");
+                    
+                    //sbContent.append("            <p><label for='reason' style='vertical-align: top'>Download Reason</label>");
+                    //sbContent.append("                <textarea name='reason' rows='5' cols='30' id='reason'  ></textarea>");
+                    //sbContent.append("            </p>");
+                    sbContent.append("            <p><label for='reasonTypeId' style='vertical-align: top'>Download Reason</label>");
+                    sbContent.append("            <select name='reasonTypeId' id='reasonTypeId'>");
+                    sbContent.append("            <option value=''>-- select a reason --</option>");
+                    JSONArray dlreasons = CommonData.getDownloadReasons();
+                    for (int i=0;i<dlreasons.size(); i++) {
+                        JSONObject dlr = dlreasons.getJSONObject(i);
+                        sbContent.append("            <option value='"+dlr.getInt("id")+"'>"+dlr.getString("name")+"</option>");
+                    }
+                    sbContent.append("            <select></p>");
+
                     sbContent.append("            <input type='submit' value='Download All Records' id='downloadSubmitButton'/>&nbsp;");
                     //sbContent.append("            <input type='submit' value='Download All Records' id='downloadSubmitButton'/>&nbsp;");
                     //sbContent.append("            <input type='submit' value='Download Species Checklist' id='downloadCheckListSubmitButton'/>&nbsp;");

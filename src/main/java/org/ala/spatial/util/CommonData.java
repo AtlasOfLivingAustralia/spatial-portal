@@ -80,6 +80,9 @@ public class CommonData {
     static HashMap<String, String[]> copy_checklistspecies_spcode_layers = null;
     static HashMap<String, String[]> checklistspecies_wms_layers_by_spcode = null;
     static HashMap<String, String[]> copy_checklistspecies_wms_layers_by_spcode = null;
+    // download reasons
+    static JSONArray download_reasons;
+    static JSONArray copy_download_reasons;
     //Common
     static public String satServer;
     static public String geoServer;
@@ -149,6 +152,13 @@ public class CommonData {
         //(8) cache shape files used during coordinate uploads
         initSimpleShapeFileCache(defaultFieldString.split(","));
 
+        // load the download reasons
+        initDownloadReasons();
+        if (copy_download_reasons != null) {
+            download_reasons = copy_download_reasons;
+        }
+
+
         //(2) for EnvironmentalList
         if (copy_distances != null) {
             distances = copy_distances;
@@ -188,6 +198,10 @@ public class CommonData {
         if (copy_species_wms_layers_by_spcode != null) {
             checklistspecies_wms_layers_by_spcode = copy_checklistspecies_wms_layers_by_spcode;
         }
+    }
+
+    static public JSONArray getDownloadReasons() {
+        return download_reasons;
     }
 
     static public JSONObject getDistances() {
@@ -873,4 +887,28 @@ public class CommonData {
         }
         return count;
     }
+
+    static public void initDownloadReasons() {
+        copy_download_reasons = null;
+        System.out.println("CommonData::initDownloadReasons()");
+        try {
+            //environmental only
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append("http://logger.ala.org.au/service/logger/reasons");
+
+            System.out.println(sbProcessUrl.toString());
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            int result = client.executeMethod(get);
+
+            if (result == 200) {
+                copy_download_reasons = JSONArray.fromObject(get.getResponseBodyAsString());
+            }
+        } catch (Exception e) {
+            copy_download_reasons = null;
+            e.printStackTrace();
+        }
+    }
+
 }
