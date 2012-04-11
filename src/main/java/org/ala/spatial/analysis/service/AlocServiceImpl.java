@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import org.ala.spatial.analysis.maxent.MaxentService;
+import org.ala.spatial.util.AnalysisJob;
 import org.ala.spatial.util.AnalysisJobAloc;
 
 /**
@@ -52,8 +53,8 @@ public class AlocServiceImpl implements MaxentService {
      * @return success int value if the process was successful
      */
     @Override
-    public int process() {
-        return runCommand(cmdAloc.toString());
+    public int process(AnalysisJob job) {
+        return runCommand(cmdAloc.toString(), job);
     }
 
     /**
@@ -62,7 +63,7 @@ public class AlocServiceImpl implements MaxentService {
      * @param command The command to be run
      * @return success int value if the process was successful
      */
-    private int runCommand(String command) {
+    private int runCommand(String command, AnalysisJob job) {
         Runtime runtime = Runtime.getRuntime();
 
         try {
@@ -98,10 +99,12 @@ public class AlocServiceImpl implements MaxentService {
             // Arrays.toString(acmd)
 
             while ((line = bre.readLine()) != null) {
+                if(job != null) job.log(line);
                 System.out.println(line);
             }
 
             while ((line = br.readLine()) != null) {
+                if(job != null) job.log(line);
                 System.out.println(line);
             }
 
@@ -127,7 +130,7 @@ public class AlocServiceImpl implements MaxentService {
     }
 
     public int process(AnalysisJobAloc job) {
-        AlocThread mt = new AlocThread(cmdAloc.toString());
+        AlocThread mt = new AlocThread(cmdAloc.toString(), job);
         mt.start();
 
         while (mt.isAlive() && (job == null || !job.isCancelled())) {
@@ -152,9 +155,11 @@ class AlocThread extends Thread {
     public int exitValue = -1;
     String command;
     Process proc;
+    AnalysisJobAloc job;
 
-    public AlocThread(String command_) {
+    public AlocThread(String command_, AnalysisJobAloc job) {
         command = command_;
+        this.job = job;
         setPriority(Thread.MIN_PRIORITY);
     }
 
@@ -191,10 +196,12 @@ class AlocThread extends Thread {
             System.out.printf("Output of running %s is:", command);
 
             while ((line = bre.readLine()) != null) {
+                if(job != null) job.log(line);
                 System.out.println(line);
             }
 
             while ((line = br.readLine()) != null) {
+                if(job != null) job.log(line);
                 System.out.println(line);
             }
 

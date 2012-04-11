@@ -9,7 +9,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Hashtable;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.legend.Legend;
@@ -36,8 +35,9 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
     LayerFilter[] envelope;
     SimpleRegion region;
     String biocacheserviceurl;
+    String areasqkm;
 
-    public AnalysisJobSitesBySpecies(String pid, String currentPath_, String qname, String speciesq, double gridsize, SimpleRegion region_, LayerFilter[] filter_, boolean sitesbyspecies, boolean occurrencedensity, boolean speciesdensity, int movingAverageSize, String biocacheserviceurl) {
+    public AnalysisJobSitesBySpecies(String pid, String currentPath_, String qname, String speciesq, double gridsize, SimpleRegion region_, LayerFilter[] filter_, boolean sitesbyspecies, boolean occurrencedensity, boolean speciesdensity, int movingAverageSize, String biocacheserviceurl, String areasqkm) {
         super(pid);
         currentPath = currentPath_ + File.separator + pid + File.separator;
         new File(currentPath).mkdirs();
@@ -54,6 +54,8 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         this.occurrencedensity = occurrencedensity;
         this.speciesdensity = speciesdensity;
         this.biocacheserviceurl = biocacheserviceurl;
+
+        this.areasqkm = areasqkm;
     }
 
     @Override
@@ -110,10 +112,17 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
 
             setProgress(0, "building sites by species matrix for " + records.getSpeciesSize() + " species in " + records.getRecordsSize() + " occurrences");
 
+            String envelopeFile = AlaspatialProperties.getAnalysisWorkingDir() + "envelope_" + getName();
+            Grid envelopeGrid = null;
+            if(envelope != null) {
+                GridCutter.makeEnvelope(envelopeFile, AlaspatialProperties.getLayerResolutionDefault(), envelope);
+                envelopeGrid = new Grid(envelopeFile);
+            }
+
             if (sitesbyspecies) {
                 SitesBySpecies sbs = new SitesBySpecies(0, gridsize, bbox);
-                sbs.write(records, currentPath + File.separator);
-                writeMetadata(currentPath + File.separator + "sxs_metadata.html", "Sites by Species", records, bbox, false, false);
+                int [] counts = sbs.write(records, currentPath + File.separator, region, envelopeGrid);
+                writeMetadata(currentPath + File.separator + "sxs_metadata.html", "Sites by Species", records, bbox, false, false, counts, areasqkm);
             }
 
             Legend occurrencesLegend = null;
@@ -159,7 +168,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
 
                 occurrencesLegend.generateLegend(currentPath + File.separator + "occurrence_density_legend.png");
 
-                writeMetadata(currentPath + File.separator + "odensity_metadata.html", "Occurrence Density", records, bbox, occurrencedensity, false);
+                writeMetadata(currentPath + File.separator + "odensity_metadata.html", "Occurrence Density", records, bbox, occurrencedensity, false, null, null);
 
                 new File(ascZipFile).delete();
             }
@@ -207,7 +216,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
 
                 speciesLegend.generateLegend(currentPath + File.separator + "species_richness_legend.png");
 
-                writeMetadata(currentPath + File.separator + "srichness_metadata.html", "Species Richness", records, bbox, false, speciesdensity);
+                writeMetadata(currentPath + File.separator + "srichness_metadata.html", "Species Richness", records, bbox, false, speciesdensity, null, null);
 
                 new File(ascZipFile).delete();
             }
@@ -363,7 +372,8 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
     AnalysisJob copy() {
         return new AnalysisJobSitesBySpecies(String.valueOf(System.currentTimeMillis()),
                 currentPath, qname, speciesq, gridsize, region, envelope,
-                sitesbyspecies, occurrencedensity, speciesdensity, movingAverageSize, biocacheserviceurl);
+                sitesbyspecies, occurrencedensity, speciesdensity,
+                movingAverageSize, biocacheserviceurl, areasqkm);
     }
 
     private void writeProjectionFile(String outputpath_prj) {
@@ -411,7 +421,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         return legend;
     }
 
-    void writeMetadata(String filename, String title, Records records, double[] bbox, boolean odensity, boolean sdensity) throws IOException {
+    void writeMetadata(String filename, String title, Records records, double[] bbox, boolean odensity, boolean sdensity, int [] counts, String addAreaSqKm) throws IOException {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
         FileWriter fw = new FileWriter(filename);
         fw.append("<html><h1>").append(title).append("</h1>");
@@ -421,6 +431,13 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         fw.append("<tr><td>Grid resolution " + gridsize + " degrees</td></tr>");
         fw.append("<tr><td>" + records.getSpeciesSize() + " species</td></tr>");
         fw.append("<tr><td>" + records.getRecordsSize() + " occurrences</td></tr>");
+        if(counts != null) {
+            fw.append("<tr><td>" + counts[0] + " grid cells with an occurrence</td></tr>");
+            fw.append("<tr><td>" + counts[1] + " grid cells in the area</td></tr>");
+        }
+        if(addAreaSqKm != null) {
+            fw.append("<tr><td>Selected area " + addAreaSqKm + " sq km</td></tr>");
+        }
         fw.append("<tr><td>bounding box of the selected area " + bbox[0] + "," + bbox[1] + "," + bbox[2] + "," + bbox[3] + "</td></tr>");
         fw.append("<tr><td>Date/time " + sdf.format(new Date()) + "</td></tr>");
         if (odensity) {

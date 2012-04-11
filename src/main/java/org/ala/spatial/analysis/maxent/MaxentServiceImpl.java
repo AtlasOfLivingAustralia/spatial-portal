@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.maxent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import org.ala.spatial.util.AnalysisJob;
 import org.ala.spatial.util.AnalysisJobMaxent;
 
 /**
@@ -51,8 +52,8 @@ public class MaxentServiceImpl implements MaxentService {
      * @return success int value if the process was successful
      */
     @Override
-    public int process() {
-        return runCommand(cmdMaxent.toString());
+    public int process(AnalysisJob job) {
+        return runCommand(cmdMaxent.toString(), job);
     }
 
     /**
@@ -61,7 +62,7 @@ public class MaxentServiceImpl implements MaxentService {
      * @param command The command to be run
      * @return success int value if the process was successful
      */
-    private int runCommand(String command) {
+    private int runCommand(String command, AnalysisJob job) {
         Runtime runtime = Runtime.getRuntime();
 
         try {
@@ -126,7 +127,7 @@ public class MaxentServiceImpl implements MaxentService {
     }
 
     public int process(AnalysisJobMaxent job) {
-        MaxentThread mt = new MaxentThread(cmdMaxent.toString());
+        MaxentThread mt = new MaxentThread(cmdMaxent.toString(), job);
         mt.start();
 
         while (mt.isAlive() && (job == null || !job.isCancelled())) {
@@ -151,9 +152,11 @@ class MaxentThread extends Thread {
     public int exitValue = -1;
     String command;
     Process proc;
+    AnalysisJob job;
 
-    public MaxentThread(String command_) {
+    public MaxentThread(String command_, AnalysisJob job) {
         command = command_;
+        this.job = job;
         setPriority(Thread.MIN_PRIORITY);
     }
 
@@ -190,10 +193,12 @@ class MaxentThread extends Thread {
             System.out.printf("Output of running %s is:", command);
 
             while ((line = bre.readLine()) != null) {
+                if(job != null) job.log(line);
                 System.out.println(line);
             }
 
             while ((line = br.readLine()) != null) {
+                if(job != null) job.log(line);
                 System.out.println(line);
             }
 

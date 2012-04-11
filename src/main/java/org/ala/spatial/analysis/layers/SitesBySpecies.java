@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import org.ala.layers.intersect.Grid;
+import org.ala.layers.intersect.SimpleRegion;
 
 /**
  *
@@ -43,7 +45,7 @@ public class SitesBySpecies {
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
-    public void write(Records records, String outputDirectory) throws IOException {
+    public int [] write(Records records, String outputDirectory, SimpleRegion region, Grid envelopeGrid) throws IOException {
         FileWriter fw = new FileWriter(outputDirectory + "fullSitesBySpecies.csv");
 
         for (int j = 0; j < 5; j++) {
@@ -82,28 +84,38 @@ public class SitesBySpecies {
         int[] totalSpeciesCounts = new int[uniqueSpeciesCount];
 
         int[][][] bsRows = new int[1][][];
+        int [] counts = new int[2];
         for (int row = 0; row < height; row++) {
             bsRows[0] = getNextIntArrayRow(records, row, uniqueSpeciesCount, bsRows[0]);
             for (int i = 0; i < width; i++) {
-                int sum = 0;
-                for (int n = 0; n < uniqueSpeciesCount; n++) {
-                    sum += bsRows[0][i][n];
-                    totalSpeciesCounts[n] += bsRows[0][i][n];
-                }
 
-                if (sum > 0) {
-                    fw.append("\n\"");
-                    fw.append(String.valueOf(i * resolution + this.bbox[0]));
-                    fw.append("_");
-                    fw.append(String.valueOf(row * resolution + this.bbox[1]));
-                    fw.append("\",");
-                    fw.append(String.valueOf(i * resolution + this.bbox[0]));
-                    fw.append(",");
-                    fw.append(String.valueOf(row * resolution + this.bbox[1]));
+                double longitude = (row + 0.5) * resolution + bbox[0];
+                double latitude = (i + 0.5) * resolution + bbox[1];
+                if((region == null || region.isWithin_EPSG900913(longitude, latitude))
+                        && (envelopeGrid == null || envelopeGrid.getValues2(new double[][] {{longitude, latitude}})[0] > 0)) {
+
+                    int sum = 0;
                     for (int n = 0; n < uniqueSpeciesCount; n++) {
-                        fw.append(",");
-                        fw.append(String.valueOf(bsRows[0][i][n]));
+                        sum += bsRows[0][i][n];
+                        totalSpeciesCounts[n] += bsRows[0][i][n];
                     }
+
+                    if (sum > 0) {
+                        fw.append("\n\"");
+                        fw.append(String.valueOf(i * resolution + this.bbox[0]));
+                        fw.append("_");
+                        fw.append(String.valueOf(row * resolution + this.bbox[1]));
+                        fw.append("\",");
+                        fw.append(String.valueOf(i * resolution + this.bbox[0]));
+                        fw.append(",");
+                        fw.append(String.valueOf(row * resolution + this.bbox[1]));
+                        for (int n = 0; n < uniqueSpeciesCount; n++) {
+                            fw.append(",");
+                            fw.append(String.valueOf(bsRows[0][i][n]));
+                        }
+                        counts[0]++;
+                    }
+                    counts[1]++;
                 }
             }
         }
@@ -143,6 +155,8 @@ public class SitesBySpecies {
         fw.close();
 
         new File(outputDirectory + "fullSitesBySpecies.csv").delete();
+
+        return counts;
     }
 
     int[][] getNextIntArrayRow(Records records, int row, int uniqueSpeciesCount, int[][] bs) {

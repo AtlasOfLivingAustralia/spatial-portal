@@ -40,6 +40,7 @@ public class SitesBySpeciesWSController {
             boolean occurrencedensity = req.getParameter("occurrencedensity") != null;
             boolean speciesdensity = req.getParameter("speciesdensity") != null;
             boolean sitesbyspecies = req.getParameter("sitesbyspecies") != null;
+            String areasqkm = req.getParameter("areasqkm");
 
             LayerFilter[] filter = null;
             SimpleRegion region = null;
@@ -51,7 +52,7 @@ public class SitesBySpeciesWSController {
 
             String pid = Long.toString(currTime);
 
-            AnalysisJobSitesBySpecies sbs = new AnalysisJobSitesBySpecies(pid, currentPath, qname, speciesq, gridsize, region, filter, sitesbyspecies, occurrencedensity, speciesdensity, movingAverageSize, biocacheurl);
+            AnalysisJobSitesBySpecies sbs = new AnalysisJobSitesBySpecies(pid, currentPath, qname, speciesq, gridsize, region, filter, sitesbyspecies, occurrencedensity, speciesdensity, movingAverageSize, biocacheurl, areasqkm);
 
             StringBuffer inputs = new StringBuffer();
             inputs.append("pid:").append(pid);

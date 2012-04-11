@@ -37,7 +37,7 @@ public class Aloc {
      * @param job
      * @return
      */
-    public static int[] runGowerMetricThreadedMemory(ArrayList<Object> data_pieces, int nNoOfGroups, int nCols, int pieces, Layer[] layers, AnalysisJobAloc job, int threadcount) {
+    public static int[] runGowerMetricThreadedMemory(ArrayList<Object> data_pieces, int nNoOfGroups, int nCols, int pieces, Layer[] layers, AnalysisJobAloc job, int threadcount, int[] iterationCount) {
 
         if (job != null) {
             job.setStage(1);    //seeding stage
@@ -544,6 +544,8 @@ public class Aloc {
                 }
             }
         }
+        
+        iterationCount[0] = iteration;
 
         //write-back row groups
         return min_groups;

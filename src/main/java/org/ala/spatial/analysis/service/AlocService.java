@@ -88,7 +88,7 @@ public class AlocService {
         }
     }
 
-    static void exportMetadata(String filename, int numberOfGroups, Layer[] layers, String pid, String coloursAndMeansUrl, String area, int width, int height, double minx, double miny, double maxx, double maxy) {
+    static void exportMetadata(String filename, int numberOfGroups, Layer[] layers, String pid, String coloursAndMeansUrl, String area, int width, int height, double minx, double miny, double maxx, double maxy, int iterationCount) {
         try {
             FileWriter fw = new FileWriter(filename);
             int i;
@@ -104,6 +104,10 @@ public class AlocService {
 
             fw.append("<p> <span class=\"title\">Number of groups:</span> <br /> ");
             fw.append(String.valueOf(numberOfGroups));
+            fw.append("</p>");
+
+            fw.append("<p> <span class=\"title\">Number of iterations:</span> <br /> ");
+            fw.append(String.valueOf(iterationCount));
             fw.append("</p>");
 
             fw.append("<p> <span class=\"title\">Layers:</span> <br /> ");
@@ -291,7 +295,8 @@ public class AlocService {
         /* run aloc
          * Note: requested number of groups may not always equal request
          */
-        int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, layers, null, numberOfThreads);
+        int [] iterationCount = new int[1];
+        int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, layers, null, numberOfThreads, iterationCount);
         if (groups == null || getGroupRange(groups) < 2) {
             if (job != null && job.getCurrentState() != null && !job.getCurrentState().equals(AnalysisJob.FAILED)) {
                 job.setCurrentState(AnalysisJobAloc.FAILED);
@@ -364,7 +369,8 @@ public class AlocService {
                 (job != null) ? job.getName() : "<insert job number here>",
                 urlpth,
                 "", //(job != null) ? job.area : "",
-                width, height, extents[2], extents[3], extents[4], extents[5]);
+                width, height, extents[2], extents[3], extents[4], extents[5],
+                iterationCount[0]);
 
         /* export geoserver sld file for legend */
         exportSLD(filename + ".sld", group_means, colours, layers, "");
@@ -431,15 +437,14 @@ public class AlocService {
                 height, width);
 
         //export sld
-        exportSLD(filename.replace("aloc.png",name + ".sld"), group_means, colours, layers, "0");
+        exportSLD(filename.replace("aloc.png", name + ".sld"), group_means, colours, layers, "0");
 
         //export ASCGRID
         BufferedWriter fw = null;
         try {
             fw = new BufferedWriter(
                     new OutputStreamWriter(
-                        new FileOutputStream(filename.replace("aloc.png",name + ".asc"))
-                        , "US-ASCII"));
+                    new FileOutputStream(filename.replace("aloc.png", name + ".asc")), "US-ASCII"));
             fw.append("ncols ").append(String.valueOf(width)).append("\n");
             fw.append("nrows ").append(String.valueOf(height)).append("\n");
             fw.append("xllcorner ").append(String.valueOf(extents[2])).append("\n");
@@ -448,13 +453,13 @@ public class AlocService {
 
             fw.append("NODATA_value ").append(String.valueOf(-1));
 
-            for(i=0;i<height;i++) {
+            for (i = 0; i < height; i++) {
                 fw.append("\n");
-                for(j=0;j<width;j++) {
-                    if(j > 0) {
+                for (j = 0; j < width; j++) {
+                    if (j > 0) {
                         fw.append(" ");
                     }
-                    if(Double.isNaN(grid_data[i * width + j])) {
+                    if (Double.isNaN(grid_data[i * width + j])) {
                         fw.append("-1");
                     } else {
                         fw.append(String.valueOf(grid_data[i * width + j]));
@@ -465,7 +470,7 @@ public class AlocService {
         } catch (Exception e) {
             e.printStackTrace(System.out);
         } finally {
-            if(fw != null) {
+            if (fw != null) {
                 try {
                     fw.close();
                 } catch (Exception e) {
@@ -505,30 +510,12 @@ public class AlocService {
             sbProjection.append("        AUTHORITY[\"EPSG\",\"9122\"]], ").append("\n");
             sbProjection.append("    AUTHORITY[\"EPSG\",\"4326\"]] ").append("\n");
 
-            //spWriter.write("spname, longitude, latitude \n");
             spWriter.write(sbProjection.toString());
             spWriter.close();
 
-        } catch (IOException ex) {
-            //Logger.getLogger(MaxentServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {            
             System.out.println("error writing species file:");
             ex.printStackTrace(System.out);
-}
+        }
     }
-
-   
-
-//    static String readFile(String file) {
-//        String s = null;
-//        try {
-//            RandomAccessFile raf = new RandomAccessFile(file, "r");
-//            byte[] b = new byte[(int) raf.length()];
-//            raf.read(b);
-//            raf.close();
-//            s = new String(b, "UTF-8");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return s;
-//    }
 }

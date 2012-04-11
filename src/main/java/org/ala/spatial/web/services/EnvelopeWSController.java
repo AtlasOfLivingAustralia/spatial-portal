@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class EnvelopeWSController {
 
-    @RequestMapping(value = "/ws/envelope", method = RequestMethod.POST)
+    @RequestMapping(value = "/ws/envelope", method = { RequestMethod.POST, RequestMethod.GET })
     public
     @ResponseBody
     String envelope(HttpServletRequest req) {
