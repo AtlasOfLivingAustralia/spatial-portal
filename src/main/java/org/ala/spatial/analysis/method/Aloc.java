@@ -123,8 +123,7 @@ public class Aloc {
 
         //initial seed as first record
         {
-            seedidx[0] = 0;
-            seedidxsize = 1;
+            seedidx[0] = 0;            
             float[] data = (float[]) data_pieces.get(0);
             for (i = 0; i < nCols; i++) {
                 seeds[i] = data[i];
@@ -133,12 +132,14 @@ public class Aloc {
 
         int c;
         while (seedidxsize != nNoOfGroups && count < 25) {
+            seedidxsize = 1;
+
             int rowPos = 0;
             for (c = 0; c < pieces; c++) {
                 float[] data = (float[]) data_pieces.get(c);
                 nRows = data.length / nCols;
                 rowPos = rowCounts[c] - nRows;
-                for (i = 0; i < nRows; i++, rowPos++) {
+                for (i = (c == 0?1:0); i < nRows; i++, rowPos++) {
                     for (j = 0; j < seedidxsize; j++) {
                         //calc dist between obj(i) & obj(seedidx(j))
                         double dist = 0;
@@ -189,8 +190,8 @@ public class Aloc {
                 continue;
             }
 
-            //PERFORM RECONCILIATION OF NUMBER OF GROUPS IF count >= 25
-            if (count < 25) {
+            //PERFORM RECONCILIATION OF NUMBER OF GROUPS IF count >= 20
+            if (count < 20) {
                 if (seedidxsize < nNoOfGroups) {
                     radius -= step;
                 } else if (seedidxsize > nNoOfGroups) {

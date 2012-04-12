@@ -92,7 +92,7 @@ public class AnalysisJobAloc extends AnalysisJob {
             System.out.println("OUT2: " + outputfile);
             setProgress(0.4);
 
-            AnalysisJobMaxent.readReplace(filepath + "classification_means.csv", "<insert job number here>", getName());
+            AnalysisJobMaxent.readReplace(filepath + "classification.html", "<insert job number here>", getName());
 
             /* register with LayerImgService */
             StringBuffer legend = new StringBuffer();
