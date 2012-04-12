@@ -1677,7 +1677,9 @@ public class AddToolComposer extends UtilityComposer {
         try {
             if (lbListLayers != null && lbListLayers.getSelectedCount() > 0
                     && tLayerList != null) {
-                tLayerList.setText(getLayerListText());
+                String lyrtext = getLayerListText();
+                System.out.println("Setting Layer text: \n" + lyrtext);
+                tLayerList.setText(lyrtext);
                 if (dLayerSummary != null) {
                     dLayerSummary.setVisible(tLayerList.getText().length() > 0);
                 }
@@ -1691,7 +1693,8 @@ public class AddToolComposer extends UtilityComposer {
         StringBuilder sb = new StringBuilder();
         for (String s : lbListLayers.getSelectedLayers()) {
             try {
-                String displayname = CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
+                //String displayname = CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
+                String displayname = CommonData.getLayerDisplayName(s);
                 if (displayname != null && displayname.length() > 0) {
                     if (sb.length() > 0) {
                         sb.append(",");

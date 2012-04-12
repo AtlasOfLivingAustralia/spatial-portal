@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import net.sf.json.JSONArray;
@@ -754,6 +755,17 @@ public class CommonData {
         JSONObject layer = facetToLayer.get(facet);
         if (layer != null && layer.containsKey("displayname")) {
             return layer.getString("displayname");
+        }
+        return null;
+    }
+
+    public static String getLayerDisplayName(String name) {
+        JSONObject layer = null;
+        for (int i=0; i<layerlistJSON.size(); i++) {
+            layer = layerlistJSON.getJSONObject(i);
+            if (layer.getString("name").equalsIgnoreCase(name) && layer.containsKey("displayname")) {
+                return layer.getString("displayname");
+            }
         }
         return null;
     }

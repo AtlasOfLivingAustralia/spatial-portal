@@ -7,6 +7,7 @@ package org.ala.spatial.data;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import org.ala.spatial.exception.NoSpeciesFoundException;
 
 /**
  *
@@ -50,7 +51,7 @@ public interface Query {
      * If a QueryField isStored() it will be populated with the field data.
      * @return coordinates as double [] like [lng, lat, lng, lat, ...].
      */
-    double[] getPoints(ArrayList<QueryField> fields);
+    double[] getPoints(ArrayList<QueryField> fields) throws NoSpeciesFoundException;
 
     /**
      * Get unique term.

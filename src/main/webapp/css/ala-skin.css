@@ -247,3 +247,14 @@ a.button:active{
     _border-right-color: pink;
     _filter: chroma(color=pink);
 }
+
+#downloadForm p {
+    margin-bottom: 10px;
+}
+#downloadForm label {
+    color: #444444;
+    display: inline-block;
+    padding-right: 10px;
+    text-align: right;
+    width: 35%;
+}

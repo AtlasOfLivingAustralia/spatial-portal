@@ -18,6 +18,7 @@ import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.exception.NoSpeciesFoundException;
 import org.ala.spatial.sampling.SimpleRegion;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.SelectedArea;
@@ -315,7 +316,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
      * @param area
      * @return
      */
-    private String[] getSpeciesData(Query query) {
+    private String[] getSpeciesData(Query query) throws NoSpeciesFoundException {
         if (query instanceof UploadQuery) {
             //no sensitive records in upload
             ArrayList<QueryField> fields = new ArrayList<QueryField>();

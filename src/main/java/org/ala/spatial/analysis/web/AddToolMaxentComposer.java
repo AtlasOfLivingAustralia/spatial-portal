@@ -25,6 +25,7 @@ import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.exception.NoSpeciesFoundException;
 import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -228,6 +229,10 @@ public class AddToolMaxentComposer extends AddToolComposer {
             this.setVisible(false);
 
             return true;
+        } catch (NoSpeciesFoundException e) {
+            System.out.println("Maxent error: NoSpeciesFoundException");
+            e.printStackTrace(System.out);
+            getMapComposer().showMessage("No species occurrences found in the current area. \nPlease select a larger area and re-run the analysis", this);
         } catch (Exception e) {
             System.out.println("Maxent error: ");
             e.printStackTrace(System.out);
@@ -331,7 +336,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
      * @param area
      * @return
      */
-    private String[] getSpeciesData(Query query) {
+    private String[] getSpeciesData(Query query) throws NoSpeciesFoundException {
         if (query instanceof UploadQuery) {
             //no sensitive records in upload
             ArrayList<QueryField> fields = new ArrayList<QueryField>();

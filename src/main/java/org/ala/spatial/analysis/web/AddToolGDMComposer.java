@@ -25,6 +25,7 @@ import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.exception.NoSpeciesFoundException;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.SelectedArea;
 import org.apache.commons.httpclient.HttpClient;
@@ -115,7 +116,7 @@ public class AddToolGDMComposer extends AddToolComposer {
     @Override
     public void onLastPanel() {
         super.onLastPanel();
-        this.updateName(getMapComposer().getNextAreaLayerName("My GDM : " + cutpoint.getSelectedItem().getValue()));
+        this.updateName(getMapComposer().getNextAreaLayerName("My GDM"));
 
     }
 
@@ -268,8 +269,14 @@ public class AddToolGDMComposer extends AddToolComposer {
 
 
             return true;
-        } catch (Exception ex) {
-            Logger.getLogger(AddToolGDMComposer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSpeciesFoundException e) {
+            System.out.println("GDM error: NoSpeciesFoundException");
+            e.printStackTrace(System.out);
+            getMapComposer().showMessage("No species occurrences found in the current area. \nPlease select a larger area and re-run the analysis", this);
+        }  catch (Exception e) {
+            System.out.println("GDM error: ");
+            e.printStackTrace(System.out);
+            getMapComposer().showMessage("Unknown error.", this);
         }
 
         return false;
@@ -314,8 +321,6 @@ public class AddToolGDMComposer extends AddToolComposer {
             loadMap(null);
 
             this.setVisible(false);
-
-            getMapComposer().showMessage("Output for the GDM is available at http://spatial-dev.ala.org.au/output/gdm/" + pid + "/", getMapComposer());
 
             String fileUrl = CommonData.satServer + "/ws/download/" + pid;
             Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
@@ -382,8 +387,14 @@ public class AddToolGDMComposer extends AddToolComposer {
             Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
 
             return true;
-        } catch (Exception ex) {
-            Logger.getLogger(AddToolGDMComposer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSpeciesFoundException e) {
+            System.out.println("GDM error: NoSpeciesFoundException");
+            e.printStackTrace(System.out);
+            getMapComposer().showMessage("No species occurrences found in the current area. \nPlease select a larger area and re-run the analysis", this);
+        }  catch (Exception e) {
+            System.out.println("GDM error: ");
+            e.printStackTrace(System.out);
+            getMapComposer().showMessage("Unknown error.", this);
         }
 
         return false;
@@ -403,8 +414,8 @@ public class AddToolGDMComposer extends AddToolComposer {
 
             System.out.println(legendurl);
 
-            String layername = "Tranformed " + CommonData.getFacetLayerDisplayName(env);
-            System.out.println("Converting " + env + " to " + CommonData.getFacetLayerDisplayName(env));
+            String layername = "Tranformed " + CommonData.getLayerDisplayName(env);
+            //System.out.println("Converting '" + env + "' to '" + layername.substring(10) + "' (" + CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(env)) + ")");
             getMapComposer().addWMSLayer(pid + "_" + env, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.GDM, null, null);
             MapLayer ml = getMapComposer().getMapLayer(pid + "_" + env);
             ml.setData("pid", pid + "_" + env);
@@ -432,7 +443,7 @@ public class AddToolGDMComposer extends AddToolComposer {
      * @param area
      * @return
      */
-    private String[] getSpeciesData(Query query) {
+    private String[] getSpeciesData(Query query) throws NoSpeciesFoundException {
         if (query instanceof UploadQuery) {
             //no sensitive records in upload
             ArrayList<QueryField> fields = new ArrayList<QueryField>();

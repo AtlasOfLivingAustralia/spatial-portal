@@ -30,6 +30,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import java.util.zip.GZIPInputStream;
 import net.sf.json.JSONArray;
+import org.ala.spatial.exception.NoSpeciesFoundException;
 import org.ala.spatial.sampling.SimpleRegion;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
@@ -528,7 +529,7 @@ public class BiocacheQuery implements Query, Serializable {
      * @return coordinates as double [] like [lng, lat, lng, lat, ...].
      */
     @Override
-    public double[] getPoints(ArrayList<QueryField> fields) {
+    public double[] getPoints(ArrayList<QueryField> fields) throws NoSpeciesFoundException {
         //if no additional fields requested, return points only
         if (fields == null && points != null) {
             return points;
@@ -550,6 +551,12 @@ public class BiocacheQuery implements Query, Serializable {
             lineCount++;
         }
         System.out.println("sampled records count: " + lineCount);
+
+        if (lineCount == -1) {
+            throw new NoSpeciesFoundException();
+        }
+
+
         CSVReader csv = new CSVReader(new StringReader(sample));
 
         //process header

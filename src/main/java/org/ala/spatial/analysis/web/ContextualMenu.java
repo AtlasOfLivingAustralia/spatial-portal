@@ -147,7 +147,7 @@ public class ContextualMenu extends UtilityComposer {
         }
         if (polygonLayer != null) {
             //actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
-            actions.add(new Action("Browse environmental point values", new GridLayerHoverEvent(getMapComposer(), polygonLayer.getName())));
+            actions.add(new Action("Browse contextual point values", new GridLayerHoverEvent(getMapComposer(), polygonLayer.getName())));
         }
 
         //default actions
