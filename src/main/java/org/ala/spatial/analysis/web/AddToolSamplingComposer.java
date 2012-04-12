@@ -61,7 +61,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
 
         try {
             SelectedArea sa = getSelectedArea();
-            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
+            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
             //test size        
             if (query.getOccurrenceCount() <= 0) {
                 getMapComposer().showMessage("No occurrences selected. Please try again", this);

@@ -19,6 +19,7 @@ import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
@@ -91,6 +92,8 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         selectedSPLFilterLayers = new Hashtable<String, SPLFilter>();
 
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+
+        cbEnvLayers.setIncludeLayers("environmental");
     }
 
     public String getAreaSize() {
@@ -101,7 +104,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         }
     }
 
-    public void onChange$cbEnvLayers(Event event) {
+    public void onChange$cbEnvLayers(Event event) {        
         applyFilter(true);
     }
 
@@ -467,12 +470,13 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer).append("/ws/envelope?area=").append(getWkt());
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString());
+            PostMethod post = new PostMethod(sbProcessUrl.toString());
+            System.out.println(sbProcessUrl.toString());
 
-            get.addRequestHeader("Accept", "text/plain");
+            post.addRequestHeader("Accept", "text/plain");
 
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
+            int result = client.executeMethod(post);
+            String slist = post.getResponseBodyAsString();
             String[] list = slist.split("\n");
             String pid = list[0];
             String url = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:envelope_" + pid + "&FORMAT=image%2Fpng";
@@ -547,7 +551,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     private int getSpeciesCount() {
-        Query q = new BiocacheQuery(null, null, null, getFacets(), false);
+        Query q = new BiocacheQuery(null, null, null, getFacets(), false, null);
 
         return q.getSpeciesCount();
     }

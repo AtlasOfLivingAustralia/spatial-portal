@@ -399,3 +399,25 @@ function openChecklists(lsids){
 function openAreaChecklist(geom_idx){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$openAreaChecklist', geom_idx));
 }
+
+var flaggedRecords = {};
+function isFlaggedRecord(layer, id) {
+    return flaggedRecords[layer + "\n" + id] != undefined
+}
+function flagRecord(layer, id, set) {
+    if(isFlaggedRecord(layer, id) != set) {
+        var key = layer + "\n" + id;
+        if(set) flaggedRecords[key] = true
+        else flaggedRecords[key] = undefined;
+
+        zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'updateAdhocGroup', key + "\n" + set))
+    }
+}
+function addFlaggedRecords(pairs) {
+    var list = pairs.split('\n');
+    for(i=0;i<list.length;i++) {
+        flaggedRecords[list[i]] = true
+    }
+}
+
+function doNothing(){}

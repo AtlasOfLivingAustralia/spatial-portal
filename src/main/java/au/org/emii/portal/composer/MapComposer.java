@@ -328,7 +328,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac, SelectedArea sa) {
+    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac, SelectedArea sa, boolean[] geospatialKosher) {
         // check if the species name is not valid
         // this might happen as we are automatically mapping
         // species without the user pressing a button
@@ -355,8 +355,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
 
-        Query query = QueryUtil.get(lsid, this, false);
-        Query q = QueryUtil.queryFromSelectedArea(query, sa, false);
+        Query query = QueryUtil.get(lsid, this, false, geospatialKosher);
+        Query q = QueryUtil.queryFromSelectedArea(query, sa, false, geospatialKosher);
 
         mapSpecies(q, taxon, rank, 0, LayerUtilities.SPECIES, sa.getWkt(), -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, nextColour());
 
@@ -456,7 +456,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     sbContent.append("            <p><label for='filename'>File Name</label>");
                     sbContent.append("                <input type='text' name='filename' id='filename' value='data' size='30'  />");
                     sbContent.append("            </p>");
-                    
+
                     //sbContent.append("            <p><label for='reason' style='vertical-align: top'>Download Reason</label>");
                     //sbContent.append("                <textarea name='reason' rows='5' cols='30' id='reason'  ></textarea>");
                     //sbContent.append("            </p>");
@@ -464,9 +464,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     sbContent.append("            <select name='reasonTypeId' id='reasonTypeId'>");
                     sbContent.append("            <option value=''>-- select a reason --</option>");
                     JSONArray dlreasons = CommonData.getDownloadReasons();
-                    for (int i=0;i<dlreasons.size(); i++) {
+                    for (int i = 0; i < dlreasons.size(); i++) {
                         JSONObject dlr = dlreasons.getJSONObject(i);
-                        sbContent.append("            <option value='"+dlr.getInt("id")+"'>"+dlr.getString("name")+"</option>");
+                        sbContent.append("            <option value='" + dlr.getInt("id") + "'>" + dlr.getString("name") + "</option>");
                     }
                     sbContent.append("            <select></p>");
 
@@ -1295,16 +1295,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return uparams;
     }
 
-    public void echoMapSpeciesByLSID(Event event) {
-        String lsid = (String) event.getData();
-        try {
-            mapSpecies(QueryUtil.get(lsid, this, true), null, "species", -1, LayerUtilities.SPECIES, null, -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, nextColour());
-        } catch (Exception e) {
-            //try again
-            Events.echoEvent("echoMapSpeciesByLSID", this, lsid);
-        }
-    }
-
     private MapLayer loadUrlParameters() {
         String params = null;
         Cookie[] cookies = ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies();
@@ -1344,6 +1334,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Double lat = null;
             Double lon = null;
             Double radius = null;
+            boolean[] geospatialKosher = null;
             if (userParams != null) {
                 for (int i = 0; i < userParams.size(); i++) {
                     String key = userParams.get(i).getKey();
@@ -1353,75 +1344,79 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         useSpeciesWMSCache = value;
                     }
 
-                    if (key.contains("species_lsid")) {
-                        Events.echoEvent("echoMapSpeciesByLSID", this, value);
-                        return null;
-                    } else {
-                        if (key.equals("q") || key.equals("fq")) {
-                            if (value.equals("*:*")) {
-                                allTermFound = true;
-                                continue;
-                            }
-                            if (sb.length() > 0) {
-                                sb.append(" AND ");
-                            }
-                            //wrap value in " when appropriate
-                            //Not key:[..
-                            //Not key:*
-                            //Not key:"...
-                            //Not key:... AND key:....
-                            //Not key:... OR key:...
-                            //Not key:.."..
-                            int p = value.indexOf(':');
-                            if (p > 0 && p + 1 < value.length()
-                                    && value.charAt(p + 1) != '['
-                                    && value.charAt(p + 1) != '*'
-                                    && value.charAt(p + 1) != '"'
-                                    && !value.contains(" AND ")
-                                    && !value.contains(" OR ")
-                                    && !value.contains("\"")
-                                    && !value.startsWith("lsid")
-                                    && !value.startsWith("(")) {
-                                value = value.substring(0, p + 1) + "\""
-                                        + value.substring(p + 1) + "\"";
-                            }
+                    if (key.equals("species_lsid")) {
+                        sb.append("lsid:").append(value);
+                        count++;
+                    } else if (key.equals("q") || key.equals("fq")) {
+                        if (value.equals("*:*")) {
+                            allTermFound = true;
+                            continue;
+                        }
+                        if (sb.length() > 0) {
+                            sb.append(" AND ");
+                        }
+                        //wrap value in " when appropriate
+                        //Not key:[..
+                        //Not key:*
+                        //Not key:"...
+                        //Not key:... AND key:....
+                        //Not key:... OR key:...
+                        //Not key:.."..
+                        int p = value.indexOf(':');
+                        if (p > 0 && p + 1 < value.length()
+                                && value.charAt(p + 1) != '['
+                                && value.charAt(p + 1) != '*'
+                                && value.charAt(p + 1) != '"'
+                                && !value.contains(" AND ")
+                                && !value.contains(" OR ")
+                                && !value.contains("\"")
+                                && !value.startsWith("lsid")
+                                && !value.startsWith("(")) {
+                            value = value.substring(0, p + 1) + "\""
+                                    + value.substring(p + 1) + "\"";
+                        }
 
+                        //flag geospatialKosher filters separately
+                        boolean[] gk = null;
+                        if ((gk = BiocacheQuery.parseGeospatialKosher(value)) != null) {
+                            geospatialKosher = gk;
+                        } else {
                             //TODO: remove this when biocache is working
-                            if(value.contains("species_guid:")) {
+                            if (value.contains("species_guid:")) {
                                 value = value.replace("\"", "");
                             }
 
                             count++;
                             sb.append("(").append(value).append(")");
-                        } else if (key.equals("qc")) {
-                            qc = "&qc=" + URLEncoder.encode(value, "UTF-8");
-                        } else if (key.equals("bs")) {
-                            bs = value;
-                        } else if (key.equals("ws")) {
-                            ws = value;
-                        } else if (key.equals("wkt")) {
-                            wkt = value;
-                        } else if (key.equals("psize")) {
-                            size = Integer.parseInt(value);
-                        } else if (key.equals("popacity")) {
-                            opacity = Float.parseFloat(value);
-                        } else if (key.equals("pcolour")) {
-                            colour = Integer.parseInt(value, 16);
-                        } else if (key.equals("ptype")) {
-                            pointtype = value;
-                        } else if (key.equals("bbox")) {
-                            bb = value;
-                        } else if(key.equals("lat")) {
-                            lat = Double.parseDouble(value);
-                        } else if(key.equals("lon")) {
-                            lon = Double.parseDouble(value);
-                        } else if(key.equals("radius")) {
-                            radius = Double.parseDouble(value);
                         }
+                    } else if (key.equals("qc")) {
+                        qc = "&qc=" + URLEncoder.encode(value, "UTF-8");
+                    } else if (key.equals("bs")) {
+                        bs = value;
+                    } else if (key.equals("ws")) {
+                        ws = value;
+                    } else if (key.equals("wkt")) {
+                        wkt = value;
+                    } else if (key.equals("psize")) {
+                        size = Integer.parseInt(value);
+                    } else if (key.equals("popacity")) {
+                        opacity = Float.parseFloat(value);
+                    } else if (key.equals("pcolour")) {
+                        colour = Integer.parseInt(value, 16);
+                    } else if (key.equals("ptype")) {
+                        pointtype = value;
+                    } else if (key.equals("bbox")) {
+                        bb = value;
+                    } else if (key.equals("lat")) {
+                        lat = Double.parseDouble(value);
+                    } else if (key.equals("lon")) {
+                        lon = Double.parseDouble(value);
+                    } else if (key.equals("radius")) {
+                        radius = Double.parseDouble(value);
                     }
                 }
 
-                if(lat != null && lon != null && radius != null) {
+                if (lat != null && lon != null && radius != null) {
                     wkt = Util.createCircleJs(lon, lat, radius * 1000); //m to km
                 }
 
@@ -1437,27 +1432,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 System.out.println("url query: " + sb.toString());
                 if (sb.toString().length() > 0) {
                     String query = sb.toString();
-                    boolean showWarning = true;
-                    if (query.contains(" AND geospatial_kosher:true")) {
-                        query = query.replace(" AND geospatial_kosher:true", "");
-                        showWarning = false;
-                    } else if (query.contains("geospatial_kosher:true AND ")) {
-                        query = query.replace("geospatial_kosher:true AND ", "");
-                        showWarning = false;
-                    }
 
-                    BiocacheQuery q = new BiocacheQuery(null, wkt, sb.toString(), null, true, bs, ws);
+                    BiocacheQuery q = new BiocacheQuery(null, wkt, sb.toString(), null, true, geospatialKosher, bs, ws);
 
                     if (qc != null) {
                         q.setQc(qc);
                     }
 
                     if (getMapLayerDisplayName(q.getSolrName()) == null) {
-                        if (showWarning) {
-//                            showMessage("You are mapping a species layer that may have fewer occurrences than you expect.\n\n"
-//                                    + q.getOccurrenceCount() + " occurrences with valid coordinates found.");
-                        }
-
                         if (bb == null) {
                             List<Double> bbox = q.getBBox();
                             String script = "map.zoomToExtent(new OpenLayers.Bounds("
@@ -3516,5 +3498,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void importAreas(Event event) {
         openModal("WEB-INF/zul/ImportAreas.zul", null, "addareawindow");
+    }
+
+    public void updateAdhocGroup(Event event) {
+        String[] params = ((String) event.getData()).split("\n");
+        MapLayer ml = getMapLayer(params[0]);
+        Query query;
+        if (ml != null && (query = (Query) ml.getData("query")) != null) {
+            query.flagRecord(params[1], params[2].equalsIgnoreCase("true"));
+        }
+        updateLayerControls();
     }
 }

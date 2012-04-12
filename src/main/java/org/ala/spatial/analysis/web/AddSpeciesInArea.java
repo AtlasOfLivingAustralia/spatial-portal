@@ -54,6 +54,7 @@ public class AddSpeciesInArea extends UtilityComposer {
     boolean byLsid = false;
     private String metadata;
     private boolean allSpecies = false;
+    private boolean[] geospatialKosher = null;
 
     @Override
     public void afterCompose() {
@@ -117,7 +118,7 @@ public class AddSpeciesInArea extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
-        if(btnOk.isDisabled()) {
+        if (btnOk.isDisabled()) {
             return;
         }
 
@@ -161,7 +162,7 @@ public class AddSpeciesInArea extends UtilityComposer {
             MapLayer ml = null;
 
             Query q = null;
-            q = QueryUtil.queryFromSelectedArea(query, sa, true);
+            q = QueryUtil.queryFromSelectedArea(query, sa, true, geospatialKosher);
             if (q instanceof UploadQuery) {
                 //do default sampling now
                 if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
@@ -189,10 +190,10 @@ public class AddSpeciesInArea extends UtilityComposer {
                     String activeAreaLayerName = getSelectedAreaDisplayName();
                     String layerName = "Occurrences in " + activeAreaLayerName;
 
-                    if(q instanceof BiocacheQuery) {
+                    if (q instanceof BiocacheQuery) {
                         String lsids = ((BiocacheQuery) q).getLsids();
-                        if (lsids != null && lsids.length() > 0 &&
-                                lsids.split(",").length > 1) {
+                        if (lsids != null && lsids.length() > 0
+                                && lsids.split(",").length > 1) {
                             layerName = "Species assemblage";
                         }
                     }
@@ -221,7 +222,7 @@ public class AddSpeciesInArea extends UtilityComposer {
             }
             //RemoteLogger rm = new RemoteLogger();
             System.out.println("metadata: " + metadata);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -319,5 +320,9 @@ public class AddSpeciesInArea extends UtilityComposer {
 
     void setAllSpecies(boolean isAllSpecies) {
         this.allSpecies = isAllSpecies;
+    }
+
+    void setGeospatialKosher(boolean[] geospatialKosher) {
+        this.geospatialKosher = geospatialKosher;
     }
 }

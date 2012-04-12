@@ -48,21 +48,25 @@ public class FilteringResultsWCController extends UtilityComposer {
     private static Logger logger = Logger.getLogger(FilteringResultsWCController.class);
     RemoteLogger remoteLogger;
     public Button mapspecies;
+    public Button mapspecieskosher;
     public Label results_label2_occurrences;
     public Label results_label2_species;
+    public Label results_label2_occurrences_kosher;
+    public Label results_label2_species_kosher;
     public Label sdLabel;
     public Label clLabel;
     public Label aclLabel;
     String[] speciesDistributionText = null;
-    String [] speciesChecklistText = null;
-    String [] areaChecklistText = null;
+    String[] speciesChecklistText = null;
+    String[] areaChecklistText = null;
     Window window = null;
-    public String[] results = null;
     public String pid;
     //String shape;
     private SettingsSupplementary settingsSupplementary = null;
     int results_count = 0;
     int results_count_occurrences = 0;
+    int results_count_kosher = 0;
+    int results_count_occurrences_kosher = 0;
     boolean addedListener = false;
     Label lblArea;
     Label lblBiostor;
@@ -149,6 +153,8 @@ public class FilteringResultsWCController extends UtilityComposer {
         if (set) {
             results_label2_occurrences.setValue("updating...");
             results_label2_species.setValue("updating...");
+            results_label2_occurrences_kosher.setValue("updating...");
+            results_label2_species_kosher.setValue("updating...");
             sdLabel.setValue("updating...");
             clLabel.setValue("updating...");
             aclLabel.setValue("updating...");
@@ -185,7 +191,6 @@ public class FilteringResultsWCController extends UtilityComposer {
 //            e.printStackTrace();
 //        }
 //    }
-
     boolean isTabOpen() {
         return true; //getMapComposer().getPortalSession().getCurrentNavigationTab() == PortalSession.LINK_TAB;
     }
@@ -296,6 +301,9 @@ public class FilteringResultsWCController extends UtilityComposer {
         lblArea.setValue(data.get("area"));
         results_label2_species.setValue(data.get("speciesCount"));
         results_label2_occurrences.setValue(data.get("occurrencesCount"));
+        results_label2_species_kosher.setValue(data.get("speciesCountKosher"));
+        results_label2_occurrences_kosher.setValue(data.get("occurrencesCountKosher"));
+
 
         //underline?
         if (isNumberGreaterThanZero(lblBiostor.getValue())) {
@@ -335,6 +343,24 @@ public class FilteringResultsWCController extends UtilityComposer {
         } else {
             mapspecies.setVisible(false);
         }
+
+        if (isNumberGreaterThanZero(results_label2_species_kosher.getValue())) {
+            results_label2_species_kosher.setSclass("underline");
+        } else {
+            results_label2_species_kosher.setSclass("");
+        }
+        if (isNumberGreaterThanZero(results_label2_occurrences_kosher.getValue())) {
+            results_label2_occurrences_kosher.setSclass("underline");
+        } else {
+            results_label2_occurrences_kosher.setSclass("");
+        }
+
+        // toggle the map button
+        if (results_count_kosher > 0 && results_count_occurrences_kosher <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
+            mapspecieskosher.setVisible(true);
+        } else {
+            mapspecieskosher.setVisible(false);
+        }
     }
 
     void decCounter() {
@@ -345,10 +371,13 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     void counts() {
         try {
-            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false);
-
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
             results_count = sq.getSpeciesCount();
             results_count_occurrences = sq.getOccurrenceCount();
+
+            Query sq2 = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, false, false});
+            results_count_kosher = sq2.getSpeciesCount();
+            results_count_occurrences_kosher = sq2.getOccurrenceCount();
 
             //setUpdatingCount(false);
 
@@ -359,7 +388,13 @@ public class FilteringResultsWCController extends UtilityComposer {
                 data.put("speciesCount", "0");
                 data.put("occurrencesCount", "0");
                 mapspecies.setVisible(false);
-                results = null;
+                return;
+            }
+
+            if (results_count == 0) {
+                data.put("speciesCountKosher", "0");
+                data.put("occurrencesCountKosher", "0");
+                mapspecieskosher.setVisible(false);
                 return;
             }
 
@@ -367,13 +402,15 @@ public class FilteringResultsWCController extends UtilityComposer {
             //results_label2_occurrences.setValue(String.format("%,d", results_count_occurrences));
             data.put("speciesCount", String.format("%,d", results_count));
             data.put("occurrencesCount", String.format("%,d", results_count_occurrences));
+            data.put("speciesCountKosher", String.format("%,d", results_count_kosher));
+            data.put("occurrencesCountKosher", String.format("%,d", results_count_occurrences_kosher));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     public void onClick$results_label2_species() {
-        SpeciesListEvent sle = new SpeciesListEvent(getMapComposer(), areaName, 1);
+        SpeciesListEvent sle = new SpeciesListEvent(getMapComposer(), areaName, 1, null);
         try {
             sle.onEvent(null);
         } catch (Exception e) {
@@ -382,7 +419,25 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onClick$results_label2_occurrences() {
-        SamplingEvent sle = new SamplingEvent(getMapComposer(), null, areaName, null, 2);
+        SamplingEvent sle = new SamplingEvent(getMapComposer(), null, areaName, null, 2, null);
+        try {
+            sle.onEvent(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onClick$results_label2_species_kosher() {
+        SpeciesListEvent sle = new SpeciesListEvent(getMapComposer(), areaName, 1, new boolean[]{true, false, false});
+        try {
+            sle.onEvent(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onClick$results_label2_occurrences_kosher() {
+        SamplingEvent sle = new SamplingEvent(getMapComposer(), null, areaName, null, 2, new boolean[]{true, false, false});
         try {
             sle.onEvent(null);
         } catch (Exception e) {
@@ -395,6 +450,11 @@ public class FilteringResultsWCController extends UtilityComposer {
         onMapSpecies(null);
     }
 
+    public void onClick$mapspecieskosher() {
+        //getMapComposer().addToSession("Occurrences in Active area", "lsid=aa");
+        onMapSpeciesKosher(null);
+    }
+
     public void onMapSpecies(Event event) {
         try {
             SelectedArea sa = null;
@@ -404,9 +464,28 @@ public class FilteringResultsWCController extends UtilityComposer {
                 sa = new SelectedArea(null, getMapComposer().getViewArea());
             }
 
-            Query query = QueryUtil.queryFromSelectedArea(null, sa, true);
+            Query query = QueryUtil.queryFromSelectedArea(null, sa, true, null);
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);
+            getMapComposer().mapSpecies(query, activeAreaLayerName, "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onMapSpeciesKosher(Event event) {
+        try {
+            SelectedArea sa = null;
+            if (!areaName.equalsIgnoreCase("Current extent")) {
+                sa = selectedArea;
+            } else {
+                sa = new SelectedArea(null, getMapComposer().getViewArea());
+            }
+
+            Query query = QueryUtil.queryFromSelectedArea(null, sa, true, new boolean[]{true, false, false});
+
+            String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName + " geospatial kosher");
             getMapComposer().mapSpecies(query, activeAreaLayerName, "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
 
         } catch (Exception e) {
@@ -434,13 +513,16 @@ public class FilteringResultsWCController extends UtilityComposer {
             //results_label2_occurrences.setValue(String.format("%,d", results_count_occurrences));
             data.put("occurrencesCount", String.format("%,d", results_count_occurrences));
             data.put("speciesCount", String.format("%,d", results_count));
-            results = null;
+            data.put("occurrencesCountKosher", String.format("%,d", results_count_occurrences_kosher));
+            data.put("speciesCountKosher", String.format("%,d", results_count_kosher));
         }
 
         //results_label2_species.setValue(String.format("%,d", results_count));
         //results_label2_occurrences.setValue(String.format("%,d", results_count_occurrences));
         data.put("occurrencesCount", String.format("%,d", results_count_occurrences));
         data.put("speciesCount", String.format("%,d", results_count));
+        data.put("occurrencesCountKosher", String.format("%,d", results_count_occurrences_kosher));
+        data.put("speciesCountKosher", String.format("%,d", results_count_kosher));
         setUpdatingCount(false);
 
         // toggle the map button
@@ -453,7 +535,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void intersectWithSpeciesDistributions() {
         try {
-            String [] lines = getDistributionsOrChecklists("distributions", selectedArea.getWkt(), null, null);
+            String[] lines = getDistributionsOrChecklists("distributions", selectedArea.getWkt(), null, null);
 
             if (lines == null || lines.length <= 1) {
                 data.put("intersectWithSpeciesDistributions", "0");
@@ -467,7 +549,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
-    public static String [] getDistributionsOrChecklists(String type, String wkt, String lsids, String geom_idx) {
+    public static String[] getDistributionsOrChecklists(String type, String wkt, String lsids, String geom_idx) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append("/" + type);
@@ -475,13 +557,13 @@ public class FilteringResultsWCController extends UtilityComposer {
             HttpClient client = new HttpClient();
             PostMethod post = new PostMethod(CommonData.layersServer + sbProcessUrl.toString()); // testurl
             System.out.println(CommonData.layersServer + sbProcessUrl.toString());
-            if(wkt != null) {
+            if (wkt != null) {
                 post.addParameter("wkt", wkt);
             }
-            if(lsids != null) {
+            if (lsids != null) {
                 post.addParameter("lsids", lsids);
             }
-            if(geom_idx != null) {
+            if (geom_idx != null) {
                 post.addParameter("geom_idx", geom_idx);
             }
             post.addRequestHeader("Accept", "application/json, text/javascript, */*");
@@ -538,23 +620,23 @@ public class FilteringResultsWCController extends UtilityComposer {
         return null;
     }
 
-    public static String [] getAreaChecklists(String geom_idx, String lsids, String wkt) {
+    public static String[] getAreaChecklists(String geom_idx, String lsids, String wkt) {
         try {
-            return getAreaChecklists(getDistributionsOrChecklists("checklists",lsids,wkt, geom_idx));
+            return getAreaChecklists(getDistributionsOrChecklists("checklists", lsids, wkt, geom_idx));
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public static String [] getAreaChecklists(String [] records) {
-        String [] lines = null;
+    public static String[] getAreaChecklists(String[] records) {
+        String[] lines = null;
         try {
-            if(records != null) {
-                String [][] data = new String[records.length-1][]; //exclude header
-                for(int i=1;i<records.length;i++) {
+            if (records != null) {
+                String[][] data = new String[records.length - 1][]; //exclude header
+                for (int i = 1; i < records.length; i++) {
                     CSVReader csv = new CSVReader(new StringReader(records[i]));
-                    data[i-1] = csv.readNext();
+                    data[i - 1] = csv.readNext();
                     csv.close();
                 }
                 java.util.Arrays.sort(data, new Comparator<String[]>() {
@@ -570,16 +652,16 @@ public class FilteringResultsWCController extends UtilityComposer {
                 lines[0] = lines[0] = "SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,LSID,AREA_NAME,AREA_SQ_KM,SPECIES_COUNT";
                 int len = 1;
                 int thisCount = 0;
-                for(int i=0;i<data.length;i++) {
+                for (int i = 0; i < data.length; i++) {
                     thisCount++;
-                    if(i == data.length-1
-                            || !CommonData.getSpeciesChecklistWMSFromSpcode(data[i][0])[1].equals(CommonData.getSpeciesChecklistWMSFromSpcode(data[i+1][0])[1])) {
+                    if (i == data.length - 1
+                            || !CommonData.getSpeciesChecklistWMSFromSpcode(data[i][0])[1].equals(CommonData.getSpeciesChecklistWMSFromSpcode(data[i + 1][0])[1])) {
                         StringBuilder sb = new StringBuilder();
-                        for(int j=0;j<data[i].length;j++) {
-                            if(j > 0) {
+                        for (int j = 0; j < data[i].length; j++) {
+                            if (j > 0) {
                                 sb.append(",");
                             }
-                            if(j == 0 || (j >= 9 && j != 10)) {
+                            if (j == 0 || (j >= 9 && j != 10)) {
                                 sb.append(wrap(data[i][j]));
                             }
                         }
@@ -598,7 +680,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         return lines;
     }
 
-    public static String [] getDistributionOrChecklist(String spcode) {
+    public static String[] getDistributionOrChecklist(String spcode) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append("/distribution/" + spcode);
@@ -616,7 +698,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                 } else {
                     String[] output = new String[13];
                     //"SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,LSID,AREA_NAME,AREA_SQ_KM";
-                    
+
                     //String spcode = jo.containsKey("spcode") ? jo.getString("spcode") : "";
                     String scientific = jo.containsKey("scientific") ? jo.getString("scientific") : "";
                     String auth = jo.containsKey("authority_") ? jo.getString("authority_") : "";
@@ -657,7 +739,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void intersectWithSpeciesChecklists() {
         try {
-            String [] lines = getDistributionsOrChecklists("checklists", selectedArea.getWkt(), null, null);
+            String[] lines = getDistributionsOrChecklists("checklists", selectedArea.getWkt(), null, null);
 
             if (lines == null || lines.length <= 1) {
                 data.put("intersectWithSpeciesChecklists", "0");
@@ -665,7 +747,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                 speciesChecklistText = null;
             } else {
                 data.put("intersectWithSpeciesChecklists", String.format("%,d", lines.length - 1));
-                
+
                 areaChecklistText = getAreaChecklists(lines);
                 data.put("intersectWithAreaChecklists", String.format("%,d", areaChecklistText.length - 1));
                 speciesChecklistText = lines;
@@ -682,18 +764,20 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void onClick$sdLabel(Event event) {
         int c = 0;
         try {
-            c = Integer.parseInt(sdLabel.getValue().replace(",",""));
+            c = Integer.parseInt(sdLabel.getValue().replace(",", ""));
         } catch (Exception e) {
         }
         if (c > 0 && speciesDistributionText != null) {
             try {
                 getMapComposer().getFellowIfAny("distributionresults").detach();
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
             DistributionsWCController window = (DistributionsWCController) Executions.createComponents("WEB-INF/zul/AnalysisDistributionResults.zul", this, null);
 
             try {
                 window.doModal();
                 window.init(speciesDistributionText, "Expert Distributions", sdLabel.getValue(), new EventListener() {
+
                     @Override
                     public void onEvent(Event event) throws Exception {
                         onClick$sdDownload(event);
@@ -708,7 +792,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void onClick$clLabel(Event event) {
         int c = 0;
         try {
-            c = Integer.parseInt(clLabel.getValue().replace(",",""));
+            c = Integer.parseInt(clLabel.getValue().replace(",", ""));
         } catch (Exception e) {
         }
         if (c > 0 && speciesChecklistText != null) {
@@ -717,6 +801,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             try {
                 window.doModal();
                 window.init(speciesChecklistText, "Species Checklists", clLabel.getValue(), new EventListener() {
+
                     @Override
                     public void onEvent(Event event) throws Exception {
                         onClick$clDownload(event);
@@ -731,7 +816,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void onClick$aclLabel(Event event) {
         int c = 0;
         try {
-            c = Integer.parseInt(aclLabel.getValue().replace(",",""));
+            c = Integer.parseInt(aclLabel.getValue().replace(",", ""));
         } catch (Exception e) {
         }
         if (c > 0 && areaChecklistText != null) {
@@ -740,6 +825,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             try {
                 window.doModal();
                 window.init(areaChecklistText, "Checklist areas", aclLabel.getValue(), new EventListener() {
+
                     @Override
                     public void onEvent(Event event) throws Exception {
                         onClick$aclDownload(event);

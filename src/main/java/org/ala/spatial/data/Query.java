@@ -5,6 +5,7 @@
 package org.ala.spatial.data;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -64,7 +65,6 @@ public interface Query {
      * @return
      */
     public String getFullQ(boolean encode);
-
 
     /**
      * Query data name.
@@ -179,7 +179,7 @@ public interface Query {
 
     public String getDownloadUrl(String[] extraFields);
 
-    public byte[] getDownloadBytes(String[] extraFields, String [] displayNames);
+    public byte[] getDownloadBytes(String[] extraFields, String[] displayNames);
 
     /**
      * Get parameter to add into WMS requests
@@ -192,4 +192,24 @@ public interface Query {
     public void setQc(String qc);
 
     public String getRecordFieldDisplayName(String colourMode);
+
+    /**
+     * Add or remove one record to an internal group.
+     */
+    public void flagRecord(String id, boolean set);
+
+    /**
+     * Get the number of flagged records.
+     */
+    public int flagRecordCount();
+
+    /**
+     * Get the list of flagged records as '\n' separated String.
+     */
+    public String getFlaggedRecords();
+
+    /**
+     * Create a new Query including or excluding flagged records
+     */
+    public Query newFlaggedRecords(boolean include);
 }

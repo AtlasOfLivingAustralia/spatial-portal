@@ -346,7 +346,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                 //test if this facet is in solr
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(f);
-                if (new BiocacheQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
+                if (new BiocacheQuery(null, null, null, facets, false, null).getOccurrenceCount() > 0) {
                     return f;
                 }
             }

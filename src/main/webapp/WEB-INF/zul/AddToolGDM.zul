@@ -131,6 +131,12 @@
                         <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Import assemblage" />
                         <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import points" />
                     </radiogroup>
+                    <vbox>
+                        <separator height="20px" />
+                        <checkbox id="chkGeoKosherTrue" checked="true" label="include occurrences not marked suspect" />
+                        <checkbox id="chkGeoKosherFalse" checked="true" label="include occurrences marked as suspect" />
+                        <checkbox visible="false" id="chkGeoKosherNull" checked="false" label="include occurrences without coordinates" />
+                    </vbox>
                 </div>
 
                 <div id="atstep3" visible="false" zclass="step3 minlayers1">

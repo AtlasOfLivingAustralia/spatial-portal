@@ -86,13 +86,13 @@ public class AddToolMaxentComposer extends AddToolComposer {
         //super.onFinish();
 
         Query query = getSelectedSpecies();
-        if(query == null) {
+        if (query == null) {
             getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
             return false;
         }
         if (searchSpeciesAuto.getSelectedItem() != null) {
-            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea());
-        } else if(query != null && rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue().equals("multiple")) {
+            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea(), getGeospatialKosher());
+        } else if (query != null && rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue().equals("multiple")) {
             getMapComposer().mapSpecies(query, "Species assemblage", "species", 0, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
         }
 
@@ -105,7 +105,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
     public boolean runmaxent() {
         try {
             SelectedArea sa = getSelectedArea();
-            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
+            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
 
             String sbenvsel = getSelectedLayers();
 
@@ -219,12 +219,12 @@ public class AddToolMaxentComposer extends AddToolComposer {
                     options = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + options;
                     remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, bq.getLsids(), sbenvsel.toString(), pid, options, "STARTED");
                 } else {
-                    remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, query.getName()+"__"+query.getQ(), sbenvsel.toString(), pid, options, "STARTED");
+                    remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, query.getName() + "__" + query.getQ(), sbenvsel.toString(), pid, options, "STARTED");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            
+
             this.setVisible(false);
 
             return true;
@@ -361,7 +361,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
             //identify sensitive species records
             List<String[]> sensitiveSpecies = null;
             try {
-                String sensitiveSpeciesRaw = new BiocacheQuery(null, null, "sensitive:[* TO *]", null, false).speciesList();
+                String sensitiveSpeciesRaw = new BiocacheQuery(null, null, "sensitive:[* TO *]", null, false, null).speciesList();
                 CSVReader csv = new CSVReader(new StringReader(sensitiveSpeciesRaw));
                 sensitiveSpecies = csv.readAll();
                 csv.close();
@@ -440,7 +440,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
                 rgArea.setFocus(true);
                 break;
             case 2:
-                if(rSpeciesSearch.isChecked()) {
+                if (rSpeciesSearch.isChecked()) {
                     searchSpeciesAuto.setFocus(true);
                 } else {
                     rgSpecies.setFocus(true);

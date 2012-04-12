@@ -65,7 +65,11 @@
                     <radio id ="rUploadLSIDs" label="Import assemblage" />
                     
                     <radio id ="rUploadCoordinates" label="Import points" />
-                    
+
+                    <separator height="20px" />
+                    <checkbox id="chkGeoKosherTrue" checked="true" label="include geospatial_kosher:true (has coordinates and not flagged as suspect)" />
+                    <checkbox id="chkGeoKosherFalse" checked="true" label="include occurrences marked as suspect" />
+                    <checkbox visible="false" id="chkGeoKosherNull" checked="false" label="include occurrences without coordinates" />
                 </vbox>
             </radiogroup>
             <separator height="20px"/>

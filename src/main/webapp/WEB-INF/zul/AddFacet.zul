@@ -102,6 +102,10 @@
                  </div>
             </vbox>
             </div>
+            <separator height="20px" />
+            <checkbox id="chkGeoKosherTrue" checked="true" label="include occurrences not marked suspect" />
+            <checkbox id="chkGeoKosherFalse" checked="true" label="include occurrences marked as suspect" />
+            <checkbox visible="false" id="chkGeoKosherNull" checked="false" label="include occurrences without coordinates" />
             </vbox>
         </hbox>
         <div sclass="wizButtonContainer">

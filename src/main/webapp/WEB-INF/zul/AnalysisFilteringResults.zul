@@ -3,7 +3,7 @@
     <window id="popup_results"
         apply="org.ala.spatial.analysis.web.FilteringResultsWCController"
         use="org.ala.spatial.analysis.web.FilteringResultsWCController"
-        width="300px"
+        width="400px"
         xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -46,6 +46,25 @@
                 </n:td>
                 <n:td>
                     <button label="Map all" id="mapspecies" visible="false" sclass="goButton"/>
+                </n:td>
+            </n:tr>
+            <n:tr height="18px" >
+                <n:td>
+                    <label value="Number of species (no flagged location issue)" />
+                </n:td>
+                <n:td>
+                    <label id="results_label2_species_kosher" style="cursor:pointer;" />
+                </n:td>
+            </n:tr>
+            <n:tr height="18px" >
+                <n:td>
+                    <label value="Occurrences (no flagged location issue)" />
+                </n:td>
+                <n:td>
+                    <label id="results_label2_occurrences_kosher" style="cursor:pointer;" />
+                </n:td>
+                <n:td>
+                    <button label="Map all" id="mapspecieskosher" visible="false" sclass="goButton"/>
                 </n:td>
             </n:tr>
             <n:tr height="18px" >

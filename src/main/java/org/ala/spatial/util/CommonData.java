@@ -5,8 +5,6 @@
 package org.ala.spatial.util;
 
 import au.org.emii.portal.util.LayerSelection;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -101,6 +99,7 @@ public class CommonData {
     static public String convert_cmd;
     static public String print_output_path;
     static public String print_output_url;
+    static public String[][] facetNameExceptions; //{{"cl22", "state"}, {"cl959", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
 
     /*
      * initialize common data from geoserver and satserver
@@ -126,6 +125,7 @@ public class CommonData {
         convert_cmd = settings.get("convert_cmd");
         print_output_path = settings.get("print_output_path");
         print_output_url = settings.get("print_output_url");
+        facetNameExceptions = parseFacetNameExceptions(settings.get("facet_name_exceptions"));
 
         setupAnalysisLayerSets();
 
@@ -717,66 +717,77 @@ public class CommonData {
         }
         return wms;
     }
-    static HashMap<String, String> layerToFacet;
-    static HashMap<String, String> facetToLayer;
-    static HashMap<String, String> facetShapeNameField;
-    static HashMap<String, String> facetToLayerDisplayName;
+    static HashMap<String, JSONObject> layerToFacet;
+    static HashMap<String, JSONObject> facetToLayer;
 
     public static String getLayerFacetName(String layer) {
-        String facetName = layerToFacet.get(layer.toLowerCase());
-        if (facetName == null) {
+        String facetName = layer;
+        JSONObject f = layerToFacet.get(layer.toLowerCase());
+        if (f != null) {
             facetName = layer;
         }
         return facetName;
     }
 
     public static String getFacetLayerName(String facet) {
-        return facetToLayer.get(facet);
+        JSONObject jo = facetToLayer.get(facet);
+        if (jo != null) {
+            return jo.getString("name");
+        } else {
+            return null;
+        }
     }
 
     public static String getFacetShapeNameField(String facet) {
-        return facetShapeNameField.get(facet);
+        JSONObject layer = facetToLayer.get(facet);
+        if (layer != null) {
+            JSONObject f = layerToFacet.get(layer.getString("name"));
+            if (f != null && f.containsKey("sname")) {
+                return f.getString("sname");
+            }
+        }
+
+        return null;
     }
 
     public static String getFacetLayerDisplayName(String facet) {
-        String displayName = facetToLayerDisplayName.get(facet);
-        if (displayName == null) {
-            displayName = facet;
+        JSONObject layer = facetToLayer.get(facet);
+        if (layer != null && layer.containsKey("displayname")) {
+            return layer.getString("displayname");
         }
-        return displayName;
+        return null;
     }
 
     private static void readLayerInfo() {
         try {
-            HashMap<String, String> ftl = new HashMap<String, String>();
-            HashMap<String, String> ltf = new HashMap<String, String>();
-            HashMap<String, String> fsnf = new HashMap<String, String>();
-            HashMap<String, String> ftldn = new HashMap<String, String>();
+            HashMap<String, JSONObject> ftl = new HashMap<String, JSONObject>();
+            HashMap<String, JSONObject> ltf = new HashMap<String, JSONObject>();
 
-            String filename = CommonData.class.getResource("/layers.txt").getFile();
-            BufferedReader br = new BufferedReader(new FileReader(filename));
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] record = line.split(",");
+            if (copy_layerlistJSON != null) {
+                for (int i = 0; i < copy_layerlistJSON.size(); i++) {
+                    JSONObject jo = copy_layerlistJSON.getJSONObject(i);
 
-                String layer = record[1];
-                String facet = (record[2].equals("Contextual") ? "cl" : "el") + record[0];
+                    if (jo.containsKey("fields")) {
+                        JSONArray ja = jo.getJSONArray("fields");
+                        for (int j = 0; j < ja.size(); j++) {
+                            JSONObject f = ja.getJSONObject(j);
+                            if (f.containsKey("defaultlayer") && f.getBoolean("defaultlayer")) {
+                                System.out.println("adding defaultlayer: " + jo.getString("name") + ", " + f.getString("id"));
+                                String layer = jo.getString("name");
+                                String facet = f.getString("id");
 
-                ltf.put(layer.toLowerCase(), facet);
-                ftl.put(facet, layer);
-
-                ftldn.put(facet, record[3]);
-
-                if (record.length > 4) {
-                    fsnf.put(facet, record[4]);
+                                ltf.put(layer.toLowerCase(), f);
+                                ftl.put(facet, jo);
+                            }
+                        }
+                    }
                 }
             }
-            br.close();
 
-            layerToFacet = ltf;
-            facetToLayer = ftl;
-            facetShapeNameField = fsnf;
-            facetToLayerDisplayName = ftldn;
+            if (layerToFacet == null || ltf.size() > 0) {
+                layerToFacet = ltf;
+                facetToLayer = ftl;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -824,9 +835,11 @@ public class CommonData {
         //requres readLayerInfo() first
         String[] layers = new String[fields.length];
         String[] columns = new String[fields.length];
+        System.out.println("defaultFieldString: " + defaultFieldString);
         for (int i = 0; i < fields.length; i++) {
             layers[i] = getFacetLayerName(fields[i]);
             columns[i] = getFacetShapeNameField(fields[i]);
+            System.out.println("field,layer,columns:" + fields[i] + "," + layers[i] + "," + columns[i]);
         }
 
         if (ssfCache == null) {
@@ -911,4 +924,12 @@ public class CommonData {
         }
     }
 
+    private static String[][] parseFacetNameExceptions(String list) {
+        String[] terms = list.split(",");
+        String[][] output = new String[terms.length][];
+        for (int i = 0; i < terms.length; i++) {
+            output[i] = terms[i].split(":");
+        }
+        return output;
+    }
 }

@@ -7,6 +7,7 @@ package org.ala.spatial.data;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,10 +31,10 @@ public class UploadQuery implements Query, Serializable {
     String uniqueId;
     String metadata;
     int originalFieldCount;
-
     //for history
     String wkt = "";
     ArrayList<Facet> facets = new ArrayList<Facet>();
+    HashSet<String> flaggedRecords = new HashSet<String>();
 
     /**
      *
@@ -53,7 +54,7 @@ public class UploadQuery implements Query, Serializable {
     }
 
     public void resetOriginalFieldCount(int count) {
-        if(count == -1) {
+        if (count == -1) {
             this.originalFieldCount = data.size();
         } else {
             this.originalFieldCount = count;
@@ -198,14 +199,14 @@ public class UploadQuery implements Query, Serializable {
 
     @Override
     public String getFullQ(boolean encode) {
-        StringBuilder sb = new StringBuilder();        
+        StringBuilder sb = new StringBuilder();
         sb.append(metadata).append("\n");
-        
-        if(wkt.length()>0) {
+
+        if (wkt.length() > 0) {
             sb.append(wkt).append("\n");
         }
 
-        for(int i=0;i<facets.size();i++) {
+        for (int i = 0; i < facets.size(); i++) {
             sb.append(facets.get(i).toString()).append("\n");
         }
 
@@ -231,9 +232,9 @@ public class UploadQuery implements Query, Serializable {
         }
 
         UploadQuery q = newFromValidMapping(valid, count);
-        
+
         //maintain wkt history
-        if(this.wkt.length() > 0) {
+        if (this.wkt.length() > 0) {
             q.wkt = this.wkt + " AND " + wkt;
         } else {
             q.wkt = wkt;
@@ -291,7 +292,7 @@ public class UploadQuery implements Query, Serializable {
     @Override
     public ArrayList<QueryField> getFacetFieldList() {
         ArrayList<QueryField> fields = new ArrayList<QueryField>();
-        for(int i=1;i<data.size();i++) {
+        for (int i = 1; i < data.size(); i++) {
             fields.add(data.get(i));
         }
         return fields;
@@ -506,14 +507,14 @@ public class UploadQuery implements Query, Serializable {
 
     @Override
     public String getMetadataHtml() {
-        String [] m = metadata.replace("<br />","").split("\n");
+        String[] m = metadata.replace("<br />", "").split("\n");
         String name = m[1].substring(m[1].indexOf(':') + 1).trim();
         String description = m[2].substring(m[2].indexOf(':') + 1).trim();
         String date = m[3].substring(m[3].indexOf(':') + 1).trim();
 
         StringBuilder fieldsList = new StringBuilder();
-        for(int i=0;i<data.size();i++) {
-            if(i > 0) {
+        for (int i = 0; i < data.size(); i++) {
+            if (i > 0) {
                 fieldsList.append(", ");
             }
             fieldsList.append(data.get(i).getDisplayName());
@@ -538,16 +539,16 @@ public class UploadQuery implements Query, Serializable {
     }
 
     @Override
-    public byte[] getDownloadBytes(String[] extraFields, String [] displayNames) {
+    public byte[] getDownloadBytes(String[] extraFields, String[] displayNames) {
         ArrayList<QueryField> fields = new ArrayList<QueryField>();
         if (getFacetFieldList() != null) {
             fields.add(data.get(0));    //id column (1st) is not in getFacetFieldList()
             fields.addAll(getFacetFieldList());
         }
         if (extraFields != null && extraFields.length > 0) {
-            for (int i=0;i<extraFields.length;i++) {
+            for (int i = 0; i < extraFields.length; i++) {
                 String s = extraFields[i];
-                if(displayNames == null) {
+                if (displayNames == null) {
                     fields.add(new QueryField(s, CommonData.getFacetLayerDisplayName(s), QueryField.FieldType.AUTO));
                 } else {
                     fields.add(new QueryField(s, displayNames[i], QueryField.FieldType.AUTO));
@@ -577,7 +578,6 @@ public class UploadQuery implements Query, Serializable {
 
     @Override
     public void setQc(String qc) {
-
     }
 
     /**
@@ -588,11 +588,69 @@ public class UploadQuery implements Query, Serializable {
      */
     @Override
     public String getRecordFieldDisplayName(String colourMode) {
-        for(int i=0;i<data.size();i++) {
-            if(data.get(i).getName().equals(colourMode)) {
+        for (int i = 0; i < data.size(); i++) {
+            if (data.get(i).getName().equals(colourMode)) {
                 return data.get(i).getDisplayName();
             }
         }
         return colourMode;
+    }
+
+    /**
+     * Add or remove one record to an internal group.
+     */
+    @Override
+    public void flagRecord(String id, boolean set) {
+        if (set) {
+            flaggedRecords.add(id);
+        } else {
+            flaggedRecords.remove(id);
+        }
+    }
+
+    /**
+     * Get the number of flagged records.
+     */
+    @Override
+    public int flagRecordCount() {
+        return flaggedRecords.size();
+    }
+
+    /**
+     * Get the list of flagged records as '\n' separated String.
+     */
+    @Override
+    public String getFlaggedRecords() {
+        StringBuilder sb = new StringBuilder();
+        for (String s : flaggedRecords) {
+            if (sb.length() > 0) {
+                sb.append("\n");
+            }
+            sb.append(s);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Create a new Query that contains only or excludes all flagged records
+     */
+    @Override
+    public Query newFlaggedRecords(boolean includeOnlyFlaggedRecords) {
+        if (flagRecordCount() == 0) {
+            return this;
+        }
+
+        //per record test
+        boolean[] valid = new boolean[points.length / 2];
+        int count = 0;
+        for (int i = 0; i < valid.length; i++) {
+            valid[i] = includeOnlyFlaggedRecords != flaggedRecords.contains(data.get(0).getString(i));
+
+            if (valid[i]) {
+                count++;
+            }
+        }
+
+        return newFromValidMapping(valid, count);
     }
 }

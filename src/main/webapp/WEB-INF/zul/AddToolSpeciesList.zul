@@ -27,7 +27,13 @@
                     <radio id="rAreaWorld" label="World" value="world" />
                     <radio id="rAreaCustom" label="Define new area" value="custom" />
                 </radiogroup>
-            </div>
+                <vbox>
+                    <separator height="20px" />
+                    <checkbox id="chkGeoKosherTrue" checked="true" label="include occurrences not marked suspect" />
+                    <checkbox id="chkGeoKosherFalse" checked="true" label="include occurrences marked as suspect" />
+                    <checkbox id="chkGeoKosherNull" checked="true" label="include occurrences without coordinates" />
+                </vbox>
+            </div>            
         </vbox>
         <div sclass="wizButtonContainer">
             <hbox>

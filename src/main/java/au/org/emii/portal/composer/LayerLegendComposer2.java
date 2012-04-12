@@ -7,6 +7,7 @@ package au.org.emii.portal.composer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.GeoJSONUtilities;
+import au.org.emii.portal.util.LayerUtilities;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,6 +80,9 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     String sLayerName;
     Button btnLayerName;
     Button btnActivateHover;
+    Label lInGroupCount;
+    Button btnCreateGroupLayers;
+    Div dGroupBox;
 
     @Override
     public void afterCompose() {
@@ -434,6 +438,9 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 
                 updateComboBoxesColour(currentSelection);
 
+                updateAdhocGroupContols(m);
+
+
                 if (currentSelection.getColourMode().equals("-1")) {
                     divUserColours.setVisible(true);
                 } else {
@@ -625,6 +632,35 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                     seperator5.setDisabled(true);
                 }
             }
+        }
+    }
+
+    public void onClick$btnCreateGroupLayers(Event event) {
+        Query query;
+        if (mapLayer != null
+                && (query = (Query) mapLayer.getData("query")) != null
+                && query.flagRecordCount() != 0) {
+
+            Query inGroup = query.newFlaggedRecords(true);
+            Query outGroup = query.newFlaggedRecords(false);
+
+            getMapComposer().mapSpecies(inGroup, mapLayer.getDisplayName() + " in group", "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
+            getMapComposer().mapSpecies(outGroup, mapLayer.getDisplayName() + " out group", "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
+        }
+    }
+
+    private void updateAdhocGroupContols(MapLayer m) {
+        if (m == null) {
+            dGroupBox.setVisible(false);
+            return;
+        }
+        Query query = (Query) m.getData("query");
+        if (query == null || query.flagRecordCount() == 0) {
+            dGroupBox.setVisible(false);
+        } else {
+            dGroupBox.setVisible(true);
+
+            lInGroupCount.setValue(query.flagRecordCount() + (query.flagRecordCount() == 1 ? " record" : " records"));
         }
     }
 }

@@ -127,8 +127,8 @@ public class Util {
 
     }
 
-    static public double [] transformBbox4326To900913(double minx, double miny, double maxx, double maxy) {
-        double [] bbox = new double[4];
+    static public double[] transformBbox4326To900913(double minx, double miny, double maxx, double maxy) {
+        double[] bbox = new double[4];
         try {
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
@@ -554,7 +554,7 @@ public class Util {
                 //test if this facet is in solr
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(f);
-                if (new BiocacheQuery(null, null, null, facets, false).getOccurrenceCount() > 0) {
+                if (new BiocacheQuery(null, null, null, facets, false, null).getOccurrenceCount() > 0) {
                     return f;
                 }
             }

@@ -61,7 +61,6 @@ public class AddToolGDMComposer extends AddToolComposer {
     Slider sitesslider;
     Label sitesslidermin, sitesslidermax, sitessliderdef;
     Hbox sliderbox;
-
     int MAX_SCROLL = 100;
 
     @Override
@@ -91,7 +90,7 @@ public class AddToolGDMComposer extends AddToolComposer {
                     }
                 }
             });
-            
+
         } catch (Exception e) {
             System.out.println("Error in slider");
             System.out.println(e.getMessage());
@@ -128,7 +127,7 @@ public class AddToolGDMComposer extends AddToolComposer {
             return false;
         }
         if (searchSpeciesAuto.getSelectedItem() != null) {
-            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea());
+            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea(), getGeospatialKosher());
         } else if (query != null && rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue().equals("multiple")) {
             getMapComposer().mapSpecies(query, "Species assemblage", "species", 0, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
         }
@@ -159,7 +158,7 @@ public class AddToolGDMComposer extends AddToolComposer {
     public boolean runGDMStep1() {
         try {
             SelectedArea sa = getSelectedArea();
-            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
+            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
             String sbenvsel = getSelectedLayers();
             String[] speciesData = getSpeciesData(query);
 
@@ -258,8 +257,8 @@ public class AddToolGDMComposer extends AddToolComposer {
 
             int maxBytes = 524288000; // 500 * 1024 * 1024 bytes
 
-            int maxScroll = maxBytes/((lbListLayers.getSelectedCount()*3)+1)/8;
-            int minScroll = (int)(maxScroll * 0.01);  // 1% of maxScroll
+            int maxScroll = maxBytes / ((lbListLayers.getSelectedCount() * 3) + 1) / 8;
+            int minScroll = (int) (maxScroll * 0.01);  // 1% of maxScroll
 
             sitesslider.setCurpos(minScroll);
             sitesslider.setMaxpos(maxScroll);
@@ -298,7 +297,7 @@ public class AddToolGDMComposer extends AddToolComposer {
             sbProcessUrl.append("&cutpoint=" + cutpoint.getSelectedItem().getValue());
             sbProcessUrl.append("&useDistance=" + rgdistance.getSelectedItem().getValue());
             sbProcessUrl.append("&weighting=" + weighting.getSelectedItem().getValue());
-            sbProcessUrl.append("&useSubSample=" + (useSubSample.isChecked()?"1":"0"));
+            sbProcessUrl.append("&useSubSample=" + (useSubSample.isChecked() ? "1" : "0"));
             sbProcessUrl.append("&sitePairsSize=" + sitePairsSize.getValue());
 
             HttpClient client = new HttpClient();
@@ -329,11 +328,10 @@ public class AddToolGDMComposer extends AddToolComposer {
         return false;
     }
 
-
     public boolean rungdmfull() {
         try {
             SelectedArea sa = getSelectedArea();
-            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
+            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
             String sbenvsel = getSelectedLayers();
             String[] speciesData = getSpeciesData(query);
 
@@ -407,9 +405,9 @@ public class AddToolGDMComposer extends AddToolComposer {
 
             String layername = "Tranformed " + CommonData.getFacetLayerDisplayName(env);
             System.out.println("Converting " + env + " to " + CommonData.getFacetLayerDisplayName(env));
-            getMapComposer().addWMSLayer(pid+"_"+env, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.GDM, null, null);
-            MapLayer ml = getMapComposer().getMapLayer(pid+"_"+env);
-            ml.setData("pid", pid+"_"+env);
+            getMapComposer().addWMSLayer(pid + "_" + env, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.GDM, null, null);
+            MapLayer ml = getMapComposer().getMapLayer(pid + "_" + env);
+            ml.setData("pid", pid + "_" + env);
             String infoUrl = CommonData.satServer + "/output/gdm/" + pid + "/gdm.html";
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
@@ -426,7 +424,6 @@ public class AddToolGDMComposer extends AddToolComposer {
 
         //showInfoWindow("/output/maxent/" + pid + "/species.html");
     }
-
 
     /**
      * get CSV of speciesName, longitude, latitude in [0] and
@@ -465,7 +462,7 @@ public class AddToolGDMComposer extends AddToolComposer {
             //identify sensitive species records
             List<String[]> sensitiveSpecies = null;
             try {
-                String sensitiveSpeciesRaw = new BiocacheQuery(null, null, "sensitive:[* TO *]", null, false).speciesList();
+                String sensitiveSpeciesRaw = new BiocacheQuery(null, null, "sensitive:[* TO *]", null, false, getGeospatialKosher()).speciesList();
                 CSVReader csv = new CSVReader(new StringReader(sensitiveSpeciesRaw));
                 sensitiveSpecies = csv.readAll();
                 csv.close();

@@ -82,7 +82,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             <n:a href="http://www.ala.org.au/" target="_blank">Home</n:a>
                         </n:li>
                         <n:li>
-                            <n:a href="">Add to Map</n:a>
+                            <n:a href="" n:onClick="doNothing()">Add to Map</n:a>
                             <n:ul>
                                 <n:li>
                                     <n:a href="#" n:onClick="addSpeciesAction();">Species</n:a>
@@ -99,7 +99,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </n:ul>
                         </n:li>
                         <n:li>
-                            <n:a href="">Tools</n:a>
+                            <n:a href="" n:onClick="doNothing()">Tools</n:a>
                             <n:ul>
                                 <n:li>
                                     <n:a href="#" n:onClick="runAreaReport();">Area Report</n:a>
@@ -131,7 +131,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </n:ul>
                         </n:li>
                         <n:li>
-                            <n:a href="">Import</n:a>
+                            <n:a href="" n:onClick="doNothing()">Import</n:a>
                             <n:ul>
                                 <n:li>
                                     <n:a href="#" n:onClick="runImportSpecies('points');">Points</n:a>
@@ -145,7 +145,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </n:ul>
                         </n:li>
                         <n:li>
-                            <n:a href="">Export</n:a>
+                            <n:a href="" n:onClick="doNothing()">Export</n:a>
                             <n:ul>
                                 <n:li>
                                     <n:a href="#" n:onClick='printHack();'>Map</n:a>
@@ -162,7 +162,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </n:ul>
                         </n:li>
                         <n:li>
-                            <n:a href="">Help</n:a>
+                            <n:a href="" n:onClick="doNothing()">Help</n:a>
                             <n:ul>
                                 <n:li>
                                     <n:a href="#" n:onClick="loadHelp('getting-started');">Getting Started</n:a>

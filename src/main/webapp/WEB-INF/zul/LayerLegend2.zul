@@ -147,7 +147,7 @@ padding: 1px 0px 0px 5px;
                             <hbox>
                                 <div style="padding-top:0px" width="65px">
                                     <label value="Red" sclass="h3" />
-                    </div>
+                                </div>
 
                                 <div width="250px">
                                     <slider id="redSlider" maxpos="255" width="95%" />
@@ -228,10 +228,17 @@ padding: 1px 0px 0px 5px;
                 <div align="right" style="padding-top:0px" visible="false">
                     <label id="legendLabel" value="Click symbol to edit" />
                 </div>
+                <div id="dGroupBox" >
+                    <hbox>
+                        <label value="Adhoc selection: " />
+                        <label id="lInGroupCount" value="0 records"/>
+                        <button id="btnCreateGroupLayers" label="add in/out layers to map" />
+                    </hbox>
+                </div>
                 <div  width="60%">
                     <hbox>
-                    <image id="legendImgUri" visible="false"/>
-                    <button id="btnActivateHover" label="Browse environmental point values" href="javascript:window.mapFrame.mytoggle(this);" visible="false" />
+                        <image id="legendImgUri" visible="false"/>
+                        <button id="btnActivateHover" label="Browse environmental point values" href="javascript:window.mapFrame.mytoggle(this);" visible="false" />
                     </hbox>
                 </div>
                 <div id="legendHtml" visible="true"/>

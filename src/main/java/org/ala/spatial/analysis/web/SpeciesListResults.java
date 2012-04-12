@@ -41,12 +41,14 @@ public class SpeciesListResults extends UtilityComposer {
     int results_count = 0;
     int results_count_occurrences = 0;
     SelectedArea selectedArea;
+    boolean[] geospatialKosher;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
         selectedArea = (SelectedArea) Executions.getCurrent().getArg().get("selectedarea");
+        geospatialKosher = (boolean[]) Executions.getCurrent().getArg().get("geospatialKosher");
 
         populateList();
     }
@@ -58,7 +60,7 @@ public class SpeciesListResults extends UtilityComposer {
         }
 
         try {
-            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false);
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, geospatialKosher);
 
             if (sq.getSpeciesCount() <= 0) {
                 getMapComposer().showMessage("No species records in the active area.");

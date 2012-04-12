@@ -21,6 +21,7 @@ import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.sampling.SimpleRegion;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.SelectedArea;
+import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -67,14 +68,14 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
         //super.onFinish();
 
         Query query = getSelectedSpecies();
-        if(query == null) {
+        if (query == null) {
             getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
             return false;
         }
 
         if (searchSpeciesAuto.getSelectedItem() != null) {
-            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea());
-        } else if(query != null && rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue().equals("multiple")) {
+            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea(), getGeospatialKosher());
+        } else if (query != null && rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue().equals("multiple")) {
             getMapComposer().mapSpecies(query, "Species assemblage", "species", 0, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
         }
 
@@ -111,7 +112,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             Double gridResolution = dResolution.getValue();
             SelectedArea sa = getSelectedArea();
             SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
-            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false);
+            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
             int occurrenceCount = query.getOccurrenceCount();
             int boundingboxcellcount = (int) ((sr.getBoundingBox()[1][0] - sr.getBoundingBox()[0][0])
                     * (sr.getBoundingBox()[1][1] - sr.getBoundingBox()[0][1])
@@ -133,10 +134,10 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/sitesbyspecies?");
 
-            sbProcessUrl.append("speciesq=" + URLEncoder.encode(query.getQ(), "UTF-8"));
+            sbProcessUrl.append("speciesq=").append(URLEncoder.encode(QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher()).getQ(), "UTF-8"));
 
             sbProcessUrl.append("&gridsize=" + URLEncoder.encode(String.valueOf(gridResolution), "UTF-8"));
-            sbProcessUrl.append("&bs=" + URLEncoder.encode(((BiocacheQuery)query).getBS(), "UTF-8"));
+            sbProcessUrl.append("&bs=" + URLEncoder.encode(((BiocacheQuery) query).getBS(), "UTF-8"));
 
             if (chkOccurrenceDensity.isChecked()) {
                 sbProcessUrl.append("&occurrencedensity=1");
@@ -149,6 +150,14 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             }
 
             sbProcessUrl.append("&movingaveragesize=" + ma);
+
+            String areaSqKm = "0";
+            if (sa.getMapLayer() != null && sa.getMapLayer().getData("area") != null) {
+                areaSqKm = (String) sa.getMapLayer().getData("area");
+            } else {
+                areaSqKm = String.valueOf(Util.calculateArea(sa.getWkt()));
+            }
+            sbProcessUrl.append("&areasqkm=" + areaSqKm);
 
 
             HttpClient client = new HttpClient();
@@ -182,7 +191,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                 extras += "|occurrencedensity=1";
                 extras += "|speciesdensity=1";
                 extras += "|sitesbyspecies=1";
-                extras += "|movingaveragesize="+ma;
+                extras += "|movingaveragesize=" + ma;
 
                 if (query instanceof BiocacheQuery) {
                     BiocacheQuery bq = (BiocacheQuery) query;
@@ -221,7 +230,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                 String layername = getMapComposer().getNextAreaLayerName("Occurrence Density");
                 getMapComposer().addWMSLayer(pid + "_odensity", layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ODENSITY, null, null);
                 MapLayer ml = getMapComposer().getMapLayer(pid + "_odensity");
-                 ml.setData("pid", pid + "_odensity");
+                ml.setData("pid", pid + "_odensity");
                 String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/odensity_metadata.html";
                 MapLayerMetadata md = ml.getMapLayerMetadata();
                 if (md == null) {
@@ -243,8 +252,8 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
 
 //                String layername = tToolName.getValue();
                 String layername = getMapComposer().getNextAreaLayerName("Species Richness");
-                getMapComposer().addWMSLayer( pid + "_srichness", layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.SRICHNESS, null, null);
-                MapLayer ml = getMapComposer().getMapLayer( pid + "_srichness");
+                getMapComposer().addWMSLayer(pid + "_srichness", layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.SRICHNESS, null, null);
+                MapLayer ml = getMapComposer().getMapLayer(pid + "_srichness");
                 ml.setData("pid", pid + "_srichness");
                 String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/srichness_metadata.html";
                 MapLayerMetadata md = ml.getMapLayerMetadata();
@@ -336,7 +345,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             //identify sensitive species records
             List<String[]> sensitiveSpecies = null;
             try {
-                String sensitiveSpeciesRaw = new BiocacheQuery(null, null, "sensitive:[* TO *]", null, false).speciesList();
+                String sensitiveSpeciesRaw = new BiocacheQuery(null, null, "sensitive:[* TO *]", null, false, getGeospatialKosher()).speciesList();
                 CSVReader csv = new CSVReader(new StringReader(sensitiveSpeciesRaw));
                 sensitiveSpecies = csv.readAll();
                 csv.close();

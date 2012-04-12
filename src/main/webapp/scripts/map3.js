@@ -385,6 +385,7 @@ function iterateSpeciesInfoQuery(curr) {
             var infohtml = "<div id='sppopup'> " +
             heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
             " Longitude: "+ulyr_occ_lng + " , Latitude: " + ulyr_occ_lat + " (<a href='javascript:goToLocation("+ulyr_occ_lng+", "+ulyr_occ_lat+", 15);relocatePopup("+ulyr_occ_lng+", "+ulyr_occ_lat+");'>zoom to</a>) <br/>" +
+            " <input type='checkbox' checked='parent.isFlaggedRecord(\"" + ulyr + "\",\"" + ulyr_occ_id + "\")' onClick='parent.flagRecord(\"" + ulyr + "\",\"" + ulyr_occ_id + "\",this.checked)' />is in user assigned adhoc group<br/>"
             "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
             setTimeout(function(){
@@ -497,7 +498,7 @@ function pointSpeciesSearch(e) {
                             size = layer.params.ENV.substring(p2 + 5,p3)
                         }
                     }
-
+console.log("map layer: " + layer);
                     var data = null;
                     if(query != null) data = getOccurrence(layer, query, lonlat.lat, lonlat.lon, 0, pos, size);
                     if(userquery != null) data = getOccurrenceUploaded(layer, userquery, lonlat.lat, lonlat.lon, 0, pos, size);
@@ -759,7 +760,7 @@ function setupPopup(count, centerlonlat) {
     popup = new OpenLayers.Popup.FramedCloud("featurePopup",
         centerlonlat,
         new OpenLayers.Size(100,150),
-        "<div id='sppopup' style='width: 350px; height: 220px;'>" + waitmsg + "</div>"
+        "<div id='sppopup' style='width: 350px; height: 250px;'>" + waitmsg + "</div>"
         ,
         null, true, onPopupClose);
 }
@@ -823,6 +824,10 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
         heading = "<h2>Occurrence information (1 occurrence)</h2>";
     }
 
+    var checked = parent.isFlaggedRecord(query_layer[pos].name, occinfo.uuid);
+    var checkstate = "";
+    if(checked) checkstate="checked='" + checked + "'";
+
     var infohtml = "<div id='sppopup'> " +
     heading +
     " Scientific name: " + species + " <br />" +
@@ -833,6 +838,7 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
     " Spatial uncertainty in metres: " + uncertaintyText + "<br />" +
     " Occurrence date: " + occurrencedate + " <br />" +
     "Species Occurence <a href='" + biocache + "/occurrences/" + occinfo.uuid + "' target='_blank'>View details</a> <br /> <br />" +
+    "<input type='checkbox' " + checkstate + " onClick='parent.flagRecord(\"" + query_layer[pos].name + "\",\"" + occinfo.uuid + "\",this.checked)' />is in user assigned adhoc group<br/>"
     "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
     if (document.getElementById("sppopup") != null) {
@@ -944,7 +950,7 @@ function selected (evt) {
             popup = new OpenLayers.Popup.FramedCloud("featurePopup",
                 feature.geometry.getBounds().getCenterLonLat(),
                 new OpenLayers.Size(100,150),
-                "<div id='sppopup' style='width: 350px; height: 220px;'>Retrieving data... </div>"
+                "<div id='sppopup' style='width: 350px; height: 250px;'>Retrieving data... </div>"
                 ,
                 null, true, onPopupClose);
 

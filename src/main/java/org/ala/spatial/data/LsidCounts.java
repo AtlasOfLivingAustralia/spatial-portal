@@ -28,7 +28,7 @@ public class LsidCounts {
         try {
             String url = CommonData.biocacheServer
                     + "/webportal/legend?cm=lft&q="
-                    + URLEncoder.encode("longitude:[* TO *] AND geospatial_kosher:true", "UTF-8")
+                    + URLEncoder.encode("geospatial_kosher:*", "UTF-8")
                     + CommonData.biocacheQc;
             System.out.println(url);
             GetMethod get = new GetMethod(url);
@@ -64,30 +64,31 @@ public class LsidCounts {
             e.printStackTrace();
         } finally {
             try {
-                if(csv != null) {
+                if (csv != null) {
                     csv.close();
                 }
-            } catch (Exception e){}
+            } catch (Exception e) {
+            }
         }
     }
 
     public long getCount(long left, long right) {
-        if(lft == null) {
+        if (lft == null) {
             return 0;
         }
         int pos = java.util.Arrays.binarySearch(lft, left);
-        if(pos < 0) {
-            pos = -1*pos -1;
+        if (pos < 0) {
+            pos = -1 * pos - 1;
         }
 
         long sum = 0;
-        while(lft[pos] < right) {
+        while (lft[pos] < right) {
             sum += count[pos++];
         }
         return sum;
     }
 
     public int getSize() {
-        return (lft==null)?0:lft.length;
+        return (lft == null) ? 0 : lft.length;
     }
 }

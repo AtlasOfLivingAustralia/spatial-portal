@@ -141,15 +141,22 @@ public class ContextualMenu extends UtilityComposer {
                     (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         }
 
-        if(gridLayer != null){
+        if (gridLayer != null) {
             //actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
             actions.add(new Action("Browse environmental point values", new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
         }
-        if(polygonLayer != null){
+        if (polygonLayer != null) {
             //actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
             actions.add(new Action("Browse environmental point values", new GridLayerHoverEvent(getMapComposer(), polygonLayer.getName())));
         }
 
+        //default actions
+        if (actions.size() == 0) {
+            actions.add(new Action("Map species occurrences", new AddToMap(getMapComposer(), "species")));
+            actions.add(new Action("Map area", new AddToMap(getMapComposer(), "area")));
+            actions.add(new Action("Map layer", new AddToMap(getMapComposer(), "layer")));
+            actions.add(new Action("Map facet", new AddToMap(getMapComposer(), "facet")));
+        }
 
         return actions;
     }
@@ -186,6 +193,7 @@ class SamplingEvent implements EventListener {
     String environmentalLayerName;
     MapComposer mc;
     int steps_to_skip;
+    boolean[] geospatialKosher;
 
     public SamplingEvent(MapComposer mc, String speciesLayerName, String polygonLayerName, String environmentalLayerName) {
         this.mc = mc;
@@ -193,14 +201,16 @@ class SamplingEvent implements EventListener {
         this.polygonLayerName = polygonLayerName;
         this.environmentalLayerName = environmentalLayerName;
         this.steps_to_skip = 0;
+        this.geospatialKosher = null;
     }
 
-    public SamplingEvent(MapComposer mc,  String speciesLayerName, String polygonLayerName, String environmentalLayerName, int steps_to_skip) {
+    public SamplingEvent(MapComposer mc, String speciesLayerName, String polygonLayerName, String environmentalLayerName, int steps_to_skip, boolean[] geospatialKosher) {
         this.mc = mc;
         this.speciesLayerName = speciesLayerName;
         this.polygonLayerName = polygonLayerName;
         this.environmentalLayerName = environmentalLayerName;
         this.steps_to_skip = steps_to_skip;
+        this.geospatialKosher = geospatialKosher;
     }
 
     @Override
@@ -223,8 +233,10 @@ class SamplingEvent implements EventListener {
         }
         AddToolSamplingComposer window = (AddToolSamplingComposer) mc.openModal("WEB-INF/zul/AddToolSampling.zul", params, "addtoolwindow");
 
+        window.setGeospatialKosherCheckboxes(geospatialKosher);
+
         int skip = steps_to_skip;
-        while(skip > 0) {
+        while (skip > 0) {
             window.onClick$btnOk(event);
             skip--;
         }
@@ -308,7 +320,7 @@ class ScatterplotEvent implements EventListener {
     String environmentalLayerName;
     MapComposer mc;
 
-    public ScatterplotEvent(MapComposer mc, String speciesLayerName , String polygonLayerName, String environmentalLayerName) {
+    public ScatterplotEvent(MapComposer mc, String speciesLayerName, String polygonLayerName, String environmentalLayerName) {
         this.mc = mc;
         this.speciesLayerName = speciesLayerName;
         this.polygonLayerName = polygonLayerName;
@@ -344,17 +356,20 @@ class SpeciesListEvent implements EventListener {
     String polygonLayerName;
     MapComposer mc;
     int steps_to_skip;
+    boolean[] geospatialKosher;
 
     public SpeciesListEvent(MapComposer mc, String polygonLayerName) {
         this.mc = mc;
         this.polygonLayerName = polygonLayerName;
         this.steps_to_skip = 0;
+        this.geospatialKosher = null;
     }
 
-    public SpeciesListEvent(MapComposer mc, String polygonLayerName, int steps_to_skip) {
+    public SpeciesListEvent(MapComposer mc, String polygonLayerName, int steps_to_skip, boolean[] geospatialKosher) {
         this.mc = mc;
         this.polygonLayerName = polygonLayerName;
         this.steps_to_skip = steps_to_skip;
+        this.geospatialKosher = geospatialKosher;
     }
 
     @Override
@@ -366,27 +381,13 @@ class SpeciesListEvent implements EventListener {
             params.put("polygonLayerName", "none");
         }
         AddToolSpeciesListComposer window = (AddToolSpeciesListComposer) mc.openModal("WEB-INF/zul/AddToolSpeciesList.zul", params, "addtoolwindow");
+        window.setGeospatialKosherCheckboxes(geospatialKosher);
 
         int skip = steps_to_skip;
-        while(skip > 0) {
+        while (skip > 0) {
             window.onClick$btnOk(event);
             skip--;
         }
-
-        //window.onClick$btnOk(event);
-
-//        SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", mc, null);
-//        MapLayer ml = mc.getMapLayer(polygonLayerName);
-//        if(ml != null) {
-//            window.wkt = ml.getWKT();
-//        } else {
-//            window.wkt = mc.getViewArea();
-//        }
-//        try {
-//            window.doModal();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
 }
 
@@ -404,21 +405,21 @@ class MetadataEvent implements EventListener {
     public void onEvent(Event event) throws Exception {
         MapLayer mapLayer = mc.getMapLayer(layerName);
         if (mapLayer != null) {
-            if(mapLayer.getData("query") != null) {
-                    //TODO: update for scatterplot layers
-                    Query q = (Query) mapLayer.getData("query");
-                    Events.echoEvent("openHTML", mc, q.getMetadataHtml());
+            if (mapLayer.getData("query") != null) {
+                //TODO: update for scatterplot layers
+                Query q = (Query) mapLayer.getData("query");
+                Events.echoEvent("openHTML", mc, q.getMetadataHtml());
             } else if (mapLayer.getMapLayerMetadata() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo().startsWith("http://")) {
-                    String infourl = mapLayer.getMapLayerMetadata().getMoreInfo().replace("__", ".");
-                    if (mapLayer.getSubType()==LayerUtilities.SCATTERPLOT) {
-                        ScatterplotData data = (ScatterplotData) mapLayer.getData("scatterplotData");
-                        infourl += "?dparam=X-Layer:"+data.getLayer1Name();
-                        infourl += "&dparam=Y-Layer:"+data.getLayer2Name();
-                    }
-                    // send the user to the BIE page for the species
-                    Events.echoEvent("openUrl", mc, infourl);
+                String infourl = mapLayer.getMapLayerMetadata().getMoreInfo().replace("__", ".");
+                if (mapLayer.getSubType() == LayerUtilities.SCATTERPLOT) {
+                    ScatterplotData data = (ScatterplotData) mapLayer.getData("scatterplotData");
+                    infourl += "?dparam=X-Layer:" + data.getLayer1Name();
+                    infourl += "&dparam=Y-Layer:" + data.getLayer2Name();
+                }
+                // send the user to the BIE page for the species
+                Events.echoEvent("openUrl", mc, infourl);
 
             } else if (mapLayer.getMapLayerMetadata() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo() != null
@@ -446,7 +447,7 @@ class AreaReportEvent implements EventListener {
     @Override
     public void onEvent(Event event) throws Exception {
         Hashtable<String, Object> params = new Hashtable<String, Object>();
-        if(polygonLayerName != null) {
+        if (polygonLayerName != null) {
             params.put("polygonLayerName", polygonLayerName);
         } else {
             params.put("polygonLayerName", "none");
@@ -485,5 +486,29 @@ class GridLayerHoverEvent implements EventListener {
     @Override
     public void onEvent(Event event) throws Exception {
         Clients.evalJavaScript("mapFrame.toggleActiveHover();");
+    }
+}
+
+class AddToMap implements EventListener {
+
+    String type;
+    MapComposer mc;
+
+    public AddToMap(MapComposer mc, String type) {
+        this.mc = mc;
+        this.type = type;
+    }
+
+    @Override
+    public void onEvent(Event event) throws Exception {
+        if (type.equals("species")) {
+            mc.onClick$btnAddSpecies(null);
+        } else if (type.equals("area")) {
+            mc.onClick$btnAddArea(null);
+        } else if (type.equals("layer")) {
+            mc.onClick$btnAddLayer(null);
+        } else if (type.equals("facet")) {
+            mc.onClick$btnAddFacet(null);
+        }
     }
 }

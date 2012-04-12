@@ -17,6 +17,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,7 +53,8 @@ public class BiocacheQuery implements Query, Serializable {
     static final String POST_SERVICE = "/webportal/params?";
     static final String DEFAULT_ROWS = "pageSize=1000000";
     /** DEFAULT_VALIDATION must not be null */
-    static final String DEFAULT_VALIDATION = "geospatial_kosher:true";
+    //static final String DEFAULT_VALIDATION = "longitude:[-180 TO 180] AND latitude:[-90 TO 90]";
+    static final String DEFAULT_VALIDATION = "";
     static final String BIE_SPECIES = "/species/";
     static final String WMS_URL = "/webportal/wms/reflect?";
     private static String[] commonTaxonRanks = new String[]{
@@ -89,14 +91,15 @@ public class BiocacheQuery implements Query, Serializable {
     int occurrenceCount = -1;
     double[] points = null;
     String solrName = null;
-    static String[][] facetNameExceptions = {{"cl22", "state"}, {"cl23", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
+    //static String[][] facetNameExceptions = {{"cl22", "state"}, {"cl959", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
     HashMap<String, LegendObject> legends = new HashMap<String, LegendObject>();
+    HashSet<String> flaggedRecords = new HashSet<String>();
 
     static String translateFieldForSolr(String facetName) {
-        if(facetName == null) {
+        if (facetName == null) {
             return facetName;
         }
-        for (String[] s : facetNameExceptions) {
+        for (String[] s : CommonData.facetNameExceptions) {
             if (facetName.equals(s[0])) {
                 facetName = s[1];
                 break;
@@ -106,7 +109,7 @@ public class BiocacheQuery implements Query, Serializable {
     }
 
     static String translateSolrForField(String facetName) {
-        for (String[] s : facetNameExceptions) {
+        for (String[] s : CommonData.facetNameExceptions) {
             if (facetName.equals(s[1])) {
                 facetName = s[0];
                 break;
@@ -115,7 +118,7 @@ public class BiocacheQuery implements Query, Serializable {
         return facetName;
     }
 
-    public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping) {
+    public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, boolean[] geospatialKosher) {
         this.lsids = lsids;
         this.facets = facets;
         this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : wkt;
@@ -126,10 +129,14 @@ public class BiocacheQuery implements Query, Serializable {
         this.biocacheWebServer = CommonData.biocacheWebServer;
         this.biocacheServer = CommonData.biocacheServer;
 
+        if (geospatialKosher != null) {
+            addGeospatialKosher(geospatialKosher);
+        }
+
         makeParamId();
     }
 
-    public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, String biocacheServer, String biocacheWebServer) {
+    public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, boolean[] geospatialKosher, String biocacheServer, String biocacheWebServer) {
         this.lsids = lsids;
         this.facets = facets;
         this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : wkt;
@@ -137,7 +144,7 @@ public class BiocacheQuery implements Query, Serializable {
         this.forMapping = forMapping;
         this.qc = CommonData.biocacheQc;
 
-        if(biocacheServer != null && biocacheWebServer != null) {
+        if (biocacheServer != null && biocacheWebServer != null) {
             this.biocacheWebServer = biocacheWebServer;
             this.biocacheServer = biocacheServer;
         } else {
@@ -145,7 +152,140 @@ public class BiocacheQuery implements Query, Serializable {
             this.biocacheServer = CommonData.biocacheServer;
         }
 
+        if (geospatialKosher != null) {
+            addGeospatialKosher(geospatialKosher);
+        }
+
         makeParamId();
+    }
+
+    //call makeParamId() after this function
+    void addGeospatialKosher(boolean[] geospatialKosher) {
+        if (getGeospatialKosher() == null) {
+            //Do not add/replace facet for geospatial_kosher when it is present
+            //outside a facet.
+            return;
+        }
+
+        Facet f = BiocacheQuery.makeFacetGeospatialKosher(geospatialKosher[0], geospatialKosher[1], geospatialKosher[2]);
+
+        if (facets == null) {
+            facets = new ArrayList<Facet>();
+        } else {
+            for (int i = 0; i < facets.size(); i++) {
+                if (!facets.get(i).toString().contains("geospatial_kosher:")) {
+                    facets.remove(i);
+                    break;
+                }
+            }
+        }
+
+        if (f != null) {
+            facets.add(f);
+        }
+    }
+
+    static Facet makeFacetGeospatialKosher(boolean includeTrue, boolean includeFalse, boolean includeNull) {
+        if (includeTrue && includeFalse && includeNull) {
+            return null;    //31192356
+        } else if (!includeTrue && !includeFalse && !includeNull) {
+            return new Facet("*", "*", false);  //0
+        } else if (includeTrue && !includeFalse && !includeNull) {
+            return new Facet("geospatial_kosher", "true", true); //28182161
+        } else if (!includeTrue && includeFalse && !includeNull) {
+            return new Facet("geospatial_kosher", "false", true); //2211703
+        } else if (!includeTrue && !includeFalse && includeNull) {
+            return new Facet("geospatial_kosher", "*", false); //798492
+        } else if (includeTrue && includeFalse && !includeNull) {
+            return new Facet("geospatial_kosher", "*", true); //30393864
+        } else if (includeTrue && !includeFalse && includeNull) {
+            return new Facet("geospatial_kosher", "false", false); //28980653
+        } else { //if(!includeTrue && includeFalse && includeNull) {
+            return new Facet("geospatial_kosher", "true", false); //3010195
+        }
+    }
+
+    public static boolean[] parseGeospatialKosher(String facet) {
+        boolean[] geospatial_kosher = null;
+        if (facet != null) {
+            String f = facet.replace("\"", "").replace("(", "").replace(")", "");
+            if (f.equals("geospatial_kosher:true")) {
+                geospatial_kosher = new boolean[]{true, false, false};
+            } else if (f.equals("geospatial_kosher:false")) {
+                geospatial_kosher = new boolean[]{false, true, false};
+            } else if (f.equals("-geospatial_kosher:*")) {
+                geospatial_kosher = new boolean[]{false, false, true};
+            } else if (f.equals("geospatial_kosher:*")) {
+                geospatial_kosher = new boolean[]{true, true, false};
+            } else if (f.equals("-geospatial_kosher:false")) {
+                geospatial_kosher = new boolean[]{true, false, true};
+            } else if (f.equals("-geospatial_kosher:true")) {
+                geospatial_kosher = new boolean[]{false, true, true};
+            }
+        }
+        return geospatial_kosher;
+    }
+
+    public boolean[] getGeospatialKosher() {
+        if ((lsids + extraParams).contains("geospatial_kosher:")) {
+            //must be in a Facet to be compatible
+            return null;
+        }
+
+        boolean[] geospatial_kosher = new boolean[]{true, true, true};
+        if (facets != null) {
+            for (int i = 0; i < facets.size(); i++) {
+                String f = facets.get(i).toString();
+                if (f.contains("geospatial_kosher:")) {
+                    if (f.equals("geospatial_kosher:true")) {
+                        geospatial_kosher = new boolean[]{true, false, false};
+                    } else if (f.equals("geospatial_kosher:false")) {
+                        geospatial_kosher = new boolean[]{false, true, false};
+                    } else if (f.equals("-geospatial_kosher:*")) {
+                        geospatial_kosher = new boolean[]{false, false, true};
+                    } else if (f.equals("geospatial_kosher:*")) {
+                        geospatial_kosher = new boolean[]{true, true, false};
+                    } else if (f.equals("-geospatial_kosher:false")) {
+                        geospatial_kosher = new boolean[]{true, false, true};
+                    } else if (f.equals("-geospatial_kosher:true")) {
+                        geospatial_kosher = new boolean[]{false, true, true};
+                    }
+                    break;
+                }
+            }
+        }
+        return geospatial_kosher;
+    }
+
+    public BiocacheQuery newFacetGeospatialKosher(boolean[] geospatialKosher, boolean forMapping) {
+        boolean[] gk = getGeospatialKosher();
+
+        //cannot create the new facet
+        if (gk == null) {
+            //This should never happen.
+            new Exception("Attempted to add a geospatial_kosher facet to an unsupported query: '" + lsids + "', '" + extraParams + "'").printStackTrace();
+            return newFacet(null, forMapping);
+        }
+
+        int sum = 0;
+        for (int i = 0; i < gk.length; i++) {
+            if (gk[i] == geospatialKosher[i]) {
+                sum++;
+            }
+        }
+        if (sum == gk.length) {
+            return newFacet(null, forMapping);
+        }
+        ArrayList<Facet> newFacets = new ArrayList<Facet>();
+        if (facets != null) {
+            for (int i = 0; i < facets.size(); i++) {
+                if (!facets.get(i).toString().contains("geospatial_kosher:")) {
+                    newFacets.add(facets.get(i));
+                }
+            }
+        }
+
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, geospatialKosher, biocacheServer, biocacheWebServer);
     }
 
     /**
@@ -156,7 +296,7 @@ public class BiocacheQuery implements Query, Serializable {
      */
     @Override
     public BiocacheQuery newFacet(Facet facet, boolean forMapping) {
-        if(facet == null && (this.forMapping || !forMapping)) {
+        if (facet == null && (this.forMapping || !forMapping)) {
             return this;
         }
 
@@ -164,9 +304,11 @@ public class BiocacheQuery implements Query, Serializable {
         if (facets != null) {
             newFacets.addAll(facets);
         }
-        newFacets.add(facet);
+        if (facet != null) {
+            newFacets.add(facet);
+        }
 
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, biocacheServer, biocacheWebServer);
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer);
     }
 
     /**
@@ -183,7 +325,7 @@ public class BiocacheQuery implements Query, Serializable {
             if (this.forMapping || !forMapping) {
                 return this;
             } else {
-                return new BiocacheQuery(lsids, wkt, extraParams, facets, forMapping, biocacheServer, biocacheWebServer);
+                return new BiocacheQuery(lsids, wkt, extraParams, facets, forMapping, null, biocacheServer, biocacheWebServer);
             }
         }
 
@@ -197,7 +339,7 @@ public class BiocacheQuery implements Query, Serializable {
                 newWkt = (new WKTWriter()).write(intersectionGeom).replace(" (", "(").replace(", ", ",").replace(") ", ")");
             }
 
-            sq = new BiocacheQuery(lsids, newWkt, extraParams, facets, forMapping, biocacheServer, biocacheWebServer);
+            sq = new BiocacheQuery(lsids, newWkt, extraParams, facets, forMapping, null, biocacheServer, biocacheWebServer);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -332,32 +474,50 @@ public class BiocacheQuery implements Query, Serializable {
         }
 
         return speciesCount;
+    }
+    int speciesCountKosher = -1, speciesCountCoordinates = -1, speciesCountAny = -1;
+    int occurrenceCountKosher = -1, occurrenceCountCoordinates = -1, occurrenceCountAny = -1;
 
+    public int getSpeciesCountKosher() {
+        if (speciesCountKosher >= 0) {
+            return speciesCountKosher;
+        }
+        return speciesCountKosher = newFacetGeospatialKosher(new boolean[]{true, false, false}, false).getSpeciesCount();
+    }
 
-//        HttpClient client = new HttpClient();
-//        String url = CommonData.biocacheServer
-//                + SPECIES_LIST_SERVICE
-//                + DEFAULT_ROWS
-//                + "&q=" + getQ();
-//        System.out.println(url);
-//        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
-//
-//        try {
-//            int result = client.executeMethod(get);
-//            String response = get.getResponseBodyAsString();
-//
-//            if (result == 200) {
-//                speciesCount = 0;
-//                int pos = 0;
-//                while ((pos = response.indexOf('{', pos + 1)) >= 0) {
-//                    speciesCount++;
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        return speciesCount;
+    public int getSpeciesCountCoordinates() {
+        if (speciesCountCoordinates >= 0) {
+            return speciesCountCoordinates;
+        }
+        return speciesCountCoordinates = newFacetGeospatialKosher(new boolean[]{true, true, false}, false).getSpeciesCount();
+    }
+
+    public int getSpeciesCountAny() {
+        if (speciesCountAny >= 0) {
+            return speciesCountAny;
+        }
+        return speciesCountAny = newFacetGeospatialKosher(new boolean[]{true, true, true}, false).getSpeciesCount();
+    }
+
+    public int getOccurrenceCountKosher() {
+        if (occurrenceCountKosher >= 0) {
+            return occurrenceCountKosher;
+        }
+        return occurrenceCountKosher = newFacetGeospatialKosher(new boolean[]{true, false, false}, false).getOccurrenceCount();
+    }
+
+    public int getOccurrenceCountCoordinates() {
+        if (occurrenceCountCoordinates >= 0) {
+            return occurrenceCountCoordinates;
+        }
+        return occurrenceCountCoordinates = newFacetGeospatialKosher(new boolean[]{true, true, false}, false).getOccurrenceCount();
+    }
+
+    public int getOccurrenceCountAny() {
+        if (occurrenceCountAny >= 0) {
+            return occurrenceCountAny;
+        }
+        return occurrenceCountAny = newFacetGeospatialKosher(new boolean[]{true, true, true}, false).getOccurrenceCount();
     }
 
     /**
@@ -537,7 +697,7 @@ public class BiocacheQuery implements Query, Serializable {
                         facet = t + facet.substring(p);
                     }
                 }
-                if(facet.contains(" OR ")) {
+                if (facet.contains(" OR ")) {
                     facet = "(" + facet + ")";
                 }
                 sb.append(facet);
@@ -562,7 +722,7 @@ public class BiocacheQuery implements Query, Serializable {
             sb.append(extraParams);
         }
 
-        if(encode) {
+        if (encode) {
             String s = sb.toString();
             sb = new StringBuilder();
             try {
@@ -749,7 +909,7 @@ public class BiocacheQuery implements Query, Serializable {
             while ((size = gzip.read(buffer)) >= 0) {
                 baos.write(buffer, 0, size);
             }
-            s =  new String(baos.toByteArray());
+            s = new String(baos.toByteArray());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -801,7 +961,7 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("year", "Year", QueryField.FieldType.INT));
             //fields.add(new QueryField("decade", "Decade", QueryField.FieldType.INT));
             // Record details
-            fields.add(new QueryField("basis_of_record", "Record Type", QueryField.FieldType.STRING));            
+            fields.add(new QueryField("basis_of_record", "Record Type", QueryField.FieldType.STRING));
             fields.add(new QueryField("type_status", "Specimen Type", QueryField.FieldType.STRING));
             //fields.add(new QueryField("multimedia", "Media", QueryField.FieldType.STRING));
             fields.add(new QueryField("collector", "Collector", QueryField.FieldType.STRING));
@@ -817,11 +977,11 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("assertions", "Record Issues", QueryField.FieldType.STRING));
             //fields.add(new QueryField("outlier_layer", "Outlier for Layer", QueryField.FieldType.STRING));
             //fields.add(new QueryField("outlier_layer_count", "Outlier Layer Count", QueryField.FieldType.STRING));
-            
+
             //fields.add(new QueryField("biogeographic_region", "Biogeographic Region", QueryField.FieldType.STRING));
             //fields.add(new QueryField("species_guid", "Species", QueryField.FieldType.STRING));
             //fields.add(new QueryField("interaction", "Species Interaction", QueryField.FieldType.INT));
-            
+
             //fields.add(new QueryField("cl678", "Land use", QueryField.FieldType.STRING));
             //fields.add(new QueryField("cl619", "Vegetation - condition", QueryField.FieldType.STRING));
             for (int i = 0; i < fields.size(); i++) {
@@ -853,6 +1013,7 @@ public class BiocacheQuery implements Query, Serializable {
     public String getRecordLatitudeFieldName() {
         return "latitude";
     }
+
     @Override
     public String getRecordIdFieldDisplayName() {
         return "id";
@@ -876,12 +1037,12 @@ public class BiocacheQuery implements Query, Serializable {
      */
     @Override
     public LegendObject getLegend(String colourmode) {
-        if(colourmode.equals("-1") || colourmode.equals("grid")) {
+        if (colourmode.equals("-1") || colourmode.equals("grid")) {
             return null;
         }
         LegendObject lo = legends.get(colourmode);
-        if(lo != null && lo.getColourMode() != null && !lo.getColourMode().equals(colourmode)) {
-            System.out.println("lo not empty and lo="+lo);
+        if (lo != null && lo.getColourMode() != null && !lo.getColourMode().equals(colourmode)) {
+            System.out.println("lo not empty and lo=" + lo);
             lo = legends.get(lo.getColourMode());
         }
         if (lo == null) {
@@ -916,15 +1077,18 @@ public class BiocacheQuery implements Query, Serializable {
                     Legend l = lo.getNumericLegend();
                     double[] minmax = l.getMinMax();
                     double[] cutpoints = l.getCutoffdoubles();
-                    double [] cutpointmins = l.getCutoffMindoubles();
+                    double[] cutpointmins = l.getCutoffMindoubles();
                     StringBuilder sb = new StringBuilder();
-                    sb.append(colourmode);                    
+                    sb.append(colourmode);
                     int i = 0;
                     int lasti = 0;
                     while (i < cutpoints.length) {
                         if (i == cutpoints.length - 1 || cutpoints[i] != cutpoints[i + 1]) {
-                            if(i > 0) sb.append(",").append(cutpoints[lasti]);
-                            else sb.append(",*");
+                            if (i > 0) {
+                                sb.append(",").append(cutpoints[lasti]);
+                            } else {
+                                sb.append(",*");
+                            }
                             sb.append(",").append(cutpoints[i]);
                             lasti = i;
                         }
@@ -953,7 +1117,7 @@ public class BiocacheQuery implements Query, Serializable {
                     legends.put(newColourMode, newlo);
 
                     lo = newlo;
-                }else  {
+                } else {
                     legends.put(colourmode, lo);
                 }
             } catch (Exception e) {
@@ -966,7 +1130,7 @@ public class BiocacheQuery implements Query, Serializable {
 
     @Override
     public Query newFacets(List<Facet> facets, boolean forMapping) {
-        if((facets == null || facets.isEmpty()) && (this.forMapping || !forMapping)) {
+        if ((facets == null || facets.isEmpty()) && (this.forMapping || !forMapping)) {
             return this;
         }
         ArrayList<Facet> newFacets = new ArrayList<Facet>();
@@ -975,7 +1139,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
         newFacets.addAll(facets);
 
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, biocacheServer, biocacheWebServer);
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer);
     }
 
     @Override
@@ -1032,13 +1196,45 @@ public class BiocacheQuery implements Query, Serializable {
         String html = "Species layer\n";
         html += "<table class='md_table'>";
         html += "<tr class='" + lastClass + "'><td class='md_th'>Species name: </td><td class='md_spacer'/><td class='md_value'>" + spname + "</td></tr>";
-        lastClass = lastClass.length() == 0?"md_grey-bg":"";
-        html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>" + getSpeciesCount() + "</td></tr>";
-        lastClass = lastClass.length() == 0?"md_grey-bg":"";
-        html += "<tr class='" + lastClass + "'><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCount() + "</td></tr>";
-        lastClass = lastClass.length() == 0?"md_grey-bg":"";
-        html += "<tr class='" + lastClass + "'><td class='md_th'>Classification: </td><td class='md_spacer'/><td class='md_value'>";
+        lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+
+        boolean[] gk = getGeospatialKosher();
+        if (gk == null) {
+            html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>" + getSpeciesCount() + "</td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCount() + "</td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+        } else {
+            if (wkt != null && !wkt.equals(CommonData.WORLD_WKT)) {
+                html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>" + getSpeciesCountKosher() + " without a flagged spatial issue<br>" + getSpeciesCountCoordinates() + " with any coordinates</td></tr>";
+                lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCountKosher() + " without a flagged spatial issue<br>" + getOccurrenceCountCoordinates() + " with any coordinates</td></tr>";
+                lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+            } else {
+                html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>" + getSpeciesCountKosher() + " without a flagged spatial issue<br>" + getSpeciesCountCoordinates() + " with any coordinates<br>" + getSpeciesCountAny() + " total including records without coordiantes</td></tr>";
+                lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCountKosher() + " without a flagged spatial issue<br>" + getOccurrenceCountCoordinates() + " with any coordinates<br>" + getOccurrenceCountAny() + " total including records without coordiantes</td></tr>";
+                lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+            }
+            String areamsg = "";
+            if (wkt != null && !wkt.equals(CommonData.WORLD_WKT)) {
+                areamsg = " in the area selected";
+            }
+            String msg = null;
+            if (gk[0] && gk[1]) {
+                msg = "Map layer displays records with and without geospatial issues " + areamsg;
+            } else if (gk[0]) {
+                msg = "Map layer only displays records without geospatial issues " + areamsg;
+            } else if (gk[1]) {
+                msg = "Map layer only displays records with geospatial issues " + areamsg;
+            }
+            if (msg != null) {
+                html += "<tr class='" + lastClass + "'><td class='md_th'></td><td class='md_spacer'/><td class='md_value'>" + msg + "</td></tr>";
+                lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+            }
+        }
         if (lsids != null) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Classification: </td><td class='md_spacer'/><td class='md_value'>";
             for (String s : lsids.split(",")) {
                 Map<String, String> classification = getSpeciesClassification(s);
                 Iterator<String> it = classification.keySet().iterator();
@@ -1056,26 +1252,26 @@ public class BiocacheQuery implements Query, Serializable {
                 html += "<br />";
                 html += "<br />";
             }
+            html += "</td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
         }
-        html += "</td></tr>";
-        lastClass = lastClass.length() == 0?"md_grey-bg":"";
         html += "<tr class='" + lastClass + "'><td class='md_th'>Data providers: </td><td class='md_spacer'/><td class='md_value'>" + getDataProviders() + "</td></tr>";
-        lastClass = lastClass.length() == 0?"md_grey-bg":"";
-        
-        if(lsids != null && lsids.length() > 0) {
-            html += "<tr class='" + lastClass + "'><td class='md_th'>List of LSIDs: </td><td class='md_spacer'/><td class='md_value'>" + lsids + "</td></tr>";
-            lastClass = lastClass.length() == 0?"md_grey-bg":"";
+        lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
 
-            String [] wms = CommonData.getSpeciesDistributionWMS(lsids);
-            if(wms != null && wms.length > 0) {
+        if (lsids != null && lsids.length() > 0) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>List of LSIDs: </td><td class='md_spacer'/><td class='md_value'>" + lsids + "</td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+
+            String[] wms = CommonData.getSpeciesDistributionWMS(lsids);
+            if (wms != null && wms.length > 0) {
                 html += "<tr class='" + lastClass + "'><td class='md_th'>Expert distributions</td><td class='md_spacer'/><td class='md_value'><a href='#' onClick='openDistributions(\"" + lsids + "\")'>" + wms.length + "</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
-                lastClass = lastClass.length() == 0? "md_grey-bg": "";
+                lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
             }
 
             wms = CommonData.getSpeciesChecklistWMS(lsids);
-            if(wms != null && wms.length > 0) {
+            if (wms != null && wms.length > 0) {
                 html += "<tr class='" + lastClass + "'><td class='md_th'>Checklist species</td><td class='md_spacer'/><td class='md_value'><a href='#' onClick='openChecklists(\"" + lsids + "\")'>" + wms.length + "</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
-                lastClass = lastClass.length() == 0? "md_grey-bg": "";
+                lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
             }
         }
 
@@ -1177,7 +1373,7 @@ public class BiocacheQuery implements Query, Serializable {
     }
 
     @Override
-    public byte[] getDownloadBytes(String[] extraFields, String [] displayNames) {
+    public byte[] getDownloadBytes(String[] extraFields, String[] displayNames) {
         return null;
     }
 
@@ -1245,24 +1441,22 @@ public class BiocacheQuery implements Query, Serializable {
                     String title = jo.getString("queryTitle");
 
                     //clean default parameter
-                    title = title.replace(" AND geospatial_kosher:true", "");
-                    title = title.replace("geospatial_kosher:true AND ", "");
                     title = title.replace(" AND <span>null</span>", "");
-                    title = title.replace(" AND null","");
+                    title = title.replace(" AND null", "");
 
                     //clean spans
                     int p1 = title.indexOf("<span");
-                    while(p1 >= 0) {
+                    while (p1 >= 0) {
                         int p2 = title.indexOf(">", p1);
-                        int p3 = title.indexOf("</span>",p2);
-                        title = title.substring(0, p1) + title.substring(p2 + 1, p3) 
-                                + (p3+7 < title.length()?title.substring(p3 + 7, title.length()):"");
-                        
+                        int p3 = title.indexOf("</span>", p2);
+                        title = title.substring(0, p1) + title.substring(p2 + 1, p3)
+                                + (p3 + 7 < title.length() ? title.substring(p3 + 7, title.length()) : "");
+
                         p1 = title.indexOf("<span");
                     }
 
                     solrName = title;
-                    System.out.println("solrName12="+solrName);
+                    System.out.println("solrName12=" + solrName);
                     return solrName;
                 }
             }
@@ -1291,7 +1485,6 @@ public class BiocacheQuery implements Query, Serializable {
         return biocacheWebServer;
     }
 
-    
     /**
      * Get the column header name for a column in the output of sampling.
      * 
@@ -1302,5 +1495,73 @@ public class BiocacheQuery implements Query, Serializable {
     public String getRecordFieldDisplayName(String colourMode) {
         //sampling column name is the same as colourMode name.
         return colourMode;
+    }
+
+    /**
+     * Add or remove one record to an internal group.
+     */
+    @Override
+    public void flagRecord(String id, boolean set) {
+        if (set) {
+            flaggedRecords.add(id);
+        } else {
+            flaggedRecords.remove(id);
+        }
+    }
+
+    /**
+     * Get the number of flagged records.
+     */
+    @Override
+    public int flagRecordCount() {
+        return flaggedRecords.size();
+    }
+
+    /**
+     * Get the list of flagged records as '\n' separated String.
+     */
+    @Override
+    public String getFlaggedRecords() {
+        StringBuilder sb = new StringBuilder();
+        for (String s : flaggedRecords) {
+            if (sb.length() > 0) {
+                sb.append("\n");
+            }
+            sb.append(s);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Create a new Query including or excluding flagged records
+     */
+    @Override
+    public Query newFlaggedRecords(boolean include) {
+        if (flagRecordCount() == 0) {
+            return this;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        if (include) {
+            for (String s : flaggedRecords) {
+                if (sb.length() > 0) {
+                    sb.append(" OR ");
+                }
+                sb.append("id:").append(s);
+            }
+        } else {
+            for (String s : flaggedRecords) {
+                if (sb.length() > 0) {
+                    sb.append(" AND ");
+                }
+                sb.append("-id:").append(s);
+            }
+        }
+        ArrayList<Facet> newFacets = new ArrayList<Facet>();
+        if (facets != null) {
+            newFacets.addAll(facets);
+        }
+        newFacets.add(Facet.parseFacet(sb.toString()));
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer);
     }
 }

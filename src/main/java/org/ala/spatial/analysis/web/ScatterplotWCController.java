@@ -150,90 +150,88 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         redraw();
     }
 
-    public void onChange$sac(Event event) {
-        getScatterplotData();
-
-        //remove any previous layer highlighted now
-//        if (data.getLsid() != null) {
-//            getMapComposer().removeLayerHighlight(data, "species");
+//    public void onChange$sac(Event event) {
+//        getScatterplotData();
+//
+//        //remove any previous layer highlighted now
+////        if (data.getLsid() != null) {
+////            getMapComposer().removeLayerHighlight(data, "species");
+////        }
+////
+////        data.setLsid(null);
+//        data.setSpeciesName(null);
+//
+//        if (sac.getSelectedItem() == null) {
+//            return;
 //        }
 //
-//        data.setLsid(null);
-        data.setSpeciesName(null);
-
-        if (sac.getSelectedItem() == null) {
-            return;
-        }
-
-        cleanTaxon(sac);
-        String taxon = sac.getValue();
-
-        String rank = "";
-        String spVal = sac.getSelectedItem().getDescription();
-        if (spVal.trim().contains(": ")) {
-            taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
-            rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
-
-            if (rank.equalsIgnoreCase("scientific name")) {
-                rank = "taxon";
-            }
-        } else {
-            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
-        }
-        System.out.println("mapping rank and species: " + rank + " - " + taxon);
-
-//        data.setLsid((String) sac.getSelectedItem().getAnnotatedProperties().get(0));
-        data.setSpeciesName(taxon);
-
-        //only add it to the map if this was signaled from an event
-        if (event != null) {
-            Events.echoEvent("doSpeciesChange", this, null);
-        } else {
-            Events.echoEvent("updateScatterplot", this, null);
-        }
-    }
-
-    public void onChange$sacBackground(Event event) {
-        data.setBackgroundQuery(null);
-
-        if (sacBackground.getSelectedItem() == null) {
-            return;
-        }
-
-        cleanTaxon(sacBackground);
-        String taxon = sacBackground.getValue();
-
-        String rank = "";
-        String spVal = sacBackground.getSelectedItem().getDescription();
-        if (spVal.trim().contains(": ")) {
-            taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
-            rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
-
-            if (rank.equalsIgnoreCase("scientific name")) {
-                rank = "taxon";
-            }
-        } else {
-            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
-        }
-        System.out.println("mapping rank and species: " + rank + " - " + taxon);
-
-        Query query = QueryUtil.get((String) sacBackground.getSelectedItem().getAnnotatedProperties().get(0),
-                getMapComposer(), false);
-
-        Query q = QueryUtil.queryFromSelectedArea(query, data.getFilterSa(), false);
-
-        data.setBackgroundQuery(query);
-
-        //only add it to the map if this was signaled from an event
-        //clearSelection();
-
-        if (event != null) {
-            Events.echoEvent("doSpeciesChange", this, null);
-        } else {
-            Events.echoEvent("updateScatterplot", this, null);
-        }
-    }
-
+//        cleanTaxon(sac);
+//        String taxon = sac.getValue();
+//
+//        String rank = "";
+//        String spVal = sac.getSelectedItem().getDescription();
+//        if (spVal.trim().contains(": ")) {
+//            taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
+//            rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
+//
+//            if (rank.equalsIgnoreCase("scientific name")) {
+//                rank = "taxon";
+//            }
+//        } else {
+//            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
+//        }
+//        System.out.println("mapping rank and species: " + rank + " - " + taxon);
+//
+////        data.setLsid((String) sac.getSelectedItem().getAnnotatedProperties().get(0));
+//        data.setSpeciesName(taxon);
+//
+//        //only add it to the map if this was signaled from an event
+//        if (event != null) {
+//            Events.echoEvent("doSpeciesChange", this, null);
+//        } else {
+//            Events.echoEvent("updateScatterplot", this, null);
+//        }
+//    }
+//    public void onChange$sacBackground(Event event) {
+//        data.setBackgroundQuery(null);
+//
+//        if (sacBackground.getSelectedItem() == null) {
+//            return;
+//        }
+//
+//        cleanTaxon(sacBackground);
+//        String taxon = sacBackground.getValue();
+//
+//        String rank = "";
+//        String spVal = sacBackground.getSelectedItem().getDescription();
+//        if (spVal.trim().contains(": ")) {
+//            taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
+//            rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
+//
+//            if (rank.equalsIgnoreCase("scientific name")) {
+//                rank = "taxon";
+//            }
+//        } else {
+//            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
+//        }
+//        System.out.println("mapping rank and species: " + rank + " - " + taxon);
+//
+//        Query query = QueryUtil.get((String) sacBackground.getSelectedItem().getAnnotatedProperties().get(0),
+//                getMapComposer(), false);
+//
+//        Query q = QueryUtil.queryFromSelectedArea(query, data.getFilterSa(), false);
+//
+//        data.setBackgroundQuery(query);
+//
+//        //only add it to the map if this was signaled from an event
+//        //clearSelection();
+//
+//        if (event != null) {
+//            Events.echoEvent("doSpeciesChange", this, null);
+//        } else {
+//            Events.echoEvent("updateScatterplot", this, null);
+//        }
+//    }
     public void doSpeciesChange(Event event) {
         //getMapComposer().activateLayerForScatterplot(getScatterplotData(), "species");
 
@@ -625,30 +623,29 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     /**
      * populate sampling screen with values from active layers and area tab
      */
-    public void callPullFromActiveLayers() {
-        //get top species and list of env/ctx layers
-        if (sac.getSelectedItem() == null || sac.getSelectedItem().getValue() == null) {
-            //String species = layersUtil.getFirstSpeciesLayer();
-            String speciesandlsid = layersUtil.getFirstSpeciesLayer();
-            String species = null;
-            if (StringUtils.isNotBlank(speciesandlsid)) {
-                species = speciesandlsid.split(",")[0];
-            }
-
-            /* set species from layer selector */
-            if (species != null) {
-                String tmpSpecies = species;
-                if (species.contains(" (")) {
-                    tmpSpecies = StringUtils.substringBefore(species, " (");
-                }
-                sac.setValue(tmpSpecies);
-                sac.refresh(tmpSpecies);
-
-                onChange$sac(null);
-            }
-        }
-    }
-
+//    public void callPullFromActiveLayers() {
+//        //get top species and list of env/ctx layers
+//        if (sac.getSelectedItem() == null || sac.getSelectedItem().getValue() == null) {
+//            //String species = layersUtil.getFirstSpeciesLayer();
+//            String speciesandlsid = layersUtil.getFirstSpeciesLayer();
+//            String species = null;
+//            if (StringUtils.isNotBlank(speciesandlsid)) {
+//                species = speciesandlsid.split(",")[0];
+//            }
+//
+//            /* set species from layer selector */
+//            if (species != null) {
+//                String tmpSpecies = species;
+//                if (species.contains(" (")) {
+//                    tmpSpecies = StringUtils.substringBefore(species, " (");
+//                }
+//                sac.setValue(tmpSpecies);
+//                sac.refresh(tmpSpecies);
+//
+//                onChange$sac(null);
+//            }
+//        }
+//    }
     /**
      * get rid of the common name if present
      * 2 conditions here

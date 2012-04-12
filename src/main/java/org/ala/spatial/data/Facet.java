@@ -50,46 +50,46 @@ public class Facet implements Serializable {
      * @param isInteger flag for range queries.  Want to report an inclusive range
      * @return
      */
-    public static Facet parseFacet(String fq){
-        if(fq == null || fq.length() < 3) {
+    public static Facet parseFacet(String fq) {
+        if (fq == null || fq.length() < 3) {
             return null;
 
         }
-        
+
         //tests
         boolean hasAnd = fq.contains(" AND ");
         boolean hasOr = fq.contains(" OR ");
-        
-        if(fq.startsWith("-(-(")) {
+
+        if (fq.startsWith("-(-(")) {
             // (10) -(-(<field>:[<min> TO <max>] AND <field>:[<min> TO <max>]) AND <field>:[* TO *] AND <field>:[* TO *])
             int p = fq.indexOf(')');
 
             //reverse sign to convert first inner AND into OR
-            Facet [] orPart = parseTerms(" AND ", fq.substring(4,p), true);
-            Facet [] andPart = parseTerms(" AND ", fq.substring(p + 6, fq.length()-1), false);
+            Facet[] orPart = parseTerms(" AND ", fq.substring(4, p), true);
+            Facet[] andPart = parseTerms(" AND ", fq.substring(p + 6, fq.length() - 1), false);
 
             return new Facet(fq, orPart, andPart, null);
-        } else if(fq.startsWith("-(") && !fq.endsWith(")") && !hasOr) {
+        } else if (fq.startsWith("-(") && !fq.endsWith(")") && !hasOr) {
             //(13) -(<field>:[<min> TO <max>] AND <field>:[<min> TO <max>]) AND <field>:[* TO *] AND <field>:[* TO *]
             int p = fq.indexOf(')');
 
             //reverse sign to convert first inner AND into OR
-            Facet [] orPart = parseTerms(" AND ", fq.substring(2,p), true);
-            Facet [] andPart = parseTerms(" AND ", fq.substring(p + 6, fq.length()-1), false);
+            Facet[] orPart = parseTerms(" AND ", fq.substring(2, p), true);
+            Facet[] andPart = parseTerms(" AND ", fq.substring(p + 6, fq.length() - 1), false);
             return new Facet(fq, orPart, andPart, null);
         } else {//if((hasAnd != hasOr) || (!hasAnd && !hasOr)) {
             //(1) (2) (3) (4) (5) (6) (7) (8) (9) (11) (12)
             boolean invert = fq.charAt(0) == '-' && fq.charAt(1) == '(';
-            String s = invert?fq.substring(2,fq.length()-1):fq;
-            Facet [] f = parseTerms((hasAnd?" AND ":" OR "), s, invert);
+            String s = invert ? fq.substring(2, fq.length() - 1) : fq;
+            Facet[] f = parseTerms((hasAnd ? " AND " : " OR "), s, invert);
 
-            if(f.length == 1) {
+            if (f.length == 1) {
                 return f[0];
             } else {
-                if(invert) {
-                    return new Facet(fq, (hasAnd?f:null) , (hasOr?f:null) , null);
+                if (invert) {
+                    return new Facet(fq, (hasAnd ? f : null), (hasOr ? f : null), null);
                 } else {
-                    return new Facet(fq, (hasOr?f:null) , (hasAnd?f:null) , null);
+                    return new Facet(fq, (hasOr ? f : null), (hasAnd ? f : null), null);
                 }
             }
         }
@@ -105,10 +105,10 @@ public class Facet implements Serializable {
             int offset = ff.startsWith("-") ? 1 : 0;
             String f = ff.substring(offset, ff.indexOf(':'));
             String v = ff.substring(ff.indexOf(':') + 1);
-            if(v.charAt(0) == '\"' || v.charAt(0) == '*') {
+            if (v.charAt(0) == '\"' || v.charAt(0) == '*' || !v.toLowerCase().contains(" TO ")) {
                 //value
-                if(v.charAt(0) != '*') {
-                    v = v.substring(1, v.length()-1);
+                if (v.charAt(0) == '\"') {
+                    v = v.substring(1, v.length() - 1);
                 }
                 facets[i] = new Facet(f, v, invert != (offset == 0));
             } else {
@@ -116,10 +116,10 @@ public class Facet implements Serializable {
                 String[] n = v.substring(1, v.length() - 1).split(" TO ");
                 /*
                  * double[] d = {n[0].equals("*") ? Double.NEGATIVE_INFINITY : Double.parseDouble(n[0]),
-                    n[1].equals("*") ? Double.POSITIVE_INFINITY : Double.parseDouble(n[1])};
+                n[1].equals("*") ? Double.POSITIVE_INFINITY : Double.parseDouble(n[1])};
                 facets[i] = new Facet(f, d[0], d[1], invert != (offset == 0));
-                * 
-                */
+                 *
+                 */
                 facets[i] = new Facet(f, n[0], n[1], invert != (offset == 0));
             }
         }
@@ -133,7 +133,6 @@ public class Facet implements Serializable {
     double min;
     double max;
     boolean includeRange;
-
     Facet[] orInAndTerms;
     Facet[] andTerms;
     Facet[] orTerms;
@@ -146,7 +145,7 @@ public class Facet implements Serializable {
         this.min = Double.NaN;
         this.max = Double.NaN;
         this.valueArray = null;
-        if(this.value != null) {
+        if (this.value != null) {
             this.valueArray = new String[]{this.value};
         }
     }
@@ -157,21 +156,21 @@ public class Facet implements Serializable {
         this.max = max;
         this.includeRange = includeRange;
 
-        String strMin = Double.isInfinite(min)?"*":(min==(int)min)?String.format("%d",(int)min):String.valueOf(min);
-        String strMax = Double.isInfinite(max)?"*":(max==(int)max)?String.format("%d",(int)max):String.valueOf(max);
+        String strMin = Double.isInfinite(min) ? "*" : (min == (int) min) ? String.format("%d", (int) min) : String.valueOf(min);
+        String strMax = Double.isInfinite(max) ? "*" : (max == (int) max) ? String.format("%d", (int) max) : String.valueOf(max);
 
         this.value = "[" + strMin + " TO " + strMax + "]";
 
         this.valueArray = null;
 
-        this.parameter = (includeRange?"":"-") + this.field + ":" + this.value;
+        this.parameter = (includeRange ? "" : "-") + this.field + ":" + this.value;
     }
-    
+
     public Facet(String field, String strMin, String strMax, boolean includeRange) {
         this.field = field;
-        
+
         double[] d = {strMin.equals("*") ? Double.NEGATIVE_INFINITY : Double.parseDouble(strMin),
-                    strMax.equals("*") ? Double.POSITIVE_INFINITY : Double.parseDouble(strMax)};
+            strMax.equals("*") ? Double.POSITIVE_INFINITY : Double.parseDouble(strMax)};
         this.min = d[0];
         this.max = d[1];
         this.includeRange = includeRange;
@@ -180,7 +179,7 @@ public class Facet implements Serializable {
 
         this.valueArray = null;
 
-        this.parameter = (includeRange?"":"-") + this.field + ":" + this.value;
+        this.parameter = (includeRange ? "" : "-") + this.field + ":" + this.value;
     }
 
     public Facet(String fq, Facet[] orInAndTerms, Facet[] andTerms, Facet[] orTerms) {
@@ -196,7 +195,7 @@ public class Facet implements Serializable {
     @Override
     public String toString() {
         if (parameter == null) {
-            if(value.startsWith("\"") && value.endsWith("\"")) {
+            if ((value.startsWith("\"") && value.endsWith("\"")) || value.equals("*")) {
                 return (includeRange ? "" : "-") + field + ":" + value;
             } else {
                 return (includeRange ? "" : "-") + field + ":\"" + value + "\"";
@@ -246,7 +245,7 @@ public class Facet implements Serializable {
                 }
             }
             return !includeRange;
-        } else if(getType() == 0) {
+        } else if (getType() == 0) {
             try {
                 double d = Double.parseDouble(v);
                 boolean inside = d >= min && d <= max;
@@ -282,7 +281,7 @@ public class Facet implements Serializable {
     public boolean isValid(double d) {
         if (getType() == 1) {
             String v = String.valueOf(d);
-            if(Double.isNaN(d)) {
+            if (Double.isNaN(d)) {
                 v = "";
             }
             for (int i = 0; i < valueArray.length; i++) {
@@ -292,7 +291,7 @@ public class Facet implements Serializable {
             }
 
             return !includeRange;
-        } else if(getType() == 0){
+        } else if (getType() == 0) {
             try {
                 boolean inside = d >= min && d <= max;
                 return includeRange ? inside : !inside;
@@ -439,32 +438,32 @@ public class Facet implements Serializable {
     }
 
     public double getMin() {
-        if(getType() == 0) {
+        if (getType() == 0) {
             return min;
-        } else if(getType() == 1) {
+        } else if (getType() == 1) {
             return Float.NaN;
         } else {
             double min = Double.POSITIVE_INFINITY;
-            if(orInAndTerms != null) {
-                for(int i=0;i<orInAndTerms.length;i++) {
+            if (orInAndTerms != null) {
+                for (int i = 0; i < orInAndTerms.length; i++) {
                     double newMin = orInAndTerms[i].getMin();
-                    if(orInAndTerms[i].includeRange && newMin < min) {
+                    if (orInAndTerms[i].includeRange && newMin < min) {
                         min = newMin;
                     }
                 }
             }
-            if(andTerms != null) {
-                for(int i=0;i<andTerms.length;i++) {
+            if (andTerms != null) {
+                for (int i = 0; i < andTerms.length; i++) {
                     double newMin = andTerms[i].getMin();
-                    if(andTerms[i].includeRange && newMin < min) {
+                    if (andTerms[i].includeRange && newMin < min) {
                         min = newMin;
                     }
                 }
             }
-            if(orTerms != null) {
-                for(int i=0;i<orTerms.length;i++) {
+            if (orTerms != null) {
+                for (int i = 0; i < orTerms.length; i++) {
                     double newMin = orTerms[i].getMin();
-                    if(orTerms[i].includeRange && newMin < min) {
+                    if (orTerms[i].includeRange && newMin < min) {
                         min = newMin;
                     }
                 }
@@ -474,32 +473,32 @@ public class Facet implements Serializable {
     }
 
     public double getMax() {
-        if(getType() == 0) {
+        if (getType() == 0) {
             return max;
-        } else if(getType() == 1) {
+        } else if (getType() == 1) {
             return Float.NaN;
         } else {
             double max = Double.NEGATIVE_INFINITY;
-            if(orInAndTerms != null) {
-                for(int i=0;i<orInAndTerms.length;i++) {
+            if (orInAndTerms != null) {
+                for (int i = 0; i < orInAndTerms.length; i++) {
                     double newMax = orInAndTerms[i].getMax();
-                    if(orInAndTerms[i].includeRange && newMax > max) {
+                    if (orInAndTerms[i].includeRange && newMax > max) {
                         max = newMax;
                     }
                 }
             }
-            if(andTerms != null) {
-                for(int i=0;i<andTerms.length;i++) {
+            if (andTerms != null) {
+                for (int i = 0; i < andTerms.length; i++) {
                     double newMax = andTerms[i].getMax();
-                    if(andTerms[i].includeRange && newMax > max) {
+                    if (andTerms[i].includeRange && newMax > max) {
                         max = newMax;
                     }
                 }
             }
-            if(orTerms != null) {
-                for(int i=0;i<orTerms.length;i++) {
+            if (orTerms != null) {
+                for (int i = 0; i < orTerms.length; i++) {
                     double newMax = orTerms[i].getMax();
-                    if(orTerms[i].includeRange && newMax > max) {
+                    if (orTerms[i].includeRange && newMax > max) {
                         max = newMax;
                     }
                 }

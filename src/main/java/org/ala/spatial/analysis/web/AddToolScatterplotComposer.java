@@ -33,7 +33,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
         this.setIncludeAnalysisLayersForAnyQuery(true);
         //this.setIncludeAnalysisLayersForUploadQuery(true);
-        
+
         this.loadAreaLayers("World");
         this.loadSpeciesLayers();
         this.loadAreaLayersHighlight();
@@ -55,7 +55,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         System.out.println("Species: " + getSelectedSpecies());
 
         Query query = getSelectedSpecies();
-        if(query == null) {
+        if (query == null) {
             getMapComposer().showMessage("There was a problem selecting the species.  Try to select the species again", this);
             return false;
         }
@@ -79,7 +79,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         if (bgSearchSpeciesAuto.getSelectedItem() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() > 0) {
-            backgroundLsid = QueryUtil.get((String) bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), false);
+            backgroundLsid = QueryUtil.get((String) bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), false, getGeospatialKosher());
         }
 
         SelectedArea filterSa = getSelectedArea();
@@ -87,9 +87,9 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
         boolean envGrid = chkShowEnvIntersection.isChecked();
 
-        Query lsidQuery = QueryUtil.queryFromSelectedArea(lsid, filterSa, false);
+        Query lsidQuery = QueryUtil.queryFromSelectedArea(lsid, filterSa, false, getGeospatialKosher());
 
-        Query backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false);
+        Query backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false, getGeospatialKosherBk());
 
         ScatterplotData data = new ScatterplotData(lsidQuery, name, lyr1value,
                 lyr1name, lyr2value, lyr2name, pid, selection, enabled,
@@ -102,13 +102,13 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
         try {
             String extras = "";
-            if(highlightSa != null) {
-                extras += "highlight="+highlightSa.getWkt();
+            if (highlightSa != null) {
+                extras += "highlight=" + highlightSa.getWkt();
             }
             if (backgroundLsid != null && backgroundLsid instanceof BiocacheQuery) {
-                extras += "background="+((BiocacheQuery) backgroundLsid).getLsids();
+                extras += "background=" + ((BiocacheQuery) backgroundLsid).getLsids();
             } else if (backgroundLsid != null && backgroundLsid instanceof UploadQuery) {
-                extras += "background="+((UploadQuery) backgroundLsid).getQ();
+                extras += "background=" + ((UploadQuery) backgroundLsid).getQ();
             } else {
                 extras += "background=none";
             }
@@ -116,7 +116,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
             if (lsidQuery instanceof BiocacheQuery) {
                 BiocacheQuery bq = (BiocacheQuery) lsidQuery;
                 extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), bq.getLsids(), lyr1value+":"+lyr2value, pid, extras, "SUCCESSFUL");
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), bq.getLsids(), lyr1value + ":" + lyr2value, pid, extras, "SUCCESSFUL");
             } else if (lsidQuery instanceof UploadQuery) {
                 remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), ((UploadQuery) lsidQuery).getQ(), "", pid, extras, "SUCCESSFUL");
             } else {
@@ -136,7 +136,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
                 rgArea.setFocus(true);
                 break;
             case 2:
-                if(rSpeciesSearch.isChecked()) {
+                if (rSpeciesSearch.isChecked()) {
                     searchSpeciesAuto.setFocus(true);
                 } else {
                     rgSpecies.setFocus(true);
@@ -145,11 +145,11 @@ public class AddToolScatterplotComposer extends AddToolComposer {
             case 3:
                 rgAreaHighlight.setFocus(true);
                 break;
-           case 4:
+            case 4:
                 cbLayer2.setFocus(true);
                 break;
             case 5:
-                if(rSpeciesSearchBk.isChecked()) {
+                if (rSpeciesSearchBk.isChecked()) {
                     bgSearchSpeciesAuto.setFocus(true);
                 } else {
                     rgSpeciesBk.setFocus(true);

@@ -672,7 +672,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             params += ", ";
         }
         if (!Validate.empty(layer.getEnvParams())) {
-            params += "env: '" + layer.getEnvParams().replace("'","\\'") + "', ";
+            params += "env: '" + layer.getEnvParams().replace("'", "\\'") + "', ";
         }
 
         //extend to add ogc filter
@@ -729,6 +729,9 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+            if (q.flagRecordCount() > 0) {
+                script += "parent.addFlaggedRecords('" + layer.getNameJS() + "','" + StringEscapeUtils.escapeJavaScript(q.getFlaggedRecords()) + "'); ";
             }
         }
 
