@@ -242,7 +242,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
     }
 
     void openProgressBar() {
-        MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", null, null);
+        MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", getMapComposer(), null);
         window.parent = this;
         window.start(pid);
         try {
