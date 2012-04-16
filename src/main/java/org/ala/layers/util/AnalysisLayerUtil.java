@@ -67,13 +67,24 @@ public class AnalysisLayerUtil {
                 + "args[2] = resolution in decimal degrees, e.g. 0.01\n"
                 + "args[3] = path to gdal\n\n"
                 + "prepare all grid files for analysis.\n"
-                + "args[0] = 'all', prepare all layers for analysis\n");
+                + "args[0] = 'all', prepare all layers for analysis\n\n"
+                + "prepare all shape or grid files for analysis.\n"
+                + "args[0] = 'all', operate on all layers\n"
+                + "args[1] = 'shapes' or 'grids' to operate on only grids or shapes\n\n"
+                + "operate on one grid file by fieldId\n"
+                + "args[0] = fieldId\n");
 
-        args = new String[]{"auto"};
+        //args = new String[]{"auto"};
 
         if (args.length == 1 && args[0].equals("auto")) {                        
             processShapeFiles();
             processGridFiles();
+        } else if (args.length == 2 && args[0].equals("auto")) {
+            if (args[1].equals("shapes")) {
+                processShapeFiles();
+            } else {
+                processGridFiles();
+            }
         } else if (args.length == 4) {
             if (diva2Analysis(args[0], args[1], Double.parseDouble(args[2]), args[3], true)) {
                 System.out.println("successful");

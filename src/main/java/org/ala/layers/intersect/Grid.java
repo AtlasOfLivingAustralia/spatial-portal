@@ -442,7 +442,7 @@ public class Grid { //  implements Serializable
         }
 
 
-        writeHeader(newfilename, xmin, ymin, xmax, ymax, xres, yres, nrows, ncols, minvalue, maxvalue, "INT4BYTES", "-9999");
+        writeHeader(newfilename, xmin, ymin, xmin + xres * ncols, ymin + yres * nrows, xres, yres, nrows, ncols, minvalue, maxvalue, "INT4BYTES", "-9999");
 
     }
 
@@ -497,9 +497,7 @@ public class Grid { //  implements Serializable
             logger.error(ExceptionUtils.getFullStackTrace(e));
         }
 
-
-        writeHeader(newfilename, xmin, ymin, xmax, ymax, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
-
+        writeHeader(newfilename, xmin, ymin, xmin + xres * ncols, ymin + yres * nrows, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
     }
 
     public void writeGrid(String newfilename, float[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
@@ -542,7 +540,7 @@ public class Grid { //  implements Serializable
             logger.error(ExceptionUtils.getFullStackTrace(e));
         }
 
-        writeHeader(newfilename, xmin, ymin, xmax, ymax, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
+        writeHeader(newfilename, xmin, ymin, xmin + xres * ncols, ymin + yres * nrows, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
 
     }
 

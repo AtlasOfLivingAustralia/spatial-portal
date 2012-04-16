@@ -83,8 +83,8 @@ public class Bil2diva {
             fw.write("Columns=" + ncols + "\n");
             fw.write("Rows=" + nrows + "\n");
             fw.write("MinX=" + String.valueOf((float) (minx - divx / 2.0)) + "\n");
-            fw.write("MaxX=" + String.valueOf((float) (minx + ncols * divx + divx / 2.0)) + "\n");
-            fw.write("MinY=" + String.valueOf((float) (maxy - nrows * divy - divy / 2.0)) + "\n");
+            fw.write("MaxX=" + String.valueOf((float) (minx + ncols * divx - divx / 2.0)) + "\n");
+            fw.write("MinY=" + String.valueOf((float) (maxy - nrows * divy + divy / 2.0)) + "\n");
             fw.write("MaxY=" + String.valueOf((float) (maxy + divy / 2.0)) + "\n");
             fw.write("ResolutionX=" + map.get("xdim") + "\n");
             fw.write("ResolutionY=" + map.get("ydim") + "\n");
