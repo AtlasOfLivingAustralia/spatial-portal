@@ -725,7 +725,7 @@ public class CommonData {
         String facetName = layer;
         JSONObject f = layerToFacet.get(layer.toLowerCase());
         if (f != null) {
-            facetName = layer;
+            facetName = f.getString("id");
         }
         return facetName;
     }
