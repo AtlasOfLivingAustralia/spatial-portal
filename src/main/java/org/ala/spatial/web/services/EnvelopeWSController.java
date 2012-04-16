@@ -40,9 +40,11 @@ public class EnvelopeWSController {
             }
 
             LayerFilter[] filter = null;
-            if (area != null && area.startsWith("ENVELOPE")) {
+            if (area != null /* && area.startsWith("ENVELOPE")*/) {
                 filter = LayerFilter.parseLayerFilters(area);
             }
+
+            System.out.println("filter: " + filter);
 
             //test envelope
             if (!GridCutter.isValidLayerFilter(resolution, filter)) {

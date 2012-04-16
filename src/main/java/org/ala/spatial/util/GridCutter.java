@@ -12,6 +12,8 @@ import java.util.TreeMap;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.spatial.analysis.index.LayerFilter;
+import org.ala.spatial.analysis.maxent.MaxentService;
+import org.ala.spatial.web.services.MaxentWSController;
 import org.ala.spatial.web.services.SamplingWSController;
 
 /**
@@ -460,7 +462,7 @@ public class GridCutter {
             for (int j = 0; j < h; j++) {
                 points[i + j * w][0] = (double) (extents[0][0] + (i + 0.5) * res);
                 points[i + j * w][1] = (double) (extents[0][1] + (j + 0.5) * res);
-                mask[j][i] = 1;
+                //mask[j][i] = 0;
             }
         }
 
@@ -473,7 +475,17 @@ public class GridCutter {
 
             for (int i = 0; i < d.length; i++) {
                 if (lf.isValid(d[i])) {
-                    mask[i / w][i % w] = 0;
+                    mask[i / w][i % w] ++;
+                }
+            }
+        }
+        
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                if(mask[j][i] == envelopes.length) {
+                    mask[j][i] = 1;
+                } else {
+                    mask[j][i] = 0;
                 }
             }
         }
@@ -505,8 +517,8 @@ public class GridCutter {
         //reduce the size of the mask
         int nw = maxx - minx + 1;
         int nh = maxy - miny + 1;
-        byte[][] smallerMask = new byte[nw][nh];
-        for (int i = minx; i <= maxx; i++) {
+        byte[][] smallerMask = new byte[nh][nw];
+        for (int i = minx; i < maxx; i++) {
             for (int j = miny; j < maxy; j++) {
                 smallerMask[j - miny][i - minx] = mask[j][i];
             }
@@ -538,12 +550,14 @@ public class GridCutter {
         double res = Double.parseDouble(resolution);
         h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
         w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
-        mask = getEnvelopeMaskAndUpdateExtents(resolution, res, extents, w, h, envelopes);
+        mask = getEnvelopeMaskAndUpdateExtents(resolution, res, extents, h, w, envelopes);
+        h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
+        w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
 
         float[] values = new float[w * h];
         int pos = 0;
         double areaSqKm = 0;
-        for (int i = 0; i < h; i++) {
+        for (int i = h-1; i >= 0; i--) {
             for (int j = 0; j < w; j++) {
                 values[pos] = mask[i][j];
                 pos++;

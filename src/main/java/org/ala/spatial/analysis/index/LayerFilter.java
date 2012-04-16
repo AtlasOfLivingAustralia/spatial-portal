@@ -76,7 +76,9 @@ public class LayerFilter extends Object implements Serializable {
 
         int i = 0;
         for (String t : terms) {
+            System.out.println("parsing filter term: " + t);
             lf[i] = parseLayerFilter(t);
+            i++;
         }
 
         return lf;
