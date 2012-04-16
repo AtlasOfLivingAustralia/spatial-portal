@@ -107,7 +107,8 @@
                     <checkbox id="dunknown" label="Select Unknown" checked="false" />
                  </div>
             </vbox>
-            </div>            
+            </div>
+            </vbox>
         </hbox>
         <div sclass="wizButtonContainer">
             <hbox>

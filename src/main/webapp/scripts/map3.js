@@ -382,10 +382,10 @@ function iterateSpeciesInfoQuery(curr) {
                 heading = "<h2>Occurrence information (1 occurrence)</h2>";
             }
 
-            var infohtml = "<div id='sppopup'> " +
+            var infohtml = "<div id='sppopup2'> " +
             heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
             " Longitude: "+ulyr_occ_lng + " , Latitude: " + ulyr_occ_lat + " (<a href='javascript:goToLocation("+ulyr_occ_lng+", "+ulyr_occ_lat+", 15);relocatePopup("+ulyr_occ_lng+", "+ulyr_occ_lat+");'>zoom to</a>) <br/>" +
-            " <input type='checkbox' checked='parent.isFlaggedRecord(\"" + ulyr + "\",\"" + ulyr_occ_id + "\")' onClick='parent.flagRecord(\"" + ulyr + "\",\"" + ulyr_occ_id + "\",this.checked)' />is in user assigned adhoc group<br/>"
+            " <input type='checkbox' checked='parent.isFlaggedRecord(\"" + ulyr + "\",\"" + ulyr_occ_id + "\")' onClick='parent.flagRecord(\"" + ulyr + "\",\"" + ulyr_occ_id + "\",this.checked)' />is in user assigned adhoc group<br/>" + 
             "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
             setTimeout(function(){
@@ -498,7 +498,7 @@ function pointSpeciesSearch(e) {
                             size = layer.params.ENV.substring(p2 + 5,p3)
                         }
                     }
-console.log("map layer: " + layer);
+                    //console.log("map layer: " + layer);
                     var data = null;
                     if(query != null) data = getOccurrence(layer, query, lonlat.lat, lonlat.lon, 0, pos, size);
                     if(userquery != null) data = getOccurrenceUploaded(layer, userquery, lonlat.lat, lonlat.lon, 0, pos, size);
@@ -760,9 +760,11 @@ function setupPopup(count, centerlonlat) {
     popup = new OpenLayers.Popup.FramedCloud("featurePopup",
         centerlonlat,
         new OpenLayers.Size(100,150),
-        "<div id='sppopup' style='width: 350px; height: 250px;'>" + waitmsg + "</div>"
+        "<div id='sppopup'>" + waitmsg + "</div>" //  style='width: 350px; height: 250px;'
         ,
         null, true, onPopupClose);
+        popup.autoSize = true;
+        popup.minSize = new OpenLayers.Size(350,250);
 }
 
 function onPopupClose(evt) {
@@ -828,7 +830,7 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
     var checkstate = "";
     if(checked) checkstate="checked='" + checked + "'";
 
-    var infohtml = "<div id='sppopup'> " +
+    var infohtml = "<div id='sppopup2'> " +
     heading +
     " Scientific name: " + species + " <br />" +
     " Kingdom: " + kingdom + " <br />" +
@@ -838,7 +840,7 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
     " Spatial uncertainty in metres: " + uncertaintyText + "<br />" +
     " Occurrence date: " + occurrencedate + " <br />" +
     "Species Occurence <a href='" + biocache + "/occurrences/" + occinfo.uuid + "' target='_blank'>View details</a> <br /> <br />" +
-    "<input type='checkbox' " + checkstate + " onClick='parent.flagRecord(\"" + query_layer[pos].name + "\",\"" + occinfo.uuid + "\",this.checked)' />is in user assigned adhoc group<br/>"
+    "<input type='checkbox' " + checkstate + " onClick='parent.flagRecord(\"" + query_layer[pos].name + "\",\"" + occinfo.uuid + "\",this.checked)' />is in user assigned adhoc group<br/>" +
     "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
     if (document.getElementById("sppopup") != null) {
@@ -950,7 +952,7 @@ function selected (evt) {
             popup = new OpenLayers.Popup.FramedCloud("featurePopup",
                 feature.geometry.getBounds().getCenterLonLat(),
                 new OpenLayers.Size(100,150),
-                "<div id='sppopup' style='width: 350px; height: 250px;'>Retrieving data... </div>"
+                "<div id='sppopup'>Retrieving data... </div>" //  style='width: 350px; height: 250px;'
                 ,
                 null, true, onPopupClose);
 
@@ -1347,7 +1349,7 @@ function envLayerInspection(e) {
 
             pt = pt.transform(map.projection, map.displayProjection);
 
-            infoHtml = "<div id='sppopup'>"
+            infoHtml = "<div id='sppopup2'>"
             + "<table><tr><td colspan='5'><b>Point "
             + pt.lon.toPrecision(8)
             + ", "
@@ -1764,7 +1766,7 @@ function checkIfLoadPanoramio() {
 function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
     panoramioLoading++;
     //document.getElementById("addPanoramio").style.backgroundImage = "url('img/panoramio-marker.png')";
-    var popup, selectControl, selectedFeature;
+    var popup21, selectControl, selectedFeature;
     var panoramio_style;
     //Obtain Bbox coords
     var proj = new OpenLayers.Projection("EPSG:4326");
@@ -1874,17 +1876,26 @@ function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
         //var html = "<h2>"+feature.attributes.photo_title +"</h2> <p>" +" <a href='photo/"+feature.attributes.photo_id+"'><Img src ='http://mw2.google.com/mw-panoramio/photos/small/"+feature.attributes.photo_id + ".jpg ' border = '3' alt ='' /></a>";
         popup = new OpenLayers.Popup.FramedCloud("featurePopup",
             feature.geometry.getBounds().getCenterLonLat(),
-            new OpenLayers.Size(20,20),
-            "<div id='sppopup' style='width: 350px; height: 50px;'>" + "Loading..." + "</div>"
+            new OpenLayers.Size(400,400),
+            "<div id='sppopup'>" + "Loading..." + "</div>" //  style='width: 350px; height: 50px;'
             ,
-            null, true, onPopupClose);
+            null, true, closePopup);
+
+        popup.autoSize = true;
+        if (feature.attributes.pwidth > feature.attributes.pheight) {
+            popup.minSize = new OpenLayers.Size(300,250);
+        } else if (feature.attributes.pwidth < feature.attributes.pheight) {
+            popup.minSize = new OpenLayers.Size(300,375);
+        } else {
+            popup.minSize = new OpenLayers.Size(315,375);
+        }
 
         var feat = popup;
         feat.popup = popup;
         popup.feature = feat;
         map.addPopup(popup, true);
 
-        infoHtml = "<div id='sppopup'>"
+        infoHtml = "<div id='sppopup2'>"
         + html
         + "</div>";
 
@@ -1892,12 +1903,29 @@ function loadPanoramio(pictureIndexFrom,pictureIndexTo) {
             document.getElementById("sppopup").innerHTML = infoHtml;
         }
 
+        //popup2.setSize(500, 500);
+
+//        setTimeout(function(){
+//            console.log("setting and updating pop up size");
+//            //popup.setSize(500, 500);
+//            popup.updateSize();
+//        }, 5000);
+
         shownPicturePopup = true;
     }
 
     function closePopup(evt) {
         shownPicturePopup = false;
-        onPopupClose(evt);
+        //onPopupClose(evt);
+
+        try {
+            map.removePopup(this.feature.popup);
+            this.feature.popup.destroy();
+            this.feature.popup = null;
+
+            selectControl.unselect(this.feature);
+        } catch(err) {
+        }
     }
 
     function onFeatureUnselect(feature) {

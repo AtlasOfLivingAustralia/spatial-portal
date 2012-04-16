@@ -47,6 +47,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.xml.sax.helpers.NamespaceSupport;
 import org.zkoss.util.media.Media;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.MouseEvent;
@@ -78,53 +79,53 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
     public void afterCompose() {
         super.afterCompose();
 
-//        Map args = Executions.getCurrent().getArg();
-//
-//        layername = (String) args.get("layername");
-//
-//        media = (Media) args.get("media");
-//        System.out.println("Got media in wizard");
-//        System.out.println("m.getName(): " + media.getName());
-//        System.out.println("getContentType: " + media.getContentType());
-//        System.out.println("getFormat: " + media.getFormat());
-//
-//
-//        System.out.println("Layer name: " + layername);
-//
-//        processMedia();
+        Map args = Executions.getCurrent().getArg();
+
+        layername = (String) args.get("layername");
+
+        media = (Media) args.get("media");
+        System.out.println("Got media in wizard");
+        System.out.println("m.getName(): " + media.getName());
+        System.out.println("getContentType: " + media.getContentType());
+        System.out.println("getFormat: " + media.getFormat());
+
+
+        System.out.println("Layer name: " + layername);
+
+        processMedia();
 
         img.addEventListener("onClick", new EventListener() {
 
             public void onEvent(Event event) throws Exception {
-                imageClicked(event);
+                //imageClicked(event);
             }
         });
 
 
-
+//
 //        System.out.println("\n\n\nStart. ShapefileRenderer.generateShapeImage\n\n\n");
 //        System.out.println(ShapefileRenderer.generateShapeImage("/Users/ajay/Downloads/MEOW_zip/MEOW2/meow_ecos.shp", "/Users/ajay/Downloads/MEOW_zip/", "ECOREGION", "Baltic Sea"));
 //        System.out.println("\n\n\nEnd  . ShapefileRenderer.generateShapeImage\n\n\n");
 //
-//
-//
-        try {
-            File imgFile = new File("/data/ala/runtime/output/layers/meow_ecos_none.jpg");
-            if (imgFile.exists()) {
-                BufferedImage bi;
-                bi = ImageIO.read(imgFile);
-                img.setContent(bi);
 
 
-                loadShape("/Users/ajay/Downloads/MEOW_zip/MEOW2/meow_ecos.shp");
-            }
-        } catch (IOException ex) {
-            System.out.println("IO Exception loading the test meow image");
-            ex.printStackTrace(System.out);
-        } catch (Exception ex) {
-            System.out.println("Exception loading the test meow image");
-            ex.printStackTrace(System.out);
-        }
+//        try {
+//            File imgFile = new File("/data/ala/runtime/output/layers/meow_ecos_none.jpg");
+//            if (imgFile.exists()) {
+//                BufferedImage bi;
+//                bi = ImageIO.read(imgFile);
+//                img.setContent(bi);
+//
+//
+//                loadShape("/Users/ajay/Downloads/MEOW_zip/MEOW2/meow_ecos.shp");
+//            }
+//        } catch (IOException ex) {
+//            System.out.println("IO Exception loading the test meow image");
+//            ex.printStackTrace(System.out);
+//        } catch (Exception ex) {
+//            System.out.println("Exception loading the test meow image");
+//            ex.printStackTrace(System.out);
+//        }
 
     }
 
@@ -167,7 +168,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 filters = "none";
             }
 
-            //shapeimageexe = "cd /usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/classes && java -classpath .:../lib/* org.ala.spatial.util.ShapefileRenderer ";
+            ////shapeimageexe = "cd /usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/classes && java -classpath .:../lib/* org.ala.spatial.util.ShapefileRenderer ";
             shapeimageexe = "java -classpath /usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/classes:/usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/lib/* org.ala.spatial.util.ShapefileRenderer ";
 
             //String command = shapeimageexe + " \"" + shapepath + "\" \"" + shapeout + "\" \"" + column + "\" \"" + filters + "\"";
@@ -260,7 +261,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             // if so, then select it and map it automatically
             System.out.println("features.size(): " + features.size());
             if (features.size() > 1) {
-//                executeShapeImageRenderer(file, "none", "none");
+                executeShapeImageRenderer(file, "none", "none");
             } else {
                 System.out.println("only a single feature, bypassing wizard...");
                 ArrayList<String> tmpList = new ArrayList<String>();
@@ -304,14 +305,14 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 Listitem li = it.next();
                 IDs.add((FeatureId) li.getValue());
             }
-            //loadOnMap(IDs);
-            Filter filter = ff.id(IDs);
-            SimpleFeatureCollection sff = source.getFeatures(filter);
-            SimpleFeatureIterator fif = sff.features();
-            while (fif.hasNext()) {
-                SimpleFeature f = fif.next();
-                System.out.println("Selected Feature: " + f.getID() + " -> " + f.getAttribute("ECOREGION"));
-            }
+//            Filter filter = ff.id(IDs);
+//            SimpleFeatureCollection sff = source.getFeatures(filter);
+//            SimpleFeatureIterator fif = sff.features();
+//            while (fif.hasNext()) {
+//                SimpleFeature f = fif.next();
+//                System.out.println("Selected Feature: " + f.getID() + " -> " + f.getAttribute("ECOREGION"));
+//            }
+            loadOnMap(IDs);
             this.detach();
         } catch (Exception ex) {
             System.out.println("Error iterating thru' features");

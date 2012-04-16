@@ -521,17 +521,33 @@ console.log(currentbaselayertxt);
 
         function downloadSubmitButtonClick() {
         //e.preventDefault();
+        if (validateForm()) {
         var downloadUrl = $("input#downloadUrl").val().replace(/\\ /g, " ");
         var reason = $("#reasonTypeId").val();
         if(typeof reason == "undefined")
             reason = "";
-        downloadUrl = downloadUrl + "&type=&email="+$("#email").val()+"&reason="+encodeURIComponent(reason)+"&file="+$("#filename").val();
+        downloadUrl = downloadUrl + "&type=&email="+$("#email").val()+ "&reasonTypeId="+$("#reasonTypeId").val()+"&reason="+encodeURIComponent(reason)+"&file="+$("#filename").val();
         //console.log("downloadUrl = " + downloadUrl);
         //alert("downloadUrl = " + downloadUrl);
         window.location.href = downloadUrl;
         zk.Widget.$(jq('$externalContentWindow')).detach(); 
         return false; 
+        }
     }
+    function validateForm() {
+            var isValid = false;
+            var reasonId = $("#reasonTypeId option:selected").val();
+
+            if (reasonId) {
+                isValid = true;
+            } else {
+                $("#reasonTypeId").focus();
+                $("label[for='reasonTypeId']").css("color","red");
+                alert("Please select a \"download reason\" from the drop-down list");
+            }
+
+            return isValid;
+        }
 
 function readCookie(name) {
     var nameEQ = name+"=";

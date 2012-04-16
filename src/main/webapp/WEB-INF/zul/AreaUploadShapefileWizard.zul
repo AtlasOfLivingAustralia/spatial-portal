@@ -18,13 +18,15 @@
         <vbox>
             <div><imagemap id="img" /></div>
             <div>
-                <button sclass="goButton" label="Refresh" id="btnRefresh" />
-                <button sclass="goButton" label="Cancel" id="btnCancel" />
-                <button sclass="goButton" label="Next" id="btnNext" />
-            </div>
-            <div>
-                <listbox id="lAttributes" width="100%" height="300px" multiple="true" checkmark="true">
+                <vbox>
+                <hbox>
+                    <button sclass="goButton" label="Refresh image" id="btnRefresh" />
+                    <button sclass="goButton" label="Cancel" id="btnCancel" />
+                    <button sclass="goButton" label="Next" id="btnNext" />
+                </hbox>
+                <listbox id="lAttributes" width="97%" height="300px" multiple="true" checkmark="true">
                 </listbox>
+                </vbox>
             </div>
         </vbox>
 
