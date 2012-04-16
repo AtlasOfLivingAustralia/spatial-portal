@@ -16,8 +16,10 @@ import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.SelectedArea;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
+import org.zkoss.zk.ui.event.CheckEvent;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.*;
 
@@ -1537,5 +1539,26 @@ public class AddFacetController extends UtilityComposer {
 
     public boolean[] getGeospatialKosher() {
         return new boolean[]{chkGeoKosherTrue.isChecked(), chkGeoKosherFalse.isChecked(), chkGeoKosherNull.isChecked()};
+    }
+
+    public void onCheck$chkGeoKosherTrue(Event event) {
+        event = ((ForwardEvent)event).getOrigin();
+        if (!((CheckEvent)event).isChecked() && !chkGeoKosherFalse.isChecked() && !chkGeoKosherNull.isChecked()) {
+            chkGeoKosherFalse.setChecked(true);
+        }
+    }
+
+    public void onCheck$chkGeoKosherFalse(Event event) {
+        event = ((ForwardEvent)event).getOrigin();
+        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherNull.isChecked()) {
+            chkGeoKosherTrue.setChecked(true);
+        }
+    }
+
+    public void onCheck$chkGeoKosherNull(Event event) {
+        event = ((ForwardEvent)event).getOrigin();
+        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherFalse.isChecked()) {
+            chkGeoKosherTrue.setChecked(true);
+        }
     }
 }

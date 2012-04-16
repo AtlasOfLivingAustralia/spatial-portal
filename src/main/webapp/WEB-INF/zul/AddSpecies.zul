@@ -15,6 +15,12 @@
         <caption label="Add species" sclass="caption" />
         <separator/>
         <div style="margin-left:20px" >
+            <vbox>
+                <checkbox id="chkGeoKosherTrue" checked="true" label="Include spatially-valid records" />
+                <checkbox id="chkGeoKosherFalse" checked="false" label="Include spatially-suspect records" />
+                <checkbox visible="false" id="chkGeoKosherNull" checked="false" label="Include records without coordinates" />
+            </vbox>
+            <separator/>
             <radiogroup id="rgAddSpecies" onOK="addspecieswindow.onClick$btnOk(null)" >
                 <vbox height="143px">
                     <radio id ="rAllSpecies" label="All species" />
@@ -65,11 +71,6 @@
                     <radio id ="rUploadLSIDs" label="Import assemblage" />
                     
                     <radio id ="rUploadCoordinates" label="Import points" />
-
-                    <separator height="20px" />
-                    <checkbox id="chkGeoKosherTrue" checked="true" label="include geospatial_kosher:true (has coordinates and not flagged as suspect)" />
-                    <checkbox id="chkGeoKosherFalse" checked="true" label="include occurrences marked as suspect" />
-                    <checkbox visible="false" id="chkGeoKosherNull" checked="false" label="include occurrences without coordinates" />
                 </vbox>
             </radiogroup>
             <separator height="20px"/>

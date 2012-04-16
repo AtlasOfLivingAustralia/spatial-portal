@@ -20,6 +20,12 @@
             <div id="atstep1" visible="true" zclass="first optional last download" sclass="atstep" style="padding:5px;">
                 <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                 <label id="atstep1_label" value="" />
+                <vbox>
+                    <separator height="20px" />
+                    <checkbox id="chkGeoKosherTrue" checked="true" label="Include spatially-valid records" />
+                    <checkbox id="chkGeoKosherFalse" checked="false" label="Include spatially-suspect records" />
+                    <checkbox id="chkGeoKosherNull" checked="false" label="Include records without coordinates" />
+                </vbox>
                 <separator />
                 <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
                     <radio id="rAreaCurrent" label="Current extent" value="current" />
@@ -27,12 +33,6 @@
                     <radio id="rAreaWorld" label="World" value="world" />
                     <radio id="rAreaCustom" label="Define new area" value="custom" />
                 </radiogroup>
-                <vbox>
-                    <separator height="20px" />
-                    <checkbox id="chkGeoKosherTrue" checked="true" label="include occurrences not marked suspect" />
-                    <checkbox id="chkGeoKosherFalse" checked="true" label="include occurrences marked as suspect" />
-                    <checkbox id="chkGeoKosherNull" checked="true" label="include occurrences without coordinates" />
-                </vbox>
             </div>            
         </vbox>
         <div sclass="wizButtonContainer">

@@ -41,6 +41,12 @@
                     <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                     <label id="atstep1_label" value="" />
                     <separator />
+                    <vbox>
+                        <checkbox id="chkGeoKosherTrue" checked="true" label="Include spatially-valid records" />
+                        <checkbox id="chkGeoKosherFalse" checked="false" label="Include spatially-suspect recordst" />
+                        <checkbox visible="false" id="chkGeoKosherNull" checked="false" label="Include records without coordinates" />
+                    </vbox>
+                    <separator />
                     <radiogroup id="rgArea" orient="vertical" onOK="addfacetwindow.onClick$btnOk(null)">
                         <radio id="rAreaCurrent" label="Current extent" value="current"/>
                         <radio id="rAreaAustralia" label="Australia" value="australia"/>
@@ -101,12 +107,7 @@
                     <checkbox id="dunknown" label="Select Unknown" checked="false" />
                  </div>
             </vbox>
-            </div>
-            <separator height="20px" />
-            <checkbox id="chkGeoKosherTrue" checked="true" label="include occurrences not marked suspect" />
-            <checkbox id="chkGeoKosherFalse" checked="true" label="include occurrences marked as suspect" />
-            <checkbox visible="false" id="chkGeoKosherNull" checked="false" label="include occurrences without coordinates" />
-            </vbox>
+            </div>            
         </hbox>
         <div sclass="wizButtonContainer">
             <hbox>

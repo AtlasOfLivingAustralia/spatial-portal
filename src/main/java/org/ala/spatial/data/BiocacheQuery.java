@@ -236,7 +236,7 @@ public class BiocacheQuery implements Query, Serializable {
         boolean[] geospatial_kosher = new boolean[]{true, true, true};
         if (facets != null) {
             for (int i = 0; i < facets.size(); i++) {
-                String f = facets.get(i).toString();
+                String f = facets.get(i).toString().replace("\"","").replace("(","").replace(")","");
                 if (f.contains("geospatial_kosher:")) {
                     if (f.equals("geospatial_kosher:true")) {
                         geospatial_kosher = new boolean[]{true, false, false};

@@ -68,6 +68,12 @@
             <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep"  width="550px" height="600px">
                 <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
                 <label id="atstep2_label" value="" />
+                <vbox>
+                    <separator height="20px" />
+                    <checkbox id="chkGeoKosherTrue" checked="true" label="Include spatially-valid records" />
+                    <checkbox id="chkGeoKosherFalse" checked="false" label="Include spatially-suspect records" />
+                    <checkbox id="chkGeoKosherNull" checked="false" label="Include records without coordinates" />
+                </vbox>
                 <separator />
                 <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
                     <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false" />
@@ -124,13 +130,7 @@
                     </vbox>
                     <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Import assemblage" />
                     <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import points" />
-                </radiogroup>
-                <vbox>
-                    <separator height="20px" />
-                    <checkbox id="chkGeoKosherTrue" checked="true" label="include occurrences not marked suspect" />
-                    <checkbox id="chkGeoKosherFalse" checked="true" label="include occurrences marked as suspect" />
-                    <checkbox id="chkGeoKosherNull" checked="true" label="include occurrences without coordinates" />
-                </vbox>
+                </radiogroup>                
             </div>
 
             <div id="atstep3" visible="false" zclass="step3 optional" sclass="atstep">
@@ -176,6 +176,11 @@
             <div id="atstep5" visible="false" zclass="step5 optional" sclass="atstep" width="550px" height="600px">
                 <label id="atstep5_desc" value="Select background species" sclass="wSubLabel"/>
                 <label id="atstep5_label" value="" />
+                <vbox>
+                    <checkbox id="chkGeoKosherTrueBk" checked="true" label="Include spatially-valid records" />
+                    <checkbox id="chkGeoKosherFalseBk" checked="false" label="Include spatially-suspect records" />
+                    <checkbox visible="false" id="chkGeoKosherNullBk" checked="false" label="Include records without coordinates" />
+                </vbox>
                 <separator />
                 <radiogroup id="rgSpeciesBk" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
                     <radio id="rSpeciesNoneBk" label="No background species" value="none" visible="true" checked="true"/>
@@ -232,11 +237,7 @@
                     </vbox>
                     <radio id="rSpeciesUploadLSIDBk" value="uploadLsid" label="Import assemblage" />
                     <radio id="rSpeciesUploadSpeciesBk" value="uploadSpecies" label="Import points" />
-                </radiogroup>
-                <separator height="20px" />
-                <checkbox id="chkGeoKosherTrueBk" checked="true" label="include occurrences not marked suspect" />
-                <checkbox id="chkGeoKosherFalseBk" checked="true" label="include occurrences marked as suspect" />
-                <checkbox visible="false" id="chkGeoKosherNullBk" checked="false" label="include occurrences without coordinates" />
+                </radiogroup>                
             </div>
 
             <div id="atstep6" visible="false" zclass="last optional" sclass="atstep">
