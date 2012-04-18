@@ -429,7 +429,11 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         fw.append("<tr><td>Date/time " + sdf.format(new Date()) + "</td></tr>");
         fw.append("<tr><td>Model reference number: " + getName() + "</td></tr>");
         fw.append("<tr><td>Species selection " + qname + "</td></tr>");
-        fw.append("<tr><td>Grid resolution " + gridsize + " degrees</td></tr>");
+        if (!odensity && !sdensity) {
+            fw.append("<tr><td>Grid: " +  1 + "x" + 1 + " moving average, resolution " + gridsize + " degrees</td></tr>");
+        } else {
+            fw.append("<tr><td>Grid: " +  movingAverageSize + "x" + movingAverageSize + " moving average, resolution " + gridsize + " degrees</td></tr>");
+        }
         fw.append("<tr><td>" + records.getSpeciesSize() + " species</td></tr>");
         fw.append("<tr><td>" + records.getRecordsSize() + " occurrences</td></tr>");
         if(counts != null) {
@@ -441,11 +445,11 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         }
         fw.append("<tr><td>bounding box of the selected area " + bbox[0] + "," + bbox[1] + "," + bbox[2] + "," + bbox[3] + "</td></tr>");        
         if (odensity) {
-            fw.append("<tr><td><br>Occurrence Density (" + movingAverageSize + "x" + movingAverageSize + " moving average)</td></tr>");
+            fw.append("<tr><td><br>Occurrence Density</td></tr>");
             fw.append("<tr><td><img src='occurrence_density.png' width='300px' height='300px'><img src='occurrence_density_legend.png'></td></tr>");
         }
         if (sdensity) {
-            fw.append("<tr><td><br>Species Richness (" + movingAverageSize + "x" + movingAverageSize + " moving average)</td></tr>");
+            fw.append("<tr><td><br>Species Richness</td></tr>");
             fw.append("<tr><td><img src='species_richness.png' width='300px' height='300px'><img src='species_richness_legend.png'></td></tr>");
         }
         fw.append("</table>");
