@@ -46,6 +46,7 @@ import org.codehaus.jackson.type.TypeReference;
 public class IntersectConfig {
 
     public static final String GEOSERVER_URL_PLACEHOLDER = "<COMMON_GEOSERVER_URL>";
+    public static final String GEONETWORK_URL_PLACEHOLDER = "<COMMON_GEONETWORK_URL>";
 
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(IntersectConfig.class);
@@ -61,6 +62,7 @@ public class IntersectConfig {
     static final String GRID_CACHE_READER_COUNT = "GRID_CACHE_READER_COUNT";
     static final String LOCAL_SAMPLING = "LOCAL_SAMPLING";
     static final String GEOSERVER_URL = "GEOSERVER_URL";
+    static final String GEONETWORK_URL = "GEONETWORK_URL";
     static final String GDAL_PATH = "GDAL_PATH";
     static final String ANALYSIS_RESOLUTIONS = "ANALYSIS_RESOLUTIONS";
     static final String OCCURRENCE_SPECIES_RECORDS_FILENAME = "OCCURRENCE_SPECIES_RECORDS_FILENAME";
@@ -84,6 +86,7 @@ public class IntersectConfig {
     HashMap<String, HashMap<Integer, GridClass>> classGrids;
     static boolean localSampling;
     static String geoserverUrl;
+    static String geonetworkUrl;
     static String gdalPath;
     static List<Double> analysisResolutions;
     static String occurrenceSpeciesRecordsFilename;
@@ -114,6 +117,7 @@ public class IntersectConfig {
         gridCacheReaderCount = (int) getPositiveLongProperty(GRID_CACHE_READER_COUNT, properties, 10);
         localSampling = getProperty(LOCAL_SAMPLING, properties, "true").toLowerCase().equals("true");
         geoserverUrl = getProperty(GEOSERVER_URL, properties, null);
+        geonetworkUrl = getProperty(GEONETWORK_URL, properties, null);
         gdalPath = getProperty(GDAL_PATH, properties, null);
         analysisResolutions = getDoublesFrom(getProperty(ANALYSIS_RESOLUTIONS, properties, "0.5"));
         occurrenceSpeciesRecordsFilename = getProperty(OCCURRENCE_SPECIES_RECORDS_FILENAME, properties, null);
@@ -487,6 +491,10 @@ public class IntersectConfig {
 
     static public String getGeoserverUrl() {
         return geoserverUrl;
+    }
+
+    static public String getGeonetworkUrl() {
+        return geonetworkUrl;
     }
 
     static public String getAnalysisLayerFilesPath() {

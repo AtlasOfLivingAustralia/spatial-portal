@@ -236,7 +236,7 @@ public class AnalysisLayerUtil {
         
         for (Field f : fields) {
             try {
-                if (f.getType().equals("c")) {
+                if (f.isAnalysis() && f.getType().equals("c")) {
                     System.out.println("processing: " + f.getId());
                     
                     Layer l = layerDao.getLayerById(Integer.parseInt(f.getSpid()));
@@ -282,7 +282,7 @@ public class AnalysisLayerUtil {
 
         for (Field f : fields) {
             try {
-                if (f.getType().equals("e") || f.getType().equals("a") || f.getType().equals("b")) {
+                if (f.isAnalysis() && (f.getType().equals("e") || f.getType().equals("a") || f.getType().equals("b"))) {
                     Layer l = layerDao.getLayerById(Integer.parseInt(f.getSpid()));
 
                     //determine best resolution

@@ -60,6 +60,7 @@ public class LayerDAOImpl implements LayerDAO {
         String sql = "select * from layers where enabled=true";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class));
         updateDisplayPaths(l);
+        updateMetadataPaths(l);
         return l;
     }
 
@@ -70,6 +71,7 @@ public class LayerDAOImpl implements LayerDAO {
         String sql = "select * from layers where enabled=true and id = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), id);
         updateDisplayPaths(l);
+        updateMetadataPaths(l);
         if (l.size() > 0) {
             return l.get(0);
         } else {
@@ -85,6 +87,7 @@ public class LayerDAOImpl implements LayerDAO {
         String sql = "select * from layers where enabled=true and name = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
         updateDisplayPaths(l);
+        updateMetadataPaths(l);
         System.out.println("Searching for " + name + ": Found " + l.size() + " records. ");
         if (l.size() > 0) {
             return l.get(0);
@@ -101,6 +104,7 @@ public class LayerDAOImpl implements LayerDAO {
         String sql = "select * from layers where enabled=true and displayname = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
         updateDisplayPaths(l);
+        updateMetadataPaths(l);
         if (l.size() > 0) {
             return l.get(0);
         } else {
@@ -116,6 +120,7 @@ public class LayerDAOImpl implements LayerDAO {
         String sql = "select * from layers where enabled=true and type = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), type);
         updateDisplayPaths(l);
+        updateMetadataPaths(l);
         return l;
     }
 
@@ -127,6 +132,7 @@ public class LayerDAOImpl implements LayerDAO {
         String sql = "select * from layers where enabled=true and type = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), type);
         updateDisplayPaths(l);
+        updateMetadataPaths(l);
         return l;
     }
 
@@ -153,6 +159,7 @@ public class LayerDAOImpl implements LayerDAO {
         list.addAll(setItems);
 
         updateDisplayPaths(list);
+        updateMetadataPaths(list);
 
         return list;//no duplicates now
 //        logger.info("Getting a list of all enabled layers");
@@ -169,6 +176,7 @@ public class LayerDAOImpl implements LayerDAO {
         String sql = "select * from layers where id = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), id);
         updateDisplayPaths(l);
+        updateMetadataPaths(l);
         if (l.size() > 0) {
             return l.get(0);
         } else {
@@ -182,6 +190,7 @@ public class LayerDAOImpl implements LayerDAO {
         String sql = "select * from layers where name = ?";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
         updateDisplayPaths(l);
+        updateMetadataPaths(l);
         if (l.size() > 0) {
             return l.get(0);
         } else {
@@ -196,6 +205,7 @@ public class LayerDAOImpl implements LayerDAO {
         String sql = "select * from layers";
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class));
         updateDisplayPaths(l);
+        updateMetadataPaths(l);
         return l;
     }
 
@@ -227,7 +237,27 @@ public class LayerDAOImpl implements LayerDAO {
 
         for (Layer layer : layers) {
             if (layer.getDisplaypath() != null) {
-                layer.setDisplaypath(layer.getDisplaypath().replace(IntersectConfig.GEOSERVER_URL_PLACEHOLDER, IntersectConfig.getGeoserverUrl()));
+                if(!layer.getDisplaypath().startsWith("/")) {
+                    layer.setDisplaypath(layer.getDisplaypath().replace(IntersectConfig.GEOSERVER_URL_PLACEHOLDER, IntersectConfig.getGeoserverUrl()));
+                } else {
+                    layer.setDisplaypath(IntersectConfig.getGeoserverUrl() + IntersectConfig.getGeoserverUrl());
+                }
+            }
+        }
+    }
+
+    private void updateMetadataPaths(List<Layer> layers) {
+        if (layers == null) {
+            return;
+        }
+
+        for (Layer layer : layers) {
+            if (layer.getMetadatapath() != null) {
+                if(!layer.getMetadatapath().startsWith("/")) {
+                    layer.setMetadatapath(layer.getMetadatapath().replace(IntersectConfig.GEONETWORK_URL_PLACEHOLDER, IntersectConfig.getGeonetworkUrl()));
+                } else {
+                    layer.setMetadatapath(IntersectConfig.getGeonetworkUrl() + layer.getMetadatapath());
+                }
             }
         }
     }
