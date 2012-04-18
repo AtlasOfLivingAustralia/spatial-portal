@@ -229,7 +229,7 @@ padding: 1px 0px 0px 5px;
                     <label id="legendLabel" value="Click symbol to edit" />
                 </div>
                 <vbox>
-                    <div id="dGroupBox" >
+                    <div id="dGroupBox" visible="false">
                         <hbox>
                             <label value="Adhoc selection: " />
                             <label id="lInGroupCount" value="0 records"/>

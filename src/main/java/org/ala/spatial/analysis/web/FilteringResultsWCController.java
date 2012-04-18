@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -37,6 +38,7 @@ import org.zkoss.zul.Label;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
+import org.zkoss.zul.Div;
 import org.zkoss.zul.Window;
 
 /**
@@ -77,6 +79,9 @@ public class FilteringResultsWCController extends UtilityComposer {
     String areaSqKm = null;
     double[] boundingBox = null;
     HashMap<String, String> data = new HashMap<String, String>();
+    Div divWorldNote;
+    Label lblWorldNoteOccurrences;
+    Label lblWorldNoteSpecies;
 
     public void setReportArea(SelectedArea sa, String name, String displayname, String areaSqKm, double[] boundingBox) {
         selectedArea = sa;
@@ -269,6 +274,11 @@ public class FilteringResultsWCController extends UtilityComposer {
         biostorThread.start();
         t4.start();
         t5.start();
+
+        boolean worldAreaSelected = CommonData.WORLD_WKT.equals(selectedArea.getWkt());
+        divWorldNote.setVisible(worldAreaSelected);
+        lblWorldNoteOccurrences.setVisible(worldAreaSelected);
+        lblWorldNoteSpecies.setVisible(worldAreaSelected);
 
         long start = System.currentTimeMillis();
 
@@ -535,7 +545,17 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void intersectWithSpeciesDistributions() {
         try {
-            String[] lines = getDistributionsOrChecklists("distributions", selectedArea.getWkt(), null, null);
+            String wkt = selectedArea.getWkt();
+            if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+                //use boundingbox
+                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
+                double long1 = bbox.get(0);
+                double lat1 = bbox.get(1);
+                double long2 = bbox.get(2);
+                double lat2 = bbox.get(3);
+                wkt = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+            }
+            String[] lines = getDistributionsOrChecklists("distributions", wkt, null, null);
 
             if (lines == null || lines.length <= 1) {
                 data.put("intersectWithSpeciesDistributions", "0");
@@ -739,7 +759,18 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void intersectWithSpeciesChecklists() {
         try {
-            String[] lines = getDistributionsOrChecklists("checklists", selectedArea.getWkt(), null, null);
+            String wkt = selectedArea.getWkt();
+            if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+                //use boundingbox
+                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
+                double long1 = bbox.get(0);
+                double lat1 = bbox.get(1);
+                double long2 = bbox.get(2);
+                double lat2 = bbox.get(3);
+                wkt = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+            }
+
+            String[] lines = getDistributionsOrChecklists("checklists", wkt, null, null);
 
             if (lines == null || lines.length <= 1) {
                 data.put("intersectWithSpeciesChecklists", "0");
@@ -925,32 +956,41 @@ public class FilteringResultsWCController extends UtilityComposer {
         try {
             String area = selectedArea.getWkt();
 
-            Pattern coord = Pattern.compile("[+-]?[0-9]*\\.?[0-9]* [+-]?[0-9]*\\.?[0-9]*");
-            Matcher matcher = coord.matcher(area);
-
             double lat1 = 0;
             double lat2 = 0;
             double long1 = 0;
             double long2 = 0;
-            boolean first = true;
-            while (matcher.find()) {
-                String[] p = matcher.group().split(" ");
-                double[] d = {Double.parseDouble(p[0]), Double.parseDouble(p[1])};
+            if (area.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+                //use boundingbox
+                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
+                long1 = bbox.get(0);
+                lat1 = bbox.get(1);
+                long2 = bbox.get(2);
+                lat2 = bbox.get(3);
+            } else {
+                Pattern coord = Pattern.compile("[+-]?[0-9]*\\.?[0-9]* [+-]?[0-9]*\\.?[0-9]*");
+                Matcher matcher = coord.matcher(area);
 
-                if (first || long1 > d[0]) {
-                    long1 = d[0];
-                }
-                if (first || long2 < d[0]) {
-                    long2 = d[0];
-                }
-                if (first || lat1 > d[1]) {
-                    lat1 = d[1];
-                }
-                if (first || lat2 < d[1]) {
-                    lat2 = d[1];
-                }
+                boolean first = true;
+                while (matcher.find()) {
+                    String[] p = matcher.group().split(" ");
+                    double[] d = {Double.parseDouble(p[0]), Double.parseDouble(p[1])};
 
-                first = false;
+                    if (first || long1 > d[0]) {
+                        long1 = d[0];
+                    }
+                    if (first || long2 < d[0]) {
+                        long2 = d[0];
+                    }
+                    if (first || lat1 > d[1]) {
+                        lat1 = d[1];
+                    }
+                    if (first || lat2 < d[1]) {
+                        lat2 = d[1];
+                    }
+
+                    first = false;
+                }
             }
 
             String biostorurl = "http://biostor.org/bounds.php?";

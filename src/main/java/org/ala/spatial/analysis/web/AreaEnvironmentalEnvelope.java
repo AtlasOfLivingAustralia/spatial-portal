@@ -18,7 +18,6 @@ import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
@@ -104,19 +103,21 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         }
     }
 
-    public void onChange$cbEnvLayers(Event event) {        
+    public void onChange$cbEnvLayers(Event event) {
         applyFilter(true);
     }
 
     public void onChange$popup_minimum(Event event) {
         isDirtyCount = true;
         System.out.println("popup_minimum=" + popup_minimum.getValue() + " " + event.getData());
+        popup_filter.minimum_value = popup_minimum.getValue();
         serverFilter();
 
     }
 
     public void onChange$popup_maximum(Event event) {
         isDirtyCount = true;
+        popup_filter.maximum_value = popup_maximum.getValue();
         serverFilter();
     }
 
@@ -511,6 +512,28 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
                 e.printStackTrace();
             }
 
+            if (ml.getMapLayerMetadata() == null) {
+                ml.setMapLayerMetadata(new MapLayerMetadata());
+            }
+            this.layerName = ml.getName();
+            List<Double> bb = new ArrayList<Double>(4);
+            String[] bs = activeAreaExtent.split(",");
+            for (int i = 0; i < 4; i++) {
+                bb.add(Double.parseDouble(bs[i]));
+            }
+            ml.getMapLayerMetadata().setBbox(bb);
+            ml.getMapLayerMetadata().setMoreInfo(activeAreaMetadata);
+
+            ml.setWKT("ENVELOPE(" + final_wkt + ")");
+            ml.setData("envelope", final_wkt); //not the actual WKT
+            try {
+                double area = Double.parseDouble(activeAreaSize.replace(",", ""));
+                activeAreaSize = String.format("%,.2f", area);
+            } catch (Exception e) {
+            }
+            ml.setData("area", activeAreaSize);
+            ml.setData("facets", getFacets());
+
             removeAllSelectedLayers(true);  //this also shows active area
 
         } catch (Exception e) {
@@ -521,23 +544,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     void showActiveArea() {
-        MapLayer ml = mc.getMapLayer(txtLayerName.getValue());
-        if (ml.getMapLayerMetadata() == null) {
-            ml.setMapLayerMetadata(new MapLayerMetadata());
-        }
-        this.layerName = ml.getName();
-        List<Double> bb = new ArrayList<Double>(4);
-        String[] bs = activeAreaExtent.split(",");
-        for (int i = 0; i < 4; i++) {
-            bb.add(Double.parseDouble(bs[i]));
-        }
-        ml.getMapLayerMetadata().setBbox(bb);
-        ml.getMapLayerMetadata().setMoreInfo(activeAreaMetadata);
-
-        //ml.setWKT(final_wkt);
-        ml.setData("envelope", final_wkt); //not the actual WKT
-        ml.setData("area", activeAreaSize);
-        ml.setData("facets", getFacets());
     }
 
     public void onClick$apply_continous(Event event) {

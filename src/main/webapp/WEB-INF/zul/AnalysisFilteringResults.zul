@@ -31,7 +31,7 @@
             </n:tr>
             <n:tr height="18px" >
                 <n:td>
-                    <label value="Number of species" />
+                    <label value="Number of species" /><label id="lblWorldNoteSpecies" value="*" />
                 </n:td>
                 <n:td>
                     <label id="results_label2_species" style="cursor:pointer;" />
@@ -39,7 +39,7 @@
             </n:tr>
             <n:tr height="18px" >
                 <n:td>                    
-                    <label value="Occurrences" />
+                    <label value="Occurrences" /><label id="lblWorldNoteOccurrences" value="*" />
                 </n:td>
                 <n:td>
                     <label id="results_label2_occurrences" style="cursor:pointer;" />
@@ -48,9 +48,12 @@
                     <button label="Map all" id="mapspecies" visible="false" sclass="goButton"/>
                 </n:td>
             </n:tr>
+            <div id="divWorldNote" visible="false">
+                <label value="* World area includes records without coordinates" />
+            </div>
             <n:tr height="18px" >
                 <n:td>
-                    <label value="Number of species (no flagged location issue)" />
+                    <label value="Number of species - spatially valid only" />
                 </n:td>
                 <n:td>
                     <label id="results_label2_species_kosher" style="cursor:pointer;" />
@@ -58,7 +61,7 @@
             </n:tr>
             <n:tr height="18px" >
                 <n:td>
-                    <label value="Occurrences (no flagged location issue)" />
+                    <label value="Occurrences - spatially valid only" />
                 </n:td>
                 <n:td>
                     <label id="results_label2_occurrences_kosher" style="cursor:pointer;" />

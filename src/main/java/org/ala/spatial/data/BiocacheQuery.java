@@ -121,7 +121,9 @@ public class BiocacheQuery implements Query, Serializable {
 
     public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, boolean[] geospatialKosher) {
         this.lsids = lsids;
-        this.facets = facets;
+        if (facets != null) {
+            this.facets = (ArrayList<Facet>) facets.clone();
+        }
         this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : wkt;
         this.extraParams = extraParams;
         this.forMapping = forMapping;
@@ -139,7 +141,9 @@ public class BiocacheQuery implements Query, Serializable {
 
     public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, boolean[] geospatialKosher, String biocacheServer, String biocacheWebServer) {
         this.lsids = lsids;
-        this.facets = facets;
+        if (facets != null) {
+            this.facets = (ArrayList<Facet>) facets.clone();
+        }
         this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : wkt;
         this.extraParams = extraParams;
         this.forMapping = forMapping;
@@ -174,7 +178,7 @@ public class BiocacheQuery implements Query, Serializable {
             facets = new ArrayList<Facet>();
         } else {
             for (int i = 0; i < facets.size(); i++) {
-                if (!facets.get(i).toString().contains("geospatial_kosher:")) {
+                if (facets.get(i).toString().contains("geospatial_kosher:")) {
                     facets.remove(i);
                     break;
                 }
@@ -236,7 +240,7 @@ public class BiocacheQuery implements Query, Serializable {
         boolean[] geospatial_kosher = new boolean[]{true, true, true};
         if (facets != null) {
             for (int i = 0; i < facets.size(); i++) {
-                String f = facets.get(i).toString().replace("\"","").replace("(","").replace(")","");
+                String f = facets.get(i).toString().replace("\"", "").replace("(", "").replace(")", "");
                 if (f.contains("geospatial_kosher:")) {
                     if (f.equals("geospatial_kosher:true")) {
                         geospatial_kosher = new boolean[]{true, false, false};

@@ -385,7 +385,7 @@ function iterateSpeciesInfoQuery(curr) {
             var infohtml = "<div id='sppopup2'> " +
             heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
             " Longitude: "+ulyr_occ_lng + " , Latitude: " + ulyr_occ_lat + " (<a href='javascript:goToLocation("+ulyr_occ_lng+", "+ulyr_occ_lat+", 15);relocatePopup("+ulyr_occ_lng+", "+ulyr_occ_lat+");'>zoom to</a>) <br/>" +
-            " <input type='checkbox' checked='parent.isFlaggedRecord(\"" + ulyr + "\",\"" + ulyr_occ_id + "\")' onClick='parent.flagRecord(\"" + ulyr + "\",\"" + ulyr_occ_id + "\",this.checked)' />is in user assigned adhoc group<br/>" + 
+            //" <input type='checkbox' checked='parent.isFlaggedRecord(\"" + ulyr + "\",\"" + ulyr_occ_id + "\")' onClick='parent.flagRecord(\"" + ulyr + "\",\"" + ulyr_occ_id + "\",this.checked)' />Assign record to <i>ad hoc</i> group<br/>" +
             "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
             setTimeout(function(){
@@ -840,7 +840,7 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
     " Spatial uncertainty in metres: " + uncertaintyText + "<br />" +
     " Occurrence date: " + occurrencedate + " <br />" +
     "Species Occurence <a href='" + biocache + "/occurrences/" + occinfo.uuid + "' target='_blank'>View details</a> <br /> <br />" +
-    "<input type='checkbox' " + checkstate + " onClick='parent.flagRecord(\"" + query_layer[pos].name + "\",\"" + occinfo.uuid + "\",this.checked)' />is in user assigned adhoc group<br/>" +
+    "<input type='checkbox' " + checkstate + " onClick='parent.flagRecord(\"" + query_layer[pos].name + "\",\"" + occinfo.uuid + "\",this.checked)' />Assign record to <i>ad hoc</i> group<br/>" +
     "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
     if (document.getElementById("sppopup") != null) {

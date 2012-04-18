@@ -156,7 +156,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             if (sa.getMapLayer() != null && sa.getMapLayer().getData("area") != null) {
                 areaSqKm = (String) sa.getMapLayer().getData("area");
             } else {
-                areaSqKm = String.valueOf(Util.calculateArea(sa.getWkt()));
+                areaSqKm = String.format("%,.2f", Util.calculateArea(sa.getWkt()) / 1000000.0);
             }
             sbProcessUrl.append("&areasqkm=" + areaSqKm);
 
