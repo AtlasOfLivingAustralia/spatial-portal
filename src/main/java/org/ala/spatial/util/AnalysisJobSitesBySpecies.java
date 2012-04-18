@@ -426,6 +426,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         FileWriter fw = new FileWriter(filename);
         fw.append("<html><h1>").append(title).append("</h1>");
         fw.append("<table>");
+        fw.append("<tr><td>Date/time " + sdf.format(new Date()) + "</td></tr>");
         fw.append("<tr><td>Model reference number: " + getName() + "</td></tr>");
         fw.append("<tr><td>Species selection " + qname + "</td></tr>");
         fw.append("<tr><td>Grid resolution " + gridsize + " degrees</td></tr>");
@@ -433,13 +434,12 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         fw.append("<tr><td>" + records.getRecordsSize() + " occurrences</td></tr>");
         if(counts != null) {
             fw.append("<tr><td>" + counts[0] + " grid cells with an occurrence</td></tr>");
-            fw.append("<tr><td>" + counts[1] + " grid cells in the area</td></tr>");
+            fw.append("<tr><td>" + counts[1] + " grid cells in the area (both marine and terrestrial)</td></tr>");
         }
         if(addAreaSqKm != null) {
-            fw.append("<tr><td>Selected area " + addAreaSqKm + " sq km</td></tr>");
+            fw.append("<tr><td>Selected area " + addAreaSqKm + " sqkm</td></tr>");
         }
-        fw.append("<tr><td>bounding box of the selected area " + bbox[0] + "," + bbox[1] + "," + bbox[2] + "," + bbox[3] + "</td></tr>");
-        fw.append("<tr><td>Date/time " + sdf.format(new Date()) + "</td></tr>");
+        fw.append("<tr><td>bounding box of the selected area " + bbox[0] + "," + bbox[1] + "," + bbox[2] + "," + bbox[3] + "</td></tr>");        
         if (odensity) {
             fw.append("<tr><td><br>Occurrence Density (" + movingAverageSize + "x" + movingAverageSize + " moving average)</td></tr>");
             fw.append("<tr><td><img src='occurrence_density.png' width='300px' height='300px'><img src='occurrence_density_legend.png'></td></tr>");

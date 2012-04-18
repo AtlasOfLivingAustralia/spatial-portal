@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import org.ala.layers.intersect.Grid;
@@ -97,6 +98,10 @@ public class AlocService {
 
             fw.append("<body>");
             fw.append("<h1>").append("Classification").append("</h1>");
+
+            fw.append("<p> <span class=\"title\">Dte/time:</span> <br /> ");
+            fw.append(new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(System.currentTimeMillis()));
+            fw.append("</p>");
 
             fw.append("<p> <span class=\"title\">Model reference number:</span> <br /> ");
             fw.append(pid);
