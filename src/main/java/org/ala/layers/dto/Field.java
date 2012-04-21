@@ -69,6 +69,8 @@ public class Field {
     private Boolean layerbranch;
     @Column(name = "analysis")
     private Boolean analysis;
+    @Column(name = "addtomap")
+    private Boolean addtomap;
     private List<Objects> objects;
 
     public List<Objects> getObjects() {
@@ -205,5 +207,13 @@ public class Field {
 
     public void setAnalysis(Boolean analysis) {
         this.analysis = analysis;
+    }
+
+    public Boolean isAddtomap() {
+        return addtomap;
+    }
+
+    public void setAddtomap(Boolean addtomap) {
+        this.addtomap = addtomap;
     }
 }

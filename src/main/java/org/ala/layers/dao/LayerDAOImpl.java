@@ -146,12 +146,13 @@ public class LayerDAOImpl implements LayerDAO {
         sql += " or lower(displayname) like ? ";
         //sql += " or lower(type) like ? ";
         sql += " or lower(name) like ? ";
+        sql += " or lower(domain) like ? ";
         sql += ") order by displayname ";
 
         keywords = "%" + keywords.toLowerCase() + "%";
 
         //List list = hibernateTemplate.find(sql, new String[]{keywords, keywords, keywords}); // keywords,
-        List<Layer> list = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), keywords, keywords, keywords);
+        List<Layer> list = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), keywords, keywords, keywords, keywords);
 
         //remove duplicates if any
         Set setItems = new LinkedHashSet(list);

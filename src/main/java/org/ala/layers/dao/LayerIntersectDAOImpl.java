@@ -234,45 +234,12 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                     }
                 }
             } else {
-                String gid = null;
-                String filename = null;
-                String name = null;
+                String [] info = getConfig().getAnalysisLayerInfo(id);
 
-                if (id.startsWith("species_")) {
-                    //maxent layer
-                    gid = id.substring("species_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "maxent" + File.separator + gid + File.separator + gid;
-                    name = "Prediction";
-                } else if (id.startsWith("aloc_")) {
-                    //aloc layer
-                    gid = id.substring("aloc_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + "aloc";
-                    name = "Classification";
-                } else if (id.startsWith("odensity_")) {
-                    //occurrence density layer
-                    gid = id.substring("odensity_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "occurrence_density";
-                    name = "Occurrence Density";
-                } else if (id.startsWith("srichness_")) {
-                    //species richness layer
-                    gid = id.substring("srichness_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
-                    name = "Species Richness";
-                } else if (id.startsWith("gdm_")) {
-                    //gdm layer
-                    String[] gdmparts = id.split("_");
-                    gid = gdmparts[2];
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1];
-                    Layer tmpLayer = layerDao.getLayerByName(gdmparts[1].replaceAll("Tran", ""));
-                    name = "Transformed " + tmpLayer.getDisplayname();
-                } else if (id.startsWith("envelope_")) {
-                    //envelope layer
-                    gid = id.substring("envelope_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "envelope" + File.separator + gid + File.separator + "envelope";
-                    name = "Environmental Envelope";
-                }
-
-                if (filename != null) {
+                if (info != null) {
+                    String gid = info[0];
+                    String filename = info[1];
+                    String name = info[2];
                     Grid grid = new Grid(filename);
 
                     if (grid != null && (new File(filename + ".grd").exists())) {
@@ -403,40 +370,11 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                         }
                     }
                 }
-            } else {
-                String gid = null;
-                String filename = null;
+            } else {                
+                String [] info = getConfig().getAnalysisLayerInfo(fid);                
 
-                if (fid.startsWith("species_")) {
-                    //maxent layer
-                    gid = fid.substring("species_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "maxent" + File.separator + gid + File.separator + gid;
-                } else if (fid.startsWith("aloc_")) {
-                    //aloc layer
-                    gid = fid.substring("aloc_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + "aloc";
-                } else if (fid.startsWith("odensity_")) {
-                    //occurrence density layer
-                    gid = fid.substring("odensity_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "occurrence_density";
-                } else if (fid.startsWith("srichness_")) {
-                    //species richness layer
-                    gid = fid.substring("srichness_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
-                } else if (fid.startsWith("gdm_")) {
-                    //gdm layer
-                    String[] gdmparts = fid.split("_");
-                    gid = gdmparts[2];
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1];
-                    Layer tmpLayer = layerDao.getLayerByName(gdmparts[1].replaceAll("Tran", ""));
-                    filename = "Transformed " + tmpLayer.getDisplayname();
-                } else if (fid.startsWith("envelope_")) {
-                    //envelope layer
-                    gid = fid.substring("envelope_".length());
-                    filename = getConfig().getAlaspatialOutputPath() + File.separator + "envelope" + File.separator + gid + File.separator + "envelope";
-                }
-
-                if (filename != null) {
+                if (info != null) {
+                    String filename = info[1];
                     Grid grid = new Grid(filename);
 
                     if (grid != null && (new File(filename + ".grd").exists())) {

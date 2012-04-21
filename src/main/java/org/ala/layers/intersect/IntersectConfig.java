@@ -532,4 +532,59 @@ public class IntersectConfig {
     static public String getOccurrenceSpeciesRecordsFilename() {
         return occurrenceSpeciesRecordsFilename;
     }
+
+    public Map<String, IntersectionFile> getIntersectionFiles() {
+        return intersectionFiles;
+    }
+
+    /**
+     * get info on an analysis layer
+     * @param id layer id as String
+     * @return String [] with [0] = analysis id, [1] = path to grid file, [2] = analysis type
+     */
+    public String[] getAnalysisLayerInfo(String id) {
+        String gid, filename, name;
+        gid = filename = name = null;
+        if (id.startsWith("species_")) {
+            //maxent layer
+            gid = id.substring("species_".length());
+            filename = getAlaspatialOutputPath() + File.separator + "maxent" + File.separator + gid + File.separator + gid;
+            name = "Prediction";
+        } else if (id.startsWith("aloc_")) {
+            //aloc layer
+            gid = id.substring("aloc_".length());
+            filename = getAlaspatialOutputPath() + File.separator + "aloc" + File.separator + gid + File.separator + "aloc";
+            name = "Classification";
+        } else if (id.startsWith("odensity_")) {
+            //occurrence density layer
+            gid = id.substring("odensity_".length());
+            filename = getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "occurrence_density";
+            name = "Occurrence Density";
+        } else if (id.startsWith("srichness_")) {
+            //species richness layer
+            gid = id.substring("srichness_".length());
+            filename = getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
+            name = "Species Richness";
+        } else if (id.startsWith("envelope_")) {
+            //envelope layer
+            gid = id.substring("envelope_".length());
+            filename = getAlaspatialOutputPath() + File.separator + "envelope" + File.separator + gid + File.separator + "envelope";
+            name = "Environmental Envelope";
+        } else if (id.startsWith("gdm_") || id.contains("_")) {
+            //gdm layer
+            int pos = id.indexOf("_");
+            String[] gdmparts = new String [] {id.substring(0,pos), id.substring(pos+1) };
+            gid = gdmparts[2];
+            filename = getAlaspatialOutputPath() + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1];
+            //Layer tmpLayer = layerDao.getLayerByName(gdmparts[1].replaceAll("Tran", ""));
+            //name = "Transformed " + tmpLayer.getDisplayname();
+            name = "Transformed " + getIntersectionFile(gdmparts[1].replaceAll("Tran", "")).getFieldName();
+        }
+
+        if (gid != null) {
+            return new String[] {gid, filename, name};
+        } else {
+            return null;
+        }
+    }
 }
