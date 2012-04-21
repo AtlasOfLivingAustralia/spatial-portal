@@ -38,16 +38,19 @@ public class Sampling {
             File sxsSRichness = null;
             File sxsODensity = null;
             File gdmTransLayer = null;
-            if(split.length > 1) {
+            File envelope = null;
+            if(split != null && split.length > 1) {
                 if(split[1].equals("srichness")) {
                     sxsSRichness = new File(CommonData.settings.get("analysis_output_dir") + "sitesbyspecies/" + split[0] + "/species_richness.grd");
                 } else if(split[1].equals("odensity")) {
                     sxsODensity = new File(CommonData.settings.get("analysis_output_dir") + "sitesbyspecies/" + split[0] + "/occurrence_density.grd");
                 } else {
-                    gdmTransLayer = new File(CommonData.settings.get("analysis_output_dir") + "gdm/" + split[0] + "/" + split[1] + "Tran.grd");
+                    int pos = facetName.indexOf("_");
+                    String[] gdmparts = new String [] {facetName.substring(0,pos), facetName.substring(pos+1) };
+                    gdmTransLayer = new File(CommonData.settings.get("analysis_output_dir") + "gdm/" + split[0] + "/" + gdmparts[1] + "Tran.grd");
                 }
-            }
-            File envelope = new File(CommonData.settings.get("analysis_output_dir") + "envelope/" + split[0] + "/envelope.grd");
+                envelope = new File(CommonData.settings.get("analysis_output_dir") + "envelope/" + split[0] + "/envelope.grd");
+            }            
 
             System.out.println("Analysis layer: " + facetName);
             System.out.println(maxent.getPath() + ", " + maxent.exists());
@@ -61,7 +64,9 @@ public class Sampling {
             if (gdmTransLayer != null) {
                 System.out.println(gdmTransLayer.getPath() + ", " + gdmTransLayer.exists());
             }
-            System.out.println(envelope.getPath() + ", " + envelope.exists());
+            if (envelope != null) {
+                System.out.println(envelope.getPath() + ", " + envelope.exists());
+            }
 
             File file = null;
             if (maxent.exists()) {
@@ -74,7 +79,7 @@ public class Sampling {
                 file = sxsODensity;
             } else if(gdmTransLayer != null && gdmTransLayer.exists()) {
                 file = gdmTransLayer;
-            } else if (envelope.exists()) {
+            } else if (envelope != null && envelope.exists()) {
                 file = envelope;
             }
             if (file != null) {

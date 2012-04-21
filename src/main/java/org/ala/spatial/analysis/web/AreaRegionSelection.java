@@ -8,14 +8,9 @@ import org.zkoss.zk.ui.event.Event;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import net.sf.json.JSONObject;
 import org.ala.spatial.data.Facet;
-import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
@@ -55,25 +50,35 @@ public class AreaRegionSelection extends AreaToolComposer {
             return;
         }
 
-        String link = (String) ci.getValue();
+        JSONObject jo = (JSONObject) ci.getValue();
+        JSONObject obj = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
         String label = ci.getLabel();
 
         //add feature to the map as a new layer
         MapLayer mapLayer;
         if (displayAsWms.isChecked()) {
-            String url = CommonData.geoServer
-                    + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
-                    + link.substring(link.lastIndexOf('/') + 1);
-            logger.info(label + " | " + url);
-            mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, url, 0.6f, /*metadata url*/ null,
+            logger.info(label + " | " + obj.getString("wmsurl"));
+            mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, obj.getString("wmsurl"), 0.6f, /*metadata url*/ null,
                     null, LayerUtilities.WKT, null, null);
             if (mapLayer == null) {
                 return;
             }
-            mapLayer.setWKT(Util.readUrl(CommonData.layersServer + link.replace("/geojson/", "/wkt/")));
+
+            //TODO: move large WKT objects into envelope form
+            //grid class layers best operate as an envelope
+            if (jo.getString("pid").contains(":")) {
+                String envelope = "cl" + jo.getString("pid");
+                mapLayer.setWKT("ENVELOPE(" + envelope + ")");
+                mapLayer.setData("envelope", envelope);
+                ArrayList<Facet> facets = new ArrayList<Facet>();
+                facets.add(new Facet(envelope.split(":")[0], jo.getString("name"), true));
+                mapLayer.setData("facets", facets);
+            } else {
+                mapLayer.setWKT(Util.readUrl(CommonData.layersServer + "/shape/wkt/" + jo.getString("pid")));
+            }
             mapLayer.setPolygonLayer(true);
         } else {
-            mapLayer = getMapComposer().addGeoJSON(label, CommonData.layersServer + link);
+            mapLayer = getMapComposer().addGeoJSON(label, CommonData.layersServer + "/shape/geojson/" + jo.getString("pid"));
             if (mapLayer == null) {
                 return;
             }
@@ -93,10 +98,9 @@ public class AreaRegionSelection extends AreaToolComposer {
             mapLayer = getMapComposer().addWKTLayer(wkt, label, label);
         }
 
-        if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
-            String object = Util.readUrl(CommonData.layersServer + "/object/" + link.substring(link.lastIndexOf('/') + 1));
-            String bbox = Util.getStringValue(null, "bbox", object);
-            String fid = Util.getStringValue(null, "fid", object);
+        if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null            
+            String bbox = obj.getString("bbox");
+            String fid = obj.getString("fid");
             String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
 
             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
@@ -124,16 +128,16 @@ public class AreaRegionSelection extends AreaToolComposer {
             md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
 
             Facet facet = null;
-            if (!point) {
-                facet = Util.getFacetForObject(link.substring(link.lastIndexOf('/') + 1), label);
-            }
-            if (facet != null) {
-                ArrayList<Facet> facets = new ArrayList<Facet>();
-                facets.add(facet);
-                mapLayer.setData("facets", facets);
+            if (!point && mapLayer.getData("facets") == null) {
+                facet = Util.getFacetForObject(jo.getString("pid"), label);
+                if (facet != null ) {
+                    ArrayList<Facet> facets = new ArrayList<Facet>();
+                    facets.add(facet);
+                    mapLayer.setData("facets", facets);
+                }
             }
 
-            getMapComposer().updateUserLogMapLayer("gaz", label + "|" + CommonData.geoServer + link);
+            getMapComposer().updateUserLogMapLayer("gaz", label + "|" + CommonData.geoServer + obj.getString("wmsurl"));
         }
 
         ok = true;

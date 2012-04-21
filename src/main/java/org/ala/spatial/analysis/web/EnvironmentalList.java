@@ -201,7 +201,7 @@ public class EnvironmentalList extends Listbox {
                     && (domain = getDomain(l.layerObject)) != null) {
                 for (ListEntry le : listEntries) {
                     if (le.layerObject != null && le.layerObject.containsKey("fields")
-                            && isSameDomain(getDomain(le.layerObject), domain)) {
+                            && (!singleDomain || isSameDomain(getDomain(le.layerObject), domain))) {
                         String fieldId2 = getFieldId(le.layerObject);
 
                         Double d = CommonData.getDistancesMap().get(fieldId).get(fieldId2);
@@ -336,7 +336,7 @@ public class EnvironmentalList extends Listbox {
             for (int j = 0; j < layers.length; j++) {
                 if (listEntries.get(i).displayname.equalsIgnoreCase(layers[j])
                         || listEntries.get(i).name.equalsIgnoreCase(layers[j])) {
-                    if (!getItemAtIndex(i).isSelected() && isSameDomain(firstDomain, getDomain(listEntries.get(i).layerObject))) {
+                    if (!getItemAtIndex(i).isSelected() && (!singleDomain || isSameDomain(firstDomain, getDomain(listEntries.get(i).layerObject)))) {
                         toggleItemSelection(getItemAtIndex(i));
                     }
                     break;

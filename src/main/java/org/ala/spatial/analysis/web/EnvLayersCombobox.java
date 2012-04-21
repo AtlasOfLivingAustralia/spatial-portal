@@ -95,9 +95,23 @@ public class EnvLayersCombobox extends Combobox {
                     String type = jo.getString("type");
                     String name = jo.getString("name");
 
-                    if (!type.equalsIgnoreCase("environmental") &&
-                            (includeLayers != null && !includeLayers.equalsIgnoreCase("AllLayers") && !includeLayers.equalsIgnoreCase("MixLayers"))) {
+                    if (!type.equalsIgnoreCase("environmental")
+                            && (includeLayers != null && !includeLayers.equalsIgnoreCase("AllLayers") && !includeLayers.equalsIgnoreCase("MixLayers"))) {
                         continue;
+                    }
+
+                    JSONObject layer = CommonData.getLayer(name);
+                    if (layer != null && layer.containsKey("fields")) {
+                        JSONArray ja = layer.getJSONArray("fields");
+                        boolean skip = false;
+                        for (int j = 0; j < ja.size(); j++) {
+                            if (ja.getJSONObject(j).containsKey("addtomap") && !ja.getJSONObject(j).getBoolean("addtomap")) {
+                                skip = true;
+                            }
+                        }
+                        if (skip) {
+                            continue;
+                        }
                     }
 
 //                    if (!isValidLayer(jo.getString("name"))) {
@@ -157,13 +171,13 @@ public class EnvLayersCombobox extends Combobox {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "Prediction";
-                        name = (String)ml.getData("pid");
-                    } else if(ml.getSubType() == LayerUtilities.GDM) {
+                        name = (String) ml.getData("pid");
+                    } else if (ml.getSubType() == LayerUtilities.GDM) {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "GDM";
-                        name = (String)ml.getData("pid");
-                    } else if(ml.getSubType() == LayerUtilities.ODENSITY) {
+                        name = (String) ml.getData("pid");
+                    } else if (ml.getSubType() == LayerUtilities.ODENSITY) {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "Occurrence Density";

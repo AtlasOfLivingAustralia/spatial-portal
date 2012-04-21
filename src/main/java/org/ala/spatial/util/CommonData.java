@@ -944,4 +944,18 @@ public class CommonData {
         }
         return output;
     }
+
+    /*
+     * get a layer JSONObject with the short name.
+     */
+    public static JSONObject getLayer(String name) {
+        JSONObject layer = null;
+        for (int i=0; i<layerlistJSON.size(); i++) {
+            layer = layerlistJSON.getJSONObject(i);
+            if (layer.getString("name").equalsIgnoreCase(name)) {
+                break;
+            }
+        }
+        return layer;
+    }
 }

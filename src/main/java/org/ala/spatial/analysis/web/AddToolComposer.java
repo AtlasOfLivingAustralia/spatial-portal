@@ -1768,6 +1768,7 @@ public class AddToolComposer extends UtilityComposer {
             JSONObject jo = (JSONObject) cbLayer.getSelectedItem().getValue();
             String[] layer = jo.getString("name").split("/");
             lbListLayers.selectLayers(layer);
+            cbLayer.setSelectedIndex(-1);
         }
         toggles();
     }
@@ -1778,6 +1779,7 @@ public class AddToolComposer extends UtilityComposer {
             JSONObject jo = (JSONObject) cbLayerEnvironmentalOnly.getSelectedItem().getValue();
             String[] layer = jo.getString("name").split("/");
             lbListLayers.selectLayers(layer);
+            cbLayerEnvironmentalOnly.setSelectedIndex(-1);
         }
         toggles();
     }
@@ -1788,6 +1790,7 @@ public class AddToolComposer extends UtilityComposer {
             JSONObject jo = (JSONObject) cbLayerMix.getSelectedItem().getValue();
             String[] layer = jo.getString("name").split("/");
             lbListLayers.selectLayers(layer);
+            cbLayerMix.setSelectedIndex(-1);
         }
         toggles();
     }
