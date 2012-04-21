@@ -138,7 +138,7 @@ public class Aloc {
             for (c = 0; c < pieces; c++) {
                 float[] data = (float[]) data_pieces.get(c);
                 nRows = data.length / nCols;
-                rowPos = rowCounts[c] - nRows;
+                rowPos = rowCounts[c] - nRows + (c==0?1:0);
                 for (i = (c == 0?1:0); i < nRows; i++, rowPos++) {
                     for (j = 0; j < seedidxsize; j++) {
                         //calc dist between obj(i) & obj(seedidx(j))
@@ -405,7 +405,8 @@ public class Aloc {
                             int pos = 0;
                             int cg = -1;
                             for (j = 0; j < pieces; j++) {
-                                short[] grps = ((AlocPieceData) apdList.get(i)).groups;
+                                short[] grps = ((AlocPieceData) apdList.get(j)).groups;
+                                System.out.println("i,j,pos,row,grps.length: " + i + ", " + j + ", " + pos + ", " + row + ", " + grps.length);
                                 if (pos + grps.length > row) {
                                     cg = grps[row - pos];
                                     break;

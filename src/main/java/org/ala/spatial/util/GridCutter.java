@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.TreeMap;
+import org.ala.layers.client.Client;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.spatial.analysis.index.LayerFilter;
@@ -259,6 +260,8 @@ public class GridCutter {
      * @return
      */
     public static String cut2(String[] layers, String resolution, SimpleRegion region, LayerFilter[] envelopes, String extentsFilename) {
+        //check if resolution needs changing
+        resolution = confirmResolution(layers, resolution);
 
         //get extents for all layers
         double[][] extents = getLayerExtents(resolution, layers[0]);
@@ -369,7 +372,15 @@ public class GridCutter {
         if (new File(layerPath + ".grd").exists()) {
             return layerPath;
         } else {
-            return null;
+            //look for an analysis layer
+            System.out.println("getLayerPath, not a default layer, checking analysis output for: " + layer);
+            String[] info = Client.getLayerIntersectDao().getConfig().getAnalysisLayerInfo(layer);
+            if (info != null) {
+                return info[1];
+            } else {
+                System.out.println("getLayerPath, cannot find for: " + layer + ", " + resolution);
+                return null;
+            }
         }
     }
 
@@ -387,14 +398,15 @@ public class GridCutter {
         }
 
         //Translate between data source grid and output grid
+        double resMult = Double.parseDouble(resolution) / grid.xres;
         int xoff = (int) ((grid.xmin - extents[0][0]) / grid.xres);
         int yoff = (int) ((grid.ymin - extents[0][1]) / grid.xres);
 
         for (int i = 0; i < mask.length; i++) {
             for (int j = 0; j < mask[0].length; j++) {
                 if (mask[i][j] > 0) {
-                    int x = j - xoff;
-                    int y = i - yoff;
+                    int x = (int) Math.round(j * resMult - xoff);
+                    int y = (int) Math.round(i * resMult - yoff);
                     if (x >= 0 && x < grid.ncols
                             && y >= 0 && y < grid.nrows) {
                         int pSrc = x + (grid.nrows - y - 1) * grid.ncols;
@@ -475,14 +487,14 @@ public class GridCutter {
 
             for (int i = 0; i < d.length; i++) {
                 if (lf.isValid(d[i])) {
-                    mask[i / w][i % w] ++;
+                    mask[i / w][i % w]++;
                 }
             }
         }
-        
+
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
-                if(mask[j][i] == envelopes.length) {
+                if (mask[j][i] == envelopes.length) {
                     mask[j][i] = 1;
                 } else {
                     mask[j][i] = 0;
@@ -557,7 +569,7 @@ public class GridCutter {
         float[] values = new float[w * h];
         int pos = 0;
         double areaSqKm = 0;
-        for (int i = h-1; i >= 0; i--) {
+        for (int i = h - 1; i >= 0; i--) {
             for (int j = 0; j < w; j++) {
                 values[pos] = mask[i][j];
                 pos++;
@@ -587,5 +599,34 @@ public class GridCutter {
             }
         }
         return true;
+    }
+
+    /**
+     * Determine the grid resolution that will be in use.
+     * 
+     * @param layers list of layers to be used as String []
+     * @param resolution target resolution as String
+     * @return resolution that will be used
+     */
+    private static String confirmResolution(String[] layers, String resolution) {
+        try {
+            TreeMap<Double, String> resolutions = new TreeMap<Double, String>();
+            for (String layer : layers) {
+                String path = GridCutter.getLayerPath(resolution, layer);
+                int end, start;
+                if (path != null
+                        && ((end = path.lastIndexOf(File.separator)) > 0)
+                        && ((start = path.lastIndexOf(File.separator, end - 1)) > 0)) {
+                    String res = path.substring(start + 1, end);
+                    resolutions.put(Double.parseDouble(res), res);
+                }
+            }
+            if(resolutions.size() > 0) {
+                resolution = resolutions.firstEntry().getValue();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return resolution;
     }
 }
