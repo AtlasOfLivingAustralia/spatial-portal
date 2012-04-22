@@ -570,15 +570,28 @@ public class IntersectConfig {
             gid = id.substring("envelope_".length());
             filename = getAlaspatialOutputPath() + File.separator + "envelope" + File.separator + gid + File.separator + "envelope";
             name = "Environmental Envelope";
-        } else if (id.startsWith("gdm_") || id.contains("_")) {
+        } else if (id.startsWith("gdm_")) {
             //gdm layer
-            int pos = id.indexOf("_");
-            String[] gdmparts = new String [] {id.substring(0,pos), id.substring(pos+1) };
+            int pos1 = id.indexOf("_");
+            int pos2 = id.lastIndexOf("_");
+            String[] gdmparts = new String [] {id.substring(0,pos1), id.substring(pos1+1, pos2), id.substring(pos2+1) };
             gid = gdmparts[2];
             filename = getAlaspatialOutputPath() + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1];
             //Layer tmpLayer = layerDao.getLayerByName(gdmparts[1].replaceAll("Tran", ""));
             //name = "Transformed " + tmpLayer.getDisplayname();
             name = "Transformed " + getIntersectionFile(gdmparts[1].replaceAll("Tran", "")).getFieldName();
+        } else if (id.contains("_")) {
+            //2nd form of gdm layer name, why?
+            int pos = id.indexOf("_");
+            String[] gdmparts = new String [] {id.substring(0,pos), id.substring(pos+1) };
+            gid = gdmparts[0];
+            filename = getAlaspatialOutputPath() + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1] + "Tran";
+            System.out.println("id: " + id);
+            System.out.println("parts: " + gdmparts[0] + ", " + gdmparts[1]);
+            System.out.println("filename: " + filename);
+            //Layer tmpLayer = layerDao.getLayerByName(gdmparts[1].replaceAll("Tran", ""));
+            //name = "Transformed " + tmpLayer.getDisplayname();
+            name = "Transformed " + getIntersectionFile(gdmparts[1]).getFieldName();
         }
 
         if (gid != null) {
