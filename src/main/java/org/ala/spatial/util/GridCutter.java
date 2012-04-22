@@ -260,6 +260,7 @@ public class GridCutter {
      * @return
      */
     public static String cut2(String[] layers, String resolution, SimpleRegion region, LayerFilter[] envelopes, String extentsFilename) {
+        System.out.println("RESOLUTION: " + resolution);
         //check if resolution needs changing
         resolution = confirmResolution(layers, resolution);
 
@@ -267,6 +268,7 @@ public class GridCutter {
         double[][] extents = getLayerExtents(resolution, layers[0]);
         for (int i = 1; i < layers.length; i++) {
             extents = internalExtents(extents, getLayerExtents(resolution, layers[i]));
+            System.out.println("extents: " + extents[0][0] + ", " + extents[0][1] + ", " + extents[1][0] + ", " + extents[1][1]);
             if (!isValidExtents(extents)) {
                 return null;
             }
@@ -274,10 +276,13 @@ public class GridCutter {
 
         //get mask and adjust extents for filter
         byte[][] mask;
-        int w, h;
+        int w = 0, h = 0;
         double res = Double.parseDouble(resolution);
+        System.out.println("resolution: " + resolution + ", " + res);
         if (region != null) {
             extents = internalExtents(extents, region.getBoundingBox());
+            System.out.println("extentsB, " + w + ", " + h + ": " + extents[0][0] + ", " + extents[0][1] + ", " + extents[1][0] + ", " + extents[1][1]);
+
             if (!isValidExtents(extents)) {
                 return null;
             }
@@ -285,6 +290,7 @@ public class GridCutter {
             h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
             w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
             mask = getRegionMask(res, extents, w, h, region);
+            System.out.println("extentsC, " + w + ", " + h + ": " + extents[0][0] + ", " + extents[0][1] + ", " + extents[1][0] + ", " + extents[1][1]);
         } else if (envelopes != null) {
             h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
             h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
@@ -297,6 +303,7 @@ public class GridCutter {
             w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
             mask = getMask(res, extents, w, h);
         }
+        System.out.println("extentsD, " + w + ", " + h + ": " + extents[0][0] + ", " + extents[0][1] + ", " + extents[1][0] + ", " + extents[1][1]);
 
         //mkdir in index location
         String newPath = null;
@@ -312,6 +319,7 @@ public class GridCutter {
         //apply mask
         for (int i = 0; i < layers.length; i++) {
             applyMask(newPath, resolution, extents, w, h, mask, layers[i]);
+            System.out.println("extentsE, " + w + ", " + h + ": " + extents[0][0] + ", " + extents[0][1] + ", " + extents[1][0] + ", " + extents[1][1]);
         }
 
         //write extents file
@@ -353,18 +361,29 @@ public class GridCutter {
         File file = new File(AlaspatialProperties.getAnalysisLayersDir() + File.separator + resolution + File.separator + field + ".grd");
 
         //move up a resolution when the file does not exist at the target resolution
-        if (!file.exists()) {
-            TreeMap<Double, String> resolutionDirs = new TreeMap<Double, String>();
-            for (File dir : new File(AlaspatialProperties.getAnalysisLayersDir()).listFiles()) {
-                if (dir.isDirectory()) {
-                    try {
-                        resolutionDirs.put(Double.parseDouble(dir.getName()), dir.getName());
-                    } catch (Exception e) {
+        try {
+            while (!file.exists()) {
+                TreeMap<Double, String> resolutionDirs = new TreeMap<Double, String>();
+                for (File dir : new File(AlaspatialProperties.getAnalysisLayersDir()).listFiles()) {
+                    if (dir.isDirectory()) {
+                        try {
+                            System.out.println(dir.getName());
+                            resolutionDirs.put(Double.parseDouble(dir.getName()), dir.getName());
+                        } catch (Exception e) {
+                        }
                     }
                 }
-            }
 
-            resolution = resolutionDirs.higherEntry(Double.parseDouble(resolution)).getValue();
+                String newResolution = resolutionDirs.higherEntry(Double.parseDouble(resolution)).getValue();
+
+                if(newResolution.equals(resolution)) {
+                    break;
+                } else {
+                    resolution = newResolution;
+                    file = new File(AlaspatialProperties.getAnalysisLayersDir() + File.separator + resolution + File.separator + field + ".grd");
+                }
+            }
+        } catch (Exception e) {
         }
 
         String layerPath = AlaspatialProperties.getAnalysisLayersDir() + File.separator + resolution + File.separator + field;
@@ -618,7 +637,10 @@ public class GridCutter {
                         && ((end = path.lastIndexOf(File.separator)) > 0)
                         && ((start = path.lastIndexOf(File.separator, end - 1)) > 0)) {
                     String res = path.substring(start + 1, end);
-                    resolutions.put(Double.parseDouble(res), res);
+                    Double d = Double.parseDouble(res);
+                    if (d < 1) {
+                        resolutions.put(d, res);
+                    }
                 }
             }
             if(resolutions.size() > 0) {
