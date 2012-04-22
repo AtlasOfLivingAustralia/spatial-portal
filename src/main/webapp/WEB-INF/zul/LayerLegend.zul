@@ -66,19 +66,8 @@
                     <hbox>
                         <label value="Facet" sclass="h3" />
                         <separator orient="vertical" />
-                        <combobox id="cbColour" >
+                        <combobox id="cbColour" readonly="true">
                             <comboitem label="User defined colour" id="ciColourUser" value="-1" />
-                            <comboitem label="Scientific Name" value="taxon_name" />
-                            <comboitem label="Species" value="species" />
-                            <comboitem label="Genus" value="genus" />
-                            <comboitem label="Family" value="family" />
-                            <comboitem label="Order" value="order" />
-                            <comboitem label="Class" value="class" />
-                            <comboitem label="Phylum" value="phylum" />
-                            <comboitem label="Kingdom" value="kingdom" />
-                            <comboitem label="Data Provider" value="p" />
-                            <comboitem label="Institution" value="in" />
-                            <comboitem label="Collection" value="c" />
                         </combobox>
                     </hbox>
                     <div id="divUserColours" >

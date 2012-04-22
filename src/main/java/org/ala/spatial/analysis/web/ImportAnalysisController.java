@@ -6,11 +6,7 @@ import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.wms.WMSStyle;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
 import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
@@ -33,9 +29,11 @@ public class ImportAnalysisController extends UtilityComposer {
     boolean isAloc = false;
     boolean isMaxent = false;
     boolean isSxS = false;
+    boolean isGdm = false;
     boolean sxsSitesBySpecies = false;
     boolean sxsOccurrenceDensity = false;
     boolean sxsSpeciesDensity = false;
+    String[] gdmEnvlist;
 
     @Override
     public void afterCompose() {
@@ -46,24 +44,28 @@ public class ImportAnalysisController extends UtilityComposer {
         pid = refNum.getValue();
         pid = pid.trim();
 
-        if(getParametersAloc()) {
+        if (getParametersAloc()) {
             isAloc = true;
             openProgressBarAloc();
             remoteLogger.logMapAnalysis("Import Classification", "Tool - Restore", "", "", "", pid, "classification", "IMPORTED");
-        } else if(getParametersMaxent()) {
+        } else if (getParametersMaxent()) {
             isMaxent = true;
             openProgressBarMaxent();
             remoteLogger.logMapAnalysis("Import Prediction", "Tool - Restore", "", "", "", pid, "prediction", "IMPORTED");
-        } else if(getParametersSxS()){
+        } else if (getParametersSxS()) {
             isSxS = true;
             openProgressBarSxS();
             remoteLogger.logMapAnalysis("Import Species to Grid", "Tool - Restore", "", "", "", pid, "species to grid", "IMPORTED");
+        } else if (getParametersGdm()) {
+            isGdm = true;
+            openProgressBarGdm();
+            remoteLogger.logMapAnalysis("Import GDM", "Tool - Restore", "", "", "", pid, "gdm", "IMPORTED");
         } else {
             getMapComposer().showMessage("Invalid reference number.");
         }
     }
 
-    public void onClick$btnCancel(Event event) {        
+    public void onClick$btnCancel(Event event) {
         this.detach();
     }
 
@@ -76,7 +78,7 @@ public class ImportAnalysisController extends UtilityComposer {
                 return false;
             }
             int p2 = txt.indexOf("gc:", pos);
-            if(p2 < 0) {
+            if (p2 < 0) {
                 return false;
             }
             int p3 = txt.indexOf("area:", pos);
@@ -155,7 +157,7 @@ public class ImportAnalysisController extends UtilityComposer {
             loadMapAloc(event);
         } else if (isMaxent) {
             loadMapMaxent(event);
-        } else if(isSxS) {
+        } else if (isSxS) {
             loadMapSxS(event);
         }
     }
@@ -205,9 +207,6 @@ public class ImportAnalysisController extends UtilityComposer {
 
         this.detach();
     }
-
-
-
 
     double[] getExtents() {
         double[] d = new double[6];
@@ -275,9 +274,9 @@ public class ImportAnalysisController extends UtilityComposer {
                 return false;
             }
             int p2 = txt.indexOf("taxonid:", pos);
-            if(p2 < 0) {
+            if (p2 < 0) {
                 return false;
-            }  
+            }
 
             return true;
         } catch (Exception e) {
@@ -295,17 +294,17 @@ public class ImportAnalysisController extends UtilityComposer {
                 return false;
             }
             int p2 = txt.indexOf("gridsize:", pos);
-            if(p2 < 0) {
+            if (p2 < 0) {
                 return false;
             }
 
-            if(txt.indexOf("sitesbyspecies") > 0) {
+            if (txt.indexOf("sitesbyspecies") > 0) {
                 sxsSitesBySpecies = true;
             }
-            if(txt.indexOf("occurrencedensity") > 0) {
+            if (txt.indexOf("occurrencedensity") > 0) {
                 sxsOccurrenceDensity = true;
             }
-            if(txt.indexOf("speciesdensity") > 0) {
+            if (txt.indexOf("speciesdensity") > 0) {
                 sxsSpeciesDensity = true;
             }
 
@@ -374,7 +373,7 @@ public class ImportAnalysisController extends UtilityComposer {
         try {
             // set off the download as well
             String fileUrl = CommonData.satServer + "/ws/download/" + pid;
-            Filedownload.save(new URL(fileUrl).openStream(), "application/zip",layername.replaceAll(" ", "_")+".zip"); // "ALA_Prediction_"+pid+".zip"
+            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", layername.replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
         } catch (Exception ex) {
             System.out.println("Error generating download for prediction model:");
             ex.printStackTrace(System.out);
@@ -445,5 +444,71 @@ public class ImportAnalysisController extends UtilityComposer {
         }
 
         this.detach();
+    }
+
+    boolean getParametersGdm() {
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            //TODO: analysis output url into config
+            sbProcessUrl.append(CommonData.satServer.replace("/alaspatial", "") + "/output/gdm/").append(pid).append("/ala.properties");
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+
+            if (result == 200) {
+                String slist = get.getResponseBodyAsString();
+                for (String row : slist.split("\n")) {
+                    if (row.startsWith("envlist")) {
+                        gdmEnvlist = row.replace("envlist=", "").split("\\\\:");
+                    }
+                }
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    void openProgressBarGdm() {
+        String[] envlist = gdmEnvlist;
+
+        for (String env : envlist) {
+            String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:gdm_" + env + "Tran_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
+
+            String legendurl = CommonData.geoServer
+                    + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
+                    + "&LAYER=ALA:gdm_" + env + "Tran_" + pid
+                    + "&STYLE=alastyles";
+
+            System.out.println(legendurl);
+
+            String layername = "Tranformed " + CommonData.getLayerDisplayName(env);
+            //System.out.println("Converting '" + env + "' to '" + layername.substring(10) + "' (" + CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(env)) + ")");
+            getMapComposer().addWMSLayer(pid + "_" + env, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.GDM, null, null);
+            MapLayer ml = getMapComposer().getMapLayer(pid + "_" + env);
+            ml.setData("pid", pid + "_" + env);
+            String infoUrl = CommonData.satServer + "/output/gdm/" + pid + "/gdm.html";
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                ml.setMapLayerMetadata(md);
+            }
+            md.setMoreInfo(infoUrl + "\nGDM Output\npid:" + pid);
+            md.setId(Long.valueOf(pid));
+        }
+
+        String fileUrl = CommonData.satServer + "/ws/download/" + pid;
+        try {
+            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", "gdm_" + pid + ".zip"); // "ALA_Prediction_"+pid+".zip"
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+         this.detach();
     }
 }

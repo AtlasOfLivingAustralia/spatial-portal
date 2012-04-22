@@ -66,7 +66,7 @@
                         <div style="padding-top:0px" width="65px">
                             <label value="Facet" sclass="h3" />
                         </div>
-                        <combobox id="cbColour" width="280px" >
+                        <combobox id="cbColour" width="280px" readonly="true">
                             <comboitem label="User defined colour" id="ciColourUser" value="-1" />
                         </combobox>
                     </hbox>
