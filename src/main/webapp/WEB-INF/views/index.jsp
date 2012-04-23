@@ -80,6 +80,10 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                             <li><strong>estuarine</strong> - Values are true/false or null (= not entered); false = non-estuarine, true = estuarine </li>
                             <li><strong>pelagic</strong> - Values are true/false or null</li>
                             <li><strong>groupName</strong> - e.g. "sharks", "rays", "chimaeras"</li>
+                            <li><strong>family</strong> - e.g. "Alopiidae". For multiple families add multiple "&family=?" params to URL</li>
+                            <li><strong>familyLsid</strong> - e.g. "urn:lsid:biodiversity.org.au:afd.taxon:7cb7f40d-143f-49cc-839d-613259786a42"</li>
+                            <li><strong>genus</strong> - e.g. "Alopias" For multiple genera add multiple "&genus=?" params to URL</li>
+                            <li><strong>genusLsid</strong> - e.g. "urn:lsid:biodiversity.org.au:afd.taxon:557d7f85-a430-4424-a7ae-7fca52b8b443"</li>
                         </ul>
                     </li>
                     <li><strong>Get a list of all distributions for radius:</strong> <a href="/ws/distributions/radius">/ws/distributions/radius</a>
@@ -94,6 +98,10 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                             <li><strong>estuarine</strong> - Values are true/false or null (= not entered); false = non-estuarine, true = estuarine </li>
                             <li><strong>pelagic</strong> - Values are true/false or null</li>
                             <li><strong>groupName</strong> - e.g. "sharks", "rays", "chimaeras"</li>
+                            <li><strong>family</strong> - e.g. "Alopiidae". For multiple families add multiple e.g. "?family=Alopiidae&family=Rhinochimaeridae" params to URL</li>
+                            <li><strong>familyLsid</strong> - e.g. "urn:lsid:biodiversity.org.au:afd.taxon:7cb7f40d-143f-49cc-839d-613259786a42"</li>
+                            <li><strong>genus</strong> - e.g. "Alopias" For multiple genera add multiple "&genus=?" params to URL</li>
+                            <li><strong>genusLsid</strong> - e.g. "urn:lsid:biodiversity.org.au:afd.taxon:557d7f85-a430-4424-a7ae-7fca52b8b443"</li>
                         </ul>
                     </li>
                     <li><strong>Get information about a specific distribution, given a spcode:</strong> /ws/distribution/{spcode} e.g. <a href="/ws/distribution/37031044">/ws/distribution/37031044</a> (Arafura Skate)</li>

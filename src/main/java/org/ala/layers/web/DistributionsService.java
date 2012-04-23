@@ -74,6 +74,10 @@ public class DistributionsService {
             @RequestParam(value = "estuarine", required = false) Boolean estuarine,
             @RequestParam(value = "desmersal", required = false) Boolean desmersal,
             @RequestParam(value = "groupName", required = false) String groupName,
+            @RequestParam(value = "family", required = false) String[] families,
+            @RequestParam(value = "familyLsid", required = false) String[] familyLsids,
+            @RequestParam(value = "genus", required = false) String[] genera,
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids,
             HttpServletResponse response) {
 
         if(StringUtils.isEmpty(wkt) && fid != null && objectName != null){
@@ -93,7 +97,7 @@ public class DistributionsService {
         }
         return distributionDao.queryDistributions(wkt, min_depth, max_depth,
                 pelagic,coastal,estuarine,desmersal,groupName,
-                geom_idx, lsids, Distribution.EXPERT_DISTRIBUTION);
+                geom_idx, lsids, families, familyLsids, genera, generaLsids, Distribution.EXPERT_DISTRIBUTION);
     }
 
     @RequestMapping(value = WS_DISTRIBUTIONS_RADIUS, method = {RequestMethod.GET, RequestMethod.POST} )
@@ -109,11 +113,17 @@ public class DistributionsService {
             @RequestParam(value = "coastal", required = false) Boolean coastal,
             @RequestParam(value = "estuarine", required = false) Boolean estuarine,
             @RequestParam(value = "desmersal", required = false) Boolean desmersal,
-            @RequestParam(value = "groupName", required = false) String groupName
+            @RequestParam(value = "groupName", required = false) String groupName,
+            @RequestParam(value = "family", required = false) String[] families,
+            @RequestParam(value = "familyLsid", required = false) String[] familyLsids,
+            @RequestParam(value = "genus", required = false) String[] genera,
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids
             ) {
         return distributionDao.queryDistributionsByRadius(longitude, latitude, radius, min_depth, max_depth,
                 pelagic,coastal,estuarine,desmersal,groupName,
-                geom_idx, lsids, Distribution.EXPERT_DISTRIBUTION);
+                geom_idx, lsids,
+                families, familyLsids, genera, generaLsids,
+                Distribution.EXPERT_DISTRIBUTION);
     }
 
     /*
@@ -151,7 +161,6 @@ public class DistributionsService {
         if(distributions != null && !distributions.isEmpty()) {
             Distribution distribution = distributions.get(0);
             logger.info("Sending redirect to WMS request for: " + lsid);
-            //FIXME remove the URL hardcoding and load from properties file
             response.sendRedirect("http://spatial.ala.org.au/geoserver/ALA/wms?service=WMS&version=1.1.0&request=GetMap" +
                     "&layers=ALA:aus1,ALA:distributions&styles=" +
                     "&bbox=112.911,-54.778,159.113,-9.221" +
