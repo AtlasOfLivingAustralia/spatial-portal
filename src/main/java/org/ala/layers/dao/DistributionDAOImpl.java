@@ -42,21 +42,24 @@ public class DistributionDAOImpl implements DistributionDAO {
 
     @Override
     public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth,
-                                                 Integer geomIdx, String lsids, String type) {
-        return queryDistributions(wkt, min_depth, max_depth, null, null, null, null, null, geomIdx, lsids, type);
+                                                 Integer geomIdx, String lsids,
+                                                 String type) {
+        return queryDistributions(wkt, min_depth, max_depth, null, null, null, null, null, geomIdx, lsids,  null, null, null, null, type);
     }
 
     @Override
     public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth,
                                                  Boolean pelagic, Boolean coastal, Boolean estuarine,Boolean desmersal,
                                                  String groupName,
-                                                 Integer geomIdx, String lsids, String type) {
+                                                 Integer geomIdx, String lsids,
+                                                 String[] families, String[] familyLsids, String[] genera, String[] generaLsids,
+                                                 String type) {
         logger.info("Getting distributions list");
 
         StringBuilder whereClause = new StringBuilder();
         Map<String, Object> params = new HashMap<String,Object>();
-        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName,geomIdx, lsids, type, params, whereClause);
-
+        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids,
+                families, familyLsids, genera, generaLsids, type, params, whereClause);
         if (wkt != null && wkt.length() > 0) {
             if (whereClause.length() > 0) {
                 whereClause.append(" AND ");
@@ -71,7 +74,7 @@ public class DistributionDAOImpl implements DistributionDAO {
         }
 
         return updateWMSUrl(jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params));
-    }        
+    }
 
     @Override
     public Distribution getDistributionBySpcode(long spcode, String type) {
@@ -85,9 +88,11 @@ public class DistributionDAOImpl implements DistributionDAO {
 
     public List<Distribution> queryDistributionsByRadius(float longitude, float latitude, float radiusInMetres,
                                                          double min_depth, double max_depth, Integer geomIdx,
-                                                         String lsids, String type){
+                                                         String lsids,
+                                                         String[] families, String[] familyLsids, String[] genera, String[] generaLsids,
+                                                         String type){
         return queryDistributionsByRadius(longitude, latitude, radiusInMetres, min_depth, max_depth, null, null, null,
-                null, null, geomIdx, lsids, type);
+                null, null, geomIdx, lsids, families, familyLsids, genera, generaLsids, type);
     }
 
     /**
@@ -98,7 +103,9 @@ public class DistributionDAOImpl implements DistributionDAO {
                                                          double min_depth, double max_depth, Boolean pelagic,
                                                          Boolean coastal, Boolean estuarine, Boolean desmersal,
                                                          String groupName,
-                                                         Integer geomIdx, String lsids, String type){
+                                                         Integer geomIdx, String lsids,
+                                                         String[] families, String[] familyLsids, String[] genera, String[] generaLsids,
+                                                         String type){
         logger.info("Getting distributions list with a radius");
 
         Map<String, Object> params = new HashMap<String,Object>();
@@ -112,7 +119,8 @@ public class DistributionDAOImpl implements DistributionDAO {
         //add additional criteria
         StringBuilder whereClause = new StringBuilder();
         
-        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids, type, params, whereClause);
+        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx,
+                lsids, families, familyLsids,  genera, generaLsids, type, params, whereClause);
         
         if(whereClause.length()>0){
             sql += " AND " + whereClause.toString();
@@ -140,7 +148,10 @@ public class DistributionDAOImpl implements DistributionDAO {
      */
     private void constructWhereClause(double min_depth, double max_depth, Boolean pelagic,
                                       Boolean coastal, Boolean estuarine, Boolean desmersal,
-                                      String groupName, Integer geomIdx, String lsids, String type, Map<String,Object> params,
+                                      String groupName,
+                                      Integer geomIdx, String lsids,
+                                      String[] families, String[] familyLsids, String[] genera, String[] generaLsids,
+                                      String type, Map<String,Object> params,
                                       StringBuilder where) {
         if (geomIdx != null && geomIdx >= 0) {
             where.append(" geom_idx = :geom_idx ");
@@ -155,25 +166,26 @@ public class DistributionDAOImpl implements DistributionDAO {
             params.put("lsids", " " + lsids.replace(",", " ") + " ") ;
         }
 
+
         if (min_depth != -1 && max_depth != -1) {
             if (where.length() > 0) {
                 where.append(" AND ");
             }
-            where.append("min_depth <= :min_depth AND max_depth >= :max_depth ");
+            where.append("min_depth <= :max_depth AND max_depth >= :min_depth ");
             params.put("max_depth", new Double(max_depth));
             params.put("min_depth", new Double(min_depth));
         } else if (min_depth != -1) {
             if (where.length() > 0) {
                 where.append(" AND ");
             }
-            where.append("max_depth >= :max_depth ");
-            params.put("max_depth", new Double(min_depth));
+            where.append("max_depth >= :min_depth ");
+            params.put("min_depth", new Double(min_depth));
         } else if (max_depth != -1) {
             if (where.length() > 0) {
                 where.append(" AND ");
             }
-            where.append("min_depth<= :min_depth ");
-            params.put("min_depth", new Double(max_depth));
+            where.append("min_depth <= :max_depth ");
+            params.put("max_depth", new Double(max_depth));
         }
 
         if (pelagic !=null) {
@@ -226,15 +238,38 @@ public class DistributionDAOImpl implements DistributionDAO {
             where.append("group_name = :groupName ");
             params.put("groupName", groupName);
         }
-    }
 
-    @Resource(name = "dataSource")
-    public void setDataSource(DataSource dataSource) {
-        this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
-    }
+        if (families !=null) {
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
+            where.append("family IN (:families) ");
+            params.put("families", Arrays.asList(families));
+        }
 
-    public void setViewName(String viewName) {
-        this.viewName = viewName;
+        if (familyLsids !=null) {
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
+            where.append("family_lsid IN (:familyLsids) ");
+            params.put("familyLsids", Arrays.asList(familyLsids));
+        }
+
+        if (genera !=null) {
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
+            where.append("genus_name IN (:genera) ");
+            params.put("genera", Arrays.asList(genera));
+        }
+
+        if (generaLsids !=null) {
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
+            where.append("genus_lsid IN (:generaLsids) ");
+            params.put("generaLsids", Arrays.asList(generaLsids));
+        }
     }
 
     private List<Distribution> updateWMSUrl(List<Distribution> distributions) {
@@ -247,5 +282,14 @@ public class DistributionDAOImpl implements DistributionDAO {
         }
 
         return distributions;
+    }
+
+    @Resource(name = "dataSource")
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
+    }
+
+    public void setViewName(String viewName) {
+        this.viewName = viewName;
     }
 }
