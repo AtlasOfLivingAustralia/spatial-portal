@@ -415,23 +415,13 @@ public class GridCutter {
         for (int i = 0; i < dfiltered.length; i++) {
             dfiltered[i] = Double.NaN;
         }
-
-        //Translate between data source grid and output grid
-        double resMult = Double.parseDouble(resolution) / grid.xres;
-        int xoff = (int) ((grid.xmin - extents[0][0]) / grid.xres);
-        int yoff = (int) ((grid.ymin - extents[0][1]) / grid.xres);
-
+        
+        double res = Double.parseDouble(resolution);
+     
         for (int i = 0; i < mask.length; i++) {
             for (int j = 0; j < mask[0].length; j++) {
-                if (mask[i][j] > 0) {
-                    int x = (int) Math.round(j * resMult - xoff);
-                    int y = (int) Math.round(i * resMult - yoff);
-                    if (x >= 0 && x < grid.ncols
-                            && y >= 0 && y < grid.nrows) {
-                        int pSrc = x + (grid.nrows - y - 1) * grid.ncols;
-                        int pDest = j + (h - i - 1) * w;
-                        dfiltered[pDest] = d[pSrc];
-                    }
+                if (mask[i][j] > 0) {    
+                    dfiltered[j + (h - i - 1) * w] = grid.getValues2(new double [][] {{j * res + extents[0][0], i * res + extents[0][1]}})[0];
                 }
             }
         }
@@ -441,7 +431,7 @@ public class GridCutter {
                 extents[0][1],
                 extents[1][0],
                 extents[1][1],
-                grid.xres, grid.yres, h, w);
+                res, res, h, w);
     }
 
     static void writeExtents(String filename, double[][] extents, int w, int h) {
