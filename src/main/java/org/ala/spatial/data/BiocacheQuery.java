@@ -14,14 +14,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
@@ -963,7 +956,7 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("country", "Country Boundaries", QueryField.FieldType.STRING));
             fields.add(new QueryField("ibra", "IBRA Regions", QueryField.FieldType.STRING));
             fields.add(new QueryField("imcra", "IMCRA Regions", QueryField.FieldType.STRING));
-            fields.add(new QueryField("cl918", "Dynamic Land Cover", QueryField.FieldType.STRING));
+            //fields.add(new QueryField("cl918", "Dynamic Land Cover", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl617", "Vegetation types - native", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl620", "Vegetation types - present", QueryField.FieldType.STRING));
             //fields.add(new QueryField("geospatial_kosher", "Location Quality", QueryField.FieldType.STRING));
@@ -1574,5 +1567,5 @@ public class BiocacheQuery implements Query, Serializable {
         }
         newFacets.add(Facet.parseFacet(sb.toString()));
         return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer);
-    }
+    }    
 }

@@ -7,12 +7,7 @@ package org.ala.spatial.util;
 import au.org.emii.portal.util.LayerSelection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.data.LsidCounts;
@@ -24,9 +19,9 @@ import org.apache.commons.httpclient.methods.GetMethod;
 /**
  * common data store
  *
- * 1. alaspatial environmental and contextual layer names (use in LayersUtil)
- * 2. alaspatial layers associations, environmental and contextual layer names (use in EnvironmentalList)
- * 3. layer list as string and JSON (layer tree, (2))
+ * 1. alaspatial environmental and contextual layer names (use in LayersUtil) 2.
+ * alaspatial layers associations, environmental and contextual layer names (use
+ * in EnvironmentalList) 3. layer list as string and JSON (layer tree, (2))
  *
  *
  * @author Adam
@@ -60,8 +55,7 @@ public class CommonData {
     public static SimpleShapeFileCache ssfCache;
     //(4) species with distribution layres
     /**
-     * key = LSID
-     * value = list of WMS names
+     * key = LSID value = list of WMS names
      */
     static HashMap<String, String[]> species_wms_layers = null;
     static HashMap<String, String[]> copy_species_wms_layers = null;
@@ -101,6 +95,7 @@ public class CommonData {
     static public String print_output_path;
     static public String print_output_url;
     static public String[][] facetNameExceptions; //{{"cl22", "state"}, {"cl959", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
+    static public Set<String> biocacheLayerList;
 
     /*
      * initialize common data from geoserver and satserver
@@ -159,6 +154,8 @@ public class CommonData {
             download_reasons = copy_download_reasons;
         }
 
+        //keep a list of biocache field names to know what is available for queries
+        initBiocacheLayerList();
 
         //(2) for EnvironmentalList
         if (copy_distances != null) {
@@ -761,7 +758,7 @@ public class CommonData {
 
     public static String getLayerDisplayName(String name) {
         JSONObject layer = null;
-        for (int i=0; i<layerlistJSON.size(); i++) {
+        for (int i = 0; i < layerlistJSON.size(); i++) {
             layer = layerlistJSON.getJSONObject(i);
             if (layer.getString("name").equalsIgnoreCase(name) && layer.containsKey("displayname")) {
                 return layer.getString("displayname");
@@ -950,12 +947,47 @@ public class CommonData {
      */
     public static JSONObject getLayer(String name) {
         JSONObject layer = null;
-        for (int i=0; i<layerlistJSON.size(); i++) {
+        for (int i = 0; i < layerlistJSON.size(); i++) {
             layer = layerlistJSON.getJSONObject(i);
             if (layer.getString("name").equalsIgnoreCase(name)) {
                 break;
             }
         }
         return layer;
+    }
+
+    static void initBiocacheLayerList() {
+        try {
+            //environmental only
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(biocacheServer + "/index/fields");
+
+            System.out.println(sbProcessUrl.toString());
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            int result = client.executeMethod(get);
+
+            System.out.println("initBiocacheLayerList: " + sbProcessUrl.toString() + " > " + result);
+            if (result == 200) {
+                Set<String> set = new HashSet<String>();
+                JSONArray ja = JSONArray.fromObject(get.getResponseBodyAsString());
+                System.out.println("size: " + ja.size());
+                for (int i = 0; i < ja.size(); i++) {                    
+                    set.add(ja.getJSONObject(i).getString("name"));
+                }
+                if (ja.size() > 0) {
+                    //include field names that get translated 
+                    for (int i = 0; i < facetNameExceptions.length; i++) {
+                        if (set.contains(facetNameExceptions[i][1])) {
+                            set.add(facetNameExceptions[i][0]);
+                        }
+                    }
+                    biocacheLayerList = set;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

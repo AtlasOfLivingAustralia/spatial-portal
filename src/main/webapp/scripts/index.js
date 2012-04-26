@@ -331,6 +331,10 @@ function runScatterPlot(){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddScatterplot', null));
 }
 
+function runScatterPlotList(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddScatterplotList', null));
+}
+
 function runTabulation(){
 //  uncomment this to trigger an error window
 //    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onSearchSpeciesPoint', null));

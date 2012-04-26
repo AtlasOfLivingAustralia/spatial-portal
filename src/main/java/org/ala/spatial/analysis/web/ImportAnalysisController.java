@@ -142,8 +142,9 @@ public class ImportAnalysisController extends UtilityComposer {
     }
 
     void openProgressBarAloc() {
-        ALOCProgressWCController window = (ALOCProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisALOCProgress.zul", this, null);
-        window.start(pid);
+        ProgressWCController window = (ProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisProgress.zul", getMapComposer(), null);
+        window.parent = this;
+        window.start(pid, "Classification");
         try {
             window.doModal();
 
@@ -255,9 +256,9 @@ public class ImportAnalysisController extends UtilityComposer {
     }
 
     void openProgressBarMaxent() {
-        MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", this, null);
-        //window.parent = this;
-        window.start(pid);
+        ProgressWCController window = (ProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisProgress.zul", getMapComposer(), null);
+        window.parent = this;
+        window.start(pid, "Prediction");
         try {
             window.doModal();
         } catch (Exception e) {
@@ -317,9 +318,9 @@ public class ImportAnalysisController extends UtilityComposer {
     }
 
     void openProgressBarSxS() {
-        SitesBySpeciesProgressWCController window = (SitesBySpeciesProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisSitesBySpeciesProgress.zul", this, null);
-        //window.parent = this;
-        window.start(pid);
+        ProgressWCController window = (ProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisProgress.zul", getMapComposer(), null);
+        window.parent = this;
+        window.start(pid, "Points to Grid");        
         try {
             window.doModal();
         } catch (Exception e) {

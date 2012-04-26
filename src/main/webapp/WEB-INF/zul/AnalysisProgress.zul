@@ -2,8 +2,8 @@
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
     <window id="alocprogress" title="Classification" border="normal"
-    use="org.ala.spatial.analysis.web.ALOCProgressWCController"
-            apply="org.ala.spatial.analysis.web.ALOCProgressWCController"
+    use="org.ala.spatial.analysis.web.ProgressWCController"
+            apply="org.ala.spatial.analysis.web.ProgressWCController"
             closable="false" mode="embedded" width="320px">
 
         <separator />
@@ -17,6 +17,7 @@
             <label value="Reference number" /> 
             <textbox readonly="true" id="tbPid" /> 
         </hbox>
+        <textbox id="txtLog" multiline="true" width="300px" height="300px"/>
         <separator />
         <button visible="false" id="btnHide" label="continue" />
         <button id="btnCancel" label="cancel" />

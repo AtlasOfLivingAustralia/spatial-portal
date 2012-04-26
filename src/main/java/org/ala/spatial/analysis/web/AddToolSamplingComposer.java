@@ -4,6 +4,9 @@
  */
 package org.ala.spatial.analysis.web;
 
+import java.util.ArrayList;
+import java.util.Set;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
@@ -84,9 +87,38 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 }
             }
 
-            //test for URL download
-            String url = query.getDownloadUrl(layers);
-            if (url != null) {
+            if(query instanceof BiocacheQuery) {
+                String [] inBiocache = null;
+                String [] outBiocache = null;
+                
+                //split layers into 'in biocache' and 'out of biocache'
+                Set<String> biocacheLayers = CommonData.biocacheLayerList;
+                ArrayList<String> aInBiocache = new ArrayList<String>();
+                ArrayList<String> aOutBiocache = new ArrayList<String>();
+                
+                for(String s : layers) {
+                    if(biocacheLayers.contains(s)) {
+                        aInBiocache.add(s);
+                    } else {
+                        aOutBiocache.add(s);
+                    }
+                }
+                if(aInBiocache.size() > 0) {
+                    inBiocache = new String [aInBiocache.size()];
+                    aInBiocache.toArray(inBiocache);
+                }
+                if(aOutBiocache.size() > 0) {
+                    outBiocache = new String [aOutBiocache.size()];
+                    aOutBiocache.toArray(outBiocache);
+                    getMapComposer().downloadSecondQuery = query;
+                    getMapComposer().downloadSecondLayers = outBiocache;
+                } else {                    
+                    getMapComposer().downloadSecondQuery = null;
+                    getMapComposer().downloadSecondLayers = null;
+                }                
+                            
+                //test for URL download
+                String url = query.getDownloadUrl(inBiocache);
                 System.out.println("Sending file to user: " + url);
 
                 Events.echoEvent("openHTML", getMapComposer(), "Download\n" + url);

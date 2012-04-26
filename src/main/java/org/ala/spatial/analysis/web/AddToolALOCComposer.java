@@ -281,9 +281,9 @@ public class AddToolALOCComposer extends AddToolComposer {
                 e.printStackTrace();
             }
 
-            ALOCProgressWCController window = (ALOCProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisALOCProgress.zul", getMapComposer(), null);
+            ProgressWCController window = (ProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisProgress.zul", getMapComposer(), null);
             window.parent = this;
-            window.start(pid);
+            window.start(pid, "Classification");
             window.doModal();
 
             this.setVisible(false);

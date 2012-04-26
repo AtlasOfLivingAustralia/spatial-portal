@@ -6,6 +6,7 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import java.net.SocketTimeoutException;
+import net.sf.json.JSONObject;
 import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.Util;
@@ -23,7 +24,7 @@ import org.zkoss.zul.Window;
  *
  * @author ajay
  */
-public class ALOCProgressWCController extends UtilityComposer {
+public class ProgressWCController extends UtilityComposer {
 
     RemoteLogger remoteLogger;
     Label jobstatus;
@@ -31,18 +32,23 @@ public class ALOCProgressWCController extends UtilityComposer {
     Timer timer;
     Textbox tbPid;
     public String pid = null;
-//    public ALOCWCController parent = null;
     public Window parent = null;
-
+    public String name = "";
+    Textbox txtLog;
+    
+    String log = "";
+    
     @Override
     public void afterCompose() {
         super.afterCompose();
         timer.stop();
     }
 
-    public void start(String pid_) {
+    public void start(String pid_, String name) {
         pid = pid_;
         tbPid.setValue(pid_);
+        this.name = name;
+        this.setTitle(name);
 
         timer.start();
 
@@ -55,60 +61,91 @@ public class ALOCProgressWCController extends UtilityComposer {
             parent = (Window) this.getParent();
         }
 
-        String status = get("status");
-        if(status.length() > 0) {
-            jobstatus.setValue(status);
+        JSONObject jo = get();
+        
+        if(jo.containsKey("status")) {
+            jobstatus.setValue(jo.getString("status"));
         }
 
-        String s = get("state");
+        String s = jo.getString("state");
         if(s.equals("job does not exist")){
             timer.stop();
-            getMapComposer().showMessage("Classification request does not exist","");//get("error"));
+            getMapComposer().showMessage(name + " request does not exist","");//get("error"));
             this.detach();
             return;
         }
 
-        String p = get("progress");
+        String p = jo.getString("progress");
         try {
             double d = Double.parseDouble(p);
             jobprogress.setValue((int) (d * 100));
         } catch (Exception ex) {
+        }
+        
+        String log = jo.getString("log");
+        if(log != null) {
+            this.log += log;
+            if(txtLog != null) {
+                txtLog.setValue(this.log);
+            }
         }
 
         remoteLogger.logMapAnalysisUpdateStatus(pid, s);
 
         if (s.equals("SUCCESSFUL")) {
             timer.stop();
-            System.out.println("ALOC DONE. Calling loadMap");
+            System.out.println("JOB DONE. Calling loadMap");
             Events.echoEvent("loadMap",parent, null);
-            //showReferenceNumber();
             this.detach();
         } else if (s.startsWith("FAILED")) {
             timer.stop();
             //String error_info = (s.contains(";")?"\n"+s.substring(s.indexOf(";")+1):"");
-            String error_info = get("message");
+            String error_info = jo.getString("message");
             if (!error_info.equals("job does not exist")) {
                 error_info = " with the following message: \n\n" + Util.breakString(error_info, 64);
             } else {
                 error_info = "";
             }
-            getMapComposer().showMessage("Classification failed" + error_info);
+            getMapComposer().showMessage(name + " failed" + error_info);
             this.detach();
             this.parent.detach();
         } else if(s.equals("CANCELLED")){
             timer.stop();
-            getMapComposer().showMessage("Classification cancelled by user");
+            getMapComposer().showMessage(name + " cancelled by user");
             this.detach();
         }
 
     }
 
-    String get(String type) {
+    JSONObject get() {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/ws/job?pid=").append(pid);
 
             System.out.println("checking status every '"+timer.getDelay()+"' sec: " + sbProcessUrl.toString());
+            
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            get.addRequestHeader("Accept", "application/json");
+
+            client.getHttpConnectionManager().getParams().setSoTimeout(timer.getDelay());
+            int result = client.executeMethod(get);
+            
+            if (result == 200) {
+                return JSONObject.fromObject(get.getResponseBodyAsString());
+            }
+        } catch (SocketTimeoutException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void onClick$btnCancel(Event e) {
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(CommonData.satServer + "/ws/jobs/cancel?pid=").append(pid);
             
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
@@ -117,18 +154,9 @@ public class ALOCProgressWCController extends UtilityComposer {
 
             client.getHttpConnectionManager().getParams().setSoTimeout(timer.getDelay());
             int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            
-            return slist;
-        } catch (SocketTimeoutException e) {
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        return "";
-    }
-
-    public void onClick$btnCancel(Event e) {
-        get("cancel");
         this.detach();
     }
 

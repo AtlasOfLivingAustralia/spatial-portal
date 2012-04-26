@@ -278,9 +278,9 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
     }
 
     void openProgressBar() {
-        SitesBySpeciesProgressWCController window = (SitesBySpeciesProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisSitesBySpeciesProgress.zul", getMapComposer(), null);
+        ProgressWCController window = (ProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisProgress.zul", getMapComposer(), null);
         window.parent = this;
-        window.start(pid);
+        window.start(pid, "Points to Grid");
         try {
             window.doModal();
         } catch (Exception e) {

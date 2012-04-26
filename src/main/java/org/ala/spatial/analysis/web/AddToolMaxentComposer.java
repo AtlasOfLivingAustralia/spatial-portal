@@ -15,7 +15,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.ala.spatial.data.Facet;
@@ -34,8 +33,6 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Filedownload;
-import org.zkoss.zul.Listbox;
-import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Textbox;
 
 /**
@@ -242,9 +239,9 @@ public class AddToolMaxentComposer extends AddToolComposer {
     }
 
     void openProgressBar() {
-        MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", getMapComposer(), null);
+        ProgressWCController window = (ProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisProgress.zul", getMapComposer(), null);
         window.parent = this;
-        window.start(pid);
+        window.start(pid, "Prediction");
         try {
             window.doModal();
         } catch (Exception e) {

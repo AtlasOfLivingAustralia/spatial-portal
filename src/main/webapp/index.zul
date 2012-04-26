@@ -114,6 +114,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a>
                                 </n:li>
                                 <n:li>
+                                    <n:a href="#" n:onClick="runScatterPlotList();">Scatterplot List</n:a>
+                                </n:li>
+                                <n:li>
                                     <n:a href="#" n:onClick="runTabulation();">Tabulate</n:a>
                                 </n:li>
                                 <n:li>
@@ -530,10 +533,16 @@ console.log(currentbaselayertxt);
         //console.log("downloadUrl = " + downloadUrl);
         //alert("downloadUrl = " + downloadUrl);
         window.location.href = downloadUrl;
-        zk.Widget.$(jq('$externalContentWindow')).detach(); 
+        zk.Widget.$(jq('$externalContentWindow')).detach();
+        setTimeout(downloadSecond, 2000);
         return false; 
         }
     }
+
+    function downloadSecond() {
+        zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'downloadSecond', null));
+    }
+
     function validateForm() {
             var isValid = false;
             var reasonId = $("#reasonTypeId option:selected").val();

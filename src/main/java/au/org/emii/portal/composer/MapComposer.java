@@ -29,12 +29,7 @@ import com.vividsolutions.jts.io.WKTReader;
 import org.geotools.kml.KML;
 import org.geotools.kml.KMLConfiguration;
 import java.awt.Color;
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -48,6 +43,8 @@ import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONArray;
@@ -59,20 +56,14 @@ import org.ala.spatial.analysis.web.DistributionsWCController;
 import org.ala.spatial.analysis.web.FilteringResultsWCController;
 import org.ala.spatial.analysis.web.HasMapLayer;
 import org.ala.spatial.analysis.web.UploadSpeciesController;
-import org.ala.spatial.data.LegendObject;
-import org.ala.spatial.data.Query;
-import org.ala.spatial.data.QueryUtil;
+import org.ala.spatial.data.*;
+import org.ala.spatial.sampling.Sampling;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.ShapefileUtils;
-import org.ala.spatial.data.BiocacheQuery;
-import org.ala.spatial.data.Facet;
-import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.sampling.SimpleShapeFile;
-import org.ala.spatial.util.SelectedArea;
-import org.ala.spatial.util.UserData;
-import org.ala.spatial.util.Util;
+import org.ala.spatial.util.*;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
@@ -224,11 +215,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void applyChange(MapLayer selectedLayer) {
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
-            /* different path for each type layer
-             * 1. symbol
-             * 2. classification legend
-             * 3. prediction legend
-             * 4. other (wms)
+            /*
+             * different path for each type layer 1. symbol 2. classification
+             * legend 3. prediction legend 4. other (wms)
              */
             if (selectedLayer.isDynamicStyle()) {
 
@@ -294,8 +283,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     reloadMapLayerNowAndIndexes(selectedLayer);
                 }
             } else if (selectedLayer.getSelectedStyle() != null) {
-                /* 1. classification legend has uri with ".zul" content
-                 * 2. prediction legend works here                 *
+                /*
+                 * 1. classification legend has uri with ".zul" content 2.
+                 * prediction legend works here *
                  */
                 selectedLayer.setOpacity(selectedLayer.getOpacity());
                 String legendUri = selectedLayer.getSelectedStyle().getLegendUri();
@@ -365,6 +355,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     /**
      * Reorder the active layers list based on a d'n'd event
+     *
      * @param dragged
      * @param dropped
      */
@@ -390,13 +381,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Remove a maplayer from the active layers list and then
-     * reinsert it at the same spot - should cause this part
-     * of the list to be re-rendered.
+     * Remove a maplayer from the active layers list and then reinsert it at the
+     * same spot - should cause this part of the list to be re-rendered.
      *
-     * After re-rendering, reselect the corresponding item in
-     * its listbox, as operations such as changing opacity
-     * and animation require a layer is selected
+     * After re-rendering, reselect the corresponding item in its listbox, as
+     * operations such as changing opacity and animation require a layer is
+     * selected
+     *
      * @param mapLayer
      */
     public void refreshActiveLayer(MapLayer mapLayer) {
@@ -546,9 +537,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     /**
      * Activate a map layer on the map
+     *
      * @param layer MapLayer instance to activate
-     * @param doJavaScript set false to defer execution of JavaScript
-     * which actually adds the layer to the openlayers menu
+     * @param doJavaScript set false to defer execution of JavaScript which
+     * actually adds the layer to the openlayers menu
      *
      * @return true if the layer was added successfully, otherwise false
      */
@@ -556,17 +548,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         List<MapLayer> activeLayers = getPortalSession().getActiveLayers();
         boolean layerAdded = false;
 
-        /* switch to the ListModelList if we are currently using simplelistmodel
+        /*
+         * switch to the ListModelList if we are currently using simplelistmodel
          * to display the 'no layers selected' message
          *
-         * If the model is already an instance of ListModelList then
-         * the model should already have the data it needs so just
-         * fire the update event.
+         * If the model is already an instance of ListModelList then the model
+         * should already have the data it needs so just fire the update event.
          */
         if (!(activeLayersList.getModel() instanceof ListModelList)) {
             logger.debug("changing model for Active Layers to ListModelList");
-            /* this is the first item being added to the list so we make
-             * it a new ListModelList instance based on live data
+            /*
+             * this is the first item being added to the list so we make it a
+             * new ListModelList instance based on live data
              */
             activeLayersList.setModel(new ListModelList(activeLayers, true));
 
@@ -574,17 +567,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (!activeLayers.contains(mapLayer) && mapLayer.isDisplayable()) {
 
-            /* assume we want to display on the map straight away - set checkbox
+            /*
+             * assume we want to display on the map straight away - set checkbox
              * to true
              */
             activeLayersList.setItemRenderer(activeLayerRenderer);
 
 
-            /* use the MODEL facade to add the new layer (it's not smart enough
+            /*
+             * use the MODEL facade to add the new layer (it's not smart enough
              * to detect the change otherwise.
              *
-             * We always add to the top of the list so that newly actived
-             * map layers display above existing ones
+             * We always add to the top of the list so that newly actived map
+             * layers display above existing ones
              */
 
             ((ListModelList) activeLayersList.getModel()).add(0, mapLayer);
@@ -613,8 +608,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Remove an item from the list of active layers and put it back in the
-     * tree menu of available layers
+     * Remove an item from the list of active layers and put it back in the tree
+     * menu of available layers
+     *
      * @param itemToRemove
      */
     public void deactiveLayer(MapLayer itemToRemove, boolean updateMapAndLayerControls, boolean recursive) {
@@ -654,11 +650,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
             }
 
-            /* only the items in the active menu will have been marked
-             * as being displayed (gets done by the changeSelection()
-             * method), so we must set the listedInActiveLayers flag
-             * ourself if we skipped this stage because the item is
-             * in a menu that's not being displayed
+            /*
+             * only the items in the active menu will have been marked as being
+             * displayed (gets done by the changeSelection() method), so we must
+             * set the listedInActiveLayers flag ourself if we skipped this
+             * stage because the item is in a menu that's not being displayed
              */
             if (!deListedInActiveLayers) {
                 itemToRemove.setListedInActiveLayers(false);
@@ -689,8 +685,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Remove an item from the list of active layers and put it back in the
-     * tree menu of available layers
+     * Remove an item from the list of active layers and put it back in the tree
+     * menu of available layers
+     *
      * @param itemToRemove
      */
     public void removeFromList(MapLayer itemToRemove) {
@@ -715,11 +712,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
             }
 
-            /* only the items in the active menu will have been marked
-             * as being displayed (gets done by the changeSelection()
-             * method), so we must set the listedInActiveLayers flag
-             * ourself if we skipped this stage because the item is
-             * in a menu that's not being displayed
+            /*
+             * only the items in the active menu will have been marked as being
+             * displayed (gets done by the changeSelection() method), so we must
+             * set the listedInActiveLayers flag ourself if we skipped this
+             * stage because the item is in a menu that's not being displayed
              */
             if (!deListedInActiveLayers) {
                 itemToRemove.setListedInActiveLayers(false);
@@ -735,6 +732,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     /**
      * A simple message dialogue
+     *
      * @param message Full text of message to show
      */
     public void showMessage(String message) {
@@ -744,6 +742,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
     /**
      * A simple message dialogue to display over AnalysisToolComposer
+     *
      * @param message Full text of message to show
      */
     boolean mp = true;
@@ -763,11 +762,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Show a message dialogue.  Initially a short message is
-     * shown but the user can click 'show details' to get a more
-     * informative message.
+     * Show a message dialogue. Initially a short message is shown but the user
+     * can click 'show details' to get a more informative message.
      *
      * A default message title is obtained from the config file
+     *
      * @param message
      * @param messageDetail
      */
@@ -776,11 +775,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Show a message dialogue.  Initially a short message is
-     * shown but the user can click 'show details' to get a more
-     * informative message.
+     * Show a message dialogue. Initially a short message is shown but the user
+     * can click 'show details' to get a more informative message.
      *
      * A title must be provided for the popup box
+     *
      * @param title
      * @param message
      * @param messageDetail
@@ -796,26 +795,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * This is a fixed size (because of zk limitations) message
-     * dialogue featuring:
-     * 	o	title
-     * 	o	brief description
-     * 	o	detailed description (hidden by default)
-     * 	o	link to raw data (hidden by default)
-     * 	o	Iframe full of raw data (hidden by default)
-     * There are lots of parameters for this method so if you want
-     * to use it, it's easiest to write a wrapper and just call that
+     * This is a fixed size (because of zk limitations) message dialogue
+     * featuring: o	title o	brief description o	detailed description (hidden by
+     * default) o	link to raw data (hidden by default) o	Iframe full of raw data
+     * (hidden by default) There are lots of parameters for this method so if
+     * you want to use it, it's easiest to write a wrapper and just call that
      * when you have a problem.
      *
-     * This is not a general purpose error message - everything
-     * is fixed sizes (has to be or the iframe doesn't display
-     * properly.  If you want a general purpose error message, use
-     * the showMessageNow() calls
+     * This is not a general purpose error message - everything is fixed sizes
+     * (has to be or the iframe doesn't display properly. If you want a general
+     * purpose error message, use the showMessageNow() calls
      *
      * @param title TEXT of the title or null to use default from config file
      * @param message TEXT in config file of the error message
      * @param messageDetail TEXT to display if user clicks 'show detail'
-     * @param rawMessageTitle TEXT to display before raw output or null to ignore
+     * @param rawMessageTitle TEXT to display before raw output or null to
+     * ignore
      * @param rawMessage TEXT of raw error message or null to ignore
      */
     public void showMessage(String title,
@@ -835,50 +830,53 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         // this will be the inside of the iframe...
 
-        /* StringMedia is not allowed to be null (will give an error)
-         * so if no data was available, give the user a message
+        /*
+         * StringMedia is not allowed to be null (will give an error) so if no
+         * data was available, give the user a message
          */
         if (rawMessage == null) {
             rawMessage = languagePack.getLang("null_raw_data");
         }
         StringMedia rawErrorMessageMedia = new StringMedia(rawMessage);
 
-        /* have to store the raw error message in the user's session
-         * temporarily to prevent getting a big zk severe error if
-         * the iframe is requested after it is supposed to have been
-         * dereferenced
+        /*
+         * have to store the raw error message in the user's session temporarily
+         * to prevent getting a big zk severe error if the iframe is requested
+         * after it is supposed to have been dereferenced
          */
         getPortalSession().setRawErrorMessageMedia(rawErrorMessageMedia);
         rawMessageIframeHack.setContent(rawErrorMessageMedia);
 
-        /* the raw text can't go in with the params or it gets
-         * escaped by zk - you have to do weird things with
-         * iframes and the media class instead
+        /*
+         * the raw text can't go in with the params or it gets escaped by zk -
+         * you have to do weird things with iframes and the media class instead
          */
 
         Window window;
         window = (Window) Executions.createComponents("WEB-INF/zul/ErrorMessageWithDetailAndRawData.zul", null, params);
 
-        /* now we grab the hidden iframe in index.zul and move it into
-         * our message box - again this is to prevent a massive zk error
-         * if the iframe content is requested after it's supposed to have
-         * gone
+        /*
+         * now we grab the hidden iframe in index.zul and move it into our
+         * message box - again this is to prevent a massive zk error if the
+         * iframe content is requested after it's supposed to have gone
          */
         Component holder = window.getFellow("rawMessageHolder");
         rawMessageIframeHack.setParent(holder);
         window.doOverlapped();
 
-        /* at this point the user has closed the message box - we
-         * only have one more thing to do to stop the big zk error
-         * and that is to grab the iframe back off the error message
-         * window and put it back where we found it in the index.zul
-         * page - not pretty or efficient but works a treat!
+        /*
+         * at this point the user has closed the message box - we only have one
+         * more thing to do to stop the big zk error and that is to grab the
+         * iframe back off the error message window and put it back where we
+         * found it in the index.zul page - not pretty or efficient but works a
+         * treat!
          */
         rawMessageIframeHack.setParent(rawMessageHackHolder);
     }
 
     /**
      * Add a map layer to the user defined map layers group (My Layers)
+     *
      * @param layer
      *
      *
@@ -898,11 +896,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Initial building of the tree menu and active layers list based on
-     * the values obtained from the current session.
+     * Initial building of the tree menu and active layers list based on the
+     * values obtained from the current session.
      *
-     * JavaScript for loading default map layers and setting the default
-     * zoombox is in SessionInit.java
+     * JavaScript for loading default map layers and setting the default zoombox
+     * is in SessionInit.java
      */
     public void load() {
         logger.debug("entering loadMapLayers");
@@ -937,8 +935,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     /**
      * Display an empty list in the active layers box - usually this will
-     * consist of a single list element with a value along the lines of
-     * 'please select map layers'
+     * consist of a single list element with a value along the lines of 'please
+     * select map layers'
+     *
      * @param activeLayersList
      */
     void displayEmptyActiveLayers(Listbox activeLayersList) {
@@ -948,8 +947,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Add a WMS layer identified by the given parameters to the menu system
-     * and activate it
+     * Add a WMS layer identified by the given parameters to the menu system and
+     * activate it
+     *
      * @param label Name of map layer
      * @param uri URI for the WMS service
      * @param opacity 0 for invisible, 1 for solid
@@ -1181,6 +1181,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /**
      * Simple test to see whether we have active layers in the active layers
      * list or not
+     *
      * @return
      */
     public boolean haveActiveLayers() {
@@ -1211,8 +1212,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Check if its safe to do things to the map - if it's not,
-     * show a popup box
+     * Check if its safe to do things to the map - if it's not, show a popup box
+     *
      * @return
      */
     public boolean safeToPerformMapAction() {
@@ -1227,8 +1228,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Extract the value of custom attribute systemId from the passed
-     * in ForwardEvent instance
+     * Extract the value of custom attribute systemId from the passed in
+     * ForwardEvent instance
+     *
      * @param event
      * @return value of custom attribute systemId
      */
@@ -1254,7 +1256,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /**
      * apply window parameters
      *
-     * p = width in pixels,height in pixels,longitude1,latitude1,longitude2,latitude2
+     * p = width in pixels,height in
+     * pixels,longitude1,latitude1,longitude2,latitude2
      */
     void applyWindowParams() {
         String s = (String) Executions.getCurrent().getParameter("p");
@@ -1691,8 +1694,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /**
      * Destroy session and reload page
      *
-     * - added confirmation message, needs to be event driven since
-     * message box always returning '1' with current zk settings.
+     * - added confirmation message, needs to be event driven since message box
+     * always returning '1' with current zk settings.
      */
     public void onClick$reloadPortal() {
         // user confirmation for whole map reset
@@ -1884,7 +1887,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Maximise map display area - currently just hides the left menumapNavigationTabContent
+     * Maximise map display area - currently just hides the left
+     * menumapNavigationTabContent
+     *
      * @param maximise
      */
     void maximise() {
@@ -2764,7 +2769,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * get Active Area as WKT string, from a layer name
      *
      * @param layer name of layer as String
-     * @param register_shape true to register the shape with alaspatial shape register
+     * @param register_shape true to register the shape with alaspatial shape
+     * register
      * @return
      */
     String getLayerGeoJsonAsWkt(String layer) {
@@ -2952,6 +2958,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/AddToolScatterplot.zul", null, "addtoolwindow");
     }
 
+    public void onClick$btnAddScatterplotList(Event event) {
+        openModal("WEB-INF/zul/AddToolScatterplotList.zul", null, "addtoolwindow");
+    }
+    
     public void runTabulation(Event event) {
         openModal("WEB-INF/zul/AddToolTabulation.zul", null, "addtoolwindow");
     }
@@ -3235,8 +3245,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Searches the occurrences at a given point and then maps the polygon feature
-     * found at the location (for the current top contextual layer).
+     * Searches the occurrences at a given point and then maps the polygon
+     * feature found at the location (for the current top contextual layer).
+     *
      * @param event triggered by the usual javascript trickery
      */
 //    public void onSearchSpeciesPoint(Event event) {
@@ -3508,5 +3519,96 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             query.flagRecord(params[1], params[2].equalsIgnoreCase("true"));
         }
         updateLayerControls();
+    }
+    
+    public Query downloadSecondQuery = null;
+    public String[] downloadSecondLayers = null;
+
+    public void downloadSecond(Event event) throws IOException {
+        if (downloadSecondQuery != null) {
+            ArrayList<QueryField> fields = new ArrayList<QueryField>();
+            fields.add(new QueryField(downloadSecondQuery.getRecordIdFieldName()));
+            fields.add(new QueryField(downloadSecondQuery.getRecordLongitudeFieldName()));
+            fields.add(new QueryField(downloadSecondQuery.getRecordLatitudeFieldName()));
+
+            String results = downloadSecondQuery.sample(fields);
+
+            if (results == null) {
+                //TODO: fail nicely
+            } else {
+                CSVReader csvreader = new CSVReader(new StringReader(results));
+                List<String[]> csv = csvreader.readAll();
+                csvreader.close();
+
+                int longitudeColumn = findInArray(downloadSecondQuery.getRecordLongitudeFieldDisplayName(), csv.get(0));
+                int latitudeColumn = findInArray(downloadSecondQuery.getRecordLatitudeFieldDisplayName(), csv.get(0));
+                int idColumn = findInArray(downloadSecondQuery.getRecordIdFieldDisplayName(), csv.get(0));
+
+                double[] points = new double[(csv.size() - 1) * 2];
+                String[] ids = new String[csv.size() - 1];
+                int pos = 0;
+                for (int i = 1; i < csv.size(); i++) {
+                    try {
+                        points[pos] = Double.parseDouble(csv.get(i)[longitudeColumn]);
+                        points[pos + 1] = Double.parseDouble(csv.get(i)[latitudeColumn]);
+                    } catch (Exception e) {
+                        points[pos] = Double.NaN;
+                        points[pos + 1] = Double.NaN;
+                    }
+                    ids[pos / 2] = csv.get(i)[idColumn];
+                    pos += 2;
+                }
+
+                double[][] p = new double[points.length / 2][2];
+                for (int i = 0; i < points.length; i += 2) {
+                    p[i / 2][0] = points[i];
+                    p[i / 2][1] = points[i + 1];
+                }
+
+                ArrayList<String> layers = new ArrayList<String>();
+                StringBuilder sb = new StringBuilder();
+                for (String layer : downloadSecondLayers) {
+                    if (sb.length() > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(CommonData.getLayerDisplayName(layer));
+
+                    layers.add(CommonData.getLayerFacetName(layer));
+                }
+                List<String[]> sample = Sampling.sampling(layers, p);
+
+                for (int i = 0; i < sample.size(); i++) {
+                    sb.append("\n").append(ids[i]).append(",").append(p[i][1]).append(",").append(p[i][0]);
+                    for (int j = 0; j < sample.get(i).length; j++) {
+                        sb.append(",").append(sample.get(i)[j]);
+                    }
+                }
+                
+                try {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ZipOutputStream zos = new ZipOutputStream(baos);
+                    
+                    ZipEntry anEntry = new ZipEntry("analysis_output_intersect.csv");                    
+                    zos.putNextEntry(anEntry);
+                    zos.write(sb.toString().getBytes());
+                    zos.close();
+                    
+                    Filedownload.save(baos.toByteArray(), "application/zip","analysis_output_intersect.zip");                
+                } catch (Exception e) {
+                    //handle exception
+                }
+
+                downloadSecondQuery = null;
+            }
+        }
+    }
+
+    private int findInArray(String lookFor, String[] array) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].equals(lookFor)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }
