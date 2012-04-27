@@ -537,7 +537,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
             layerControls.setVisible(true);
             layerControls.setAttribute("activeLayerName", currentSelection.getName());
 
-            btnActivateHover.setVisible((currentSelection.isGridLayer() || currentSelection.isContextualLayer()));
+            btnActivateHover.setVisible((currentSelection.isGridLayer() || currentSelection.isContextualLayer() || currentSelection.getSubType()==LayerUtilities.GDM));
         }
 
         if (m != null && m.isSpeciesLayer()) {

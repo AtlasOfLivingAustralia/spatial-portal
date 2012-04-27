@@ -451,7 +451,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     //sbContent.append("            <p><label for='reason' style='vertical-align: top'>Download Reason</label>");
                     //sbContent.append("                <textarea name='reason' rows='5' cols='30' id='reason'  ></textarea>");
                     //sbContent.append("            </p>");
-                    sbContent.append("            <p><label for='reasonTypeId' style='vertical-align: top'>Download Reason</label>");
+                    sbContent.append("            <p><label for='reasonTypeId' style='vertical-align: top'>Download Reason *</label>");
                     sbContent.append("            <select name='reasonTypeId' id='reasonTypeId'>");
                     sbContent.append("            <option value=''>-- select a reason --</option>");
                     JSONArray dlreasons = CommonData.getDownloadReasons();

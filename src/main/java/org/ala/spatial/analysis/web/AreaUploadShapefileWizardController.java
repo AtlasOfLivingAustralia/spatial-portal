@@ -264,10 +264,15 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 executeShapeImageRenderer(file, "none", "none");
             } else {
                 System.out.println("only a single feature, bypassing wizard...");
-                ArrayList<String> tmpList = new ArrayList<String>();
                 fi = features.features();
+                //ArrayList<String> tmpList = new ArrayList<String>();
                 //tmpList.add(String.valueOf(fi.next().getAttribute(cbAttributes.getValue())));
                 //loadOnMap(tmpList);
+
+                Set<FeatureId> IDs = new HashSet<FeatureId>();
+                IDs.add(fi.next().getIdentifier()); 
+                loadOnMap(IDs);
+
                 this.detach();
             }
 

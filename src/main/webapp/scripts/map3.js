@@ -197,15 +197,8 @@ function buildMapReal() {
     document.getElementById('mapdiv').style.height = '100%';
 
     // highlight for the scale and lonlat info
-    function onOver(){
-        jQuery("div#mapinfo ").css("opacity","0.9");
-    }
-    function onOut(){
-        jQuery("div#mapinfo ").css("opacity","0.5");
-    }
-
-    jQuery("div#mapinfo ").css("opacity","0.5");
-    jQuery("div#mapinfo").hover(onOver,onOut);
+    $("div#mapinfo").hover( function(){$(this).css("opacity","0.9");}, function(){$(this).css("opacity","0.5");} );
+    $("div#layervalues").hover( function(){$(this).css("opacity","0.9");}, function(){$(this).css("opacity","0.5");} );
 
     // proxy.cgi script provided by OpenLayers written in Python, must be on the same domain
     OpenLayers.ProxyHost = proxy_script;
@@ -326,6 +319,7 @@ function buildMapReal() {
     });
 
     registerSpeciesClick();
+    toggleActiveHover();
 }
 
 function autoSwitchBaseMap() {
@@ -1330,7 +1324,7 @@ var prevNearestRequest = null;
 
 function envLayerInspection(e) {
     try {
-        infoHtml = envLayerHover(e);
+        infoHtml = envLayerHover(e, true);
         if(infoHtml != null) {
             var pt = map.getLonLatFromViewPortPx(new
                 OpenLayers.Pixel(e.xy.x, e.xy.y) );
@@ -1369,7 +1363,7 @@ function envLayerInspection(e) {
 
 var last_hover_pos = null;
 var last_hover_data = null;
-function envLayerHover(e) {
+function envLayerHover(e,displayFull) {
     //This variable will contain the body text to be displayed in the popup.
     var body = "";
 
@@ -1413,7 +1407,14 @@ function envLayerHover(e) {
     
         if(data != null && data.length > 0) {
             for(i=0;i<data.length;i++) {
-                body = body + "<tr><td>" + data[i].layername + "</td><td><b>" + data[i].value + "</b></td></tr>";
+                if (displayFull) {
+                    body = body + "<tr><td>" + data[i].layername + "</td><td><b>" + data[i].value + "</b></td></tr>";
+                } else {
+                    body += '<div class="lvalue" title="' + data[i].layername + ': ' + data[i].value + '">';
+                    body += '<div class="lname">' + data[i].layername + '</div>';
+                    body += '<div class="lval">' + data[i].value + '</div>';
+                    body += '</div>';
+                }
             }
             last_hover_data = body;
             return body;
@@ -1539,10 +1540,19 @@ function initHover() {
             }
             hovercontrolprevpos = this_pos;
     
+            var displayFull = false;
+            if ($("#lvalues").hasClass("layervaluesMax")) {
+                displayFull = true;
+            }
             var output = parent.document.getElementById('hoverOutput');
-            var data = envLayerHover(e);
+            var data = envLayerHover(e,displayFull);
             if(data != null) {
-                output.innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>";
+                if (displayFull) {
+                    output.innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>";
+                    //$('#hoverOutput').html("<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>"); 
+                } else {
+                    $('div#lvalues').html(data); 
+                }                
             } else {
                 output.innerHTML = "No values to display";
             }
@@ -1566,9 +1576,9 @@ function toggleActiveHover() {
         parent.document.getElementById('hoverOutput').innerHTML = "Hover cursor over map to view layer values";                
         document.getElementById("hoverTool").style.backgroundImage = "url('img/overview_replacement.gif')";
 
-        setTimeout(function() { //for IE9
-            parent.jq('$hovertool')[0].style.display=""
-        }, 100)
+//        setTimeout(function() { //for IE9
+//            parent.jq('$hovertool')[0].style.display=""
+//        }, 100)
     }
 }
 var nearestcontrol = null;

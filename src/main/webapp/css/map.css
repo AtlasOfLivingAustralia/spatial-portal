@@ -141,7 +141,72 @@ hr {
     -moz-border-radius: 5! important;
     border: 1px 1px 0 0;
     background-color:#3c668d;
-    opacity: 0.0;
+    opacity: 0.5;
+}
+#layervalues {
+    position: absolute;
+    bottom: 70px! important;
+    right: 0px! important;
+    width: 220px;
+    max-height: 250px! important;
+    padding: 6px;
+    z-index: 410;
+
+    overflow: hidden; 
+    background-color: #3c668d;
+    color: #fff;
+    cursor: pointer;
+    font-family: Arial;
+    font-size: x-small;
+    opacity: 0.5;
+    -moz-border-radius: 5! important;
+}
+.layervaluesMin {
+    /*height: 175px;*/
+    display: block;
+}
+.layervaluesMax {
+    /*height: 175px;*/
+    display: none;
+}
+.layervaluesDie {
+    /*height: 10px;*/
+    display: none;
+}
+#layervalues div#lheader {
+    border-bottom: 1px solid white;
+    font-size: x-small;
+}
+#layervalues .lvicons {
+    float: right;
+    font-size: smaller;
+    font-weight: bold;
+    padding: 5px 5px 2px 5px;
+    line-height: 0.5em; 
+}
+#layervalues .lvicons span a {
+    color: white;
+    text-decoration: none;
+}
+#layervalues .lvalue {
+    padding: 2px 0; 
+}
+#layervalues .lvalue div {
+    width: 100px;
+    position: relative; 
+}
+.ellipsis, #layervalues .lvalue div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+}
+#layervalues .lvalue .lname {
+    float: left;
+    clear:both;
+}
+#layervalues .lvalue .lval {
+    float: right;
 }
 #gmaplyrswtch {
     top: 20px;
@@ -636,6 +701,8 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     z-index: 110;
     top: 350px! important;
     left: 22px! important;
+    
+    display: none;
 }
 #nearestTool {
     position: absolute;

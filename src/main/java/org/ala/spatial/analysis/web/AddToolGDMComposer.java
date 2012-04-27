@@ -60,9 +60,9 @@ public class AddToolGDMComposer extends AddToolComposer {
     Checkbox useSubSample;
     Textbox sitePairsSize;
     Slider sitesslider;
-    Label sitesslidermin, sitesslidermax, sitessliderdef;
+    Label sitesslidermin, sitesslidermax, sitessliderper, sitessliderdef;
     Hbox sliderbox;
-    int MAX_SCROLL = 100;
+    double MAX_SCROLL = 100;
 
     @Override
     public void afterCompose() {
@@ -83,11 +83,15 @@ public class AddToolGDMComposer extends AddToolComposer {
                 @Override
                 public void onEvent(Event event) throws Exception {
                     if (event instanceof ScrollEvent) {
-//                        ScrollEvent se = (ScrollEvent) event;
-//                        System.out.println("Checking for max scroll...");
+                        ScrollEvent se = (ScrollEvent) event;
 //                        if (se.getPos() > MAX_SCROLL) {
 //                            sitesslider.setCurpos(MAX_SCROLL);
 //                        }
+
+                        double a = se.getPos();
+                        double b = (a / MAX_SCROLL);
+                        long p = Math.round(b * 100);
+                        sitesslider.setSlidingtext(Math.round(a) + " - " + p + "%");
                     }
                 }
             });
@@ -135,8 +139,8 @@ public class AddToolGDMComposer extends AddToolComposer {
 
         return rungdm();
     }
+    
     Vector<String> vSp = new Vector<String>();
-
     private int getSpLoc(String sp) {
         if (vSp.indexOf(sp) == -1) {
             vSp.add(sp);
@@ -167,6 +171,7 @@ public class AddToolGDMComposer extends AddToolComposer {
             sbProcessUrl.append(CommonData.satServer + "/ws/gdm/step1?");
             //sbProcessUrl.append("http://localhost:8080/alaspatial/ws/gdm/process2?");
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
+            sbProcessUrl.append("&taxacount="+vSp.size());
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
@@ -255,17 +260,18 @@ public class AddToolGDMComposer extends AddToolComposer {
 
 
             // setup the range slider for the sub samples
+            double maxBytes = 524288000; // 500 * 1024 * 1024 bytes
 
-            int maxBytes = 524288000; // 500 * 1024 * 1024 bytes
+            double maxScroll = maxBytes / ((lbListLayers.getSelectedCount() * 3) + 1) / 8;
+            double minScroll = (int) (maxScroll * 0.1);  // 10% of maxScroll
 
-            int maxScroll = maxBytes / ((lbListLayers.getSelectedCount() * 3) + 1) / 8;
-            int minScroll = (int) (maxScroll * 0.01);  // 1% of maxScroll
+            MAX_SCROLL = maxScroll; 
 
-            sitesslider.setCurpos(minScroll);
-            sitesslider.setMaxpos(maxScroll);
-            sitePairsSize.setValue(Integer.toString(minScroll));
-            sitessliderdef.setValue(Integer.toString(minScroll));
-            sitesslidermax.setValue(Integer.toString(maxScroll));
+            sitesslider.setCurpos((int)minScroll);
+            sitesslider.setMaxpos((int)maxScroll);
+            sitePairsSize.setValue(Long.toString(Math.round(minScroll)));
+            sitessliderdef.setValue(Long.toString(Math.round(minScroll)));
+            sitesslidermax.setValue(Long.toString(Math.round(maxScroll)));
 
 
             return true;
@@ -283,7 +289,20 @@ public class AddToolGDMComposer extends AddToolComposer {
     }
 
     public void onScroll$sitesslider(Event event) {
+        double a = sitesslider.getCurpos();
+        double b = a/MAX_SCROLL;
+        long p = Math.round(b*100);
         sitePairsSize.setValue(Integer.toString(sitesslider.getCurpos()));
+        sitessliderper.setValue(p + "%");
+    }
+
+    public void onBlur$sitePairsSize(Event event) {
+        try {
+            sitesslider.setCurpos(Integer.parseInt(sitePairsSize.getValue()));
+            onScroll$sitesslider(event);
+        } catch (NumberFormatException e) {
+            sitesslider.setCurpos(Integer.parseInt(sitessliderdef.getValue()));
+        }
     }
 
     public void onCheck$useSubSample(Event event) {
@@ -293,6 +312,7 @@ public class AddToolGDMComposer extends AddToolComposer {
         } else {
             sitePairsSize.setDisabled(false);
             sliderbox.setVisible(true);
+            sitesslider.setCurpos(Integer.parseInt(sitePairsSize.getValue()));
         }
     }
 

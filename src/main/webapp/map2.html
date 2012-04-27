@@ -89,6 +89,38 @@
                 }
             }
             detectIE6();
+            
+            function doSome(thing) {
+                if (thing == "die") {
+                    if(hovercontrol != null) {
+                        toggleActiveHover();
+                    }                    
+                } else {
+                    if(hovercontrol == null) {
+                        toggleActiveHover(); 
+                    }                    
+                }
+
+                if (thing == "min") {
+                    $("#lvalues").removeClass("layervaluesMax").removeClass("layervaluesDie").addClass("layervaluesMin");
+                    $("#layervalues").show();
+                    setTimeout(function() {
+                        parent.jq('$hovertool')[0].style.display="none"
+                    }, 100);
+                } else if (thing == "max") {
+                    $("#lvalues").removeClass("layervaluesMin").removeClass("layervaluesDie").addClass("layervaluesMax");
+                    $("#layervalues").hide();
+                    setTimeout(function() { //for IE9
+                        parent.jq('$hovertool')[0].style.display=""
+                    }, 100);
+                } else if (thing == "die") {
+                    $("#lvalues").removeClass("layervaluesMin").removeClass("layervaluesMax").addClass("layervaluesDie");
+                    $("#layervalues").show();
+                    setTimeout(function() {
+                        parent.jq('$nearesttool')[0].style.display="none"
+                    }, 100);
+                } 
+            }
         </script>
 
     </head>
@@ -107,6 +139,17 @@
         <div id="addPanoramio" class="imagesOff" onClick="checkIfLoadPanoramio()"></div>
         <div id="panoramioLoader" style="position:absolute;top:50%;left:50%;display:none;z-index: 99;">
             <img src="img/ajax-loader.gif" alt="loading..."/>
+        </div>        
+        <div id="layervalues">
+            <div id="lheader">
+                <div class="lvicons">
+                    <span><a href="javascript:doSome('min');">&or;</a></span>
+                    <span><a href="javascript:doSome('max');">&and;</a></span>
+                    <span><a href="javascript:doSome('die');">&Chi;</a></span>
+                </div>
+                Layer values:
+            </div>                
+            <div id="lvalues"></div>
         </div>
         <div id="mapinfo">
             <div id="mapscale"></div>

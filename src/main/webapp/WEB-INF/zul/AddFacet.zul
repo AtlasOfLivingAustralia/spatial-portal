@@ -43,7 +43,7 @@
                     <separator />
                     <vbox>
                         <checkbox id="chkGeoKosherTrue" checked="true" label="Include spatially-valid records" />
-                        <checkbox id="chkGeoKosherFalse" checked="false" label="Include spatially-suspect recordst" />
+                        <checkbox id="chkGeoKosherFalse" checked="false" label="Include spatially-suspect records" />
                         <checkbox visible="false" id="chkGeoKosherNull" checked="false" label="Include records without coordinates" />
                     </vbox>
                     <separator />

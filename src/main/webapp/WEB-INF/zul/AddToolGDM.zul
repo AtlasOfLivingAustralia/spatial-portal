@@ -309,10 +309,10 @@
                     <vbox>
 
                         <vbox>
-                            Select a threshold to help generate the site pairs.
+                            Select the minimum number of taxa in a single grid-cell representing an assemblage to include.
                             <listbox sclass="envlist" fixedLayout="false" id="cutpoint" width="300px" height="200px" multiple="false" checkmark="true">
                                 <listhead>
-                                    <listheader label="Records Per Cell"  />
+                                    <listheader label="Taxa Per Cell"  />
                                     <listheader label="Frequency" />
                                     <listheader label="Cummulative %"  />
                                 </listhead>
@@ -354,14 +354,15 @@
 
                         <vbox>
                             <hbox>
-                                <checkbox id="useSubSample" label="Use all site pairs" checked="true" />
-                                <textbox id="sitePairsSize" value="1000000" disabled="true" />
+                                <checkbox id="useSubSample" label="Use default number of site pairs" checked="true" />
+                                <textbox id="sitePairsSize" value="1000000" disabled="true" constraint="no empty,/[0-9]+/: Please enter an integer" />
                                 (Default: <label value="1000000" id="sitessliderdef" />)
                             </hbox>
                             <hbox id="sliderbox" visible="false">
                                 <label value="0" id="sitesslidermin" />
                                 <slider id="sitesslider" width="250px" />
                                 <label value="1000000" id="sitesslidermax" />
+                                (using <label value="10%" id="sitessliderper" />)
                             </hbox>
                         </vbox>
 

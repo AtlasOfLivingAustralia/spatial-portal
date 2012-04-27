@@ -980,7 +980,7 @@ public class BiocacheQuery implements Query, Serializable {
             // Record Assertions
             fields.add(new QueryField("assertions", "Record Issues", QueryField.FieldType.STRING));
             //fields.add(new QueryField("outlier_layer", "Outlier for Layer", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("outlier_layer_count", "Outlier Layer Count", QueryField.FieldType.STRING));
+            fields.add(new QueryField("outlier_layer_count", "Outlier Layer Count", QueryField.FieldType.STRING));
 
             //fields.add(new QueryField("biogeographic_region", "Biogeographic Region", QueryField.FieldType.STRING));
             //fields.add(new QueryField("species_guid", "Species", QueryField.FieldType.STRING));

@@ -154,7 +154,7 @@
                     <div visible="true">
                         <vbox>
                             <separator />
-                            <checkbox id="chkSitesBySpecies" label="Produce sites by species list" checked="true" />
+                            <checkbox id="chkSitesBySpecies" label="Produce sites by species matrix" checked="true" />
                             <checkbox id="chkOccurrenceDensity" label="Produce occurrence density layer" />
                             <checkbox id="chkSpeciesDensity" label="Produce species richness layer" />
                         </vbox>
