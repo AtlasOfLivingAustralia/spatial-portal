@@ -105,7 +105,7 @@ public class Facet implements Serializable {
             int offset = ff.startsWith("-") ? 1 : 0;
             String f = ff.substring(offset, ff.indexOf(':'));
             String v = ff.substring(ff.indexOf(':') + 1);
-            if (v.charAt(0) == '\"' || v.charAt(0) == '*' || !v.toLowerCase().contains(" TO ")) {
+            if (v.charAt(0) == '\"' || v.charAt(0) == '*' || !v.toUpperCase().contains(" TO ")) {
                 //value
                 if (v.charAt(0) == '\"') {
                     v = v.substring(1, v.length() - 1);
@@ -113,7 +113,7 @@ public class Facet implements Serializable {
                 facets[i] = new Facet(f, v, invert != (offset == 0));
             } else {
                 //range
-                String[] n = v.substring(1, v.length() - 1).split(" TO ");
+                String[] n = v.toUpperCase().substring(1, v.length() - 1).split(" TO ");
                 /*
                  * double[] d = {n[0].equals("*") ? Double.NEGATIVE_INFINITY : Double.parseDouble(n[0]),
                 n[1].equals("*") ? Double.POSITIVE_INFINITY : Double.parseDouble(n[1])};
