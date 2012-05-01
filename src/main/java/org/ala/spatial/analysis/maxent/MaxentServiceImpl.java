@@ -1,5 +1,6 @@
 package org.ala.spatial.analysis.maxent;
 
+import org.ala.spatial.util.StreamGobbler;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -75,35 +76,33 @@ public class MaxentServiceImpl implements MaxentService {
             System.out.println("Exec'ing " + command);
             Process proc = runtime.exec(command);
 
-            /*
             // any error message?
-            StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "ERROR", false);
+            StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "ERROR", job);
 
             // any output?
-            StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream(), "OUTPUT", false);
+            StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream(), "OUTPUT", job);
 
             // kick them off
             errorGobbler.start();
             outputGobbler.start();
-             */
 
-            System.out.println("Setting up output stream readers");
-            InputStreamReader isre = new InputStreamReader(proc.getErrorStream());
-            BufferedReader bre = new BufferedReader(isre);
-            InputStreamReader isr = new InputStreamReader(proc.getInputStream());
-            BufferedReader br = new BufferedReader(isr);
-            String line;
+//            System.out.println("Setting up output stream readers");
+//            InputStreamReader isre = new InputStreamReader(proc.getErrorStream());
+//            BufferedReader bre = new BufferedReader(isre);
+//            InputStreamReader isr = new InputStreamReader(proc.getInputStream());
+//            BufferedReader br = new BufferedReader(isr);
+//            String line;
 
             System.out.printf("Output of running %s is:", command);
             // Arrays.toString(acmd)
 
-            while ((line = bre.readLine()) != null) {
-                System.out.println(line);
-            }
-
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
-            }
+//            while ((line = bre.readLine()) != null) {
+//                System.out.println(line);
+//            }
+//
+//            while ((line = br.readLine()) != null) {
+//                System.out.println(line);
+//            }
 
             int exitVal = proc.waitFor();
 
@@ -114,6 +113,9 @@ public class MaxentServiceImpl implements MaxentService {
             Process proc2 = runtime.exec()
             }
              */
+
+            errorGobbler.interrupt();
+            outputGobbler.interrupt();
 
             // any error???
             return exitVal;

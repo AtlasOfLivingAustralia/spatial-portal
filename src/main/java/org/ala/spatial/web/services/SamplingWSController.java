@@ -23,8 +23,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class SamplingWSController {
 
-    static HashMap<Double, double[]> commonGridLatitudeArea = new HashMap<Double, double[]>();
-
     /**
      * chart basis: occurrence or area
      * filter: [lsid] + [area]
@@ -160,7 +158,7 @@ public class SamplingWSController {
 
                 if (x >= 0 && x < area.length
                         && y >= 0 && y < area[x].length) {
-                    area[x][y] += cellArea(Double.parseDouble(AlaspatialProperties.getLayerResolutionDefault()), g.ymin + (i / g.ncols) * g.yres);
+                    area[x][y] += SpatialUtil.cellArea(Double.parseDouble(AlaspatialProperties.getLayerResolutionDefault()), g.ymin + (i / g.ncols) * g.yres);
                 }
             }
 
@@ -193,32 +191,5 @@ public class SamplingWSController {
         }
 
         return pos;
-    }
-
-    public static double cellArea(double resolution, double latitude) {
-        double[] areas = commonGridLatitudeArea.get(resolution);
-
-        if (areas == null) {
-            areas = buildCommonGridLatitudeArea(resolution);
-            commonGridLatitudeArea.put(resolution, areas);
-        }
-
-        return areas[(int) (Math.floor(Math.abs(latitude / resolution)) * resolution)];
-    }
-
-    static double[] buildCommonGridLatitudeArea(double resolution) {
-        int parts = (int) Math.ceil(90 / resolution);
-        double[] areas = new double[parts];
-
-        for (int i = 0; i < parts; i++) {
-            double minx = 0;
-            double maxx = resolution;
-            double miny = resolution * i;
-            double maxy = miny + resolution;
-
-            areas[i] = SpatialUtil.calculateArea(new double[][]{{minx, miny}, {minx, maxy}, {maxx, maxy}, {maxx, miny}, {minx, miny}});
-        }
-
-        return areas;
     }
 }

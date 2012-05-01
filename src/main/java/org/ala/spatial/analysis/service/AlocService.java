@@ -18,9 +18,9 @@ import org.ala.spatial.analysis.method.Aloc;
 import org.ala.spatial.analysis.method.Pca;
 import org.ala.spatial.util.AnalysisJob;
 import org.ala.spatial.util.AnalysisJobAloc;
-import org.ala.spatial.util.GridCutter;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.AlaspatialProperties;
+import org.ala.spatial.util.GridCutter;
 
 /**
  * entry into running Aloc

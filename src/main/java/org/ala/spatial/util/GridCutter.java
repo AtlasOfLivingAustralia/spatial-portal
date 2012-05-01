@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import org.ala.layers.client.Client;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
+import org.ala.layers.util.SpatialUtil;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.maxent.MaxentService;
 import org.ala.spatial.web.services.MaxentWSController;
@@ -584,7 +585,7 @@ public class GridCutter {
                 pos++;
 
                 if (mask[i][j] > 0) {
-                    areaSqKm += SamplingWSController.cellArea(res, extents[0][1] + res * i);
+                    areaSqKm += SpatialUtil.cellArea(res, extents[0][1] + res * i);
                 }
             }
         }
