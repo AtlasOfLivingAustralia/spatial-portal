@@ -5,14 +5,17 @@
 package org.ala.layers.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
  * @author Adam
  */
 public class SpatialUtil {
-    //calculateArea from FilteringResultsWCController
 
+    static HashMap<Double, double[]> commonGridLatitudeArea = new HashMap<Double, double[]>();
+
+    //calculateArea from FilteringResultsWCController
     static public double calculateArea(double[][] areaarr) {
         try {
             double totalarea = 0.0;
@@ -323,5 +326,32 @@ public class SpatialUtil {
         int distance = (int) Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2));
 
         return distance >> (map_zoom - zoom);
+    }
+
+    public static double cellArea(double resolution, double latitude) {
+        double[] areas = commonGridLatitudeArea.get(resolution);
+
+        if (areas == null) {
+            areas = buildCommonGridLatitudeArea(resolution);
+            commonGridLatitudeArea.put(resolution, areas);
+        }
+
+        return areas[(int) (Math.floor(Math.abs(latitude / resolution)) * resolution)];
+    }
+
+    static double[] buildCommonGridLatitudeArea(double resolution) {
+        int parts = (int) Math.ceil(90 / resolution);
+        double[] areas = new double[parts];
+
+        for (int i = 0; i < parts; i++) {
+            double minx = 0;
+            double maxx = resolution;
+            double miny = resolution * i;
+            double maxy = miny + resolution;
+
+            areas[i] = SpatialUtil.calculateArea(new double[][]{{minx, miny}, {minx, maxy}, {maxx, maxy}, {maxx, miny}, {minx, miny}});
+        }
+
+        return areas;
     }
 }
