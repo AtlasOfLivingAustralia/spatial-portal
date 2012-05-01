@@ -13,14 +13,12 @@ import org.ala.spatial.util.ScatterplotData;
 import org.zkoss.zhtml.Li;
 import org.zkoss.zhtml.Ul;
 import org.zkoss.zk.ui.Component;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.A;
 import org.zkoss.zul.Vbox;
 import org.zkoss.zk.ui.util.Clients;
-import org.zkoss.zul.Window;
 
 /**
  *
@@ -65,7 +63,7 @@ public class ContextualMenu extends UtilityComposer {
         MapLayer gridLayer = null;
 
         MapLayer firstLayer = null;
-        for (int i = 0; i < layers.size() && actions.size() < 5; i++) {
+        for (int i = 0; i < layers.size() /*&& actions.size() < 5*/; i++) {
             if (layers.get(i).getData("query") != null
                     && layers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
                 if (speciesLayer == null) {
@@ -140,15 +138,35 @@ public class ContextualMenu extends UtilityComposer {
                     new PredictionEvent(getMapComposer(), speciesLayer.getName(),
                     (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         }
-
-        if (gridLayer != null) {
-            //actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
-            actions.add(new Action("Browse environmental point values", new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
+        if (speciesLayer != null) {
+            actions.add(new Action("Produce sites x species for \"" + speciesLayer.getDisplayName() + "\""
+                    + ((polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : ""),
+                    new SitesBySpeciesEvent(getMapComposer(), speciesLayer.getName(),
+                    (polygonLayer != null) ? polygonLayer.getName() : null, null)));
+        }
+        if (speciesLayer != null) {
+            actions.add(new Action("Produce GDM using species \"" + speciesLayer.getDisplayName() + "\""
+                    + ((polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : ""),
+                    new GDMEvent(getMapComposer(), speciesLayer.getName(),
+                    (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         }
         if (polygonLayer != null) {
-            //actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
-            actions.add(new Action("Browse contextual point values", new GridLayerHoverEvent(getMapComposer(), polygonLayer.getName())));
+            actions.add(new Action("Export area \"" + polygonLayer.getDisplayName() + "\"",
+                    new ExportAreaEvent(getMapComposer(), polygonLayer.getName())));
         }
+        if (speciesLayer != null && speciesLayer == getMapComposer().getActiveLayersSelection(false)) {
+            actions.add(new Action("Display facet of \"" + speciesLayer.getDisplayName() + "\"",
+                    new OpenFacetsEvent(getMapComposer(), speciesLayer.getName())));
+        }
+
+//        if (gridLayer != null) {
+//            //actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
+//            actions.add(new Action("Browse environmental point values", new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
+//        }
+//        if (polygonLayer != null) {
+//            //actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
+//            actions.add(new Action("Browse contextual point values", new GridLayerHoverEvent(getMapComposer(), polygonLayer.getName())));
+//        }
 
         //default actions
         if (actions.size() == 0) {
@@ -283,6 +301,44 @@ class PredictionEvent implements EventListener {
     }
 }
 
+class GDMEvent implements EventListener {
+
+    String speciesLayerName;
+    String polygonLayerName;
+    String environmentalLayerName;
+    MapComposer mc;
+
+    public GDMEvent(MapComposer mc, String speciesLayerName, String polygonLayerName, String environmentalLayerName) {
+        this.mc = mc;
+        this.speciesLayerName = speciesLayerName;
+        this.polygonLayerName = polygonLayerName;
+        this.environmentalLayerName = environmentalLayerName;
+    }
+
+    @Override
+    public void onEvent(Event event) throws Exception {
+        Hashtable<String, Object> params = new Hashtable<String, Object>();
+        if (speciesLayerName != null) {
+            params.put("speciesLayerName", speciesLayerName);
+        } else {
+            params.put("speciesLayerName", "none");
+        }
+        if (polygonLayerName != null) {
+            params.put("polygonLayerName", polygonLayerName);
+        } else {
+            params.put("polygonLayerName", "none");
+        }
+        if (environmentalLayerName != null) {
+            params.put("environmentalLayerName", environmentalLayerName);
+        } else {
+            params.put("environmentalLayerName", "none");
+        }
+        AddToolGDMComposer window = (AddToolGDMComposer) mc.openModal("WEB-INF/zul/AddToolGDM.zul", params, "addtoolwindow");
+        //window.onClick$btnOk(event);
+        //window.onClick$btnOk(event);
+    }
+}
+
 class ClassificationEvent implements EventListener {
 
     String polygonLayerName;
@@ -346,6 +402,44 @@ class ScatterplotEvent implements EventListener {
             params.put("environmentalLayerName", "default");
         }
         AddToolComposer window = (AddToolComposer) mc.openModal("WEB-INF/zul/AddToolScatterplot.zul", params, "addtoolwindow");
+        //window.onClick$btnOk(event);
+        //window.onClick$btnOk(event);
+    }
+}
+
+class SitesBySpeciesEvent implements EventListener {
+
+    String speciesLayerName;
+    String polygonLayerName;
+    String environmentalLayerName;
+    MapComposer mc;
+
+    public SitesBySpeciesEvent(MapComposer mc, String speciesLayerName, String polygonLayerName, String environmentalLayerName) {
+        this.mc = mc;
+        this.speciesLayerName = speciesLayerName;
+        this.polygonLayerName = polygonLayerName;
+        this.environmentalLayerName = environmentalLayerName;
+    }
+
+    @Override
+    public void onEvent(Event event) throws Exception {
+        Hashtable<String, Object> params = new Hashtable<String, Object>();
+        if (speciesLayerName != null) {
+            params.put("speciesLayerName", speciesLayerName);
+        } else {
+            params.put("speciesLayerName", "none");
+        }
+        if (polygonLayerName != null) {
+            params.put("polygonLayerName", polygonLayerName);
+        } else {
+            params.put("polygonLayerName", "none");
+        }
+        if (environmentalLayerName != null) {
+            params.put("environmentalLayerName", environmentalLayerName);
+        } else {
+            params.put("environmentalLayerName", "default");
+        }
+        AddToolComposer window = (AddToolComposer) mc.openModal("WEB-INF/zul/AddToolSitesBySpecies.zul", params, "addtoolwindow");
         //window.onClick$btnOk(event);
         //window.onClick$btnOk(event);
     }
@@ -434,6 +528,29 @@ class MetadataEvent implements EventListener {
     }
 }
 
+class OpenFacetsEvent implements EventListener {
+
+    String layerName;
+    MapComposer mc;
+
+    public OpenFacetsEvent(MapComposer mc, String layerName) {
+        this.mc = mc;
+        this.layerName = layerName;
+    }
+
+    @Override
+    public void onEvent(Event event) throws Exception {
+        MapLayer mapLayer = mc.getMapLayer(layerName);
+        if (mapLayer != null) {
+            if(mapLayer.getColourMode().equals("grid")) {
+                mapLayer.setColourMode("-1");
+                mc.updateLayerControls();
+            }
+            Events.echoEvent("openFacets", mc, null);
+        }
+    }
+}
+
 class AreaReportEvent implements EventListener {
 
     String polygonLayerName;
@@ -453,6 +570,45 @@ class AreaReportEvent implements EventListener {
             params.put("polygonLayerName", "none");
         }
         AddToolAreaReportComposer window = (AddToolAreaReportComposer) mc.openModal("WEB-INF/zul/AddToolAreaReport.zul", params, "addtoolwindow");
+
+//        MapLayer ml = mc.getMapLayer(polygonLayerName);
+//        Window w = (Window) mc.getPage().getFellowIfAny("popup_results");
+//        if (w != null) {
+//            w.detach();
+//        }
+//        double[] bbox = null;
+//        if (ml != null && ml.getMapLayerMetadata() != null
+//                && ml.getMapLayerMetadata().getBbox() != null
+//                && ml.getMapLayerMetadata().getBbox().size() == 4) {
+//            bbox = new double[4];
+//            bbox[0] = ml.getMapLayerMetadata().getBbox().get(0);
+//            bbox[1] = ml.getMapLayerMetadata().getBbox().get(1);
+//            bbox[2] = ml.getMapLayerMetadata().getBbox().get(2);
+//            bbox[3] = ml.getMapLayerMetadata().getBbox().get(3);
+//        }
+//        FilteringResultsWCController.open(ml.getWKT(), ml.getName(), ml.getDisplayName(), (String) ml.getData("area"), bbox);
+    }
+}
+
+class ExportAreaEvent implements EventListener {
+
+    String polygonLayerName;
+    MapComposer mc;
+
+    public ExportAreaEvent(MapComposer mc, String polygonLayerName) {
+        this.mc = mc;
+        this.polygonLayerName = polygonLayerName;
+    }
+
+    @Override
+    public void onEvent(Event event) throws Exception {
+        Hashtable<String, Object> params = new Hashtable<String, Object>();
+        if (polygonLayerName != null) {
+            params.put("polygonLayerName", polygonLayerName);
+        } else {
+            params.put("polygonLayerName", "none");
+        }
+        ExportLayerComposer window = (ExportLayerComposer) mc.openModal("WEB-INF/zul/ExportLayer.zul", params, "addtoolwindow");
 
 //        MapLayer ml = mc.getMapLayer(polygonLayerName);
 //        Window w = (Window) mc.getPage().getFellowIfAny("popup_results");

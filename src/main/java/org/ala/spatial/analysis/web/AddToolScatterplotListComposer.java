@@ -5,9 +5,6 @@
 package org.ala.spatial.analysis.web;
 
 import au.com.bytecode.opencsv.CSVReader;
-import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
 import java.awt.Color;
 import java.awt.Font;
@@ -17,21 +14,18 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.sf.json.JSONObject;
 import org.ala.spatial.data.*;
 import org.ala.spatial.sampling.Sampling;
-import org.ala.spatial.sampling.SimpleRegion;
-import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.SelectedArea;
@@ -55,8 +49,6 @@ import org.jfree.chart.renderer.xy.XYShapeRenderer;
 import org.jfree.data.xy.DefaultXYZDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleAnchor;
-import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Checkbox;
 
 /**
@@ -111,7 +103,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             return false;
         }
 
-        Query lsid = getSelectedSpecies();   
+        Query lsid = getSelectedSpecies();
         String name = getSelectedSpeciesName();
 
 //        JSONObject jo = (JSONObject) cbLayer1.getSelectedItem().getValue();
@@ -121,11 +113,11 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
 //        jo = (JSONObject) cbLayer2.getSelectedItem().getValue();
 //        String lyr2name = cbLayer2.getText();
 //        String lyr2value = jo.getString("name");        
-        
+
         if (lsid instanceof BiocacheQuery) {
             //split layers into 'in biocache' and 'out of biocache'
             Set<String> biocacheLayers = CommonData.biocacheLayerList;
-            
+
             {
                 ArrayList<QueryField> f = new ArrayList<QueryField>();
                 f.add(new QueryField(lsid.getRecordIdFieldName()));
@@ -251,7 +243,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
                 }
             }
         }
-     
+
         String pid = "";
         Rectangle2D.Double selection = null;
         boolean enabled = true;
@@ -273,68 +265,45 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         Query backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false, getGeospatialKosherBk());
 
         ArrayList<ScatterplotData> datas = new ArrayList<ScatterplotData>();
-        
+
         String sbenvsel = getSelectedLayers();
-        String [] layers = sbenvsel.split(":");
+        String[] layers = sbenvsel.split(":");
         if (layers.length > 20) {
             getMapComposer().showMessage(sbenvsel.split(":").length + " layers selected.  Please select fewer than 20 environmental layers in step 1.");
-            return false;        
+            return false;
         }
-        
-        for(int i=0;i<layers.length-1;i++) {
-            for(int j = i+1;j<layers.length;j++) {
-                if(data == null) {
+
+        ArrayList<String> imageUrls = new ArrayList<String>();
+        for (int i = 0; i < layers.length - 1; i++) {
+            for (int j = i + 1; j < layers.length; j++) {
+                if (data == null) {
                     data = new ScatterplotData(lsidQuery, name, CommonData.getLayerDisplayName(layers[i]),
-                        layers[i], CommonData.getLayerDisplayName(layers[j]), layers[j], pid, selection, enabled,
-                        (backgroundLsid != null) ? backgroundLsidQuery : null,
-                        filterSa, highlightSa, envGrid);
+                            layers[i], CommonData.getLayerDisplayName(layers[j]), layers[j], pid, selection, enabled,
+                            (backgroundLsid != null) ? backgroundLsidQuery : null,
+                            filterSa, highlightSa, envGrid);
                 } else {
                     data.setLayer1(layers[i]);
                     data.setLayer1Name(CommonData.getLayerDisplayName(layers[i]));
                     data.setLayer2(layers[j]);
                     data.setLayer2Name(CommonData.getLayerDisplayName(layers[j]));
                 }
-                
+
                 resample();
-                String imageUrl = null;                
+                String imageUrl = null;
                 try {
                     imageUrl = draw();
+                    System.out.println("scatterplot image: " + layers[i] + "," + layers[j] + " > " + imageUrl);
                 } catch (IOException ex) {
-                    Logger.getLogger(AddToolScatterplotListComposer.class.getName()).log(Level.SEVERE, null, ex);
+                    System.out.println("failed scatterplot image: " + layers[i] + "," + layers[j]);
+                    ex.printStackTrace();                    
                 }
-                System.out.println("scatterplot image: " + layers[i] + "," + layers[j] + imageUrl);
+                imageUrls.add(imageUrl);
             }
         }
 
-        getMapComposer().loadScatterplot(data, tToolName.getValue());
+        String htmlUrl = makeHtml(layers, imageUrls);
 
         this.detach();
-
-        try {
-            String extras = "";
-            if (highlightSa != null) {
-                extras += "highlight=" + highlightSa.getWkt();
-            }
-            if (backgroundLsid != null && backgroundLsid instanceof BiocacheQuery) {
-                extras += "background=" + ((BiocacheQuery) backgroundLsid).getLsids();
-            } else if (backgroundLsid != null && backgroundLsid instanceof UploadQuery) {
-                extras += "background=" + ((UploadQuery) backgroundLsid).getQ();
-            } else {
-                extras += "background=none";
-            }
-
-//            if (lsidQuery instanceof BiocacheQuery) {
-//                BiocacheQuery bq = (BiocacheQuery) lsidQuery;
-//                extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
-//                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), bq.getLsids(), lyr1value + ":" + lyr2value, pid, extras, "SUCCESSFUL");
-//            } else if (lsidQuery instanceof UploadQuery) {
-//                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), ((UploadQuery) lsidQuery).getQ(), "", pid, extras, "SUCCESSFUL");
-//            } else {
-//                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), "", "", pid, extras, "SUCCESSFUL");
-//            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         return true;
     }
@@ -370,13 +339,13 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
                 break;
         }
     }
-    
+
     String draw() throws IOException {
-        if(missing_data) {
+        if (missing_data) {
             return null;
         }
         //active area must be drawn first
-                
+
         jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyzDataset, PlotOrientation.HORIZONTAL, false, false, false);
 
         jChart.setBackgroundPaint(Color.white);
@@ -409,7 +378,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             }
         }
         plot.setRenderer(getRenderer(legend, seriesColours, seriesNames, data.getSeriesValues()));
-        
+
         //add points background
         if (data.getBackgroundQuery() != null) {
             resampleBackground();
@@ -436,34 +405,33 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
                     y.getUpperBound());
         }
 
-            chartRenderingInfo = new ChartRenderingInfo();
+        chartRenderingInfo = new ChartRenderingInfo();
 
-            int width = 320;
-            int height = 320;
-            if (height > width) {
-                height = width;
-            } else {
-                width = height;
-            }
-            BufferedImage bi = jChart.createBufferedImage(width, height, BufferedImage.TRANSLUCENT, chartRenderingInfo);
-            byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
+        int width = 320;
+        int height = 320;
+        if (height > width) {
+            height = width;
+        } else {
+            width = height;
+        }
+        BufferedImage bi = jChart.createBufferedImage(width, height, BufferedImage.TRANSLUCENT, chartRenderingInfo);
+        byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
 
-            //save to file
-            String uid = String.valueOf(System.currentTimeMillis());
-            String pth = this.settingsSupplementary.getValue("print_output_path");
-            String htmlurl = settingsSupplementary.getValue("print_output_url");
+        //save to file
+        String uid = String.valueOf(System.currentTimeMillis());
+        String pth = this.settingsSupplementary.getValue("print_output_path");
+        String htmlurl = settingsSupplementary.getValue("print_output_url");
 
-            try {
-                FileOutputStream fos = new FileOutputStream(pth + uid + ".png");
-                fos.write(bytes);
-                fos.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }  
-            
-            return htmlurl + uid + ".png";
+        try {
+            FileOutputStream fos = new FileOutputStream(pth + uid + ".png");
+            fos.write(bytes);
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return htmlurl + uid + ".png";
     }
-    
     String prevResampleData = null;
     String prevResampleLayers = null;
     String prevResampleHighlight = null;
@@ -650,7 +618,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             e.printStackTrace();
         }
     }
-    
+
     private XYShapeRenderer getRenderer(LegendObject legend, int[] datasetColours, String[] seriesNames, double[] seriesValues) {
         class MyXYShapeRenderer extends XYShapeRenderer {
 
@@ -696,7 +664,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             renderer.datasetColours = new Color[datasetColours.length];
             for (int i = 0; i < datasetColours.length; i++) {
                 int c = datasetColours[i];
-                
+
                 int r = (c >> 16) & 0x000000FF;
                 int g = (c >> 8) & 0x000000FF;
                 int b = c & 0x000000FF;
@@ -748,7 +716,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
 
         return renderer;
     }
-    
+
     private int findInArray(String lookFor, String[] array) {
         for (int i = 0; i < array.length; i++) {
             if (array[i].equals(lookFor)) {
@@ -757,7 +725,6 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         }
         return -1;
     }
-    
     String prevBlockPlot = null;
     DefaultXYZDataset blockXYZDataset = null;
     XYBlockRenderer xyBlockRenderer = null;
@@ -867,7 +834,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         plot.getRangeAxis().setLowerMargin(0);
         plot.getRangeAxis().setUpperMargin(0);
     }
-    
+
     XYShapeRenderer getBackgroundRenderer() {
         XYShapeRenderer renderer = new XYShapeRenderer();
         Color c = new Color(255, 164, 96, 150);
@@ -879,7 +846,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
 
         return renderer;
     }
-    
+
     private void sample() {
         double[] points = data.getPoints();
         double[][] p = new double[points.length / 2][2];
@@ -933,7 +900,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
 
         data.setBackgroundData(d);
     }
-    
+
     private void createDataset() {
         xyzDataset = new DefaultXYZDataset();
 
@@ -1006,5 +973,34 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
                 backgroundXyzDataset.addSeries(seriesNames[i], sd);
             }
         }
+    }
+
+    String htmlHeader = "<html><head><link rel=\"stylesheet\" href=\"/alaspatial/styles/style.\" type=\"text/css\" media=\"all\" /></head><body><table border=1><tr><th>Layer 1</th><th>Layer 2</th><th>Scatterplot</th></tr>";
+    String htmlFooter = "</table></body></html>";
+    private String makeHtml(String[] layers, ArrayList<String> imageUrls) {
+        //linear
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(htmlHeader);
+        int pos = 0;
+        for(int i=0;i<layers.length-1;i++) {
+            for(int j=i+1;j<layers.length;j++) {
+                sb.append("<tr><td>").append(CommonData.getLayerDisplayName(layers[i]));
+                sb.append("</td><td>").append(CommonData.getLayerDisplayName(layers[j]));
+                sb.append("</td><td><img src='").append(imageUrls.get(pos)).append("'/></td></tr>");
+            }
+        }
+        sb.append(htmlFooter);
+
+        String uid = String.valueOf(System.currentTimeMillis());
+        String pth = this.settingsSupplementary.getValue("print_output_path");
+        String htmlurl = settingsSupplementary.getValue("print_output_url");
+        try {
+            FileWriter fw = new FileWriter(pth + uid + ".html");
+            fw.write(sb.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return htmlurl + uid + ".html";
     }
 }

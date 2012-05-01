@@ -3611,4 +3611,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
         return -1;
     }
+
+    public void openFacets(Event event) {
+        llc2.cbColour.open();
+    }
 }

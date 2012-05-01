@@ -146,7 +146,7 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep4" visible="false" zclass="step4 minlayers2" sclass="atstep" width="500px">                
+            <div id="atstep4" visible="false" zclass="step4 minlayers2" sclass="atstep">                
                 <checkbox id="chkShowEnvIntersection" label="Display possible environments in area" />
                 <separator height="15px"/>
                 <label id="atstep4_desc" value="Select two or more environmental layers" sclass="wSubLabel"/>

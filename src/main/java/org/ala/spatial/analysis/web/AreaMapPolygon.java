@@ -185,23 +185,9 @@ public class AreaMapPolygon extends AreaToolComposer {
 
                         System.out.println(ml.getName());
                         Map<String, String> feature = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, CommonData.geoServer);
-                        if (feature == null) { // featureURI == null
+                        if (feature == null || !feature.containsKey("pid")) { // featureURI == null
                             continue;
                         }
-                        //if it is a filtered layer, expect the filter as part of the new uri.
-//                        boolean passedFilterCheck = true;
-//                        try {
-//                            String filter = ml.getUri().replaceAll("^.*cql_filter=", "").replaceFirst("^.*='", "").replaceAll("'.*", "");
-//                            if (filter != null && filter.length() > 0) {
-//                                System.out.println(filter.toLowerCase());
-//                                passedFilterCheck = featureURI.toLowerCase().contains(filter.toLowerCase().replace(" ", "_"));
-//                            }
-//                        } catch (Exception e) {
-//                        }
-//                        if (!passedFilterCheck) {
-//                            continue;
-//                        }
-
 
                         //add feature to the map as a new layer
                         String wkt = readUrl(CommonData.layersServer + "/shape/wkt/" + feature.get("pid"));
@@ -234,7 +220,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                                 mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
                             }
                             Facet facet = null;
-                            if (!mapLayer.getWKT().startsWith("POINT")) {
+                            if (!mapLayer.getWKT().startsWith("POINT") && !feature.get("pid").contains(":")) {
                                 facet = getFacetForObject(feature.get("pid"), feature.get("value"));
                             }
                             if (facet != null) {

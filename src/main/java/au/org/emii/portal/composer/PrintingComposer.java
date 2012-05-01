@@ -12,6 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.metainfo.EventHandler;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Combobox;
@@ -91,7 +93,19 @@ public class PrintingComposer extends UtilityComposer {
         iframe.setHeight("100%");
         iframe.setSrc(previewUrl);
         iframe.setParent(w);
+        iframe.setId("iframe");
         w.setParent(this.getParent());
+
+        //fix for closing preview closing the session
+        w.addEventListener("onClose", new EventListener() {
+
+            @Override
+            public void onEvent(Event event) throws Exception {
+                Iframe frame = ((Iframe)event.getTarget().getFellow("iframe"));
+                frame.detach();
+                frame.setSrc("");
+            }
+        });
         try {
             w.doModal();
         } catch (InterruptedException ex) {
