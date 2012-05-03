@@ -1729,13 +1729,16 @@ public class AddToolComposer extends UtilityComposer {
         StringBuilder sb = new StringBuilder();
         for (String s : lbListLayers.getSelectedLayers()) {
             try {
+                if (sb.length() > 0) {
+                    sb.append(",");
+                }
+
                 //String displayname = CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
                 String displayname = CommonData.getLayerDisplayName(s);
-                if (displayname != null && displayname.length() > 0) {
-                    if (sb.length() > 0) {
-                        sb.append(",");
-                    }
+                if (displayname != null && displayname.length() > 0) {                    
                     sb.append(displayname).append(" (").append(s).append(")");
+                } else {
+                    sb.append(s);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

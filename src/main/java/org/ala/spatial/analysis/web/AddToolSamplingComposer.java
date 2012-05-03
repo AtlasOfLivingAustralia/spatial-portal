@@ -31,7 +31,8 @@ public class AddToolSamplingComposer extends AddToolComposer {
         this.selectedMethod = "Sampling";
         this.totalSteps = 3;
 
-        this.setIncludeAnalysisLayersForUploadQuery(true);
+        //this.setIncludeAnalysisLayersForUploadQuery(true);
+        this.setIncludeAnalysisLayersForAnyQuery(true);
 
         this.loadAreaLayers();
         this.loadSpeciesLayers();

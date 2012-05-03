@@ -1,7 +1,9 @@
 package org.ala.spatial.sampling;
 
 import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -28,6 +30,9 @@ public class Sampling {
         System.out.println("start sampling " + points.length + " points in " + facetName + ":" + layerName);
         if (shapeFieldName != null) {
             intersectShape(CommonData.settings.get("sampling_files_path") + "shape/" + layerName, shapeFieldName, points, output);
+        } else if (facetName.startsWith("cl")) {
+            //shape_diva?
+            intersectShapeGrid(CommonData.settings.get("sampling_files_path") + "shape_diva/" + layerName, points, output);
         } else if (facetName.startsWith("el")) {
             intersectGrid(CommonData.settings.get("sampling_files_path") + "diva/" + layerName, points, output);
         } else {
@@ -114,6 +119,32 @@ public class Sampling {
             }
         } catch (Exception e) {
             System.out.println("Error with grid: " + filename);
+            e.printStackTrace();
+        }
+    }
+
+    static void intersectShapeGrid(String filename, double[][] points, String[] output) {
+        try {
+            Grid grid = new Grid(filename);
+            Properties p = new Properties();
+            p.load(new FileReader(filename + ".txt"));
+            
+            float[] values = null;
+
+            values = grid.getValues3(points, 40960);
+
+            if (values != null) {
+                for (int i = 0; i < output.length; i++) {
+                    if (Float.isNaN(values[i])) {
+                        output[i] = "n/a";
+                    } else {
+                        String v = p.getProperty(String.valueOf((int)values[i]));
+                        output[i] = v;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error with shape grid: " + filename);
             e.printStackTrace();
         }
     }

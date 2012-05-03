@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul" xmlns:n="http://www.zkoss.org/2005/zk/native">
     <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolScatterplotListComposer"
-    apply="org.ala.spatial.analysis.web.AddToolScatterplotListComposer" width="750px" height="700px"
+    apply="org.ala.spatial.analysis.web.AddToolScatterplotListComposer" width="770px" height="700px"
    xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -146,7 +146,7 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep4" visible="false" zclass="step4 minlayers2" sclass="atstep">                
+            <div id="atstep4" visible="false" zclass="step4 minlayers2" sclass="atstep" height="650px" width="580px">                
                 <checkbox id="chkShowEnvIntersection" label="Display possible environments in area" />
                 <separator height="15px"/>
                 <label id="atstep4_desc" value="Select two or more environmental layers" sclass="wSubLabel"/>
@@ -170,11 +170,11 @@
                     </hbox>                    
                     <separator />
                     <vbox>
-                        <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="610px" height="430px" multiple="true" checkmark="true"
+                        <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="560px" height="430px" multiple="true" checkmark="true"
                      onOK="addtoolwindow.onClick$btnOk(null)">
                             <listhead>
-                                <listheader label="category" hflex="min"/>
-                                <listheader label="name" hflex="max"/>
+                                <listheader label="category" hflex="200px"/>
+                                <listheader label="name" hflex="300px"/>
                                 <listheader label=" "  width="25px"/>
                                 <listheader label=" " width="14px" />
                             </listhead>

@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.jfree.chart.renderer.xy.XYShapeRenderer;
 import org.jfree.data.xy.DefaultXYZDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleAnchor;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Checkbox;
 
 /**
@@ -273,6 +275,15 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             return false;
         }
 
+        //TODO: discover why the first resample works if done backwards first.
+        if (data == null) {
+            data = new ScatterplotData(lsidQuery, name, CommonData.getLayerDisplayName(layers[1]),
+                    layers[1], CommonData.getLayerDisplayName(layers[0]), layers[0], pid, selection, enabled,
+                    (backgroundLsid != null) ? backgroundLsidQuery : null,
+                    filterSa, highlightSa, envGrid);
+            resample();
+        }
+
         ArrayList<String> imageUrls = new ArrayList<String>();
         for (int i = 0; i < layers.length - 1; i++) {
             for (int j = i + 1; j < layers.length; j++) {
@@ -302,6 +313,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         }
 
         String htmlUrl = makeHtml(layers, imageUrls);
+        Events.echoEvent("openUrl", getMapComposer(), htmlUrl);
 
         this.detach();
 
@@ -975,7 +987,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         }
     }
 
-    String htmlHeader = "<html><head><link rel=\"stylesheet\" href=\"/alaspatial/styles/style.\" type=\"text/css\" media=\"all\" /></head><body><table border=1><tr><th>Layer 1</th><th>Layer 2</th><th>Scatterplot</th></tr>";
+    String htmlHeader = "<html><body><table border=1><tr><th>Layer 1</th><th>Layer 2</th><th>Scatterplot</th></tr>";
     String htmlFooter = "</table></body></html>";
     private String makeHtml(String[] layers, ArrayList<String> imageUrls) {
         //linear
@@ -987,7 +999,12 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             for(int j=i+1;j<layers.length;j++) {
                 sb.append("<tr><td>").append(CommonData.getLayerDisplayName(layers[i]));
                 sb.append("</td><td>").append(CommonData.getLayerDisplayName(layers[j]));
-                sb.append("</td><td><img src='").append(imageUrls.get(pos)).append("'/></td></tr>");
+                if(imageUrls.get(pos) == null) {
+                    sb.append("</td><td>n/a</td></tr>");
+                } else {
+                    sb.append("</td><td><img src='").append(imageUrls.get(pos)).append("'/></td></tr>");
+                }
+                pos++;
             }
         }
         sb.append(htmlFooter);
@@ -998,9 +1015,12 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         try {
             FileWriter fw = new FileWriter(pth + uid + ".html");
             fw.write(sb.toString());
+            fw.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("ScatterplotList file: " + pth + uid + ".html");
+        System.out.println("ScatterplotList output: " + sb.toString());
         return htmlurl + uid + ".html";
     }
 }

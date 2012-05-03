@@ -171,8 +171,8 @@ public class ImportAnalysisController extends UtilityComposer {
                 + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:aloc_" + pid;
         System.out.println(legendurl);
-        getMapComposer().addWMSLayer(pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
-        MapLayer mapLayer = getMapComposer().getMapLayer(pid);
+        getMapComposer().addWMSLayer("aloc_" + pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
+        MapLayer mapLayer = getMapComposer().getMapLayer("aloc_" + pid);
         mapLayer.setData("pid", pid);
         if (mapLayer != null) {
             WMSStyle style = new WMSStyle();
@@ -359,8 +359,8 @@ public class ImportAnalysisController extends UtilityComposer {
 
 
         String layername = "Maxent - " + pid;
-        getMapComposer().addWMSLayer(pid, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
-        MapLayer ml = getMapComposer().getMapLayer(pid);
+        getMapComposer().addWMSLayer("maxent_" + pid, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
+        MapLayer ml = getMapComposer().getMapLayer("maxent_" + pid);
         ml.setData("pid", pid);
         String infoUrl = CommonData.satServer + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();

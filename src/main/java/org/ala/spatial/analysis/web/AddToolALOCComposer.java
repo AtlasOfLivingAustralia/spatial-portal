@@ -112,9 +112,9 @@ public class AddToolALOCComposer extends AddToolComposer {
                 + "&LAYER=ALA:aloc_" + pid;
         System.out.println(legendurl);
         legendPath = legendurl;
-        getMapComposer().addWMSLayer(pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
+        getMapComposer().addWMSLayer("aloc_" + pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
         
-        MapLayer mapLayer = getMapComposer().getMapLayer(pid);
+        MapLayer mapLayer = getMapComposer().getMapLayer("aloc_" + pid);
         if (mapLayer != null) {
             mapLayer.setData("pid", pid);
             WMSStyle style = new WMSStyle();

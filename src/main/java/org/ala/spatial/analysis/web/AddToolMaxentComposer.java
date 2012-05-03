@@ -277,8 +277,8 @@ public class AddToolMaxentComposer extends AddToolComposer {
         }
 
         String layername = tToolName.getValue();
-        getMapComposer().addWMSLayer(pid, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
-        MapLayer ml = getMapComposer().getMapLayer(pid);
+        getMapComposer().addWMSLayer("species_" + pid, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
+        MapLayer ml = getMapComposer().getMapLayer("species_" +pid);
         ml.setData("pid", pid);
         String infoUrl = CommonData.satServer + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();
