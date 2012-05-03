@@ -180,6 +180,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 deactiveLayer(mapLayer, false, false);
             }
             updateLayerControls();
+            refreshContextualMenu();
             openLayersJavascript.execute(
                     openLayersJavascript.iFrameReferences
                     + script.toString());
@@ -593,6 +594,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
 
             updateLayerControls();
+            refreshContextualMenu();
             layerAdded = true;
         } else {
             logger.debug(
@@ -667,6 +669,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 }
                 updateLayerControls();
+                refreshContextualMenu();
                 removeFromSession(itemToRemove.getName());
             }
 
@@ -925,6 +928,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         activeLayersList.setSelectedIndex(activeLayerModel.size() - 1);
 
         updateLayerControls();
+        refreshContextualMenu();
 
         //showCurrentMenu();
 
@@ -1970,6 +1974,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
 
             updateLayerControls();
+            refreshContextualMenu();
         }
 
         return ml;
@@ -2333,6 +2338,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         ml.setData("query", query);
 
                         updateLayerControls();
+                        refreshContextualMenu();
 
                         //create highlight layer
                         MapLayer mlHighlight = (MapLayer) ml.clone();
@@ -2790,6 +2796,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         ml.setData("scatterplotData", data);
         addUserDefinedLayerToMenu(ml, true);
         updateLayerControls();
+        refreshContextualMenu();
     }
     /*
      * remove it + map it
