@@ -3567,20 +3567,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 ArrayList<String> layers = new ArrayList<String>();
                 StringBuilder sb = new StringBuilder();
+                sb.append("id,longitude,latitude");
                 for (String layer : downloadSecondLayers) {
-                    if (sb.length() > 0) {
-                        sb.append(",");
-                    }
+                    sb.append(",");
                     sb.append(CommonData.getLayerDisplayName(layer));
 
                     layers.add(CommonData.getLayerFacetName(layer));
                 }
                 List<String[]> sample = Sampling.sampling(layers, p);
 
-                for (int i = 0; i < sample.size(); i++) {
-                    sb.append("\n").append(ids[i]).append(",").append(p[i][1]).append(",").append(p[i][0]);
-                    for (int j = 0; j < sample.get(i).length; j++) {
-                        sb.append(",").append(sample.get(i)[j]);
+                if(sample.size() > 0) {
+                    for (int j = 0; j < sample.get(0).length; j++) {
+                        sb.append("\n");
+                        sb.append(ids[j]).append(",").append(p[j][0]).append(",").append(p[j][1]);
+                        for (int i = 0; i < sample.size(); i++) {                            
+                            sb.append(",").append(sample.get(i)[j]);
+                        }
                     }
                 }
                 

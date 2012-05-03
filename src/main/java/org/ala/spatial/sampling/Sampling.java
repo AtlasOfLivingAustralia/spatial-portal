@@ -125,6 +125,7 @@ public class Sampling {
 
     static void intersectShapeGrid(String filename, double[][] points, String[] output) {
         try {
+            System.out.println("intersectShapeGrid: " + filename);
             Grid grid = new Grid(filename);
             Properties p = new Properties();
             p.load(new FileReader(filename + ".txt"));
@@ -135,10 +136,12 @@ public class Sampling {
 
             if (values != null) {
                 for (int i = 0; i < output.length; i++) {
+                    System.out.print(", " + values[i]);
                     if (Float.isNaN(values[i])) {
                         output[i] = "n/a";
                     } else {
                         String v = p.getProperty(String.valueOf((int)values[i]));
+                        System.out.print("=" + v);
                         output[i] = v;
                     }
                 }

@@ -139,7 +139,7 @@ public class ContextualMenu extends UtilityComposer {
                     (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         }
         if (speciesLayer != null) {
-            actions.add(new Action("Produce sites x species for \"" + speciesLayer.getDisplayName() + "\""
+            actions.add(new Action("Produce points to grid for \"" + speciesLayer.getDisplayName() + "\""
                     + ((polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : ""),
                     new SitesBySpeciesEvent(getMapComposer(), speciesLayer.getName(),
                     (polygonLayer != null) ? polygonLayer.getName() : null, null)));
