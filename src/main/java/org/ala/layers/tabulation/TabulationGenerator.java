@@ -75,8 +75,8 @@ public class TabulationGenerator {
                 + "\n args[2] = db username,"
                 + "\n args[3] = password,"
                 + "\n args[4] = (optional) specify one step to run, "
-                + "'1' pair objects, '3' delete invalid objects, '4' area, '5' occurrences"
-                + "\n args[5] = (required when args[4]=5) path to records file");
+                + "'1' pair objects, '3' delete invalid objects, '4' area, '5' occurrences, '6' grid x grid comparisons"
+                + "\n args[5] = (required when args[4]=5 or 6) path to records file");
 //        args = new String[] {
 //            "6",
 //            "jdbc:postgresql://localhost:5432/layersdb",
@@ -134,6 +134,25 @@ public class TabulationGenerator {
             } else {
                 System.out.println("Please provide a valid path to the species occurrence file");
             }
+        } else if (args[4].equals("6")) {
+            
+            //some init
+            FieldDAO fieldDao = Client.getFieldDao();
+            LayerDAO layerDao = Client.getLayerDao();
+            ObjectDAO objectDao = Client.getObjectDao();
+            LayerIntersectDAO layerIntersectDao = Client.getLayerIntersectDao();
+
+            //test fieldDao
+            System.out.println("TEST: " + fieldDao.getFields());
+            System.out.println("RECORDS FILE: " + args[5]);
+            
+            File f = new File(args[5]);
+            if (f.exists()) {
+                Records records = new Records(f.getAbsolutePath());
+                updatePairObjectsGridToGrid(records);
+            } else {
+                System.out.println("Please provide a valid path to the species occurrence file");
+            }
         }
     }
 
@@ -150,7 +169,61 @@ public class TabulationGenerator {
 
             LinkedBlockingQueue<String> data = new LinkedBlockingQueue<String>();
             while (rs1.next()) {
-                data.put(rs1.getString("fid1") + "," + rs1.getString("fid2"));
+                //check file sizes
+                String layer1 = Client.getFieldDao().getFieldById(rs1.getString("fid1")).getSpid();
+                String layer2 = Client.getFieldDao().getFieldById(rs1.getString("fid2")).getSpid();
+                String path1 = Client.getLayerDao().getLayerById(Integer.parseInt(layer1)).getPath_orig();
+                String path2 = Client.getLayerDao().getLayerById(Integer.parseInt(layer2)).getPath_orig();
+                File f1 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path1 + ".shp");
+                File f2 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path2 + ".shp");
+
+                if(f1.exists() && f2.exists() && f1.length() < 50*1024*1024 && f2.length() < 50*1024*1024) {
+                    data.put(rs1.getString("fid1") + "," + rs1.getString("fid2"));
+                } else {
+                    //for gridToGrid
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static void updatePairObjectsGridToGrid(Records records) {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            String allFidPairs = "SELECT (CASE WHEN f1.id < f2.id THEN f1.id ELSE f2.id END) as fid1, (CASE WHEN f1.id < f2.id THEN f2.id ELSE f1.id END) as fid2 FROM fields f1, fields f2 WHERE f1.id != f2.id AND f1.intersect=true AND f2.intersect=true";
+            String existingFidPairs = "SELECT fid1, fid2 FROM tabulation WHERE pid1 is null";
+            String newFidPairs = "SELECT a.fid1, a.fid2 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b ON a.fid1=b.fid1 AND a.fid2=b.fid2 WHERE b.fid1 is null group by a.fid1, a.fid2;";
+            String sql = newFidPairs;
+            Statement s1 = conn.createStatement();
+            ResultSet rs1 = s1.executeQuery(sql);
+
+            LinkedBlockingQueue<String> data = new LinkedBlockingQueue<String>();
+            while (rs1.next()) {
+                //check file sizes
+                String layer1 = Client.getFieldDao().getFieldById(rs1.getString("fid1")).getSpid();
+                String layer2 = Client.getFieldDao().getFieldById(rs1.getString("fid2")).getSpid();
+                String path1 = Client.getLayerDao().getLayerById(Integer.parseInt(layer1)).getPath_orig();
+                String path2 = Client.getLayerDao().getLayerById(Integer.parseInt(layer2)).getPath_orig();
+                File f1 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path1 + ".shp");
+                File f2 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path2 + ".shp");
+
+                if(f1.exists() && f2.exists() && f1.length() < 50*1024*1024 && f2.length() < 50*1024*1024) {
+                    //for shape comparisons
+                } else {
+                    //for gridToGrid
+                    sql = gridToGrid(rs1.getString("fid1"), rs1.getString("fid2"), records);
+                    s1.execute(sql);
+                }
             }
 
             System.out.println("next " + data.size());
@@ -191,6 +264,248 @@ public class TabulationGenerator {
                 }
             }
         }
+    }
+
+    static String gridToGrid(String fieldId1, String fieldId2, Records records) throws IOException {
+        List<Double> resolutions = Client.getLayerIntersectDao().getConfig().getAnalysisResolutions();
+        Double resolution = resolutions.get(resolutions.size()-1);
+        System.out.println("RESOLUTION: " + resolution);
+        //check if resolution needs changing
+        resolution = Double.parseDouble(confirmResolution(new String [] {fieldId1, fieldId2}, String.valueOf(resolution)));
+
+        //get extents for all layers
+        double[][] extents = getLayerExtents(String.valueOf(resolution), fieldId1);
+        extents = internalExtents(extents, getLayerExtents(String.valueOf(resolution), fieldId2));
+        if (!isValidExtents(extents)) {
+            System.out.println("Warning, no overlap between grids: " + fieldId1 + " and " + fieldId2);
+            return null;
+        }
+
+        //get mask and adjust extents for filter
+        byte[][] mask;
+        int width = 0, height = 0;
+        System.out.println("resolution: " + resolution);
+        height = (int) Math.ceil((extents[1][1] - extents[0][1]) / resolution);
+        width = (int) Math.ceil((extents[1][0] - extents[0][0]) / resolution);
+        mask = getMask(resolution, extents, width, height);
+
+        //prep grid files
+        Grid grid1 = new Grid("file1");
+        Grid grid2 = new Grid("file2");
+        grid1.getGrid();
+        grid2.getGrid();
+        Properties p1 = new Properties();
+        p1.load(new FileReader("properties file 1"));
+        Properties p2 = new Properties();
+        p2.load(new FileReader("properties file 2"));
+
+        //pids
+        List<Objects> objects1 = Client.getObjectDao().getObjectsById(fieldId1);
+        List<Objects> objects2 = Client.getObjectDao().getObjectsById(fieldId2);
+
+        //get pids for properties entries
+        for(Entry<Object, Object> entry : p1.entrySet()) {
+            for(Objects o : objects1) {
+                if(o.getName().equalsIgnoreCase((String)entry.getValue())) {
+                    entry.setValue(o.getPid());
+                    break;
+                }
+            }
+        }
+        for(Entry<Object, Object> entry : p2.entrySet()) {
+            for(Objects o : objects2) {
+                if(o.getName().equalsIgnoreCase((String)entry.getValue())) {
+                    entry.setValue(o.getPid());
+                    break;
+                }
+            }
+        }
+
+        HashMap<String, Pair> map = new HashMap<String, Pair>();
+
+        //sample on species
+        HashMap<Integer, BitSet> species1 = new HashMap<Integer, BitSet>();
+        HashMap<Integer, BitSet> species2 = new HashMap<Integer, BitSet>();
+        int [][] occurrences = new int[width][height];
+        if(records != null) {
+            for(int i=0;i<records.getRecordsSize();i++) {
+                //get v1 & v2
+                int v1 = (int) grid1.getValues2(new double[][] {{records.getLongitude(i), records.getLatitude(i)}})[0];
+                int v2 = (int) grid2.getValues2(new double[][] {{records.getLongitude(i), records.getLatitude(i)}})[0];
+                String key = v1 + " " + v2;
+                Pair p = map.get(key);
+                if(p == null) {
+                    p = new Pair(key);
+                    map.put(key, p);
+                }
+                p.species.set(records.getSpeciesNumber(i));
+                p.occurrences++;
+            }
+        }
+
+        //build intersections by category pairs
+        for(int i=0;i<width;i++) {
+            for(int j=0;j<height;j++) {
+                //area
+                int v1 = (int) grid1.getValues2(new double[][] {{extents[0][0] + resolution * i, extents[0][1] + resolution * j}})[0];
+                int v2 = (int) grid2.getValues2(new double[][] {{extents[0][0] + resolution * i, extents[0][1] + resolution * j}})[0];
+                String key = v1 + " " + v2;
+                Pair p = map.get(key);
+                if(p == null) {
+                    p = new Pair(key);
+                    map.put(key, p);
+                }
+                p.area += SpatialUtil.cellArea(resolution, extents[0][1] + resolution * j);
+            }
+        }
+
+        //sql statements to put pairs into tabulation
+        StringBuilder sb = new StringBuilder();
+        for(Entry<String, Pair> p : map.entrySet()) {
+            sb.append("INSERT INTO tabulations (fid1, fid2, pid1, pid2, area, occurrences, species) VALUES ");
+            sb.append("('").append(fieldId1).append("','").append(fieldId2).append("',");
+            sb.append("'").append(p1.get(p.getValue().v1)).append("','").append(p2.get(p.getValue().v2)).append("',");
+            sb.append(p.getValue().area).append(",");
+            sb.append(p.getValue().occurrences).append(",");
+            sb.append(p.getValue().species.cardinality()).append(");");
+        }
+
+        System.out.println(sb.toString());
+
+        return sb.toString();
+    }
+
+    /**
+     * Determine the grid resolution that will be in use.
+     *
+     * @param layers list of layers to be used as String []
+     * @param resolution target resolution as String
+     * @return resolution that will be used
+     */
+    private static String confirmResolution(String[] layers, String resolution) {
+        try {
+            TreeMap<Double, String> resolutions = new TreeMap<Double, String>();
+            for (String layer : layers) {
+                String path = getLayerPath(resolution, layer);
+                int end, start;
+                if (path != null
+                        && ((end = path.lastIndexOf(File.separator)) > 0)
+                        && ((start = path.lastIndexOf(File.separator, end - 1)) > 0)) {
+                    String res = path.substring(start + 1, end);
+                    Double d = Double.parseDouble(res);
+                    if (d < 1) {
+                        resolutions.put(d, res);
+                    }
+                }
+            }
+            if(resolutions.size() > 0) {
+                resolution = resolutions.firstEntry().getValue();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return resolution;
+    }
+
+    static double[][] internalExtents(double[][] e1, double[][] e2) {
+        double[][] internalExtents = new double[2][2];
+
+        internalExtents[0][0] = Math.max(e1[0][0], e2[0][0]);
+        internalExtents[0][1] = Math.max(e1[0][1], e2[0][1]);
+        internalExtents[1][0] = Math.min(e1[1][0], e2[1][0]);
+        internalExtents[1][1] = Math.min(e1[1][1], e2[1][1]);
+
+        return internalExtents;
+    }
+
+    private static byte[][] getMask(double res, double[][] extents, int w, int h) {
+        byte[][] mask = new byte[h][w];
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < w; j++) {
+                mask[i][j] = 1;
+            }
+        }
+        return mask;
+    }
+
+    static boolean isValidExtents(double[][] e) {
+        return e[0][0] < e[1][0] && e[0][1] < e[1][1];
+    }
+
+    static double[][] getLayerExtents(String resolution, String layer) {
+        double[][] extents = new double[2][2];
+        Grid g = Grid.getGrid(getLayerPath(resolution, layer));
+
+        extents[0][0] = g.xmin;
+        extents[0][1] = g.ymin;
+        extents[1][0] = g.xmax;
+        extents[1][1] = g.ymax;
+
+        return extents;
+    }
+
+    public static String getLayerPath(String resolution, String layer) {
+        String analysisLayerDir = Client.getLayerIntersectDao().getConfig().getAnalysisLayerFilesPath();
+        String field = getFieldId(layer);
+
+        File file = new File(analysisLayerDir + File.separator + resolution + File.separator + field + ".grd");
+
+        //move up a resolution when the file does not exist at the target resolution
+        try {
+            while (!file.exists()) {
+                TreeMap<Double, String> resolutionDirs = new TreeMap<Double, String>();
+                for (File dir : new File(analysisLayerDir).listFiles()) {
+                    if (dir.isDirectory()) {
+                        try {
+                            System.out.println(dir.getName());
+                            resolutionDirs.put(Double.parseDouble(dir.getName()), dir.getName());
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+
+                String newResolution = resolutionDirs.higherEntry(Double.parseDouble(resolution)).getValue();
+
+                if(newResolution.equals(resolution)) {
+                    break;
+                } else {
+                    resolution = newResolution;
+                    file = new File(analysisLayerDir + File.separator + resolution + File.separator + field + ".grd");
+                }
+            }
+        } catch (Exception e) {
+        }
+
+        String layerPath = analysisLayerDir + File.separator + resolution + File.separator + field;
+
+        if (new File(layerPath + ".grd").exists()) {
+            return layerPath;
+        } else {
+            //look for an analysis layer
+            System.out.println("getLayerPath, not a default layer, checking analysis output for: " + layer);
+            String[] info = Client.getLayerIntersectDao().getConfig().getAnalysisLayerInfo(layer);
+            if (info != null) {
+                return info[1];
+            } else {
+                System.out.println("getLayerPath, cannot find for: " + layer + ", " + resolution);
+                return null;
+            }
+        }
+    }
+
+    public static String getFieldId(String layerShortName) {
+        String field = layerShortName;
+        // layer short name -> layer id -> field id
+        try {
+            String id = String.valueOf(Client.getLayerDao().getLayerByName(layerShortName).getId());
+            for(Field f : Client.getFieldDao().getFields()) {
+                if(f.getSpid() != null && f.getSpid().equals(id)) {
+                    field = f.getId();
+                    break;
+                }
+            }
+        } catch (Exception e) {}
+        return field;
     }
 
 //    private static void updateSingleObjects() {
@@ -831,248 +1146,7 @@ class OccurrencesSpeciesThread extends Thread {
         }
     }
     
-    String gridToGrid(String fieldId1, String fieldId2, String speciesfile) throws IOException {
-        List<Double> resolutions = Client.getLayerIntersectDao().getConfig().getAnalysisResolutions();
-        Double resolution = resolutions.get(resolutions.size()-1);
-        System.out.println("RESOLUTION: " + resolution);
-        //check if resolution needs changing
-        resolution = Double.parseDouble(confirmResolution(new String [] {fieldId1, fieldId2}, String.valueOf(resolution)));
-
-        //get extents for all layers
-        double[][] extents = getLayerExtents(String.valueOf(resolution), fieldId1);
-        extents = internalExtents(extents, getLayerExtents(String.valueOf(resolution), fieldId2));
-        if (!isValidExtents(extents)) {
-            System.out.println("Warning, no overlap between grids: " + fieldId1 + " and " + fieldId2);
-            return null;
-        }
-
-        //get mask and adjust extents for filter
-        byte[][] mask;
-        int width = 0, height = 0;
-        System.out.println("resolution: " + resolution);
-        height = (int) Math.ceil((extents[1][1] - extents[0][1]) / resolution);
-        width = (int) Math.ceil((extents[1][0] - extents[0][0]) / resolution);
-        mask = getMask(resolution, extents, width, height);
-        
-        //prep grid files
-        Grid grid1 = new Grid("file1");
-        Grid grid2 = new Grid("file2");
-        grid1.getGrid();
-        grid2.getGrid();
-        Properties p1 = new Properties();
-        p1.load(new FileReader("properties file 1"));
-        Properties p2 = new Properties();
-        p2.load(new FileReader("properties file 2"));
-        
-        //pids
-        List<Objects> objects1 = Client.getObjectDao().getObjectsById(fieldId1);
-        List<Objects> objects2 = Client.getObjectDao().getObjectsById(fieldId2);
-        
-        //get pids for properties entries
-        for(Entry<Object, Object> entry : p1.entrySet()) {
-            for(Objects o : objects1) {
-                if(o.getName().equalsIgnoreCase((String)entry.getValue())) {
-                    entry.setValue(o.getPid());
-                    break;
-                }
-            }
-        }
-        for(Entry<Object, Object> entry : p2.entrySet()) {
-            for(Objects o : objects2) {
-                if(o.getName().equalsIgnoreCase((String)entry.getValue())) {
-                    entry.setValue(o.getPid());
-                    break;
-                }
-            }
-        }
-        
-        HashMap<String, Pair> map = new HashMap<String, Pair>();        
-                
-        //sample on species   
-        HashMap<Integer, BitSet> species1 = new HashMap<Integer, BitSet>();
-        HashMap<Integer, BitSet> species2 = new HashMap<Integer, BitSet>();
-        int [][] occurrences = new int[width][height];
-        if(speciesfile != null) {
-            Records records = new Records(speciesfile);
-            for(int i=0;i<records.getRecordsSize();i++) {
-                //get v1 & v2
-                int v1 = (int) grid1.getValues2(new double[][] {{records.getLongitude(i), records.getLatitude(i)}})[0];
-                int v2 = (int) grid2.getValues2(new double[][] {{records.getLongitude(i), records.getLatitude(i)}})[0];
-                String key = v1 + " " + v2;
-                Pair p = map.get(key);
-                if(p == null) {
-                    p = new Pair(key);
-                    map.put(key, p);
-                }
-                p.species.set(records.getSpeciesNumber(i));
-                p.occurrences++;  
-            }
-        }
-        
-        //build intersections by category pairs        
-        for(int i=0;i<width;i++) {
-            for(int j=0;j<height;j++) {
-                //area
-                int v1 = (int) grid1.getValues2(new double[][] {{extents[0][0] + resolution * i, extents[0][1] + resolution * j}})[0];
-                int v2 = (int) grid2.getValues2(new double[][] {{extents[0][0] + resolution * i, extents[0][1] + resolution * j}})[0];
-                String key = v1 + " " + v2;
-                Pair p = map.get(key);
-                if(p == null) {
-                    p = new Pair(key);
-                    map.put(key, p);
-                }
-                p.area += SpatialUtil.cellArea(resolution, extents[0][1] + resolution * j);
-            }
-        }
-        
-        //sql statements to put pairs into tabulation
-        StringBuilder sb = new StringBuilder();
-        for(Entry<String, Pair> p : map.entrySet()) {
-            sb.append("INSERT INTO tabulations (fid1, fid2, pid1, pid2, area, occurrences, species) VALUES ");
-            sb.append("('").append(fieldId1).append("','").append(fieldId2).append("',");
-            sb.append("'").append(p1.get(p.getValue().v1)).append("','").append(p2.get(p.getValue().v2)).append("',");
-            sb.append(p.getValue().area).append(",");
-            sb.append(p.getValue().occurrences).append(",");
-            sb.append(p.getValue().species.cardinality()).append(");");            
-        }
-        
-        System.out.println(sb.toString());
-
-        return sb.toString();
-    }
-
-    /**
-     * Determine the grid resolution that will be in use.
-     *
-     * @param layers list of layers to be used as String []
-     * @param resolution target resolution as String
-     * @return resolution that will be used
-     */
-    private static String confirmResolution(String[] layers, String resolution) {
-        try {
-            TreeMap<Double, String> resolutions = new TreeMap<Double, String>();
-            for (String layer : layers) {
-                String path = getLayerPath(resolution, layer);
-                int end, start;
-                if (path != null
-                        && ((end = path.lastIndexOf(File.separator)) > 0)
-                        && ((start = path.lastIndexOf(File.separator, end - 1)) > 0)) {
-                    String res = path.substring(start + 1, end);
-                    Double d = Double.parseDouble(res);
-                    if (d < 1) {
-                        resolutions.put(d, res);
-                    }
-                }
-            }
-            if(resolutions.size() > 0) {
-                resolution = resolutions.firstEntry().getValue();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return resolution;
-    }
-
-    static double[][] internalExtents(double[][] e1, double[][] e2) {
-        double[][] internalExtents = new double[2][2];
-
-        internalExtents[0][0] = Math.max(e1[0][0], e2[0][0]);
-        internalExtents[0][1] = Math.max(e1[0][1], e2[0][1]);
-        internalExtents[1][0] = Math.min(e1[1][0], e2[1][0]);
-        internalExtents[1][1] = Math.min(e1[1][1], e2[1][1]);
-
-        return internalExtents;
-    }
-
-    private static byte[][] getMask(double res, double[][] extents, int w, int h) {
-        byte[][] mask = new byte[h][w];
-        for (int i = 0; i < h; i++) {
-            for (int j = 0; j < w; j++) {
-                mask[i][j] = 1;
-            }
-        }
-        return mask;
-    }
-
-    static boolean isValidExtents(double[][] e) {
-        return e[0][0] < e[1][0] && e[0][1] < e[1][1];
-    }
-
-    static double[][] getLayerExtents(String resolution, String layer) {
-        double[][] extents = new double[2][2];
-        Grid g = Grid.getGrid(getLayerPath(resolution, layer));
-
-        extents[0][0] = g.xmin;
-        extents[0][1] = g.ymin;
-        extents[1][0] = g.xmax;
-        extents[1][1] = g.ymax;
-
-        return extents;
-    }
-
-    public static String getLayerPath(String resolution, String layer) {
-        String analysisLayerDir = Client.getLayerIntersectDao().getConfig().getAnalysisLayerFilesPath();
-        String field = getFieldId(layer);
-
-        File file = new File(analysisLayerDir + File.separator + resolution + File.separator + field + ".grd");
-
-        //move up a resolution when the file does not exist at the target resolution
-        try {
-            while (!file.exists()) {
-                TreeMap<Double, String> resolutionDirs = new TreeMap<Double, String>();
-                for (File dir : new File(analysisLayerDir).listFiles()) {
-                    if (dir.isDirectory()) {
-                        try {
-                            System.out.println(dir.getName());
-                            resolutionDirs.put(Double.parseDouble(dir.getName()), dir.getName());
-                        } catch (Exception e) {
-                        }
-                    }
-                }
-
-                String newResolution = resolutionDirs.higherEntry(Double.parseDouble(resolution)).getValue();
-
-                if(newResolution.equals(resolution)) {
-                    break;
-                } else {
-                    resolution = newResolution;
-                    file = new File(analysisLayerDir + File.separator + resolution + File.separator + field + ".grd");
-                }
-            }
-        } catch (Exception e) {
-        }
-
-        String layerPath = analysisLayerDir + File.separator + resolution + File.separator + field;
-
-        if (new File(layerPath + ".grd").exists()) {
-            return layerPath;
-        } else {
-            //look for an analysis layer
-            System.out.println("getLayerPath, not a default layer, checking analysis output for: " + layer);
-            String[] info = Client.getLayerIntersectDao().getConfig().getAnalysisLayerInfo(layer);
-            if (info != null) {
-                return info[1];
-            } else {
-                System.out.println("getLayerPath, cannot find for: " + layer + ", " + resolution);
-                return null;
-            }
-        }
-    }
-
-    public static String getFieldId(String layerShortName) {
-        String field = layerShortName;
-        // layer short name -> layer id -> field id
-        try {
-            String id = String.valueOf(Client.getLayerDao().getLayerByName(layerShortName).getId());
-            for(Field f : Client.getFieldDao().getFields()) {
-                if(f.getSpid() != null && f.getSpid().equals(id)) {
-                    field = f.getId();
-                    break;
-                }
-            }
-        } catch (Exception e) {}
-        return field;
-    }
+    
 }
 
 class Pair {

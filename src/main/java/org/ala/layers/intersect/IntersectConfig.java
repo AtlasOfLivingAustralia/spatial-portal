@@ -452,10 +452,11 @@ public class IntersectConfig {
                 });
                 logger.info("found grid classes for " + gridClassesFile.getPath());
             } else {
-                logger.info("building " + gridClassesFile.getPath());
-                long start = System.currentTimeMillis();
-                classes = GridClassBuilder.buildFromGrid(filePath);
-                logger.info("finished building " + gridClassesFile.getPath() + " in " + (System.currentTimeMillis() - start) + " ms");
+                logger.info("classes unavailable for " + gridClassesFile.getPath() + ", build classes offline");
+//                logger.info("building " + gridClassesFile.getPath());
+//                long start = System.currentTimeMillis();
+//                classes = GridClassBuilder.buildFromGrid(filePath);
+//                logger.info("finished building " + gridClassesFile.getPath() + " in " + (System.currentTimeMillis() - start) + " ms");
             }
         } else {
             logger.info("no grid classes for " + filePath);

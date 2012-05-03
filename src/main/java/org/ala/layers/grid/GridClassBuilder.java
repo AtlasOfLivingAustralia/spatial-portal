@@ -18,6 +18,8 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.io.WKTReader;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -274,6 +276,9 @@ public class GridClassBuilder {
         Grid g = new Grid(filePath);
         g.writeGrid(filePath + File.separator + "polygons", wktMap, g.xmin, g.ymin, g.xmax, g.ymax, g.xres, g.yres, g.nrows, g.ncols);
 
+        //copy the header file to get it exactly the same, but change the data type
+        copyHeaderAsInt(filePath + ".grd", File.separator + "polygons.grd");
+
         //write sld
         exportSLD(filePath + File.separator + "polygons.sld", new File(filePath + ".txt").getName(), maxValues, labels);
 
@@ -368,6 +373,26 @@ public class GridClassBuilder {
             //Logger.getLogger(MaxentServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("error writing species file:");
             ex.printStackTrace(System.out);
+        }
+    }
+
+    private static void copyHeaderAsInt(String src, String dst) {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(src));
+            FileWriter fw = new FileWriter(dst);
+            String line;
+            while((line = br.readLine()) != null) {
+                if(line.startsWith("DataType=")) {
+                    fw.write("DataType=INT\n");
+                } else {
+                    fw.write(line);
+                    fw.write("\n");
+                }
+            }
+            fw.close();
+            br.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

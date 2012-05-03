@@ -204,8 +204,8 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
                         if (f != null && f.getClasses() != null) {
                             GridClass gc = f.getClasses().get((int) v[0]);
-                            if (gc != null) {
-                                m.put("value", (gc == null ? "n/a" : gc.getName()));
+                            m.put("value", (gc == null ? "n/a" : gc.getName()));
+                            if (gc != null) {                                
                                 //TODO: re-enable intersection for type 'a' after correct implementation of 'defaultField' fields table column
 //                                    if (f.getType().equals("a")) {           //class pid
 //                                        m.put("pid", f.getLayerPid() + ":" + ((int) v[0]));
@@ -300,7 +300,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
             }
 
             if (f != null) {
-                if (f.getShapeFields() != null) {
+                if (f.getShapeFields() != null && getConfig().getShapeFileCache() != null) {
                     SimpleShapeFile ssf = getConfig().getShapeFileCache().get(f.getFilePath());
                     if (ssf != null) {
                         String s = ssf.intersect(longitude, latitude);
@@ -393,13 +393,15 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
         HashMap<String, String> output = new HashMap<String, String>();
 
-        HashMap<String, SimpleShapeFile> ssfs = getConfig().getShapeFileCache().getAll();
-        for (Entry<String, SimpleShapeFile> entry : ssfs.entrySet()) {
-            String s = entry.getValue().intersect(longitude, latitude);
-            if (s == null) {
-                s = "n/a";
+        if (getConfig().getShapeFileCache() != null) {
+            HashMap<String, SimpleShapeFile> ssfs = getConfig().getShapeFileCache().getAll();
+            for (Entry<String, SimpleShapeFile> entry : ssfs.entrySet()) {
+                String s = entry.getValue().intersect(longitude, latitude);
+                if (s == null) {
+                    s = "n/a";
+                }
+                output.put(entry.getKey(), s);
             }
-            output.put(entry.getKey(), s);
         }
 
         if (gridReaders != null) {

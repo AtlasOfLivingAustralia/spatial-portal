@@ -814,7 +814,7 @@ public class Grid2Shape {
             }
         }
         double x = minx + getX(pos, ncols) * resx;
-        double y = miny + (nrows - getY(pos, ncols) + 0.5) * resy;
+        double y = miny + (nrows - getY(pos, ncols)) * resy;
         switch (edge) {
             case lEdge:
                 break;

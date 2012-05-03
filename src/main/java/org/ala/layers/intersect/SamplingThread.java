@@ -135,7 +135,7 @@ public class SamplingThread extends Thread {
                     if (i > 0) {
                         sb.append("\n");
                     }
-                    gc = classes.get(values[i]);
+                    gc = classes.get((int)values[i]);
                     if (gc != null) {
                         sb.append(gc.getName());
                     } else {
