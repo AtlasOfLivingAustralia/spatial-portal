@@ -131,14 +131,24 @@ public class Bil2diva {
                 fw.write("ByteOrder=MSB\n");
             }
 
-            String noDataValue = (map.get("nodata") != null) ? map.get("nodata") : "0";
-            double missingValue = Double.parseDouble(noDataValue);
-            if (noDataValue == null) {
-                noDataValue = String.valueOf(Double.MAX_VALUE * -1);
+            String noDataValueString = (map.get("nodata") != null) ? map.get("nodata") : "0";
+            
+            double missingValue;
+            if (noDataValueString == null) {
+                missingValue = Double.MAX_VALUE * -1;
+            } else {
+                missingValue = Double.parseDouble(noDataValueString);
             }
-            fw.write("NoDataValue=" + noDataValue + "\n");
 
             double[] minmax = getMinMax(nbits, pixelType, nrows, ncols, byteOrder, missingValue, bilFile);
+            
+            //If no nodata value was supplied, use the minimum value - 1.
+            if (noDataValueString == null) {
+                noDataValueString = Double.toString(minmax[0] - 1);
+            }
+            
+            fw.write("NoDataValue=" + noDataValueString + "\n");
+
             fw.write("MinValue=" + minmax[0] + "\n");
             fw.write("MaxValue=" + minmax[1] + "\n");
 
