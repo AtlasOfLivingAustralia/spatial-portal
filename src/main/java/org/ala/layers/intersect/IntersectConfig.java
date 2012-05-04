@@ -227,7 +227,7 @@ public class IntersectConfig {
                         layers.getJSONObject(i).getString("name"));
                 layerType.put(layers.getJSONObject(i).getString("id"),
                         layers.getJSONObject(i).getString("type"));
-                layerType.put(layers.getJSONObject(i).getString("id"),
+                layerPid.put(layers.getJSONObject(i).getString("id"),
                         layers.getJSONObject(i).getString("id"));
             }
 
@@ -452,7 +452,7 @@ public class IntersectConfig {
                 });
                 logger.info("found grid classes for " + gridClassesFile.getPath());
             } else {
-                logger.info("classes unavailable for " + gridClassesFile.getPath() + ", build classes offline");
+                logger.error("classes unavailable for " + gridClassesFile.getPath() + ", build classes offline");
 //                logger.info("building " + gridClassesFile.getPath());
 //                long start = System.currentTimeMillis();
 //                classes = GridClassBuilder.buildFromGrid(filePath);

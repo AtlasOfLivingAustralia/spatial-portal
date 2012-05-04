@@ -16,8 +16,12 @@ package org.ala.layers.dao;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map.Entry;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+import org.ala.layers.dto.Field;
+import org.ala.layers.dto.GridClass;
+import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.dto.Tabulation;
 import org.ala.layers.tabulation.TabulationUtil;
 import org.ala.layers.util.SpatialUtil;
@@ -40,6 +44,9 @@ public class TabulationDAOImpl implements TabulationDAO {
     @Resource(name = "layerIntersectDao")
     private LayerIntersectDAO layerIntersectDao;
 
+    @Resource(name = "fieldDao")
+    private FieldDAO fieldDao;
+
     @Resource(name = "dataSource")
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
@@ -47,6 +54,8 @@ public class TabulationDAOImpl implements TabulationDAO {
 
     @Override
     public List<Tabulation> getTabulation(String fid1, String fid2, String wkt){
+        List<Tabulation> tabulations = null;
+
         String min, max;
         if (fid1.compareTo(fid2) < 0) {
             min = fid1;
@@ -68,22 +77,26 @@ public class TabulationDAOImpl implements TabulationDAO {
             /* before "tabulation" table is updated with column "occurrences", to just make sure column "area" is all good */
             String sql = "SELECT i.pid1, i.pid2, i.fid1, i.fid2, i.area, o1.name as name1, o2.name as name2, i.occurrences, i.species FROM "
                     + "(SELECT pid1, pid2, fid1, fid2, area, occurrences, species FROM tabulation WHERE fid1= ? AND fid2 = ? ) i, "
-                    + "(SELECT pid, name FROM objects WHERE fid= ? ) o1, "
-                    + "(SELECT pid, name FROM objects WHERE fid= ? ) o2 "
+                    + "(select t1.pid1 as pid, name from tabulation t1 left join objects o3 on t1.fid1=o3.fid where t1.fid1= ? group by t1.pid1, name) o1, "
+                    //+ "(SELECT pid, name FROM objects WHERE fid= ? ) o1, "
+                    + "(select t2.pid2 as pid, name from tabulation t2 left join objects o4 on t2.fid2=o4.fid where t2.fid2= ? group by t2.pid2, name) o2 "
+                    //+ "(SELECT pid, name FROM objects WHERE fid= ? ) o2 "
                     + "WHERE i.pid1=o1.pid AND i.pid2=o2.pid ;";
             
-            return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Tabulation.class), min, max, min, max);
+            tabulations = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Tabulation.class), min, max, min, max);
             
         } else {
             String sql = "SELECT fid1, pid1, fid2, pid2, ST_AsText(newgeom) as geometry, name1, name2, occurrences, species FROM "
                     + "(SELECT fid1, pid1, fid2, pid2, (ST_INTERSECTION(ST_GEOMFROMTEXT( ? ,4326), i.the_geom)) as newgeom, o1.name as name1, o2.name as name2, i.occurrences, i.species FROM "
                         + "(SELECT * FROM tabulation WHERE fid1= ? AND fid2 = ? ) i, "
-                        + "(SELECT pid, name FROM objects WHERE fid= ? ) o1, "
-                        + "(SELECT pid, name FROM objects WHERE fid= ? ) o2 "
+                        + "(select t1.pid1 as pid, name from tabulation t1 left join objects o3 on t1.fid1=o3.fid where t1.fid1= ? group by t1.pid1, name) o1, "
+                        //+ "(SELECT pid, name FROM objects WHERE fid= ? ) o1, "
+                        + "(select t2.pid2 as pid, name from tabulation t2 left join objects o4 on t2.fid2=o4.fid where t2.fid2= ? group by t2.pid2, name) o2 "
+                        //+ "(SELECT pid, name FROM objects WHERE fid= ? ) o2 "
                         + "WHERE i.pid1=o1.pid AND i.pid2=o2.pid) a "
                     + "WHERE a.newgeom is not null AND ST_Area(a.newgeom) > 0;";
 
-            List<Tabulation> tabulations = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Tabulation.class), wkt, min, max, min, max);
+            tabulations = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Tabulation.class), wkt, min, max, min, max);
 
             for(Tabulation t : tabulations) {
                 try {
@@ -94,9 +107,23 @@ public class TabulationDAOImpl implements TabulationDAO {
                     logger.error("fid1:" + fid1 + " fid2:" + fid2 + " wkt:" + wkt, e);
                 }
             }
-
-            return tabulations;
         }
+
+        //fill in 'name' for 'grids as classes'/fields.type='a'/pids with ':'
+        IntersectionFile f = layerIntersectDao.getConfig().getIntersectionFile(min);
+        if(f.getType().equals("a")) {
+            for(Tabulation t : tabulations) {
+                t.setName1(f.getClasses().get(Integer.parseInt(t.getPid1().split(":")[1])).getName());
+            }
+        }
+        f = layerIntersectDao.getConfig().getIntersectionFile(max);
+        if(f.getType().equals("a")) {
+            for(Tabulation t : tabulations) {
+                t.setName2(f.getClasses().get(Integer.parseInt(t.getPid2().split(":")[1])).getName());
+            }
+        }
+
+        return tabulations;
     }
 
     @Override

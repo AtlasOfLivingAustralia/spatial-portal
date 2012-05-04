@@ -135,7 +135,7 @@ public class TabulationGenerator {
                 System.out.println("Please provide a valid path to the species occurrence file");
             }
         } else if (args[4].equals("6")) {
-            
+
             //some init
             FieldDAO fieldDao = Client.getFieldDao();
             LayerDAO layerDao = Client.getLayerDao();
@@ -145,7 +145,7 @@ public class TabulationGenerator {
             //test fieldDao
             System.out.println("TEST: " + fieldDao.getFields());
             System.out.println("RECORDS FILE: " + args[5]);
-            
+
             File f = new File(args[5]);
             if (f.exists()) {
                 Records records = new Records(f.getAbsolutePath());
@@ -177,7 +177,7 @@ public class TabulationGenerator {
                 File f1 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path1 + ".shp");
                 File f2 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path2 + ".shp");
 
-                if(f1.exists() && f2.exists() && f1.length() < 50*1024*1024 && f2.length() < 50*1024*1024) {
+                if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
                     data.put(rs1.getString("fid1") + "," + rs1.getString("fid2"));
                 } else {
                     //for gridToGrid
@@ -217,12 +217,12 @@ public class TabulationGenerator {
                 File f1 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path1 + ".shp");
                 File f2 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path2 + ".shp");
 
-                if(f1.exists() && f2.exists() && f1.length() < 50*1024*1024 && f2.length() < 50*1024*1024) {
+                if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
                     //for shape comparisons
                 } else {
                     //for gridToGrid
                     sql = gridToGrid(rs1.getString("fid1"), rs1.getString("fid2"), records);
-                    s1.execute(sql);
+                    //s1.execute(sql);
                 }
             }
 
@@ -268,10 +268,10 @@ public class TabulationGenerator {
 
     static String gridToGrid(String fieldId1, String fieldId2, Records records) throws IOException {
         List<Double> resolutions = Client.getLayerIntersectDao().getConfig().getAnalysisResolutions();
-        Double resolution = resolutions.get(resolutions.size()-1);
+        Double resolution = resolutions.get(resolutions.size() - 1);
         System.out.println("RESOLUTION: " + resolution);
         //check if resolution needs changing
-        resolution = Double.parseDouble(confirmResolution(new String [] {fieldId1, fieldId2}, String.valueOf(resolution)));
+        resolution = Double.parseDouble(confirmResolution(new String[]{fieldId1, fieldId2}, String.valueOf(resolution)));
 
         //get extents for all layers
         double[][] extents = getLayerExtents(String.valueOf(resolution), fieldId1);
@@ -282,39 +282,43 @@ public class TabulationGenerator {
         }
 
         //get mask and adjust extents for filter
-        byte[][] mask;
         int width = 0, height = 0;
         System.out.println("resolution: " + resolution);
         height = (int) Math.ceil((extents[1][1] - extents[0][1]) / resolution);
         width = (int) Math.ceil((extents[1][0] - extents[0][0]) / resolution);
-        mask = getMask(resolution, extents, width, height);
 
         //prep grid files
-        Grid grid1 = new Grid("file1");
-        Grid grid2 = new Grid("file2");
+        String pth1 = getLayerPath("" + resolution, fieldId1);
+        String pth2 = getLayerPath("" + resolution, fieldId2);
+        System.out.println("PATH 1: " + pth1);
+        System.out.println("PATH 2: " + pth2);
+        Grid grid1 = new Grid(pth1);
+        Grid grid2 = new Grid(pth2);
         grid1.getGrid();
         grid2.getGrid();
         Properties p1 = new Properties();
-        p1.load(new FileReader("properties file 1"));
+        p1.load(new FileReader(pth1 + ".txt"));
         Properties p2 = new Properties();
-        p2.load(new FileReader("properties file 2"));
+        p2.load(new FileReader(pth2 + ".txt"));
 
         //pids
         List<Objects> objects1 = Client.getObjectDao().getObjectsById(fieldId1);
         List<Objects> objects2 = Client.getObjectDao().getObjectsById(fieldId2);
 
         //get pids for properties entries
-        for(Entry<Object, Object> entry : p1.entrySet()) {
-            for(Objects o : objects1) {
-                if(o.getName().equalsIgnoreCase((String)entry.getValue())) {
+        for (Entry<Object, Object> entry : p1.entrySet()) {
+            for (Objects o : objects1) {
+                if ((o.getName() == null && entry.getValue() == null)
+                        || (o.getName() != null && entry.getValue() != null && o.getName().equalsIgnoreCase(((String) entry.getValue())))) {
                     entry.setValue(o.getPid());
                     break;
                 }
             }
         }
-        for(Entry<Object, Object> entry : p2.entrySet()) {
-            for(Objects o : objects2) {
-                if(o.getName().equalsIgnoreCase((String)entry.getValue())) {
+        for (Entry<Object, Object> entry : p2.entrySet()) {
+            for (Objects o : objects2) {
+                if ((o.getName() == null && entry.getValue() == null)
+                        || (o.getName() != null && entry.getValue() != null && o.getName().equalsIgnoreCase(((String) entry.getValue())))) {
                     entry.setValue(o.getPid());
                     break;
                 }
@@ -324,17 +328,14 @@ public class TabulationGenerator {
         HashMap<String, Pair> map = new HashMap<String, Pair>();
 
         //sample on species
-        HashMap<Integer, BitSet> species1 = new HashMap<Integer, BitSet>();
-        HashMap<Integer, BitSet> species2 = new HashMap<Integer, BitSet>();
-        int [][] occurrences = new int[width][height];
-        if(records != null) {
-            for(int i=0;i<records.getRecordsSize();i++) {
+        if (records != null) {
+            for (int i = 0; i < records.getRecordsSize(); i++) {
                 //get v1 & v2
-                int v1 = (int) grid1.getValues2(new double[][] {{records.getLongitude(i), records.getLatitude(i)}})[0];
-                int v2 = (int) grid2.getValues2(new double[][] {{records.getLongitude(i), records.getLatitude(i)}})[0];
+                int v1 = (int) grid1.getValues2(new double[][]{{records.getLongitude(i), records.getLatitude(i)}})[0];
+                int v2 = (int) grid2.getValues2(new double[][]{{records.getLongitude(i), records.getLatitude(i)}})[0];
                 String key = v1 + " " + v2;
                 Pair p = map.get(key);
-                if(p == null) {
+                if (p == null) {
                     p = new Pair(key);
                     map.put(key, p);
                 }
@@ -344,30 +345,32 @@ public class TabulationGenerator {
         }
 
         //build intersections by category pairs
-        for(int i=0;i<width;i++) {
-            for(int j=0;j<height;j++) {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 //area
-                int v1 = (int) grid1.getValues2(new double[][] {{extents[0][0] + resolution * i, extents[0][1] + resolution * j}})[0];
-                int v2 = (int) grid2.getValues2(new double[][] {{extents[0][0] + resolution * i, extents[0][1] + resolution * j}})[0];
+                int v1 = (int) grid1.getValues2(new double[][]{{extents[0][0] + resolution * i, extents[0][1] + resolution * j}})[0];
+                int v2 = (int) grid2.getValues2(new double[][]{{extents[0][0] + resolution * i, extents[0][1] + resolution * j}})[0];
                 String key = v1 + " " + v2;
                 Pair p = map.get(key);
-                if(p == null) {
+                if (p == null) {
                     p = new Pair(key);
                     map.put(key, p);
                 }
-                p.area += SpatialUtil.cellArea(resolution, extents[0][1] + resolution * j);
+                p.area += SpatialUtil.cellArea(resolution, extents[0][1] + resolution * j) * 1000000; //convert sqkm to sqm
             }
         }
 
         //sql statements to put pairs into tabulation
         StringBuilder sb = new StringBuilder();
-        for(Entry<String, Pair> p : map.entrySet()) {
-            sb.append("INSERT INTO tabulations (fid1, fid2, pid1, pid2, area, occurrences, species) VALUES ");
-            sb.append("('").append(fieldId1).append("','").append(fieldId2).append("',");
-            sb.append("'").append(p1.get(p.getValue().v1)).append("','").append(p2.get(p.getValue().v2)).append("',");
-            sb.append(p.getValue().area).append(",");
-            sb.append(p.getValue().occurrences).append(",");
-            sb.append(p.getValue().species.cardinality()).append(");");
+        for (Entry<String, Pair> p : map.entrySet()) {
+            if (p1.get(p.getValue().v1) != null && p2.get(p.getValue().v2) != null) {
+                sb.append("INSERT INTO tabulation (fid1, fid2, pid1, pid2, area, occurrences, species) VALUES ");
+                sb.append("('").append(fieldId1).append("','").append(fieldId2).append("',");
+                sb.append("'").append(p1.get(p.getValue().v1)).append("','").append(p2.get(p.getValue().v2)).append("',");
+                sb.append(p.getValue().area).append(",");
+                sb.append(p.getValue().occurrences).append(",");
+                sb.append(p.getValue().species.cardinality()).append(");");
+            }
         }
 
         System.out.println(sb.toString());
@@ -398,7 +401,7 @@ public class TabulationGenerator {
                     }
                 }
             }
-            if(resolutions.size() > 0) {
+            if (resolutions.size() > 0) {
                 resolution = resolutions.firstEntry().getValue();
             }
         } catch (Exception e) {
@@ -466,7 +469,7 @@ public class TabulationGenerator {
 
                 String newResolution = resolutionDirs.higherEntry(Double.parseDouble(resolution)).getValue();
 
-                if(newResolution.equals(resolution)) {
+                if (newResolution.equals(resolution)) {
                     break;
                 } else {
                     resolution = newResolution;
@@ -498,13 +501,14 @@ public class TabulationGenerator {
         // layer short name -> layer id -> field id
         try {
             String id = String.valueOf(Client.getLayerDao().getLayerByName(layerShortName).getId());
-            for(Field f : Client.getFieldDao().getFields()) {
-                if(f.getSpid() != null && f.getSpid().equals(id)) {
+            for (Field f : Client.getFieldDao().getFields()) {
+                if (f.getSpid() != null && f.getSpid().equals(id)) {
                     field = f.getId();
                     break;
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         return field;
     }
 
@@ -1145,20 +1149,19 @@ class OccurrencesSpeciesThread extends Thread {
             e.printStackTrace();
         }
     }
-    
-    
 }
 
 class Pair {
+
     String key;
     int occurrences;
     BitSet species = new BitSet();
     double area;
     String v1, v2;
-    
+
     Pair(String key) {
         this.key = key;
-        String [] split = key.split(" ");
+        String[] split = key.split(" ");
         v1 = split[0];
         v2 = split[1];
     }
