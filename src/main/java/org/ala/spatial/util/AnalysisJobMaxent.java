@@ -121,13 +121,15 @@ public class AnalysisJobMaxent extends AnalysisJob {
             System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
 
             MaxentSettings msets = new MaxentSettings();
-            msets.setMaxentPath(AlaspatialProperties.getAnalysisMaxentCmd());            
+            msets.setMaxentPath(AlaspatialProperties.getAnalysisMaxentCmd());
             msets.setRandomTestPercentage(Integer.parseInt(txtTestPercentage));
             msets.setEnvPath(cutDataPath);          //use (possibly) cut layers
 
             String ctxVarToggler = "";
             for (int l = 0; l < envnameslist.length; l++) {
-                if(Client.getLayerDao().getLayerByName(envnameslist[l]).getType().equals("contextual")) {
+                if (Client.getLayerDao().getLayerByName(envnameslist[l]) != null && Client.getLayerDao().getLayerByName(envnameslist[l]).getType().equals("contextual")) {
+                    ctxVarToggler += envnameslist[l] + " ";
+                } else if (envnameslist[l].startsWith("aloc_")) {
                     ctxVarToggler += envnameslist[l] + " ";
                 }
             }
@@ -215,7 +217,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     LayerDAO layerDao = Client.getLayerDao();
                     for (int ei = 0; ei < envnameslist.length; ei++) {
                         System.out.println("LAYER NAME: " + envnameslist[ei]);
-                        if(layerDao.getLayerByName(envnameslist[ei]) != null) {
+                        if (layerDao.getLayerByName(envnameslist[ei]) != null) {
                             paramlist += "<li>" + layerDao.getLayerByName(envnameslist[ei]).getDisplayname() + " (" + envnameslist[ei] + ")</li>";
                         } else {
                             paramlist += "<li>" + envnameslist[ei] + "</li>";
@@ -241,7 +243,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
                             sbTable.append("<pre>");
                             for (String ctx : ctxlist) {
                                 sbTable.append("<span style='font-weight: bold; text-decoration: underline'>" + ctx + " legend</span><br />");
-                                sbTable.append(IOUtils.toString(new FileInputStream(/*TabulationSettings.environmental_data_path + ctx + ".txt"*/ "")));
+                                sbTable.append(IOUtils.toString(new FileInputStream(/*TabulationSettings.environmental_data_path + ctx + ".txt"*/"")));
                                 sbTable.append("<br /><br />");
                             }
                             sbTable.append("</pre>");
