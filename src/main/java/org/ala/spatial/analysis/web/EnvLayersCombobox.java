@@ -163,7 +163,7 @@ public class EnvLayersCombobox extends Combobox {
                     String classification2 = null;
                     if (ml.getSubType() == LayerUtilities.ALOC) {
                         type = "contextual";
-                        name = (String) ml.getData("pid");
+                        name = ml.getName();
                         classification1 = "Analysis";
                         classification2 = "Classification";
                         continue;   //no contextuals
@@ -171,22 +171,22 @@ public class EnvLayersCombobox extends Combobox {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "Prediction";
-                        name = (String) ml.getData("pid");
+                        name = ml.getName();
                     } else if (ml.getSubType() == LayerUtilities.GDM) {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "GDM";
-                        name = (String) ml.getData("pid");
+                        name = ml.getName();
                     } else if (ml.getSubType() == LayerUtilities.ODENSITY) {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "Occurrence Density";
-                        name = (String) ml.getData("pid");
+                        name = ml.getName();
                     } else if (ml.getSubType() == LayerUtilities.SRICHNESS) {
                         type = "environmental";
                         classification1 = "Analysis";
                         classification2 = "Species Richness";
-                        name = (String) ml.getData("pid");
+                        name = ml.getName();
                     } else {
                         continue;
                     }

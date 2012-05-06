@@ -236,7 +236,9 @@ padding: 1px 0px 0px 5px;
                             <button id="btnCreateGroupLayers" label="add in/out layers to map" />
                         </hbox>
                     </div>
-                    <button id="btnActivateHover" label="Browse layer point values" href="javascript:window.mapFrame.toggleActiveHover();" visible="false" />
+                    <div visible="false">
+                        <button id="btnActivateHover" label="Browse layer point values" href="javascript:window.mapFrame.toggleActiveHover();" visible="false" />
+                    </div>
                 </vbox>
                 <div  width="60%">
                     <image id="legendImgUri" visible="false"/>

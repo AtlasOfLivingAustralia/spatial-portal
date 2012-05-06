@@ -359,8 +359,8 @@ public class ImportAnalysisController extends UtilityComposer {
 
 
         String layername = "Maxent - " + pid;
-        getMapComposer().addWMSLayer("maxent_" + pid, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
-        MapLayer ml = getMapComposer().getMapLayer("maxent_" + pid);
+        getMapComposer().addWMSLayer("species_" + pid, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
+        MapLayer ml = getMapComposer().getMapLayer("species_" + pid);
         ml.setData("pid", pid);
         String infoUrl = CommonData.satServer + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();

@@ -3577,7 +3577,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 sb.append("id,longitude,latitude");
                 for (String layer : downloadSecondLayers) {
                     sb.append(",");
-                    sb.append(CommonData.getLayerDisplayName(layer));
+                    String name = CommonData.getLayerDisplayName(layer);
+                    if(name == null) {
+                        name = CommonData.getFacetLayerDisplayName(layer);
+                        if(name == null) {
+                            MapLayer ml = getMapLayer(layer);
+                            if(ml == null) {
+                                name = layer;
+                            } else {
+                                name = ml.getDisplayName();
+                            }
+                        }
+                    }
+                    sb.append(name);
 
                     layers.add(CommonData.getLayerFacetName(layer));
                 }

@@ -37,59 +37,61 @@ public class Sampling {
             intersectGrid(CommonData.settings.get("sampling_files_path") + "diva/" + layerName, points, output);
         } else {
             //look for an analysis layer
-            File maxent = new File(CommonData.settings.get("analysis_output_dir") + "maxent/" + facetName + "/" + facetName + ".grd");
-            File aloc = new File(CommonData.settings.get("analysis_output_dir") + "aloc/" + facetName + "/" + "aloc" + ".grd");
-            String[] split = facetName.split("_");
-            File sxsSRichness = null;
-            File sxsODensity = null;
-            File gdmTransLayer = null;
-            File envelope = null;
-            if(split != null && split.length > 1) {
-                if(split[1].equals("srichness")) {
-                    sxsSRichness = new File(CommonData.settings.get("analysis_output_dir") + "sitesbyspecies/" + split[0] + "/species_richness.grd");
-                } else if(split[1].equals("odensity")) {
-                    sxsODensity = new File(CommonData.settings.get("analysis_output_dir") + "sitesbyspecies/" + split[0] + "/occurrence_density.grd");
-                } else {
-                    int pos = facetName.indexOf("_");
-                    String[] gdmparts = new String [] {facetName.substring(0,pos), facetName.substring(pos+1) };
-                    gdmTransLayer = new File(CommonData.settings.get("analysis_output_dir") + "gdm/" + split[0] + "/" + gdmparts[1] + "Tran.grd");
-                }
-                envelope = new File(CommonData.settings.get("analysis_output_dir") + "envelope/" + split[0] + "/envelope.grd");
-            }            
+//            File maxent = new File(CommonData.settings.get("analysis_output_dir") + "maxent/" + facetName + "/" + facetName + ".grd");
+//            File aloc = new File(CommonData.settings.get("analysis_output_dir") + "aloc/" + facetName + "/" + "aloc" + ".grd");
+//            String[] split = facetName.split("_");
+//            File sxsSRichness = null;
+//            File sxsODensity = null;
+//            File gdmTransLayer = null;
+//            File envelope = null;
+//            if(split != null && split.length > 1) {
+//                if(split[1].equals("srichness")) {
+//                    sxsSRichness = new File(CommonData.settings.get("analysis_output_dir") + "sitesbyspecies/" + split[0] + "/species_richness.grd");
+//                } else if(split[1].equals("odensity")) {
+//                    sxsODensity = new File(CommonData.settings.get("analysis_output_dir") + "sitesbyspecies/" + split[0] + "/occurrence_density.grd");
+//                } else {
+//                    int pos = facetName.indexOf("_");
+//                    String[] gdmparts = new String [] {facetName.substring(0,pos), facetName.substring(pos+1) };
+//                    gdmTransLayer = new File(CommonData.settings.get("analysis_output_dir") + "gdm/" + split[0] + "/" + gdmparts[1] + "Tran.grd");
+//                }
+//                envelope = new File(CommonData.settings.get("analysis_output_dir") + "envelope/" + split[0] + "/envelope.grd");
+//            }
+//
+//            System.out.println("Analysis layer: " + facetName);
+//            System.out.println(maxent.getPath() + ", " + maxent.exists());
+//            System.out.println(aloc.getPath() + ", " + aloc.exists());
+//            if (sxsSRichness != null) {
+//                System.out.println(sxsSRichness.getPath() + ", " + sxsSRichness.exists());
+//            }
+//            if (sxsODensity != null) {
+//                System.out.println(sxsODensity.getPath() + ", " + sxsODensity.exists());
+//            }
+//            if (gdmTransLayer != null) {
+//                System.out.println(gdmTransLayer.getPath() + ", " + gdmTransLayer.exists());
+//            }
+//            if (envelope != null) {
+//                System.out.println(envelope.getPath() + ", " + envelope.exists());
+//            }
+//
+//            File file = null;
+//            if (maxent.exists()) {
+//                file = maxent;
+//            } else if (aloc.exists()) {
+//                file = aloc;
+//            } else if (sxsSRichness != null && sxsSRichness.exists()) {
+//                file = sxsSRichness;
+//            } else if (sxsODensity != null && sxsODensity.exists()) {
+//                file = sxsODensity;
+//            } else if(gdmTransLayer != null && gdmTransLayer.exists()) {
+//                file = gdmTransLayer;
+//            } else if (envelope != null && envelope.exists()) {
+//                file = envelope;
+//            }
 
-            System.out.println("Analysis layer: " + facetName);
-            System.out.println(maxent.getPath() + ", " + maxent.exists());
-            System.out.println(aloc.getPath() + ", " + aloc.exists());
-            if (sxsSRichness != null) {
-                System.out.println(sxsSRichness.getPath() + ", " + sxsSRichness.exists());
-            }
-            if (sxsODensity != null) {
-                System.out.println(sxsODensity.getPath() + ", " + sxsODensity.exists());
-            }
-            if (gdmTransLayer != null) {
-                System.out.println(gdmTransLayer.getPath() + ", " + gdmTransLayer.exists());
-            }
-            if (envelope != null) {
-                System.out.println(envelope.getPath() + ", " + envelope.exists());
-            }
-
-            File file = null;
-            if (maxent.exists()) {
-                file = maxent;
-            } else if (aloc.exists()) {
-                file = aloc;
-            } else if (sxsSRichness != null && sxsSRichness.exists()) {
-                file = sxsSRichness;
-            } else if (sxsODensity != null && sxsODensity.exists()) {
-                file = sxsODensity;
-            } else if(gdmTransLayer != null && gdmTransLayer.exists()) {
-                file = gdmTransLayer;
-            } else if (envelope != null && envelope.exists()) {
-                file = envelope;
-            }
-            if (file != null) {
-                System.out.println("found file for sampling: " + file.getPath().substring(0, file.getPath().length() - 4));
-                intersectGrid(file.getPath().substring(0, file.getPath().length() - 4), points, output);
+            String [] info = getAnalysisLayerInfo(facetName);
+            if (info != null) {
+                System.out.println("found file for sampling: " + info[1]);
+                intersectGrid(info[1], points, output);
             }
         }
         System.out.println("finished sampling " + points.length + " points in " + facetName + ":" + layerName + " in " + (System.currentTimeMillis() - start) + "ms");
@@ -215,5 +217,70 @@ public class Sampling {
                 + " in " + (System.currentTimeMillis() - start) + "ms");
 
         return output;
+    }
+
+    /**
+     * get info on an analysis layer
+     * @param id layer id as String
+     * @return String [] with [0] = analysis id, [1] = path to grid file, [2] = analysis type
+     */
+    static public String[] getAnalysisLayerInfo(String id) {
+        String analysisOutputPath = CommonData.settings.get("analysis_output_dir");
+        String gid, filename, name;
+        gid = filename = name = null;
+        if (id.startsWith("species_")) {
+            //maxent layer
+            gid = id.substring("species_".length());
+            filename = analysisOutputPath + File.separator + "maxent" + File.separator + gid + File.separator + gid;
+            name = "Prediction";
+        } else if (id.startsWith("aloc_")) {
+            //aloc layer
+            gid = id.substring("aloc_".length());
+            filename = analysisOutputPath + File.separator + "aloc" + File.separator + gid + File.separator + "aloc";
+            name = "Classification";
+        } else if (id.startsWith("odensity_")) {
+            //occurrence density layer
+            gid = id.substring("odensity_".length());
+            filename = analysisOutputPath + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "occurrence_density";
+            name = "Occurrence Density";
+        } else if (id.startsWith("srichness_")) {
+            //species richness layer
+            gid = id.substring("srichness_".length());
+            filename = analysisOutputPath + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
+            name = "Species Richness";
+        } else if (id.startsWith("envelope_")) {
+            //envelope layer
+            gid = id.substring("envelope_".length());
+            filename = analysisOutputPath + File.separator + "envelope" + File.separator + gid + File.separator + "envelope";
+            name = "Environmental Envelope";
+        } else if (id.startsWith("gdm_")) {
+            //gdm layer
+            int pos1 = id.indexOf("_");
+            int pos2 = id.lastIndexOf("_");
+            String[] gdmparts = new String [] {id.substring(0,pos1), id.substring(pos1+1, pos2), id.substring(pos2+1) };
+            gid = gdmparts[2];
+            filename = analysisOutputPath + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1];
+            //Layer tmpLayer = layerDao.getLayerByName(gdmparts[1].replaceAll("Tran", ""));
+            //name = "Transformed " + tmpLayer.getDisplayname();
+            name = "Transformed " + CommonData.getFacetLayerDisplayName(gdmparts[1].replaceAll("Tran", ""));
+        } else if (id.contains("_")) {
+            //2nd form of gdm layer name, why?
+            int pos = id.indexOf("_");
+            String[] gdmparts = new String [] {id.substring(0,pos), id.substring(pos+1) };
+            gid = gdmparts[0];
+            filename = analysisOutputPath + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1] + "Tran";
+            System.out.println("id: " + id);
+            System.out.println("parts: " + gdmparts[0] + ", " + gdmparts[1]);
+            System.out.println("filename: " + filename);
+            //Layer tmpLayer = layerDao.getLayerByName(gdmparts[1].replaceAll("Tran", ""));
+            //name = "Transformed " + tmpLayer.getDisplayname();
+            name = "Transformed " + CommonData.getFacetLayerDisplayName(gdmparts[1]);
+        }
+
+        if (gid != null) {
+            return new String[] {gid, filename, name};
+        } else {
+            return null;
+        }
     }
 }

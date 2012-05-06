@@ -127,5 +127,29 @@ public class Zipper {
         }
     }
 
+    public static void zipFiles(String [] files, String outpath) {
+        try {
+            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outpath));
 
+            byte[] readBuffer = new byte[2156];
+            int bytesIn = 0;
+            for (int i = 0; i < files.length; i++) {
+                File f = new File(files[i]);
+                FileInputStream fis = new FileInputStream(f);
+                String fileToAdd = f.getName();
+                ZipEntry anEntry = new ZipEntry(fileToAdd);
+                System.out.println("adding: " + anEntry.getName());
+                zos.putNextEntry(anEntry);
+                while ((bytesIn = fis.read(readBuffer)) != -1) {
+                    zos.write(readBuffer, 0, bytesIn);
+                }
+                //close the Stream
+                fis.close();
+            }
+
+            zos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

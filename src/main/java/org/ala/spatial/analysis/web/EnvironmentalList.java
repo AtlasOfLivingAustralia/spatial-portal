@@ -68,15 +68,15 @@ public class EnvironmentalList extends Listbox {
             for (MapLayer ml : mapComposer.getAnalysisLayers()) {
                 ListEntry le = null;
                 if (ml.getSubType() == LayerUtilities.ALOC) {
-                    le = new ListEntry((String) ml.getData("pid"), ml.getDisplayName(), "Analysis", "Classification", "Contextual", null, null);
+                    le = new ListEntry(ml.getName(), ml.getDisplayName(), "Analysis", "Classification", "Contextual", null, null);
                 } else if (ml.getSubType() == LayerUtilities.MAXENT) {
-                    le = new ListEntry((String) ml.getData("pid"), ml.getDisplayName(), "Analysis", "Prediction", "Environmental", null, null);
+                    le = new ListEntry(ml.getName(), ml.getDisplayName(), "Analysis", "Prediction", "Environmental", null, null);
                 } else if (ml.getSubType() == LayerUtilities.GDM) {
-                    le = new ListEntry((String) ml.getData("pid"), ml.getDisplayName(), "Analysis", "GDM", "Environmental", null, null);
+                    le = new ListEntry(ml.getName(), ml.getDisplayName(), "Analysis", "GDM", "Environmental", null, null);
                 } else if (ml.getSubType() == LayerUtilities.ODENSITY) {
-                    le = new ListEntry((String) ml.getData("pid"), ml.getDisplayName(), "Analysis", "Occurrence Density", "Environmental", null, null);
+                    le = new ListEntry(ml.getName(), ml.getDisplayName(), "Analysis", "Occurrence Density", "Environmental", null, null);
                 } else if (ml.getSubType() == LayerUtilities.SRICHNESS) {
-                    le = new ListEntry((String) ml.getData("pid"), ml.getDisplayName(), "Analysis", "Species Richness", "Environmental", null, null);
+                    le = new ListEntry(ml.getName(), ml.getDisplayName(), "Analysis", "Species Richness", "Environmental", null, null);
                 }
                 if (le != null) {
                     listEntries.add(le);

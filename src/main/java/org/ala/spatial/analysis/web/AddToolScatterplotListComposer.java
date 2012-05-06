@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.UserData;
+import org.ala.spatial.util.Zipper;
 import org.ala.spatial.wms.RecordsLookup;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -52,6 +54,7 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleAnchor;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Filedownload;
 
 /**
  *
@@ -313,7 +316,14 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         }
 
         String htmlUrl = makeHtml(layers, imageUrls);
+        String zipUrl = makeZip(layers, imageUrls, htmlUrl);
+        
         Events.echoEvent("openUrl", getMapComposer(), htmlUrl);
+        try {
+            Filedownload.save(new URL(zipUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip");
+        } catch (Exception ex) {
+            Logger.getLogger(AddToolScatterplotListComposer.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         this.detach();
 
@@ -431,7 +441,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
 
         //save to file
         String uid = String.valueOf(System.currentTimeMillis());
-        String pth = this.settingsSupplementary.getValue("print_output_path");
+        String pth = settingsSupplementary.getValue("print_output_path");
         String htmlurl = settingsSupplementary.getValue("print_output_url");
 
         try {
@@ -987,7 +997,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         }
     }
 
-    String htmlHeader = "<html><body><table border=1><tr><th>Layer 1</th><th>Layer 2</th><th>Scatterplot</th></tr>";
+    String htmlHeader = "<html><body><table border=1>";
     String htmlFooter = "</table></body></html>";
     private String makeHtml(String[] layers, ArrayList<String> imageUrls) {
         //linear
@@ -996,16 +1006,18 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         sb.append(htmlHeader);
         int pos = 0;
         for(int i=0;i<layers.length-1;i++) {
+            sb.append("<tr>");
             for(int j=i+1;j<layers.length;j++) {
-                sb.append("<tr><td>").append(CommonData.getLayerDisplayName(layers[i]));
-                sb.append("</td><td>").append(CommonData.getLayerDisplayName(layers[j]));
+//                sb.append("<td>").append(CommonData.getLayerDisplayName(layers[i]));
+//                sb.append("</td><td>").append(CommonData.getLayerDisplayName(layers[j]));
                 if(imageUrls.get(pos) == null) {
-                    sb.append("</td><td>n/a</td></tr>");
+                    sb.append("<td>n/a</td>");
                 } else {
-                    sb.append("</td><td><img src='").append(imageUrls.get(pos)).append("'/></td></tr>");
+                    sb.append("<td><img src='").append(imageUrls.get(pos)).append("'/></td>");
                 }
                 pos++;
             }
+            sb.append("</tr>");
         }
         sb.append(htmlFooter);
 
@@ -1022,5 +1034,19 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         System.out.println("ScatterplotList file: " + pth + uid + ".html");
         System.out.println("ScatterplotList output: " + sb.toString());
         return htmlurl + uid + ".html";
+    }
+
+    private String makeZip(String[] layers, ArrayList<String> imageUrls, String htmlUrl) {
+        String [] files = new String [imageUrls.size()+1];
+        for(int i=0;i<imageUrls.size();i++) {
+            files[i] = imageUrls.get(i).replace(settingsSupplementary.getValue("print_output_url"),settingsSupplementary.getValue("print_output_path"));
+        }
+        files[files.length-1] = htmlUrl.replace(settingsSupplementary.getValue("print_output_url"),settingsSupplementary.getValue("print_output_path"));
+
+        String outpath = settingsSupplementary.getValue("print_output_path") + files[files.length-1].replace(".html", ".zip");
+
+        Zipper.zipFiles(files, outpath);
+
+        return settingsSupplementary.getValue("print_output_url") + files[files.length-1].replace(".html", ".zip");
     }
 }
