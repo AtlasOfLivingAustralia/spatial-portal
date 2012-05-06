@@ -267,6 +267,8 @@ public class TabulationGenerator {
     }
 
     static String gridToGrid(String fieldId1, String fieldId2, Records records) throws IOException {
+        FileWriter fw = new FileWriter(fieldId1 + "_" + fieldId2 + ".sql");
+
         List<Double> resolutions = Client.getLayerIntersectDao().getConfig().getAnalysisResolutions();
         Double resolution = resolutions.get(resolutions.size() - 1);
         System.out.println("RESOLUTION: " + resolution);
@@ -364,16 +366,22 @@ public class TabulationGenerator {
         StringBuilder sb = new StringBuilder();
         for (Entry<String, Pair> p : map.entrySet()) {
             if (p1.get(p.getValue().v1) != null && p2.get(p.getValue().v2) != null) {
-                sb.append("INSERT INTO tabulation (fid1, fid2, pid1, pid2, area, occurrences, species) VALUES ");
-                sb.append("('").append(fieldId1).append("','").append(fieldId2).append("',");
-                sb.append("'").append(p1.get(p.getValue().v1)).append("','").append(p2.get(p.getValue().v2)).append("',");
-                sb.append(p.getValue().area).append(",");
-                sb.append(p.getValue().occurrences).append(",");
-                sb.append(p.getValue().species.cardinality()).append(");");
+                String sql = "INSERT INTO tabulation (fid1, fid2, pid1, pid2, area, occurrences, species) VALUES "
+                        + "('" + fieldId1 + "','" + fieldId2 + "',"
+                        + "'" + p1.get(p.getValue().v1) + "','" + p2.get(p.getValue().v2) + "',"
+                        + p.getValue().area + ","
+                        + p.getValue().occurrences + ","
+                        + p.getValue().species.cardinality() + ");";
+                
+                sb.append(sql);
+
+                fw.write(sql);
+                fw.write("\n");
+                fw.flush();
             }
         }
 
-        System.out.println(sb.toString());
+        fw.close();
 
         return sb.toString();
     }

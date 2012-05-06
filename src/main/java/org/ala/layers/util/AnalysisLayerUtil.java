@@ -206,6 +206,7 @@ public class AnalysisLayerUtil {
             try {
                 new File(s).delete();
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

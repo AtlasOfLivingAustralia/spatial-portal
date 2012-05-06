@@ -77,9 +77,9 @@ public class TabulationDAOImpl implements TabulationDAO {
             /* before "tabulation" table is updated with column "occurrences", to just make sure column "area" is all good */
             String sql = "SELECT i.pid1, i.pid2, i.fid1, i.fid2, i.area, o1.name as name1, o2.name as name2, i.occurrences, i.species FROM "
                     + "(SELECT pid1, pid2, fid1, fid2, area, occurrences, species FROM tabulation WHERE fid1= ? AND fid2 = ? ) i, "
-                    + "(select t1.pid1 as pid, name from tabulation t1 left join objects o3 on t1.fid1=o3.fid where t1.fid1= ? group by t1.pid1, name) o1, "
+                    + "(select t1.pid1 as pid, name from tabulation t1 left join objects o3 on t1.fid1=o3.fid and t1.pid1=o3.pid where t1.fid1= ? group by t1.pid1, name) o1, "
                     //+ "(SELECT pid, name FROM objects WHERE fid= ? ) o1, "
-                    + "(select t2.pid2 as pid, name from tabulation t2 left join objects o4 on t2.fid2=o4.fid where t2.fid2= ? group by t2.pid2, name) o2 "
+                    + "(select t2.pid2 as pid, name from tabulation t2 left join objects o4 on t2.fid2=o4.fid and t2.pid2=o4.pid where t2.fid2= ? group by t2.pid2, name) o2 "
                     //+ "(SELECT pid, name FROM objects WHERE fid= ? ) o2 "
                     + "WHERE i.pid1=o1.pid AND i.pid2=o2.pid ;";
             
@@ -89,9 +89,9 @@ public class TabulationDAOImpl implements TabulationDAO {
             String sql = "SELECT fid1, pid1, fid2, pid2, ST_AsText(newgeom) as geometry, name1, name2, occurrences, species FROM "
                     + "(SELECT fid1, pid1, fid2, pid2, (ST_INTERSECTION(ST_GEOMFROMTEXT( ? ,4326), i.the_geom)) as newgeom, o1.name as name1, o2.name as name2, i.occurrences, i.species FROM "
                         + "(SELECT * FROM tabulation WHERE fid1= ? AND fid2 = ? ) i, "
-                        + "(select t1.pid1 as pid, name from tabulation t1 left join objects o3 on t1.fid1=o3.fid where t1.fid1= ? group by t1.pid1, name) o1, "
+                        + "(select t1.pid1 as pid, name from tabulation t1 left join objects o3 on t1.fid1=o3.fid and t1.pid1=o3.pid where t1.fid1= ? group by t1.pid1, name) o1, "
                         //+ "(SELECT pid, name FROM objects WHERE fid= ? ) o1, "
-                        + "(select t2.pid2 as pid, name from tabulation t2 left join objects o4 on t2.fid2=o4.fid where t2.fid2= ? group by t2.pid2, name) o2 "
+                        + "(select t2.pid2 as pid, name from tabulation t2 left join objects o4 on t2.fid2=o4.fid and t2.pid2=o4.pid where t2.fid2= ? group by t2.pid2, name) o2 "
                         //+ "(SELECT pid, name FROM objects WHERE fid= ? ) o2 "
                         + "WHERE i.pid1=o1.pid AND i.pid2=o2.pid) a "
                     + "WHERE a.newgeom is not null AND ST_Area(a.newgeom) > 0;";

@@ -588,7 +588,6 @@ public class Grid { //  implements Serializable
      * @return
      */
     public float[] getValues2(double[][] points) {
-        System.out.println("getValues2");
         if (points == null || points.length == 0) {
             return null;
         }
@@ -610,7 +609,6 @@ public class Grid { //  implements Serializable
             } else {
                 ret[i] = Float.NaN;
             }
-            System.out.println("!!!! " + pos + " : " + ret[i] + " @ " + points[i][0] + " " + points[i][1]);
         }
 
         return ret;
@@ -791,7 +789,6 @@ public class Grid { //  implements Serializable
      *          points provided
      */
     public float[] getValues(double[][] points) {
-        System.out.println("getValues");
 
         //confirm inputs since they come from somewhere else
         if (points == null || points.length == 0) {
@@ -869,7 +866,6 @@ public class Grid { //  implements Serializable
                 b = new byte[size];
                 for (i = 0; i < length; i++) {
                     pos = getcellnumber(points[i][0], points[i][1]);
-                    System.out.println("INT: " + points[i][0] + " " +  points[i][1] + ", pos=" + pos);
                     if (pos >= 0) {
                         afile.seek(pos * size);
                         afile.read(b);
@@ -973,8 +969,6 @@ public class Grid { //  implements Serializable
      *          points provided
      */
     public float[] getValues3(double[][] points, int bufferSize) {
-        System.out.println("getValues3");
-
         //confirm inputs since they come from somewhere else
         if (points == null || points.length == 0) {
             return null;
