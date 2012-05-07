@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -309,7 +310,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
                     System.out.println("scatterplot image: " + layers[i] + "," + layers[j] + " > " + imageUrl);
                 } catch (IOException ex) {
                     System.out.println("failed scatterplot image: " + layers[i] + "," + layers[j]);
-                    ex.printStackTrace();                    
+                    ex.printStackTrace();
                 }
                 imageUrls.add(imageUrl);
             }
@@ -317,7 +318,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
 
         String htmlUrl = makeHtml(layers, imageUrls);
         String zipUrl = makeZip(layers, imageUrls, htmlUrl);
-        
+
         Events.echoEvent("openUrl", getMapComposer(), htmlUrl);
         try {
             Filedownload.save(new URL(zipUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip");
@@ -996,26 +997,35 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             }
         }
     }
-
     String htmlHeader = "<html><body><table border=1>";
     String htmlFooter = "</table></body></html>";
+
     private String makeHtml(String[] layers, ArrayList<String> imageUrls) {
         //linear
         StringBuilder sb = new StringBuilder();
 
-        sb.append(htmlHeader);
+        //confused, map it
+        HashMap<String, String> map = new HashMap<String, String>();
         int pos = 0;
-        for(int i=0;i<layers.length-1;i++) {
+        for (int i = 0; i < layers.length - 1; i++) {
+            for (int j = i + 1; j < layers.length; j++) {
+                map.put(i + " " + j, imageUrls.get(pos));
+                pos++;
+            }
+        }
+
+        sb.append(htmlHeader);        
+        for (int i = 1; i < layers.length; i++) {
             sb.append("<tr>");
-            for(int j=i+1;j<layers.length;j++) {
-//                sb.append("<td>").append(CommonData.getLayerDisplayName(layers[i]));
-//                sb.append("</td><td>").append(CommonData.getLayerDisplayName(layers[j]));
-                if(imageUrls.get(pos) == null) {
+            for (int j = 0; j < i; j++) {
+                int a = (layers.length - i - 1);
+                int b = (layers.length - j - 1);
+                String key = Math.min(a, b) + " " + Math.max(a,b);
+                if (map.get(key) == null) {
                     sb.append("<td>n/a</td>");
                 } else {
-                    sb.append("<td><img src='").append(imageUrls.get(pos)).append("'/></td>");
+                    sb.append("<td><img src='").append(map.get(key)).append("'/></td>");
                 }
-                pos++;
             }
             sb.append("</tr>");
         }
@@ -1037,16 +1047,16 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
     }
 
     private String makeZip(String[] layers, ArrayList<String> imageUrls, String htmlUrl) {
-        String [] files = new String [imageUrls.size()+1];
-        for(int i=0;i<imageUrls.size();i++) {
-            files[i] = imageUrls.get(i).replace(settingsSupplementary.getValue("print_output_url"),settingsSupplementary.getValue("print_output_path"));
+        String[] files = new String[imageUrls.size() + 1];
+        for (int i = 0; i < imageUrls.size(); i++) {
+            files[i] = imageUrls.get(i).replace(settingsSupplementary.getValue("print_output_url"), settingsSupplementary.getValue("print_output_path"));
         }
-        files[files.length-1] = htmlUrl.replace(settingsSupplementary.getValue("print_output_url"),settingsSupplementary.getValue("print_output_path"));
+        files[files.length - 1] = htmlUrl.replace(settingsSupplementary.getValue("print_output_url"), settingsSupplementary.getValue("print_output_path"));
 
-        String outpath = settingsSupplementary.getValue("print_output_path") + files[files.length-1].replace(".html", ".zip");
+        String outpath = files[files.length - 1].replace(".html", ".zip");
 
         Zipper.zipFiles(files, outpath);
 
-        return settingsSupplementary.getValue("print_output_url") + files[files.length-1].replace(".html", ".zip");
+        return files[files.length - 1].replace(".html", ".zip").replace(settingsSupplementary.getValue("print_output_path"), settingsSupplementary.getValue("print_output_url"));
     }
 }
