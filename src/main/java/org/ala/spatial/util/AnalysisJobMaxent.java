@@ -19,6 +19,7 @@ import java.util.Hashtable;
 import org.ala.layers.client.Client;
 import org.ala.layers.dao.LayerDAO;
 import org.ala.layers.dto.Field;
+import org.ala.layers.dto.Layer;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.spatial.analysis.index.LayerFilter;
@@ -217,10 +218,15 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     LayerDAO layerDao = Client.getLayerDao();
                     for (int ei = 0; ei < envnameslist.length; ei++) {
                         System.out.println("LAYER NAME: " + envnameslist[ei]);
-                        if (layerDao.getLayerByName(envnameslist[ei]) != null) {
-                            paramlist += "<li>" + layerDao.getLayerByName(envnameslist[ei]).getDisplayname() + " (" + envnameslist[ei] + ")</li>";
+                        Layer lyr = layerDao.getLayerByName(envnameslist[ei]);
+                        if (lyr != null) {
+                            paramlist += "<li>" + lyr.getDisplayname() + " (" + envnameslist[ei] + ")</li>";
                         } else {
-                            paramlist += "<li>" + envnameslist[ei] + "</li>";
+                            if (envnameslist[ei].startsWith("aloc_")) {
+                                paramlist += "<li>Classification (" + envnameslist[ei].split("_")[1] + ")</li>";
+                            } else {
+                                paramlist += "<li>" + envnameslist[ei] + "</li>";
+                            }                            
                         }
                     }
                     paramlist += "</ul>";
@@ -242,8 +248,10 @@ public class AnalysisJobMaxent extends AnalysisJob {
                         if (msets.getEnvVarToggler().length() > 0) {
                             sbTable.append("<pre>");
                             for (String ctx : ctxlist) {
+                                if (ctx.startsWith("aloc_")) continue; 
                                 sbTable.append("<span style='font-weight: bold; text-decoration: underline'>" + ctx + " legend</span><br />");
-                                sbTable.append(IOUtils.toString(new FileInputStream(/*TabulationSettings.environmental_data_path + ctx + ".txt"*/"")));
+                                //sbTable.append(IOUtils.toString(new FileInputStream(/*TabulationSettings.environmental_data_path + ctx + ".txt"*/"")));
+                                sbTable.append(IOUtils.toString(new FileInputStream(GridCutter.getLayerPath(resolution, ctx) + ".txt")));
                                 sbTable.append("<br /><br />");
                             }
                             sbTable.append("</pre>");
