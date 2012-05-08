@@ -145,14 +145,14 @@ hr {
 }
 #layervalues {
     position: absolute;
-    bottom: 70px! important;
+    bottom: 68px! important;
     right: 0px! important;
     width: 220px;
-    max-height: 250px! important;
+    max-height: 300px! important;
     padding: 6px;
     z-index: 410;
 
-    overflow: hidden; 
+    overflow: auto; 
     background-color: #3c668d;
     color: #fff;
     cursor: pointer;
@@ -188,12 +188,14 @@ hr {
     color: white;
     text-decoration: none;
 }
+#layervalues .lvicons span a.hidden {
+    content: '&and;';
+}
+#layervalues .lvicons span a.shown {
+    content: '&or;';
+}
 #layervalues .lvalue {
     padding: 2px 0; 
-}
-#layervalues .lvalue div {
-    width: 100px;
-    position: relative; 
 }
 .ellipsis, #layervalues .lvalue div {
     white-space: nowrap;
@@ -202,11 +204,15 @@ hr {
     -o-text-overflow: ellipsis;
 }
 #layervalues .lvalue .lname {
+    position: relative; 
+    width: 160px;
     float: left;
     clear:both;
 }
 #layervalues .lvalue .lval {
+    position: relative; 
     float: right;
+    width: 60px;
 }
 #gmaplyrswtch {
     top: 20px;
@@ -757,7 +763,7 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     cursor: pointer;
 
     z-index: 110;
-    top: 370px! important;
+    top: 350px! important;
     left: 23px! important;
 }
 
@@ -766,4 +772,41 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
 }
 .imagesOff {
     background-image: url('../img/images_off.png');
+}
+
+.olLayerGooglePoweredBy {display: none;}
+.z-loading {
+    left: 45% !important;
+    top: 50% !important;
+    vertical-align: middle;
+
+    background-color: #E3E3E3;
+    border: 1px solid #C7C7C7;
+    cursor: wait;
+    left: 0;
+    padding: 3px;
+    position: absolute;
+    top: 0;
+    white-space: nowrap;
+    z-index: 31000;
+
+    font-family: arial,sans-serif;
+    font-size: 12px;
+    font-weight: normal;
+
+    display:none;
+}
+.z-loading-indicator {
+    background-color: #FFFFFF;
+    border: 1px solid #C7C7C7;
+    color: #102B6D;
+    padding: 6px;
+    white-space: nowrap;
+}
+.z-apply-loading-icon, .z-loading-icon, .z-renderdefer {
+    background: url("/webportal/zkau/web/da1ccf7c/zk/img/progress4.gif") no-repeat scroll center center transparent;
+    height: 16px;
+    width: 16px;
+    display: inline-block;
+    vertical-align: top;
 }

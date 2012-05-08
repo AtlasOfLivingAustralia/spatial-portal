@@ -466,6 +466,7 @@ console.log(currentbaselayertxt);
             if (!printing) {
                 window.mapFrame.loadBaseMap();
                 $(".login-bubble").show().delay(8000).fadeOut(2000);
+                window.mapFrame.document.getElementById("layervalues").style.display= "block";
             }
 
             map.signalLayerLoaded = function (layerName) {

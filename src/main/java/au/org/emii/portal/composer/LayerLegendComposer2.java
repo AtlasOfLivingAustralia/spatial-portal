@@ -79,7 +79,6 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     Textbox txtLayerName;
     String sLayerName;
     Button btnLayerName;
-    Button btnActivateHover;
     Label lInGroupCount;
     Button btnCreateGroupLayers;
     Div dGroupBox;
@@ -536,8 +535,6 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
             }
             layerControls.setVisible(true);
             layerControls.setAttribute("activeLayerName", currentSelection.getName());
-
-            btnActivateHover.setVisible((currentSelection.isGridLayer() || currentSelection.isContextualLayer() || currentSelection.getSubType()==LayerUtilities.GDM));
         }
 
         if (m != null && m.isSpeciesLayer()) {

@@ -9,64 +9,9 @@
 
         <link rel="stylesheet" type="text/css" href="css/map.css?" media="screen" >
         <link rel="stylesheet" type="text/css" href="css/mapprint.css?" media="print" >
-        <style type="text/css">
-            .olLayerGooglePoweredBy {display: none;}
-            .z-loading {
-                left: 45% !important;
-                top: 50% !important;
-                vertical-align: middle;
 
-                background-color: #E3E3E3;
-                border: 1px solid #C7C7C7;
-                cursor: wait;
-                left: 0;
-                padding: 3px;
-                position: absolute;
-                top: 0;
-                white-space: nowrap;
-                z-index: 31000;
-
-                font-family: arial,sans-serif;
-                font-size: 12px;
-                font-weight: normal;
-
-                display:none;
-            }
-            .z-loading-indicator {
-                background-color: #FFFFFF;
-                border: 1px solid #C7C7C7;
-                color: #102B6D;
-                padding: 6px;
-                white-space: nowrap;
-            }
-            .z-apply-loading-icon, .z-loading-icon, .z-renderdefer {
-                background: url("/webportal/zkau/web/da1ccf7c/zk/img/progress4.gif") no-repeat scroll center center transparent;
-                height: 16px;
-                width: 16px;
-                display: inline-block;
-                vertical-align: top;
-            }
-        </style>
-
-        <!--
-        <link rel="stylesheet" href="http://www.openlayers.org/dev/theme/default/style.css" type="text/css">
-        <link rel="stylesheet" href="http://www.openlayers.org/dev/theme/default/google.css" type="text/css">
-        <link rel="stylesheet" href="http://www.openlayers.org/dev/examples/style.css" type="text/css">
-        -->
-
-        <!--<script src="http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers"></script>-->
-        <!--<script src="http://maps.google.com/maps/api/js?sensor=false"></script>-->
-
-        <!-- localhost -->
-        <!--<script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAATePNm7xBFZXllvoRxGz_BhRsDxR58u4EMP2nDvLHzYbxa1j3hhSNIRDINQLwPQ2hP0ES6-nALNTX5A'></script>-->
-        <!-- *.ala.org.au -->
-        <!--script src='http://maps.google.com/maps?file=api&v=2&key=ABQIAAAATePNm7xBFZXllvoRxGz_BhTywzZ2Wb6D2-BxLGvg54t676eSkhT8wZ8wJWAhNjC_IwB5zdfydxVPsw'></script-->
-        <script src="http://maps.google.com/maps/api/js?libraries=geometry&sensor=false"></script>
-        <!--script language="JavaScript" type="text/javascript" src="scripts/jquery-1.3.1.min.js"></script>
-        <script language="JavaScript" type="text/javascript" src="scripts/jquery.rotate.1-1.js"></script>
-        <script language="JavaScript" type="text/javascript" src="scripts/OpenLayers-2.10.js"></script>
-        <script language="JavaScript" type="text/javascript" src="scripts/map3.js?"></script-->
-        <script language="JavaScript" type="text/javascript" src="map.js.dsp"></script>
+        <script type="text/javascript" src="http://maps.google.com/maps/api/js?libraries=geometry&sensor=false"></script>
+        <script type="text/javascript" src="map.js.dsp"></script>
 
 
         <script type="text/javascript">
@@ -121,6 +66,19 @@
                     }, 100);
                 } 
             }
+            
+            
+            function doSomething(ele) {
+                var ele = $("div.lvicons span a");
+                //console.log($(ele).text());
+                //$(ele).toggleClass("hidden");
+                if ($(ele).text() == "x") {
+                    $(ele).text("^");
+                } else {
+                    $(ele).text(escape("x"));
+                }
+                $("#lvalues").toggleClass("layervaluesDie");
+            }
         </script>
 
     </head>
@@ -143,13 +101,17 @@
         <div id="layervalues">
             <div id="lheader">
                 <div class="lvicons">
+                    <!--
                     <span><a href="javascript:doSome('min');">&or;</a></span>
                     <span><a href="javascript:doSome('max');">&and;</a></span>
                     <span><a href="javascript:doSome('die');">&Chi;</a></span>
+                    -->
+                    <!-- <span><a href="javascript:doSomething(this);">&and;</a></span> -->
+                    <span><a href="javascript:doSomething();" class="shown">&or;</a></span>
                 </div>
                 Layer values:
             </div>                
-            <div id="lvalues"></div>
+            <div id="lvalues" class="layervaluesMin"></div>
         </div>
         <div id="mapinfo">
             <div id="mapscale"></div>
