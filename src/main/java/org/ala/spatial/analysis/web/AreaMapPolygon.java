@@ -99,12 +99,12 @@ public class AreaMapPolygon extends AreaToolComposer {
     public void onCheck$rgPolygonLayers(Event event) {
 
         Radio selectedItem = rgPolygonLayers.getSelectedItem();
-
+        
         //Add and remove layer to set as top layer
         String layerName = selectedItem.getValue();
         MapComposer mc = getThisMapComposer();
-        MapLayer ml = mc.getMapLayer(layerName);
-        mc.removeLayer(layerName);
+        MapLayer ml = mc.getMapLayerDisplayName(layerName);
+        mc.removeLayer(layerName); 
         mc.activateLayer(ml, true);
 
     }
