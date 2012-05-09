@@ -1215,9 +1215,9 @@ public class BiocacheQuery implements Query, Serializable {
                 html += "<tr class='" + lastClass + "'><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCountKosher() + " without a flagged spatial issue<br>" + getOccurrenceCountCoordinates() + " with any coordinates</td></tr>";
                 lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
             } else {
-                html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>" + getSpeciesCountKosher() + " without a flagged spatial issue<br>" + getSpeciesCountCoordinates() + " with any coordinates<br>" + getSpeciesCountAny() + " total including records without coordiantes</td></tr>";
+                html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>" + getSpeciesCountKosher() + " without a flagged spatial issue<br>" + getSpeciesCountCoordinates() + " with any coordinates<br>" + getSpeciesCountAny() + " total including records without coordinates</td></tr>";
                 lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
-                html += "<tr class='" + lastClass + "'><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCountKosher() + " without a flagged spatial issue<br>" + getOccurrenceCountCoordinates() + " with any coordinates<br>" + getOccurrenceCountAny() + " total including records without coordiantes</td></tr>";
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCountKosher() + " without a flagged spatial issue<br>" + getOccurrenceCountCoordinates() + " with any coordinates<br>" + getOccurrenceCountAny() + " total including records without coordinates</td></tr>";
                 lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
             }
             String areamsg = "";
