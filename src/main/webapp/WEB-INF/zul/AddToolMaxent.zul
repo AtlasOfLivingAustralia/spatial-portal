@@ -112,6 +112,7 @@
                             <hbox>
                                 <textbox id="tMultiple" width="380px" height="100px" multiline="true" />
                                 <button id="bMultiple" label="Add"/>
+                                <fileupload label="Upload" id="bSpeciesListUpload" sclass="fUploadButton" />
                             </hbox>
                             <separator height="15px"/>
                             <hbox>
@@ -132,7 +133,8 @@
                                     <listheader />
                                 </listhead>
                             </listbox>
-                            <separator height="20px"/>
+                            <button id="bAssemblageExport" label="Export set" sclass="goButton" />
+                            <separator height="5px"/>
                         </vbox>
                         <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Import assemblage" />
                         <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import points" />

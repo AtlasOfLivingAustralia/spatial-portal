@@ -2,7 +2,12 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -17,15 +22,18 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
+import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.CheckEvent;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
+import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Comboitem;
+import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
@@ -278,7 +286,11 @@ public class AddSpeciesController extends UtilityComposer {
     }
 
     public void onClick$bMultiple(Event event) {
-        String[] speciesNames = tMultiple.getText().replace("\n", ",").split(",");
+        importList(tMultiple.getText());
+    }
+
+    void importList(String list) {
+        String[] speciesNames = list.replace("\n", ",").replace("\t",",").split(",");
         ArrayList<String> notFound = new ArrayList<String>();
         StringBuilder notFoundSb = new StringBuilder();
         for (int i = 0; i < speciesNames.length; i++) {
@@ -498,5 +510,90 @@ public class AddSpeciesController extends UtilityComposer {
         if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherFalse.isChecked()) {
             chkGeoKosherTrue.setChecked(true);
         }
+    }
+
+    public void onClick$bAssemblageExport(Event event) {
+        SimpleDateFormat sdf = new SimpleDateFormat("ddmmyyyy_hhmm");
+        Filedownload.save(getLsids(), "text/plain", "species_assemblage_" + sdf.format(new Date()) + ".txt");
+    }
+
+    String getLsids() {
+        StringBuilder sb = new StringBuilder();
+        for (Listitem li : (List<Listitem>) lMultiple.getItems()) {
+            Listcell lsidCell = (Listcell) li.getLastChild();
+            if(sb.length() > 0) sb.append("\n");
+            sb.append(lsidCell.getLabel());
+        }
+        return sb.toString();
+    }
+    
+    public void onUpload$bSpeciesListUpload(Event event) {
+        UploadEvent ue = null;
+        if (event instanceof UploadEvent) {
+            ue = (UploadEvent) event;
+        } else if (event instanceof ForwardEvent) {
+            ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
+        }
+        if (ue == null) {
+            System.out.println("unable to upload file");
+            return;
+        } else {
+            System.out.println("fileUploaded()");
+        }
+        try {
+            Media m = ue.getMedia();
+            
+            //forget content types, do 'try'
+            boolean loaded = false;
+            try {
+                importList(readerToString(m.getReaderData()));
+                loaded = true;
+                System.out.println("read type " + m.getContentType() + " with getReaderData");
+            } catch (Exception e) {
+                //e.printStackTrace();
+            }
+            if (!loaded) {
+                try {
+                    importList(new String(m.getByteData()));
+                    loaded = true;
+                    System.out.println("read type " + m.getContentType() + " with getByteData");
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+            if (!loaded) {
+                try {
+                    importList(readerToString(new InputStreamReader(m.getStreamData())));
+                    loaded = true;
+                    System.out.println("read type " + m.getContentType() + " with getStreamData");
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+            if (!loaded) {
+                try {
+                    importList(m.getStringData());
+                    loaded = true;
+                    System.out.println("read type " + m.getContentType() + " with getStringData");
+                } catch (Exception e) {
+                    //last one, report error
+                    getMapComposer().showMessage("Unable to load your file. Please try again.");
+                    System.out.println("unable to load user points: ");
+                    e.printStackTrace();
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    String readerToString(Reader reader) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        char [] buffer = new char[1000];
+        int size;
+        while((size = reader.read(buffer)) > 0) {
+            sb.append(buffer, 0, size);
+        }
+        return sb.toString();
     }
 }

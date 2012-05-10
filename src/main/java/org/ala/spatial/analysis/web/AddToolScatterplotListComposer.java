@@ -18,7 +18,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -78,7 +77,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         super.afterCompose();
 
         this.selectedMethod = "Scatterplot";
-        this.totalSteps = 6;
+        this.totalSteps = 5;
 
         this.setIncludeAnalysisLayersForAnyQuery(true);
         //this.setIncludeAnalysisLayersForUploadQuery(true);
@@ -1014,13 +1013,13 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             }
         }
 
-        sb.append(htmlHeader);        
+        sb.append(htmlHeader);
         for (int i = 1; i < layers.length; i++) {
             sb.append("<tr>");
             for (int j = 0; j < i; j++) {
                 int a = (layers.length - i - 1);
                 int b = (layers.length - j - 1);
-                String key = Math.min(a, b) + " " + Math.max(a,b);
+                String key = Math.min(a, b) + " " + Math.max(a, b);
                 if (map.get(key) == null) {
                     sb.append("<td>n/a</td>");
                 } else {

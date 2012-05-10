@@ -96,12 +96,14 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 Set<String> biocacheLayers = CommonData.biocacheLayerList;
                 ArrayList<String> aInBiocache = new ArrayList<String>();
                 ArrayList<String> aOutBiocache = new ArrayList<String>();
-                
-                for(String s : layers) {
-                    if(biocacheLayers.contains(s)) {
-                        aInBiocache.add(s);
-                    } else {
-                        aOutBiocache.add(s);
+
+                if (envlayers.length() > 0) {
+                    for(String s : layers) {
+                        if(biocacheLayers.contains(s)) {
+                            aInBiocache.add(s);
+                        } else {
+                            aOutBiocache.add(s);
+                        }
                     }
                 }
                 if(aInBiocache.size() > 0) {
