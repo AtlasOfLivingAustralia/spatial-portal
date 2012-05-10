@@ -32,6 +32,7 @@ public class PageController {
     private final String EXAMPLE_INDEX = "/examples/index";
     private final String EXAMPLE_SPECIES_WMS = "/examples/specieswms";
     private final String EXAMPLE_LAYERS_WMS = "/examples/layerswms";
+    private final String EXAMPLE_SPECIES_WMSG = "/examples/specieswmsg";
 
     @RequestMapping(value = INDEX)
     public String index() {
@@ -56,5 +57,10 @@ public class PageController {
     @RequestMapping(value = EXAMPLE_LAYERS_WMS)
     public String exampleLayersWms() {
         return "examples/layerswms";
+    }
+
+    @RequestMapping(value = EXAMPLE_SPECIES_WMSG)
+    public String exampleSpeciesWmsg() {
+        return "examples/specieswmsg";
     }
 }
