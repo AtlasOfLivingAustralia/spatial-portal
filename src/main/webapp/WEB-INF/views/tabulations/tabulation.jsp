@@ -16,6 +16,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
         <section id="content-search">
             <h1>Spatial Web Services</h1>
             <p>${title} for ${tabulationDescription}</p>
+            <p>Occurrences and species numbers are reported correctly but the area of some intersections may be reported as "0" sq.km. when they are < 50% of the smallest grid cell used for tabulation.</p>
         </section>
     </div><!--inner-->
 
@@ -24,7 +25,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
     <div class="col-wide last" style="width:100%">
 
         <script type="text/javascript" src="/layers-service/javascript/SortingTable.js"></script>
-            
+
        <table class="sortable table-borders" style="width:100%">
            <c:forEach items="${grid}" var="row" varStatus="counter">
                <tr>
