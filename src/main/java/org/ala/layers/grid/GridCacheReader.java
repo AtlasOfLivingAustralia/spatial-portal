@@ -67,10 +67,12 @@ public class GridCacheReader {
     }
 
     public static void main(String[] args) {
+        //args = new String[] {"d:\\timing_test_sampling_diva_cache.csv", ""e:\\layers\\ready\\diva_cache"};
+        System.out.println("Test sampling on a grid cache with random points.\n\nargs[0] = output test results\nargs[1] = ready/diva_cache path");
         try {
-            FileWriter fw = new FileWriter("d:\\timing_test_sampling_diva_cache.csv");
+            FileWriter fw = new FileWriter(args[0]);
             for (int i = 1; i < 5000; i += 10) {
-                long t = largerTest(i);
+                long t = largerTest(i, args[1]);
                 fw.append(String.valueOf(i)).append(",").append(String.valueOf(t)).append("\n");
             }
             fw.close();
@@ -82,9 +84,9 @@ public class GridCacheReader {
         System.exit(0);
     }
 
-    static void smallerTest() {
+    static void smallerTest(String diva_cache_path) {
         try {
-            HashMap<String, Float> map = new GridCacheReader("e:\\layers\\ready\\diva_cache").sample(130, -22);
+            HashMap<String, Float> map = new GridCacheReader(diva_cache_path).sample(130, -22);
 
             for (String k : map.keySet()) {
                 System.out.println(k + " > " + map.get(k));
@@ -95,9 +97,8 @@ public class GridCacheReader {
 
     }
 
-    static long largerTest(int size) {
+    static long largerTest(int size,String diva_cache_path) {
         try {
-//            ArrayList<Double> points = loadPoints("d:\\1000.csv");
             ArrayList<Double> points = new ArrayList<Double>(2000);
             Random r = new Random(System.currentTimeMillis());
             for (int i = 0; i < size; i++) {
@@ -116,7 +117,7 @@ public class GridCacheReader {
                 step--;
             }
             for (int i = 0; i < threadCount; i++) {
-                lbqReaders.add(new GridCacheReader("e:\\layers\\ready\\diva_cache"));
+                lbqReaders.add(new GridCacheReader(diva_cache_path));
                 if (i == threadCount - 1) {
                     step = points.size();
                 }
@@ -151,38 +152,6 @@ public class GridCacheReader {
 
             long end = System.currentTimeMillis() - start;
             System.out.println("sampling time " + end + "ms for " + points.size() / 2);
-
-//            FileWriter fw = new FileWriter("d:\\1000_test_cache.csv");
-//            ArrayList<String> header = null;
-//            for (int i = 0; i < output.size(); i++) {
-//                ArrayList<HashMap<String, Float>> list = output.get(i).get();
-//                if (header == null) {
-//                    header = new ArrayList<String>();
-//                    header.add("latitude");
-//                    header.add("longitude");
-//                    fw.append("latitude,longitude,");
-//                    for (String k : list.get(0).keySet()) {
-//                        if (k.equals("latitude") || k.equals("longitude")) {
-//                            continue;
-//                        }
-//                        header.add(k);
-//                        fw.append(k);
-//                        fw.append(",");
-//                    }
-//                }
-//                for (int j = 0; j < list.size(); j++) {
-//                    fw.append("\n");
-//                    for (int k = 0; k < header.size(); k++) {
-//                        Float f = list.get(j).get(header.get(k));
-//                        if (f != null && !Float.isNaN(f)) {
-//                            fw.append(String.valueOf(f));
-//                        }
-//                        fw.append(",");
-//                    }
-//                }
-//            }
-//
-//            fw.close();
 
             return end;
         } catch (Exception e) {
