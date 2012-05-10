@@ -471,7 +471,7 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     display: none;
 }
 .olPopupCloseBox {
-    background:transparent url(../img/close.png?) no-repeat scroll 0 0 !important;
+    background:transparent url(../img/close.png) no-repeat scroll 0 0 !important;
     margin-right: 7px;
 }
 
