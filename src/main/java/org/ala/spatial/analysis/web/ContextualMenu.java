@@ -154,7 +154,9 @@ public class ContextualMenu extends UtilityComposer {
             actions.add(new Action("Export area \"" + polygonLayer.getDisplayName() + "\"",
                     new ExportAreaEvent(getMapComposer(), polygonLayer.getName())));
         }
-        if (speciesLayer != null && speciesLayer == getMapComposer().getActiveLayersSelection(false)) {
+        if (speciesLayer != null
+                && (speciesLayer == getMapComposer().getActiveLayersSelection(false)
+                || (getMapComposer().getActiveLayersSelection(false) == null && layers != null && speciesLayer == layers.get(0)))) {
             actions.add(new Action("Display facet of \"" + speciesLayer.getDisplayName() + "\"",
                     new OpenFacetsEvent(getMapComposer(), speciesLayer.getName())));
         }
@@ -542,7 +544,7 @@ class OpenFacetsEvent implements EventListener {
     public void onEvent(Event event) throws Exception {
         MapLayer mapLayer = mc.getMapLayer(layerName);
         if (mapLayer != null) {
-            if(mapLayer.getColourMode().equals("grid")) {
+            if (mapLayer.getColourMode().equals("grid")) {
                 mapLayer.setColourMode("-1");
                 mc.updateLayerControls();
             }

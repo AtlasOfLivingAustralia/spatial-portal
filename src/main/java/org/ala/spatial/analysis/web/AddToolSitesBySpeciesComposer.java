@@ -216,6 +216,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
         return false;
     }
 
+    @Override
     public void loadMap(Event event) {
         try {
             if (chkOccurrenceDensity.isChecked()) {
@@ -240,6 +241,9 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                 }
                 md.setMoreInfo(infoUrl + "\nOccurrence Density\npid:" + pid);
                 md.setId(Long.valueOf(pid));
+
+                //perform intersection on user uploaded layers so you can facet on this layer
+                getMapComposer().addAnalysisLayerToUploadedCoordinates(pid + "_odensity", layername);
             }
 
             if (chkSpeciesDensity.isChecked()) {
@@ -264,6 +268,9 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                 }
                 md.setMoreInfo(infoUrl + "\nSpecies Richness\npid:" + pid);
                 md.setId(Long.valueOf(pid));
+
+                //perform intersection on user uploaded layers so you can facet on this layer
+                getMapComposer().addAnalysisLayerToUploadedCoordinates(pid + "_srichness", layername);
             }
 
             // set off the download as well

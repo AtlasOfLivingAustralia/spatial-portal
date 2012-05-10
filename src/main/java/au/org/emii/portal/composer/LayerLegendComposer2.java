@@ -9,6 +9,7 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.util.LayerUtilities;
 import java.awt.Color;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +18,10 @@ import org.ala.spatial.data.LegendObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LegendMaker;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -82,6 +86,8 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     Label lInGroupCount;
     Button btnCreateGroupLayers;
     Div dGroupBox;
+    Combobox cbClassificationGroup;
+    Div divClassificationPicker;
 
     @Override
     public void afterCompose() {
@@ -535,6 +541,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
             }
             layerControls.setVisible(true);
             layerControls.setAttribute("activeLayerName", currentSelection.getName());
+            setupForClassificationLayers();
         }
 
         if (m != null && m.isSpeciesLayer()) {
@@ -659,5 +666,105 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 
             lInGroupCount.setValue(query.flagRecordCount() + (query.flagRecordCount() == 1 ? " record" : " records"));
         }
+    }
+
+    private void setupForClassificationLayers() {
+        if (mapLayer != null && mapLayer.getSubType() == LayerUtilities.ALOC) {
+            divClassificationPicker.setVisible(true);
+
+            //reset content
+            Integer groupCount = (Integer) mapLayer.getData("classificationGroupCount");
+            if (groupCount == null) {
+                mapLayer.setData("classificationGroupCount", getClassificationGroupCount(mapLayer.getName().replace("aloc_", "")));
+                groupCount = 0;
+            }
+            for (int i = cbClassificationGroup.getItemCount() - 1; i >= 0; i--) {
+                cbClassificationGroup.removeItemAt(i);
+            }
+            Comboitem ci = new Comboitem("none");
+            ci.setParent(cbClassificationGroup);
+
+            for (int i = 1; i <= groupCount; i++) {
+                new Comboitem("Group " + i).setParent(cbClassificationGroup);
+            }
+
+            //is there a current selection?
+            Integer groupSelection = (Integer) mapLayer.getData("classificationSelection");
+            if (groupSelection == null) {
+                groupSelection = 0;
+                mapLayer.setData("classificationSelection", groupSelection);
+            }
+            cbClassificationGroup.setSelectedIndex(groupSelection);
+
+        } else {
+            divClassificationPicker.setVisible(false);
+        }
+    }
+
+    //sld substitution strings
+    private static final String SUB_LAYERNAME = "*layername*";
+    private static final String SUB_COLOUR = "0xff0000"; //"*colour*";
+    private static final String SUB_MIN_MINUS_ONE = "*min_minus_one*";
+    private static final String SUB_MIN = "*min*";
+    private static final String SUB_MAX_PLUS_ONE = "*max_plus_one*";
+    String polygonSld =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\">"
+            + "<NamedLayer><Name>ALA:" + SUB_LAYERNAME + "</Name>"
+            + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
+            + "<ColorMap>"
+            + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"0\" quantity=\"" + SUB_MIN_MINUS_ONE + "\"/>"
+            + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"1\" quantity=\"" + SUB_MIN + "\"/>"
+            + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"0\" quantity=\"" + SUB_MAX_PLUS_ONE + "\"/>"
+            + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
+
+    public void onChange$cbClassificationGroup(Event event) {
+        if (mapLayer != null) {
+            mapLayer.setData("classificationSelection", new Integer(cbClassificationGroup.getSelectedIndex()));
+
+            String baseUri = mapLayer.getUri();
+            int pos = baseUri.indexOf("&sld_body=");
+            if (pos > 0) {
+                baseUri = baseUri.substring(0, pos);
+            }
+            String layername = mapLayer.getName();
+            int n = cbClassificationGroup.getSelectedIndex();
+            if (n > 0) {
+                try {
+                    String sldBodyParam = "&sld_body=" + formatSld(URLEncoder.encode(polygonSld, "UTF-8"), layername, String.valueOf(n - 1), String.valueOf(n), String.valueOf(n), String.valueOf(n + 1));
+                    mapLayer.setUri(baseUri + sldBodyParam);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                mapLayer.setUri(baseUri);
+            }
+            getMapComposer().reloadMapLayerNowAndIndexes(mapLayer);
+        }
+    }
+
+    private String formatSld(String sld, String layername, String min_minus_one, String min, String max, String max_plus_one) {
+        return sld.replace(SUB_LAYERNAME, layername).replace(SUB_MIN_MINUS_ONE, min_minus_one).replace(SUB_MIN, min).replace(SUB_MAX_PLUS_ONE, max_plus_one);
+    }
+
+    public Integer getClassificationGroupCount(String pid) {
+        Integer i = 0;
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(CommonData.satServer + "/output/aloc/" + pid + "/classification_means.csv");
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            String[] s = slist.split("\n");
+            i = s.length - 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return i;
     }
 }

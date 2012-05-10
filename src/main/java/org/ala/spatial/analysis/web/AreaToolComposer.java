@@ -11,17 +11,17 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.BiocacheQuery;
+import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.SelectedArea;
-import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 
 /**
@@ -120,8 +120,13 @@ public class AreaToolComposer extends UtilityComposer {
 
                     if (q instanceof UploadQuery) {
                         //do default sampling now
+                        ArrayList<QueryField> f = CommonData.getDefaultUploadSamplingFields();
+                        //add any analysis layers from the layers list
+                        for (MapLayer ml : getMapComposer().getAnalysisLayers()) {
+                            f.add(new QueryField(ml.getName(), ml.getDisplayName(), QueryField.FieldType.AUTO));
+                        }
                         if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
-                            q.sample(CommonData.getDefaultUploadSamplingFields());
+                            q.sample(f);
                             ((UploadQuery) q).resetOriginalFieldCount(-1);
                         }
                     }
@@ -211,10 +216,6 @@ public class AreaToolComposer extends UtilityComposer {
             if (results_count_occurrences > 0 && results_count_occurrences <= getMapComposer().getSettingsSupplementary().getValueAsInt("max_record_count_map")) {
                 String activeAreaLayerName = layers.get(0).getDisplayName();
                 getMapComposer().mapSpecies(sq, "Occurrences in " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
-
-                //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/" + sbProcessUrl.toString(), pid, "map species in area");
-                //String extra = sq.getWS() + "|" + sq.getBS() + "|" + sq.getFullQ(false);
-                //remoteLogger.logMapSpecies("Occurrences in " + activeAreaLayerName, sq.getLsids(), wkt, extra);
             } else {
                 getMapComposer().showMessage(results_count_occurrences
                         + " occurrences in this area.\r\nSelect an area with fewer than "
@@ -225,15 +226,4 @@ public class AreaToolComposer extends UtilityComposer {
             e.printStackTrace();
         }
     }
-//    private void doRemoteLog(Query q, String wkt) {
-//        if (q instanceof BiocacheQuery) {
-//            BiocacheQuery bq = (BiocacheQuery) q;
-//            String extra = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false);
-//            remoteLogger.logMapSpecies(q.getName(), ((BiocacheQuery) q).getLsids(), wkt, extra);
-//        } else if (q instanceof UploadQuery) {
-//            remoteLogger.logMapSpecies(q.getName(), "user-" + ((UploadQuery) q).getSpeciesCount() + " records", wkt, q.getMetadataHtml());
-//        } else {
-//            remoteLogger.logMapSpecies((String) winProps.get("name"), (String) winProps.get("s"), layerName + "__" + wkt, "");
-//        }
-//    }
 }

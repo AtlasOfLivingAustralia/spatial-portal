@@ -35,9 +35,8 @@ public class ProgressWCController extends UtilityComposer {
     public Window parent = null;
     public String name = "";
     Textbox txtLog;
-    
     String log = "";
-    
+
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -57,20 +56,20 @@ public class ProgressWCController extends UtilityComposer {
 
     public void onTimer$timer(Event e) {
         //get status
-        if(parent == null) {
+        if (parent == null) {
             parent = (Window) this.getParent();
         }
 
         JSONObject jo = get();
-        
-        if(jo.containsKey("status")) {
+
+        if (jo.containsKey("status")) {
             jobstatus.setValue(jo.getString("status"));
         }
 
         String s = jo.getString("state");
-        if(s.equals("job does not exist")){
+        if (s.equals("job does not exist")) {
             timer.stop();
-            getMapComposer().showMessage(name + " request does not exist","");//get("error"));
+            getMapComposer().showMessage(name + " request does not exist", "");//get("error"));
             this.detach();
             return;
         }
@@ -81,11 +80,11 @@ public class ProgressWCController extends UtilityComposer {
             jobprogress.setValue((int) (d * 100));
         } catch (Exception ex) {
         }
-        
+
         String log = jo.getString("log");
-        if(log != null) {
-            this.log += log;
-            if(txtLog != null) {
+        if (log != null) {
+            this.log = reverseLines(log) + this.log;
+            if (txtLog != null) {
                 txtLog.setValue(this.log);
             }
         }
@@ -95,7 +94,7 @@ public class ProgressWCController extends UtilityComposer {
         if (s.equals("SUCCESSFUL")) {
             timer.stop();
             System.out.println("JOB DONE. Calling loadMap");
-            Events.echoEvent("loadMap",parent, null);
+            Events.echoEvent("loadMap", parent, null);
             this.detach();
         } else if (s.startsWith("FAILED")) {
             timer.stop();
@@ -109,7 +108,7 @@ public class ProgressWCController extends UtilityComposer {
             getMapComposer().showMessage(name + " failed" + error_info);
             this.detach();
             this.parent.detach();
-        } else if(s.equals("CANCELLED")){
+        } else if (s.equals("CANCELLED")) {
             timer.stop();
             getMapComposer().showMessage(name + " cancelled by user");
             this.detach();
@@ -122,8 +121,8 @@ public class ProgressWCController extends UtilityComposer {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/job?pid=").append(pid);
 
-            System.out.println("checking status every '"+timer.getDelay()+"' sec: " + sbProcessUrl.toString());
-            
+            System.out.println("checking status every '" + timer.getDelay() + "' sec: " + sbProcessUrl.toString());
+
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
 
@@ -131,7 +130,7 @@ public class ProgressWCController extends UtilityComposer {
 
             client.getHttpConnectionManager().getParams().setSoTimeout(timer.getDelay());
             int result = client.executeMethod(get);
-            
+
             if (result == 200) {
                 return JSONObject.fromObject(get.getResponseBodyAsString());
             }
@@ -146,7 +145,7 @@ public class ProgressWCController extends UtilityComposer {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/jobs/cancel?pid=").append(pid);
-            
+
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
 
@@ -160,12 +159,24 @@ public class ProgressWCController extends UtilityComposer {
         this.detach();
     }
 
-    public void onClick$btnHide(Event e){
+    public void onClick$btnHide(Event e) {
         showReferenceNumber();
         this.detach();
     }
 
-    void showReferenceNumber(){
+    void showReferenceNumber() {
         getMapComposer().showMessage("Reference number to retrieve results: " + pid);
+    }
+
+    private String reverseLines(String log) {
+        String[] split = log.split("\n");
+        StringBuilder sb = new StringBuilder();
+        for (int i = split.length - 1; i >= 0; i--) {
+            if (sb.length() > 0) {
+                sb.append("\n");
+            }
+            sb.append(split[i]);
+        }
+        return sb.toString();
     }
 }

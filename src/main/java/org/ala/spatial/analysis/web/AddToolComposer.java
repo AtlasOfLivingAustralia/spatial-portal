@@ -6,6 +6,7 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerSelection;
 import au.org.emii.portal.util.LayerUtilities;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
@@ -730,11 +731,11 @@ public class AddToolComposer extends UtilityComposer {
             //set default geospatial kosher checkboxes unless a map layers has been chosen
             MapLayer ml = null;
             Query q = null;
-            if(rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue() != null
+            if (rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue() != null
                     && (ml = getMapComposer().getMapLayer(rgSpecies.getSelectedItem().getValue())) != null
                     && (q = (Query) ml.getData("query")) != null
                     && q instanceof BiocacheQuery) {
-                setGeospatialKosherCheckboxes(((BiocacheQuery)q).getGeospatialKosher());
+                setGeospatialKosherCheckboxes(((BiocacheQuery) q).getGeospatialKosher());
             } else {
                 setGeospatialKosherCheckboxes(defaultGeospatialKosher);
             }
@@ -787,11 +788,11 @@ public class AddToolComposer extends UtilityComposer {
             //set default geospatial kosher checkboxes unless a map layers has been chosen
             MapLayer ml = null;
             Query q = null;
-            if(rgSpeciesBk.getSelectedItem() != null && rgSpeciesBk.getSelectedItem().getValue() != null
+            if (rgSpeciesBk.getSelectedItem() != null && rgSpeciesBk.getSelectedItem().getValue() != null
                     && (ml = getMapComposer().getMapLayer(rgSpeciesBk.getSelectedItem().getValue())) != null
                     && (q = (Query) ml.getData("query")) != null
                     && q instanceof BiocacheQuery) {
-                setGeospatialKosherCheckboxesBk(((BiocacheQuery)q).getGeospatialKosher());
+                setGeospatialKosherCheckboxesBk(((BiocacheQuery) q).getGeospatialKosher());
             } else {
                 setGeospatialKosherCheckboxesBk(defaultGeospatialKosher);
             }
@@ -1233,7 +1234,7 @@ public class AddToolComposer extends UtilityComposer {
             q = (Query) ml.getData("query");
             if (q instanceof BiocacheQuery) {
                 BiocacheQuery bq = (BiocacheQuery) q;
-                q = bq.newFacetGeospatialKosher(applycheckboxes?getGeospatialKosher():null, false);
+                q = bq.newFacetGeospatialKosher(applycheckboxes ? getGeospatialKosher() : null, false);
             }
         } else {
             try {
@@ -1241,7 +1242,7 @@ public class AddToolComposer extends UtilityComposer {
                 System.out.println("tool is: " + (tToolName == null ? "null" : tToolName.getValue()));
                 if (species.equals("allspecies")) {
                     species = "none";
-                    q = new BiocacheQuery(null, null, null, null, false, applycheckboxes?getGeospatialKosher():null);
+                    q = new BiocacheQuery(null, null, null, null, false, applycheckboxes ? getGeospatialKosher() : null);
                 } else if (species.equals("allmapped")) {
 
                     //                species = "";
@@ -1261,7 +1262,7 @@ public class AddToolComposer extends UtilityComposer {
                     String lsids = getMultipleLsids();
                     System.out.println("getSelectedSpecies.lsids: " + lsids);
                     if (lsids != null && lsids.length() > 0) {
-                        q = new BiocacheQuery(lsids, null, null, null, false, applycheckboxes?getGeospatialKosher():null);
+                        q = new BiocacheQuery(lsids, null, null, null, false, applycheckboxes ? getGeospatialKosher() : null);
                         System.out.println("getSelectedSpecies.query is now set");
                     }
                 } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
@@ -1271,7 +1272,7 @@ public class AddToolComposer extends UtilityComposer {
                             System.out.println("error in getSelectedSpecies value=" + searchSpeciesAuto.getSelectedItem().getValue() + " text=" + searchSpeciesAuto.getText());
                         }
                         species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                        q = QueryUtil.get(species, getMapComposer(), false, applycheckboxes?getGeospatialKosher():null);
+                        q = QueryUtil.get(species, getMapComposer(), false, applycheckboxes ? getGeospatialKosher() : null);
                     }
                 }
             } catch (Exception e) {
@@ -1286,6 +1287,7 @@ public class AddToolComposer extends UtilityComposer {
     public Query getSelectedSpeciesBk() {
         return getSelectedSpeciesBk(false, true);
     }
+
     public Query getSelectedSpeciesBk(boolean mapspecies, boolean applycheckboxes) {
         Query q = null;
 
@@ -1296,7 +1298,7 @@ public class AddToolComposer extends UtilityComposer {
             q = (Query) ml.getData("query");
             if (q instanceof BiocacheQuery) {
                 BiocacheQuery bq = (BiocacheQuery) q;
-                q = bq.newFacetGeospatialKosher(applycheckboxes?getGeospatialKosherBk():null, false);
+                q = bq.newFacetGeospatialKosher(applycheckboxes ? getGeospatialKosherBk() : null, false);
             }
         } else {
             try {
@@ -1304,7 +1306,7 @@ public class AddToolComposer extends UtilityComposer {
                     species = null;
                 } else if (species.equals("allspecies")) {
                     species = "none";
-                    q = new BiocacheQuery(null, null, null, null, false, applycheckboxes?getGeospatialKosherBk():null);
+                    q = new BiocacheQuery(null, null, null, null, false, applycheckboxes ? getGeospatialKosherBk() : null);
                 } else if (species.equals("allmapped")) {
                     //                species = "";
                     //                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
@@ -1322,7 +1324,7 @@ public class AddToolComposer extends UtilityComposer {
                 } else if (species.equals("multiple")) {
                     String lsids = getMultipleLsidsBk();
                     if (lsids != null && lsids.length() > 0) {
-                        q = new BiocacheQuery(lsids, null, null, null, false, applycheckboxes?getGeospatialKosherBk():null);
+                        q = new BiocacheQuery(lsids, null, null, null, false, applycheckboxes ? getGeospatialKosherBk() : null);
                     }
                 } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                     if (bgSearchSpeciesAuto == null) {
@@ -1330,7 +1332,7 @@ public class AddToolComposer extends UtilityComposer {
                     }
                     if (bgSearchSpeciesAuto.getSelectedItem() != null) {
                         species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                        q = QueryUtil.get(species, getMapComposer(), false, applycheckboxes?getGeospatialKosherBk():null);
+                        q = QueryUtil.get(species, getMapComposer(), false, applycheckboxes ? getGeospatialKosherBk() : null);
                     }
                 }
             } catch (Exception e) {
@@ -1530,6 +1532,15 @@ public class AddToolComposer extends UtilityComposer {
                 btnOk.setDisabled(lbListLayers.getSelectedCount() < 2);
             } else if (currentDiv.getZclass().contains("optional")) {
                 btnOk.setDisabled(false);
+            }
+            //test for max
+            if (currentDiv.getZclass().contains("maxlayers")) {
+                int start = currentDiv.getZclass().indexOf("maxlayers") + "maxlayers".length();
+                int end = Math.max(currentDiv.getZclass().indexOf(" ", start), currentDiv.getZclass().length());
+                int max = Integer.parseInt(currentDiv.getZclass().substring(start, end));
+                if (!btnOk.isDisabled()) {
+                    btnOk.setDisabled(lbListLayers.getSelectedCount() > max);
+                }
             }
             updateLayerSelectionCount();
         }
@@ -1735,7 +1746,7 @@ public class AddToolComposer extends UtilityComposer {
 
                 //String displayname = CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
                 String displayname = CommonData.getLayerDisplayName(s);
-                if (displayname != null && displayname.length() > 0) {                    
+                if (displayname != null && displayname.length() > 0) {
                     sb.append(displayname).append(" (").append(s).append(")");
                 } else {
                     sb.append(s);
@@ -2023,7 +2034,11 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void onClick$bMultiple(Event event) {
-        String[] speciesNames = tMultiple.getText().replace("\n", ",").split(",");
+        importList(tMultiple.getText());
+    }
+
+    void importList(String list) {
+        String[] speciesNames = list.replace("\n", ",").replace("\t", ",").split(",");
         ArrayList<String> notFound = new ArrayList<String>();
         StringBuilder notFoundSb = new StringBuilder();
         for (int i = 0; i < speciesNames.length; i++) {
@@ -2532,44 +2547,131 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void onCheck$chkGeoKosherTrue(Event event) {
-        event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherFalse.isChecked() && !chkGeoKosherNull.isChecked()) {
+        event = ((ForwardEvent) event).getOrigin();
+        if (!((CheckEvent) event).isChecked() && !chkGeoKosherFalse.isChecked() && !chkGeoKosherNull.isChecked()) {
             chkGeoKosherFalse.setChecked(true);
         }
     }
 
     public void onCheck$chkGeoKosherFalse(Event event) {
-        event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherNull.isChecked()) {
+        event = ((ForwardEvent) event).getOrigin();
+        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherNull.isChecked()) {
             chkGeoKosherTrue.setChecked(true);
         }
     }
 
     public void onCheck$chkGeoKosherNull(Event event) {
-        event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherFalse.isChecked()) {
+        event = ((ForwardEvent) event).getOrigin();
+        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherFalse.isChecked()) {
             chkGeoKosherTrue.setChecked(true);
         }
     }
 
     public void onCheck$chkGeoKosherTrueBk(Event event) {
-        event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherFalseBk.isChecked() && !chkGeoKosherNullBk.isChecked()) {
+        event = ((ForwardEvent) event).getOrigin();
+        if (!((CheckEvent) event).isChecked() && !chkGeoKosherFalseBk.isChecked() && !chkGeoKosherNullBk.isChecked()) {
             chkGeoKosherFalseBk.setChecked(true);
         }
     }
 
     public void onCheck$chkGeoKosherFalseBk(Event event) {
-        event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrueBk.isChecked() && !chkGeoKosherNullBk.isChecked()) {
+        event = ((ForwardEvent) event).getOrigin();
+        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrueBk.isChecked() && !chkGeoKosherNullBk.isChecked()) {
             chkGeoKosherTrueBk.setChecked(true);
         }
     }
 
     public void onCheck$chkGeoKosherNullBk(Event event) {
-        event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrueBk.isChecked() && !chkGeoKosherFalseBk.isChecked()) {
+        event = ((ForwardEvent) event).getOrigin();
+        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrueBk.isChecked() && !chkGeoKosherFalseBk.isChecked()) {
             chkGeoKosherTrueBk.setChecked(true);
         }
+    }
+
+    public void onClick$bAssemblageExport(Event event) {
+        SimpleDateFormat sdf = new SimpleDateFormat("ddmmyyyy_hhmm");
+        Filedownload.save(getLsids(), "text/plain", "species_assemblage_" + sdf.format(new Date()) + ".txt");
+    }
+
+    String getLsids() {
+        StringBuilder sb = new StringBuilder();
+        for (Listitem li : (List<Listitem>) lMultiple.getItems()) {
+            Listcell lsidCell = (Listcell) li.getLastChild();
+            if (sb.length() > 0) {
+                sb.append("\n");
+            }
+            sb.append(lsidCell.getLabel());
+        }
+        return sb.toString();
+    }
+
+    public void onUpload$bSpeciesListUpload(Event event) {
+        UploadEvent ue = null;
+        if (event instanceof UploadEvent) {
+            ue = (UploadEvent) event;
+        } else if (event instanceof ForwardEvent) {
+            ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
+        }
+        if (ue == null) {
+            System.out.println("unable to upload file");
+            return;
+        } else {
+            System.out.println("fileUploaded()");
+        }
+        try {
+            Media m = ue.getMedia();
+
+            //forget content types, do 'try'
+            boolean loaded = false;
+            try {
+                importList(readerToString(m.getReaderData()));
+                loaded = true;
+                System.out.println("read type " + m.getContentType() + " with getReaderData");
+            } catch (Exception e) {
+                //e.printStackTrace();
+            }
+            if (!loaded) {
+                try {
+                    importList(new String(m.getByteData()));
+                    loaded = true;
+                    System.out.println("read type " + m.getContentType() + " with getByteData");
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+            if (!loaded) {
+                try {
+                    importList(readerToString(new InputStreamReader(m.getStreamData())));
+                    loaded = true;
+                    System.out.println("read type " + m.getContentType() + " with getStreamData");
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+            if (!loaded) {
+                try {
+                    importList(m.getStringData());
+                    loaded = true;
+                    System.out.println("read type " + m.getContentType() + " with getStringData");
+                } catch (Exception e) {
+                    //last one, report error
+                    getMapComposer().showMessage("Unable to load your file. Please try again.");
+                    System.out.println("unable to load user points: ");
+                    e.printStackTrace();
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    String readerToString(Reader reader) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        char[] buffer = new char[1000];
+        int size;
+        while ((size = reader.read(buffer)) > 0) {
+            sb.append(buffer, 0, size);
+        }
+        return sb.toString();
     }
 }

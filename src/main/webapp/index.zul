@@ -538,13 +538,8 @@ console.log(currentbaselayertxt);
         //alert("downloadUrl = " + downloadUrl);
         window.location.href = downloadUrl;
         zk.Widget.$(jq('$externalContentWindow')).detach();
-        setTimeout(downloadSecond, 2000);
         return false; 
         }
-    }
-
-    function downloadSecond() {
-        zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'downloadSecond', null));
     }
 
     function validateForm() {

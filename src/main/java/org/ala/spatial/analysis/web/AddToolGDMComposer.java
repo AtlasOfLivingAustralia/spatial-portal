@@ -139,8 +139,8 @@ public class AddToolGDMComposer extends AddToolComposer {
 
         return rungdm();
     }
-    
     Vector<String> vSp = new Vector<String>();
+
     private int getSpLoc(String sp) {
         if (vSp.indexOf(sp) == -1) {
             vSp.add(sp);
@@ -171,7 +171,7 @@ public class AddToolGDMComposer extends AddToolComposer {
             sbProcessUrl.append(CommonData.satServer + "/ws/gdm/step1?");
             //sbProcessUrl.append("http://localhost:8080/alaspatial/ws/gdm/process2?");
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
-            sbProcessUrl.append("&taxacount="+vSp.size());
+            sbProcessUrl.append("&taxacount=" + vSp.size());
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
@@ -265,10 +265,10 @@ public class AddToolGDMComposer extends AddToolComposer {
             double maxScroll = maxBytes / ((lbListLayers.getSelectedCount() * 3) + 1) / 8;
             double minScroll = (int) (maxScroll * 0.1);  // 10% of maxScroll
 
-            MAX_SCROLL = maxScroll; 
+            MAX_SCROLL = maxScroll;
 
-            sitesslider.setCurpos((int)minScroll);
-            sitesslider.setMaxpos((int)maxScroll);
+            sitesslider.setCurpos((int) minScroll);
+            sitesslider.setMaxpos((int) maxScroll);
             sitePairsSize.setValue(Long.toString(Math.round(minScroll)));
             sitessliderdef.setValue(Long.toString(Math.round(minScroll)));
             sitesslidermax.setValue(Long.toString(Math.round(maxScroll)));
@@ -279,7 +279,7 @@ public class AddToolGDMComposer extends AddToolComposer {
             System.out.println("GDM error: NoSpeciesFoundException");
             e.printStackTrace(System.out);
             getMapComposer().showMessage("No species occurrences found in the current area. \nPlease select a larger area and re-run the analysis", this);
-        }  catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("GDM error: ");
             e.printStackTrace(System.out);
             getMapComposer().showMessage("Unknown error.", this);
@@ -290,8 +290,8 @@ public class AddToolGDMComposer extends AddToolComposer {
 
     public void onScroll$sitesslider(Event event) {
         double a = sitesslider.getCurpos();
-        double b = a/MAX_SCROLL;
-        long p = Math.round(b*100);
+        double b = a / MAX_SCROLL;
+        long p = Math.round(b * 100);
         sitePairsSize.setValue(Integer.toString(sitesslider.getCurpos()));
         sitessliderper.setValue(p + "%");
     }
@@ -411,7 +411,7 @@ public class AddToolGDMComposer extends AddToolComposer {
             System.out.println("GDM error: NoSpeciesFoundException");
             e.printStackTrace(System.out);
             getMapComposer().showMessage("No species occurrences found in the current area. \nPlease select a larger area and re-run the analysis", this);
-        }  catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("GDM error: ");
             e.printStackTrace(System.out);
             getMapComposer().showMessage("Unknown error.", this);
@@ -447,6 +447,9 @@ public class AddToolGDMComposer extends AddToolComposer {
             }
             md.setMoreInfo(infoUrl + "\nGDM Output\npid:" + pid);
             md.setId(Long.valueOf(pid));
+
+            //perform intersection on user uploaded layers so you can facet on this layer
+            getMapComposer().addAnalysisLayerToUploadedCoordinates(pid + "_" + env, layername);
         }
 
         //this.detach();

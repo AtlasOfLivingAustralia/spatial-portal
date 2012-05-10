@@ -53,7 +53,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
         //super.onFinish();
 
         Query query = getSelectedSpecies();
-        if(query == null) {
+        if (query == null) {
             getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
             return false;
         }
@@ -80,7 +80,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 for (int i = 0; i < layers.length; i++) {
                     String l = layers[i];
                     String new_name = CommonData.getLayerFacetName(layers[i]);
-                    if(layers[i] == null || new_name == null || layers[i].equals(new_name)) {
+                    if (layers[i] == null || new_name == null || layers[i].equals(new_name)) {
                         System.out.println("failed to getLayerFacetName for " + l);
                     } else {
                         layers[i] = new_name;
@@ -88,38 +88,40 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 }
             }
 
-            if(query instanceof BiocacheQuery) {
-                String [] inBiocache = null;
-                String [] outBiocache = null;
-                
+            if (query instanceof BiocacheQuery) {
+                String[] inBiocache = null;
+                String[] outBiocache = null;
+
                 //split layers into 'in biocache' and 'out of biocache'
                 Set<String> biocacheLayers = CommonData.biocacheLayerList;
                 ArrayList<String> aInBiocache = new ArrayList<String>();
                 ArrayList<String> aOutBiocache = new ArrayList<String>();
 
                 if (envlayers.length() > 0) {
-                    for(String s : layers) {
-                        if(biocacheLayers.contains(s)) {
+                    for (String s : layers) {
+                        if (biocacheLayers.contains(s)) {
                             aInBiocache.add(s);
                         } else {
                             aOutBiocache.add(s);
                         }
                     }
                 }
-                if(aInBiocache.size() > 0) {
-                    inBiocache = new String [aInBiocache.size()];
+                if (aInBiocache.size() > 0) {
+                    inBiocache = new String[aInBiocache.size()];
                     aInBiocache.toArray(inBiocache);
                 }
-                if(aOutBiocache.size() > 0) {
-                    outBiocache = new String [aOutBiocache.size()];
+                if (aOutBiocache.size() > 0) {
+                    outBiocache = new String[aOutBiocache.size()];
                     aOutBiocache.toArray(outBiocache);
                     getMapComposer().downloadSecondQuery = query;
                     getMapComposer().downloadSecondLayers = outBiocache;
-                } else {                    
+                    SamplingAnalysisDownloadWCController c = (SamplingAnalysisDownloadWCController) Executions.createComponents("/WEB-INF/zul/SamplingAnalysisDownload.zul", getMapComposer(), null);
+                    c.doModal();
+                } else {
                     getMapComposer().downloadSecondQuery = null;
                     getMapComposer().downloadSecondLayers = null;
-                }                
-                            
+                }
+
                 //test for URL download
                 String url = query.getDownloadUrl(inBiocache);
                 System.out.println("Sending file to user: " + url);
@@ -136,7 +138,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
 
                 //download byte data.  Requires a progress bar to prevent timeout issues.
                 Component c = getMapComposer().getFellowIfAny("samplingprogress");
-                if(c != null) {
+                if (c != null) {
                     c.detach();
                 }
                 SamplingProgressWCController window = (SamplingProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingProgress.zul", getMapComposer(), null);
@@ -173,7 +175,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 rgArea.setFocus(true);
                 break;
             case 2:
-                if(rSpeciesSearch.isChecked()) {
+                if (rSpeciesSearch.isChecked()) {
                     searchSpeciesAuto.setFocus(true);
                 } else {
                     rgSpecies.setFocus(true);

@@ -228,6 +228,13 @@ padding: 1px 0px 0px 5px;
                 <div align="right" style="padding-top:0px" visible="false">
                     <label id="legendLabel" value="Click symbol to edit" />
                 </div>
+                <div id="divClassificationPicker" visible="false" >
+                    <hbox>
+                        <label value="Highlight group: " />
+                        <combobox id="cbClassificationGroup" />
+                    </hbox>
+                    <separator />
+                </div>
                 <vbox>
                     <div id="dGroupBox" visible="false">
                         <hbox>
@@ -240,7 +247,7 @@ padding: 1px 0px 0px 5px;
                 <div  width="60%">
                     <image id="legendImgUri" visible="false"/>
                 </div>
-                <div id="legendHtml" visible="true"/>
+                <div id="legendHtml" visible="true"/>                
             </div>
         </div>
     </window>

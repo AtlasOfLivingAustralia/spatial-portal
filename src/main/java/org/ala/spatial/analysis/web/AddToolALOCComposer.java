@@ -8,11 +8,8 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.wms.WMSStyle;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
 import org.ala.spatial.sampling.SimpleRegion;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
@@ -24,7 +21,6 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Intbox;
-import org.zkoss.zul.Messagebox;
 
 /**
  *
@@ -113,8 +109,7 @@ public class AddToolALOCComposer extends AddToolComposer {
         System.out.println(legendurl);
         legendPath = legendurl;
         getMapComposer().addWMSLayer("aloc_" + pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
-        
-        MapLayer mapLayer = getMapComposer().getMapLayer("aloc_" + pid);
+        MapLayer mapLayer = getMapComposer().getMapLayer("aloc_" + pid);        
         if (mapLayer != null) {
             mapLayer.setData("pid", pid);
             WMSStyle style = new WMSStyle();
@@ -147,36 +142,13 @@ public class AddToolALOCComposer extends AddToolComposer {
                 ex.printStackTrace(System.out);
             }
 
-
             //Events.echoEvent("openUrl", this.getMapComposer(), infoUrl);
+
+            //perform intersection on user uploaded layers so you can facet on this layer
+            getMapComposer().addAnalysisLayerToUploadedCoordinates("aloc_" + pid, tToolName.getValue());
         }
 
         this.detach();
-    }
-
-    double[] getExtents() {
-        double[] d = new double[6];
-        try {
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/output/aloc/" + pid + "/aloc.pngextents.txt");
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString());
-
-            get.addRequestHeader("Accept", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            System.out.println("getExtents:" + slist);
-
-            String[] s = slist.split("\n");
-            for (int i = 0; i < 6 && i < s.length; i++) {
-                d[i] = Double.parseDouble(s[i]);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return d;
     }
 
     String getJob(String type) {
@@ -216,34 +188,42 @@ public class AddToolALOCComposer extends AddToolComposer {
                 getMapComposer().showMessage("Please enter the number of groups to generate (2 to 200) in step 2.");
                 //highlight step 2
 //                tabboxclassification.setSelectedIndex(1);
-               return false;
+                return false;
             }
 
             SelectedArea sa = getSelectedArea();//getMapComposer().getSelectionArea();
 
             //estimate analysis size in bytes
             SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
-            double [][] bbox;
-            if(sr != null) {
+            double[][] bbox;
+            if (sr != null) {
                 bbox = sr.getBoundingBox();
             } else {
-                bbox = new double[][] {{-180,-90},{180,90}};
+                bbox = new double[][]{{-180, -90}, {180, 90}};
             }
             //analysis currently restricted to australian extents and 0.01 degree grid
-            if(bbox[0][0] < 112) bbox[0][0] = 112;
-            if(bbox[1][0] > 155) bbox[1][0] = 155;
-            if(bbox[0][1] < -44) bbox[0][1] = -44;
-            if(bbox[1][1] > -9) bbox[1][1] = -9;
+            if (bbox[0][0] < 112) {
+                bbox[0][0] = 112;
+            }
+            if (bbox[1][0] > 155) {
+                bbox[1][0] = 155;
+            }
+            if (bbox[0][1] < -44) {
+                bbox[0][1] = -44;
+            }
+            if (bbox[1][1] > -9) {
+                bbox[1][1] = -9;
+            }
 
-            long cellsInBBox = (long)((bbox[1][0] - bbox[0][0]) / 0.01 * (bbox[1][1] - bbox[0][1]) / 0.01);
+            long cellsInBBox = (long) ((bbox[1][0] - bbox[0][0]) / 0.01 * (bbox[1][1] - bbox[0][1]) / 0.01);
             long size = (groupCount.getValue() + sbenvsel.split(":").length + 2) * cellsInBBox * 4;
             System.out.println("ALOC estimate size in MB, cells=" + cellsInBBox
                     + ", bbox=" + bbox[0][0] + "," + bbox[0][1] + "," + bbox[1][0] + "," + bbox[1][1]
                     + ", groups=" + groupCount.getValue()
                     + ", layers=" + sbenvsel.split(":").length
-                    + ", size=" + size/1024/1024
+                    + ", size=" + size / 1024 / 1024
                     + ", max size=" + settingsSupplementary.getValueAsInt("aloc_size_limit_in_mb"));
-            if(size /1024/1024 > settingsSupplementary.getValueAsInt("aloc_size_limit_in_mb")) {
+            if (size / 1024 / 1024 > settingsSupplementary.getValueAsInt("aloc_size_limit_in_mb")) {
                 getMapComposer().showMessage("Analysis is too large.  Reduce the number of groups, number of layers or area.", this);
                 return false;
             }
@@ -274,7 +254,7 @@ public class AddToolALOCComposer extends AddToolComposer {
             legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
 
             getMapComposer().updateUserLogAnalysis("Classification", "gc: " + groupCount.getValue() + ";area: " + area, sbenvsel.toString(), slist, pid, layerLabel);
-            
+
             try {
                 remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Classification", area, "", sbenvsel.toString(), pid, "gc: " + groupCount.getValue(), "STARTED");
             } catch (Exception e) {
@@ -292,7 +272,7 @@ public class AddToolALOCComposer extends AddToolComposer {
 
         } catch (Exception ex) {
             ex.printStackTrace(System.out);
-             getMapComposer().showMessage("Unknown error.", this);
+            getMapComposer().showMessage("Unknown error.", this);
         }
 
         return false;

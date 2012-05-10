@@ -1,7 +1,6 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
-import org.zkoss.zul.Textbox;
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
@@ -15,15 +14,11 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.QueryField;
-import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.UserData;
 import org.ala.spatial.wms.RecordsLookup;
@@ -37,12 +32,13 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zul.*;
-import org.ala.spatial.analysis.web.AddSpeciesController;
+
 /**
  *
  * @author ajay
  */
 public class UploadSpeciesController extends UtilityComposer {
+
     Button btnOk;
     SettingsSupplementary settingsSupplementary;
     Textbox tbDesc;
@@ -60,7 +56,7 @@ public class UploadSpeciesController extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        
+
         setTbInstructions("3. Select file (text file, one LSID or name per line)");
 
         tbName.setConstraint(new Constraint() {
@@ -95,15 +91,6 @@ public class UploadSpeciesController extends UtilityComposer {
                 onClick$btnCancel(null);
             }
         });
-
-        /*Map<String, String> map = Executions.getCurrent().getArg();
-        if (map != null && map.get("addToMap") != null && map.get("addToMap").equals("false")) {
-            addToMap = false;
-        } else {
-            addToMap = true;
-        }*/
-
-
     }
 
     public void onClick$btnOk(Event event) {
@@ -185,15 +172,6 @@ public class UploadSpeciesController extends UtilityComposer {
 
             System.out.println("Got file '" + ud.getName() + "' with type '" + m.getContentType() + "'");
 
-            // check the content-type
-            // TODO: check why LB is sending 'application/spc' mime-type. remove from future use.
-//            if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
-//                loadUserPoints(ud, m.getReaderData());
-//            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL) || m.getContentType().equalsIgnoreCase("application/spc")) {
-//                byte[] csvdata = m.getByteData();
-//                loadUserPoints(ud, new StringReader(new String(csvdata)));
-//            }
-
             //forget content types, do 'try'
             boolean loaded = false;
             try {
@@ -256,254 +234,178 @@ public class UploadSpeciesController extends UtilityComposer {
 
     public void loadUserPoints(UserData ud, Reader data) throws Exception {
         System.out.println("\n\n\nin loadUserPoints");
-            // Read a line in to check if it's a valid file
-            // if it throw's an error, then it's not a valid csv file
-            CSVReader reader = new CSVReader(data);
+        // Read a line in to check if it's a valid file
+        // if it throw's an error, then it's not a valid csv file
+        CSVReader reader = new CSVReader(data);
 
-            List userPoints = reader.readAll();
+        List userPoints = reader.readAll();
 
-            System.out.println("userPoints.size(): " + userPoints.size());
-            //if only one column treat it as a list of LSID's
-            if(userPoints.size() == 0) {
-                throw(new RuntimeException("no data in csv"));
-            }
-            if (((String[]) userPoints.get(0)).length == 1) {
-                continueLoadUserLSIDs(ud, data, reader, userPoints);
-                return;
-            }
-
-            boolean hasHeader = false;
-
-            // check if it has a header
-            String[] upHeader = (String[]) userPoints.get(0);
-            try {
-                Double d1 = new Double(upHeader[1]);
-                Double d2 = new Double(upHeader[2]);
-            } catch (Exception e) {
-                hasHeader = true;
-            }
-
-            System.out.println("hasHeader: " + hasHeader);
-
-            // check if the count of points goes over the threshold.
-            int sizeToCheck = (hasHeader) ? userPoints.size() - 1 : userPoints.size();
-            System.out.println("Checking user points size: " + sizeToCheck + " -> " + settingsSupplementary.getValueAsInt("max_record_count_upload"));
-            if (sizeToCheck > settingsSupplementary.getValueAsInt("max_record_count_upload")) {
-                getMapComposer().showMessage(settingsSupplementary.getValue("max_record_count_upload_message"));
-                return;
-            }
-
-            ArrayList<QueryField> fields = new ArrayList<QueryField>();
-            if (upHeader.length == 2) {
-                //only points upload, add 'id' column at the start
-                fields.add(new QueryField("id"));
-                fields.get(0).ensureCapacity(sizeToCheck);
-            }
-            String[] defaultHeader = {"id", "longitude", "latitude"};
-            for (int i = 0; i < upHeader.length; i++) {
-                String name = upHeader[i];
-                if (upHeader.length == 2 && i < 2) {
-                    name = defaultHeader[i + 1];
-                } else if (upHeader.length > 2 && i < 3) {
-                    name = defaultHeader[i];
-                }
-                fields.add(new QueryField("f" + String.valueOf(i),name,QueryField.FieldType.AUTO));
-                fields.get(fields.size() - 1).ensureCapacity(sizeToCheck);
-            }
-
-            double[] points = new double[sizeToCheck * 2];
-            int counter = 1;
-            int hSize = hasHeader ? 1 : 0;
-            for (int i = 0; i < userPoints.size() - hSize; i++) {
-                String[] up = (String[]) userPoints.get(i + hSize);
-                if (up.length > 2) {
-                    for (int j = 0; j < up.length && j < fields.size(); j++) {
-                        //replace anything that may interfere with webportal facet parsing
-                        String s = up[j].replace("\"","'").replace(" AND "," and ").replace(" OR "," or ");
-                        if(s.length() > 0 && s.charAt(0) == '*') {
-                            s = "_" + s;
-                        }
-                        fields.get(j).add(s);
-                    }
-                    try {
-                        points[i * 2] = Double.parseDouble(up[1]);
-                        points[i * 2 + 1] = Double.parseDouble(up[2]);
-                    } catch (Exception e) {
-                    }
-                } else if (up.length > 1) {
-                    fields.get(0).add(ud.getName() + "-" + counter);
-                    for (int j = 0; j < up.length && j < fields.size(); j++) {
-                        fields.get(j + 1).add(up[j]);
-                    }
-                    try {
-                        points[i * 2] = Double.parseDouble(up[0]);
-                        points[i * 2 + 1] = Double.parseDouble(up[1]);
-                    } catch (Exception e) {
-                    }
-                    counter++;
-                }
-            }
-
-            for (int i = 0; i < fields.size(); i++) {
-                fields.get(i).store();
-            }
-
-            String pid = String.valueOf(System.currentTimeMillis());
-
-            ud.setFeatureCount(userPoints.size() - hSize);
-
-            String metadata = "";
-            metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " <br />\n";
-            metadata += "Description: " + ud.getDescription() + " <br />\n";
-            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
-
-            ud.setMetadata(metadata);
-            ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
-            ud.setLsid(pid);
-            uploadLSID = pid + "\t" + ud.getName();
-
-            Query q = new UploadQuery(pid, ud.getName(), points, fields, metadata);
-            ud.setQuery(q);
-            RecordsLookup.putData(pid, points, fields, metadata);
-
-            // add it to the user session
-            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
-            if (htUserSpecies == null) {
-                htUserSpecies = new Hashtable<String, UserData>();
-            }
-            htUserSpecies.put(pid, ud);
-            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
-
-            System.out.println("addToMap: " + addToMap);
-            System.out.println("uploadLSID: " + uploadLSID);
-            System.out.println("metadata: " + metadata);
-
-            if (addToMap) {
-                if (!defineArea) {
-                    //do default sampling now
-                    if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
-                        q.sample(CommonData.getDefaultUploadSamplingFields());
-                        ((UploadQuery) q).resetOriginalFieldCount(-1);
-                    }
-                }
-                MapLayer ml = null;
-                if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
-                    //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
-                    if (defineArea) {
-                        mapFilterGrid(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
-                    } else {
-                        ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
-                    }
-                } else {
-                    if (defineArea) {
-                        mapFilter(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
-                    } else {
-                        ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
-                    }
-                }
-                if (ml != null) {
-                    MapLayerMetadata md = ml.getMapLayerMetadata();
-                    if (md == null) {
-                        md = new MapLayerMetadata();
-                        ml.setMapLayerMetadata(md);
-                    }
-                    md.setMoreInfo(metadata);
-                    md.setSpeciesRank("User");
-                }
-            }
-
-            if (eventListener != null) {
-                eventListener.onEvent(new Event("", null, pid + "\t" + ud.getName()));
-            }
-
-            // close the reader and data streams
-            reader.close();
-            data.close();
-    }
-
-    /*
-     * public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
-        try {
-            //don't care if it has a header
-
-            // check if the count of LSIDs goes over the threshold (+1).
-            int sizeToCheck = userPoints.size();
-            System.out.println("Checking user LSIDs size: " + sizeToCheck + " -> " + 50);
-            if (sizeToCheck > 50) {
-                getMapComposer().showMessage("Cannot upload more than 50 LSIDs");
-                return;
-            }
-
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < userPoints.size(); i++) {
-                String[] up = (String[]) userPoints.get(i);
-                if (i > 0) {
-                    sb.append(",");
-                }
-                sb.append(up[0].replace(",", "").trim().toLowerCase());
-            }
-
-            String lsids = sb.toString();
-
-            String pid = String.valueOf(System.currentTimeMillis());
-
-            ud.setFeatureCount(userPoints.size());
-
-            String metadata = "";
-            metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " <br />\n";
-            metadata += "Description: " + ud.getDescription() + " <br />\n";
-            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
-
-            ud.setMetadata(metadata);
-            ud.setSubType(LayerUtilities.SPECIES);
-            ud.setLsid(pid);
-            uploadLSID = pid + "\t" + ud.getName();
-
-            Query q = new BiocacheQuery(lsids, null, null, null, true);
-            ud.setQuery(q);
-
-            // add it to the user session
-            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
-            if (htUserSpecies == null) {
-                htUserSpecies = new Hashtable<String, UserData>();
-            }
-            htUserSpecies.put(pid, ud);
-            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
-
-            if (addToMap) {
-                if (defineArea) {
-                    mapSpeciesByLsid(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, metadata);
-                } else {
-                    MapLayer ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, null, -1);
-                    MapLayerMetadata md = ml.getMapLayerMetadata();
-                    if (md == null) {
-                        md = new MapLayerMetadata();
-                        ml.setMapLayerMetadata(md);
-                    }
-                    md.setMoreInfo(metadata);
-                }
-            }
-
-            if (eventListener != null) {
-                eventListener.onEvent(new Event("", null, pid + "\t" + ud.getName()));
-            }
-
-            // close the reader and data streams
-            reader.close();
-            data.close();
-        } catch (Exception e) {
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
-
-            System.out.println("unable to load user LSIDs: ");
-            e.printStackTrace(System.out);
+        System.out.println("userPoints.size(): " + userPoints.size());
+        //if only one column treat it as a list of LSID's
+        if (userPoints.size() == 0) {
+            throw (new RuntimeException("no data in csv"));
         }
+        if (((String[]) userPoints.get(0)).length == 1) {
+            continueLoadUserLSIDs(ud, data, reader, userPoints);
+            return;
+        }
+
+        boolean hasHeader = false;
+
+        // check if it has a header
+        String[] upHeader = (String[]) userPoints.get(0);
+        try {
+            Double d1 = new Double(upHeader[1]);
+            Double d2 = new Double(upHeader[2]);
+        } catch (Exception e) {
+            hasHeader = true;
+        }
+
+        System.out.println("hasHeader: " + hasHeader);
+
+        // check if the count of points goes over the threshold.
+        int sizeToCheck = (hasHeader) ? userPoints.size() - 1 : userPoints.size();
+        System.out.println("Checking user points size: " + sizeToCheck + " -> " + settingsSupplementary.getValueAsInt("max_record_count_upload"));
+        if (sizeToCheck > settingsSupplementary.getValueAsInt("max_record_count_upload")) {
+            getMapComposer().showMessage(settingsSupplementary.getValue("max_record_count_upload_message"));
+            return;
+        }
+
+        ArrayList<QueryField> fields = new ArrayList<QueryField>();
+        if (upHeader.length == 2) {
+            //only points upload, add 'id' column at the start
+            fields.add(new QueryField("id"));
+            fields.get(0).ensureCapacity(sizeToCheck);
+        }
+        String[] defaultHeader = {"id", "longitude", "latitude"};
+        for (int i = 0; i < upHeader.length; i++) {
+            String name = upHeader[i];
+            if (upHeader.length == 2 && i < 2) {
+                name = defaultHeader[i + 1];
+            } else if (upHeader.length > 2 && i < 3) {
+                name = defaultHeader[i];
+            }
+            fields.add(new QueryField("f" + String.valueOf(i), name, QueryField.FieldType.AUTO));
+            fields.get(fields.size() - 1).ensureCapacity(sizeToCheck);
+        }
+
+        double[] points = new double[sizeToCheck * 2];
+        int counter = 1;
+        int hSize = hasHeader ? 1 : 0;
+        for (int i = 0; i < userPoints.size() - hSize; i++) {
+            String[] up = (String[]) userPoints.get(i + hSize);
+            if (up.length > 2) {
+                for (int j = 0; j < up.length && j < fields.size(); j++) {
+                    //replace anything that may interfere with webportal facet parsing
+                    String s = up[j].replace("\"", "'").replace(" AND ", " and ").replace(" OR ", " or ");
+                    if (s.length() > 0 && s.charAt(0) == '*') {
+                        s = "_" + s;
+                    }
+                    fields.get(j).add(s);
+                }
+                try {
+                    points[i * 2] = Double.parseDouble(up[1]);
+                    points[i * 2 + 1] = Double.parseDouble(up[2]);
+                } catch (Exception e) {
+                }
+            } else if (up.length > 1) {
+                fields.get(0).add(ud.getName() + "-" + counter);
+                for (int j = 0; j < up.length && j < fields.size(); j++) {
+                    fields.get(j + 1).add(up[j]);
+                }
+                try {
+                    points[i * 2] = Double.parseDouble(up[0]);
+                    points[i * 2 + 1] = Double.parseDouble(up[1]);
+                } catch (Exception e) {
+                }
+                counter++;
+            }
+        }
+
+        for (int i = 0; i < fields.size(); i++) {
+            fields.get(i).store();
+        }
+
+        String pid = String.valueOf(System.currentTimeMillis());
+
+        ud.setFeatureCount(userPoints.size() - hSize);
+
+        String metadata = "";
+        metadata += "User uploaded points \n";
+        metadata += "Name: " + ud.getName() + " <br />\n";
+        metadata += "Description: " + ud.getDescription() + " <br />\n";
+        metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+        metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
+
+        ud.setMetadata(metadata);
+        ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
+        ud.setLsid(pid);
+        uploadLSID = pid + "\t" + ud.getName();
+
+        Query q = new UploadQuery(pid, ud.getName(), points, fields, metadata);
+        ud.setQuery(q);
+        RecordsLookup.putData(pid, points, fields, metadata);
+
+        // add it to the user session
+        Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
+        if (htUserSpecies == null) {
+            htUserSpecies = new Hashtable<String, UserData>();
+        }
+        htUserSpecies.put(pid, ud);
+        getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
+
+        System.out.println("addToMap: " + addToMap);
+        System.out.println("uploadLSID: " + uploadLSID);
+        System.out.println("metadata: " + metadata);
+
+        if (addToMap) {
+            if (!defineArea) {
+                //do default sampling now
+                ArrayList<QueryField> f = CommonData.getDefaultUploadSamplingFields();
+                //add any analysis layers from the layers list
+                for (MapLayer ml : getMapComposer().getAnalysisLayers()) {
+                    f.add(new QueryField(ml.getName(), ml.getDisplayName(), QueryField.FieldType.AUTO));
+                }
+                if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
+                    q.sample(f);
+                    ((UploadQuery) q).resetOriginalFieldCount(-1);
+                }
+            }
+            MapLayer ml = null;
+            if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
+                //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
+                if (defineArea) {
+                    mapFilterGrid(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
+                } else {
+                    ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
+                }
+            } else {
+                if (defineArea) {
+                    mapFilter(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
+                } else {
+                    ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
+                }
+            }
+            if (ml != null) {
+                MapLayerMetadata md = ml.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    ml.setMapLayerMetadata(md);
+                }
+                md.setMoreInfo(metadata);
+                md.setSpeciesRank("User");
+            }
+        }
+
+        if (eventListener != null) {
+            eventListener.onEvent(new Event("", null, pid + "\t" + ud.getName()));
+        }
+
+        // close the reader and data streams
+        reader.close();
+        data.close();
     }
-    */
-    
+
     public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
         System.out.println("\n\n\nin continueLoadUserLSIDs");
         try {
@@ -524,12 +426,12 @@ public class UploadSpeciesController extends UtilityComposer {
                 }
                 sb.append(up[0].replace(",", "").trim().toLowerCase());
             }
-           
+
             String lsids = sb.toString();
 
             if (this.getParent().getId().equals("addtoolwindow")) {
                 uploadLSID = lsids;
-                uploadType = "assemblage"; 
+                uploadType = "assemblage";
             } else {
                 AddSpeciesController window = (AddSpeciesController) Executions.createComponents("WEB-INF/zul/AddSpecies.zul", getMapComposer(), null);
                 try {
@@ -540,15 +442,14 @@ public class UploadSpeciesController extends UtilityComposer {
                 } catch (SuspendNotAllowedException ex) {
                     Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }        
-        }catch (Exception e) {
+            }
+        } catch (Exception e) {
             getMapComposer().showMessage("Unable to load your file. Please try again.");
 
             System.out.println("unable to load user LSIDs: ");
             e.printStackTrace(System.out);
         }
     }
-    
 
     void setEventListener(EventListener eventListener) {
         this.eventListener = eventListener;
@@ -587,17 +488,6 @@ public class UploadSpeciesController extends UtilityComposer {
     private void mapFilter(Query q, String name, String s, int featureCount, int type, String metadata, String rank) {
         AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
         window.setSpeciesFilterParams(q, name, s, featureCount, type, metadata, rank);
-        window.loadAreaLayers();
-        try {
-            window.doModal();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void mapSpeciesByLsid(Query q, String name, String s, int featureCount, int type, String metadata) {
-        AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-        window.setSpeciesByLsidParams(q, name, s, featureCount, type, metadata);
         window.loadAreaLayers();
         try {
             window.doModal();

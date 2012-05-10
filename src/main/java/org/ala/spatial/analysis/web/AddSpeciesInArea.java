@@ -6,6 +6,7 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.logging.Logger;
 import org.ala.logger.client.RemoteLogger;
 import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.UploadQuery;
@@ -165,8 +167,13 @@ public class AddSpeciesInArea extends UtilityComposer {
             q = QueryUtil.queryFromSelectedArea(query, sa, true, geospatialKosher);
             if (q instanceof UploadQuery) {
                 //do default sampling now
+                ArrayList<QueryField> f = CommonData.getDefaultUploadSamplingFields();
+                //add any analysis layers from the layers list
+                for (MapLayer m : getMapComposer().getAnalysisLayers()) {
+                    f.add(new QueryField(m.getName(), m.getDisplayName(), QueryField.FieldType.AUTO));
+                }
                 if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
-                    q.sample(CommonData.getDefaultUploadSamplingFields());
+                    q.sample(f);
                     ((UploadQuery) q).resetOriginalFieldCount(-1);
                 }
             }

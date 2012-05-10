@@ -278,7 +278,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
         String layername = tToolName.getValue();
         getMapComposer().addWMSLayer("species_" + pid, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
-        MapLayer ml = getMapComposer().getMapLayer("species_" +pid);
+        MapLayer ml = getMapComposer().getMapLayer("species_" + pid);
         ml.setData("pid", pid);
         String infoUrl = CommonData.satServer + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();
@@ -303,6 +303,9 @@ public class AddToolMaxentComposer extends AddToolComposer {
         //getMapComposer().showMessage("Reference number to retrieve results: " + pid);
 
         //showInfoWindow("/output/maxent/" + pid + "/species.html");
+
+        //perform intersection on user uploaded layers so you can facet on this layer
+        getMapComposer().addAnalysisLayerToUploadedCoordinates("species_" + pid, tToolName.getValue());
     }
 
     String getJob(String type) {
