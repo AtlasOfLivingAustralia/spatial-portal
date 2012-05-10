@@ -272,6 +272,9 @@ public class AlocService {
         int pieces = numberOfThreads * 4;
 
         ArrayList<Object> data_pieces = GridCutter.loadCutGridsForAloc(gridfilepath, outputpath + "extents.txt", pieces, job);
+        if (data_pieces == null) {
+            return;
+        }
 
         //number of pieces may have changed
         pieces = data_pieces.size() - 2;

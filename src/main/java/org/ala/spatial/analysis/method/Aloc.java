@@ -92,11 +92,13 @@ public class Aloc {
             if (col_range[i] <= 0) {
                 //error
                 SpatialLogger.log("column '" + i + "' has zero range.");
+                SpatialLogger.log("Layer '" + layers[i].display_name + "' cannot be included since it has no variation for the area specified.");
                 if (job != null) {
-                    job.setCurrentState(AnalysisJob.FAILED);
+                    //job.setCurrentState(AnalysisJob.FAILED);
                     job.setMessage("Layer '" + layers[i].display_name + "' cannot be included since it has no variation for the area specified.");
                 }
-                return null;
+                //return null;
+                col_range[i] = 1;
             }
         }
         for (k = 0; k < pieces; k++) {

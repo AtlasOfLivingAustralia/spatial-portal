@@ -34,7 +34,16 @@ public class GridCutter {
 
             @Override
             public boolean accept(File dir, String name) {
-                return name.endsWith(".grd") || name.endsWith(".GRD");
+                //use grid files where MinValue < MaxValue
+                if (name.endsWith(".grd") || name.endsWith(".GRD")) {
+                    try {
+                        Grid g = new Grid(name.substring(0, name.length()-4));
+                        if(g != null) {
+                            return g.minval < g.maxval;
+                        }
+                    } catch (Exception e) {}
+                }
+                return false;
             }
         });
 
@@ -63,6 +72,12 @@ public class GridCutter {
                 ymax = g.ymax;
             }
         }
+
+        if(files.length < 2) {
+            SpatialLogger.log("Fewer than two layers with postive range.");
+            return null;
+        }
+
 
         //determine range and width's
         double xrange = xmax - xmin;
