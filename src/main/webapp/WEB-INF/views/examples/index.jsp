@@ -28,7 +28,7 @@
                         <td><a href="/ws/examples/specieswms">Species occurrence WMS</a></td>
                         <td>
                             This example shows how to use the species occurrences
-                            available via ALA's web services.
+                            available via ALA's web services using OpenLayers.
                         </td>
                         <td>
                             Species WMS, Species autocomplete 
@@ -38,10 +38,20 @@
                         <td><a href="/ws/examples/layerswms">Spatial layer WMS</a></td>
                         <td>
                             This example shows how to use the environmental and
-                            contextual layers available via ALA's web services.
+                            contextual layers available via ALA's web services using OpenLayers.
                         </td>
                         <td>
                             Layers WMS, Layers autocomplete
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><a href="/ws/examples/specieswmsg">Species and Layer WMS using Google</a></td>
+                        <td>
+                            This example shows how to use the species, environmental and
+                            contextual layers available via ALA's web services using Google API.
+                        </td>
+                        <td>
+                            Species WMS, Species autocomplete Layers WMS, Layers autocomplete
                         </td>
                     </tr>
                 </thead>
