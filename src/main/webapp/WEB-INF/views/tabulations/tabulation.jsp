@@ -45,7 +45,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                    <c:if test="${rowcounter.index !=0 && counter.index != 0}">
                        <c:choose>
                            <c:when test="${cell != null && id == 1}">
-                            <c:set var="rowClass" value="${cell / 1000000.00}"/>
+                            <c:set var="rowClass" value="${cell}"/>
                             <td align="right"><fmt:formatNumber value="${rowClass}" pattern="#0"/></td>
                            </c:when>
                             <c:when test="${cell != null && id == 2}">
