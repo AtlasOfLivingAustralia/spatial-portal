@@ -46,10 +46,10 @@ public class DownloadController {
 
                 if ("maxent".equals(parentPath)) {
                     fixMaxentFiles(pid, dir);
-                    Zipper.zipDirectory(dir.getParent()+"/temp/"+pid, zipfile);
+                    Zipper.zipDirectory(dir.getParent() + "/temp/" + pid, zipfile);
                 } else if ("layers".equals(parentPath) || "aloc".equals(parentPath)) {
                     fixAlocFiles(pid, dir);
-                    Zipper.zipDirectory(dir.getParent()+"/temp/"+pid, zipfile);
+                    Zipper.zipDirectory(dir.getParent() + "/temp/" + pid, zipfile);
                 } else {
                     Zipper.zipDirectory(dir.getAbsolutePath(), zipfile);
                 }
@@ -187,12 +187,16 @@ public class DownloadController {
             File pgw = new File(tmpdir.getAbsolutePath() + "/aloc.pgw");
             File pgwnew = new File(tmpdir.getAbsolutePath() + "/classfication.pgw");
 
+            File log = new File(tmpdir.getAbsolutePath() + "/aloc.log");
+            File lognew = new File(tmpdir.getAbsolutePath() + "/classfication.log");
+
             grd.renameTo(grdnew);
             gri.renameTo(grinew);
             asc.renameTo(ascnew);
             prj.renameTo(prjnew);
             png.renameTo(pngnew);
             pgw.renameTo(pgwnew);
+            log.renameTo(lognew);
 
             (new File(tmpdir.getAbsolutePath() + "/" + pid + ".asc.zip")).delete();
             (new File(tmpdir.getAbsolutePath() + "/" + pid + ".sld")).delete();
@@ -271,15 +275,15 @@ public class DownloadController {
 
                 if ("maxent".equals(parentPath)) {
                     fixMaxentFiles(pid, dir);
-                    Zipper.zipDirectory(dir.getParent()+"/temp/"+pid, zipfile);
+                    Zipper.zipDirectory(dir.getParent() + "/temp/" + pid, zipfile);
                 } else if ("layers".equals(parentPath) || "aloc".equals(parentPath)) {
                     fixAlocFiles(pid, dir);
-                    Zipper.zipDirectory(dir.getParent()+"/temp/"+pid, zipfile);
+                    Zipper.zipDirectory(dir.getParent() + "/temp/" + pid, zipfile);
                 } else {
                     Zipper.zipDirectory(dir.getAbsolutePath(), zipfile);
                 }
 
-                
+
 
                 System.out.println("Found " + dir.getName() + " in " + dir.getParent() + " and zipped at: " + zipfile);
                 //return "Found " + dir.getName() + " in " + dir.getParent() + " and zipped at: " + zipfile;
@@ -299,13 +303,6 @@ public class DownloadController {
                 }
 
                 File file = new File(zipfile);
-//                response.setContentType("application/zip");
-//                response.setContentLength(safeLongToInt(file.length()));
-//                response.setHeader("Content-Disposition", "attachment; filename=\"" + parentName + pid + ".zip\"");
-
-//                FileCopyUtils.copy(new FileInputStream(file), response.getOutputStream());
-
-//                return null;
 
                 System.out.println("File generated: " + file.getAbsolutePath());
 

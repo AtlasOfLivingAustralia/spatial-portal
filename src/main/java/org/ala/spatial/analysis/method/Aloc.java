@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.ala.spatial.util.AnalysisJob;
-import org.ala.spatial.util.AnalysisJobAloc;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SpatialLogger;
 
@@ -37,7 +36,7 @@ public class Aloc {
      * @param job
      * @return
      */
-    public static int[] runGowerMetricThreadedMemory(ArrayList<Object> data_pieces, int nNoOfGroups, int nCols, int pieces, Layer[] layers, AnalysisJobAloc job, int threadcount, int[] iterationCount) {
+    public static int[] runGowerMetricThreadedMemory(ArrayList<Object> data_pieces, int nNoOfGroups, int nCols, int pieces, Layer[] layers, AnalysisJob job, int threadcount, int[] iterationCount) {
 
         if (job != null) {
             job.setStage(1);    //seeding stage
@@ -91,11 +90,13 @@ public class Aloc {
             col_range[i] = col_max[i] - col_min[i];
             if (col_range[i] <= 0) {
                 //error
-                SpatialLogger.log("column '" + i + "' has zero range.");
-                SpatialLogger.log("Layer '" + layers[i].display_name + "' cannot be included since it has no variation for the area specified.");
                 if (job != null) {
                     //job.setCurrentState(AnalysisJob.FAILED);
+                    job.log("column '" + i + "' has zero range.");
                     job.setMessage("Layer '" + layers[i].display_name + "' cannot be included since it has no variation for the area specified.");
+                } else {
+                    SpatialLogger.log("column '" + i + "' has zero range.");
+                    SpatialLogger.log("Layer '" + layers[i].display_name + "' cannot be included since it has no variation for the area specified.");
                 }
                 //return null;
                 col_range[i] = 1;
@@ -117,7 +118,7 @@ public class Aloc {
         double step = radius / 2.0f;
 
         int count = 0;
-        int[] seedidx = new int[nNoOfGroups + 1000]; 
+        int[] seedidx = new int[nNoOfGroups + 1000];
         double[] seeds = new double[nCols * (1000 + nNoOfGroups)]; //space for an extra 1000 groups during seeding
         double[] oldSeeds = new double[nCols * (1000 + nNoOfGroups)];
         int[] oldCount = new int[nCols * (1000 + nNoOfGroups)];
@@ -125,7 +126,7 @@ public class Aloc {
 
         //initial seed as first record
         {
-            seedidx[0] = 0;            
+            seedidx[0] = 0;
             float[] data = (float[]) data_pieces.get(0);
             for (i = 0; i < nCols; i++) {
                 seeds[i] = data[i];
@@ -140,8 +141,8 @@ public class Aloc {
             for (c = 0; c < pieces; c++) {
                 float[] data = (float[]) data_pieces.get(c);
                 nRows = data.length / nCols;
-                rowPos = rowCounts[c] - nRows + (c==0?1:0);
-                for (i = (c == 0?1:0); i < nRows; i++, rowPos++) {
+                rowPos = rowCounts[c] - nRows + (c == 0 ? 1 : 0);
+                for (i = (c == 0 ? 1 : 0); i < nRows; i++, rowPos++) {
                     for (j = 0; j < seedidxsize; j++) {
                         //calc dist between obj(i) & obj(seedidx(j))
                         double dist = 0;
@@ -211,19 +212,21 @@ public class Aloc {
 
             if (job != null) {
                 job.setProgress(count / 25.0, "seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+            } else {
+                SpatialLogger.log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
             }
             if (job != null && job.isCancelled()) {
                 return null;
             }
-            SpatialLogger.log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         }
         if (job != null) {
             job.setProgress(count / 25.0, "seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+        } else {
+            SpatialLogger.log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         }
         if (job != null && job.isCancelled()) {
             return null;
         }
-        SpatialLogger.log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
 
         if (job != null) {
             job.setStage(2); //iterations
@@ -297,12 +300,20 @@ public class Aloc {
             ail[i] = new AlocInnerLoop3(lbq, atdArray[i], asdCopies[i]);
         }
 
-        System.out.println("Started AlocInnerLoops (" + threadcount + " threads): " + System.currentTimeMillis());
+        if (job != null) {
+            job.log("Started AlocInnerLoops (" + threadcount + " threads): " + System.currentTimeMillis());
+        } else {
+            SpatialLogger.log("Started AlocInnerLoops (" + threadcount + " threads): " + System.currentTimeMillis());
+        }
 
         int iteration = 0;
         int movement = -1;
         while (movement != 0 && iteration < MAX_ITERATIONS) {
-            SpatialLogger.log("moving (" + iteration + ") > moved " + movement);
+            if (job != null) {
+                job.log("moving (" + iteration + ") > moved " + movement);
+            } else {
+                SpatialLogger.log("moving (" + iteration + ") > moved " + movement);
+            }
 
             //preserve first element from each group
             //- ok for first iteration since centroid movement occurs at end
@@ -397,7 +408,6 @@ public class Aloc {
                     //check
                     for (i = 0; i < seedidxsize; i++) {
                         if (groupsize[i] == 0) {
-                            System.out.print("*");
                             repeat = true;
 
                             //move original member back here
@@ -408,7 +418,6 @@ public class Aloc {
                             int cg = -1;
                             for (j = 0; j < pieces; j++) {
                                 short[] grps = ((AlocPieceData) apdList.get(j)).groups;
-                                System.out.println("i,j,pos,row,grps.length: " + i + ", " + j + ", " + pos + ", " + row + ", " + grps.length);
                                 if (pos + grps.length > row) {
                                     cg = grps[row - pos];
                                     break;
@@ -548,7 +557,7 @@ public class Aloc {
                 }
             }
         }
-        
+
         iterationCount[0] = iteration;
 
         //write-back row groups
@@ -735,7 +744,6 @@ class AlocInnerLoop3 extends Thread {
                 }
             }
         }
-        //System.out.print("[" + Math.round((skips / (double)(nRows*seedidxsize)) * 100.0) + "%]");
     }
 
     void kill() {

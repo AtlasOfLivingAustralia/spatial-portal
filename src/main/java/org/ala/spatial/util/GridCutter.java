@@ -6,7 +6,6 @@ package org.ala.spatial.util;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.TreeMap;
 import org.ala.layers.client.Client;
@@ -22,30 +21,12 @@ import org.ala.spatial.analysis.index.LayerFilter;
  */
 public class GridCutter {
 
-    public static ArrayList<Object> loadCutGridsForAloc(String directory, String extentsFilename, int pieces, AnalysisJob job) {
+    public static ArrayList<Object> loadCutGridsForAloc(File[] files, String extentsFilename, int pieces, AnalysisJob job) {
         ArrayList<Object> data = new ArrayList<Object>();
 
         if (job != null) {
             job.setProgress(0);
         }
-
-        //identify grid files
-        File[] files = new File(directory).listFiles(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                //use grid files where MinValue < MaxValue
-                if (name.endsWith(".grd") || name.endsWith(".GRD")) {
-                    try {
-                        Grid g = new Grid(name.substring(0, name.length()-4));
-                        if(g != null) {
-                            return g.minval < g.maxval;
-                        }
-                    } catch (Exception e) {}
-                }
-                return false;
-            }
-        });
 
         //determine outer bounds of layers
         double xmin = Double.MAX_VALUE;
@@ -73,8 +54,13 @@ public class GridCutter {
             }
         }
 
-        if(files.length < 2) {
-            SpatialLogger.log("Fewer than two layers with postive range.");
+        if (files.length < 2) {
+            if (job != null) {
+                job.setCurrentState(AnalysisJob.FAILED);
+                job.log("Fewer than two layers with postive range.");
+            } else {
+                SpatialLogger.log("Fewer than two layers with postive range.");
+            }
             return null;
         }
 
@@ -123,7 +109,11 @@ public class GridCutter {
         }
 
 //TODO: test for zero length cells
-        System.out.println("Cut cells count: " + cells.length);
+        if (job != null) {
+            job.log("Cut cells count: " + cells.length);
+        } else {
+            System.out.println("Cut cells count: " + cells.length);
+        }
 
         //transform cells numbers to long/lat numbers
         double[][] points = new double[cells.length][2];
@@ -187,12 +177,12 @@ public class GridCutter {
             }
 
             if (job != null) {
-                job.setProgress(0.2 + j / (double) files.length * 7 / 10.0, "");
+                job.setProgress(0.2 + j / (double) files.length * 7 / 10.0, "opened grid: " + files[j].getName());
             }
         }
 
         if (job != null) {
-            job.log("loaded data");
+            job.log("finished opening grids");
         }
 
         //remove null rows from data and cells
@@ -389,7 +379,7 @@ public class GridCutter {
 
                 String newResolution = resolutionDirs.higherEntry(Double.parseDouble(resolution)).getValue();
 
-                if(newResolution.equals(resolution)) {
+                if (newResolution.equals(resolution)) {
                     break;
                 } else {
                     resolution = newResolution;
@@ -428,13 +418,13 @@ public class GridCutter {
         for (int i = 0; i < dfiltered.length; i++) {
             dfiltered[i] = Double.NaN;
         }
-        
+
         double res = Double.parseDouble(resolution);
-     
+
         for (int i = 0; i < mask.length; i++) {
             for (int j = 0; j < mask[0].length; j++) {
-                if (mask[i][j] > 0) {    
-                    dfiltered[j + (h - i - 1) * w] = grid.getValues2(new double [][] {{j * res + extents[0][0], i * res + extents[0][1]}})[0];
+                if (mask[i][j] > 0) {
+                    dfiltered[j + (h - i - 1) * w] = grid.getValues2(new double[][]{{j * res + extents[0][0], i * res + extents[0][1]}})[0];
                 }
             }
         }
@@ -646,7 +636,7 @@ public class GridCutter {
                     }
                 }
             }
-            if(resolutions.size() > 0) {
+            if (resolutions.size() > 0) {
                 resolution = resolutions.firstEntry().getValue();
             }
         } catch (Exception e) {

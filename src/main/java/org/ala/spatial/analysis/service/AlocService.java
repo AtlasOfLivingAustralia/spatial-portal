@@ -20,6 +20,7 @@ import org.ala.spatial.util.AnalysisJob;
 import org.ala.spatial.util.AnalysisJobAloc;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.AlaspatialProperties;
+import org.ala.spatial.util.AnalysisJobLog;
 import org.ala.spatial.util.GridCutter;
 
 /**
@@ -258,7 +259,7 @@ public class AlocService {
 
         String name = "aloc";
 
-        AnalysisJob job = null;
+        final AnalysisJobLog job = new AnalysisJobLog(outputpath + File.separator + "aloc.log");
 
         if (job != null) {
             job.log("start ALOC");
@@ -271,7 +272,29 @@ public class AlocService {
 
         int pieces = numberOfThreads * 4;
 
-        ArrayList<Object> data_pieces = GridCutter.loadCutGridsForAloc(gridfilepath, outputpath + "extents.txt", pieces, job);
+        //identify grid files
+        File[] files = new File(gridfilepath).listFiles(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                //use grid files where MinValue < MaxValue
+                if (name.endsWith(".grd") || name.endsWith(".GRD")) {
+                    try {
+                        Grid g = new Grid(dir.getPath() + File.separator + name.substring(0, name.length() - 4));
+                        if (g != null) {
+                            if (g.minval >= g.maxval) {
+                                job.log("layer " + name + " excluded from classification because it has no invariance for the selected area.");
+                            }
+                            return g.minval < g.maxval;
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+                return false;
+            }
+        });
+
+        ArrayList<Object> data_pieces = GridCutter.loadCutGridsForAloc(files, outputpath + "extents.txt", pieces, job);
         if (data_pieces == null) {
             return;
         }
@@ -287,14 +310,6 @@ public class AlocService {
         width = (int) extents[0];
         height = (int) extents[1];
 
-        //identify grid files
-        File[] files = new File(gridfilepath).listFiles(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".grd") || name.endsWith(".GRD");
-            }
-        });
         Layer[] layers = new Layer[files.length];
         for (i = 0; i < files.length; i++) {
             layers[i] = new Layer(files[i].getName(), files[i].getName(), "", "");
@@ -303,8 +318,8 @@ public class AlocService {
         /* run aloc
          * Note: requested number of groups may not always equal request
          */
-        int [] iterationCount = new int[1];
-        int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, layers, null, numberOfThreads, iterationCount);
+        int[] iterationCount = new int[1];
+        int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, layers, job, numberOfThreads, iterationCount);
         if (groups == null || getGroupRange(groups) < 2) {
             if (job != null && job.getCurrentState() != null && !job.getCurrentState().equals(AnalysisJob.FAILED)) {
                 job.setCurrentState(AnalysisJobAloc.FAILED);
@@ -486,6 +501,10 @@ public class AlocService {
                 }
             }
         }
+
+        if (job != null) {
+            job.close();
+        }
     }
 
     static String readFile(String file) {
@@ -521,7 +540,7 @@ public class AlocService {
             spWriter.write(sbProjection.toString());
             spWriter.close();
 
-        } catch (IOException ex) {            
+        } catch (IOException ex) {
             System.out.println("error writing species file:");
             ex.printStackTrace(System.out);
         }
