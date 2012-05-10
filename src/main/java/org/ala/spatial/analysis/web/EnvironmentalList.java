@@ -125,7 +125,7 @@ public class EnvironmentalList extends Listbox {
                             el.updateDistances();
 
                             String s = ((ListEntry) ((Listcell) event.getTarget().getParent()).getValue()).name;
-                            String metadata = CommonData.layersServer + "/layer/" + s;
+                            String metadata = CommonData.layersServer + "/layers/view/more/" + s;
                             mapComposer.activateLink(metadata, "Metadata", false);
 
                         }
