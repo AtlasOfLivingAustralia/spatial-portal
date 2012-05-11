@@ -299,7 +299,7 @@ public class TabulationService {
             //grid
             for (Tabulation t : tabulations) {
                 if (func.equals("area") || func.equals("arearow") || func.equals("areacolumn") || func.equals("areatotal")) {
-                    grid[order2.get(t.getPid2()) + 1][order1.get(t.getPid1()) + 1] = String.valueOf(t.getArea() / 1000000.0); //convert sqm to sqkm
+                    grid[order2.get(t.getPid2()) + 1][order1.get(t.getPid1()) + 1] = String.format("%.1f", t.getArea() / 1000000.0); //convert sqm to sqkm
                 } else if (func.equals("occurrences") || func.equals("occurrencesrow") || func.equals("occurrencescolumn") || func.equals("occurrencestotal")) {
                     grid[order2.get(t.getPid2()) + 1][order1.get(t.getPid1()) + 1] = String.valueOf(t.getOccurrences());
                 } else if (func.equals("species") || func.equals("speciesrow") || func.equals("speciescolumn") || func.equals("speciestotal")) {
@@ -324,7 +324,7 @@ public class TabulationService {
             //grid
             for (Tabulation t : tabulations) {
                 if (func.equals("area") || func.equals("arearow") || func.equals("areacolumn") || func.equals("areatotal")) {
-                    grid[order1.get(t.getPid1()) + 1][order2.get(t.getPid2()) + 1] = String.valueOf(t.getArea() / 1000000.0); //convert sqm to sqkm
+                    grid[order1.get(t.getPid1()) + 1][order2.get(t.getPid2()) + 1] = String.format("%.1f", t.getArea() / 1000000.0); //convert sqm to sqkm
                 } else if (func.equals("occurrences") || func.equals("occurrencesrow") || func.equals("occurrencescolumn") || func.equals("occurrencestotal")) {
                     grid[order1.get(t.getPid1()) + 1][order2.get(t.getPid2()) + 1] = String.valueOf(t.getOccurrences());
                 } else if (func.equals("species") || func.equals("speciesrow") || func.equals("speciescolumn") || func.equals("speciestotal")) {
