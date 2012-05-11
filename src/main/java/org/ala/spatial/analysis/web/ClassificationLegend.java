@@ -87,7 +87,7 @@ public class ClassificationLegend extends UtilityComposer {
         checkmarks = (Executions.getCurrent().getArg().get("checkmarks")) != null;
 
         disableselection = (Executions.getCurrent().getArg().get("disableselection")) != null;
-        if(disableselection) {
+        if (disableselection) {
             dCreateButtons.setVisible(false);
             lhFirstColumn.setWidth("0px");
             lhSecondColumn.setWidth("190px");
@@ -102,8 +102,7 @@ public class ClassificationLegend extends UtilityComposer {
 
     public void onClick$createInGroup(Event e) {
         getMapComposer().mapSpecies(query.newFacet(facet, true),
-                "Facet of " + mapLayer.getDisplayName(), "species", -1, LayerUtilities.SPECIES, null, -1
-                , MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
+                "Facet of " + mapLayer.getDisplayName(), "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
     }
 
     int[] getState() {
@@ -193,9 +192,9 @@ public class ClassificationLegend extends UtilityComposer {
                     setupForNumericalList(first, h);
                     //test for manual range (solr query)
                 } else if (colourmode.equals("year")) {
-                    setupForBiocacheNumber(h,colourmode,true);
+                    setupForBiocacheNumber(h, colourmode, true);
                 } else if (colourmode.equals("coordinate_uncertainty")) {
-                    setupForBiocacheNumber(h,colourmode,false);
+                    setupForBiocacheNumber(h, colourmode, false);
                 } else if (colourmode.equals("month")) {
                     setupForBiocacheMonth();
                 }
@@ -417,7 +416,7 @@ public class ClassificationLegend extends UtilityComposer {
         if (!dmin.isDisabled()) {
             double range = gMaxValue - gMinValue;
             if (range > 0) {
-                if(intContinous) {
+                if (intContinous) {
                     minValue = (int) minValue;
                     maxValue = (int) maxValue;
                 }
@@ -480,7 +479,7 @@ public class ClassificationLegend extends UtilityComposer {
             gMinValue = minValue = lo.getMinMax()[0];
             gMaxValue = maxValue = lo.getMinMax()[1];
             double rng = gMaxValue - gMinValue;
-            if(intContinous && rng < SLIDER_MAX && rng > 0) {
+            if (intContinous && rng < SLIDER_MAX && rng > 0) {
                 SLIDER_MAX = (int) rng;
             }
             dslider.setMaxpos(SLIDER_MAX);
@@ -621,19 +620,29 @@ public class ClassificationLegend extends UtilityComposer {
                     if (ss.length > 1) {
                         if (ss[0].equals("*")) {
                             double v = Double.parseDouble(ss[1]);
-                            if(intContinous) {
-                                range = String.format(">= %d and <= %d", (int) cutoffMins[0], (int) cutoffs[0]);
+                            if (intContinous) {
+                                if (cutoffs.length > 1) {
+                                    range = String.format(">= %d and < %d", (int) cutoffMins[0], (int) cutoffMins[1]);
+                                } else {
+                                    range = String.format(">= %d and <= %d", (int) cutoffMins[0], (int) cutoffs[0]);
+                                }
                                 strFacet = "" + facetName + ":[" + (int) cutoffMins[0] + " TO " + (int) cutoffs[0] + "]";
                             } else {
-                                range = String.format(">= %.2f and <= %.2f", cutoffMins[0], cutoffs[0]);
+                                if (cutoffs.length > 1) {
+                                    range = String.format(">= %.2f and < %.2f", cutoffMins[0], cutoffMins[1]);
+                                } else {
+                                    range = String.format(">= %.2f and <= %.2f", cutoffMins[0], cutoffs[0]);
+                                }
                                 strFacet = "" + facetName + ":[" + cutoffMins[0] + " TO " + cutoffs[0] + "]";
                             }
                         } else if (ss[1].equals("*")) {
-                            if(intContinous) {
-                                range = String.format(">= %d and <= %d", (int) cutoffMins[cutoffMins.length - 1], (int) gMaxValue);
+                            if (intContinous) {
+                                //range = String.format(">= %d and <= %d", (int) cutoffMins[cutoffMins.length - 1], (int) gMaxValue);
+                                range = String.format("<= %d", (int) gMaxValue);
                                 strFacet = "" + facetName + ":[" + (int) cutoffMins[cutoffMins.length - 1] + " TO " + (int) gMaxValue + "]";
                             } else {
-                                range = String.format(">= %.2f and <= %.2f", cutoffMins[cutoffMins.length - 1], gMaxValue);
+                                //range = String.format(">= %.2f and <= %.2f", cutoffMins[cutoffMins.length - 1], gMaxValue);
+                                range = String.format("<= %.2f", gMaxValue);
                                 strFacet = "" + facetName + ":[" + cutoffMins[cutoffMins.length - 1] + " TO " + gMaxValue + "]";
                             }
                         } else {
@@ -642,11 +651,20 @@ public class ClassificationLegend extends UtilityComposer {
                             while (v > cutoffs[pos]) {
                                 pos++;
                             }
-                            if(intContinous) {
-                                range = String.format(">= %d and <= %d", (int) (int) cutoffMins[pos], (int) cutoffs[pos]);
+                            if (intContinous) {
+                                if (pos + 1 < cutoffs.length) {
+                                    range = String.format("< %d", (int) cutoffMins[pos + 1]);
+                                } else {
+                                    //range = String.format(">= %d and <= %d", (int) cutoffMins[pos], (int) cutoffs[pos]);
+                                    range = String.format("<= %d", (int) cutoffs[pos]);
+                                }
                                 strFacet = "" + facetName + ":[" + (int) cutoffMins[pos] + " TO " + (int) cutoffs[pos] + "]";
                             } else {
-                                range = String.format(">= %.2f and <= %.2f", cutoffMins[pos], cutoffs[pos]);
+                                if (pos + 1 < cutoffs.length) {
+                                    range = String.format("< %.2f", cutoffMins[pos + 1]);
+                                } else {
+                                    range = String.format("<= %.2f", cutoffs[pos]);
+                                }
                                 strFacet = "" + facetName + ":[" + cutoffMins[pos] + " TO " + cutoffs[pos] + "]";
                             }
                         }
@@ -811,7 +829,7 @@ public class ClassificationLegend extends UtilityComposer {
     }
 
     public void onClick$selectAll(Event event) {
-        if(legend != null) {
+        if (legend != null) {
             for (Listitem li : (List<Listitem>) legend.getItems()) {
                 if (li.getFirstChild().getChildren().size() > 0
                         && !((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {

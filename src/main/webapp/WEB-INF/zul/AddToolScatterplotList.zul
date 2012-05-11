@@ -186,7 +186,7 @@
                     </vbox>
             </div>
             
-            <div id="atstep5" visible="false" zclass="step5 optional" sclass="atstep" width="550px" height="600px">
+            <div id="atstep5" visible="false" zclass="step5 optional last" sclass="atstep" width="550px" height="600px">
                 <label id="atstep5_desc" value="Select background species" sclass="wSubLabel"/>
                 <label id="atstep5_label" value="" />
                 <vbox>

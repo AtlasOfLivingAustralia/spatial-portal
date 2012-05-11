@@ -1678,6 +1678,9 @@ public class AddToolComposer extends UtilityComposer {
             return;
         }
 
+        //support new line separated layer names
+        layersList = layersList.replace("\n", ",");
+
         //check the whole layer string as well as the one at the end
         String[] layers = layersList.split(",");
         String[] list = new String[layers.length * 2];
@@ -1827,7 +1830,43 @@ public class AddToolComposer extends UtilityComposer {
             if (lbListLayers.getSelectedCount() == 1) {
                 lLayersSelected.setValue("1 layer selected");
             } else {
-                lLayersSelected.setValue(lbListLayers.getSelectedCount() + " layers selected");
+                //test for max
+                String error = "";
+                Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
+                if (currentDiv.getZclass().contains("maxlayers")) {
+                    int start = currentDiv.getZclass().indexOf("maxlayers") + "maxlayers".length();
+                    int end = currentDiv.getZclass().indexOf(" ", start);
+                    if (end < 0) {
+                        end = currentDiv.getZclass().length();
+                    }
+
+                    int max = Integer.parseInt(currentDiv.getZclass().substring(start, end));
+
+                    if (lbListLayers.getSelectedCount() > max) {
+                        lLayersSelected.setSclass("lblRed");
+                        error = ", INVALID: select no more than " + max + " layers.";
+                    } else {
+                        lLayersSelected.setSclass("");
+                    }
+                }
+                if (currentDiv.getZclass().contains("minlayers")) {
+                    int start = currentDiv.getZclass().indexOf("minlayers") + "minlayers".length();
+                    int end = currentDiv.getZclass().indexOf(" ", start);
+                    if (end < 0) {
+                        end = currentDiv.getZclass().length();
+                    }
+
+                    int min = Integer.parseInt(currentDiv.getZclass().substring(start, end));
+                    if (lbListLayers.getSelectedCount() < min) {
+                        lLayersSelected.setSclass("lblRed");
+                        error = ", INVALID: select at least " + min + " layers.";
+                    }
+                }
+                if (error.length() == 0) {
+                    lLayersSelected.setSclass("");
+                }
+
+                lLayersSelected.setValue(lbListLayers.getSelectedCount() + " layers selected" + error);
             }
         }
     }

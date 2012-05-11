@@ -248,6 +248,16 @@ public class Sampling {
             gid = id.substring("srichness_".length());
             filename = analysisOutputPath + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
             name = "Species Richness";
+        } else if (id.endsWith("_odensity")) {
+            //occurrence density layer
+            gid = id.substring(0, id.length() - "odensity_".length());
+            filename = analysisOutputPath + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "occurrence_density";
+            name = "Occurrence Density";
+        } else if (id.endsWith("_srichness")) {
+            //species richness layer
+            gid = id.substring(0, id.length() - "srichness_".length());
+            filename = analysisOutputPath + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
+            name = "Species Richness";
         } else if (id.startsWith("envelope_")) {
             //envelope layer
             gid = id.substring("envelope_".length());

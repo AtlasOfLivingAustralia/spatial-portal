@@ -1341,6 +1341,9 @@ div.z-window-modal-header, div.z-window-overlapped-header {
  .lcGreen {
  background: #22aa22;
  }
+ .lblRed {
+     color: red;
+}
 
  .xRemove {
  text-decoration: underline;
