@@ -566,7 +566,17 @@ public class IntersectConfig {
             gid = id.substring("srichness_".length());
             filename = getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
             name = "Species Richness";
-        } else if (id.startsWith("envelope_")) {
+        } else if (id.endsWith("_odensity")) {
+            //occurrence density layer
+            gid = id.substring(0, id.length() - "_odensity".length());
+            filename = getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "occurrence_density";
+            name = "Occurrence Density";
+        } else if (id.endsWith("_srichness")) {
+            //species richness layer
+            gid = id.substring(0, id.length() - "_srichness".length());
+            filename = getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
+            name = "Species Richness";
+        }else if (id.startsWith("envelope_")) {
             //envelope layer
             gid = id.substring("envelope_".length());
             filename = getAlaspatialOutputPath() + File.separator + "envelope" + File.separator + gid + File.separator + "envelope";
