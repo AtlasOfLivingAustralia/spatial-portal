@@ -31,6 +31,7 @@ public class Pca {
         //scale data
         double min;
         double max;
+        double sum;
         for (i = 0; i < data[0].length; i++) {
             //get min/max
             min = data[0][i];
@@ -51,7 +52,17 @@ public class Pca {
                     data[j][i] = (data[j][i] - min) / range;
                 }
             }
+
+            //-mean
+            sum = 0;
+            for (j = 0; j < data.length; j++) {
+                sum += data[j][i];
+            }
+            for (j = 0; j < data.length; j++) {
+                data[j][i] -= sum / (double) data.length;
+            }
         }
+
 
         /*
          * to bring more colour variation, when 2 columns, double columns (add
@@ -430,7 +441,7 @@ public class Pca {
             f = asevec[i][i - 1];
             g = zero;
             if (l >= 0) {
-                for (k = 0; k <=0; k++) {
+                for (k = 0; k <= 0; k++) {
                     g += asevec[i][k] * asevec[i][k];
                 }
             }
