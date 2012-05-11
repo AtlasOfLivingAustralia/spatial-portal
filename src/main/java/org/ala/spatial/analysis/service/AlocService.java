@@ -90,7 +90,7 @@ public class AlocService {
         }
     }
 
-    static void exportMetadata(String filename, int numberOfGroups, Layer[] layers, String pid, String coloursAndMeansUrl, String area, int width, int height, double minx, double miny, double maxx, double maxy, int iterationCount) {
+    static void exportMetadata(String filename, int numberOfGroups, Layer[] layers, Layer[] invariantLayers, String pid, String coloursAndMeansUrl, String area, int width, int height, double minx, double miny, double maxx, double maxy, int iterationCount) {
         try {
             FileWriter fw = new FileWriter(filename);
             int i;
@@ -100,7 +100,7 @@ public class AlocService {
             fw.append("<body>");
             fw.append("<h1>").append("Classification").append("</h1>");
 
-            fw.append("<p> <span class=\"title\">Dte/time:</span> <br /> ");
+            fw.append("<p> <span class=\"title\">Date/time:</span> <br /> ");
             fw.append(new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(System.currentTimeMillis()));
             fw.append("</p>");
 
@@ -116,14 +116,25 @@ public class AlocService {
             fw.append(String.valueOf(iterationCount));
             fw.append("</p>");
 
-            fw.append("<p> <span class=\"title\">Layers:</span> <br /> ");
+            fw.append("<p> <span class=\"title\">Layers (" + layers.length + "):</span> <br /> ");
             for (i = 0; i < layers.length; i++) {
-                fw.append(layers[i].display_name);
+                fw.append(layers[i].display_name.replace(".grd", "").replace(".GRD", ""));
                 if (i < layers.length - 1) {
-                    fw.append(", ");
+                    fw.append("<br /> ");
                 }
             }
             fw.append("</p>");
+
+            if (invariantLayers != null && invariantLayers.length > 0) {
+                fw.append("<p> <span class=\"title\">DROPPED LAYERS: invariance across extent (" + invariantLayers.length + "):</span> <br /> ");
+                for (i = 0; i < invariantLayers.length; i++) {
+                    fw.append(invariantLayers[i].display_name.replace(".grd", "").replace(".GRD", ""));
+                    if (i < invariantLayers.length - 1) {
+                        fw.append("<br /> ");
+                    }
+                }
+                fw.append("</p>");
+            }
 
             fw.append("<p> <a href=\"" + AlaspatialProperties.getBaseOutputURL() + "/files/inter_layer_association.csv\" >");
             fw.append("<span class=\"title\">Inter-layer dissimilarity matrix (csv)</span>  ");
@@ -202,7 +213,7 @@ public class AlocService {
                 while (s.length() < 6) {
                     s = "0" + s;
                 }
-                sld.append("<ColorMapEntry color=\"#" + s + "\" quantity=\"" + i + ".0\" label=\"group " + (i + 1) + "\" opacity=\"1\"/>\r\n");
+                sld.append("<ColorMapEntry color=\"#" + s + "\" quantity=\"" + (i + 1) + ".0\" label=\"group " + (i + 1) + "\" opacity=\"1\"/>\r\n");
             }
 
             /* footer */
@@ -294,6 +305,24 @@ public class AlocService {
             }
         });
 
+        File[] invariantFiles = new File(gridfilepath).listFiles(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                //use grid files where MinValue < MaxValue
+                if (name.endsWith(".grd") || name.endsWith(".GRD")) {
+                    try {
+                        Grid g = new Grid(dir.getPath() + File.separator + name.substring(0, name.length() - 4));
+                        if (g != null) {
+                            return g.minval >= g.maxval;
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+                return false;
+            }
+        });
+
         ArrayList<Object> data_pieces = GridCutter.loadCutGridsForAloc(files, outputpath + "extents.txt", pieces, job);
         if (data_pieces == null) {
             return;
@@ -313,6 +342,11 @@ public class AlocService {
         Layer[] layers = new Layer[files.length];
         for (i = 0; i < files.length; i++) {
             layers[i] = new Layer(files[i].getName(), files[i].getName(), "", "");
+        }
+
+        Layer[] invariantLayers = new Layer[invariantFiles.length];
+        for (i = 0; i < invariantFiles.length; i++) {
+            invariantLayers[i] = new Layer(invariantFiles[i].getName(), invariantFiles[i].getName(), "", "");
         }
 
         /* run aloc
@@ -388,7 +422,7 @@ public class AlocService {
 
         /* export metadata html */
         String urlpth = AlaspatialProperties.getBaseOutputURL() + "aloc/<insert job number here>/classification_means.csv";
-        exportMetadata(filename.replace("aloc.png", "classification") + ".html", numberOfGroups, layers,
+        exportMetadata(filename.replace("aloc.png", "classification") + ".html", numberOfGroups, layers, invariantLayers,
                 (job != null) ? job.getName() : "<insert job number here>",
                 urlpth,
                 "", //(job != null) ? job.area : "",
@@ -451,7 +485,7 @@ public class AlocService {
             for (j = 0; j < colour.length; j++) {
                 colour[j] = (int) (colours[groups[i]][j]);
             }
-            grid_data[cells[i][0] + (height - cells[i][1] - 1) * width] = groups[i];
+            grid_data[cells[i][0] + (height - cells[i][1] - 1) * width] = groups[i] + 1; //set grid values to "1 to number of groups" instead of "0 to number of groups - 1"
         }
         Grid g = new Grid(null);
         float res = (float) ((extents[4] - extents[2]) / width);
