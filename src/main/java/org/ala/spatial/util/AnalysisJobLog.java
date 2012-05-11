@@ -44,12 +44,6 @@ public class AnalysisJobLog extends AnalysisJob {
         output(state);
     }
 
-    @Override
-    public void setProgress(double d, String s) {
-        super.setProgress(d, s);
-        output(s);
-    }
-
     void output(String s) {
         System.out.println(s);
         if (fw != null) {
