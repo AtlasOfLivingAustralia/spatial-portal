@@ -5,6 +5,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.util.LayerUtilities;
 import java.awt.Color;
 import java.awt.Font;
@@ -13,6 +14,7 @@ import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -287,25 +289,43 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             resample();
         }
 
+        String uid = String.valueOf(System.currentTimeMillis());
         ArrayList<String> imageUrls = new ArrayList<String>();
         for (int i = 0; i < layers.length - 1; i++) {
             for (int j = i + 1; j < layers.length; j++) {
+                MapLayer ml;
+                String displayName1 = CommonData.getLayerDisplayName(layers[i]);
+                if (displayName1 == null) {
+                    if ((ml = getMapComposer().getMapLayer(layers[i])) != null) {
+                        displayName1 = ml.getDisplayName();
+                    } else {
+                        displayName1 = layers[i];
+                    }
+                }
+                String displayName2 = CommonData.getLayerDisplayName(layers[j]);
+                if (displayName2 == null) {
+                    if ((ml = getMapComposer().getMapLayer(layers[j])) != null) {
+                        displayName2 = ml.getDisplayName();
+                    } else {
+                        displayName2 = layers[j];
+                    }
+                }
                 if (data == null) {
-                    data = new ScatterplotData(lsidQuery, name, CommonData.getLayerDisplayName(layers[i]),
-                            layers[i], CommonData.getLayerDisplayName(layers[j]), layers[j], pid, selection, enabled,
+                    data = new ScatterplotData(lsidQuery, name, displayName1,
+                            layers[i], displayName2, layers[j], pid, selection, enabled,
                             (backgroundLsid != null) ? backgroundLsidQuery : null,
                             filterSa, highlightSa, envGrid);
                 } else {
                     data.setLayer1(layers[i]);
-                    data.setLayer1Name(CommonData.getLayerDisplayName(layers[i]));
+                    data.setLayer1Name(displayName1);
                     data.setLayer2(layers[j]);
-                    data.setLayer2Name(CommonData.getLayerDisplayName(layers[j]));
+                    data.setLayer2Name(displayName2);
                 }
 
                 resample();
                 String imageUrl = null;
                 try {
-                    imageUrl = draw();
+                    imageUrl = draw(uid, replaceNonAlphaNumeric(data.getLayer1Name() + "_" + data.getLayer2Name(), '_'));
                     System.out.println("scatterplot image: " + layers[i] + "," + layers[j] + " > " + imageUrl);
                 } catch (IOException ex) {
                     System.out.println("failed scatterplot image: " + layers[i] + "," + layers[j]);
@@ -315,8 +335,9 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             }
         }
 
-        String htmlUrl = makeHtml(layers, imageUrls);
-        String zipUrl = makeZip(layers, imageUrls, htmlUrl);
+        String htmlUrl = makeHtml(uid, layers, imageUrls);
+        makeReadme(uid);
+        String zipUrl = makeZip(uid, layers, imageUrls, htmlUrl);
 
         Events.echoEvent("openUrl", getMapComposer(), htmlUrl);
         try {
@@ -362,7 +383,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         }
     }
 
-    String draw() throws IOException {
+    String draw(String uid, String filename) throws IOException {
         if (missing_data) {
             return null;
         }
@@ -440,19 +461,20 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
 
         //save to file
-        String uid = String.valueOf(System.currentTimeMillis());
-        String pth = settingsSupplementary.getValue("print_output_path");
-        String htmlurl = settingsSupplementary.getValue("print_output_url");
+        String id = filename;
+        String pth = settingsSupplementary.getValue("print_output_path") + uid + File.separator;
+        String htmlurl = settingsSupplementary.getValue("print_output_url") + uid + "/";
 
         try {
-            FileOutputStream fos = new FileOutputStream(pth + uid + ".png");
+            new File(pth).mkdir();
+            FileOutputStream fos = new FileOutputStream(pth + id + ".png");
             fos.write(bytes);
             fos.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return htmlurl + uid + ".png";
+        return htmlurl + id + ".png";
     }
     String prevResampleData = null;
     String prevResampleLayers = null;
@@ -999,7 +1021,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
     String htmlHeader = "<html><body><table border=1>";
     String htmlFooter = "</table></body></html>";
 
-    private String makeHtml(String[] layers, ArrayList<String> imageUrls) {
+    private String makeHtml(String uid, String[] layers, ArrayList<String> imageUrls) {
         //linear
         StringBuilder sb = new StringBuilder();
 
@@ -1030,32 +1052,59 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         }
         sb.append(htmlFooter);
 
-        String uid = String.valueOf(System.currentTimeMillis());
-        String pth = this.settingsSupplementary.getValue("print_output_path");
-        String htmlurl = settingsSupplementary.getValue("print_output_url");
+        String pth = settingsSupplementary.getValue("print_output_path") + uid + File.separator;
+        String htmlurl = settingsSupplementary.getValue("print_output_url") + uid + "/";
         try {
-            FileWriter fw = new FileWriter(pth + uid + ".html");
+            FileWriter fw = new FileWriter(pth + "scatterplot.html");
             fw.write(sb.toString());
             fw.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("ScatterplotList file: " + pth + uid + ".html");
+        System.out.println("ScatterplotList file: " + pth + "scatterplot.html");
         System.out.println("ScatterplotList output: " + sb.toString());
-        return htmlurl + uid + ".html";
+        return htmlurl + "scatterplot.html";
     }
 
-    private String makeZip(String[] layers, ArrayList<String> imageUrls, String htmlUrl) {
-        String[] files = new String[imageUrls.size() + 1];
+    private String makeZip(String uid, String[] layers, ArrayList<String> imageUrls, String htmlUrl) {
+        String[] files = new String[imageUrls.size() + 2];
         for (int i = 0; i < imageUrls.size(); i++) {
-            files[i] = imageUrls.get(i).replace(settingsSupplementary.getValue("print_output_url"), settingsSupplementary.getValue("print_output_path"));
+            files[i] = imageUrls.get(i).replace(settingsSupplementary.getValue("print_output_url") + uid + "/", settingsSupplementary.getValue("print_output_path") + uid + File.separator);
         }
-        files[files.length - 1] = htmlUrl.replace(settingsSupplementary.getValue("print_output_url"), settingsSupplementary.getValue("print_output_path"));
+        files[files.length - 2] = htmlUrl.replace(settingsSupplementary.getValue("print_output_url") + uid + "/", settingsSupplementary.getValue("print_output_path") + uid + File.separator);
+        files[files.length - 1] = files[files.length-2].replace("scatterplot.html", "readme.txt");
 
-        String outpath = files[files.length - 1].replace(".html", ".zip");
+        String outpath = files[files.length - 2].replace(".html", ".zip");
 
         Zipper.zipFiles(files, outpath);
 
-        return files[files.length - 1].replace(".html", ".zip").replace(settingsSupplementary.getValue("print_output_path"), settingsSupplementary.getValue("print_output_url"));
+        return files[files.length - 2].replace(".html", ".zip").replace(settingsSupplementary.getValue("print_output_path") + uid + File.separator, settingsSupplementary.getValue("print_output_url")  + uid + "/");
+    }
+
+    private void makeReadme(String uid) {
+        try {
+            String pth = settingsSupplementary.getValue("print_output_path") + uid + File.separator;
+            FileWriter fw = new FileWriter(pth + "readme.txt");
+            fw.write("readme.txt               This file.\n"
+                   + "scatterplot.html         Web page with all scatterplots.\n"
+                   + "*.png                    Scatterplot images.");
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String replaceNonAlphaNumeric(String text, char replacement) {
+        for(int i=0;i<text.length();i++) {
+            if(!isAlphaNumeric(text.charAt(i)) && text.charAt(i) != replacement) {
+                text = text.replace(text.charAt(i), replacement);
+            }
+        }
+        //remove multiples
+        return text.replace("" + replacement + replacement, "" + replacement).replace("" + replacement + replacement, "" + replacement);
+    }
+
+    private boolean isAlphaNumeric(char c) {
+        return (c <= 'Z' && c >= 'A') || (c <= 'z' && c >= 'a') || (c <= '9' && c >= '0');
     }
 }
