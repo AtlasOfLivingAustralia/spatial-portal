@@ -309,11 +309,6 @@ public class Aloc {
         int iteration = 0;
         int movement = -1;
         while (movement != 0 && iteration < MAX_ITERATIONS) {
-            if (job != null) {
-                job.log("moving (" + iteration + ") > moved " + movement);
-            } else {
-                SpatialLogger.log("moving (" + iteration + ") > moved " + movement);
-            }
 
             //preserve first element from each group
             //- ok for first iteration since centroid movement occurs at end

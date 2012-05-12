@@ -198,7 +198,8 @@ public class GridCutter {
                         nMissing++;
                     }
                 }
-                if (nMissing < files.length) {
+                //if (nMissing < files.length) {
+                if (nMissing == 0) {
                     if (newPos < k) {
                         for (int j = 0; j < files.length; j++) {
                             d[newPos + j] = d[k + j];

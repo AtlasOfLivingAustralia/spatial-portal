@@ -158,6 +158,10 @@ public class AnalysisJobAloc extends AnalysisJob {
     public long getEstimate() {
         //if(getProgress() == 0) return 0;
 
+        if (getStage() < 0 || getStage() >= stageTimes.length) {
+            return 0;
+        }
+
         long timeElapsed;
         long t1 = 0, t2 = 0, t3 = 0, t4 = 0;
         double prog;
