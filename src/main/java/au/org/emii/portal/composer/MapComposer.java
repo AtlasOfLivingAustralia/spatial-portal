@@ -30,6 +30,7 @@ import org.geotools.kml.KML;
 import org.geotools.kml.KMLConfiguration;
 import java.awt.Color;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -65,6 +66,7 @@ import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.*;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -347,7 +349,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
 
         Query query = QueryUtil.get(lsid, this, false, geospatialKosher);
-        Query q = QueryUtil.queryFromSelectedArea(query, sa, false, geospatialKosher);
+        Query q = QueryUtil.queryFromSelectedArea(query, sa, false, geospatialKosher);        
 
         mapSpecies(q, taxon, rank, 0, LayerUtilities.SPECIES, sa.getWkt(), -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, nextColour());
 
@@ -565,7 +567,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             activeLayersList.setModel(new ListModelList(activeLayers, true));
 
         }
-
+        
         if (!activeLayers.contains(mapLayer) && mapLayer.isDisplayable()) {
 
             /*
@@ -1029,8 +1031,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 return ml;
             }
         }
-
-        return null;
+        
+        // now check if we can find it using the display name
+        return getMapLayerDisplayName(label); 
     }
 
     public MapLayer getMapLayerDisplayName(String label) {
@@ -1339,6 +1342,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Double lat = null;
             Double lon = null;
             Double radius = null;
+            String savedsession = ""; 
             boolean[] geospatialKosher = null;
             if (userParams != null) {
                 for (int i = 0; i < userParams.size(); i++) {
@@ -1418,6 +1422,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         lon = Double.parseDouble(value);
                     } else if (key.equals("radius")) {
                         radius = Double.parseDouble(value);
+                    } else if (key.equals("ss")) {
+                        savedsession = value.trim();
                     }
                 }
 
@@ -1433,6 +1439,54 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 } else if (count == 0 && allTermFound) {
                     sb.append("*:*");
                 }
+                
+                
+                // load a saved session 
+                if (StringUtils.isNotBlank(savedsession)) { 
+                    System.out.println("Loading session data for " + savedsession);
+                    HttpClient client = new HttpClient();
+                    GetMethod get = new GetMethod(settingsSupplementary.getValue("logging_url") + "/session/"+savedsession); // testurl
+                    get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+                    int result = client.executeMethod(get);
+                    if (result == 200) {
+                        JSONObject josession = JSONObject.fromObject(get.getResponseBodyAsString()); 
+                        if (josession.getString("status").equalsIgnoreCase("success")) {
+                            int total = josession.getInt("total");
+                            JSONArray jaactions = josession.getJSONArray("actions"); 
+                            for (int i=0;i<jaactions.size();i++) {
+                                JSONObject jos = jaactions.getJSONObject(i);
+                                String category1 = jos.getString("category1"); 
+                                String category2 = jos.getString("category2"); 
+                                JSONObject jose = jos.getJSONObject("service");
+                                String dname = jose.getString("name");
+                                
+                                if (category1.equalsIgnoreCase("species")) {
+                                    SelectedArea sa = new SelectedArea(null, jose.getString("area"));
+                                    
+                                } else if (category1.equalsIgnoreCase("area")) {
+                                    
+                                } else if (category1.equalsIgnoreCase("layer")) {
+                                    String name = jose.getString("layers");
+                                    String path = jose.getString("area");
+                                    String legendurl = CommonData.geoServer + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + name;
+                                    String metadata = jose.getString("extra");
+                                    int lyrSubtype = category2.equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL;
+                                    addWMSLayer(name, dname, path, (float) 0.75, metadata, legendurl, lyrSubtype, null, null, null);
+                                } 
+                                
+                            }
+                        } else {
+                            String errmsg = josession.getString("reason");
+                            if (StringUtils.isBlank(errmsg)) {
+                                errmsg = "Unable to retrieve session data. Please try again.";
+                            }
+                            Messagebox.show(errmsg, "ALA Spatial Portal", Messagebox.OK, Messagebox.EXCLAMATION);
+                        }
+                    }
+                } else {
+                    System.out.println("No saved session to load");
+                }
+                
 
                 System.out.println("url query: " + sb.toString());
                 if (sb.toString().length() > 0) {
@@ -1951,6 +2005,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     layerType = "Species - Occurrences";
                 } else if (species.equals("Species assemblage")) {
                     layerType = "Species - Assemblage";
+                } else if (species.contains("My facet")) {
+                    layerType = "Species - Facet";
                 }
                 if (subType == LayerUtilities.SPECIES_UPLOAD) {
                     layerType = "Import - Species";
@@ -2940,6 +2996,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/AddFacet.zul", null, "addfacetwindow");
     }
 
+    public void onClick$btnAddWMSLayer(Event event) {
+        openModal("WEB-INF/zul/AddWMSLayer.zul", null, "addLayerWindow");
+    }
+
     public void onClick$btnAddGDM(Event event) {
         openModal("WEB-INF/zul/AddToolGDM.zul", null, "addtoolwindow");
     }
@@ -3646,5 +3706,84 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 ((UploadQuery) q).resetOriginalFieldCount(-1);
             }
         }
+    }
+    
+    
+    /**
+     * Add a WMS server to the menu system
+     *
+     * @param name Name for the root menu item or null to obtain from
+     * capabilities document
+     * @param uri URI to query for getCapabilities document - will be mangled if
+     * autodiscovery was enabled by the version parameter (see below)
+     * @param version one of ("auto", "1.3.0", "1.1.1", "1.1.0", "1.0.0") if
+     * auto is used, the version will be automatically discovered and the url
+     * will be mangled to add the required components
+     * @param opacity default opacity to be used for all layers discovered
+     * @param hostnameInDescription if set to true, the hostname will be
+     * appended to the description for the root mapLayer
+     * @return true if adding was successful, otherwise false
+     */
+    public boolean addWMSServer(String name, String uri, String version, float opacity, boolean hostnameInDescription) {
+        boolean addedOk = false;
+        if (safeToPerformMapAction()) {
+            /*
+             * First check that the URI is unique within the system (as an ID) -
+             * otherwise there will be problems eg if the user adds a duplicate
+             * uri
+             */
+            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
+
+                // make sure all layers are displayed for ud layers
+                MapLayer mapLayer = remoteMap.autoDiscover(name, opacity, uri, version);
+
+                // and add it to the map if we got a mapLayer back..
+                if (mapLayer != null) {
+                    // ok
+
+                    // append the hostname to the description (top level only)
+                    if (hostnameInDescription) {
+                        try {
+                            String hostnameDescription = languagePack.getCompoundLang(
+                                    "user_defined_layer_description",
+                                    new Object[]{new URL(uri).getHost()});
+                            mapLayer.appendDescription(hostnameDescription, true);
+                        } // should never happen since we used it to discover from earlier...
+                        catch (MalformedURLException e) {
+                        }
+                    }
+
+                    addUserDefinedLayerToMenu(mapLayer, false);
+                    addedOk = true;
+                } else {
+                    // error
+                    errorMessageBrokenWMSServer(remoteMap);
+                    logger.info("no data/invalid data received from map server - refusing to add");
+                }
+            } else {
+                // error
+                showMessage(languagePack.getLang("wms_server_already_exists"));
+                logger.info(
+                        "refusing to add a new layer with URI " + uri
+                        + " because it already exists in the menu");
+            }
+        }
+        return addedOk;
+    }
+
+    /**
+     * Show message for broken wms server
+     *
+     * @param rm
+     */
+    public void errorMessageBrokenWMSServer(RemoteMap rm) {
+        showMessage(
+                languagePack.getLang("wms_server_added_error"),
+                rm.getDiscoveryErrorMessageSimple(),
+                rm.getDiscoveryErrorMessage(),
+                "Link to WMS server",
+                rm.getLastUriAttempted(),
+                "Raw data from location",
+                httpConnection.readRawData(rm.getLastUriAttempted()));
     }
 }

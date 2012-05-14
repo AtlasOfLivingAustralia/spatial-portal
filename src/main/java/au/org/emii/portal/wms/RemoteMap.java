@@ -48,4 +48,35 @@ public interface RemoteMap {
     MapLayer createWKTLayer(String wkt, String label);
 
     MapLayer createLocalLayer(int type, String label);
+    
+    
+    
+    MapLayer autoDiscover(String name, float opacity, String uri, String version);
+
+    /**
+     * Autodiscover a wms servers layers
+     *
+     * @param name
+     * @param opacity
+     * @param uri
+     * @param version
+     * @return
+     */
+    MapLayer autoDiscover(String id, String name, float opacity, String uri, String version);
+
+    /**
+     * Discovery of nested services
+     *
+     * @param discovery
+     * @return
+     */
+    MapLayer discover(Discovery discovery, boolean displayAllChildren, boolean queryableDisabled, boolean quiet);
+
+    String getDiscoveryErrorMessage();
+
+    String getDiscoveryErrorMessageSimple();
+
+    String getLastUriAttempted();
+
+    int getLastWMSVersionAttempted();
 }

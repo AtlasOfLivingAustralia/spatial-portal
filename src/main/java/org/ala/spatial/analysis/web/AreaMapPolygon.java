@@ -103,7 +103,7 @@ public class AreaMapPolygon extends AreaToolComposer {
         //Add and remove layer to set as top layer
         String layerName = selectedItem.getValue();
         MapComposer mc = getThisMapComposer();
-        MapLayer ml = mc.getMapLayerDisplayName(layerName);
+        MapLayer ml = mc.getMapLayer(layerName);
         mc.removeLayer(layerName); 
         mc.activateLayer(ml, true);
 

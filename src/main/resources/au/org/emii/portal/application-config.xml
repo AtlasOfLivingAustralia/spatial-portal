@@ -132,6 +132,7 @@
         <property name="layerUtilities" ref="layerUtilities" />
         <property name="httpConnection" ref="httpConnection" />
         <property name="geoJSONUtilities" ref="geoJSONUtilities" />
+        <property name="discoveryProcessorFactory" ref="discoveryProcessorFactory" />
     </bean>
 
     <bean id="geoJSONUtilities" class="au.org.emii.portal.util.GeoJSONUtilitiesImpl">
@@ -198,6 +199,18 @@
 
     <bean id="portalSessionCloner" class="au.org.emii.portal.util.PortalSessionCloner">
         <property name="portalSessionUtilities" ref="portalSessionUtilities" />
+    </bean>
+    
+    <bean id="wMSSupport_1_1_1" class="au.org.emii.portal.wms.WMSSupport_1_1_1" parent="wmsSupport" scope="prototype" />
+    <bean id="wMSSupport_1_1_0" class="au.org.emii.portal.wms.WMSSupport_1_1_0" parent="wmsSupport" scope="prototype" />
+    <bean id="wMSSupport_1_0_0" class="au.org.emii.portal.wms.WMSSupport_1_0_0" parent="wmsSupport" scope="prototype" />
+    <bean id="discoveryProcessorFactory" class="au.org.emii.portal.factory.DiscoveryProcessorFactoryImpl">
+        <lookup-method name="createNcWmsSupport" bean="ncWMSSupport" />
+        <lookup-method name="createThreddsSupport" bean="threddsSupport" />
+        <lookup-method name="createWmsSupport_1_0_0" bean="wMSSupport_1_0_0" />
+        <lookup-method name="createWmsSupport_1_1_0" bean="wMSSupport_1_1_0" />
+        <lookup-method name="createWmsSupport_1_1_1" bean="wMSSupport_1_1_1" />
+        <lookup-method name="createWmsSupport_1_3_0" bean="wMSSupport_1_3_0" />
     </bean>
 
 </beans>

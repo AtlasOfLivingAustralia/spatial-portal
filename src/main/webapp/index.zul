@@ -21,22 +21,6 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
     <style src="css/zkprint.css" media="print" />
 
     <style src="css/sf.css" />
-    <!--style src="http://test.ala.org.au/wp-content/themes/ala2011/css/sp-sf.css" media="screen"/-->
-
-<!--script type="text/javascript" src="http://test.ala.org.au/wp-content/themes/ala2011/scripts/html5.js"></script>
-<script type='text/javascript' src='http://test.ala.org.au/wp-content/plugins/menubar-templates/Superfish/superfish.js?ver=3.2.1'></script>
-<script type="text/javascript" src="http://test.ala.org.au/wp-content/themes/ala2011/scripts/hoverintent-min.js"></script>
-	<script type="text/javascript" src="http://test.ala.org.au/wp-content/themes/ala2011/scripts/superfish/superfish.js"></script>
-	<script type="text/javascript">
-		 $(document).ready(function() {
-			$('ul.sf').superfish( {
-				delay:500,
-				autoArrows:false,
-				dropShadows:false
-			});
-		});
-	</script-->
-
   
     <script defer="false" type="text/javascript">
         var mapLayers = null;
@@ -95,6 +79,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 </n:li>
                                 <n:li>
                                     <n:a href="#" n:onClick="addFacetAction();">Facet</n:a>
+                                </n:li>
+                                <n:li>
+                                    <n:a href="#" n:onClick="addWMSLayerAction();">WMS Layer</n:a>
                                 </n:li>
                             </n:ul>
                         </n:li>

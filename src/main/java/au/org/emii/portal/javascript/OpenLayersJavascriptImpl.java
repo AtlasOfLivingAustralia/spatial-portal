@@ -699,7 +699,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + ((layer.getSelectedStyleNameJS().equals("Default")) ? "" : "			styles: '" + layer.getSelectedStyleNameJS() + "', ")
                 + "			layers: '" + layer.getLayerJS() + "', "
                 + "			format: '" + layer.getImageFormat() + "', "
-                + "                     srs: 'epsg:900913', "
+                + "         srs: 'epsg:900913', "
                 + "			transparent: " + (!layer.isBaseLayer()) + ", "
                 + "			" + params
                 + wmsVersionDeclaration(layer) + //","
