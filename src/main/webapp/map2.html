@@ -35,43 +35,8 @@
             }
             detectIE6();
             
-            function doSome(thing) {
-                if (thing == "die") {
-                    if(hovercontrol != null) {
-                        toggleActiveHover();
-                    }                    
-                } else {
-                    if(hovercontrol == null) {
-                        toggleActiveHover(); 
-                    }                    
-                }
-
-                if (thing == "min") {
-                    $("#lvalues").removeClass("layervaluesMax").removeClass("layervaluesDie").addClass("layervaluesMin");
-                    $("#layervalues").show();
-                    setTimeout(function() {
-                        parent.jq('$hovertool')[0].style.display="none"
-                    }, 100);
-                } else if (thing == "max") {
-                    $("#lvalues").removeClass("layervaluesMin").removeClass("layervaluesDie").addClass("layervaluesMax");
-                    $("#layervalues").hide();
-                    setTimeout(function() { //for IE9
-                        parent.jq('$hovertool')[0].style.display=""
-                    }, 100);
-                } else if (thing == "die") {
-                    $("#lvalues").removeClass("layervaluesMin").removeClass("layervaluesMax").addClass("layervaluesDie");
-                    $("#layervalues").show();
-                    setTimeout(function() {
-                        parent.jq('$nearesttool')[0].style.display="none"
-                    }, 100);
-                } 
-            }
-            
-            
             function doSomething(ele) {
                 var ele = $("div.lvicons span a");
-                //console.log($(ele).text());
-                //$(ele).toggleClass("hidden");
                 if ($(ele).text() == "x") {
                     $(ele).text("^");
                 } else {
@@ -101,13 +66,7 @@
         <div id="layervalues">
             <div id="lheader">
                 <div class="lvicons">
-                    <!--
-                    <span><a href="javascript:doSome('min');">&or;</a></span>
-                    <span><a href="javascript:doSome('max');">&and;</a></span>
-                    <span><a href="javascript:doSome('die');">&Chi;</a></span>
-                    -->
-                    <!-- <span><a href="javascript:doSomething(this);">&and;</a></span> -->
-                    <span><a href="javascript:doSomething();" class="shown">&or;</a></span>
+                    <span><a href="javascript:doSomething();" class="shown">x</a></span>
                 </div>
                 Layer values:
             </div>                
