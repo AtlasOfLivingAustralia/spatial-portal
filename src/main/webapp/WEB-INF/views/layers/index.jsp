@@ -5,7 +5,7 @@
 <%@include file="../common/top.jsp" %>
 <header id="page-header">
     <div class="inner">
-        <nav id="breadcrumb"><ol><li><a href="http://www.ala.org.au">Home</a></li> <li><a href="http://spatial.ala.org.au">Mapping &#038; analysis</a></li> <li class="last">Spatial Layers</li></ol></nav>
+        <nav id="breadcrumb"><ol><li><a href="http://www.ala.org.au">Home</a></li> <li><a href="/">Mapping &#038; analysis</a></li> <li class="last">Spatial Layers</li></ol></nav>
         <section id="content-search">
             <h1>Spatial layers</h1>
             <p>Following are a list of ALA Spatial web services.</p>

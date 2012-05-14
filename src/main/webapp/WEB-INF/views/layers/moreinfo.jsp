@@ -8,8 +8,8 @@
         <nav id="breadcrumb">
             <ol>
                 <li><a href="http://www.ala.org.au">Home</a></li> 
-                <li><a href="http://spatial.ala.org.au">Mapping &#038; analysis</a></li> 
-                <li><a href="../../">Spatial Layers</a></li> 
+                <li><a href="/">Mapping &#038; analysis</a></li> 
+                <li><a href="../../layers/">Spatial Layers</a></li> 
                 <li class="last">Layer information</li>
             </ol>
         </nav>
