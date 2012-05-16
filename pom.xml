@@ -6,7 +6,7 @@
     <artifactId>layers-service</artifactId>
     <packaging>war</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>layers-service</name>
+    <name>ALA Spatial Layers Service</name>
     <url>http://www.ala.org.au</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -33,19 +33,42 @@
         <dependency>
             <groupId>org.ala.layers</groupId>
             <artifactId>layers-store</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <!--exclusions>
+            <version>1.0-SNAPSHOT</version>            
+            <exclusions>
                 <exclusion>
                     <groupId>postgresql</groupId>
                     <artifactId>postgresql</artifactId>
                 </exclusion>
-            </exclusions-->
+            </exclusions>            
         </dependency>
+        <!--
+        <dependency>
+            <groupId>au.org.ala.spatial</groupId>
+            <artifactId>utilities</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        -->
         <!-- ALA header and tails -->
         <dependency>
             <groupId>au.org.ala</groupId>
             <artifactId>ala-header-and-tails</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+        
+        <!--  Central Authorisation Service (CAS) client -->
+        <dependency>
+            <groupId>org.jasig.cas.client</groupId>
+            <artifactId>cas-client-core</artifactId>
+            <version>3.1.11</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>au.org.ala</groupId>
+            <artifactId>ala-cas-client</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>jar</type>
+            <scope>compile</scope>
         </dependency>
 
         <!--  Spring Framework -->
@@ -223,6 +246,28 @@
             </build>
         </profile>
     </profiles>
+    <developers>
+        <developer>
+            <id>AC</id>
+            <name>Adam Collins</name>
+            <email>adam.collins@csiro.au</email>
+            <organization>CSIRO</organization>
+            <organizationUrl>http://csiro.au</organizationUrl>
+            <roles>
+                <role>Analysis Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>AR</id>
+            <name>Ajay Ranipeta</name>
+            <email>Ajay.Ranipeta@csiro.au</email>
+            <organization>CSIRO</organization>
+            <organizationUrl>http://csiro.au</organizationUrl>
+            <roles>
+                <role>Software and Analysis Developer</role>
+            </roles>
+        </developer>
+    </developers>
 
 </project>
 
