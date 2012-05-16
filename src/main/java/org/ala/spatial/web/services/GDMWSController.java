@@ -78,6 +78,7 @@ public class GDMWSController {
             String envlist = req.getParameter("envlist");
             String speciesdata = req.getParameter("speciesdata");
             String area = req.getParameter("area");
+            String taxacount = req.getParameter("taxacount"); 
 
             //Layer[] layers = getEnvFilesAsLayers(envlist);
 
@@ -148,6 +149,7 @@ public class GDMWSController {
             props.setProperty("pid", Long.toString(currTime));
             props.setProperty("envlist", envlist);
             props.setProperty("area", area);
+            props.setProperty("taxacount", taxacount); 
             //props.store(new PrintWriter(new BufferedWriter(new FileWriter(outputdir + "ala.properties"))), "");
             props.store(new FileOutputStream(outputdir + "ala.properties"), "ALA GDM Properties");
 
@@ -186,6 +188,7 @@ public class GDMWSController {
             props.load(new FileInputStream(outputdir + "ala.properties"));
             String envlist = props.getProperty("envlist");
             String area = props.getProperty("area");
+            String taxacount = props.getProperty("taxacount");
             //Layer[] layers = getEnvFilesAsLayers(envlist);
 
 
@@ -866,7 +869,7 @@ public class GDMWSController {
             sbMetadata.append("<h3>Your options:</h3><ul>");
 
             sbMetadata.append("<li>Model reference number:").append(pid).append("</li>");
-            sbMetadata.append("<li>Species:").append("").append("</li>");
+            sbMetadata.append("<li>Assemblage:").append("").append("</li>");
             sbMetadata.append("<li>Area:").append(area).append("</li>");
 
             sbMetadata.append("<li>Layers: <ul>");

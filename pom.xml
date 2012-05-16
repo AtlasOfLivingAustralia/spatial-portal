@@ -6,7 +6,7 @@
 	<artifactId>ala-spatial</artifactId>
 	<packaging>war</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<name>alaspatial-index2</name>
+	<name>ALA Spatial Analysis</name>
 	<description>This is the ALA Spatial Portal providing access to the core ALA Portal mapping and analyses of occurrence and specimen records from collections in Australia.</description>
 	<url>http://www.ala.org.au</url>
 	<properties>
@@ -506,18 +506,7 @@
 
 		</plugins>
 	</reporting>
-
 	<developers>
-		<developer>
-			<id>BW</id>
-			<name>Brendon Ward</name>
-			<email>Brendon.Ward@utas.edu.au</email>
-			<organization>eMII</organization>
-			<organizationUrl>http://emii.org.au</organizationUrl>
-			<roles>
-				<role>Software Architect</role>
-			</roles>
-		</developer>
 		<developer>
 			<id>AC</id>
 			<name>Adam Collins</name>
@@ -526,16 +515,6 @@
 			<organizationUrl>http://csiro.au</organizationUrl>
 			<roles>
 				<role>Analysis Developer</role>
-			</roles>
-		</developer>
-		<developer>
-			<id>AM</id>
-			<name>Angus MacAulay</name>
-			<email>Angus.MacAulay@csiro.au</email>
-			<organization>CSIRO</organization>
-			<organizationUrl>http://csiro.au</organizationUrl>
-			<roles>
-				<role>Software Developer</role>
 			</roles>
 		</developer>
 		<developer>

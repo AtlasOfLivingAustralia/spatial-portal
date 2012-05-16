@@ -10,11 +10,13 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.util.Iterator;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.Zipper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,6 +52,9 @@ public class DownloadController {
                 } else if ("layers".equals(parentPath) || "aloc".equals(parentPath)) {
                     fixAlocFiles(pid, dir);
                     Zipper.zipDirectory(dir.getParent() + "/temp/" + pid, zipfile);
+                }else if ("gdm".equals(parentPath)) {
+                    fixGdmFiles(pid, dir);
+                    Zipper.zipDirectory(dir.getParent()+"/temp/"+pid, zipfile);
                 } else {
                     Zipper.zipDirectory(dir.getAbsolutePath(), zipfile);
                 }
@@ -137,11 +142,11 @@ public class DownloadController {
             //FileCopyUtils.copy(new FileInputStream(dir), new FileOutputStream(tmpdir));
             FileUtils.copyDirectory(dir, tmpdir);
 
-            File grd = new File(tmpdir.getAbsolutePath() + "/" + pid + ".grd");
-            File grdnew = new File(tmpdir.getAbsolutePath() + "/prediction.grd");
+            //File grd = new File(tmpdir.getAbsolutePath() + "/" + pid + ".grd");
+            //File grdnew = new File(tmpdir.getAbsolutePath() + "/prediction.grd");
 
-            File gri = new File(tmpdir.getAbsolutePath() + "/" + pid + ".gri");
-            File grinew = new File(tmpdir.getAbsolutePath() + "/prediction.gri");
+            //File gri = new File(tmpdir.getAbsolutePath() + "/" + pid + ".gri");
+            //File grinew = new File(tmpdir.getAbsolutePath() + "/prediction.gri");
 
             File rsp = new File(tmpdir.getAbsolutePath() + "/removedSpecies.txt");
             File rspnew = new File(tmpdir.getAbsolutePath() + "/prediction_removedSpecies.txt");
@@ -149,13 +154,15 @@ public class DownloadController {
             File msp = new File(tmpdir.getAbsolutePath() + "/maskedOutSensitiveSpecies.txt");
             File mspnew = new File(tmpdir.getAbsolutePath() + "/prediction_maskedOutSensitiveSpecies.txt");
 
-            grd.renameTo(grdnew);
-            gri.renameTo(grinew);
+            //grd.renameTo(grdnew);
+            //gri.renameTo(grinew);
             rsp.renameTo(rspnew);
             msp.renameTo(mspnew);
 
             (new File(tmpdir.getAbsolutePath() + "/species.zip")).delete();
             (new File(tmpdir.getAbsolutePath() + "/species.bat")).delete();
+            (new File(tmpdir.getAbsolutePath() + "/" + pid + ".grd")).delete();
+            (new File(tmpdir.getAbsolutePath() + "/" + pid + ".gri")).delete();
 
         } catch (Exception e) {
             System.out.println("Unable to fix Prediction files");
@@ -169,11 +176,11 @@ public class DownloadController {
             //FileCopyUtils.copy(new FileInputStream(dir), new FileOutputStream(tmpdir));
             FileUtils.copyDirectory(dir, tmpdir);
 
-            File grd = new File(tmpdir.getAbsolutePath() + "/" + pid + ".grd");
-            File grdnew = new File(tmpdir.getAbsolutePath() + "/classfication.grd");
+            //File grd = new File(tmpdir.getAbsolutePath() + "/" + pid + ".grd");
+            //File grdnew = new File(tmpdir.getAbsolutePath() + "/classfication.grd");
 
-            File gri = new File(tmpdir.getAbsolutePath() + "/" + pid + ".gri");
-            File grinew = new File(tmpdir.getAbsolutePath() + "/classfication.gri");
+            //File gri = new File(tmpdir.getAbsolutePath() + "/" + pid + ".gri");
+            //File grinew = new File(tmpdir.getAbsolutePath() + "/classfication.gri");
 
             File asc = new File(tmpdir.getAbsolutePath() + "/" + pid + ".asc");
             File ascnew = new File(tmpdir.getAbsolutePath() + "/classfication.asc");
@@ -190,8 +197,8 @@ public class DownloadController {
             File log = new File(tmpdir.getAbsolutePath() + "/aloc.log");
             File lognew = new File(tmpdir.getAbsolutePath() + "/classfication.log");
 
-            grd.renameTo(grdnew);
-            gri.renameTo(grinew);
+            //grd.renameTo(grdnew);
+            //gri.renameTo(grinew);
             asc.renameTo(ascnew);
             prj.renameTo(prjnew);
             png.renameTo(pngnew);
@@ -204,9 +211,43 @@ public class DownloadController {
             (new File(tmpdir.getAbsolutePath() + "/aloc.prj")).delete();
             (new File(tmpdir.getAbsolutePath() + "/t_aloc.tif")).delete();
             (new File(tmpdir.getAbsolutePath() + "/t_aloc.png")).delete();
+            (new File(tmpdir.getAbsolutePath() + "/" + pid + ".grd")).delete();
+            (new File(tmpdir.getAbsolutePath() + "/" + pid + ".gri")).delete();
 
         } catch (Exception e) {
             System.out.println("Unable to fix Classification files");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    private static void fixGdmFiles(String pid, File dir) {
+        try {
+            File tmpdir = new File(dir.getParent() + "/temp/" + pid);
+            //FileCopyUtils.copy(new FileInputStream(dir), new FileOutputStream(tmpdir));
+            FileUtils.copyDirectory(dir, tmpdir);
+
+            //File rsp = new File(tmpdir.getAbsolutePath() + "/removedSpecies.txt");
+            //File rspnew = new File(tmpdir.getAbsolutePath() + "/prediction_removedSpecies.txt");
+
+            //File msp = new File(tmpdir.getAbsolutePath() + "/maskedOutSensitiveSpecies.txt");
+            //File mspnew = new File(tmpdir.getAbsolutePath() + "/prediction_maskedOutSensitiveSpecies.txt");
+
+            //rsp.renameTo(rspnew);
+            //msp.renameTo(mspnew);
+
+            //(new File(tmpdir.getAbsolutePath() + "/species.zip")).delete();
+
+            FilenameFilter ff = new SuffixFileFilter(".grd");
+            File[] files = tmpdir.listFiles(ff);
+            for (int i = 0; i < files.length; i++) {
+                File f = files[i];
+                if (!f.getName().startsWith("domain")) {
+                    f.delete();
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Unable to fix Prediction files");
             e.printStackTrace(System.out);
         }
     }

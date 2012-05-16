@@ -22,33 +22,9 @@
 		<from>/styles/**</from>
 		<to>/styles/$1</to>
 	</rule>
-        <rule>
-            <from>/mobile/**</from>
-            <to>/mobile/$1</to>
-        </rule>
 	<rule>
-		<from>/output/maxent/**</from>
-		<to>/output/maxent/$1</to>
-	</rule>
-	<rule>
-		<from>/output/aloc/**</from>
-		<to>/output/aloc/$1</to>
-	</rule>
-	<rule>
-		<from>/output/layers/**</from>
-		<to>/output/layers/$1</to>
-	</rule>
-	<rule>
-		<from>/output/filtering/**</from>
-		<to>/output/filtering/$1</to>
-	</rule>
-	<rule>
-		<from>/output/sampling/**</from>
-		<to>/output/sampling/$1</to>
-	</rule>
-	<rule>
-		<from>/analysis</from>
-		<to>/index.zul</to>
+		<from>/output/**</from>
+		<to>/output/$1</to>
 	</rule>
         <rule>
 		<from>/layers/analysis/inter_layer_association.pdf</from>
@@ -65,10 +41,6 @@
 	<rule>
 		<from>/images/**</from>
 		<to>/images/$1</to>
-	</rule>
-	<rule>
-		<from>/slider/**</from>
-		<to>/slider/$1</to>
 	</rule>
 	<rule>
 		<from>/zkau/**</from>
