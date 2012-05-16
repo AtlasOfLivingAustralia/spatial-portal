@@ -34,7 +34,9 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.renderer.lite.RendererUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -44,6 +46,7 @@ import org.opengis.filter.FilterFactory;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.xml.sax.helpers.NamespaceSupport;
 import org.zkoss.util.media.Media;
@@ -146,7 +149,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, \nKML or Shapefile. ");
         }
     }
-
+    
     private void executeShapeImageRenderer(String shapepath, String column, String filters) {
         Runtime runtime = Runtime.getRuntime();
         Process proc;
@@ -169,7 +172,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             }
 
             ////shapeimageexe = "cd /usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/classes && java -classpath .:../lib/* org.ala.spatial.util.ShapefileRenderer ";
-            shapeimageexe = "java -classpath /usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/classes:/usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/lib/* org.ala.spatial.util.ShapefileRenderer ";
+            //shapeimageexe = "java -classpath /usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/classes:/usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/lib/* org.ala.spatial.util.ShapefileRenderer ";
 
             //String command = shapeimageexe + " \"" + shapepath + "\" \"" + shapeout + "\" \"" + column + "\" \"" + filters + "\"";
             String command = shapeimageexe + " " + shapepath + " " + shapeout + " " + column + " " + filters + "";
@@ -228,7 +231,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 lh.setParent(lhd);
             }
             lhd.setParent(lAttributes);
-
+            
             SimpleFeatureIterator fi = features.features();
             while (fi.hasNext()) {
                 SimpleFeature f = fi.next();
@@ -330,6 +333,15 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             String column = "fid"; 
             final FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
             Filter filter = ff.id(IDs);
+            
+            // set up the math transform used to process the data
+            SimpleFeatureType schema = features.getSchema();
+            CoordinateReferenceSystem dataCRS = schema.getCoordinateReferenceSystem();
+            CoordinateReferenceSystem wgsCRS = DefaultGeographicCRS.WGS84;
+            boolean lenient = true; // allow for some error due to different datums
+            MathTransform transform = CRS.findMathTransform(dataCRS, wgsCRS, lenient);
+
+            
             SimpleFeatureCollection sff = source.getFeatures(filter);
             SimpleFeatureIterator fif = sff.features();
             StringBuilder sb = new StringBuilder();
@@ -346,6 +358,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
 
 
                 Geometry geom = (Geometry) f.getDefaultGeometry();
+                geom = JTS.transform(geom, transform);
                 String wktString = geom.toText();
                 wktString = wktString.replaceAll(", ", ",");
                 boolean valid = true;
