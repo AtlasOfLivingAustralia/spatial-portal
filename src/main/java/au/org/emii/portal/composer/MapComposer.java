@@ -24,6 +24,9 @@ import au.org.emii.portal.util.SessionPrint;
 import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
+import com.thoughtworks.xstream.persistence.FilePersistenceStrategy;
+import com.thoughtworks.xstream.persistence.PersistenceStrategy;
+import com.thoughtworks.xstream.persistence.XmlArrayList;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import org.geotools.kml.KML;
@@ -1432,53 +1435,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 } else if (count == 0 && allTermFound) {
                     sb.append("*:*");
                 }
-
-
-                // load a saved session 
-                /*
-                 * if (StringUtils.isNotBlank(savedsession)) {
-                 * System.out.println("Loading session data for " +
-                 * savedsession); HttpClient client = new HttpClient();
-                 * GetMethod get = new
-                 * GetMethod(settingsSupplementary.getValue("logging_url") +
-                 * "/session/"+savedsession); // testurl
-                 * get.addRequestHeader("Accept", "application/json,
-                 * text/javascript, * / *"); int result =
-                 * client.executeMethod(get); if (result == 200) { JSONObject
-                 * josession =
-                 * JSONObject.fromObject(get.getResponseBodyAsString()); if
-                 * (josession.getString("status").equalsIgnoreCase("success")) {
-                 * int total = josession.getInt("total"); JSONArray jaactions =
-                 * josession.getJSONArray("actions"); for (int
-                 * i=0;i<jaactions.size();i++) { JSONObject jos =
-                 * jaactions.getJSONObject(i); String category1 =
-                 * jos.getString("category1"); String category2 =
-                 * jos.getString("category2"); JSONObject jose =
-                 * jos.getJSONObject("service"); String dname =
-                 * jose.getString("name");
-                 *
-                 * if (category1.equalsIgnoreCase("species")) { SelectedArea sa
-                 * = new SelectedArea(null, jose.getString("area"));
-                 *
-                 * } else if (category1.equalsIgnoreCase("area")) {
-                 *
-                 * } else if (category1.equalsIgnoreCase("layer")) { String name
-                 * = jose.getString("layers"); String path =
-                 * jose.getString("area"); String legendurl =
-                 * CommonData.geoServer +
-                 * "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER="
-                 * + name; String metadata = jose.getString("extra"); int
-                 * lyrSubtype = category2.equalsIgnoreCase("environmental") ?
-                 * LayerUtilities.GRID : LayerUtilities.CONTEXTUAL;
-                 * addWMSLayer(name, dname, path, (float) 0.75, metadata,
-                 * legendurl, lyrSubtype, null, null, null); } * } } else {
-                 * String errmsg = josession.getString("reason"); if
-                 * (StringUtils.isBlank(errmsg)) { errmsg = "Unable to retrieve
-                 * session data. Please try again."; } Messagebox.show(errmsg,
-                 * "ALA Spatial Portal", Messagebox.OK, Messagebox.EXCLAMATION);
-                 * } } } else { System.out.println("No saved session to load");
-                 * }
-                 */
 
                 if (StringUtils.isNotBlank(savedsession)) {
                     loadSession(savedsession);
@@ -3575,7 +3531,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void onClick$saveSession(Event event) {
         System.out.println("saving session");
-
+        
         PrintWriter out = null;
         try {
             //session id/cookie JSESSIONID=
@@ -3583,6 +3539,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             try {
                 //get cookie
                 for (Cookie c : ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies()) {
+                    
+                    System.out.println("cookie> " + c.getName() + " in " + c.getDomain());
+                    
                     if (c.getName().equalsIgnoreCase("JSESSIONID")) {
                         System.out.println("printcookie:" + c.getValue());
                         jsessionid = c.getValue();
@@ -3592,7 +3551,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 e.printStackTrace();
             }
 
-            File sessfolder = new File("/data/ala/runtime/output/session/" + jsessionid + "/");
+            String sfld = getSettingsSupplementary().getValue("analysis_output_dir") + "session/" + jsessionid;
+
+            File sessfolder = new File(sfld + "/");
             if (!sessfolder.exists()) {
                 sessfolder.mkdirs();
             }
@@ -3600,34 +3561,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             StringBuffer sbSession = new StringBuffer();
             sbSession.append(String.valueOf(mapZoomLevel)).append(",").append(getLeftmenuSearchComposer().getViewportBoundingBox().toString());
             sbSession.append(System.getProperty("line.separator"));
+            
+            PersistenceStrategy strategy = new FilePersistenceStrategy(new File(sfld));
+            List list = new XmlArrayList(strategy);
 
             List udl = getPortalSession().getActiveLayers();
             Iterator iudl = udl.iterator();
             while (iudl.hasNext()) {
                 MapLayer ml = (MapLayer) iudl.next();
-
-                if (ml.getType() != LayerUtilities.MAP && ml.getSubType() != LayerUtilities.SCATTERPLOT) {
-                    //sbSession.append(ml.toSaveString("")).append(System.getProperty("line.separator"));
-                    sbSession.append(ml.getName()).append(System.getProperty("line.separator"));
-
-                    ObjectOutputStream oos;
-                    try {
-                        oos = new ObjectOutputStream(new FileOutputStream("/data/ala/runtime/output/session/" + jsessionid + "/" + ml.getName() + ".mlo"));
-                        oos.writeObject(ml);
-                        oos.flush();
-                        oos.close();
-                    } catch (IOException ex) {
-                        System.out.println("Unable to save map layer: " + ml.getName());
-                        ex.printStackTrace(System.out);
-                    }
+                if (ml.getType() != LayerUtilities.MAP) { 
+                    list.add(ml);
                 }
             }
 
-            out = new PrintWriter(new BufferedWriter(new FileWriter("/data/ala/runtime/output/session/" + jsessionid + ".txt")));
+            out = new PrintWriter(new BufferedWriter(new FileWriter(sfld + "/details.txt")));
             out.write(sbSession.toString());
             out.close();
-            
-            
+                        
             String sessionurl = CommonData.webportalServer + "/?ss="+jsessionid; 
             showMessage("Session saved. Please use the following link to share: \n" + sessionurl);
             
@@ -3639,106 +3589,46 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 out.close();
             }
         }
-
     }
 
     public void loadSession(String sessionid) {
         Scanner scanner = null;
         try {
+            
+            String sfld = getSettingsSupplementary().getValue("analysis_output_dir")+"session/"+sessionid; 
+            
+            File sessfolder = new File(sfld);
+            if (!sessfolder.exists()) {
+                showMessage("Session information does not exist. Please provide a valid session id");
+                return; 
+            } 
+            
+            scanner = new Scanner(new File(sfld + "/details.txt"));
+            
+            // first grab the zoom level and bounding box
+            String[] mapdetails = scanner.nextLine().split(",");
+            
+            BoundingBox bb = new BoundingBox();
+            bb.setMinLongitude(Float.parseFloat(mapdetails[1]));
+            bb.setMinLatitude(Float.parseFloat(mapdetails[2]));
+            bb.setMaxLongitude(Float.parseFloat(mapdetails[3]));
+            bb.setMaxLatitude(Float.parseFloat(mapdetails[4]));
+            openLayersJavascript.zoomToBoundingBoxNow(bb);
+            
+            PersistenceStrategy strategy = new FilePersistenceStrategy(new File(sfld));
+            List list = new XmlArrayList(strategy);
 
-            File sessfile = new File("/data/ala/runtime/output/session/" + sessionid + ".txt");
-            if (sessfile.exists()) {
-
-                scanner = new Scanner(sessfile);
-
-                // first grab the zoom level and bounding box
-                String[] mapdetails = scanner.nextLine().split(",");
-
-                ArrayList<String> lyrlist = new ArrayList<String>();
-
-                while (scanner.hasNextLine()) {
-                    String lyrline = scanner.nextLine();
-                    lyrlist.add(lyrline);
-                }
-
-//                    System.out.println("Loading \n\t" + lyrline);
-
-//                    String[] lyrdets = lyrline.split("\\|"); 
-//                    
-//                    String[] lyrtype = lyrdets[0].split(",");
-//                    
-//                    System.out.println("lyrtype: " + lyrdets[0]);
-//                    
-//                    String lyrdname = lyrdets[1];
-//                    String lyrname = lyrdets[2];
-//                    boolean lyrdisplay = Boolean.getBoolean(lyrdets[3]);
-//                    String lyrid = lyrdets[4];
-//                    String lyrdata = lyrdets[5];
-//                    
-//                    System.out.println("Loading  " + lyrdname);
-//                    
-//                    int lyrType = Integer.parseInt(lyrtype[0]); 
-//                    int lyrSubType = Integer.parseInt(lyrtype[1]); 
-
-//                    if ((lyrType > -1 && lyrType < 4) && lyrSubType == -1) {
-//                        System.out.println("\tIgnoring External WMS layer for now...");
-//                    }
-//                    
-//                    if ((lyrType > -1 && lyrType < 4) && lyrSubType > -1) {
-//                        System.out.println("\tWMS layer...");
-//                        addWMSLayer(lyrname, lyrdname, lyrdata, (float)0.75, "", "", lyrSubType, "", ""); 
-//                    }
-//                    
-//                    if (lyrType == 1 && lyrSubType == 21) {
-//                        System.out.println("\tSpecies layer... "); 
-
-//                        if (lyrdata.startsWith("(")) {
-//                            int s1 = 0;
-//                            int s2 = lyrdata.indexOf(")");
-//                            String lsids = lyrdata.substring(s1,s2);
-//                            lsids = lsids.replaceAll(" OR ", ",");
-//                            
-//                            BiocacheQuery bq = new BiocacheQuery(lyrid, lyrid, lyrdata, null, lyrdisplay, null);
-//                            
-//                        }
-
-//                        ObjectInputStream ois = new ObjectInputStream(new FileInputStream("/data/ala/runtime/output/session/"+sessionid+"/"+lyrline+".mlo"));
-//                        MapLayer ml = (MapLayer) ois.readObject();
-//                        ois.close();
-//                        
-////                        MapLayer ml = new JSONDeserializer<MapLayer>().deserialize(new FileReader("/data/ala/runtime/output/session/"+sessionid+"/"+lyrname+".mlo"));
-//                        
-//                        addUserDefinedLayerToMenu(ml, false);                        
-//                    }
-
-
-
-
-                ListIterator<String> li = lyrlist.listIterator(lyrlist.size());
-                while (li.hasPrevious()) {
-                    String lyrname = li.previous();
-                    System.out.println("Loading " + lyrname + "... ");
-                    ObjectInputStream ois = new ObjectInputStream(new FileInputStream("/data/ala/runtime/output/session/" + sessionid + "/" + lyrname + ".mlo"));
-                    MapLayer ml = (MapLayer) ois.readObject();
-                    ois.close();
-                    addUserDefinedLayerToMenu(ml, false);
-                }
-
-
-                BoundingBox bb = new BoundingBox();
-                bb.setMinLongitude(Float.parseFloat(mapdetails[1]));
-                bb.setMinLatitude(Float.parseFloat(mapdetails[2]));
-                bb.setMaxLongitude(Float.parseFloat(mapdetails[3]));
-                bb.setMaxLatitude(Float.parseFloat(mapdetails[4]));
-                openLayersJavascript.zoomToBoundingBoxNow(bb);
-
-            } else {
-                Messagebox.show("Unable to load session data for " + sessionid, "Spatial Portal", Messagebox.OK, Messagebox.EXCLAMATION);
+            ListIterator<MapLayer> it = list.listIterator(list.size());
+            while(it.hasPrevious()) {
+                MapLayer ml = it.previous();
+                System.out.println("Loading " + ml.getName() + " -> " + ml.isDisplayed() );
+                addUserDefinedLayerToMenu(ml, false);
             }
-
+            
         } catch (Exception e) {
-            System.out.println("Unable to load session data for " + sessionid);
+            System.out.println("Unable to load session data");
             e.printStackTrace(System.out);
+            showMessage("Unable to load session data");
         } finally {
             scanner.close();
         }

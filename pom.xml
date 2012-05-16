@@ -7,7 +7,7 @@
     <version>2.0.0</version>
 
 
-    <name>ZK5 ALA Spatial Portal </name>
+    <name>ALA Spatial Portal</name>
     <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
     <url>http://www.ala.org.au</url>
     <dependencies>
@@ -389,22 +389,22 @@
             <artifactId>rangeslider</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        
+        
+        <!-- for persistence -->
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.2</version>
+        </dependency>
+        
+        
     </dependencies>
     <issueManagement>
         <system>Google Code</system>
         <url>http://code.google.com/p/alageospatialportal/issues/list</url>
     </issueManagement>
     <developers>
-        <developer>
-            <id>LB</id>
-            <name>Lee Belbin</name>
-            <email>lee@blatantfabrications.com</email>
-            <organization>ALA</organization>
-            <organizationUrl>http://www.ala.org.au</organizationUrl>
-            <roles>
-                <role>Team Leader</role>
-            </roles>
-        </developer>
         <developer>
             <id>AR</id>
             <name>Ajay Ranipeta</name>
@@ -419,16 +419,6 @@
             <id>AC</id>
             <name>Adam Collins</name>
             <email>adam_collins@tpg.com.au</email>
-            <organization>ALA</organization>
-            <organizationUrl>http://www.ala.org.au</organizationUrl>
-            <roles>
-                <role>Software Engineer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>AM</id>
-            <name>Angus Macaulay</name>
-            <email>angus.i.macaulay@gmail.com</email>
             <organization>ALA</organization>
             <organizationUrl>http://www.ala.org.au</organizationUrl>
             <roles>
