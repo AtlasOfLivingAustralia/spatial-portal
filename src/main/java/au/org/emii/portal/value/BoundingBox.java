@@ -60,8 +60,11 @@ public class BoundingBox implements Serializable, Cloneable {
         @Override
         public String toString() {
             return new StringBuffer(String.valueOf(minLongitude))
+                    .append(",")
                     .append(String.valueOf(minLatitude))
+                    .append(",")
                     .append(String.valueOf(maxLongitude))
+                    .append(",")
                     .append(String.valueOf(maxLatitude))
                     .toString();
         }

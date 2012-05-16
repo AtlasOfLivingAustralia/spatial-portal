@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package au.org.emii.portal.composer;
+package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.menu.MapLayer;
@@ -14,6 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import org.ala.spatial.analysis.web.AddToolComposer;
+import org.apache.log4j.Logger;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Div;
@@ -86,6 +87,20 @@ public class AddWMSLayerComposer extends AddToolComposer {
     private LanguagePack languagePack = null;
     private LayerUtilities layerUtilities = null;
     private RemoteMap remoteMap = null;
+    
+    @Override
+    public void afterCompose() {
+        super.afterCompose();
+        btnOk.setDisabled(true);
+
+        this.selectedMethod = "Add WMS Layers";
+        this.totalSteps = 1;
+
+        //this.setIncludeAnalysisLayersForUploadQuery(true);
+        //this.loadAreaLayers();
+        //this.loadGridLayers(false, true, false);
+        this.updateWindowTitle();
+    }
 
     public void onCheck$nameAutomatically() {
         logger.debug("onNameAutomaticallyChanged()");

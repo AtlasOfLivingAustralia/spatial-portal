@@ -5,12 +5,15 @@
 package org.ala.spatial.util;
 
 import au.org.emii.portal.menu.MapLayer;
+import java.io.Serializable;
 
 /**
  *
  * @author Adam
  */
-public class SelectedArea {
+public class SelectedArea implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     MapLayer mapLayer;
     String wkt;
