@@ -501,7 +501,7 @@ console.log(currentbaselayertxt);
         <label id="help_url" value="${settingsSupplementary.values.help_url}" visible="false" />
         
 
-          <!-- script defer="false" type="text/javascript"><![CDATA[
+          <!script defer="false" type="text/javascript"><![CDATA[
             
        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js'<http://google-analytics.com/ga.js'> type='text/javascript'%3E%3C/script%3E"));
@@ -511,7 +511,7 @@ console.log(currentbaselayertxt);
        pageTracker._initData();
        pageTracker._trackPageview();
        ]]>
-        </script -->
+        </script>
 
         <script><![CDATA[
 
