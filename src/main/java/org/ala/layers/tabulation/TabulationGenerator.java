@@ -77,13 +77,13 @@ public class TabulationGenerator {
                 + "\n args[4] = (optional) specify one step to run, "
                 + "'1' pair objects, '3' delete invalid objects, '4' area, '5' occurrences, '6' grid x grid comparisons"
                 + "\n args[5] = (required when args[4]=5 or 6) path to records file");
-//        args = new String[] {
-//            "6",
-//            "jdbc:postgresql://localhost:5432/layersdb",
-//            "postgres",
-//            "postgres",
-//            "5",
-//            "e:\\_records.csv\\_records.csv"};
+        args = new String[] {
+            "6",
+            "jdbc:postgresql://ala-maps-db.vic.csiro.au:5432/layersdb",
+            "postgres",
+            "postgres",
+            "1",
+            "e:\\_records.csv\\_records.csv"};
         if (args.length >= 5) {
             CONCURRENT_THREADS = Integer.parseInt(args[0]);
             db_url = args[1];
@@ -162,17 +162,18 @@ public class TabulationGenerator {
             conn = getConnection();
             String allFidPairs = "SELECT "
                     + "(CASE WHEN f1.id < f2.id THEN f1.id ELSE f2.id END) as fid1, "
-                    + "(CASE WHEN f1.id < f2.id THEN f2.id ELSE f1.id END) as fid2,"
-                    + "f1.domain as domain1, f2.domain as domain2"
+                    + "(CASE WHEN f1.id < f2.id THEN f2.id ELSE f1.id END) as fid2, "
+                    + "(CASE WHEN f1.id < f2.id THEN f1.domain ELSE f2.domain END) as domain1, "
+                    + "(CASE WHEN f1.id < f2.id THEN f2.domain ELSE f1.domain END) as domain2 "
                     + "FROM "
-                    + "(select f3.id, f3.intersect, l1.domain from fields f3, layers l1 where f3.spid='' || l1.id) f1,"
-                    + "(select f4.id, f4.intersect, l2.domain from fields f4, layers l2 where f4.spid='' || l2.id) f2"
+                    + "(select f3.id, f3.intersect, l1.domain from fields f3, layers l1 where f3.spid='' || l1.id) f1, "
+                    + "(select f4.id, f4.intersect, l2.domain from fields f4, layers l2 where f4.spid='' || l2.id) f2 "
                     + "WHERE f1.id != f2.id "
                     + "AND f1.intersect=true AND f2.intersect=true "
-                    + "group by fid1, fid2, f1.domain, f2.domain"
+                    + "group by fid1, fid2, domain1, domain2 "
                     + "order by fid1, fid2";
             String existingFidPairs = "SELECT fid1, fid2 FROM tabulation WHERE pid1 is null";
-            String newFidPairs = "SELECT a.fid1, a.domain1, a.fid2, a.domain2 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b ON a.fid1=b.fid1 AND a.fid2=b.fid2 WHERE b.fid1 is null group by a.fid1, a.fid2;";
+            String newFidPairs = "SELECT a.fid1, a.domain1, a.fid2, a.domain2 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b ON a.fid1=b.fid1 AND a.fid2=b.fid2 WHERE b.fid1 is null group by a.fid1, a.fid2, a.domain1, a.domain2;";
             String sql = newFidPairs;
             Statement s1 = conn.createStatement();
             ResultSet rs1 = s1.executeQuery(sql);
@@ -189,12 +190,39 @@ public class TabulationGenerator {
 
                 //domain test
                 if (isSameDomain(parseDomain(rs1.getString("domain1")), parseDomain(rs1.getString("domain2")))) {
-                    if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
+                    if (f1.exists() && f2.exists() && f1.length() < 100 * 1024 * 1024 && f2.length() < 100 * 1024 * 1024) {
                         data.put(rs1.getString("fid1") + "," + rs1.getString("fid2"));
                     } else {
                         //for gridToGrid
                     }
                 }
+            }
+
+            System.out.println("next " + data.size());
+
+            int size = data.size();
+
+            if (size == 0) {
+                return;
+            }
+
+            CountDownLatch cdl = new CountDownLatch(data.size());
+
+            DistributionThread[] threads = new DistributionThread[CONCURRENT_THREADS];
+            for (int j = 0; j < CONCURRENT_THREADS; j++) {
+                threads[j] = new DistributionThread(getConnection().createStatement(), data, cdl);
+                threads[j].start();
+            }
+
+            cdl.await();
+
+            for (int j = 0; j < CONCURRENT_THREADS; j++) {
+                try {
+                    threads[j].s.getConnection().close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                threads[j].interrupt();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -242,22 +270,22 @@ public class TabulationGenerator {
             conn = getConnection();
             String allFidPairs = "SELECT "
                     + "(CASE WHEN f1.id < f2.id THEN f1.id ELSE f2.id END) as fid1, "
-                    + "(CASE WHEN f1.id < f2.id THEN f2.id ELSE f1.id END) as fid2,"
-                    + "f1.domain as domain1, f2.domain as domain2"
+                    + "(CASE WHEN f1.id < f2.id THEN f2.id ELSE f1.id END) as fid2, "
+                    + "(CASE WHEN f1.id < f2.id THEN f1.domain ELSE f2.domain END) as domain1, "
+                    + "(CASE WHEN f1.id < f2.id THEN f2.domain ELSE f1.domain END) as domain2 "
                     + "FROM "
-                    + "(select f3.id, f3.intersect, l1.domain from fields f3, layers l1 where f3.spid='' || l1.id) f1,"
-                    + "(select f4.id, f4.intersect, l2.domain from fields f4, layers l2 where f4.spid='' || l2.id) f2"
+                    + "(select f3.id, f3.intersect, l1.domain from fields f3, layers l1 where f3.spid='' || l1.id) f1, "
+                    + "(select f4.id, f4.intersect, l2.domain from fields f4, layers l2 where f4.spid='' || l2.id) f2 "
                     + "WHERE f1.id != f2.id "
                     + "AND f1.intersect=true AND f2.intersect=true "
-                    + "group by fid1, fid2, f1.domain, f2.domain"
+                    + "group by fid1, fid2, domain1, domain2 "
                     + "order by fid1, fid2";
             String existingFidPairs = "SELECT fid1, fid2 FROM tabulation WHERE pid1 is null";
-            String newFidPairs = "SELECT a.fid1, a.domain1, a.fid2, a.domain2 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b ON a.fid1=b.fid1 AND a.fid2=b.fid2 WHERE b.fid1 is null group by a.fid1, a.fid2;";
+            String newFidPairs = "SELECT a.fid1, a.domain1, a.fid2, a.domain2 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b ON a.fid1=b.fid1 AND a.fid2=b.fid2 WHERE b.fid1 is null group by a.fid1, a.fid2, a.domain1, a.domain2;";
             String sql = newFidPairs;
             Statement s1 = conn.createStatement();
             ResultSet rs1 = s1.executeQuery(sql);
-
-            LinkedBlockingQueue<String> data = new LinkedBlockingQueue<String>();
+            
             while (rs1.next()) {
                 //check file sizes
                 String layer1 = Client.getFieldDao().getFieldById(rs1.getString("fid1")).getSpid();
@@ -269,43 +297,15 @@ public class TabulationGenerator {
 
                 //domain test
                 if (isSameDomain(parseDomain(rs1.getString("domain1")), parseDomain(rs1.getString("domain2")))) {
-                    if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
+                    if (f1.exists() && f2.exists() && f1.length() < 100 * 1024 * 1024 && f2.length() < 100 * 1024 * 1024) {
                         //for shape comparisons
                     } else {
                         //for gridToGrid
                         sql = gridToGrid(rs1.getString("fid1"), rs1.getString("fid2"), records);
-                        //s1.execute(sql);
+                        s1.execute(sql);
                     }
                 }
             }
-
-            System.out.println("next " + data.size());
-
-            int size = data.size();
-
-            if (size == 0) {
-                return;
-            }
-
-            CountDownLatch cdl = new CountDownLatch(data.size());
-
-            DistributionThread[] threads = new DistributionThread[CONCURRENT_THREADS];
-            for (int j = 0; j < CONCURRENT_THREADS; j++) {
-                threads[j] = new DistributionThread(getConnection().createStatement(), data, cdl);
-                threads[j].start();
-            }
-
-            cdl.await();
-
-            for (int j = 0; j < CONCURRENT_THREADS; j++) {
-                try {
-                    threads[j].s.getConnection().close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                threads[j].interrupt();
-            }
-
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
