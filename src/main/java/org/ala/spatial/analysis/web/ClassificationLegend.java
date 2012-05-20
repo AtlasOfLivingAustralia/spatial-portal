@@ -25,6 +25,7 @@ import org.ala.spatial.data.LegendObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.QueryField;
+import org.ala.spatial.util.CommonData;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
@@ -112,6 +113,7 @@ public class ClassificationLegend extends UtilityComposer {
             if (li.getFirstChild().getChildren().size() > 0
                     && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                 String v = ((Listcell) li.getChildren().get(1)).getLabel();
+                v = displayToActualLabel(v);
                 if (((query instanceof BiocacheQuery || divContinous.isVisible()) && v.equals("Unknown"))
                         || v.length() == 0) {
                     unknownChecked = true;
@@ -241,7 +243,7 @@ public class ClassificationLegend extends UtilityComposer {
                     lc.setParent(li);
 
                     if (readonly) {
-                        lc = new Listcell(ss[0]);
+                        lc = new Listcell(actualToDisplayLabel(ss[0]));
                     } else {
                         lc = new Listcell("group " + ss[0]);
                     }
@@ -296,6 +298,7 @@ public class ClassificationLegend extends UtilityComposer {
             if (li.getFirstChild().getChildren().size() > 0
                     && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                 String v = ((Listcell) li.getChildren().get(1)).getLabel();
+                v = displayToActualLabel(v);
                 if (legend_facets != null) {
                     if (v.equals("Unknown")) {
                         //keep unchanged
@@ -524,14 +527,17 @@ public class ClassificationLegend extends UtilityComposer {
                     String range, strFacet;
                     double min;
                     double max;
+                    double nextmin;
                     if (ss.length > 1) {
                         if (ss[1].equals("*")) {
                             double v = Double.parseDouble(ss[3]);
                             min = cutoffMins[0];
                             max = cutoffs[0];
+                            nextmin = cutoffMins.length > 1 ? cutoffMins[1] : cutoffMins[0];
                         } else if (ss[3].equals("*")) {
                             min = cutoffMins[cutoffMins.length - 1];
                             max = gMaxValue;
+                            nextmin = gMaxValue;
                         } else {
                             double v = Double.parseDouble(ss[1]);
                             int pos = 0;
@@ -540,12 +546,30 @@ public class ClassificationLegend extends UtilityComposer {
                             }
                             min = cutoffMins[pos];
                             max = cutoffs[pos];
+                            nextmin = cutoffMins.length > pos + 1 ? cutoffMins[pos + 1] : cutoffMins[pos];
                         }
                         if (intContinous) {
-                            range = String.format(">= %d and <= %d", (int) min, (int) max);
+                            if (min == gMinValue && max == gMaxValue) {
+                                range = String.format(">= %d and <= %d", (int) min, (int) max);
+                            } else if (min == gMinValue) {
+                                range = String.format(">= %d and < %d", (int) min, (int) nextmin);
+                            } else if (max == gMaxValue) {
+                                range = String.format("<= %d", (int) max);
+                            } else {
+                                range = String.format("< %d", (int) nextmin);
+                            }
                             strFacet = colourmode + ":[" + (int) min + " TO " + (int) max + "]";
                         } else {
-                            range = String.format(">= %g and <= %g", min, max);
+                            if (min == gMinValue && max == gMaxValue) {
+                                range = String.format(">= %g and <= %g", min, max);
+                            } else if (min == gMinValue) {
+                                range = String.format(">= %g and < %g", min, nextmin);
+                            } else if (max == gMaxValue) {
+                                range = String.format("<= %g", max);
+                            } else {
+                                range = String.format("< %g", nextmin);
+                            }
+                            
                             strFacet = colourmode + ":[" + min + " TO " + max + "]";
                         }
                         legend_lines.set(j, range + back);
@@ -841,5 +865,32 @@ public class ClassificationLegend extends UtilityComposer {
             getMapComposer().applyChange(mapLayer);
             dCreateButtons.setVisible(true);
         }
+    }
+
+        private String displayToActualLabel(String v) {
+        String actual = null;
+        for(String key : CommonData.getI18nPropertiesList(colourmode)) {
+            String s = CommonData.getI18nProperty(key);
+            if (s.equals(v)) {
+                int pos = key.indexOf('.');
+                if (pos > 0) {
+                    actual = key.substring(pos + 1);
+                } else {
+                    actual = key;
+                }
+            }
+        }
+        if (actual == null) {
+            actual = v;
+        }
+        return actual;
+    }
+
+    private String actualToDisplayLabel(String v) {
+        String s = CommonData.getI18nProperty(colourmode + "." + v);
+        if (s == null) {
+            s = v;
+        }
+        return s;
     }
 }

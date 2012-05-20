@@ -46,6 +46,7 @@ public class BiocacheQuery implements Query, Serializable {
     static final String INDEXED_FIELDS_LIST = "/indexed/fields?";
     static final String POST_SERVICE = "/webportal/params?";
     static final String DEFAULT_ROWS = "pageSize=1000000";
+    static final String DEFAULT_ROWS_LARGEST = "pageSize=100000000";
     /** DEFAULT_VALIDATION must not be null */
     //static final String DEFAULT_VALIDATION = "longitude:[-180 TO 180] AND latitude:[-90 TO 90]";
     static final String DEFAULT_VALIDATION = "";
@@ -399,7 +400,7 @@ public class BiocacheQuery implements Query, Serializable {
         HttpClient client = new HttpClient();
         String url = biocacheServer
                 + SPECIES_LIST_SERVICE_CSV
-                + DEFAULT_ROWS
+                + DEFAULT_ROWS_LARGEST
                 + "&q=" + getQ()
                 + getQc();
         System.out.println(url);
@@ -948,8 +949,8 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("interaction", "Species Interaction", QueryField.FieldType.INT));
             // Geospatial
             fields.add(new QueryField("coordinate_uncertainty", "Spatial Uncertainty(m)", QueryField.FieldType.INT));
-            //fields.add(new QueryField("sensitive", "Sensitive", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("state_conservation", "State Conservation Status", QueryField.FieldType.STRING));
+            fields.add(new QueryField("sensitive", "Sensitive", QueryField.FieldType.STRING));
+            fields.add(new QueryField("state_conservation", "State Conservation Status", QueryField.FieldType.STRING));
             fields.add(new QueryField("raw_state_conservation", "State Conservation (unprocessed)", QueryField.FieldType.STRING));
             fields.add(new QueryField("places", "LGA Boundaries", QueryField.FieldType.STRING));
             fields.add(new QueryField("state", "Australian States and Territories", QueryField.FieldType.STRING));
@@ -967,7 +968,7 @@ public class BiocacheQuery implements Query, Serializable {
             // Record details
             fields.add(new QueryField("basis_of_record", "Record Type", QueryField.FieldType.STRING));
             fields.add(new QueryField("type_status", "Specimen Type", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("multimedia", "Media", QueryField.FieldType.STRING));
+            fields.add(new QueryField("multimedia", "Multimedia", QueryField.FieldType.STRING));
             fields.add(new QueryField("collector", "Collector", QueryField.FieldType.STRING));
             // Attribution
             fields.add(new QueryField("data_resource", "Dataset", QueryField.FieldType.STRING));
@@ -979,8 +980,9 @@ public class BiocacheQuery implements Query, Serializable {
             //fields.add(new QueryField("institution_uid", "Institution", QueryField.FieldType.STRING));
             // Record Assertions
             fields.add(new QueryField("assertions", "Record Issues", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("outlier_layer", "Outlier for Layer", QueryField.FieldType.STRING));
+            fields.add(new QueryField("outlier_layer", "Outlier for Layer", QueryField.FieldType.STRING));
             fields.add(new QueryField("outlier_layer_count", "Outlier Layer Count", QueryField.FieldType.STRING));
+            fields.add(new QueryField("taxonomic_issue", "Taxon Identification Issue", QueryField.FieldType.STRING));
 
             //fields.add(new QueryField("biogeographic_region", "Biogeographic Region", QueryField.FieldType.STRING));
             //fields.add(new QueryField("species_guid", "Species", QueryField.FieldType.STRING));
@@ -1567,5 +1569,5 @@ public class BiocacheQuery implements Query, Serializable {
         }
         newFacets.add(Facet.parseFacet(sb.toString()));
         return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer);
-    }    
+    }
 }

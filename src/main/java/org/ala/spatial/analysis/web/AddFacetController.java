@@ -338,7 +338,7 @@ public class AddFacetController extends UtilityComposer {
                     lc.setParent(li);
 
                     if (readonly) {
-                        lc = new Listcell(ss[0]);
+                        lc = new Listcell(actualToDisplayLabel(ss[0]));
                     } else {
                         lc = new Listcell("group " + ss[0]);
                     }
@@ -392,6 +392,7 @@ public class AddFacetController extends UtilityComposer {
             if (li.getFirstChild().getChildren().size() > 0
                     && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                 String v = ((Listcell) li.getChildren().get(1)).getLabel();
+                v = displayToActualLabel(v);
                 if (legend_facets != null) {
                     if (v.equals("Unknown") || v.contains("year") || v.contains("uncertainty")) {
                         //keep unchanged
@@ -903,6 +904,7 @@ public class AddFacetController extends UtilityComposer {
             if (li.getFirstChild().getChildren().size() > 0
                     && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                 String v = ((Listcell) li.getChildren().get(1)).getLabel();
+                v = displayToActualLabel(v);
                 if (((q instanceof BiocacheQuery || divContinous.isVisible()) && v.equals("Unknown"))
                         || v.length() == 0) {
                     unknownChecked = true;
@@ -1560,5 +1562,32 @@ public class AddFacetController extends UtilityComposer {
         if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherFalse.isChecked()) {
             chkGeoKosherTrue.setChecked(true);
         }
+    }
+
+    private String displayToActualLabel(String v) {
+        String actual = null;
+        for(String key : CommonData.getI18nPropertiesList(colourmode)) {
+            String s = CommonData.getI18nProperty(key);
+            if (s.equals(v)) {
+                int pos = key.indexOf('.');
+                if (pos > 0) {
+                    actual = key.substring(pos + 1);
+                } else {
+                    actual = key;
+                }
+            }
+        }
+        if (actual == null) {
+            actual = v;
+        }
+        return actual;
+    }
+
+    private String actualToDisplayLabel(String v) {
+        String s = CommonData.getI18nProperty(colourmode + "." + v);
+        if (s == null) {
+            s = v;
+        }
+        return s;
     }
 }
