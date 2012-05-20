@@ -38,6 +38,7 @@ import org.ala.layers.dto.GridClass;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.dto.Objects;
 import org.ala.layers.intersect.Grid;
+import org.ala.layers.util.LayerFilter;
 import org.apache.log4j.Logger;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -539,5 +540,82 @@ public class ObjectDAOImpl implements ObjectDAO {
         }
 
         return map;
+    }
+
+    @Override
+    public List<Objects> getObjectsByIdAndArea(String id, Integer limit, String wkt) {
+        String sql = "select fid, name, \"desc\", pid, id, ST_AsText(the_geom) as geometry "
+                + "from objects where fid= ? and "
+                + "ST_Within(the_geom, ST_GeomFromText( ? , 4326)) "
+                + "limit ? ";
+
+        List<Objects> objects = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), id, wkt, new Integer(limit));
+        updateObjectWms(objects);
+        return objects;
+    }
+
+    @Override
+    public List<Objects> getObjectsByIdAndIntersection(String id, Integer limit, LayerFilter layerFilter) {
+        String world = "POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))";
+        List<Objects> objects = getObjectsByIdAndArea(id, Integer.MAX_VALUE, world);
+
+        double[][] points = new double[objects.size()][2];
+        for (int i = 0; i < objects.size(); i++) {
+            try {
+                String[] s = objects.get(i).getGeometry().substring("POINT(".length(), objects.get(i).getGeometry().length() - 1).split(" ");
+                points[i][0] = Double.parseDouble(s[0]);
+                points[i][1] = Double.parseDouble(s[1]);
+            } catch (Exception e) {
+                //don't intersect this one
+                points[i][0] = Integer.MIN_VALUE;
+                points[i][1] = Integer.MIN_VALUE;
+            }
+        }
+
+        //sampling
+        ArrayList<String> sample = layerIntersectDao.sampling(new String[]{layerFilter.getLayername()}, points);
+
+        //filter
+        List<Objects> matched = new ArrayList<Objects>();
+        String[] sampling = sample.get(0).split("\n");
+        IntersectionFile f = layerIntersectDao.getConfig().getIntersectionFile(layerFilter.getLayername());
+        if (f != null && (f.getType().equals("a") || f.getType().equals("b"))) {
+            String target = f.getClasses().get((int) layerFilter.getMinimum_value()).getName();
+            for (int i = 0; i < sampling.length; i++) {
+                if (sampling[i].length() > 0) {
+                    if (sampling[i].equals(target)) {
+                        matched.add(objects.get(i));
+                    }
+                }
+            }
+        } else {
+            for (int i = 0; i < sampling.length; i++) {
+                if (sampling[i].length() > 0) {
+                    double v = Double.parseDouble(sampling[i]);
+                    if (v >= layerFilter.getMinimum_value() && v <= layerFilter.getMaximum_value()) {
+                        matched.add(objects.get(i));
+                    }
+                }
+            }
+        }
+
+        updateObjectWms(matched);
+        return matched;
+    }
+
+    @Override
+    public List<Objects> getObjectsByIdAndIntersection(String id, Integer limit, String intersectingPid) {
+        String sql = "select fid, name, \"desc\", pid, id, ST_AsText(the_geom) as geometry "
+                + "from objects, "
+                + "(select the_geom as g from Objects where pid = ? ) t "
+                + "where fid= ? and "
+                + "ST_Within(the_geom, g) "
+                + "limit ? ";
+
+        List<Objects> objects = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class),
+                intersectingPid, id, new Integer(limit));
+        updateObjectWms(objects);
+
+        return objects;
     }
 }

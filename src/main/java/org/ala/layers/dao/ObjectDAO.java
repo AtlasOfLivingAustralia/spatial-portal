@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import org.ala.layers.dto.Objects;
+import org.ala.layers.util.LayerFilter;
 
 /**
  * DAO for the Object object
@@ -34,4 +35,8 @@ public interface ObjectDAO {
     public List<Objects> getNearestObjectByIdAndLocation(String fid, int limit, Double lng, Double lat);
     public void streamObjectsGeometryById(OutputStream os, String id, String geomtype) throws IOException;
     public List<Objects> getObjectByFidAndName(String fid, String name);
+
+    public List<Objects> getObjectsByIdAndArea(String id, Integer limit, String wkt);
+    public List<Objects> getObjectsByIdAndIntersection(String id, Integer limit, LayerFilter layerFilter);
+    public List<Objects> getObjectsByIdAndIntersection(String id, Integer limit, String intersectingPid);
 }

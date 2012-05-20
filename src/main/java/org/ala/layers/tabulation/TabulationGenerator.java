@@ -160,9 +160,19 @@ public class TabulationGenerator {
         Connection conn = null;
         try {
             conn = getConnection();
-            String allFidPairs = "SELECT (CASE WHEN f1.id < f2.id THEN f1.id ELSE f2.id END) as fid1, (CASE WHEN f1.id < f2.id THEN f2.id ELSE f1.id END) as fid2 FROM fields f1, fields f2 WHERE f1.id != f2.id AND f1.intersect=true AND f2.intersect=true";
+            String allFidPairs = "SELECT "
+                    + "(CASE WHEN f1.id < f2.id THEN f1.id ELSE f2.id END) as fid1, "
+                    + "(CASE WHEN f1.id < f2.id THEN f2.id ELSE f1.id END) as fid2,"
+                    + "f1.domain as domain1, f2.domain as domain2"
+                    + "FROM "
+                    + "(select f3.id, f3.intersect, l1.domain from fields f3, layers l1 where f3.spid='' || l1.id) f1,"
+                    + "(select f4.id, f4.intersect, l2.domain from fields f4, layers l2 where f4.spid='' || l2.id) f2"
+                    + "WHERE f1.id != f2.id "
+                    + "AND f1.intersect=true AND f2.intersect=true "
+                    + "group by fid1, fid2, f1.domain, f2.domain"
+                    + "order by fid1, fid2";
             String existingFidPairs = "SELECT fid1, fid2 FROM tabulation WHERE pid1 is null";
-            String newFidPairs = "SELECT a.fid1, a.fid2 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b ON a.fid1=b.fid1 AND a.fid2=b.fid2 WHERE b.fid1 is null group by a.fid1, a.fid2;";
+            String newFidPairs = "SELECT a.fid1, a.domain1, a.fid2, a.domain2 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b ON a.fid1=b.fid1 AND a.fid2=b.fid2 WHERE b.fid1 is null group by a.fid1, a.fid2;";
             String sql = newFidPairs;
             Statement s1 = conn.createStatement();
             ResultSet rs1 = s1.executeQuery(sql);
@@ -177,10 +187,13 @@ public class TabulationGenerator {
                 File f1 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path1 + ".shp");
                 File f2 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path2 + ".shp");
 
-                if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
-                    data.put(rs1.getString("fid1") + "," + rs1.getString("fid2"));
-                } else {
-                    //for gridToGrid
+                //domain test
+                if (isSameDomain(parseDomain(rs1.getString("domain1")), parseDomain(rs1.getString("domain2")))) {
+                    if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
+                        data.put(rs1.getString("fid1") + "," + rs1.getString("fid2"));
+                    } else {
+                        //for gridToGrid
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -195,14 +208,51 @@ public class TabulationGenerator {
             }
         }
     }
+    
+    static String [] parseDomain(String domain) {
+        if(domain == null || domain.length() == 0) {
+            return null;
+        }
+        String [] domains = domain.split(",");
+        for(int i=0;i<domains.length;i++) {
+            domains[i] = domains[i].trim();
+        }
+        return domains;
+    }
+
+    static boolean isSameDomain(String[] domain1, String[] domain2) {
+        if (domain1 == null || domain2 == null) {
+            return true;
+        }
+
+        for (String s1 : domain1) {
+            for (String s2 : domain2) {
+                if (s1.equalsIgnoreCase(s2)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
     private static void updatePairObjectsGridToGrid(Records records) {
         Connection conn = null;
         try {
             conn = getConnection();
-            String allFidPairs = "SELECT (CASE WHEN f1.id < f2.id THEN f1.id ELSE f2.id END) as fid1, (CASE WHEN f1.id < f2.id THEN f2.id ELSE f1.id END) as fid2 FROM fields f1, fields f2 WHERE f1.id != f2.id AND f1.intersect=true AND f2.intersect=true";
+            String allFidPairs = "SELECT "
+                    + "(CASE WHEN f1.id < f2.id THEN f1.id ELSE f2.id END) as fid1, "
+                    + "(CASE WHEN f1.id < f2.id THEN f2.id ELSE f1.id END) as fid2,"
+                    + "f1.domain as domain1, f2.domain as domain2"
+                    + "FROM "
+                    + "(select f3.id, f3.intersect, l1.domain from fields f3, layers l1 where f3.spid='' || l1.id) f1,"
+                    + "(select f4.id, f4.intersect, l2.domain from fields f4, layers l2 where f4.spid='' || l2.id) f2"
+                    + "WHERE f1.id != f2.id "
+                    + "AND f1.intersect=true AND f2.intersect=true "
+                    + "group by fid1, fid2, f1.domain, f2.domain"
+                    + "order by fid1, fid2";
             String existingFidPairs = "SELECT fid1, fid2 FROM tabulation WHERE pid1 is null";
-            String newFidPairs = "SELECT a.fid1, a.fid2 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b ON a.fid1=b.fid1 AND a.fid2=b.fid2 WHERE b.fid1 is null group by a.fid1, a.fid2;";
+            String newFidPairs = "SELECT a.fid1, a.domain1, a.fid2, a.domain2 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b ON a.fid1=b.fid1 AND a.fid2=b.fid2 WHERE b.fid1 is null group by a.fid1, a.fid2;";
             String sql = newFidPairs;
             Statement s1 = conn.createStatement();
             ResultSet rs1 = s1.executeQuery(sql);
@@ -217,12 +267,15 @@ public class TabulationGenerator {
                 File f1 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path1 + ".shp");
                 File f2 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path2 + ".shp");
 
-                if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
-                    //for shape comparisons
-                } else {
-                    //for gridToGrid
-                    sql = gridToGrid(rs1.getString("fid1"), rs1.getString("fid2"), records);
-                    //s1.execute(sql);
+                //domain test
+                if (isSameDomain(parseDomain(rs1.getString("domain1")), parseDomain(rs1.getString("domain2")))) {
+                    if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
+                        //for shape comparisons
+                    } else {
+                        //for gridToGrid
+                        sql = gridToGrid(rs1.getString("fid1"), rs1.getString("fid2"), records);
+                        //s1.execute(sql);
+                    }
                 }
             }
 

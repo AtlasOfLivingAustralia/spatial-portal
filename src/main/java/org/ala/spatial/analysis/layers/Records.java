@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.zip.GZIPInputStream;
+import org.ala.layers.intersect.SimpleRegion;
 
 /**
  *
@@ -23,10 +24,18 @@ public class Records {
 
     ArrayList<Double> points;
     ArrayList<Integer> lsidIdx;
+    ArrayList<Short> years;
     String[] lsids;
     int speciesSize;
 
-    public Records(String biocache_service_url, String q, double[] bbox, String filename) throws IOException {
+    public Records(String biocache_service_url, String q, double[] bbox, String filename, SimpleRegion region) throws IOException {
+        init(biocache_service_url, q, bbox, filename, region, "names_and_lsid");
+    }
+    public Records(String biocache_service_url, String q, double[] bbox, String filename, SimpleRegion region, String facetField) throws IOException {
+        init(biocache_service_url, q, bbox, filename, region, facetField);
+    }
+
+    void init(String biocache_service_url, String q, double[] bbox, String filename, SimpleRegion region, String facetField) throws IOException {
         int speciesEstimate = 250000;
         int recordsEstimate = 26000000;
         int pageSize = 1000000;
@@ -35,6 +44,7 @@ public class Records {
 
         points = new ArrayList<Double>(recordsEstimate);
         lsidIdx = new ArrayList<Integer>(recordsEstimate);
+        years = new ArrayList<Short>(recordsEstimate);
         HashMap<String, Integer> lsidMap = new HashMap<String, Integer>(speciesEstimate);
 
         int start = 0;
@@ -45,12 +55,29 @@ public class Records {
         }
 
         while (true && start < 300000000) {
-            String url = biocache_service_url + "/webportal/occurrences.gz?q=" + q.replace(" ", "%20") + "&fq=" + bboxTerm + "&pageSize=" + pageSize + "&start=" + start + "&fl=longitude,latitude,names_and_lsid";
-            InputStream is = getUrlStream(url);
+            String url = biocache_service_url + "/webportal/occurrences.gz?q=" + q.replace(" ", "%20") + "&fq=" + bboxTerm + "&pageSize=" + pageSize + "&start=" + start + "&fl=longitude,latitude," + facetField + ",year";
 
-            CSVReader csv = new CSVReader(new InputStreamReader(new GZIPInputStream(is)));
+            int tryCount = 0;
+            InputStream is = null;
+            CSVReader csv = null;
+            int maxTrys = 4;
+            while (tryCount < maxTrys && csv == null) {
+                tryCount++;
+                try {
+                    is = getUrlStream(url);
+                    csv = new CSVReader(new InputStreamReader(new GZIPInputStream(is)));
+                } catch (Exception e) {
+                    System.out.println("failed try " + tryCount + " of " + maxTrys + ": " + url);
+                    e.printStackTrace();
+                }
+            }
+
+            if (csv == null) {
+                throw new IOException("failed to get records from biocache.");
+            }
+
             String[] line;
-            int[] header = new int[3]; //to contain [0]=lsid, [1]=longitude, [2]=latitude
+            int[] header = new int[4]; //to contain [0]=lsid, [1]=longitude, [2]=latitude, [3]=year
             int row = start;
             int currentCount = 0;
             while ((line = csv.readNext()) != null) {
@@ -67,7 +94,7 @@ public class Records {
                 if (currentCount == 1) {
                     //determine header
                     for (int i = 0; i < line.length; i++) {
-                        if (line[i].equals("names_and_lsid")) {
+                        if (line[i].equals(facetField)) {
                             header[0] = i;
                         }
                         if (line[i].equals("longitude")) {
@@ -76,23 +103,36 @@ public class Records {
                         if (line[i].equals("latitude")) {
                             header[2] = i;
                         }
+                        if (line[i].equals("year")) {
+                            header[3] = i;
+                        }
                     }
-                    System.out.println("header info:" + header[0] + "," + header[1] + "," + header[2]);
+                    System.out.println("header info:" + header[0] + "," + header[1] + "," + header[2] + "," + header[3]);
                 } else {
                     if (line.length >= 3) {
                         try {
                             double longitude = Double.parseDouble(line[header[1]]);
                             double latitude = Double.parseDouble(line[header[2]]);
-                            points.add(longitude);
-                            points.add(latitude);
-                            String species = line[header[0]];
-                            Integer idx = lsidMap.get(species);
-                            if (idx == null) {
-                                idx = lsidMap.size();
-                                lsidMap.put(species, idx);
+                            if (region == null || region.isWithin_EPSG900913(longitude, latitude)) {
+                                points.add(longitude);
+                                points.add(latitude);
+                                String species = line[header[0]];
+                                Integer idx = lsidMap.get(species);
+                                if (idx == null) {
+                                    idx = lsidMap.size();
+                                    lsidMap.put(species, idx);
+                                }
+                                lsidIdx.add(idx);
+                                years.add(Short.parseShort(line[header[3]]));
                             }
-                            lsidIdx.add(idx);
                         } catch (Exception e) {
+                        } finally {
+                            if (lsidIdx.size() * 2 < points.size()) {
+                                points.remove(points.size() - 1);
+                                points.remove(points.size() - 1);
+                            } else if (years.size() < lsidIdx.size()) {
+                                years.add((short) 0);
+                            }
                         }
                     }
                 }
@@ -107,7 +147,7 @@ public class Records {
             csv.close();
             is.close();
 
-            if (currentCount == 0) {
+            if (currentCount == 0 || currentCount < pageSize) {
                 break;
             }
         }
@@ -163,19 +203,32 @@ public class Records {
                 System.out.print("\rreading row " + currentCount);
             }
 
+            String facetName = "names_and_lsid";
             if (row == 0) {
                 //determine header
                 for (int i = 0; i < line.length; i++) {
-                    if (line[i].equals("names_and_lsid")) {
-                        header[0] = i;
-                    }
+//                    if (line[i].equals("names_and_lsid")) {
+//                        header[0] = i;
+//                    }
                     if (line[i].equals("longitude")) {
                         header[1] = i;
                     }
                     if (line[i].equals("latitude")) {
                         header[2] = i;
                     }
+                    if (line[i].equals("year")) {
+                        header[3] = i;
+                    }
                 }
+                boolean notZero = header[1] == 0 || header[2] == 0 || (header[3] == 0 && line.length > 3); //'year' may be absent
+                boolean notOne = line.length < 1 || header[1] == 1 || header[2] == 1 || header[3] == 1;
+                boolean notTwo = line.length < 2 || header[1] == 2 || header[2] == 2 || header[3] == 2;
+                boolean notThree = line.length < 3 || header[1] == 3 || header[2] == 3 || header[3] == 3;
+                if (!notZero) header[0] = 0;
+                if (!notOne) header[0] = 1;
+                if (!notTwo) header[0] = 2;
+                if (!notThree) header[0] = 3;
+                facetName = line[header[0]];
             } else {
                 if (line.length >= 3) {
                     try {
@@ -230,6 +283,10 @@ public class Records {
         return points.get(pos * 2 + 1);
     }
 
+    public short getYear(int pos) {
+        return years.get(pos);
+    }
+
     public int getRecordsSize() {
         return lsidIdx.size();
     }
@@ -249,12 +306,16 @@ public class Records {
     Integer[] sortOrder;
     int[] sortOrderRowStarts;
     double soMinLat;
+    double soMinLong;
     int soHeight;
     double soResolution;
+    boolean soSortedStarts;
+    boolean soSortedRowStarts;
 
     public int[] sortedRowStarts(double minLat, int height, double resolution) {
         if (sortOrder != null && soMinLat == minLat
-                && soHeight == height && soResolution == resolution) {
+                && soHeight == height && soResolution == resolution
+                && soSortedRowStarts) {
             return sortOrderRowStarts;
         }
         //init
@@ -313,7 +374,50 @@ public class Records {
         soMinLat = minLat;
         soHeight = height;
         soResolution = resolution;
+        soSortedStarts = false;
+        soSortedRowStarts = true;
         return rowStarts;
+    }
+
+    public void sortedStarts(double minLat, double minLong, double resolution) {
+        if (sortOrder != null && soMinLat == minLat
+                && soMinLong == minLong
+                && soResolution == resolution
+                && soSortedStarts) {
+            return;
+        }
+        //init
+        sortOrder = new Integer[points.size() / 2];
+        for (int i = 0; i < sortOrder.length; i++) {
+            sortOrder[i] = i * 2 + 1;
+        }
+
+        final double mLat = minLat;
+        final double mLong = minLong;
+        final double res = resolution;
+
+        //sort
+        java.util.Arrays.sort(sortOrder, new Comparator<Integer>() {
+
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                int v = ((int) ((points.get(o1) - mLat) / res))
+                        - ((int) ((points.get(o2) - mLat) / res));
+
+                if (v == 0) {
+                    return ((int) ((points.get(o1 - 1) - mLong) / res))
+                            - ((int) ((points.get(o2 - 1) - mLong) / res));
+                } else {
+                    return v;
+                }
+            }
+        });
+
+        soMinLat = minLat;
+        soMinLong = minLong;
+        soResolution = resolution;
+        soSortedStarts = true;
+        soSortedRowStarts = false;
     }
 
     public String getSortedSpecies(int pos) {

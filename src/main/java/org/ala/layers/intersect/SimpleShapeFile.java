@@ -290,6 +290,10 @@ public class SimpleShapeFile extends Object implements Serializable {
         return null;
     }
 
+    public int intersectInt(double longitude, double latitude) {
+        return shapesreference.intersection(longitude, latitude);
+    }
+
     /**
      * gets shape header as String
      * @return String
@@ -648,6 +652,9 @@ class ShapeRecord extends Object implements Serializable {
             case 5:
                 shape = new Polygon(bb);
                 break;
+            case 15:
+                shape = new PolygonZ(bb, contentlength);
+                break;
             default:
                 System.out.println("unknown shape type: " + shapetype);
         }
@@ -781,6 +788,141 @@ class Polygon extends Shape {
         for (i = 0; i < numpoints * 2; i++) {
             points[i] = bb.getDouble();
         }
+    }
+
+    /**
+     * output .shp POLYGON summary
+     * @return String
+     */
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+
+        sb.append("(");
+        sb.append(String.valueOf(boundingbox[0]));
+        sb.append(", ");
+        sb.append(String.valueOf(boundingbox[1]));
+
+        sb.append(") (");
+        sb.append(String.valueOf(boundingbox[2]));
+        sb.append(", ");
+        sb.append(String.valueOf(boundingbox[3]));
+
+        sb.append(") parts=");
+        sb.append(String.valueOf(numparts));
+        sb.append(" points=");
+        sb.append(String.valueOf(numpoints));
+
+        return sb.toString();
+    }
+
+    /**
+     * returns number of parts in this shape
+     *
+     * one part == one polygon
+     *
+     * @return number of parts as int
+     */
+    @Override
+    public int getNumberOfParts() {
+        return numparts;
+    }
+
+    /**
+     * returns a list of points for the numbered shape part.
+     *
+     * @param part index of part to return
+     *
+     * @return double[] containing longitude and latitude
+     * pairs where
+     * 	[] is longitude, latitude
+     */
+    @Override
+    public double[] getPoints(int part) {
+        double[] output;				//data to return
+        int start = parts[part];		//first index of this part
+
+        /* last index of this part */
+        int end = numpoints;
+        if (part < numparts - 1) {
+            end = parts[part + 1];
+        }
+
+        /* fill output */
+        output = new double[(end - start) * 2];
+        int end2 = end * 2;
+        int start2 = start * 2;
+        for (int i = start2; i < end2; i++) {
+            output[i - start2] = points[i];
+        }
+        return output;
+    }
+}
+
+/**
+ * object for shape file POLYGON
+ *
+ * @author adam
+ *
+ */
+class PolygonZ extends Shape {
+
+    /**
+     * shape file POLYGONZ record fields
+     */
+    int shapetype;
+    double[] boundingbox;
+    int numparts;
+    int numpoints;
+    int[] parts;
+    double[] points;
+
+    /**
+     * creates a shape file POLYGONZ from a ByteBuffer
+     *
+     * TODO: static
+     *
+     * @param bb ByteBuffer containing record bytes
+     * from a shape file POLYGONZ record
+     */
+    public PolygonZ(ByteBuffer bb, int contentlength) {
+        int i;
+
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+        shapetype = bb.getInt();
+
+        boundingbox = new double[4];
+        for (i = 0; i < 4; i++) {
+            boundingbox[i] = bb.getDouble();
+        }
+
+        numparts = bb.getInt();
+
+        numpoints = bb.getInt();
+
+        parts = new int[numparts];
+        for (i = 0; i < numparts; i++) {
+            parts[i] = bb.getInt();
+        }
+
+        points = new double[numpoints * 2];			//x,y pairs
+        for (i = 0; i < numpoints * 2; i++) {
+            points[i] = bb.getDouble();
+        }
+
+        //Z range + z array(numpoints)
+        int len = 2 + numpoints;
+        for (i = 0; i < len; i++) {
+            bb.getDouble();
+        }
+
+        //how is this optional?
+        //if (44 + numparts * 4 + numpoints * 24 < contentlength) {
+        //M range + m array(numpoints)
+        for (i = 0; i < len; i++) {
+            bb.getDouble();
+        }
+        // }
     }
 
     /**
