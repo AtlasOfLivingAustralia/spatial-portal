@@ -32,7 +32,7 @@ public class LayerDistanceIndex {
     double[][] range;
     static double[][] all_measures;
 
-    public void occurrencesUpdate() throws InterruptedException {
+    public void occurrencesUpdate(int threadcount) throws InterruptedException {
 
         Map<String, Double> map = loadDistances();
 
@@ -73,7 +73,7 @@ public class LayerDistanceIndex {
         }
 
         LinkedBlockingQueue<String> toDisk = new LinkedBlockingQueue<String>();
-        int threadcount = 4;
+        //int threadcount = 4;
         CountDownLatch cdl = new CountDownLatch(todo.size());
         CalcThread [] threads = new CalcThread[threadcount];
         for(int i=0;i<threadcount;i++) {
@@ -97,8 +97,9 @@ public class LayerDistanceIndex {
     }
 
     static public void main(String[] args) throws InterruptedException {
+        System.out.println("args[0] = threadcount, e.g. 1");
         LayerDistanceIndex ldi = new LayerDistanceIndex();
-        ldi.occurrencesUpdate();
+        ldi.occurrencesUpdate(Integer.parseInt(args[0]));
     }
 
     static public Map<String, Double> loadDistances() {

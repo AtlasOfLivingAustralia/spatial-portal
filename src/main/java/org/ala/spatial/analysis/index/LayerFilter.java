@@ -70,6 +70,10 @@ public class LayerFilter extends Object implements Serializable {
     }
 
     public static LayerFilter[] parseLayerFilters(String s) {
+        if (s.toUpperCase().startsWith("ENVELOPE(")) {
+            s = s.substring("ENVELOPE(".length(), s.length() - 1); //remove 'envelope(..)' wrapper
+        }
+
         String[] terms = s.split(":");
 
         LayerFilter[] lf = new LayerFilter[terms.length];
@@ -85,6 +89,10 @@ public class LayerFilter extends Object implements Serializable {
     }
 
     public static LayerFilter parseLayerFilter(String s) {
+        if (s.toUpperCase().startsWith("ENVELOPE(")) {
+            s = s.substring("ENVELOPE(".length(), s.length() - 1); //remove 'envelope(..)' wrapper
+        }
+
         String[] tokens = s.split(",");
 
         return new LayerFilter(tokens[0], Double.parseDouble(tokens[1]), Double.parseDouble(tokens[2]));

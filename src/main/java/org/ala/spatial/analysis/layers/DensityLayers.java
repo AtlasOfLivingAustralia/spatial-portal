@@ -49,7 +49,7 @@ public class DensityLayers {
                 records = new Records(recordsFile);
             } else {
                 try {
-                    records = new Records(args[0], "*:*", bbox, recordsFile);
+                    records = new Records(args[0], "*:*", bbox, recordsFile, null);
                 } catch (Exception e) {
                     e.printStackTrace();
                     try {
