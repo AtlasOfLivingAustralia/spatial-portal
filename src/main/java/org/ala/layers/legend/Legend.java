@@ -19,7 +19,7 @@ import org.ala.layers.intersect.Grid;
  */
 public abstract class Legend {
 
-    final static String LEGEND_KEY = "legend_key.png";
+    final static String LEGEND_KEY = "/legend_key.png";
 
     /*
      * Colours are all set as transparent for no reason
