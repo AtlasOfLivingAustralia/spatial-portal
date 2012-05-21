@@ -294,8 +294,6 @@ public class GridClassBuilder {
     static void exportSLD(String filename, String name, ArrayList<Integer> maxValues, ArrayList<String> labels) {
         try {
             StringBuffer sld = new StringBuffer();
-            sld.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>");
-
             /* header */
             sld.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             sld.append("<sld:StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\" xmlns:sld=\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" version=\"1.0.0\">");
@@ -327,7 +325,7 @@ public class GridClassBuilder {
             }
 
             /* footer */
-            sld.append("</sld:ColorMap></sld:RasterSymbolizer></sld:Rule></sld:FeatureTypeStyle></sld:UserStyle><sld:/NamedLayer></sld:StyledLayerDescriptor>");
+            sld.append("</sld:ColorMap></sld:RasterSymbolizer></sld:Rule></sld:FeatureTypeStyle></sld:UserStyle></sld:NamedLayer></sld:StyledLayerDescriptor>");
 
             /* write */
             FileWriter fw = new FileWriter(filename);

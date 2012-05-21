@@ -131,7 +131,7 @@ public class Bil2diva {
                 fw.write("ByteOrder=MSB\n");
             }
 
-            String noDataValueString = (map.get("nodata") != null) ? map.get("nodata") : "0";
+            String noDataValueString = map.get("nodata");
             
             double missingValue;
             if (noDataValueString == null) {

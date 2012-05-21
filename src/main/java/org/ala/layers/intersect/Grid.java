@@ -572,6 +572,7 @@ public class Grid { //  implements Serializable
             fw.append("\r\n").append("MaxValue=").append(String.valueOf(maxvalue));
             fw.append("\r\n").append("NoDataValue=").append(nodata);
             fw.append("\r\n").append("Transparent=0");
+            fw.flush();
             fw.close();
         } catch (Exception e) {
             logger.error(ExceptionUtils.getFullStackTrace(e));
