@@ -299,22 +299,24 @@ public class AnalysisLayerUtil {
                         }
                     }
                     while (i < resolutions.size()) {
-                        System.out.println("processing: " + l.getPath_orig());
-                        if (diva2Analysis(liDao.getConfig().getLayerFilesPath() + l.getPath_orig(),
-                                liDao.getConfig().getAnalysisLayerFilesPath() + resolutions.get(i) + File.separator + f.getId(),
-                                resolutions.get(i),
-                                liDao.getConfig().getGdalPath(),
-                                false)) {
+                        if(resolutions.get(i) >= minRes) {
+                            System.out.println("processing: " + l.getPath_orig());
+                            if (diva2Analysis(liDao.getConfig().getLayerFilesPath() + l.getPath_orig(),
+                                    liDao.getConfig().getAnalysisLayerFilesPath() + resolutions.get(i) + File.separator + f.getId(),
+                                    resolutions.get(i),
+                                    liDao.getConfig().getGdalPath(),
+                                    false)) {
 
-                            //copy the contextual value lookup if required
-                            if(f.getType().equals("a") || f.getType().equals("b")) {
-                                copyFile(liDao.getConfig().getLayerFilesPath() + l.getPath_orig() + ".txt",
-                                        liDao.getConfig().getAnalysisLayerFilesPath() + resolutions.get(i) + File.separator + f.getId() + ".txt");
+                                //copy the contextual value lookup if required
+                                if(f.getType().equals("a") || f.getType().equals("b")) {
+                                    copyFile(liDao.getConfig().getLayerFilesPath() + l.getPath_orig() + ".txt",
+                                            liDao.getConfig().getAnalysisLayerFilesPath() + resolutions.get(i) + File.separator + f.getId() + ".txt");
+                                }
+
+                                System.out.println("successful for: " + f.getId() + " @ " + resolutions.get(i));
+                            } else {
+                                System.out.println("unsuccessful for: " + f.getId() + " @ " + resolutions.get(i));
                             }
-
-                            System.out.println("successful for: " + f.getId() + " @ " + resolutions.get(i));
-                        } else {
-                            System.out.println("unsuccessful for: " + f.getId() + " @ " + resolutions.get(i));
                         }
                         i++;
                     }
