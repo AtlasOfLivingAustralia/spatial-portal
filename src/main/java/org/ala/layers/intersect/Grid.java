@@ -1069,7 +1069,7 @@ public class Grid { //  implements Serializable
                         continue;
                     }
                     if (cells[i][0] >= 0) {
-                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * (long) size, b);
                         if (byteorderLSB) {
                             ret[cells[i][1]] = (short) (((0xFF & b[1]) << 8) | (b[0] & 0xFF));
                         } else {
@@ -1089,7 +1089,7 @@ public class Grid { //  implements Serializable
                         continue;
                     }
                     if (cells[i][0] >= 0) {
-                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * (long) size, b);
                         if (byteorderLSB) {
                             ret[cells[i][1]] = ((0xFF & b[3]) << 24) | ((0xFF & b[2]) << 16) + ((0xFF & b[1]) << 8) + (b[0] & 0xFF);
                         } else {
@@ -1109,7 +1109,7 @@ public class Grid { //  implements Serializable
                         continue;
                     }
                     if (cells[i][0] >= 0) {
-                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * (long) size, b);
                         if (byteorderLSB) {
                             ret[cells[i][1]] = ((long) (0xFF & b[7]) << 56) + ((long) (0xFF & b[6]) << 48)
                                     + ((long) (0xFF & b[5]) << 40) + ((long) (0xFF & b[4]) << 32)
@@ -1135,7 +1135,7 @@ public class Grid { //  implements Serializable
                         continue;
                     }
                     if (cells[i][0] >= 0) {
-                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        bufferOffset = getBytes(afile, buffer, bufferOffset, cells[i][0] * (long) size, b);
                         ByteBuffer bb = ByteBuffer.wrap(b);
                         if (byteorderLSB) {
                             bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -1155,7 +1155,7 @@ public class Grid { //  implements Serializable
                         continue;
                     }
                     if (cells[i][0] >= 0) {
-                        getBytes(afile, buffer, bufferOffset, cells[i][0] * size, b);
+                        getBytes(afile, buffer, bufferOffset, cells[i][0] *  (long) size, b);
                         ByteBuffer bb = ByteBuffer.wrap(b);
                         if (byteorderLSB) {
                             bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -1340,6 +1340,9 @@ public class Grid { //  implements Serializable
     private Long getBytes(RandomAccessFile raf, byte[] buffer, Long bufferOffset, long seekTo, byte[] dest) throws IOException {
         long relativePos = seekTo - bufferOffset;
         if (relativePos < 0) {
+            if(seekTo < 0) {
+                seekTo = 0;
+            }
             raf.seek(seekTo);
             bufferOffset = seekTo;
             raf.read(buffer);
