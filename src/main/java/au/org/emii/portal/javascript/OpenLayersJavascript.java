@@ -212,6 +212,10 @@ public interface OpenLayersJavascript {
 
     public void zoomToBoundingBoxNow(BoundingBox boundingBox);
 
+    public String zoomToBoundingBox(BoundingBox boundingBox, boolean closest);
+
+    public void zoomToBoundingBoxNow(BoundingBox boundingBox, boolean closest);
+
     /**
      * Adds the openlayers polygon drawing tool to the map
      */

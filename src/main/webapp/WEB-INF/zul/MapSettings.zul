@@ -33,6 +33,8 @@
                         <listfoot>
                             <listfooter span="2">
                                 <hbox>
+                                <button sclass="goButton" label="Save session" onClick='Clients.evalJavaScript("saveSession();")' />
+                                <separator />
                                 <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
                                 <separator />
                                 <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />

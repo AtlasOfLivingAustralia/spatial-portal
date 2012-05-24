@@ -435,6 +435,29 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     @Override
+    public void zoomToBoundingBoxNow(BoundingBox boundingBox, boolean closest) {
+        execute(
+                iFrameReferences
+                + zoomToBoundingBox(boundingBox, closest));
+    }
+
+    @Override
+    public String zoomToBoundingBox(BoundingBox boundingBox, boolean closest) {
+        String script =
+                "var mapObj = window.frames.mapFrame.map;"
+                + "map.zoomToExtent("
+                + "	(new OpenLayers.Bounds("
+                + Math.max(-180, boundingBox.getMinLongitude()) + ", "
+                + Math.max(-85, boundingBox.getMinLatitude()) + ", "
+                + Math.min(180, boundingBox.getMaxLongitude()) + ", "
+                + Math.min(85, boundingBox.getMaxLatitude())
+                + ")).transform(mapObj.displayProjection, mapObj.projection) "
+                + ", " + closest
+                + "); ";
+        return wrapWithSafeToProceed(script);
+    }
+
+    @Override
     public String activateMapLayer(MapLayer mapLayer) {
         return activateMapLayer(mapLayer, true, false);
     }
@@ -539,9 +562,6 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 }
             }
         }
-
-        String test = wrapWithSafeToProceed(getAdditionalScript() + script.toString());
-        //   System.out.println("EXECUTING - " + test);
 
         return wrapWithSafeToProceed(getAdditionalScript() + script.toString());
     }

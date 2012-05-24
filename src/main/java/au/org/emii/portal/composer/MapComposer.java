@@ -64,6 +64,7 @@ import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.*;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.MDC;
@@ -476,7 +477,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 //content
                 html.setContent(content);
-                html.setStyle("overflow: scroll");
+                html.setStyle("overflow: scroll;padding: 0 10px;");
 
                 //for the 'reset window' button
                 ((ExternalContentComposer) externalContentWindow).src = "";
@@ -1437,7 +1438,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
 
                 if (StringUtils.isNotBlank(savedsession)) {
-                    loadSession(savedsession);
+                    loadUserSession(savedsession);
                 } else {
                     System.out.println("No saved session to load");
                 }
@@ -3529,7 +3530,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/ImportAreas.zul", null, "addareawindow");
     }
 
-    public void onClick$saveSession(Event event) {
+    public void saveUserSession(Event event) {
         System.out.println("saving session");
         
         PrintWriter out = null;
@@ -3553,8 +3554,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             String sfld = getSettingsSupplementary().getValue("analysis_output_dir") + "session/" + jsessionid;
 
+            // if the session dir exists, then clear it,
+            // if not let's create it.
             File sessfolder = new File(sfld + "/");
             if (!sessfolder.exists()) {
+                sessfolder.mkdirs();
+            } else {
+                FileUtils.deleteDirectory(sessfolder);
                 sessfolder.mkdirs();
             }
 
@@ -3565,22 +3571,43 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             PersistenceStrategy strategy = new FilePersistenceStrategy(new File(sfld));
             List list = new XmlArrayList(strategy);
 
+            String scatterplotNames = ""; 
             List udl = getPortalSession().getActiveLayers();
             Iterator iudl = udl.iterator();
             while (iudl.hasNext()) {
                 MapLayer ml = (MapLayer) iudl.next();
                 if (ml.getType() != LayerUtilities.MAP) { 
-                    list.add(ml);
+                    if (ml.getSubType() == LayerUtilities.SCATTERPLOT) {
+                        list.add(ml.getData("scatterplotData"));
+                        //list.add(ml.getData("prevSelection"));
+                        scatterplotNames += ((scatterplotNames.length()>1)?"___"+ml.getName():ml.getName());
+                    } else {
+                        list.add(ml);
+                    }
                 }
             }
+            sbSession.append("scatterplotNames=").append(scatterplotNames);
+            sbSession.append(System.getProperty("line.separator"));
 
             out = new PrintWriter(new BufferedWriter(new FileWriter(sfld + "/details.txt")));
             out.write(sbSession.toString());
             out.close();
                         
             String sessionurl = CommonData.webportalServer + "/?ss="+jsessionid; 
-            showMessage("Session saved. Please use the following link to share: \n" + sessionurl);
+            String sessiondownload = "http://localhost:8080/alaspatial/ws/download/session/11B2139E46B12E1A72AE72432DD6A826";
+            //showMessage("Session saved. Please use the following link to share: \n <a href=''>"+sessionurl+"</a>" + sessionurl);
             
+            StringBuffer sbMessage = new StringBuffer();
+            sbMessage.append("*"); 
+            sbMessage.append("<p>Your session has been saved and now available to share at <br />"); 
+            //sbMessage.append("Your session is available at <br />"); 
+            sbMessage.append("<a href='"+sessionurl+"'>"+sessionurl+"</a>"); 
+            sbMessage.append("<br />(Right-click on the link and to copy the link to clipboard)"); 
+            sbMessage.append("</p>"); 
+            sbMessage.append("<p>"); 
+            sbMessage.append("Alternatively, click <a href='"+sessionurl+"'>here</a> to download a direct link to this session");
+            sbMessage.append("</p>");
+            activateLink(sbMessage.toString(), "Saved session", false, "");
         } catch (IOException ex) {
             System.out.println("Unable to save session data: ");
             ex.printStackTrace(System.out);
@@ -3591,7 +3618,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void loadSession(String sessionid) {
+    public void loadUserSession(String sessionid) {
         Scanner scanner = null;
         try {
             
@@ -3613,16 +3640,48 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             bb.setMinLatitude(Float.parseFloat(mapdetails[2]));
             bb.setMaxLongitude(Float.parseFloat(mapdetails[3]));
             bb.setMaxLatitude(Float.parseFloat(mapdetails[4]));
-            openLayersJavascript.zoomToBoundingBoxNow(bb);
+            //openLayersJavascript.zoomToBoundingBoxNow(bb);
+            openLayersJavascript.setAdditionalScript(openLayersJavascript.zoomToBoundingBox(bb, true));
+
+            String[] scatterplotNames = null; 
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.startsWith("scatterplotNames")) {
+                    scatterplotNames = line.substring(17).split("___");
+                }
+            }
+            ArrayUtils.reverse(scatterplotNames);
             
             PersistenceStrategy strategy = new FilePersistenceStrategy(new File(sfld));
             List list = new XmlArrayList(strategy);
 
-            ListIterator<MapLayer> it = list.listIterator(list.size());
+            ListIterator it = list.listIterator(list.size());
+            int scatterplotIndex = 0;
             while(it.hasPrevious()) {
-                MapLayer ml = it.previous();
-                System.out.println("Loading " + ml.getName() + " -> " + ml.isDisplayed() );
-                addUserDefinedLayerToMenu(ml, false);
+                Object o = it.previous();
+                MapLayer ml = null;
+                if (o instanceof MapLayer) {
+                    ml = (MapLayer) o;
+                    System.out.println("Loading " + ml.getName() + " -> " + ml.isDisplayed());
+                    addUserDefinedLayerToMenu(ml, false);
+                } else if (o instanceof ScatterplotData) {
+                    ScatterplotData spdata = (ScatterplotData) o;
+                    //double[] prevSelection = (double[])it.previous();
+                    loadScatterplot(spdata, "My Scatterplot " + scatterplotIndex++); // scatterplotNames[scatterplotIndex++]
+                    
+                    //ml = mapSpecies(spdata.getQuery(), spdata.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT, null, 0, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, nextColour());
+                    //ml.setDisplayName(scatterplotNames[scatterplotIndex++]);
+                    //ml.setSubType(LayerUtilities.SCATTERPLOT);
+                    //ml.setData("scatterplotData", spdata);
+                    //ml.setData("prevSelection", prevSelection);
+                    //addUserDefinedLayerToMenu(ml, true);
+                    //updateLayerControls();
+                    //refreshContextualMenu();
+                }
+                
+                if (ml != null) {
+                    addUserDefinedLayerToMenu(ml, true);
+                }                
             }
             
         } catch (Exception e) {

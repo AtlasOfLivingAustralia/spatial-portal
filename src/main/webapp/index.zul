@@ -199,7 +199,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 				<ol>
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
                     <li><a href="http://www.ala.org.au/my-profile/" title="My profile">My profile</a></li>
-                    <li><a href="javascript:saveSession();" title="Save current session">Save</a></li>
+                    <li><a href="javascript:saveSession();" title="Save current session">Save session</a></li>
 					<li class="last"><a href="https://auth.ala.org.au/cas/login?service=http://spatial.ala.org.au/">Log in</a></li>
 				</ol>
 			</nav>
@@ -207,7 +207,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 				<ol>
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
                     <li><a href="http://www.ala.org.au/my-profile/" title="My profile">My profile</a></li>
-                    <li><a href="javascript:saveSession();" title="Save current session">Save</a></li>
+                    <li><a href="javascript:saveSession();" title="Save current session">Save session</a></li>
 					<li class="last"><a href="https://auth.ala.org.au/cas/logout?service=http://spatial.ala.org.au/">Log out</a></li>
 				</ol>
 			</nav>
@@ -489,7 +489,7 @@ console.log(currentbaselayertxt);
 
         <textbox id="baseMap" visible="false" />
         <textbox id="currentLayerExtent" visible="false" />
-
+        
         <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
         <label id="geoserver_url" value="${settingsSupplementary.values.geoserver_url}" visible="false" />
         <label id="layers_url" value="${settingsSupplementary.values.layers_url}" visible="false" />

@@ -25,7 +25,7 @@ header#site-header {
 }
 
 header#site-header #nav-search {
-	width:40%;
+	/*width:40%;*/
 	float:right;
 	position:relative;
 	padding-top:1px;
@@ -61,7 +61,7 @@ header#site-header #header-search {
 
 header#site-header h1 {
 	float:left;
-	width:60%;
+	/*width:60%;*/
 	padding:0;
 
     margin-top: 2px; 
@@ -228,7 +228,7 @@ a.button:active{
   width:0;
   position:absolute;
   top:-9px;
-  left:300px;
+  left:290px;
 }
 .login-bubble-arrow {
   border-color: transparent transparent #666666;
@@ -238,7 +238,7 @@ a.button:active{
   width:0;
   position:absolute;
   top:-12px;
-  left:300px;
+  left:290px;
 }
 /* IE6 */
 .login-bubble-arrow {
