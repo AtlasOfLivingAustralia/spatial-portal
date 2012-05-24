@@ -4,10 +4,7 @@
  */
 package org.ala.spatial.web.services;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
+import java.io.*;
 import java.util.Iterator;
 import javax.servlet.http.HttpServletResponse;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -32,6 +29,36 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/ws/download/")
 public class DownloadController {
 
+    @RequestMapping(value = "/session/{sessionid}", method = RequestMethod.GET)
+    @ResponseBody
+    public String downloadSessionUrl(@PathVariable String sessionid, HttpServletResponse response) {
+        try {
+            
+            String basedir = AlaspatialProperties.getBaseOutputDir() + File.separator + "output" + File.separator;
+            String sessiondir = basedir + "session" + File.separator + sessionid;
+            File sDir = new File(sessiondir);
+            
+            if (sDir.exists() && sDir.isDirectory()) {
+                StringBuffer sbSession = new StringBuffer();
+                sbSession.append("[InternetShortcut]").append("\n");
+                sbSession.append("URL=").append(AlaspatialProperties.getBaseOutputURL());
+                sbSession.append("?ss=").append(sessionid);
+                
+                response.setContentType("application/internet-shortcut");
+                response.setContentLength(safeLongToInt(sbSession.length()));
+                response.setHeader("Content-Disposition", "attachment; filename=\"ALA_Spatial_Portal_Session_" + sessionid + ".url\"");
+
+                FileCopyUtils.copy(sbSession.toString(), response.getWriter());
+
+                return null;
+            }
+        } catch (Exception e) {
+            System.out.println("Could not find session directory");            
+        }
+        
+        return ""; 
+    }
+    
     @RequestMapping(value = "/{pid}", method = RequestMethod.GET)
     @ResponseBody
     public String download(@PathVariable String pid, HttpServletResponse response) {
