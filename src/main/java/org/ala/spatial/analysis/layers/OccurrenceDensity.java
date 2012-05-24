@@ -186,7 +186,7 @@ public class OccurrenceDensity {
             bw.close();
         }
 
-        DensityLayers.writeHeader(outputDirectory + filename + ".grd", resolution, height, width, bbox[0], bbox[1], bbox[2], bbox[3], 0, max, gridSize);
+        DensityLayers.writeHeader(outputDirectory + filename + ".grd", resolution, height, width, bbox[0], bbox[1], bbox[2], bbox[3], 0, max, -1);
     }
 
     int[] getNextCountsRow(Records records, int[] rowStarts, int row, int[] counts) {

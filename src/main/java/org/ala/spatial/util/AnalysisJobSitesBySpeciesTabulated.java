@@ -36,15 +36,14 @@ public class AnalysisJobSitesBySpeciesTabulated extends AnalysisJob {
     String speciesq;
     String qname;
     double gridsize;
-    boolean sitesbyspecies, occurrencedensity, speciesdensity;
     LayerFilter[] envelope;
     SimpleRegion region;
     String biocacheserviceurl;
-    String bioregion;
+    String[] bioregions;
     boolean decade;
     String facetName;
 
-    public AnalysisJobSitesBySpeciesTabulated(String pid, String currentPath_, String qname, String speciesq, double gridsize, SimpleRegion region_, LayerFilter[] filter_, boolean sitesbyspecies, boolean occurrencedensity, boolean speciesdensity, String biocacheserviceurl, String bioregion, boolean decade, String facetName) {
+    public AnalysisJobSitesBySpeciesTabulated(String pid, String currentPath_, String qname, String speciesq, double gridsize, SimpleRegion region_, LayerFilter[] filter_, String biocacheserviceurl, String[] bioregions, boolean decade, String facetName) {
         super(pid);
         currentPath = currentPath_ + File.separator + pid + File.separator;
         new File(currentPath).mkdirs();
@@ -56,12 +55,9 @@ public class AnalysisJobSitesBySpeciesTabulated extends AnalysisJob {
 
         stageTimes = new long[2];
 
-        this.sitesbyspecies = sitesbyspecies;
-        this.occurrencedensity = occurrencedensity;
-        this.speciesdensity = speciesdensity;
         this.biocacheserviceurl = biocacheserviceurl;
 
-        this.bioregion = bioregion;
+        this.bioregions = bioregions;
         this.decade = decade;
         this.facetName = facetName;
     }
@@ -84,39 +80,6 @@ public class AnalysisJobSitesBySpeciesTabulated extends AnalysisJob {
                 bbox[1] = region.getBoundingBox()[0][1];
                 bbox[2] = region.getBoundingBox()[1][0];
                 bbox[3] = region.getBoundingBox()[1][1];
-            }
-
-            SimpleShapeFile ssf = null;
-            Grid grid = null;
-            String[] gridColumns = null;
-            if (bioregion != null) {
-                Layer layer = Client.getLayerDao().getLayerByName(bioregion);
-                Field f = Client.getFieldDao().getFieldById(org.ala.spatial.util.Layers.getFieldId(bioregion));
-                if (f.getType().equals("c")) {
-                    ssf = new SimpleShapeFile(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig(), f.getSname());
-                } else {  //must be a or b
-                    try {
-                        Properties p = new Properties();
-                        p.load(new FileReader(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig() + ".txt"));
-                        ArrayList<String> cols = new ArrayList<String>();
-                        cols.add("n/a");    //unmatched value
-                        for (Entry e : p.entrySet()) {
-                            String key = (String) e.getKey();
-                            if (key.length() > 0) {
-                                int k = Integer.parseInt(key) + 1;
-                                while (cols.size() <= k) {
-                                    cols.add("n/a");
-                                }
-                                cols.set(k, (String) e.getValue());
-                            }
-                        }
-                        gridColumns = new String[cols.size()];
-                        cols.toArray(gridColumns);
-                        grid = new Grid(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
             }
 
             // dump the species data to a file
@@ -174,13 +137,55 @@ public class AnalysisJobSitesBySpeciesTabulated extends AnalysisJob {
                 envelopeGrid = new Grid(envelopeFile);
             }
 
-            SitesBySpeciesTabulated sbs = new SitesBySpeciesTabulated(0, gridsize, bbox);
-            sbs.write(records, currentPath + File.separator, region, envelopeGrid, ssf, grid, gridColumns, decade);
+            SitesBySpeciesTabulated sbs = new SitesBySpeciesTabulated(gridsize, bbox);
+            int prog = 0;
+            int max_regions = (bioregions == null ? 0 : bioregions.length) + (decade ? 2 : 0);
+            if (bioregions != null) {
+                for (String bioregion : bioregions) {
+                    setProgress(prog / (double) max_regions, "producing table for " + bioregion);
+                    prog++;
+                    SimpleShapeFile ssf = null;
+                    Grid grid = null;
+                    String[] gridColumns = null;
+                    Layer layer = Client.getLayerDao().getLayerByName(bioregion);
+                    Field f = Client.getFieldDao().getFieldById(org.ala.spatial.util.Layers.getFieldId(bioregion));
+                    if (f.getType().equals("c")) {
+                        ssf = new SimpleShapeFile(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig(), f.getSname());
+                    } else {  //must be a or b
+                        try {
+                            Properties p = new Properties();
+                            p.load(new FileReader(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig() + ".txt"));
+                            ArrayList<String> cols = new ArrayList<String>();
+                            cols.add("n/a");    //unmatched value
+                            for (Entry e : p.entrySet()) {
+                                String key = (String) e.getKey();
+                                if (key.length() > 0) {
+                                    int k = Integer.parseInt(key) + 1;
+                                    while (cols.size() <= k) {
+                                        cols.add("n/a");
+                                    }
+                                    cols.set(k, (String) e.getValue());
+                                }
+                            }
+                            gridColumns = new String[cols.size()];
+                            cols.toArray(gridColumns);
+                            grid = new Grid(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    sbs.write(records, currentPath + File.separator, region, envelopeGrid, layer.getDisplayname(), ssf, grid, gridColumns, false);
+                }
+            }
+
+
+            setProgress(prog / (double) max_regions, "producing tables for decades");
+            sbs.write(records, currentPath + File.separator, region, envelopeGrid, null, null, null, null, true);
 
             setProgress(1, "finished");
 
             // generate the readme.txt file
-            CitationService.generateSitesBySpeciesReadme(currentPath + File.separator, sitesbyspecies, occurrencedensity, speciesdensity);
+            //CitationService.generateSitesBySpeciesReadme(currentPath + File.separator, sitesbyspecies, occurrencedensity, speciesdensity);
 
             setCurrentState(SUCCESSFUL);
 
@@ -328,53 +333,7 @@ public class AnalysisJobSitesBySpeciesTabulated extends AnalysisJob {
     AnalysisJob copy() {
         return new AnalysisJobSitesBySpeciesTabulated(String.valueOf(System.currentTimeMillis()),
                 currentPath, qname, speciesq, gridsize, region, envelope,
-                sitesbyspecies, occurrencedensity, speciesdensity,
-                biocacheserviceurl, bioregion, decade, facetName);
-    }
-
-    private void writeProjectionFile(String outputpath_prj) {
-        try {
-            FileWriter fw = new FileWriter(outputpath_prj);
-
-            fw.append("GEOGCS[\"WGS 84\", ").append("\n");
-            fw.append("    DATUM[\"WGS_1984\", ").append("\n");
-            fw.append("        SPHEROID[\"WGS 84\",6378137,298.257223563, ").append("\n");
-            fw.append("            AUTHORITY[\"EPSG\",\"7030\"]], ").append("\n");
-            fw.append("        AUTHORITY[\"EPSG\",\"6326\"]], ").append("\n");
-            fw.append("    PRIMEM[\"Greenwich\",0, ").append("\n");
-            fw.append("        AUTHORITY[\"EPSG\",\"8901\"]], ").append("\n");
-            fw.append("    UNIT[\"degree\",0.01745329251994328, ").append("\n");
-            fw.append("        AUTHORITY[\"EPSG\",\"9122\"]], ").append("\n");
-            fw.append("    AUTHORITY[\"EPSG\",\"4326\"]] ").append("\n");
-
-            fw.close();
-        } catch (IOException ex) {
-            //Logger.getLogger(MaxentServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("error writing prj file:");
-            ex.printStackTrace(System.out);
-        }
-    }
-
-    Legend produceSld(String gridfilename) {
-        Grid g = new Grid(gridfilename);
-        float[] d = g.getGrid();
-        java.util.Arrays.sort(d);
-
-        Legend legend = new LegendEqualArea();
-        legend.generate(d);
-        legend.determineGroupSizes(d);
-        legend.evaluateStdDevArea(d);
-
-        //must 'unsort' d
-        d = null;
-        g = null;
-        System.gc();
-        g = new Grid(gridfilename);
-        d = g.getGrid();
-        legend.exportImage(d, g.ncols, gridfilename + ".png", 1, true);
-        legend.exportSLD(g, gridfilename + ".sld", "", false, true);
-
-        return legend;
+                biocacheserviceurl, bioregions, decade, facetName);
     }
 
     void writeMetadata(String filename, String title, Records records, double[] bbox, boolean odensity, boolean sdensity, int[] counts, String addAreaSqKm) throws IOException {

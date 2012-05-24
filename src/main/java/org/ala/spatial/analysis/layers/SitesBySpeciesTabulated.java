@@ -23,22 +23,16 @@ import org.json.simple.JSONObject;
 public class SitesBySpeciesTabulated {
 
     Records records;
-    int gridSize;
     double resolution;
     double[] bbox;
     int width, height;
 
-    public SitesBySpeciesTabulated(int gridSize, double resolution, double[] bbox) {
-        this.gridSize = gridSize;
+    public SitesBySpeciesTabulated(double resolution, double[] bbox) {
         this.resolution = resolution;
         this.bbox = bbox;
 
         width = (int) ((bbox[2] - bbox[0]) / resolution);
         height = (int) ((bbox[3] - bbox[1]) / resolution);
-    }
-
-    void setGridSize(int gridSize) {
-        this.gridSize = gridSize;
     }
 
     void setResolution(double resolution) {
@@ -53,23 +47,23 @@ public class SitesBySpeciesTabulated {
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
-    public void write(Records records, String outputDirectory, SimpleRegion region, Grid envelopeGrid, SimpleShapeFile ssf, Grid grid, String [] gridColumns, boolean decade) throws IOException {
+    public void write(Records records, String outputDirectory, SimpleRegion region, Grid envelopeGrid, String bioregionName, SimpleShapeFile ssf, Grid grid, String[] gridColumns, boolean decade) throws IOException {
 
         String[] columns = null;
-        int [] gridIntersections = null;
+        int[] gridIntersections = null;
         int numberOfBioregions = 0;
         if (ssf != null) {
-            columns = ssf.getColumnLookup();            
+            columns = ssf.getColumnLookup();
         } else if (grid != null) {
             columns = gridColumns;
             gridIntersections = new int[records.getRecordsSize()];
-            double [][] points = new double[records.getRecordsSize()][2];
-            for(int i=0;i<records.getRecordsSize();i++) {
+            double[][] points = new double[records.getRecordsSize()][2];
+            for (int i = 0; i < records.getRecordsSize(); i++) {
                 points[i][0] = records.getLongitude(i);
                 points[i][1] = records.getLatitude(i);
             }
-            float [] f = grid.getValues(points);
-            for(int i=0;i<f.length;i++) {
+            float[] f = grid.getValues(points);
+            for (int i = 0; i < f.length; i++) {
                 gridIntersections[i] = (int) f[i];
                 if (gridIntersections[i] < 0 || gridIntersections[i] >= gridColumns.length + 1) {
                     gridIntersections[i] = -1;
@@ -107,14 +101,14 @@ public class SitesBySpeciesTabulated {
             bsDecades[j] = new BitSet(uniqueSpeciesCount);
         }
         System.out.println("finished setup of bsBioregions and bsDecades");
-        for (int pos = 0; pos < records.getRecordsSize(); ) {
+        for (int pos = 0; pos < records.getRecordsSize();) {
             //find end pos
-            int x = (int) (records.getLongitude(pos) - bbox[0] / resolution);
-            int y = (int) (records.getLatitude(pos) - bbox[1] / resolution);
+            int x = (int) ((records.getLongitude(pos) - bbox[0]) / resolution);
+            int y = (int) ((records.getLatitude(pos) - bbox[1]) / resolution);
             int endPos = pos + 1;
-            while(endPos < records.getRecordsSize()
-                    && x == (int) (records.getLongitude(endPos) - bbox[0] / resolution)
-                    && y == (int) (records.getLatitude(pos) - bbox[1] / resolution)) {
+            while (endPos < records.getRecordsSize()
+                    && x == (int) ((records.getLongitude(endPos) - bbox[0]) / resolution)
+                    && y == (int) ((records.getLatitude(pos) - bbox[1]) / resolution)) {
                 endPos++;
             }
 
@@ -144,11 +138,13 @@ public class SitesBySpeciesTabulated {
             pos = endPos;
         }
 
-        writeBioregions(outputDirectory, columns, bioMap);
+        if (numberOfBioregions > 0) {
+            writeBioregions(bioregionName, outputDirectory, columns, bioMap);
+        }
         writeDecades(outputDirectory, decadeIdx, decMap);
     }
 
-    void getNextIntArrayRow(Records records, int start, int end, BitSet[] bsBioregion, BitSet[] bsDecade, SimpleShapeFile ssf, int [] gridIntersections, short[] decadeIdx) {
+    void getNextIntArrayRow(Records records, int start, int end, BitSet[] bsBioregion, BitSet[] bsDecade, SimpleShapeFile ssf, int[] gridIntersections, short[] decadeIdx) {
         //translate into bitset for each grid cell
         if (bsBioregion != null) {
             for (int j = 0; j < bsBioregion.length; j++) {
@@ -212,7 +208,9 @@ public class SitesBySpeciesTabulated {
             Integer[] cols = new Integer[tm.size()];
             tm.keySet().toArray(cols);
 
+            ArrayList<Integer> c = new ArrayList<Integer>();
             for (int j = 0; j < cols.length; j++) {
+                c.add(cols[j]);
                 fw.write(",\"" + cols[j] + "\"");
             }
 
@@ -236,19 +234,22 @@ public class SitesBySpeciesTabulated {
                         fw.write(",");
                         if (v != null) {
                             fw.write(v.toString());
-                            Map m2 = new HashMap();
-                            m2.put(cols[j] + " species", v);
-                            array2.add(m2);
+                            array2.add(v.toString());
+                        } else {
+                            array2.add("");
                         }
                     }
                     Map m3 = new HashMap();
                     m3.put("name", rowname);
-                    m3.put("site_counts", array2);
+                    m3.put("row", array2);
                     array.add(m3);
                 }
             }
 
-            map.put("decades", array);
+            Map m4 = new HashMap();
+            m4.put("rows", array);
+            m4.put("columns", c);
+            map.put("decades", m4);
 
             fw.close();
 
@@ -263,11 +264,11 @@ public class SitesBySpeciesTabulated {
         return map;
     }
 
-    private Map writeBioregions(String outputDirectory, String[] columns, HashMap<Integer, Integer>[] bioMap) {
+    private Map writeBioregions(String name, String outputDirectory, String[] columns, HashMap<Integer, Integer>[] bioMap) {
         Map map = new HashMap();
         ArrayList array = new ArrayList();
         try {
-            FileWriter fw = new FileWriter(outputDirectory + File.separator + "bioregions.csv");
+            FileWriter fw = new FileWriter(outputDirectory + File.separator + name + ".csv");
 
             //identify column numbers
             TreeMap<Integer, Integer> tm = new TreeMap();
@@ -277,7 +278,9 @@ public class SitesBySpeciesTabulated {
             Integer[] cols = new Integer[tm.size()];
             tm.keySet().toArray(cols);
 
+            ArrayList<Integer> c = new ArrayList<Integer>();
             for (int j = 0; j < cols.length; j++) {
+                c.add(cols[j]);
                 fw.write(",\"" + cols[j] + "\"");
             }
 
@@ -296,23 +299,26 @@ public class SitesBySpeciesTabulated {
                         fw.write(",");
                         if (v != null) {
                             fw.write(v.toString());
-                            Map m2 = new HashMap();
-                            m2.put(cols[j] + " species", v);
-                            array2.add(m2);
+                            array2.add(v.toString());
+                        } else {
+                            array2.add("");
                         }
                     }
                     Map m3 = new HashMap();
                     m3.put("name", rowname);
-                    m3.put("site_counts", array2);
+                    m3.put("row", array2);
                     array.add(m3);
                 }
             }
 
-            map.put("bioregions", array);
+            Map m4 = new HashMap();
+            m4.put("rows", array);
+            m4.put("columns", c);
+            map.put(name, m4);
 
             fw.close();
 
-            fw = new FileWriter(outputDirectory + File.separator + "bioregions.json");
+            fw = new FileWriter(outputDirectory + File.separator + name + ".json");
             JSONObject.writeJSONString(map, fw);
             fw.close();
         } catch (Exception e) {

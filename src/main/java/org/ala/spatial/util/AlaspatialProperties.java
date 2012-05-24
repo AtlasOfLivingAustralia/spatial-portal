@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ala.spatial.util;
 
 import java.io.InputStream;
@@ -13,7 +12,9 @@ import java.util.Properties;
  * @author Adam
  */
 public class AlaspatialProperties {
+
     static Properties properties;
+
     static {
         properties = new Properties();
         try {
@@ -130,7 +131,7 @@ public class AlaspatialProperties {
 
     public static String getAnalysisMaxentCmd() {
         return properties.getProperty("maxent.cmd");
-    } 
+    }
 
     public static String getGeoserverUrl() {
         return properties.getProperty("geoserver.url");
@@ -142,5 +143,9 @@ public class AlaspatialProperties {
 
     public static String getGeoserverPassword() {
         return properties.getProperty("geoserver.password");
+    }
+
+    public static String getBiocacheWsURL() {
+        return properties.getProperty("biocache.ws.url");
     }
 }

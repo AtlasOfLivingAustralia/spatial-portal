@@ -18,6 +18,10 @@
 		<from>/scripts/**</from>
 		<to>/scripts/$1</to>
 	</rule>
+        <rule>
+		<from>/tld/**</from>
+		<to>/tld/$1</to>
+	</rule>
 	<rule>
 		<from>/styles/**</from>
 		<to>/styles/$1</to>
