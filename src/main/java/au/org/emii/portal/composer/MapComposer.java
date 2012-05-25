@@ -3594,7 +3594,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             out.close();
                         
             String sessionurl = CommonData.webportalServer + "/?ss="+jsessionid; 
-            String sessiondownload = "http://localhost:8080/alaspatial/ws/download/session/11B2139E46B12E1A72AE72432DD6A826";
+            String sessiondownload = CommonData.satServer + "/ws/download/session/"+jsessionid;
             //showMessage("Session saved. Please use the following link to share: \n <a href=''>"+sessionurl+"</a>" + sessionurl);
             
             StringBuffer sbMessage = new StringBuffer();
@@ -3605,7 +3605,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             sbMessage.append("<br />(Right-click on the link and to copy the link to clipboard)"); 
             sbMessage.append("</p>"); 
             sbMessage.append("<p>"); 
-            sbMessage.append("Alternatively, click <a href='"+sessionurl+"'>here</a> to download a direct link to this session");
+            sbMessage.append("Alternatively, click <a href='"+sessiondownload+"'>here</a> to download a direct link to this session");
             sbMessage.append("</p>");
             activateLink(sbMessage.toString(), "Saved session", false, "");
         } catch (IOException ex) {
