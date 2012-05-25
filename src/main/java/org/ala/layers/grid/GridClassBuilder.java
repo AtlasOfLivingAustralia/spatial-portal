@@ -277,7 +277,7 @@ public class GridClassBuilder {
         g.writeGrid(filePath + File.separator + "polygons", wktMap, g.xmin, g.ymin, g.xmax, g.ymax, g.xres, g.yres, g.nrows, g.ncols);
 
         //copy the header file to get it exactly the same, but change the data type
-        copyHeaderAsInt(filePath + ".grd", File.separator + "polygons.grd");
+        copyHeaderAsInt(filePath + ".grd", filePath + File.separator + "polygons.grd");
 
         //write sld
         exportSLD(filePath + File.separator + "polygons.sld", new File(filePath + ".txt").getName(), maxValues, labels);
