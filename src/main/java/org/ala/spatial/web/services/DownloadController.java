@@ -42,7 +42,7 @@ public class DownloadController {
                 StringBuffer sbSession = new StringBuffer();
                 sbSession.append("[InternetShortcut]").append("\n");
                 sbSession.append("URL=").append(AlaspatialProperties.getBaseOutputURL());
-                sbSession.append("?ss=").append(sessionid);
+                sbSession.append("?ss=").append(sessionid).append("\n");
                 
                 response.setContentType("application/internet-shortcut");
                 response.setContentLength(safeLongToInt(sbSession.length()));
