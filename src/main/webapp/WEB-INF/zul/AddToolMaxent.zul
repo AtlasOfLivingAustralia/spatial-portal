@@ -168,8 +168,8 @@
                     use="org.ala.spatial.analysis.web.EnvironmentalList" width="610px"
                     height="430px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
                             <listhead>
-                                <listheader label="category" hflex="min"/>
-                                <listheader label="name"  hflex="max"/>
+                                <listheader label="category" hflex="1"/>
+                                <listheader label="name"  hflex="1"/>
                                 <listheader label=" "  width="25px"/>
                                 <listheader label=" " width="14px" />
                             </listhead>

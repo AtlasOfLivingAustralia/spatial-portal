@@ -20,7 +20,7 @@
 <div sclass="highlighted">
 
         <div align="right" visible="false">
-            <button label="Hide" id="hideExtLayersButton" />
+            <button sclass="goButton" label="Hide" id="hideExtLayersButton" />
         </div>
 	<!--  label -->
 	<div>
@@ -54,10 +54,12 @@
 			
 			<label value="Server is invalid" visible="false" id="invalidUri" sclass="error" />
 		</div>
-        <label sclass="wCaption" value='For example: http://data.auscover.org.au/geoserver/wms?request=getCapabilities'/>
+        <label sclass="wCaption" value='For example:' />
+        <n:a n:href="http://data.auscover.org.au/geoserver/wms?request=getCapabilities" style="display: inline"><label sclass="wCaption" value='http://data.auscover.org.au/geoserver/wms?request=getCapabilities' />
+        </n:a>	
 	
-	
-   		<!--  version -->
+
+        <!--  version -->
    		<div  sclass="spaced">
    		<label sclass="h3 inputlabel" value="Version" />
    		<listbox mold="select" id="version">
@@ -90,8 +92,8 @@
  		</div>
 
 	    <div align="right">
-	    	<button id="selectLayersButton" label="Select Layers" />
-	       	<button id="addAllLayersButton" label="Add All" visible="false" />
+	    	<button sclass="goButton" id="selectLayersButton" label="Select Layers" />
+	       	<button sclass="goButton" id="addAllLayersButton" label="Add All" visible="false" />
 	    </div> 	
 	
 	   	<!--  Select layers -->
@@ -102,12 +104,7 @@
 		   			itemRenderer="${availableLayersListItemRenderer}"/>
 		 		<label value="Must select a Layer" visible="false" id="invalidLayerName" sclass="error"/>		 		
 	 		</div>
-	 		
-	 		<div align="right">
-	 			<button id="addDiscoveredLayerButton" label="Add To Map" />
-	 		</div>
 	   	</div>
-	
 	</div>
 	
 	<!-- Manual layer discovery -->
@@ -118,14 +115,12 @@
 			<separator/>
 			<label value="GetMap URL is invalid" visible="false" id="invalidGetMapUri" style="color: red; font-weight:bold" />
 		</div>
-        <label sclass="wCaption" value="For example: http://data.auscover.org.au/geoserver/ows?SERVICE=WMS&amp;REQUEST=GetMap&amp;LAYERS=basemaps:NE1_50M_SR_W&amp;FORMAT=image/png&amp;SRS=epsg:900913&amp;TRANSPARENT=true&amp;VERSION=1.3.0&amp;CRS=EPSG:900913&amp;EXCEPTIONS=INIMAGE&amp;STYLES="/>
+        <label sclass="wCaption" value='For example:' />
+        <n:a n:href="http://data.auscover.org.au/geoserver/ows?SERVICE=WMS&amp;REQUEST=GetMap&amp;LAYERS=basemaps:NE1_50M_SR_W&amp;FORMAT=image/png&amp;SRS=epsg:900913&amp;TRANSPARENT=true&amp;VERSION=1.3.0&amp;CRS=EPSG:900913&amp;EXCEPTIONS=INIMAGE&amp;STYLES=" style="display: inline"><label sclass="wCaption" value='http://data.auscover.org.au/geoserver/ows?SERVICE=WMS&amp;REQUEST=GetMap&amp;LAYERS=basemaps:NE1_50M_SR_W&amp;FORMAT=image/png&amp;SRS=epsg:900913&amp;TRANSPARENT=true&amp;VERSION=1.3.0&amp;CRS=EPSG:900913&amp;EXCEPTIONS=INIMAGE&amp;STYLES=' />
+        </n:a>	
 
  		<!--  holder for opacity controls -->
  		<div id="discoveryManualOpacity"/>
-	
-		<div align="right">
-			<button id="addManualLayerButton" label="Add To Map" />
-		</div>
 	</div>  
 		
 	<!--  result label -->
@@ -133,11 +128,9 @@
 </div>
         <div sclass="wizButtonContainer">
             <hbox>
-                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
+                <button sclass="goButton"  id="addDiscoveredLayerButton" label="Add To Map" visible="false" />
+                <button sclass="goButton"  id="addManualLayerButton" label="Add To Map" visible="false" />
                 <button sclass="goButton" label="Close" id="btnCancel" onClick="addwmslayerwindow.detach()" />
-                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" visible="false" />
-                <button sclass="goButton" label="Next &gt;" id="btnOk" visible="false" />
-                
             </hbox>
         </div>
 </window>
