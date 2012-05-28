@@ -76,14 +76,14 @@ public class TabulationGenerator {
                 + "\n args[3] = password,"
                 + "\n args[4] = (optional) specify one step to run, "
                 + "'1' pair objects, '3' delete invalid objects, '4' area, '5' occurrences, '6' grid x grid comparisons"
-                + "\n args[5] = (required when args[4]=5 or 6) path to records file");
-        args = new String[] {
-            "6",
-            "jdbc:postgresql://ala-maps-db.vic.csiro.au:5432/layersdb",
-            "postgres",
-            "postgres",
-            "1",
-            "e:\\_records.csv\\_records.csv"};
+                + "\n args[5] = (required when args[4]=5 or 6) path to records file,");
+//        args = new String[] {
+//            "6",
+//            "jdbc:postgresql://ala-maps-db.vic.csiro.au:5432/layersdb",
+//            "postgres",
+//            "postgres",
+//            "1",
+//            "e:\\_records.csv\\_records.csv"};
         if (args.length >= 5) {
             CONCURRENT_THREADS = Integer.parseInt(args[0]);
             db_url = args[1];
@@ -92,7 +92,7 @@ public class TabulationGenerator {
         }
 
         if (args.length < 5) {
-            updatePairObjects();
+            System.out.println("all");
 
 //            updateSingleObjects();
 
@@ -103,17 +103,22 @@ public class TabulationGenerator {
                 System.out.println("time since start= " + (System.currentTimeMillis() - start) + "ms");
             }
         } else if (args[4].equals("1")) {
+            System.out.println("1");
             updatePairObjects();
         } else if (args[4].equals("2")) {
+            System.out.println("2");
 //            updateSingleObjects();
         } else if (args[4].equals("3")) {
+            System.out.println("3");
             deleteInvalidObjects();
         } else if (args[4].equals("4")) {
+            System.out.println("4");
             long start = System.currentTimeMillis();
             while (updateArea() > 0) {
                 System.out.println("time since start= " + (System.currentTimeMillis() - start) + "ms");
             }
         } else if (args[4].equals("5")) {
+            System.out.println("5");
             //some init
             FieldDAO fieldDao = Client.getFieldDao();
             LayerDAO layerDao = Client.getLayerDao();
@@ -135,6 +140,7 @@ public class TabulationGenerator {
                 System.out.println("Please provide a valid path to the species occurrence file");
             }
         } else if (args[4].equals("6")) {
+            System.out.println("6");
 
             //some init
             FieldDAO fieldDao = Client.getFieldDao();
@@ -190,7 +196,8 @@ public class TabulationGenerator {
 
                 //domain test
                 if (isSameDomain(parseDomain(rs1.getString("domain1")), parseDomain(rs1.getString("domain2")))) {
-                    if (f1.exists() && f2.exists() && f1.length() < 100 * 1024 * 1024 && f2.length() < 100 * 1024 * 1024) {
+                    if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
+                        System.out.println("will to tabulation on: " + rs1.getString("fid1") + ", " + rs1.getString("fid2"));
                         data.put(rs1.getString("fid1") + "," + rs1.getString("fid2"));
                     } else {
                         //for gridToGrid
@@ -284,6 +291,7 @@ public class TabulationGenerator {
             String newFidPairs = "SELECT a.fid1, a.domain1, a.fid2, a.domain2 FROM (" + allFidPairs + ") a LEFT JOIN (" + existingFidPairs + ") b ON a.fid1=b.fid1 AND a.fid2=b.fid2 WHERE b.fid1 is null group by a.fid1, a.fid2, a.domain1, a.domain2;";
             String sql = newFidPairs;
             Statement s1 = conn.createStatement();
+            Statement s2 = conn.createStatement();
             ResultSet rs1 = s1.executeQuery(sql);
             
             while (rs1.next()) {
@@ -297,12 +305,13 @@ public class TabulationGenerator {
 
                 //domain test
                 if (isSameDomain(parseDomain(rs1.getString("domain1")), parseDomain(rs1.getString("domain2")))) {
-                    if (f1.exists() && f2.exists() && f1.length() < 100 * 1024 * 1024 && f2.length() < 100 * 1024 * 1024) {
+                    if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
                         //for shape comparisons
                     } else {
+                        System.out.println("gridToGrid: " + rs1.getString("fid1") + ", " + rs1.getString("fid2"));
                         //for gridToGrid
                         sql = gridToGrid(rs1.getString("fid1"), rs1.getString("fid2"), records);
-                        s1.execute(sql);
+                        s2.execute(sql);
                     }
                 }
             }

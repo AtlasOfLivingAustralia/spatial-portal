@@ -291,7 +291,16 @@ public class SimpleShapeFile extends Object implements Serializable {
     }
 
     public int intersectInt(double longitude, double latitude) {
-        return shapesreference.intersection(longitude, latitude);
+        if (singleColumn != null) {
+            int v = shapesreference.intersection(longitude, latitude);
+            if(v >= 0) {
+                return singleColumn[v];
+            } else {
+                return -1;
+            }
+        } else {
+            return shapesreference.intersection(longitude, latitude);
+        }
     }
 
     /**
