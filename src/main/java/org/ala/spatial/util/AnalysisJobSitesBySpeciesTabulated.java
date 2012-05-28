@@ -19,8 +19,6 @@ import org.ala.layers.dto.Layer;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
-import org.ala.layers.legend.Legend;
-import org.ala.layers.legend.LegendEqualArea;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.layers.Records;
 import org.ala.spatial.analysis.layers.SitesBySpeciesTabulated;
@@ -143,38 +141,43 @@ public class AnalysisJobSitesBySpeciesTabulated extends AnalysisJob {
             if (bioregions != null) {
                 for (String bioregion : bioregions) {
                     setProgress(prog / (double) max_regions, "producing table for " + bioregion);
-                    prog++;
-                    SimpleShapeFile ssf = null;
-                    Grid grid = null;
-                    String[] gridColumns = null;
-                    Layer layer = Client.getLayerDao().getLayerByName(bioregion);
-                    Field f = Client.getFieldDao().getFieldById(org.ala.spatial.util.Layers.getFieldId(bioregion));
-                    if (f.getType().equals("c")) {
-                        ssf = new SimpleShapeFile(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig(), f.getSname());
-                    } else {  //must be a or b
-                        try {
-                            Properties p = new Properties();
-                            p.load(new FileReader(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig() + ".txt"));
-                            ArrayList<String> cols = new ArrayList<String>();
-                            cols.add("n/a");    //unmatched value
-                            for (Entry e : p.entrySet()) {
-                                String key = (String) e.getKey();
-                                if (key.length() > 0) {
-                                    int k = Integer.parseInt(key) + 1;
-                                    while (cols.size() <= k) {
-                                        cols.add("n/a");
+                    try {
+                        prog++;
+                        SimpleShapeFile ssf = null;
+                        Grid grid = null;
+                        String[] gridColumns = null;
+                        Layer layer = Client.getLayerDao().getLayerByName(bioregion);
+                        Field f = Client.getFieldDao().getFieldById(org.ala.spatial.util.Layers.getFieldId(bioregion));
+                        if (f.getType().equals("c")) {
+                            ssf = new SimpleShapeFile(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig(), f.getSname());
+                        } else {  //must be a or b
+                            try {
+                                Properties p = new Properties();
+                                p.load(new FileReader(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig() + ".txt"));
+                                ArrayList<String> cols = new ArrayList<String>();
+                                cols.add("n/a");    //unmatched value
+                                for (Entry e : p.entrySet()) {
+                                    String key = (String) e.getKey();
+                                    if (key.length() > 0) {
+                                        int k = Integer.parseInt(key) + 1;
+                                        while (cols.size() <= k) {
+                                            cols.add("n/a");
+                                        }
+                                        cols.set(k, (String) e.getValue());
                                     }
-                                    cols.set(k, (String) e.getValue());
                                 }
+                                gridColumns = new String[cols.size()];
+                                cols.toArray(gridColumns);
+                                grid = new Grid(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig());
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                            gridColumns = new String[cols.size()];
-                            cols.toArray(gridColumns);
-                            grid = new Grid(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + layer.getPath_orig());
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
+                        sbs.write(records, currentPath + File.separator, region, envelopeGrid, layer.getDisplayname(), ssf, grid, gridColumns, false);
+                    } catch (Exception e) {
+                        log("failed for " + bioregion);
+                        e.printStackTrace();
                     }
-                    sbs.write(records, currentPath + File.separator, region, envelopeGrid, layer.getDisplayname(), ssf, grid, gridColumns, false);
                 }
             }
 

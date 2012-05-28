@@ -83,11 +83,15 @@ public class SitesBySpeciesTabulated {
 
         HashMap<Integer, Integer>[] bioMap = new HashMap[numberOfBioregions];
         HashMap<Integer, Integer>[] decMap = new HashMap[numberOfDecades];
+        HashMap<Integer, Integer>[] decCountMap = new HashMap[numberOfDecades+1];
         for (int i = 0; i < bioMap.length; i++) {
             bioMap[i] = new HashMap<Integer, Integer>();
         }
         for (int i = 0; i < decMap.length; i++) {
-            decMap[i] = new HashMap<Integer, Integer>();
+            decMap[i] = new HashMap<Integer, Integer>();            
+        }
+        for (int i = 0; i < decCountMap.length; i++) {
+            decCountMap[i] = new HashMap<Integer, Integer>();
         }
 
         records.sortedStarts(bbox[1], bbox[0], resolution);
@@ -100,6 +104,8 @@ public class SitesBySpeciesTabulated {
         for (int j = 0; j < numberOfDecades; j++) {
             bsDecades[j] = new BitSet(uniqueSpeciesCount);
         }
+        int [] decContinousCounts = new int[records.getSpeciesSize()];
+
         System.out.println("finished setup of bsBioregions and bsDecades");
         for (int pos = 0; pos < records.getRecordsSize();) {
             //find end pos
@@ -133,6 +139,36 @@ public class SitesBySpeciesTabulated {
                         decMap[j].put(group, count == null ? 1 : count + 1);
                     }
                 }
+
+                //reset
+                for(int j=0;j<decContinousCounts.length;j++) {
+                    decContinousCounts[j] = 0;
+                }
+                //sum
+                for (int j = 0; j < numberOfDecades; j++) {
+                    BitSet bs = bsDecades[j];
+                    if (bs.cardinality() > 0) {
+                        for(int k=0;k<bs.length();k++) {
+                            if(bs.get(k)) {
+                                decContinousCounts[k]++;
+                            }
+                        }
+                    }
+                }
+                //count
+                java.util.Arrays.sort(decContinousCounts);
+                int count = 1;
+                for(int j=1;j<decContinousCounts.length;j++) {
+                    if(decContinousCounts[j] == decContinousCounts[j-1]) {
+                        count++;
+                    } else {
+                        Integer c = decCountMap[decContinousCounts[j-1]].get(count);
+                        decCountMap[decContinousCounts[j-1]].put(count, c==null?1:c + 1);
+                        count = 1;
+                    }
+                }
+                Integer c = decCountMap[decContinousCounts[decContinousCounts.length-1]].get(count);
+                decCountMap[decContinousCounts[decContinousCounts.length-1]].put(count, c==null?1:c + 1);
             }
 
             pos = endPos;
@@ -142,6 +178,7 @@ public class SitesBySpeciesTabulated {
             writeBioregions(bioregionName, outputDirectory, columns, bioMap);
         }
         writeDecades(outputDirectory, decadeIdx, decMap);
+        writeDecadeCounts(outputDirectory, decCountMap);
     }
 
     void getNextIntArrayRow(Records records, int start, int end, BitSet[] bsBioregion, BitSet[] bsDecade, SimpleShapeFile ssf, int[] gridIntersections, short[] decadeIdx) {
@@ -223,7 +260,7 @@ public class SitesBySpeciesTabulated {
                     while (pos > 0 && decadeIdx[pos - 1] == i) {
                         pos--;
                     }
-                    String rowname = "not in bioregion";
+                    String rowname = "no year recorded";
                     if (i > 0) {
                         rowname = pos + " to " + (pos + 9);
                     }
@@ -254,6 +291,69 @@ public class SitesBySpeciesTabulated {
             fw.close();
 
             fw = new FileWriter(outputDirectory + File.separator + "decades.json");
+            JSONObject.writeJSONString(map, fw);
+            fw.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return map;
+    }
+
+    private Map writeDecadeCounts(String outputDirectory, HashMap<Integer, Integer>[] decCountMap) {
+        Map map = new HashMap();
+        ArrayList array = new ArrayList();
+
+        try {
+            FileWriter fw = new FileWriter(outputDirectory + File.separator + "decadecounts.csv");
+
+            //identify column numbers
+            TreeMap<Integer, Integer> tm = new TreeMap();
+            for (int i = 0; i < decCountMap.length; i++) {
+                tm.putAll(decCountMap[i]);
+            }
+            Integer[] cols = new Integer[tm.size()];
+            tm.keySet().toArray(cols);
+
+            ArrayList<Integer> c = new ArrayList<Integer>();
+            for (int j = 0; j < cols.length; j++) {
+                c.add(cols[j]);
+                fw.write(",\"" + cols[j] + "\"");
+            }
+
+            //bioregion rows
+            for (int i = 0; i < decCountMap.length; i++) {
+                if (decCountMap[i].size() > 0) {
+                    ArrayList array2 = new ArrayList();
+                    String rowname = (i + 1) + " Decades";
+                    fw.write("\n\"" + rowname + "\"");
+                    //count columns
+                    for (int j = 0; j < cols.length; j++) {
+                        Integer v = decCountMap[i].get(cols[j]);
+                        fw.write(",");
+                        if (v != null) {
+                            fw.write(v.toString());
+                            array2.add(v.toString());
+                        } else {
+                            array2.add("");
+                        }
+                    }
+                    Map m3 = new HashMap();
+                    m3.put("name", rowname);
+                    m3.put("row", array2);
+                    array.add(m3);
+                }
+            }
+
+            Map m4 = new HashMap();
+            m4.put("rows", array);
+            m4.put("columns", c);
+            map.put("decadecounts", m4);
+
+            fw.close();
+
+            fw = new FileWriter(outputDirectory + File.separator + "decadecounts.json");
             JSONObject.writeJSONString(map, fw);
             fw.close();
 

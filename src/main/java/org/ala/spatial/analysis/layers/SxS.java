@@ -4,6 +4,8 @@
  */
 package org.ala.spatial.analysis.layers;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
@@ -45,5 +47,13 @@ public class SxS {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getDateTime() {
+        String date = "";
+        try {
+            date = new SimpleDateFormat("dd/MM/yyyy hh:mm:SS").format(new Date(Long.valueOf(analysisId)));
+        } catch (Exception e) {}
+        return date;
     }
 }

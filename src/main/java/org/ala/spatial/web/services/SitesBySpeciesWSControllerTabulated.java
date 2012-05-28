@@ -39,7 +39,7 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 public class SitesBySpeciesWSControllerTabulated {
 
-    static Object lockPropertiesForWriting = new Object();
+    static Object lockProperties = new Object();
 
     @RequestMapping(value = "/ws/sitesbyspeciestabulated", method = {RequestMethod.POST, RequestMethod.GET})
     public
@@ -51,9 +51,13 @@ public class SitesBySpeciesWSControllerTabulated {
             long currTime = System.currentTimeMillis();
 
             String currentPath = AlaspatialProperties.getBaseOutputDir() + "output" + File.separator + "sitesbyspecies";
+
             String speciesq = URLDecoder.decode(req.getParameter("q"), "UTF-8").replace("__", ".");
             String area = req.getParameter("area");
-            String biocacheurl = URLDecoder.decode(req.getParameter("bs"), "UTF-8");
+
+            String bs = req.getParameter("bs");
+            String biocacheurl = URLDecoder.decode(bs == null ? AlaspatialProperties.getBiocacheWsURL() : bs, "UTF-8");
+
             double gridsize = Double.parseDouble(req.getParameter("gridsize"));
             String layers = req.getParameter("layers");
             if (layers != null) {
@@ -158,24 +162,22 @@ public class SitesBySpeciesWSControllerTabulated {
 
         ArrayList<SxS> list = new ArrayList<SxS>();
 
+        boolean runagain = false;
         for (Entry entry : p.entrySet()) {
             if (new File(pth + entry.getKey()).exists()) {
                 BufferedReader br = new BufferedReader(new FileReader(pth + entry.getKey()));
                 String analysisId = br.readLine();
                 br.close();
-                String status;
-                if ((analysisId + "").length() == 0 && AnalysisQueue.getState(analysisId) == null) {
-                    new File(pth + entry.getKey()).delete();
-                    status = "Not yet run";
-                } else {
-                    status = (analysisId + "").length() == 0 ? AnalysisJob.WAITING : AnalysisQueue.getState(analysisId);
-                }
+                String status = (analysisId + "").length() == 0 ? AnalysisJob.WAITING : AnalysisQueue.getState(analysisId);
 
                 list.add(new SxS((String) entry.getValue(), analysisId, status));
             } else {
-                list.add(new SxS((String) entry.getValue(), "", "Not yet run"));
+                //something did not run
+                runagain = true;
             }
         }
+
+        if(runagain) run();
 
         return list;
     }
@@ -204,54 +206,40 @@ public class SitesBySpeciesWSControllerTabulated {
     }
 
     public void run() throws IOException {
-        //get all incomplete runs
-        String pth = AlaspatialProperties.getAnalysisWorkingDir() + File.separator + "sxs" + File.separator;
-        Properties p = new Properties();
-        p.load(new FileReader(pth + "list.properties"));
-        ArrayList<SxS> list = new ArrayList<SxS>();
-        for (Entry entry : p.entrySet()) {
-            if (!new File(pth + entry.getKey()).exists()) {
-                list.add(new SxS((String) entry.getValue(), (String) entry.getKey(), ""));
-                FileWriter fw = new FileWriter(pth + entry.getKey());
-                fw.close();
-            }
-        }
-
-        for (SxS sxs : list) {
-            String url = AlaspatialProperties.getAlaspatialUrl() + "/ws/sitesbyspeciestabulated?" + sxs.getValue();
-            try {
-                //start
-                GetMethod get = new GetMethod(url);
-                HttpClient client = new HttpClient();
-                client.executeMethod(get);
-                if (get.getStatusCode() == 200) {
-                    String id = get.getResponseBodyAsString();
-                    FileWriter fw = new FileWriter(pth + sxs.getAnalysisId());
-                    fw.write(id);
-                    fw.close();
-
-                    //wait until finished
-                    while (AnalysisQueue.getState(id).equals(AnalysisJob.RUNNING)
-                            || AnalysisQueue.getState(id).equals(AnalysisJob.WAITING)) {
-                        Thread.currentThread().sleep(30000); //wait 30s
-                    }
-
-                    //test
-                    if (!AnalysisQueue.getState(id).equals(AnalysisJob.SUCCESSFUL)) {
-                        System.out.println("sxs failed for: " + url);
-                        System.out.println(AnalysisQueue.getMessage(id));
-                        System.out.println(AnalysisQueue.getLog(id));
-                        new File(pth + sxs.getAnalysisId()).delete();
-                    }
-                } else {
-                    System.out.println("sxs failed for: " + url);
-                    System.out.println("response code: " + get.getStatusCode());
-                    new File(pth + sxs.getAnalysisId()).delete();
+        synchronized (lockProperties) {
+            //get all incomplete runs
+            String pth = AlaspatialProperties.getAnalysisWorkingDir() + File.separator + "sxs" + File.separator;
+            Properties p = new Properties();
+            p.load(new FileReader(pth + "list.properties"));
+            ArrayList<SxS> list = new ArrayList<SxS>();
+            for (Entry entry : p.entrySet()) {
+                if (!new File(pth + entry.getKey()).exists()) {
+                    list.add(new SxS((String) entry.getValue(), (String) entry.getKey(), ""));
                 }
-            } catch (Exception e) {
-                new File(pth + sxs.getAnalysisId()).delete();
-                System.out.println("sxs failed for: " + url);
-                e.printStackTrace();
+            }
+
+            for (SxS sxs : list) {
+                String url = AlaspatialProperties.getAlaspatialUrl() + "/ws/sitesbyspeciestabulated?" + sxs.getValue() + "&bs=" + AlaspatialProperties.getBiocacheWsURL();
+                try {
+                    //start
+                    GetMethod get = new GetMethod(url);
+                    HttpClient client = new HttpClient();
+                    client.executeMethod(get);
+                    if (get.getStatusCode() == 200) {
+                        String id = get.getResponseBodyAsString();
+                        long lid = Long.parseLong(id);  //test analysis id
+                        FileWriter fw = new FileWriter(pth + sxs.getAnalysisId());
+                        fw.write(id);
+                        fw.flush();
+                        fw.close();
+                    } else {
+                        System.out.println("sxs failed for: " + url);
+                        System.out.println("response code: " + get.getStatusCode());
+                    }
+                } catch (Exception e) {
+                    System.out.println("sxs failed for: " + url);
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -274,9 +262,10 @@ public class SitesBySpeciesWSControllerTabulated {
         if (!f.exists()) {
             new File(pth).mkdir();
             FileWriter fw = new FileWriter(f);
-            fw.write("1=q=tasmanian%20devil&bs=http%3A%2F%2Fbiocache.ala.org.au%2Fws&gridsize=0.01&layers=aus1\n"
-                    + "2=q=tasmanian%20devil&bs=http%3A%2F%2Fbiocache.ala.org.au%2Fws&gridsize=0.1&layers=aus1\n"
-                    + "3=q=tasmanian%20devil&bs=http%3A%2F%2Fbiocache.ala.org.au%2Fws&gridsize=10&layers=aus1");
+            fw.write("1=q=tasmanian%20devil&gridsize=0.01&layers=aus1\n"
+                    + "2=q=tasmanian%20devil&gridsize=0.1&layers=aus1\n"
+                    + "3=q=tasmanian%20devil&gridsize=10&layers=aus1");
+            fw.flush();
             fw.close();
         }
     }
@@ -291,8 +280,10 @@ public class SitesBySpeciesWSControllerTabulated {
         String bs = URLEncoder.encode(AlaspatialProperties.getBiocacheWsURL(), "UTF-8");
         String gridsize = req.getParameter("gridsize");
 
+        String url = req.getParameter("u");
+
         try {
-            String url = "q=" + speciesquery + "&gridsize=" + gridsize + "&layers=" + layers + "&bs=" + bs;
+            if (url == null) url = "q=" + speciesquery + "&gridsize=" + gridsize + "&layers=" + layers;
 
             String pth = AlaspatialProperties.getAnalysisWorkingDir() + File.separator + "sxs" + File.separator;
 
@@ -300,7 +291,7 @@ public class SitesBySpeciesWSControllerTabulated {
             Properties p = new Properties();
             p.load(new FileReader(pth + "list.properties"));
 
-            synchronized (lockPropertiesForWriting) {
+            synchronized (lockProperties) {
                 FileWriter fw = new FileWriter(pth + "list.properties", true);
                 if (!p.containsValue(url)) {
                     for (int i = 1; i < Integer.MAX_VALUE; i++) {
@@ -314,22 +305,8 @@ public class SitesBySpeciesWSControllerTabulated {
                 fw.close();
             }
 
-            class RunThread extends Thread {
-                SitesBySpeciesWSControllerTabulated c;
-                public RunThread(SitesBySpeciesWSControllerTabulated c) {
-                    this.c = c;
-                }
-                @Override
-                public void run() {
-                    try {
-                        c.run();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            new RunThread(this).start();
-            
+            run();
+
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -21,15 +21,14 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
 <div class="inner">
     <div class="col-wide last" style="width:100%">
 
-        <table class="sortable table-borders" style="width:100%">
+        <table class="table-borders" style="width:100%">
             <thead>
             <tr><th>Add another sites by species tabulated</th></tr></thead>
             <tr><td>
-            <form nmethod="get" action="sxs/add" target="self">
-                input species <input name="speciesquery" value="tasmanian%20devil"/>
+            <form nmethod="get" action="sxs/add" >
+                species query<input name="speciesquery" value="tasmanian%20devil"/>
                 &nbsp;layers <input name="layers" value="aus1" />
                 &nbsp;grid size <input name="gridsize" value="0.01" />
-                <input name="bs" value="http%3A%2F%2Fbiocache.ala.org.au%2Fws" style="display:none"/>
                 <input type="submit" value="Add" />
                 <br>
             </form>
@@ -39,29 +38,39 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
         <table class="sortable table-borders" style="width:100%">
             <thead>
             <tr>
-                <th style="-moz-user-select: none;" class="sortable-keep fd-column-0"><a title="Sort on Field" href="#">Query</a></th>
-                <th style="-moz-user-select: none;" class="sortable-numeric fd-column-1"><a title="Sort on Field" href="#">Analysis ID</a></th>
-                <th style="-moz-user-select: none;" class="sortable-numeric fd-column-1"><a title="Sort on Field" href="#">Status</a></th>
+                <th style="-moz-user-select: none;" class="sortable-keep fd-column-0"><a title="Sort on Field" href="#">Date/Time</a></th>
+                <th style="-moz-user-select: none;" class="sortable-keep fd-column-1"><a title="Sort on Field" href="#">Query</a></th>
+                <th style="-moz-user-select: none;" class="sortable-numeric fd-column-2"><a title="Sort on Field" href="#">Analysis ID</a></th>
+                <th style="-moz-user-select: none;" class="sortable-numeric fd-column-3"><a title="Sort on Field" href="#">Status</a></th>
             </tr>
+            <tr></tr>
             </thead>
             <tbody>
-        <c:forEach items="${sxs}" var="layer">
-            <tr>
-                <td>${layer.value}</td>
-                <c:if test="${layer.status == 'SUCCESSFUL'}" >
-                    <td><a href="sxs/${layer.analysisId}">${layer.analysisId}</a></td>
-                </c:if>
-                <c:if test="${layer.status != 'SUCCESSFUL'}" >
-                    <td><a href="ws/job?pid=${layer.analysisId}">${layer.analysisId}</a></td>
-                </c:if>
-                <td>${layer.status}</td>
-            </tr>
-        </c:forEach>
+                <c:forEach items="${sxs}" var="layer">
+                    <tr>
+                        <td>${layer.dateTime}</td>
+                        <td><p style='width:500px;word-wrap:break-word'>${layer.value}</p></td>
+                        <c:if test="${layer.status == 'SUCCESSFUL'}" >
+                            <td><a href="sxs/${layer.analysisId}">${layer.analysisId}</a></td>
+                        </c:if>
+                        <c:if test="${layer.status != 'SUCCESSFUL'}" >
+                            <td><a href="ws/job?pid=${layer.analysisId}&log=true">${layer.analysisId}</a></td>
+                        </c:if>
+                        <td>${layer.status}</td>
+                        <td>
+                            <form nmethod="get" action="sxs/add">
+                                <div style="display:none">
+                                    <input name="u" value="${layer.value}"/>
+                                </div>
+                                <input type="submit" value="re-run" />
+                            </form>
+                        </td>
+                    </tr>
+                </c:forEach>
             </tbody>
         </table>
 
-        <script type="text/javascript" src="/layers-service/javascript/SortingTable.js"></script>
-
+        <script type="text/javascript" src="http://spatial.ala.org.au/layers-service/javascript/SortingTable.js"></script>
 
     </div>
 </div><!--inner-->
