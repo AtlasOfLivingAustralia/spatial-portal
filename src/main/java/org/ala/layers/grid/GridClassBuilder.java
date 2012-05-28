@@ -316,12 +316,12 @@ public class GridClassBuilder {
             sld.append("   <sld:SourceChannelName>1</sld:SourceChannelName>");
             sld.append(" </sld:GrayChannel>");
             sld.append(" </sld:ChannelSelection>");
-            sld.append(" <sld:ColorMap>");
+            sld.append(" <sld:ColorMap type=\"intervals\">");
 
             /* outputs */
-            sld.append("\n<sld:ColorMapEntry color=\"#ffffff\" opacity=\"0\" quantity=\"0\"/>\n");
+            sld.append("\n<sld:ColorMapEntry color=\"#ffffff\" opacity=\"0\" quantity=\"1\"/>\n");
             for (int i = 0; i < labels.size(); i++) {
-                sld.append("<sld:ColorMapEntry color=\"#" + getHexColour(colours[i % colours.length]) + "\" quantity=\"" + maxValues.get(i) + ".0\" label=\"" + labels.get(i) + "\" opacity=\"1\"/>\r\n");
+                sld.append("<sld:ColorMapEntry color=\"#" + getHexColour(colours[i % colours.length]) + "\" quantity=\"" + (maxValues.get(i) + 1) + ".0\" label=\"" + labels.get(i) + "\" opacity=\"1\"/>\r\n");
             }
 
             /* footer */
