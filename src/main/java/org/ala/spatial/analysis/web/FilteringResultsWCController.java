@@ -29,6 +29,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -82,6 +83,9 @@ public class FilteringResultsWCController extends UtilityComposer {
     Div divWorldNote;
     Label lblWorldNoteOccurrences;
     Label lblWorldNoteSpecies;
+    Label gazLabel;
+    JSONArray gazPoints = null;
+    Button mapGazPoints;
 
     public void setReportArea(SelectedArea sa, String name, String displayname, String areaSqKm, double[] boundingBox) {
         selectedArea = sa;
@@ -165,6 +169,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             aclLabel.setValue("updating...");
             lblArea.setValue("updating...");
             lblBiostor.setValue("updating...");
+            gazLabel.setValue("updating...");
         }
     }
 
@@ -218,7 +223,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     void startRefreshCount() {
         //countdown includes; intersectWithSpecies, calcuateArea, counts
-        counter = new CountDownLatch(4);
+        counter = new CountDownLatch(5);
 
         Thread t1 = new Thread() {
 
@@ -269,11 +274,22 @@ public class FilteringResultsWCController extends UtilityComposer {
             }
         };
 
+        Thread t6 = new Thread() {
+
+            @Override
+            public void run() {
+                setPriority(Thread.MIN_PRIORITY);
+                countGazPoints();
+                decCounter();
+            }
+        };
+
         t1.start();
         t2.start();
         biostorThread.start();
         t4.start();
         t5.start();
+        t6.start();
 
         boolean worldAreaSelected = CommonData.WORLD_WKT.equals(selectedArea.getWkt());
         divWorldNote.setVisible(worldAreaSelected);
@@ -313,7 +329,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         results_label2_occurrences.setValue(data.get("occurrencesCount"));
         results_label2_species_kosher.setValue(data.get("speciesCountKosher"));
         results_label2_occurrences_kosher.setValue(data.get("occurrencesCountKosher"));
-
+        gazLabel.setValue(data.get("countGazPoints"));
 
         //underline?
         if (isNumberGreaterThanZero(lblBiostor.getValue())) {
@@ -371,6 +387,8 @@ public class FilteringResultsWCController extends UtilityComposer {
         } else {
             mapspecieskosher.setVisible(false);
         }
+
+        mapGazPoints.setVisible(gazPoints != null && gazPoints.size() < 5000);
     }
 
     void decCounter() {
@@ -640,6 +658,29 @@ public class FilteringResultsWCController extends UtilityComposer {
         return null;
     }
 
+    public static JSONArray getGazPoints(String wkt) {
+        try {
+            int limit = Integer.MAX_VALUE;
+            String url = CommonData.layersServer + "/objects/inarea/" + CommonData.settings.get("area_report_gaz_field") + "?limit=" + limit;
+
+            HttpClient client = new HttpClient();            
+            PostMethod post = new PostMethod(url);
+            System.out.println(CommonData.layersServer + url);
+            if (wkt != null) {
+                post.addParameter("wkt", wkt);
+            }
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(post);
+            if (result == 200) {
+                String txt = post.getResponseBodyAsString();
+                return JSONArray.fromObject(txt);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static String[] getAreaChecklists(String geom_idx, String lsids, String wkt) {
         try {
             return getAreaChecklists(getDistributionsOrChecklists("checklists", lsids, wkt, geom_idx));
@@ -782,6 +823,33 @@ public class FilteringResultsWCController extends UtilityComposer {
                 areaChecklistText = getAreaChecklists(lines);
                 data.put("intersectWithAreaChecklists", String.format("%,d", areaChecklistText.length - 1));
                 speciesChecklistText = lines;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void countGazPoints() {
+        try {
+            String wkt = selectedArea.getWkt();
+            if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+                //use boundingbox
+                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
+                double long1 = bbox.get(0);
+                double lat1 = bbox.get(1);
+                double long2 = bbox.get(2);
+                double lat2 = bbox.get(3);
+                wkt = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+            }
+
+            JSONArray ja = getGazPoints(wkt);
+
+            if (ja == null || ja.size() == 0) {
+                data.put("countGazPoints", "0");
+                speciesChecklistText = null;
+            } else {
+                data.put("countGazPoints", String.format("%,d", ja.size()));
+                gazPoints = ja;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1063,5 +1131,13 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         return ret;
+    }
+
+    public void onClick$mapGazPoints() {
+        try {
+            getMapComposer().getOpenLayersJavascript().execute("mapFrame.mapPoints('" + StringEscapeUtils.escapeJavaScript(gazPoints.toString()) + "');");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

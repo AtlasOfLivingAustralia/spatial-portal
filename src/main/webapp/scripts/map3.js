@@ -1493,6 +1493,45 @@ function envLayerNearest(e) {
     return null;
 }
 
+function mapPoints(json) {
+    if(markers == null) {
+        initMarkersLayer();
+    }
+    var ret = jQuery.parseJSON(json);
+    var body = "";
+    if(ret != undefined && ret.length > 0) {
+        for(i=0;i<ret.length;i++) {
+            var coords = ret[i].geometry.replace("POINT(","").replace(")","").split(" ");
+            var lng = coords[0] * 1.0;
+            var lat = coords[1] * 1.0;
+            var style = ""
+            if(i%2 == 1) {
+                style = "class='md_grey-bg'"
+            }
+            body = body + "<tr " + style + "><td>" + ret[i].name
+            + "</td><td>" + lng + ",<br>" + lat
+            + "</td></tr>";
+
+            //markers.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(lng,lat).transform(map.displayProjection, map.projection),markers_icon.clone()));
+            var c = new OpenLayers.LonLat(lng,lat).transform(map.displayProjection, map.projection)
+            var point = new OpenLayers.Geometry.Point(c.lon, c.lat);
+            var pointFeature = new OpenLayers.Feature.Vector(point);
+            pointFeature.attributes = {
+                name: ret[i].name
+            };
+            try {
+                markers.addFeatures([pointFeature]);
+            } catch (err) {
+            //Catch IE9 error.  pointFeature is still mapping.
+            }
+        }
+        setTimeout(function(){ //fix for some browsers
+            parent.jq('$featuretool')[0].style.display=""
+            parent.document.getElementById('featureOutput').innerHTML = "<table>" + body + "</table>";
+        },200)
+    }
+}
+
 function initMarkersLayer() {
     var renderer = OpenLayers.Util.getParameters(window.location.href).renderer;
     renderer = (renderer) ? [renderer] : OpenLayers.Layer.Vector.prototype.renderers;
@@ -1632,6 +1671,22 @@ function toggleActiveNearest() {
         parent.document.getElementById('nearestOutput').innerHTML = "Click on the map for the nearest localities.";
         setTimeout(function() {
             parent.jq('$nearesttool')[0].style.display=""
+        }, 100)
+    }
+}
+
+function toggleActiveFeatures() {
+    if(nearestcontrol != null) {
+        nearestcontrol.deactivate();
+        nearestcontrol = null;
+        setTimeout(function() {
+            parent.jq('$featuretool')[0].style.display="none"
+        }, 100)
+    } else {
+        initNearest();
+        parent.document.getElementById('featureOutput').innerHTML = "";
+        setTimeout(function() {
+            parent.jq('$featuretool')[0].style.display=""
         }, 100)
     }
 }

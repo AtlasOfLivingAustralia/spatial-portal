@@ -30,6 +30,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ala.spatial.data.*;
 import org.ala.spatial.sampling.Sampling;
+import org.ala.spatial.sampling.SimpleRegion;
+import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.SelectedArea;
@@ -48,6 +50,7 @@ import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.GrayPaintScale;
+import org.jfree.chart.renderer.LookupPaintScale;
 import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.chart.renderer.xy.XYShapeRenderer;
@@ -64,10 +67,12 @@ import org.zkoss.zul.Filedownload;
  */
 public class AddToolScatterplotListComposer extends AddToolComposer {
 
+    private static final String ACTIVE_AREA_SERIES = "In Active Area";
     int generation_count = 1;
     ScatterplotData data;
     Checkbox chkShowEnvIntersection;
     DefaultXYZDataset xyzDataset;
+    DefaultXYZDataset aaDataset;
     DefaultXYZDataset backgroundXyzDataset;
     JFreeChart jChart;
     XYPlot plot;
@@ -388,8 +393,11 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             return null;
         }
         //active area must be drawn first
-
-        jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyzDataset, PlotOrientation.HORIZONTAL, false, false, false);
+        if (data.getHighlightSa() != null && aaDataset != null) {
+            jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), aaDataset, PlotOrientation.HORIZONTAL, false, false, false);
+        } else {
+            jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyzDataset, PlotOrientation.HORIZONTAL, false, false, false);
+        }
 
         jChart.setBackgroundPaint(Color.white);
         plot = (XYPlot) jChart.getPlot();
@@ -420,7 +428,16 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
                 seriesColours[i] = legend.getColour(seriesNames[i]);
             }
         }
-        plot.setRenderer(getRenderer(legend, seriesColours, seriesNames, data.getSeriesValues()));
+        //active area must be drawn first
+        if (data.getHighlightSa() != null && aaDataset != null) {
+            plot.setRenderer(getActiveAreaRenderer());
+
+            int datasetCount = plot.getDatasetCount();
+            plot.setDataset(datasetCount, xyzDataset);
+            plot.setRenderer(datasetCount, getRenderer(legend, seriesColours, seriesNames, data.getSeriesValues()));
+        } else {
+            plot.setRenderer(getRenderer(legend, seriesColours, seriesNames, data.getSeriesValues()));
+        }
 
         //add points background
         if (data.getBackgroundQuery() != null) {
@@ -581,8 +598,18 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
 
                     createDataset();
                 }
+                if (prevResampleHighlight == null || !prevResampleHighlight.equals(thisResampleHighlight)
+                        || aaDataset == null || aaDataset.getSeriesCount() == 0) {
+                    prevResampleHighlight = thisResampleHighlight;
+                    if (data.getHighlightSa() == null) {
+                        aaDataset = null;
+                    } else {
+                        createAADataset();
+                    }
+                }
             } else {
                 //no resample available
+                aaDataset = null;
                 xyzDataset = null;
                 if (data != null) {
                     data.setMissingCount(0);
@@ -1106,5 +1133,59 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
 
     private boolean isAlphaNumeric(char c) {
         return (c <= 'Z' && c >= 'A') || (c <= 'z' && c >= 'a') || (c <= '9' && c >= '0');
+    }
+
+    private void createAADataset() {
+        if (data.getHighlightSa() == null) {
+            aaDataset = null;
+            return;
+        }
+
+        aaDataset = new DefaultXYZDataset();
+
+        SimpleRegion region = SimpleShapeFile.parseWKT(data.getHighlightSa().getWkt());
+
+        ArrayList<double[]> records = new ArrayList<double[]>(data.getPoints().length);
+        double[][] d = data.getData();
+        double[] points = data.getPoints();
+        for (int j = 0; j < d.length; j++) {
+            if (!Double.isNaN(d[j][0]) && !Double.isNaN(d[j][1])
+                    && region.isWithin(points[j * 2], points[j * 2 + 1])) {
+                double[] r = {d[j][0], d[j][1], 0};
+                records.add(r);
+            }
+        }
+        if (records.size() > 0) {
+            //flip data into an array
+            double[][] sd = new double[3][records.size()];
+            for (int j = 0; j < records.size(); j++) {
+                sd[0][j] = records.get(j)[0];
+                sd[1][j] = records.get(j)[1];
+                sd[2][j] = records.get(j)[2];
+            }
+            aaDataset.addSeries(ACTIVE_AREA_SERIES, sd);
+        }
+    }
+
+    XYShapeRenderer getActiveAreaRenderer() {
+        XYShapeRenderer renderer = new XYShapeRenderer();
+
+        LookupPaintScale paint = new LookupPaintScale(0, 1, new Color(255, 255, 255, 0)) {
+
+            @Override
+            public Paint getPaint(double value) {
+                return this.getDefaultPaint();
+            }
+        };
+
+        renderer.setPaintScale(paint);
+        renderer.setSeriesOutlinePaint(0, new Color(255, 0, 0, 255));
+        renderer.setDrawOutlines(true);
+
+        double size = data.size + 3;
+        double delta = size / 2;
+        renderer.setSeriesShape(0, new Ellipse2D.Double(-delta, -delta, size, size));
+
+        return renderer;
     }
 }

@@ -353,6 +353,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 mapFrame.document.getElementById("hoverTool").style.display="none";
                             if(mapFrame.document.getElementById("nearestTool") != null)
                                 mapFrame.document.getElementById("nearestTool").style.display="none";
+                                if(mapFrame.document.getElementById("featureTool") != null)
+                                mapFrame.document.getElementById("featureTool").style.display="none";
 
                             jQuery('.z-center')[0].style.border = "0px";
                         }
@@ -592,13 +594,25 @@ function readCookie(name) {
         <window id="nearesttool" border="normal" sizable="true"
                  xmlns:n="http://www.zkoss.org/2005/zk/native" mode="overlapped" width="400px" height="120px" position="center,top">
             <n:a class="fancybox-close" n:onClick="clearNearestMarkerLayer();mapFrame.toggleActiveNearest();" style="display: inline" />
-            <caption label="Nearest feature tool" >
+            <caption label="Nearest feature tool">
                 <n:a href='#' n:onClick="clearNearestMarkerLayer();">
                     <n:span style="color:black">remove all markers</n:span>
                 </n:a>
             </caption>
             <div height="100%" style="background:white">
                 <n:div id="nearestOutput"></n:div>
+            </div>
+        </window>
+        <window id="featurestool" border="normal" sizable="true"
+                 xmlns:n="http://www.zkoss.org/2005/zk/native" mode="overlapped" width="400px" height="120px" position="center,top">
+            <n:a class="fancybox-close" n:onClick="clearNearestMarkerLayer();mapFrame.toggleActiveFeatures();" style="display: inline" />
+            <caption label="Mapped features">
+                <n:a href='#' n:onClick="clearNearestMarkerLayer();mapFrame.toggleActiveFeatures();">
+                    <n:span style="color:black">remove all markers</n:span>
+                </n:a>
+            </caption>
+            <div height="100%" style="background:white">
+                <n:div n:style="height:300px;overflow:auto;" id="featuresOutput"></n:div>
             </div>
         </window>
 
@@ -614,6 +628,7 @@ function readCookie(name) {
         <zscript defer="true">
             hovertool.setVisible(false);
             nearesttool.setVisible(false);
+            featuretool.setVisible(false);
         </zscript>
 
     </window>

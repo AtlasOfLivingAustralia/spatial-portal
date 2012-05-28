@@ -10,10 +10,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.metainfo.EventHandler;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Combobox;
@@ -64,7 +64,12 @@ public class PrintingComposer extends UtilityComposer {
 
     public void onClick$btnPreview(Event event) {
         //header text
-        String header = txtHeader.getValue();
+        String header = null;
+        try {
+            header = StringEscapeUtils.escapeHtml(txtHeader.getValue());
+        } catch (Exception e) {
+            header = "";
+        }
 
         //grid
         double grid = 0; //zero is none

@@ -105,7 +105,18 @@
                 <n:td width="80px">
                     <label id="lblBiostor" style="cursor:pointer;" />
                 </n:td>
-            </n:tr>      
+            </n:tr>
+            <n:tr height="18px" >
+                <n:td>
+                    <label value="Gazetteer points" />
+                </n:td>
+                <n:td>
+                    <label id="gazLabel" style="cursor:pointer;" />
+                </n:td>
+                <n:td>
+                    <button label="Map all" id="mapGazPoints" visible="false" sclass="goButton"/>
+                </n:td>
+            </n:tr>
         </n:table>
         <separator />
 
