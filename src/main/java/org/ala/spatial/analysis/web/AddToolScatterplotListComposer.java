@@ -598,15 +598,15 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
 
                     createDataset();
                 }
-                if (prevResampleHighlight == null || !prevResampleHighlight.equals(thisResampleHighlight)
-                        || aaDataset == null || aaDataset.getSeriesCount() == 0) {
+//                if (prevResampleHighlight == null || !prevResampleHighlight.equals(thisResampleHighlight)
+//                        || aaDataset == null || aaDataset.getSeriesCount() == 0) {
                     prevResampleHighlight = thisResampleHighlight;
                     if (data.getHighlightSa() == null) {
                         aaDataset = null;
                     } else {
                         createAADataset();
                     }
-                }
+//                }
             } else {
                 //no resample available
                 aaDataset = null;
