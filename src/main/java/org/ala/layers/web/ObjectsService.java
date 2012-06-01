@@ -53,7 +53,7 @@ public class ObjectsService {
      * @return 
      */
     @RequestMapping(value = "/objects/{id}", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     List<Objects> fieldObjects(@PathVariable("id") String id, HttpServletRequest req) {
         return objectDao.getObjectsById(id);
@@ -65,7 +65,7 @@ public class ObjectsService {
      * @return 
      */
     @RequestMapping(value = "/object/{pid}", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     Objects fieldObject(@PathVariable("pid") String pid, HttpServletRequest req) {
 //        String query = "SELECT pid, id, name, \"desc\" FROM objects WHERE pid='" + pid + "';";
@@ -81,7 +81,7 @@ public class ObjectsService {
      * @return
      */
     @RequestMapping(value = "/objects/{id}/{lat}/{lng:.+}", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     List<Objects> fieldObjects(@PathVariable("id") String id,
             @PathVariable("lat") Double lat, @PathVariable("lng") Double lng,
@@ -96,14 +96,14 @@ public class ObjectsService {
      * @param req
      * @return
      */
-    @RequestMapping(value = "/objects/{id}", method = { RequestMethod.GET, RequestMethod.POST })
-    public 
+    @RequestMapping(value = "/objects/inarea/{id}", method = {RequestMethod.GET, RequestMethod.POST})
+    public
     @ResponseBody
     List<Objects> fieldObjects(@PathVariable("id") String id,
             @RequestParam(value = "limit", required = false, defaultValue = "40") Integer limit,
             HttpServletRequest req) throws UnsupportedEncodingException {
-        String wkt = URLDecoder.decode(req.getParameter("wkt"),"UTF-8");
-        if (wkt.toUpperCase().startsWith("ENVELOPE(")) {
+        String wkt = URLDecoder.decode(req.getParameter("wkt"), "UTF-8");
+        if (wkt.startsWith("ENVELOPE(")) {
             //get results of each filter
             LayerFilter[] filters = LayerFilter.parseLayerFilters(wkt);
             List<List<Objects>> all = new ArrayList<List<Objects>>();
@@ -133,7 +133,7 @@ public class ObjectsService {
             }
 
             return inAllGroups;
-        } else if (wkt.toUpperCase().startsWith("OBJECT(")) {
+        } else if (wkt.startsWith("OBJECT(")) {
             String pid = wkt.substring("OBJECT(".length(), wkt.length() - 1);
             return objectDao.getObjectsByIdAndIntersection(id, limit, pid);
         } else {
