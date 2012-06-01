@@ -1,6 +1,6 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
-<zk>
+<zk xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
     <window id="layerlegend" use="au.org.emii.portal.composer.LayerLegendComposer2"
     apply="au.org.emii.portal.composer.LayerLegendComposer2" width="400px">
 
@@ -217,8 +217,31 @@ padding: 1px 0px 0px 5px;
                     </vbox>
                 </div>
                 <separator />
-                <separator />
-
+                <div id="divAnimation" visible="false">
+                    <hbox>
+                        <div style="padding-top:0px" width="65px">
+                            <label value="Animation" sclass="h3" />
+                        </div>
+                        <div  width="250px">
+                            <vbox>
+                                <label id="lblAnimationLabel" />
+                                <hbox>
+                                    <label value="Frame size in years" />
+                                    <intbox id="intAnimationStep" width="30px" value="10"/>
+                                </hbox>
+                                <hbox>
+                                    <label value="Time between frames (s)" />
+                                    <doublebox id="dblAnimationSeconds" width="30px" value="3.5"/>
+                                </hbox>
+                                <hbox>
+                                    <button label="start" id="btnAnimationStart" />
+                                    <button label="stop" id="btnAnimationStop" disabled="true" />
+                                </hbox>
+                                <n:div id="animationStatus"></n:div>
+                            </vbox>
+                        </div>
+                    </hbox>
+                </div>
                 <div style="padding-top:0px" width="65px">
                     <label value="Legend" sclass="h3" />
                 </div>

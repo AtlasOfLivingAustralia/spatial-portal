@@ -603,7 +603,7 @@ function readCookie(name) {
                 <n:div id="nearestOutput"></n:div>
             </div>
         </window>
-        <window id="featurestool" border="normal" sizable="true"
+        <window id="featuretool" border="normal" sizable="true"
                  xmlns:n="http://www.zkoss.org/2005/zk/native" mode="overlapped" width="400px" height="120px" position="center,top">
             <n:a class="fancybox-close" n:onClick="clearNearestMarkerLayer();mapFrame.toggleActiveFeatures();" style="display: inline" />
             <caption label="Mapped features">

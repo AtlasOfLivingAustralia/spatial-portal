@@ -16,4 +16,4 @@
 <!--c:include page="~./js/zul.menu.wpd"/-->
 <c:include page="/scripts/html5.js"/>
 <c:include page="/scripts/jqDnR.js"/>
-<c:include page="/scripts/jquery-1.6.4.min.js"/>
+<c:include page="/scripts/jquery-1.7.2.min.js"/>

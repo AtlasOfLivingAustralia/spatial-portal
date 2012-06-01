@@ -57,6 +57,7 @@ public class AddSpeciesInArea extends UtilityComposer {
     private String metadata;
     private boolean allSpecies = false;
     private boolean[] geospatialKosher = null;
+    String multipleSpeciesUploadName = null;
 
     @Override
     public void afterCompose() {
@@ -197,11 +198,15 @@ public class AddSpeciesInArea extends UtilityComposer {
                     String activeAreaLayerName = getSelectedAreaDisplayName();
                     String layerName = "Occurrences in " + activeAreaLayerName;
 
-                    if (q instanceof BiocacheQuery) {
-                        String lsids = ((BiocacheQuery) q).getLsids();
-                        if (lsids != null && lsids.length() > 0
-                                && lsids.split(",").length > 1) {
-                            layerName = "Species assemblage";
+                    if(multipleSpeciesUploadName != null) {
+                        layerName = multipleSpeciesUploadName;
+                    } else {
+                        if (q instanceof BiocacheQuery) {
+                            String lsids = ((BiocacheQuery) q).getLsids();
+                            if (lsids != null && lsids.length() > 0
+                                    && lsids.split(",").length > 1) {
+                                layerName = "Species assemblage";
+                            }
                         }
                     }
                     ml = getMapComposer().mapSpecies(q, layerName, "species", results_count_occurrences, LayerUtilities.SPECIES, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
@@ -331,5 +336,9 @@ public class AddSpeciesInArea extends UtilityComposer {
 
     void setGeospatialKosher(boolean[] geospatialKosher) {
         this.geospatialKosher = geospatialKosher;
+    }
+
+    void setMultipleSpeciesUploadName(String multipleSpeciesUploadName) {
+        this.multipleSpeciesUploadName = multipleSpeciesUploadName;
     }
 }

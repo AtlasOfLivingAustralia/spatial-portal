@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.LegendObject;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryField;
@@ -22,6 +23,7 @@ import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -30,8 +32,10 @@ import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
+import org.zkoss.zul.Doublebox;
 import org.zkoss.zul.Hbox;
 import org.zkoss.zul.Image;
+import org.zkoss.zul.Intbox;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Radio;
@@ -88,6 +92,12 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     Div dGroupBox;
     Combobox cbClassificationGroup;
     Div divClassificationPicker;
+    Div divAnimation;
+    Button btnAnimationStart;
+    Button btnAnimationStop;
+    Intbox intAnimationStep;
+    Label lblAnimationLabel;
+    Doublebox dblAnimationSeconds;
 
     @Override
     public void afterCompose() {
@@ -295,6 +305,11 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         updateLegendImage();
 
         setupLayerControls(ml);
+        
+        updateAnimationDiv();
+
+        String script = "mapFrame.stopAllAnimations();";
+        getMapComposer().getOpenLayersJavascript().execute(script);
 
         inInit = false;
     }
@@ -766,5 +781,78 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
             e.printStackTrace();
         }
         return i;
+    }
+
+    public void onClick$btnAnimationStart(Event event) {
+        try {
+            Integer step = intAnimationStep.getValue();
+            if(step < 1) {
+                step = 1;
+                intAnimationStep.setValue(1);
+            }
+            
+            Double interval = dblAnimationSeconds.getValue();
+            if(interval < 0.2) {
+                interval = 0.2;
+                dblAnimationSeconds.setValue(0.2);
+            }
+
+            Integer firstYear = (Integer) mapLayer.getData("first_year");
+            Integer lastYear =  (Integer) mapLayer.getData("last_year");
+
+            mapLayer.setData("animation_step", step);
+            mapLayer.setData("animation_interval", interval);
+
+            String script = "mapFrame.animateStart('" + StringEscapeUtils.escapeJavaScript(mapLayer.getNameJS()) + "',"
+                    + interval * 1000 + "," + firstYear + "," + lastYear + "," + step + ");";
+
+            getMapComposer().getOpenLayersJavascript().execute(script);
+
+            btnAnimationStop.setDisabled(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateAnimationDiv() {
+        try {
+            Query q = (Query) mapLayer.getData("query");
+            if(q != null && q instanceof BiocacheQuery) {
+                Integer firstYear = (Integer) mapLayer.getData("first_year");
+                Integer lastYear =  (Integer) mapLayer.getData("last_year");
+                if(firstYear == null) {
+                    LegendObject lo = ((BiocacheQuery)q).getLegend("year");
+                    if(lo != null && lo.getMinMax() != null) {
+                        firstYear = (int) lo.getMinMax()[0];
+                        lastYear = (int) lo.getMinMax()[1];
+                        mapLayer.setData("first_year", firstYear);
+                        mapLayer.setData("last_year", lastYear);
+                    }
+                }
+
+                Integer step = (Integer) mapLayer.getData("animation_step");
+                if(step != null) {
+                    intAnimationStep.setValue(step);
+                }
+
+                Double interval = (Double) mapLayer.getData("animation_interval");
+                if(interval != null) {
+                    dblAnimationSeconds.setValue(interval);
+                }
+
+                if(firstYear < lastYear) {
+                    lblAnimationLabel.setValue("years " + firstYear + " to " + lastYear);
+                    divAnimation.setVisible(true);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onClick$btnAnimationStop(Event event) {
+        String script = "mapFrame.animateStop('" + StringEscapeUtils.escapeJavaScript(mapLayer.getNameJS()) + "');";
+        getMapComposer().getOpenLayersJavascript().execute(script);
+        btnAnimationStop.setDisabled(true);
     }
 }

@@ -964,6 +964,7 @@ public class BiocacheQuery implements Query, Serializable {
             // Temporal
             fields.add(new QueryField("month", "Month", QueryField.FieldType.STRING));
             fields.add(new QueryField("year", "Year", QueryField.FieldType.INT));
+            fields.add(new QueryField("year", "Year (individual)", QueryField.FieldType.STRING));
             //fields.add(new QueryField("decade", "Decade", QueryField.FieldType.INT));
             // Record details
             fields.add(new QueryField("basis_of_record", "Record Type", QueryField.FieldType.STRING));

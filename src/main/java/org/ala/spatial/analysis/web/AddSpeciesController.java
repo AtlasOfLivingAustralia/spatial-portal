@@ -68,6 +68,7 @@ public class AddSpeciesController extends UtilityComposer {
     Query query;
     String rank;
     String taxon;
+    String multipleSpeciesUploadName = null;
     boolean prevAreaState = true;
 
     @Override
@@ -114,6 +115,7 @@ public class AddSpeciesController extends UtilityComposer {
                 query = new BiocacheQuery(lsids, null, null, null, false, getGeospatialKosher());
                 window.setSpeciesParams(query, rank, taxon);
                 window.loadAreaLayers();
+                window.setMultipleSpeciesUploadName(multipleSpeciesUploadName);
                 try {
                     window.doModal();
                 } catch (InterruptedException ex) {
@@ -477,7 +479,7 @@ public class AddSpeciesController extends UtilityComposer {
         return sb.toString();
     }
 
-    public void setMultipleSpecies(String splist) {
+    public void setMultipleSpecies(String splist, String layername) {
         tMultiple.setText(splist);
         rSearch.setSelected(false);
         rMultiple.setSelected(true);
@@ -485,6 +487,7 @@ public class AddSpeciesController extends UtilityComposer {
         vboxMultiple.setVisible(true);
         bMultiple.focus();
         this.onClick$bMultiple(event);
+        multipleSpeciesUploadName = layername;
     }
 
     public boolean[] getGeospatialKosher() {

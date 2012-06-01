@@ -2047,3 +2047,101 @@ function panoramioLoadingImage(display) {
         }
     }
 }
+
+//animateStart("Eucalyptus",2000,1760,2012,30,0)"
+function animateStop(layername) {
+    var layers = map.getLayersByName(layername);
+    if (layers.length == 0) return;
+    var layer = layers[0];
+    layer.animate = "stop";
+}
+
+function animateStart(layername, interval, start, end, step) {
+    var layers = map.getLayersByName(layername);
+    if (layers.length == 0) {
+        cleanupAnimationLayers(layername);
+        return;
+    }
+    var layer = layers[0];
+    if(layer.url_orig == undefined) {
+        cleanupAnimationLayers(layername);
+        layer.url_orig = layer.url;
+        layer.animate = "playing"
+    }
+
+    //create layers
+    var newlayers = [];
+    var page = 0;
+    while (page * step + start < end) {
+        newlayers[page] = layer.clone();
+        newlayers[page].setName(layer.name + "__animation__" + page);
+        newlayers[page].url = layer.url_orig + "&fq=year:[" + (1*start + step*(page)) + " TO " + (1*start + step*(page+1)) + "]";
+
+        page = page + 1
+    }
+
+    map.addLayers(newlayers);
+    layer.animated_layers = newlayers;
+
+    animateLayered(layername, interval, start, end, step, 0);
+}
+
+function animateLayered(layername, interval, start, end, step, page) {
+    var layers = map.getLayersByName(layername);
+    if (layers.length == 0) {
+        cleanupAnimationLayers(layername);
+        return;
+    }
+    var layer = layers[0];
+
+    if(page >= layer.animated_layers.length) {
+        page = 0;
+    }
+
+    var status = parent.document.getElementById('animationStatus')
+
+    if(layer.animate == "stop" ||
+        layer.animated_layers[page].url.indexOf(layer.url) < 0) {
+        layer.url = layer.url_orig;
+        layer.url_orig = undefined;
+        layer.display(true);
+
+        cleanupAnimationLayers(layername);
+
+        if(status) status.innerHTML = "stopped";
+    } else {
+        layer.display(false);
+
+        for(i=0;i<page;i++) {
+//            layer.animated_layers[i].setOpacity(((i+1)/(2*page)));
+//            layer.animated_layers[i].display(true);
+            layer.animated_layers[i].display(false);
+        }
+        //layer.animated_layers[page].setOpacity(layer.opacity);
+        layer.animated_layers[page].display(true);
+        for(i=page+1;i<layer.animated_layers.length;i++) {
+            layer.animated_layers[i].display(false);
+        }
+
+        if(status) status.innerHTML = "frame: "  + (1*start + step*(page)) + " to " + (1*start + step*(page+1));
+        setTimeout("animateLayered('" + layername + "'," + interval + ", " + start + ", " + end + ", " + step + ", " + (page + 1) + ")", interval);
+    }
+}
+
+function stopAllAnimations() {
+    for (i=0;i<map.layers.length;i++) {
+        if (map.layers[i].animate == 'playing') {
+            animateStop(map.layers[i].name);
+            i = 0;
+        }
+    }
+}
+
+function cleanupAnimationLayers(layername) {
+    for (i=0;i<map.layers.length;i++) {
+        if (map.layers[i].name.indexOf(layername + "__animation__") == 0) {
+            map.removeLayer(map.layers[i]);
+            i = 0;
+        }
+    }
+}

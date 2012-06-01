@@ -3102,6 +3102,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            String script = "mapFrame.stopAllAnimations();";
+            getMapComposer().getOpenLayersJavascript().execute(script);
             return;
         }
 

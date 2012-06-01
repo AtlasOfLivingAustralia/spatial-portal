@@ -435,7 +435,7 @@ public class UploadSpeciesController extends UtilityComposer {
             } else {
                 AddSpeciesController window = (AddSpeciesController) Executions.createComponents("WEB-INF/zul/AddSpecies.zul", getMapComposer(), null);
                 try {
-                    window.setMultipleSpecies(lsids);
+                    window.setMultipleSpecies(lsids, ud.getName());
                     window.doModal();
                 } catch (InterruptedException ex) {
                     Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
