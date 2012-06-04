@@ -64,6 +64,14 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                                 </div>
                                 <input type="submit" value="re-run" />
                             </form>
+                            <c:if test="${layer.status == 'FAILED'}" >
+                                <form nmethod="get" action="sxs/delete">
+                                    <div style="display:none">
+                                        <input name="u" value="${layer.value}"/>
+                                    </div>
+                                    <input type="submit" value="delete" />
+                                </form>
+                            </c:if>
                         </td>
                     </tr>
                 </c:forEach>
