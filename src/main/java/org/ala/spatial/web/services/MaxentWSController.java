@@ -107,4 +107,71 @@ public class MaxentWSController {
 
         return null;
     }
+
+
+
+
+    @RequestMapping(value = "/ws/maxent/estimate", method = RequestMethod.POST)
+    public @ResponseBody
+    String maxentEstimate(HttpServletRequest req) {
+
+        try {
+            long currTime = System.currentTimeMillis();
+
+            String currentPath = AlaspatialProperties.getBaseOutputDir();
+            String taxon = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__", ".");
+            String taxonlsid = URLDecoder.decode(req.getParameter("taxonlsid"), "UTF-8").replace("__", ".");
+            String species = req.getParameter("species");
+            String removedSpecies = req.getParameter("removedspecies");
+            String area = req.getParameter("area");
+            String envlist = req.getParameter("envlist");
+            String txtTestPercentage = req.getParameter("txtTestPercentage");
+            String chkJackknife = req.getParameter("chkJackknife");
+            String chkResponseCurves = req.getParameter("chkResponseCurves");
+
+            String resolution = req.getParameter("res");
+            if (resolution == null) {
+                resolution = "0.01";
+            }
+
+            LayerFilter[] filter = null;
+            SimpleRegion region = null;
+            if (area != null && area.startsWith("ENVELOPE")) {
+                filter = LayerFilter.parseLayerFilters(area);
+            } else {
+                region = SimpleShapeFile.parseWKT(area);
+            }
+
+            String pid = Long.toString(currTime);
+            writeFile(species, currentPath + "output" + File.separator + "maxent" + File.separator + pid + File.separator, "species_points.csv");
+            if (removedSpecies != null) {
+                writeFile(removedSpecies, currentPath + "output" + File.separator + "maxent" + File.separator + pid + File.separator, "Prediction_removedSpecies.txt");
+            }
+            AnalysisJobMaxent ajm = new AnalysisJobMaxent(pid, currentPath, taxon, envlist, region, filter, txtTestPercentage, chkJackknife, chkResponseCurves, resolution);
+            StringBuffer inputs = new StringBuffer();
+            inputs.append("pid:").append(pid);
+            inputs.append(";taxonid:").append(taxon);
+            inputs.append(";taxonlsid:").append(taxonlsid);
+
+            inputs.append(";area:").append(area);
+            inputs.append(";envlist:").append(envlist);
+            inputs.append(";txtTestPercentage:").append(txtTestPercentage);
+            inputs.append(";chkJackknife:").append(chkJackknife);
+            inputs.append(";chkResponseCurves:").append(chkResponseCurves);
+            inputs.append(";resolution:").append(resolution);
+            ajm.setInputs(inputs.toString());
+            //AnalysisQueue.addJob(ajm);
+
+            return String.valueOf(ajm.getEstimate()); 
+
+        } catch (Exception e) {
+            System.out.println("Error processing Maxent request:");
+            e.printStackTrace(System.out);
+        }
+
+        return "";
+
+    }
+
+
 }
