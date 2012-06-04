@@ -73,6 +73,9 @@ public class ProgressWCController extends UtilityComposer {
         }
 
         JSONObject jo = get();
+        
+        //try again next timeout
+        if (jo == null) return;
 
         if (jo.containsKey("status")) {
             jobstatus.setValue(jo.getString("status"));
