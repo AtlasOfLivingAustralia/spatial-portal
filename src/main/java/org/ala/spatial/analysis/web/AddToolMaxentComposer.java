@@ -107,13 +107,26 @@ public class AddToolMaxentComposer extends AddToolComposer {
     String sbenvsel = "";
     String[] speciesData = null;
     
-    @Override
-    public long getEstimate() {
-        try {
+    private void setupData() throws Exception {
+        if (query == null) {
             sa = getSelectedArea();
             query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
 
             sbenvsel = getSelectedLayers();
+            speciesData = getSpeciesData(query);
+        } 
+    }
+    
+    @Override
+    public long getEstimate() {
+        try {
+            
+            setupData();
+            
+//            sa = getSelectedArea();
+//            query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
+//
+//            sbenvsel = getSelectedLayers();
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/maxent/estimate?");
@@ -144,7 +157,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
             }
 
             System.out.println("Getting species data");
-            speciesData = getSpeciesData(query);
+//            speciesData = getSpeciesData(query);
             System.out.print("checking for species data...");
             //check for no data
             if (speciesData[0] == null || speciesData[0].trim().equals("")) {
@@ -181,6 +194,10 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
     public boolean runmaxent() {
         try {
+            
+            setupData();
+            
+            
             //SelectedArea sa = getSelectedArea();
             //Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
 

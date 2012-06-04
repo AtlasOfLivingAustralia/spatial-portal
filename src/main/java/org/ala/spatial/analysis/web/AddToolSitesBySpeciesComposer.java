@@ -88,11 +88,22 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
         return runsitesbyspecies();
     }
     
-    Query query = null; 
+    Query query = null;
+    SelectedArea sa = null;
+    
+    private void setupData() throws Exception {
+        if (query == null) {
+            sa = getSelectedArea();
+            query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
+        }
+    }
 
     @Override
     public long getEstimate() {
         try {
+            
+            setupData();
+            
             String ma = "9";
             if (cbMovingAverageSize.getSelectedItem() == null) {
                 String txt = cbMovingAverageSize.getValue();
@@ -119,9 +130,9 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             }
 
             Double gridResolution = dResolution.getValue();
-            SelectedArea sa = getSelectedArea();
+            //SelectedArea sa = getSelectedArea();
             SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
-            query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
+            //query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
             int occurrenceCount = query.getOccurrenceCount();
             int boundingboxcellcount = (int) ((sr.getBoundingBox()[1][0] - sr.getBoundingBox()[0][0])
                     * (sr.getBoundingBox()[1][1] - sr.getBoundingBox()[0][1])
@@ -200,6 +211,9 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
 
     public boolean runsitesbyspecies() {
         try {
+            
+            setupData();
+            
             String ma = "9";
             if (cbMovingAverageSize.getSelectedItem() == null) {
                 String txt = cbMovingAverageSize.getValue();
@@ -226,7 +240,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             }
 
             Double gridResolution = dResolution.getValue();
-            SelectedArea sa = getSelectedArea();
+            //SelectedArea sa = getSelectedArea();
             SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
             //Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
             int occurrenceCount = query.getOccurrenceCount();
