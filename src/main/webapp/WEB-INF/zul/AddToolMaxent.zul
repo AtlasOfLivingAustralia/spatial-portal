@@ -2,8 +2,8 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" use="org.ala.spatial.analysis.web.AddToolMaxentComposer"
-    apply="org.ala.spatial.analysis.web.AddToolMaxentComposer" width="810px" height="700px"
-    xmlns:n="http://www.zkoss.org/2005/zk/native">
+            apply="org.ala.spatial.analysis.web.AddToolMaxentComposer" width="810px" height="700px"
+            xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -93,8 +93,8 @@
                                 <hbox>
                                     <separator orient="vertical" />
                                     <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete"
-                                    autodrop="true"  width="320px" 
-                                    onOK="if(searchSpeciesAuto.getSelectedIndex()>=0)addtoolwindow.onClick$btnOk(null)" >
+                                              autodrop="true"  width="320px" 
+                                              onOK="if(searchSpeciesAuto.getSelectedIndex()>=0)addtoolwindow.onClick$btnOk(null)" >
                                         <comboitem label=""/>
                                     </combobox>
                                 </hbox>
@@ -165,8 +165,8 @@
                     <vbox>
                         <label value="Environmental layers" sclass="wSubLabel" />
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                    use="org.ala.spatial.analysis.web.EnvironmentalList" width="610px"
-                    height="430px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
+                                 use="org.ala.spatial.analysis.web.EnvironmentalList" width="610px"
+                                 height="430px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
                             <listhead>
                                 <listheader label="category" hflex="1"/>
                                 <listheader label="name"  hflex="1"/>
@@ -183,87 +183,7 @@
                             </vbox>
                         </hbox>
                     </vbox>
-
-                        <!--
-                        <label id="atstep4_desc" value="Select one or more contextual layers" sclass="wSubLabel"/>
-                        <label id="atstep4_label" value="" />
-                        -->
-                        <!--separator />
-                        <vbox>
-                            <label value="Contextual layers" sclass="wSubLabel" />
-                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayersCtx" width="500px"
-                    height="135px" multiple="true" checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
-                                <listhead>
-                                    <listheader label="category" />
-                                    <listheader label="name" width="300px" />
-                                    <listheader label=" "  />
-                                    <listheader label=" " width="10px" visible="false" />
-                                </listhead>
-                                <listitem value="landcover">
-                                    <listcell>Vegetation</listcell>
-                                    <listcell>Land cover</listcell>
-                                    <listcell value="618" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/618", "Metadata", false);'></listcell>
-                                </listitem>
-                                <listitem value="landuse">
-                                    <listcell>Vegetation</listcell>
-                                    <listcell>Land use</listcell>
-                                    <listcell value="678" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/678", "Metadata", false);'></listcell>
-                                </listitem>
-                                <listitem value="vast">
-                                    <listcell>Vegetation</listcell>
-                                    <listcell>Vegetation condition</listcell>
-                                    <listcell value="619" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/619", "Metadata", false);'></listcell>
-                                </listitem>
-                                <listitem value="native_veg">
-                                    <listcell>Vegetation</listcell>
-                                    <listcell>Vegetation types - native</listcell>
-                                    <listcell value="617" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/617", "Metadata", false);'></listcell>
-                                </listitem>
-                                <listitem value="present_veg">
-                                    <listcell>Vegetation</listcell>
-                                    <listcell>Vegetation types - present</listcell>
-                                    <listcell value="620" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/620", "Metadata", false);'></listcell>
-                                </listitem>
-                            </listbox>
-                            <button id="btnClearSelectionCtx" label="Clear layers"  sclass="goButton" style="float:left" />
-                        </vbox-->
                 </div>
-
-                <!--
-                <div id="atstep4" visible="false" zclass="step4 minlayers1">
-                    <label id="atstep4_desc" value="Select one or more contextual layers" sclass="wSubLabel"/>
-                    <label id="atstep4_label" value="" />
-                    <separator />
-                    <vbox>
-                        <listbox sclass="envlist" fixedLayout="false" id="lbListLayersCtx"
-                    width="500px"
-                    height="450px" multiple="true" checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
-                            <listhead>
-                                <listheader label="category"  />
-                                <listheader label="name" />
-                                <listheader label=" "  />
-                                <listheader label=" " width="10px" visible="false" />
-                            </listhead>
-                            <listitem value="landcover">
-                                <listcell>Vegetation</listcell>
-                                <listcell>Land cover</listcell>
-                                <listcell value="618" image="/img/information.png"></listcell>
-                            </listitem>
-                            <listitem value="landuse">
-                                <listcell>Vegetation</listcell>
-                                <listcell>Land use</listcell>
-                                <listcell value="618" image="/img/information.png"></listcell>
-                            </listitem>
-                            <listitem value="present_veg">
-                                <listcell>Vegetation</listcell>
-                                <listcell>Vegetation types - present</listcell>
-                                <listcell value="618" image="/img/information.png"></listcell>
-                            </listitem>
-                        </listbox>
-                        <button id="btnClearSelectionCtx" label="Clear layers"  sclass="goButton" style="float:left" />
-                    </vbox>
-                </div>
-                -->
 
                 <div id="atstep4" visible="false" zclass="step4 optional">
                     <label id="atstep4_desc" value="MaxEnt options" sclass="wSubLabel"/>
@@ -297,6 +217,42 @@
                         <label value="List of selected environmental layers" />
                         <textbox id="tLayerList" width="500px" height="80px" readonly="true" multiline="true"/>
                         <button id="bLayerListDownload2" label="Export selection" visible="false" sclass="goButton" />
+                    </vbox>
+                    <separator height="60px" />
+                    <vbox>
+                        <hbox>
+                            <label value="* Estimated time to run the process:" />
+                            <label id="lEstimateMessage" value="Unknown" />
+                        </hbox>                        
+                        <separator height="30px" />
+                        <div id="notLoggedIn" visible="false">
+                            <vbox>
+                                <div>
+                                    Your process is estimated to take longer than 5 minutes 
+                                    to process. 
+                                </div>
+                                <div>
+                                    In such instances, we recommend that you 
+                                    log into the ALA system before proceeding with the 
+                                    process. 
+                                </div>
+                                <div>
+                                    1. Click the Login button to authenticate
+                                </div>
+                                <div>
+                                    2. Close the popup window once authenticated
+                                </div>
+                                <div>
+                                    3. Click Next to proceed.
+                                </div>
+                                <div>
+                                    <button id="bLogin" label="Login" sclass="goButton" style="float:left" />
+                                </div>
+                            </vbox>
+                        </div>
+                        <div id="isLoggedIn" visible="false">
+                            Please click the Next button to proceed with the process.
+                        </div>
                     </vbox>
                 </div>
             </vbox>

@@ -80,9 +80,6 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <n:li>
                                     <n:a href="#" n:onClick="addFacetAction();">Facet</n:a>
                                 </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="addWMSLayerAction();">WMS Layer</n:a>
-                                </n:li>
                             </n:ul>
                         </n:li>
                         <n:li>
@@ -198,7 +195,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 			<nav class="not_logged_in">
 				<ol>
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
-                    <li><a href="http://www.ala.org.au/my-profile/" title="My profile">My profile</a></li>
+                    <!-- <li><a href="http://www.ala.org.au/my-profile/" title="My profile">My profile</a></li> -->
+                    <li><a href="/actions/dashboard" title="Spatial Portal Dashboard">Dashboard</a></li>
                     <li><a href="javascript:saveSession();" title="Save current session">Save session</a></li>
 					<li class="last"><a href="https://auth.ala.org.au/cas/login?service=http://spatial.ala.org.au/">Log in</a></li>
 				</ol>
@@ -206,7 +204,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 			<nav class="logged_in">
 				<ol>
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
-                    <li><a href="http://www.ala.org.au/my-profile/" title="My profile">My profile</a></li>
+                    <!-- <li><a href="http://www.ala.org.au/my-profile/" title="My profile">My profile</a></li> -->
+                    <li><a href="/actions/dashboard" title="Spatial Portal Dashboard">Dashboard</a></li>
                     <li><a href="javascript:saveSession();" title="Save current session">Save session</a></li>
 					<li class="last"><a href="https://auth.ala.org.au/cas/logout?service=http://spatial.ala.org.au/">Log out</a></li>
 				</ol>
@@ -456,7 +455,9 @@ console.log(currentbaselayertxt);
             //use session state extents for printing
             if (!printing) {
                 window.mapFrame.loadBaseMap();
-                $(".login-bubble").show().delay(8000).fadeOut(2000);
+                if (!readCookie('ALA-Auth')) {
+                    $(".login-bubble").show().delay(8000).fadeOut(2000);
+                }  
                 window.mapFrame.document.getElementById("layervalues").style.display= "block";
             }
 

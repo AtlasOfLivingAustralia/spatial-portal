@@ -490,7 +490,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 //url
                 iframe.setHeight("100%");
                 iframe.setSrc(uri);
-
+                
                 //content
                 html.setContent("");
 
@@ -1299,26 +1299,55 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         return uparams;
     }
+    
+    public String getCookieValue(String cookieName) {
+        try {
+            for (Cookie c : ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies()) {
+                //System.out.println(">> " + c.getName() + " = " + c.getValue() + " for " + c.getDomain() + " __ " + c.getPath());
+                if (c.getName().equals(cookieName)) {
+                    return c.getValue(); 
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }        
+        
+        return null;
+    }
 
     private MapLayer loadUrlParameters() {
         String params = null;
-        Cookie[] cookies = ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("analysis_layer_selections")) {
-                    try {
-                        String[] s = URLDecoder.decode(cookie.getValue(), "UTF-8").split("\n");
-                        for (int i = 0; i < s.length; i++) {
-                            String[] ls = s[i].split(" // ");
-                            selectedLayers.add(new LayerSelection(ls[0], ls[1]));
-                        }
-                        break;
-                    } catch (Exception e) {
-                    }
+        
+//        Cookie[] cookies = ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies();
+//        if (cookies != null) {
+//            for (Cookie cookie : cookies) {
+//                if (cookie.getName().equals("analysis_layer_selections")) {
+//                    try {
+//                        String[] s = URLDecoder.decode(cookie.getValue(), "UTF-8").split("\n");
+//                        for (int i = 0; i < s.length; i++) {
+//                            String[] ls = s[i].split(" // ");
+//                            selectedLayers.add(new LayerSelection(ls[0], ls[1]));
+//                        }
+//                        break;
+//                    } catch (Exception e) {
+//                    }
+//
+//                }
+//            }
+//        }
 
+        try {
+            String analysis_layer_selections = getCookieValue("analysis_layer_selections");
+            if (analysis_layer_selections != null) {
+                String[] s = URLDecoder.decode(analysis_layer_selections, "UTF-8").split("\n");
+                for (int i = 0; i < s.length; i++) {
+                    String[] ls = s[i].split(" // ");
+                    selectedLayers.add(new LayerSelection(ls[0], ls[1]));
                 }
             }
-        }
+        } catch (Exception e) { }
+        
+        
         try {
             params = Executions.getCurrent().getDesktop().getQueryString();
             System.out.println("User params: " + params);
@@ -2492,17 +2521,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
 
         //session id/cookie JSESSIONID=
-        String jsessionid = "";
-        try {
-            //get cookie
-            for (Cookie c : ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies()) {
-                if (c.getName().equalsIgnoreCase("JSESSIONID")) {
-                    System.out.println("printcookie:" + c.getValue());
-                    jsessionid = c.getValue();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+//        String jsessionid = "";
+//        try {
+//            //get cookie
+//            for (Cookie c : ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies()) {
+//                if (c.getName().equalsIgnoreCase("JSESSIONID")) {
+//                    System.out.println("printcookie:" + c.getValue());
+//                    jsessionid = c.getValue();
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        String jsessionid = getCookieValue("JSESSIONID");
+        if (jsessionid == null) {
+            jsessionid = "";
         }
 
         //width
@@ -3538,21 +3571,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         
         PrintWriter out = null;
         try {
-            //session id/cookie JSESSIONID=
-            String jsessionid = "test";
-            try {
-                //get cookie
-                for (Cookie c : ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies()) {
-                    
-                    System.out.println("cookie> " + c.getName() + " in " + c.getDomain());
-                    
-                    if (c.getName().equalsIgnoreCase("JSESSIONID")) {
-                        System.out.println("printcookie:" + c.getValue());
-                        jsessionid = c.getValue();
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            String jsessionid = getCookieValue("JSESSIONID");
+            if (jsessionid == null) {
+                jsessionid = "test";
             }
 
             String sfld = getSettingsSupplementary().getValue("analysis_output_dir") + "session/" + jsessionid;

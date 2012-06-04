@@ -60,7 +60,95 @@ public class AddToolALOCComposer extends AddToolComposer {
 
     @Override
     public boolean onFinish() {
+        if (!hasEstimated && !isUserLoggedIn()) {
+            checkEstimate();
+            return false;
+        }
+
         return runclassification();
+    }
+
+    @Override
+    public long getEstimate() {
+        try {
+            String sbenvsel = getSelectedLayers();
+            if (sbenvsel.split(":").length > 50) {
+                getMapComposer().showMessage(sbenvsel.split(":").length + " layers selected.  Please select fewer than 50 environmental layers in step 1.");
+                return -1;
+            }
+
+            if (groupCount.getValue() <= 1 || groupCount.getValue() > 200) {
+                getMapComposer().showMessage("Please enter the number of groups to generate (2 to 200) in step 2.");
+                //highlight step 2
+//                tabboxclassification.setSelectedIndex(1);
+                return -1;
+            }
+
+            SelectedArea sa = getSelectedArea();//getMapComposer().getSelectionArea();
+
+            //estimate analysis size in bytes
+            SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
+            double[][] bbox;
+            if (sr != null) {
+                bbox = sr.getBoundingBox();
+            } else {
+                bbox = new double[][]{{-180, -90}, {180, 90}};
+            }
+            //analysis currently restricted to australian extents and 0.01 degree grid
+            if (bbox[0][0] < 112) {
+                bbox[0][0] = 112;
+            }
+            if (bbox[1][0] > 155) {
+                bbox[1][0] = 155;
+            }
+            if (bbox[0][1] < -44) {
+                bbox[0][1] = -44;
+            }
+            if (bbox[1][1] > -9) {
+                bbox[1][1] = -9;
+            }
+
+            long cellsInBBox = (long) ((bbox[1][0] - bbox[0][0]) / 0.01 * (bbox[1][1] - bbox[0][1]) / 0.01);
+            long size = (groupCount.getValue() + sbenvsel.split(":").length + 2) * cellsInBBox * 4;
+            System.out.println("ALOC estimate size in MB, cells=" + cellsInBBox
+                    + ", bbox=" + bbox[0][0] + "," + bbox[0][1] + "," + bbox[1][0] + "," + bbox[1][1]
+                    + ", groups=" + groupCount.getValue()
+                    + ", layers=" + sbenvsel.split(":").length
+                    + ", size=" + size / 1024 / 1024
+                    + ", max size=" + settingsSupplementary.getValueAsInt("aloc_size_limit_in_mb"));
+            if (size / 1024 / 1024 > settingsSupplementary.getValueAsInt("aloc_size_limit_in_mb")) {
+                getMapComposer().showMessage("Analysis is too large.  Reduce the number of groups, number of layers or area.", this);
+                return -1;
+            }
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(CommonData.satServer + "/ws/aloc/estimate?");
+            sbProcessUrl.append("gc=" + URLEncoder.encode(String.valueOf(groupCount.getValue()), "UTF-8"));
+            sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+
+            HttpClient client = new HttpClient();
+            //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
+            PostMethod get = new PostMethod(sbProcessUrl.toString());
+            String area;
+            if (sa.getMapLayer() != null && sa.getMapLayer().getData("envelope") != null) {
+                area = "ENVELOPE(" + (String) sa.getMapLayer().getData("envelope") + ")";
+            } else {
+                area = sa.getWkt();
+            }
+            get.addParameter("area", area);
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String estimate = get.getResponseBodyAsString();
+
+            return Long.valueOf(estimate);
+
+        } catch (Exception e) {
+            System.out.println("Unable to get estimates");
+            e.printStackTrace(System.out);
+        }
+
+        return -1;
     }
 
     @Override

@@ -159,6 +159,41 @@
                             <checkbox id="chkSpeciesDensity" label="Produce species richness layer" />
                         </vbox>
                     </div>
+                    <separator height="60px" />
+                    <vbox>
+                        <hbox>
+                            <label value="* Estimated time to run the process:" />
+                            <label id="lEstimateMessage" value="Unknown" />
+                        </hbox>
+                        <div id="notLoggedIn" visible="false">
+                            <vbox>
+                                <div>
+                                    Your process is estimated to take longer than 5 minutes 
+                                    to process. 
+                                </div>
+                                <div>
+                                    In such instances, we recommend that you 
+                                    log into the ALA system before proceeding with the 
+                                    process. 
+                                </div>
+                                <div>
+                                    1. Click the Login button to authenticate
+                                </div>
+                                <div>
+                                    2. Close the popup window once authenticated
+                                </div>
+                                <div>
+                                    3. Click Next to proceed.
+                                </div>
+                                <div>
+                                    <button id="bLogin" label="Login" sclass="goButton" style="float:left" />
+                                </div>
+                            </vbox>
+                        </div>
+                        <div id="isLoggedIn" visible="false">
+                            Please click the Next button to proceed with the process.
+                        </div>
+                    </vbox>
                 </div>
             </vbox>
         </hbox>

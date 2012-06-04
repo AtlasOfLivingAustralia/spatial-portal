@@ -32,13 +32,19 @@
                         </listitem>
                         <listfoot>
                             <listfooter span="2">
+                                <vbox>
                                 <hbox>
-                                <button sclass="goButton" label="Save session" onClick='Clients.evalJavaScript("saveSession();")' />
+                                <button sclass="goButton" label="Add WMS Layer" onClick='Clients.evalJavaScript("addWMSLayerAction();")' />
                                 <separator />
+                                <button sclass="goButton" label="Save session" onClick='Clients.evalJavaScript("saveSession();")' />
+                                </hbox>
+                                <separator />
+                                <hbox>
                                 <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
                                 <separator />
                                 <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
                                 </hbox>
+                                </vbox>
                             </listfooter>
                         </listfoot>
                     </listbox>

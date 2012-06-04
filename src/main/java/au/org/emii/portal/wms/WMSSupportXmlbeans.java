@@ -16,6 +16,8 @@ import net.opengis.wms.WMSCapabilitiesDocument.WMSCapabilities;
 import org.apache.xmlbeans.XmlException;
 import au.org.emii.portal.config.xmlbeans.Discovery;
 import au.org.emii.portal.menu.MapLayerMetadata;
+import net.opengis.wms.AuthorityURLDocument.AuthorityURL;
+import net.opengis.wms.MetadataURLDocument.MetadataURL;
 
 public abstract class WMSSupportXmlbeans extends WMSSupport {
 
@@ -132,7 +134,7 @@ public abstract class WMSSupportXmlbeans extends WMSSupport {
 	private void processLayer(MapLayer parent, Layer layer, Sequence sequence, boolean displayAllChildren) {
 		MapLayer mapLayer;
 		String label;
-
+        
 		if (sequence.getValue() == 0) {
 			mapLayer = parent;
 			
@@ -209,8 +211,35 @@ public abstract class WMSSupportXmlbeans extends WMSSupport {
 		else {
 			mapLayer.setDisplayable(false);
 		}
-		
-		
+        
+        boolean hasMetadata = false; 
+        List<MetadataURL> metadataURLList = layer.getMetadataURLList();
+        if (metadataURLList != null) {
+            if (metadataURLList.size() > 0) {
+                MapLayerMetadata mlmd = mapLayer.getMapLayerMetadata();
+                if (mlmd == null) {
+                    mlmd = new MapLayerMetadata();
+                }
+                mlmd.setMoreInfo(metadataURLList.get(0).getOnlineResource().getHref());
+                mapLayer.setMapLayerMetadata(mlmd);
+                
+                hasMetadata = true;
+            }
+        }
+        if (!hasMetadata) {
+            List<AuthorityURL> authorityURLList = layer.getAuthorityURLList();
+            if (authorityURLList != null) {
+                if (authorityURLList.size() > 0) {
+                    MapLayerMetadata mlmd = mapLayer.getMapLayerMetadata();
+                    if (mlmd == null) {
+                        mlmd = new MapLayerMetadata();
+                    }
+                    mlmd.setMoreInfo(authorityURLList.get(0).getOnlineResource().getHref());
+                    mapLayer.setMapLayerMetadata(mlmd);
+                }
+            }
+        }
+
 		/* process all children if this layer is not displayable
 		 * (no name field) or we are forced to display all children
 		 */

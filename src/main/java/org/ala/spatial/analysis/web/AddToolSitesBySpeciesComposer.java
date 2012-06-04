@@ -68,6 +68,11 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
     public boolean onFinish() {
         //super.onFinish();
 
+        if (!hasEstimated && !isUserLoggedIn()) {
+            checkEstimate();
+            return false;
+        }
+
         Query query = getSelectedSpecies();
         if (query == null) {
             getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
@@ -81,6 +86,116 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
         }
 
         return runsitesbyspecies();
+    }
+    
+    Query query = null; 
+
+    @Override
+    public long getEstimate() {
+        try {
+            String ma = "9";
+            if (cbMovingAverageSize.getSelectedItem() == null) {
+                String txt = cbMovingAverageSize.getValue();
+                for (int i = 0; i < cbMovingAverageSize.getItemCount(); i++) {
+                    if (txt != null && txt.equalsIgnoreCase(cbMovingAverageSize.getItemAtIndex(i).getLabel())) {
+                        ma = (String) cbMovingAverageSize.getItemAtIndex(i).getValue();
+                        break;
+                    }
+                }
+            } else {
+                ma = (String) cbMovingAverageSize.getSelectedItem().getValue();
+            }
+            int movingAverageSize = Integer.parseInt(ma);
+            if (movingAverageSize % 2 == 0 || movingAverageSize <= 0 || movingAverageSize >= 16) {
+                getMapComposer().showMessage("Moving average size " + movingAverageSize + " is not valid.  Must be odd and between 1 and 15.", this);
+                return -1;
+            }
+
+            if (!chkOccurrenceDensity.isChecked()
+                    && !chkSitesBySpecies.isChecked()
+                    && !chkSpeciesDensity.isChecked()) {
+                getMapComposer().showMessage("Must select at least one output; Sites by species, Occurrence density or Species richness.", this);
+                return -1;
+            }
+
+            Double gridResolution = dResolution.getValue();
+            SelectedArea sa = getSelectedArea();
+            SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
+            query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
+            int occurrenceCount = query.getOccurrenceCount();
+            int boundingboxcellcount = (int) ((sr.getBoundingBox()[1][0] - sr.getBoundingBox()[0][0])
+                    * (sr.getBoundingBox()[1][1] - sr.getBoundingBox()[0][1])
+                    / (gridResolution * gridResolution));
+
+            System.out.println("SitesBySpecies for " + occurrenceCount + " occurrences in up to " + boundingboxcellcount + " grid cells.");
+
+            if (boundingboxcellcount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells")) {
+                //getMapComposer().showMessage("Too many potential output grid cells.  Reduce by at least " + String.format("%.2f",100* (1-boundingboxcellcount / (double)settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells"))) + "% by decreasing area or increasing resolution.", this);
+                getMapComposer().showMessage("Too many potential output grid cells.  Decrease area or increase resolution.", this);
+                return -1;
+            }
+
+            if (occurrenceCount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxoccurrences")) {
+                getMapComposer().showMessage("Too many occurrences for the selected species in this area.  " + occurrenceCount + " occurrences found, must be less than " + settingsSupplementary.getValueAsInt("sitesbyspecies_maxoccurrences"), this);
+                return -1;
+            }
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(CommonData.satServer + "/ws/sitesbyspecies/estimate?");
+
+            sbProcessUrl.append("speciesq=").append(URLEncoder.encode(QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher()).getQ(), "UTF-8"));
+
+            sbProcessUrl.append("&gridsize=" + URLEncoder.encode(String.valueOf(gridResolution), "UTF-8"));
+            sbProcessUrl.append("&bs=" + URLEncoder.encode(((BiocacheQuery) query).getBS(), "UTF-8"));
+
+            if (chkOccurrenceDensity.isChecked()) {
+                sbProcessUrl.append("&occurrencedensity=1");
+            }
+            if (chkSpeciesDensity.isChecked()) {
+                sbProcessUrl.append("&speciesdensity=1");
+            }
+            if (chkSitesBySpecies.isChecked()) {
+                sbProcessUrl.append("&sitesbyspecies=1");
+            }
+
+            sbProcessUrl.append("&movingaveragesize=" + ma);
+
+            String areaSqKm = "0";
+            if (sa.getMapLayer() != null && sa.getMapLayer().getData("area") != null) {
+                areaSqKm = (String) sa.getMapLayer().getData("area");
+            } else {
+                areaSqKm = String.format("%,.2f", Util.calculateArea(sa.getWkt()) / 1000000.0);
+            }
+            sbProcessUrl.append("&areasqkm=" + areaSqKm);
+
+
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(sbProcessUrl.toString());
+
+            String area = null;
+            if (sa.getMapLayer() != null && sa.getMapLayer().getData("envelope") != null) {
+                area = "ENVELOPE(" + (String) sa.getMapLayer().getData("envelope") + ")";
+            } else {
+                area = sa.getWkt();
+            }
+            if (getSelectedArea() != null) {
+                get.addParameter("area", area);
+            }
+            get.addParameter("qname", query.getName());
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String estimate = get.getResponseBodyAsString();
+
+            return Long.valueOf(estimate);
+            
+        } catch (Exception e) {
+            System.out.println("Unable to get estimates");
+            e.printStackTrace(System.out);
+        }
+
+        return -1;
     }
 
     public boolean runsitesbyspecies() {
@@ -113,7 +228,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             Double gridResolution = dResolution.getValue();
             SelectedArea sa = getSelectedArea();
             SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
-            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
+            //Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
             int occurrenceCount = query.getOccurrenceCount();
             int boundingboxcellcount = (int) ((sr.getBoundingBox()[1][0] - sr.getBoundingBox()[0][0])
                     * (sr.getBoundingBox()[1][1] - sr.getBoundingBox()[0][1])

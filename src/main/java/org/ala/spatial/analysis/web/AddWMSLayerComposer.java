@@ -4,6 +4,7 @@
  */
 package org.ala.spatial.analysis.web;
 
+import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.session.PortalSession;
@@ -29,7 +30,7 @@ import org.zkoss.zul.Textbox;
  *
  * @author ajay
  */
-public class AddWMSLayerComposer extends AddToolComposer {
+public class AddWMSLayerComposer extends UtilityComposer {
 
     private static final long serialVersionUID = 1L;
     /**
@@ -84,24 +85,12 @@ public class AddWMSLayerComposer extends AddToolComposer {
     private Label opacityLabel;
     // result of adding layer
     private Label resultLabel;
+    private Button addManualLayerButton;
+    private Button addDiscoveredLayerButton;
     private LanguagePack languagePack = null;
     private LayerUtilities layerUtilities = null;
     private RemoteMap remoteMap = null;
     
-    @Override
-    public void afterCompose() {
-        super.afterCompose();
-        btnOk.setDisabled(true);
-
-        this.selectedMethod = "Add WMS Layers";
-        this.totalSteps = 1;
-
-        //this.setIncludeAnalysisLayersForUploadQuery(true);
-        //this.loadAreaLayers();
-        //this.loadGridLayers(false, true, false);
-        this.updateWindowTitle();
-    }
-
     public void onCheck$nameAutomatically() {
         logger.debug("onNameAutomaticallyChanged()");
         labelDiv.setVisible(!nameAutomatically.isChecked());
@@ -135,7 +124,10 @@ public class AddWMSLayerComposer extends AddToolComposer {
 
     public void toggleAutomaticMode(boolean autoMode) {
         discoveryManual.setVisible(!autoMode);
+        addManualLayerButton.setVisible(!autoMode);
+        
         discoveryAutomatic.setVisible(autoMode);
+        addDiscoveredLayerButton.setVisible(autoMode);
     }
 
     /**
@@ -152,6 +144,7 @@ public class AddWMSLayerComposer extends AddToolComposer {
             layerName.setModel((ListModel) null);
             selectLayers.setVisible(false);
             selectLayersButton.setDisabled(false);
+            addDiscoveredLayerButton.setVisible(false);
         }
     }
 
@@ -208,6 +201,7 @@ public class AddWMSLayerComposer extends AddToolComposer {
 
                 selectLayers.setVisible(true);
                 selectLayersButton.setDisabled(true);
+                addDiscoveredLayerButton.setVisible(true);
             } else {
                 // there was an error somewhere..
                 getMapComposer().errorMessageBrokenWMSServer(remoteMap);
@@ -263,7 +257,7 @@ public class AddWMSLayerComposer extends AddToolComposer {
                  * we already added stuff from this uri
                  */ catch (MalformedURLException e) {
                 }
-
+                
                 getMapComposer().addUserDefinedLayerToMenu(targetLayer, true);
 
                 // all sweet

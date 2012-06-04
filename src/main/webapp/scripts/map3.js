@@ -1400,7 +1400,7 @@ function envLayerHover(e,displayFull) {
         }
 
         if (names.length == 0) {
-            return null;
+            return "";
         }
 
         var data = getLayerValue(names, pt.lat, pt.lon);

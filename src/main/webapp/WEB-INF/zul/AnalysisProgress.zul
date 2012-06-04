@@ -19,7 +19,7 @@
         </hbox>
         <textbox id="txtLog" multiline="true" width="300px" height="300px"/>
         <separator />
-        <button visible="false" id="btnHide" label="continue" />
-        <button id="btnCancel" label="cancel" />
+        <button visible="false" id="btnHide" label="Send to background" />
+        <button id="btnCancel" label="Cancel process" />
     </window>
 </zk>

@@ -14,6 +14,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Progressmeter;
 import org.zkoss.zul.Textbox;
@@ -34,8 +35,10 @@ public class ProgressWCController extends UtilityComposer {
     public String pid = null;
     public Window parent = null;
     public String name = "";
+    public boolean background = true;
     Textbox txtLog;
     String log = "";
+    Button btnHide;
 
     @Override
     public void afterCompose() {
@@ -44,10 +47,19 @@ public class ProgressWCController extends UtilityComposer {
     }
 
     public void start(String pid_, String name) {
+        start(pid_, name, true);
+    }
+    public void start(String pid_, String name, boolean background) {
         pid = pid_;
         tbPid.setValue(pid_);
         this.name = name;
         this.setTitle(name);
+        this.background = background; 
+        
+        if (this.background) {
+            //onClick$btnHide(null);
+            btnHide.setVisible(true);
+        }
 
         timer.start();
 
@@ -160,12 +172,16 @@ public class ProgressWCController extends UtilityComposer {
     }
 
     public void onClick$btnHide(Event e) {
-        showReferenceNumber();
+        showReferenceNumber("Go to the Spatial Portal Dashboard for an update on the status.");
         this.detach();
     }
 
     void showReferenceNumber() {
         getMapComposer().showMessage("Reference number to retrieve results: " + pid);
+    }
+
+    void showReferenceNumber(String message) {
+        getMapComposer().showMessage("Reference number to retrieve results: " + pid + "\n" + message);
     }
 
     private String reverseLines(String log) {

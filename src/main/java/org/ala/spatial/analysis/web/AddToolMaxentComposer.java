@@ -31,9 +31,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zul.Checkbox;
-import org.zkoss.zul.Filedownload;
-import org.zkoss.zul.Textbox;
+import org.zkoss.zul.*;
 
 /**
  *
@@ -76,13 +74,17 @@ public class AddToolMaxentComposer extends AddToolComposer {
         super.onLastPanel();
         //this.updateName("My Prediction model for " + rgSpecies.getSelectedItem().getLabel());
         this.updateName(getMapComposer().getNextAreaLayerName("My Prediction"));
-
     }
 
     @Override
     public boolean onFinish() {
         //super.onFinish();
-
+        
+        if (!hasEstimated && !isUserLoggedIn()) {
+            checkEstimate();
+            return false;
+        }
+        
         Query query = getSelectedSpecies();
         if (query == null) {
             getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
@@ -99,13 +101,90 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
         return runmaxent();
     }
+    
+    SelectedArea sa = null;
+    Query query = null;
+    String sbenvsel = "";
+    String[] speciesData = null;
+    
+    @Override
+    public long getEstimate() {
+        try {
+            sa = getSelectedArea();
+            query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
+
+            sbenvsel = getSelectedLayers();
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(CommonData.satServer + "/ws/maxent/estimate?");
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(query.getName(), "UTF-8"));
+            sbProcessUrl.append("&taxonlsid=" + URLEncoder.encode(query.getQ(), "UTF-8"));
+            sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+            if (chkJackknife.isChecked()) {
+                sbProcessUrl.append("&chkJackknife=on");
+            }
+            if (chkRCurves.isChecked()) {
+                sbProcessUrl.append("&chkResponseCurves=on");
+            }
+            sbProcessUrl.append("&txtTestPercentage=" + txtTestPercentage.getValue());
+
+            // System.out.println("Calling Maxent: " + sbProcessUrl.toString() + "\narea: " + area);
+
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(sbProcessUrl.toString());
+
+            String area = null;
+            if (sa.getMapLayer() != null && sa.getMapLayer().getData("envelope") != null) {
+                area = "ENVELOPE(" + (String) sa.getMapLayer().getData("envelope") + ")";
+            } else {
+                area = sa.getWkt();
+            }
+            if (getSelectedArea() != null) {
+                get.addParameter("area", area);
+            }
+
+            System.out.println("Getting species data");
+            speciesData = getSpeciesData(query);
+            System.out.print("checking for species data...");
+            //check for no data
+            if (speciesData[0] == null || speciesData[0].trim().equals("")) {
+                System.out.println("none available");
+                if (speciesData[1] == null) {
+                    getMapComposer().showMessage("No records available for Prediction", this);
+                } else {
+                    getMapComposer().showMessage("All species and records selected are marked as sensitive", this);
+                }
+                return -1;
+            } else {
+                System.out.println("available");
+            }
+
+            get.addParameter("species", speciesData[0]);
+            if (speciesData[1] != null) {
+                get.addParameter("removedspecies", speciesData[1]);
+            }
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String estimate = get.getResponseBodyAsString();
+
+            return Long.valueOf(estimate);
+
+        } catch (Exception e) {
+            System.out.println("Unable to get estimates");
+            e.printStackTrace(System.out);
+        }
+
+        return -1;
+    }
 
     public boolean runmaxent() {
         try {
-            SelectedArea sa = getSelectedArea();
-            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
+            //SelectedArea sa = getSelectedArea();
+            //Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
 
-            String sbenvsel = getSelectedLayers();
+            //String sbenvsel = getSelectedLayers();
 
             //String area = getSelectedArea();
             //String taxonlsid = taxon;
@@ -157,7 +236,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
             }
 
             System.out.println("Getting species data");
-            String[] speciesData = getSpeciesData(query);
+            //String[] speciesData = getSpeciesData(query);
             System.out.print("checking for species data...");
             //check for no data
             if (speciesData[0] == null || speciesData[0].trim().equals("")) {
@@ -226,10 +305,10 @@ public class AddToolMaxentComposer extends AddToolComposer {
             this.setVisible(false);
 
             return true;
-        } catch (NoSpeciesFoundException e) {
-            System.out.println("Maxent error: NoSpeciesFoundException");
-            e.printStackTrace(System.out);
-            getMapComposer().showMessage("No species occurrences found in the current area. \nPlease select a larger area and re-run the analysis", this);
+//        } catch (NoSpeciesFoundException e) {
+//            System.out.println("Maxent error: NoSpeciesFoundException");
+//            e.printStackTrace(System.out);
+//            getMapComposer().showMessage("No species occurrences found in the current area. \nPlease select a larger area and re-run the analysis", this);
         } catch (Exception e) {
             System.out.println("Maxent error: ");
             e.printStackTrace(System.out);
@@ -241,7 +320,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
     void openProgressBar() {
         ProgressWCController window = (ProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisProgress.zul", getMapComposer(), null);
         window.parent = this;
-        window.start(pid, "Prediction");
+        window.start(pid, "Prediction", isBackgroundProcess);
         try {
             window.doModal();
         } catch (Exception e) {

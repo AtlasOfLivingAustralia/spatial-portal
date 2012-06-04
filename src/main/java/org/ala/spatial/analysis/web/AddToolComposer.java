@@ -123,6 +123,14 @@ public class AddToolComposer extends UtilityComposer {
     Checkbox chkGeoKosherTrue, chkGeoKosherFalse, chkGeoKosherNull;
     Checkbox chkGeoKosherTrueBk, chkGeoKosherFalseBk, chkGeoKosherNullBk;
     boolean[] defaultGeospatialKosher = {true, true, false};
+    
+    private Label lEstimateMessage;
+    private Button bLogin;
+    private Div notLoggedIn;
+    private Div isLoggedIn;
+    boolean isBackgroundProcess = true; 
+    boolean hasEstimated = false;
+
 
     @Override
     public void afterCompose() {
@@ -1151,6 +1159,73 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void loadMap(Event event) {
+    }
+
+    public long getEstimate() {
+        return -1;
+    }
+    
+    public void onClick$bLogin(Event event) {
+        getMapComposer().activateLink("https://auth.ala.org.au/cas/login", "Login", false);
+
+//        Window extWin = (Window) getFellowIfAny("externalContentWindow");
+//        extWin.addEventListener("onClose", new EventListener() {
+//            @Override
+//            public void onEvent(Event event) throws Exception {
+//                checkEstimate(null);
+//            }
+//        });
+    }
+
+    public void checkEstimate() {
+        try {
+
+            long estimate = getEstimate();
+            double minutes = estimate / 60000.0;
+            String estimateInMin = "";
+            if (minutes < 0.5) {
+                estimateInMin = "< 1 minute";
+            } else {
+                estimateInMin = String.valueOf((int) Math.ceil(minutes)) + " minutes";
+            }
+
+            System.out.println("Got estimate for process: " + estimate);
+            System.out.println("Estimate in minutes: " + estimateInMin);
+
+            //String message = "Your process is going to take approximately " + estimateInMin + " minutes. ";
+            lEstimateMessage.setValue(estimateInMin);
+
+            hasEstimated = true;            
+            isBackgroundProcess = true;
+            if (estimate > 300000) {
+                if (!isUserLoggedIn()) {
+
+                    notLoggedIn.setVisible(true);
+                    isLoggedIn.setVisible(false);
+                    //btnOk.setDisabled(true);
+                    hasEstimated = false;
+
+                    return;
+                }
+                //isBackgroundProcess = true;
+            } else {
+                //isBackgroundProcess = false; 
+            }
+
+            notLoggedIn.setVisible(false);
+            isLoggedIn.setVisible(true);
+            //btnOk.setDisabled(false);            
+
+
+        } catch (Exception e) {
+            System.out.println("Unable to get estimate for the process");
+            e.printStackTrace(System.out);
+        }
+    }
+    
+    public boolean isUserLoggedIn() {
+        String authCookie = getMapComposer().getCookieValue("ALA-Auth");
+        return (authCookie != null) ? true : false; 
     }
 
     public SelectedArea getSelectedArea() {
