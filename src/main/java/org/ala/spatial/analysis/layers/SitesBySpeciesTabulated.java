@@ -323,10 +323,10 @@ public class SitesBySpeciesTabulated {
             }
 
             //bioregion rows
-            for (int i = 0; i < decCountMap.length; i++) {
+            for (int i = 1; i < decCountMap.length; i++) {
                 if (decCountMap[i].size() > 0) {
                     ArrayList array2 = new ArrayList();
-                    String rowname = (i + 1) + " Decades";
+                    String rowname = i + " Decades";
                     fw.write("\n\"" + rowname + "\"");
                     //count columns
                     for (int j = 0; j < cols.length; j++) {
