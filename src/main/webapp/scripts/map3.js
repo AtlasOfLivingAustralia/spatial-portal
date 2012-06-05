@@ -2094,11 +2094,16 @@ function animateLayered(layername, interval, start, end, step, page) {
     }
     var layer = layers[0];
 
+    var status = parent.document.getElementById('animationStatus')
+
     if(page >= layer.animated_layers.length) {
         page = 0;
+        
+        //end animation when at the end
+        cleanupAnimationLayers(layername);
+        if(status) status.innerHTML = "stopped";
+        return;
     }
-
-    var status = parent.document.getElementById('animationStatus')
 
     if(layer.animate == "stop" ||
         layer.animated_layers[page].url.indexOf(layer.url) < 0) {
@@ -2144,4 +2149,5 @@ function cleanupAnimationLayers(layername) {
             i = 0;
         }
     }
+    map.getLayersByName(layername)[0].display(true);
 }

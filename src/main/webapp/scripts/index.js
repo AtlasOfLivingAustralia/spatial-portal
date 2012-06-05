@@ -433,3 +433,7 @@ function doNothing(){}
 function saveSession() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'saveUserSession', null));
 }
+
+function downloadFeaturesCSV() {
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$downloadFeaturesCSV', null));
+}

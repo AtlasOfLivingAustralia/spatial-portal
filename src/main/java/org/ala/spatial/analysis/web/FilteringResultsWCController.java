@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -663,7 +664,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             int limit = Integer.MAX_VALUE;
             String url = CommonData.layersServer + "/objects/inarea/" + CommonData.settings.get("area_report_gaz_field") + "?limit=" + limit;
 
-            HttpClient client = new HttpClient();            
+            HttpClient client = new HttpClient();
             PostMethod post = new PostMethod(url);
             System.out.println(CommonData.layersServer + url);
             if (wkt != null) {
@@ -1135,6 +1136,46 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void onClick$mapGazPoints() {
         try {
+            if (gazPoints == null || gazPoints.size() == 0) {
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            TreeSet<String> columns = new TreeSet<String>();
+
+            //get columns
+            for (int i = 0; i < gazPoints.size(); i++) {
+                columns.addAll(gazPoints.getJSONObject(i).keySet());
+            }
+
+            //write columns, first two are longitude,latitude
+            sb.append("longitude,latitude");
+            for (String s : columns) {
+                if (!s.equals("longitude") && !s.equals("latitude")) {
+                    sb.append(",").append(s);
+                }
+            }
+
+            for (int i = 0; i < gazPoints.size(); i++) {
+                sb.append("\n");
+
+                if (gazPoints.getJSONObject(i).containsKey("geometry")) {
+                    String geometry = gazPoints.getJSONObject(i).getString("geometry");
+                    geometry = geometry.replace("POINT(", "").replace(")", "").replace(" ", ",");
+                    sb.append(geometry);
+                } else {
+                    sb.append(",");
+                }
+
+                for (String s : columns) {
+                    if (!s.equals("longitude") && !s.equals("latitude")) {
+                        String ss = gazPoints.getJSONObject(i).containsKey(s) ? gazPoints.getJSONObject(i).getString(s) : "";
+                        sb.append(",\"").append(ss.replace("\"", "\"\"")).append("\"");
+                    }
+                }
+            }
+
+            getMapComposer().featuresCSV = sb.toString();
             getMapComposer().getOpenLayersJavascript().execute("mapFrame.mapPoints('" + StringEscapeUtils.escapeJavaScript(gazPoints.toString()) + "');");
         } catch (Exception e) {
             e.printStackTrace();

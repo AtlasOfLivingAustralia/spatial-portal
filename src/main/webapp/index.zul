@@ -597,7 +597,7 @@ function readCookie(name) {
             <n:a class="fancybox-close" n:onClick="clearNearestMarkerLayer();mapFrame.toggleActiveNearest();" style="display: inline" />
             <caption label="Nearest feature tool">
                 <n:a href='#' n:onClick="clearNearestMarkerLayer();">
-                    <n:span style="color:black">remove all markers</n:span>
+                    <n:span style="color:black;text-decoration:underline">remove all markers</n:span>
                 </n:a>
             </caption>
             <div height="100%" style="background:white">
@@ -609,11 +609,14 @@ function readCookie(name) {
             <n:a class="fancybox-close" n:onClick="clearNearestMarkerLayer();mapFrame.toggleActiveFeatures();" style="display: inline" />
             <caption label="Mapped features">
                 <n:a href='#' n:onClick="clearNearestMarkerLayer();mapFrame.toggleActiveFeatures();">
-                    <n:span style="color:black">remove all markers</n:span>
+                    <n:span style="color:black;text-decoration:underline">remove all markers</n:span>
+                </n:a>
+                <n:a href='#' n:onClick="downloadFeaturesCSV()">
+                    <n:span style="color:black;text-decoration:underline">download CSV</n:span>
                 </n:a>
             </caption>
             <div height="100%" style="background:white">
-                <n:div n:style="height:300px;overflow:auto;" id="featuresOutput"></n:div>
+                <n:div n:style="height:300px;overflow:auto;" id="featureOutput"></n:div>
             </div>
         </window>
 

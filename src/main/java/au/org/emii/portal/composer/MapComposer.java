@@ -158,6 +158,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     RemoteLogger remoteLogger;
     Textbox currentLayerExtent;
 
+    public String featuresCSV;
+
     void motd() {
         if (motd.isMotdEnabled()) {
             logger.debug("displayling MOTD");
@@ -3928,5 +3930,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 rm.getLastUriAttempted(),
                 "Raw data from location",
                 httpConnection.readRawData(rm.getLastUriAttempted()));
+    }
+
+    public void onClick$downloadFeaturesCSV(Event event) {
+        if (featuresCSV != null) {
+            Filedownload.save(featuresCSV, "application/csv", "pointFeatures.csv");
+        }
     }
 }
