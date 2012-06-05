@@ -49,6 +49,8 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         this.movingAverageSize = movingAverageSize;
 
         stageTimes = new long[2];
+        setStage(0);
+        setProgress(0);
 
         this.sitesbyspecies = sitesbyspecies;
         this.occurrencedensity = occurrencedensity;

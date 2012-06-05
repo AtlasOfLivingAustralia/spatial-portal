@@ -56,6 +56,9 @@ public class AnalysisJobAloc extends AnalysisJob {
         //cells = GridCutter.countCells(region, envelope);
 
         stageTimes = new long[4];
+
+        setStage(0);
+        setProgress(0);
     }
 
     void exportResults() {
@@ -182,28 +185,43 @@ public class AnalysisJobAloc extends AnalysisJob {
                         + AlaspatialProperties.getAnalysisAlocEstimateAdd0()); //default
             }
         }
-        if (stage <= 1) { //seeding; 0.2 to 0.3
+//        if (stage <= 1) { //seeding; 0.2 to 0.3
+//            if (prog > 0.22) {
+//                //t2 = (long) (timeElapsed * (.1 - (prog-.2))/(prog-.2)) ;   //projected
+//                t2 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult1()) * (double) layerCount * numberOfGroups
+//                        + AlaspatialProperties.getAnalysisAlocEstimateAdd1()); //default
+//                t2 = t2 + progTime - stageTimes[1];
+//            }
+//            if (t2 <= 0 || prog <= 0.22) {
+//                t2 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult1()) * (double) layerCount * numberOfGroups
+//                        + AlaspatialProperties.getAnalysisAlocEstimateAdd1()); //default
+//            }
+//        }
+//        if (stage <= 2) { //iterations; 0.3 to 0.9
+//            if (prog > 0.3) {
+//                //t3 = (long) (timeElapsed  * (.6 - (prog-.3))/(prog-.3));   //projected
+//
+//                t3 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult2()) * (double) numberOfGroups * layerCount * layerCount
+//                        + AlaspatialProperties.getAnalysisAlocEstimateAdd2()); //default
+//                t3 = t3 + progTime - stageTimes[2];
+//            }
+//            if (t3 <= 0 || prog <= 0.3) {
+//                t3 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult2()) * (double) numberOfGroups * layerCount * layerCount
+//                        + AlaspatialProperties.getAnalysisAlocEstimateAdd2()); //default
+//            }
+//        }
+        if (stage <= 2) { //seeding and iterations
             if (prog > 0.22) {
-                //t2 = (long) (timeElapsed * (.1 - (prog-.2))/(prog-.2)) ;   //projected
                 t2 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult1()) * (double) layerCount * numberOfGroups
-                        + AlaspatialProperties.getAnalysisAlocEstimateAdd1()); //default
+                        + AlaspatialProperties.getAnalysisAlocEstimateAdd1())
+                        + (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult2()) * (double) numberOfGroups * layerCount * layerCount
+                        + AlaspatialProperties.getAnalysisAlocEstimateAdd2()); //default
                 t2 = t2 + progTime - stageTimes[1];
             }
             if (t2 <= 0 || prog <= 0.22) {
                 t2 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult1()) * (double) layerCount * numberOfGroups
-                        + AlaspatialProperties.getAnalysisAlocEstimateAdd1()); //default
-            }
-        }
-        if (stage <= 2) { //iterations; 0.3 to 0.9
-            if (prog > 0.3) {
-                //t3 = (long) (timeElapsed  * (.6 - (prog-.3))/(prog-.3));   //projected
-
-                t3 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult2()) * (double) numberOfGroups * layerCount * layerCount
-                        + AlaspatialProperties.getAnalysisAlocEstimateAdd2()); //default
-                t3 = t3 + progTime - stageTimes[2];
-            }
-            if (t3 <= 0 || prog <= 0.3) {
-                t3 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult2()) * (double) numberOfGroups * layerCount * layerCount
+                        + AlaspatialProperties.getAnalysisAlocEstimateAdd1())
+                        + (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult2()) * (double) numberOfGroups * layerCount * layerCount
                         + AlaspatialProperties.getAnalysisAlocEstimateAdd2()); //default
             }
         }
@@ -226,10 +244,12 @@ public class AnalysisJobAloc extends AnalysisJob {
     public void setProgress(double d) {
         if (stage == 0) { //data load; 0 to 0.2
             progress = d / 5;
-        } else if (stage == 1) { //seeding; 0.2 to 0.3
-            progress = 0.2 + d / 10;
-        } else if (stage == 2) { //iterations; 0.3 to 0.9
-            progress = 0.3 + d * 6 / 10;
+//        } else if (stage == 1) { //seeding; 0.2 to 0.3
+//            progress = 0.2 + d / 10;
+//        } else if (stage == 2) { //iterations; 0.3 to 0.9
+//            progress = 0.3 + d * 6 / 10;
+        } else if (stage == 1) { //seeding and iterations; 0.2 to 0.9
+            progress = 0.2 + d * 7 / 10;
         } else {    //transforming data; 0.9 to 1.0
             progress = 0.9 + d / 10;
         }
@@ -243,9 +263,9 @@ public class AnalysisJobAloc extends AnalysisJob {
             if (stage == 0) { //data load; 0 to 0.2
                 msg = "Data preparation, ";
             } else if (stage == 1) { //seeding; 0.2 to 0.3
-                msg = "Seed generation, ";
+                msg = "Running ALOC, ";
             } else if (stage == 2) { //iterations; 0.3 to 0.9
-                msg = "Iterations, ";
+                msg = "Running ALOC, ";
             } else {    //transforming data; 0.9 to 1.0
                 msg = "Exporting results, ";
             }

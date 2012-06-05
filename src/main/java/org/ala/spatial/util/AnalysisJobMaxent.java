@@ -81,6 +81,8 @@ public class AnalysisJobMaxent extends AnalysisJob {
         speciesCount = 10000;
 
         stageTimes = new long[4];
+        setStage(0);
+        setProgress(0);
     }
 
     @Override

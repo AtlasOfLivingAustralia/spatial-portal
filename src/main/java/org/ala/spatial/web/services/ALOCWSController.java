@@ -62,7 +62,7 @@ public class ALOCWSController {
         return pid;
     }
 
-    @RequestMapping(value = "/ws/aloc/estimate", method = RequestMethod.POST)
+    @RequestMapping(value = "/ws/aloc/estimate", method = {RequestMethod.POST, RequestMethod.GET})
     public
     @ResponseBody
     String alocEstimate(HttpServletRequest req) {

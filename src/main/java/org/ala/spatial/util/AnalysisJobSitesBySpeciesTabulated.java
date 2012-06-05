@@ -52,6 +52,8 @@ public class AnalysisJobSitesBySpeciesTabulated extends AnalysisJob {
         this.gridsize = gridsize;
 
         stageTimes = new long[2];
+        setStage(0);
+        setProgress(0);
 
         this.biocacheserviceurl = biocacheserviceurl;
 

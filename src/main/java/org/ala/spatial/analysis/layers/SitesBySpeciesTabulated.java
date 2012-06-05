@@ -310,7 +310,7 @@ public class SitesBySpeciesTabulated {
 
             //identify column numbers
             TreeMap<Integer, Integer> tm = new TreeMap();
-            for (int i = 0; i < decCountMap.length; i++) {
+            for (int i = 1; i < decCountMap.length; i++) {
                 tm.putAll(decCountMap[i]);
             }
             Integer[] cols = new Integer[tm.size()];

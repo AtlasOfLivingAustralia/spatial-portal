@@ -153,6 +153,7 @@ public class AnalysisJob extends Thread implements Serializable {
 
     public void setStage(int i){
         stage = i;
+        setProgress(0); //for this stage
     }
 
     private String now() {
