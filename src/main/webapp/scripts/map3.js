@@ -2128,7 +2128,7 @@ function animateLayered(layername, interval, start, end, step, page) {
             layer.animated_layers[i].display(false);
         }
 
-        if(status) status.innerHTML = "frame: "  + (1*start + step*(page)) + " to " + (1*start + step*(page+1));
+        if(status) status.innerHTML = ""  + (1*start + step*(page)) + " to " + (1*start + step*(page+1));
         setTimeout("animateLayered('" + layername + "'," + interval + ", " + start + ", " + end + ", " + step + ", " + (page + 1) + ")", interval);
     }
 }

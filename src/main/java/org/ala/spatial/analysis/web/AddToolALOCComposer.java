@@ -10,6 +10,7 @@ import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.wms.WMSStyle;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.List;
 import org.ala.spatial.sampling.SimpleRegion;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
@@ -87,25 +88,18 @@ public class AddToolALOCComposer extends AddToolComposer {
             SelectedArea sa = getSelectedArea();//getMapComposer().getSelectionArea();
 
             //estimate analysis size in bytes
-            SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
-            double[][] bbox;
-            if (sr != null) {
-                bbox = sr.getBoundingBox();
+            double[][] bbox = null;
+            if(sa.getMapLayer() != null && sa.getMapLayer().getMapLayerMetadata() != null) {
+                List<Double> bb = sa.getMapLayer().getMapLayerMetadata().getBbox();
+                bbox = new double[][]{{bb.get(0),bb.get(1)},{bb.get(2),bb.get(3)}};
             } else {
+                SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
+                if (sr != null) {
+                    bbox = sr.getBoundingBox();
+                }
+            }
+            if(bbox == null) {
                 bbox = new double[][]{{-180, -90}, {180, 90}};
-            }
-            //analysis currently restricted to australian extents and 0.01 degree grid
-            if (bbox[0][0] < 112) {
-                bbox[0][0] = 112;
-            }
-            if (bbox[1][0] > 155) {
-                bbox[1][0] = 155;
-            }
-            if (bbox[0][1] < -44) {
-                bbox[0][1] = -44;
-            }
-            if (bbox[1][1] > -9) {
-                bbox[1][1] = -9;
             }
 
             long cellsInBBox = (long) ((bbox[1][0] - bbox[0][0]) / 0.01 * (bbox[1][1] - bbox[0][1]) / 0.01);
@@ -282,25 +276,18 @@ public class AddToolALOCComposer extends AddToolComposer {
             SelectedArea sa = getSelectedArea();//getMapComposer().getSelectionArea();
 
             //estimate analysis size in bytes
-            SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
-            double[][] bbox;
-            if (sr != null) {
-                bbox = sr.getBoundingBox();
+            double[][] bbox = null;
+            if(sa.getMapLayer() != null && sa.getMapLayer().getMapLayerMetadata() != null) {
+                List<Double> bb = sa.getMapLayer().getMapLayerMetadata().getBbox();
+                bbox = new double[][]{{bb.get(0),bb.get(1)},{bb.get(2),bb.get(3)}};
             } else {
+                SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
+                if (sr != null) {
+                    bbox = sr.getBoundingBox();
+                }
+            }
+            if(bbox == null) {
                 bbox = new double[][]{{-180, -90}, {180, 90}};
-            }
-            //analysis currently restricted to australian extents and 0.01 degree grid
-            if (bbox[0][0] < 112) {
-                bbox[0][0] = 112;
-            }
-            if (bbox[1][0] > 155) {
-                bbox[1][0] = 155;
-            }
-            if (bbox[0][1] < -44) {
-                bbox[0][1] = -44;
-            }
-            if (bbox[1][1] > -9) {
-                bbox[1][1] = -9;
             }
 
             long cellsInBBox = (long) ((bbox[1][0] - bbox[0][0]) / 0.01 * (bbox[1][1] - bbox[0][1]) / 0.01);

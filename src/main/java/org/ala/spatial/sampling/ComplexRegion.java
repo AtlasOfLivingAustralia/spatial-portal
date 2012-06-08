@@ -371,9 +371,8 @@ public class ComplexRegion extends SimpleRegion {
     public int[][] getOverlapGridCells(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map, boolean noCellsReturned) {
         int i, j;
         // if no threestate map exists, create one
-        if (mask == null) {
-            mask = new byte[height][width];
-            three_state_map = mask;
+        if (three_state_map == null) {
+            three_state_map = new byte[height][width];
         }
 
         byte[][] tmpMask = new byte[height][width];
@@ -393,10 +392,10 @@ public class ComplexRegion extends SimpleRegion {
             //tmpMask into mask
             for (i = 0; i < height; i++) {
                 for (j = 0; j < width; j++) {
-                    if (tmpMask[i][j] == 2 || mask[i][j] == 2) {
-                        mask[i][j] = 2;
+                    if (tmpMask[i][j] == 2 || three_state_map[i][j] == 2) {
+                        three_state_map[i][j] = 2;
                     } else if (tmpMask[i][j] == 1) {
-                        mask[i][j] = 1;
+                        three_state_map[i][j] = 1;
                     }
 
                     /* reset shapemask for next part */
@@ -411,7 +410,7 @@ public class ComplexRegion extends SimpleRegion {
             int p = 0;
             for (i = 0; i < height; i++) {
                 for (j = 0; j < width; j++) {
-                    if (mask[i][j] != GI_UNDEFINED) {   //undefined == absence
+                    if (three_state_map[i][j] != GI_UNDEFINED) {   //undefined == absence
                         data[p][0] = j;
                         data[p][1] = i;
                         p++;

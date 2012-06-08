@@ -222,7 +222,7 @@ padding: 1px 0px 0px 5px;
                         <div style="padding-top:0px" width="65px">
                             <label value="Animation" sclass="h3" />
                         </div>
-                        <div  width="250px">
+                        <div  width="315px">
                             <vbox>
                                 <label id="lblAnimationLabel" />
                                 <hbox>
@@ -237,7 +237,7 @@ padding: 1px 0px 0px 5px;
                                     <button label="restart" id="btnAnimationStart" />
                                     <button label="stop" id="btnAnimationStop" disabled="true" />
                                 </hbox>
-                                <n:div id="animationStatus" style="background-color:yellow;font-weight:bold;font-size:150%"></n:div>
+                                <n:div id="animationStatus" style="background-color:yellow;font-weight:bold;font-size:150%;text-align:right"></n:div>
                             </vbox>
                         </div>
                     </hbox>
