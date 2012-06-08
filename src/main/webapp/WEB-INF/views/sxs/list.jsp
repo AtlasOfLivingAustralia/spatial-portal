@@ -29,6 +29,9 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                 species query<input name="speciesquery" value="tasmanian%20devil"/>
                 &nbsp;layers <input name="layers" value="aus1" />
                 &nbsp;grid size <input name="gridsize" value="0.01" />
+                &nbsp;min uncertainty<input name="minuncertainty" value="" />
+                &nbsp;max uncertainty<input name="maxuncertainty" value="" />
+                &nbsp;<input name="nulluncertainty" type="checkbox" value="true"/>&nbsp;exclude null uncertainty
                 <input type="submit" value="Add" />
                 <br>
             </form>

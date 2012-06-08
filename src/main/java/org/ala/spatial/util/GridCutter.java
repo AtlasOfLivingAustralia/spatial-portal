@@ -457,11 +457,17 @@ public class GridCutter {
 
     private static byte[][] getRegionMask(double res, double[][] extents, int w, int h, SimpleRegion region) {
         byte[][] mask = new byte[h][w];
+
+        //can also use region.getOverlapGridCells_EPSG900913
+        region.getOverlapGridCells(extents[0][0], extents[0][1], extents[1][0], extents[1][1], w, h, mask);
         for (int i = 0; i < h; i++) {
             for (int j = 0; j < w; j++) {
-                double tx = (j + 0.5) * res + extents[0][0];
-                double ty = (i + 0.5) * res + extents[0][1];
-                if (region.isWithin_EPSG900913(tx, ty)) {
+                //double tx = (j + 0.5) * res + extents[0][0];
+                //double ty = (i + 0.5) * res + extents[0][1];
+                //if (region.isWithin_EPSG900913(tx, ty)) {
+                //    mask[i][j] = 1;
+                //}
+                if (mask[i][j] > 0) {
                     mask[i][j] = 1;
                 }
             }

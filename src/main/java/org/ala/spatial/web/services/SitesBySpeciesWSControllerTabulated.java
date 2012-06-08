@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -108,6 +109,20 @@ public class SitesBySpeciesWSControllerTabulated {
     @RequestMapping(value = "sxs", method = RequestMethod.GET)
     public ModelAndView sxsList(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         List<SxS> list = getSxSList();
+        java.util.Collections.sort(list, new Comparator<SxS>() {
+
+            @Override
+            public int compare(SxS s1, SxS s2) {
+                if(s2.getAnalysisId() != null && s1.getAnalysisId() != null) {
+                    return s2.getAnalysisId().compareTo(s1.getAnalysisId());
+                } else if (s2.getAnalysisId() != null) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+
+        });
 
         ModelMap m = new ModelMap();
         m.addAttribute("sxs", list);
@@ -295,6 +310,19 @@ public class SitesBySpeciesWSControllerTabulated {
         String layers = req.getParameter("layers");
         String bs = URLEncoder.encode(AlaspatialProperties.getBiocacheWsURL(), "UTF-8");
         String gridsize = req.getParameter("gridsize");
+
+        String minuncertainty = req.getParameter("minuncertainty")==null?"":req.getParameter("minuncertainty");
+        String maxuncertainty = req.getParameter("maxuncertainty")==null?"":req.getParameter("maxuncertainty");
+        String nulluncertainty = req.getParameter("nulluncertainty")==null?"false":req.getParameter("nulluncertainty");
+        
+        String min = minuncertainty.length() == 0?"*":minuncertainty;
+        String max = maxuncertainty.length() == 0?"*":maxuncertainty;
+
+        if(nulluncertainty.equals("true")) {
+            speciesquery = "(" + speciesquery + ")%20AND%20coordinate_uncertainty:%5B" + min + "%20TO%20" + max + "%5D";
+        } else if(minuncertainty.length() + maxuncertainty.length() > 0) {
+            speciesquery = "(" + speciesquery + ")%20AND%20-(coordinate_uncertainty:*%20AND%20-coordinate_uncertainty:%5B" + min + "%20TO%20" + max + "%5D)";
+        }
 
         String url = req.getParameter("u");
 

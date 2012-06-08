@@ -92,7 +92,8 @@ public class LayerDistanceIndex {
         }
 
         //wait 10s and then close
-        wait(10*1000);
+        Thread.currentThread().wait(10*1000);
+
         toDiskThread.interrupt();
     }
 

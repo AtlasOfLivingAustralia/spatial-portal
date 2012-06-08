@@ -15,9 +15,9 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
         <nav id="breadcrumb"><ol><li><a href="http://www.ala.org.au">Home</a></li> 
                 <li><a href="http://spatial.ala.org.au">Mapping &#038; analysis</a></li>
                 <li><a href="../../sxs">Sites by Species list</a></li>
-                <li class="last">Sites by species tabulated by ${sxs.tablename}</li></ol></nav>
+                <li class="last">Expert Data Profile for ${sxs.tablename}</li></ol></nav>
         <section id="content-search">
-            <h1>Spatial Web Services</h1>
+            <h1>Expert Data Profile</h1>
         </section>
     </div><!--inner-->
 
