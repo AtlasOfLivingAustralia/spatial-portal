@@ -632,7 +632,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                     seperator2.setParent(cbColour);
                     seperator2.setDisabled(true);
                 }
-                if (ci.getValue().equals("year")) {
+                if (ci.getValue().equals("occurrence_year_decade")) {
                     Comboitem seperator3 = new Comboitem("seperator");
                     seperator3.setLabel("------------------Record Details------------------");
                     seperator3.setParent(cbColour);
@@ -815,18 +815,25 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     }
 
     private void updateAnimationDiv() {
+        if(dblAnimationSeconds == null) {
+            return;
+        }
         try {
             Query q = (Query) mapLayer.getData("query");
             if(q != null && q instanceof BiocacheQuery) {
                 Integer firstYear = (Integer) mapLayer.getData("first_year");
                 Integer lastYear =  (Integer) mapLayer.getData("last_year");
                 if(firstYear == null) {
-                    LegendObject lo = ((BiocacheQuery)q).getLegend("year");
-                    if(lo != null && lo.getMinMax() != null) {
-                        firstYear = (int) lo.getMinMax()[0];
-                        lastYear = (int) lo.getMinMax()[1];
-                        mapLayer.setData("first_year", firstYear);
-                        mapLayer.setData("last_year", lastYear);
+                    try {
+                        LegendObject lo = ((BiocacheQuery)q).getLegend("occurrence_year");
+                        if(lo != null && lo.getMinMax() != null) {
+                            firstYear = (int) lo.getMinMax()[0];
+                            lastYear = (int) lo.getMinMax()[1];
+                            mapLayer.setData("first_year", firstYear);
+                            mapLayer.setData("last_year", lastYear);
+                        }
+                    } catch (Exception e) {
+                        //this will fail if there are no records
                     }
                 }
 

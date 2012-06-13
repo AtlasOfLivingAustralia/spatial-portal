@@ -160,7 +160,7 @@ public class EnvironmentalList extends Listbox {
             listModel = new SimpleListModel(listEntries);
             setModel(listModel);
 
-            renderAll();
+            //renderAll();
 
         } catch (Exception e) {
             System.out.println("error setting up env list");

@@ -974,13 +974,7 @@ public class CommonData {
                 JSONArray ja = JSONArray.fromObject(get.getResponseBodyAsString());
                 System.out.println("size: " + ja.size());
                 for (int i = 0; i < ja.size(); i++) {
-                    String layer = ja.getJSONObject(i).getString("name");
-
-                    //TODO: remove this when no longer required
-                    if(!layer.equals("cl918") && !layer.equals("cl1918")) {
-                        set.add(layer);
-                    }
-                    
+                    String layer = ja.getJSONObject(i).getString("name");                    
                 }
                 if (ja.size() > 0) {
                     //include field names that get translated 

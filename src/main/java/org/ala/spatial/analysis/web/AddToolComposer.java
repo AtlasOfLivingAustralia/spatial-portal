@@ -1318,7 +1318,7 @@ public class AddToolComposer extends UtilityComposer {
                 if (species.equals("allspecies")) {
                     species = "none";
                     q = new BiocacheQuery(null, null, null, null, false, applycheckboxes ? getGeospatialKosher() : null);
-                } else if (species.equals("allmapped")) {
+                } else if (ml == null && species.equals("allmapped")) {
 
                     //                species = "";
                     //                List<MapLayer> layers = getMapComposer().getSpeciesLayers();

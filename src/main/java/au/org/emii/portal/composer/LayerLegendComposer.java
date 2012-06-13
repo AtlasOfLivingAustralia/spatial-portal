@@ -322,7 +322,10 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
             for (int i = 0; i < fields.size(); i++) {
                 //TODO: make changes to support biocache year and month
                 if(q != null && fields.get(i).getFieldType() == QueryField.FieldType.STRING
-                        && (q instanceof UploadQuery || !(fields.get(i).getName().equalsIgnoreCase("year") || fields.get(i).getName().equalsIgnoreCase("coordinate_uncertainty") || fields.get(i).getName().equalsIgnoreCase("month")))) {
+                        && (q instanceof UploadQuery 
+                            || !(fields.get(i).getName().equalsIgnoreCase("occurrence_year")
+                            || fields.get(i).getName().equalsIgnoreCase("coordinate_uncertainty")
+                            || fields.get(i).getName().equalsIgnoreCase("month")))) {
                     System.out.println("adding to combobox: '" + fields.get(i).getName() + "'");
                     /*Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
                     ci.setValue(fields.get(i).getName());
@@ -335,13 +338,19 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
                         ci.setValue(fields.get(i).getName());
                         ci.setParent(cbColour);
 
-                        if (ci.getValue().equals("rank")) {
+                        if (ci.getValue().equals("interaction")) {
                             Comboitem seperator1 = new Comboitem("seperator");
                             seperator1.setLabel("------------------Geospatial------------------");
                             seperator1.setParent(cbColour);
                             seperator1.setDisabled(true);
                         }
-                        if (ci.getValue().equals("cl620") ) {
+                        if (ci.getValue().equals("cl620")) {
+                            Comboitem seperator2 = new Comboitem("seperator");
+                            seperator2.setLabel("------------------Temporal------------------");
+                            seperator2.setParent(cbColour);
+                            seperator2.setDisabled(true);
+                        }
+                        if (ci.getValue().equals("occurrence_year_decade")) {
                             Comboitem seperator3 = new Comboitem("seperator");
                             seperator3.setLabel("------------------Record Details------------------");
                             seperator3.setParent(cbColour);

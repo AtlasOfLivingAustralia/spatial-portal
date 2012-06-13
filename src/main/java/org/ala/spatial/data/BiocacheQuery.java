@@ -100,6 +100,12 @@ public class BiocacheQuery implements Query, Serializable {
                 break;
             }
         }
+        if("occurrence_year_individual".equals(facetName)) {
+            facetName = "occurrence_year";
+        }
+        if("occurrence_year_decade".equals(facetName)) {
+            facetName = "occurrence_year";
+        }
         return facetName;
     }
 
@@ -957,15 +963,15 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("country", "Country Boundaries", QueryField.FieldType.STRING));
             fields.add(new QueryField("ibra", "IBRA Regions", QueryField.FieldType.STRING));
             fields.add(new QueryField("imcra", "IMCRA Regions", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("cl918", "Dynamic Land Cover", QueryField.FieldType.STRING));
+            fields.add(new QueryField("cl918", "Dynamic Land Cover", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl617", "Vegetation types - native", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl620", "Vegetation types - present", QueryField.FieldType.STRING));
             //fields.add(new QueryField("geospatial_kosher", "Location Quality", QueryField.FieldType.STRING));
             // Temporal
             fields.add(new QueryField("month", "Month", QueryField.FieldType.STRING));
-            fields.add(new QueryField("year", "Year", QueryField.FieldType.INT));
+            fields.add(new QueryField("occurrence_year", "Year", QueryField.FieldType.INT));
             fields.add(new QueryField("year", "Year (individual)", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("decade", "Decade", QueryField.FieldType.INT));
+            fields.add(new QueryField("occurrence_year_decade", "Decade", QueryField.FieldType.STRING));
             // Record details
             fields.add(new QueryField("basis_of_record", "Record Type", QueryField.FieldType.STRING));
             fields.add(new QueryField("type_status", "Specimen Type", QueryField.FieldType.STRING));
@@ -1058,7 +1064,7 @@ public class BiocacheQuery implements Query, Serializable {
                     + LEGEND_SERVICE_CSV
                     + DEFAULT_ROWS
                     + "&q=" + getQ()
-                    + "&cm=" + translateFieldForSolr(colourmode)
+                    + "&cm=" + (colourmode.equals("occurrence_year_decade")?"occurrence_year":translateFieldForSolr(colourmode))
                     + getQc();
             System.out.println(url);
             GetMethod get = new GetMethod(url);
@@ -1077,7 +1083,7 @@ public class BiocacheQuery implements Query, Serializable {
                 lo = new BiocacheLegendObject(colourmode, s);
 
                 //test for exceptions
-                if (!colourmode.contains(",") && (colourmode.equals("year") || colourmode.equals("coordinate_uncertainty"))) {
+                if (!colourmode.contains(",") && (colourmode.equals("occurrence_year") || colourmode.equals("coordinate_uncertainty"))) {
                     lo = ((BiocacheLegendObject) lo).getAsIntegerLegend();
 
                     //apply cutpoints to colourMode string
@@ -1092,16 +1098,23 @@ public class BiocacheQuery implements Query, Serializable {
                     while (i < cutpoints.length) {
                         if (i == cutpoints.length - 1 || cutpoints[i] != cutpoints[i + 1]) {
                             if (i > 0) {
-                                sb.append(",").append(cutpoints[lasti]);
+                                sb.append(",").append(cutpointmins[i]);
+                                if(colourmode.equals("occurrence_year"))
+                                    sb.append("-01-01T00:00:00Z");
                             } else {
                                 sb.append(",*");
                             }
                             sb.append(",").append(cutpoints[i]);
+                            if(colourmode.equals("occurrence_year"))
+                                    sb.append("-12-31T00:00:00Z");
                             lasti = i;
                         }
                         i++;
                     }
                     String newColourMode = sb.toString();
+                    if(colourmode.equals("occurrence_year")) {
+                        newColourMode = newColourMode.replace(".0","");
+                    }
 
                     lo.setColourMode(newColourMode);
                     legends.put(colourmode, lo);
@@ -1114,6 +1127,36 @@ public class BiocacheQuery implements Query, Serializable {
                     lo = newlo;
                 } else if (colourmode.equals("month")) {
                     String newColourMode = "month,00,00,01,01,02,02,03,03,04,04,05,05,06,06,07,07,08,08,09,09,10,10,11,11,12,12";
+
+                    lo.setColourMode(newColourMode);
+                    legends.put(colourmode, lo);
+
+                    LegendObject newlo = getLegend(newColourMode);
+                    newlo.setColourMode(newColourMode);
+                    newlo.setNumericLegend(lo.getNumericLegend());
+                    legends.put(newColourMode, newlo);
+
+                    lo = newlo;
+                } else if (!colourmode.contains(",") && colourmode.equals("occurrence_year_decade")) {
+                    TreeSet<Integer> decades = new TreeSet<Integer>();
+                    for(double d : ((BiocacheLegendObject) lo).categoriesNumeric.keySet()) {
+                        decades.add((int)(d/10));
+                    }
+                    ArrayList<Integer> d = new ArrayList<Integer>(decades);
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("occurrence_year");
+                    for(int i=(d.size()>0&&d.get(0)>0?0:1);i<d.size();i++) {
+                        if (i > 0) {
+                            sb.append(",").append(d.get(i));
+                            sb.append("0-01-01T00:00:00Z");
+                        } else {
+                            sb.append(",*");
+                        }
+                        sb.append(",").append(d.get(i));
+                        sb.append("9-12-31T00:00:00Z");
+                    }
+                    String newColourMode = sb.toString();
 
                     lo.setColourMode(newColourMode);
                     legends.put(colourmode, lo);

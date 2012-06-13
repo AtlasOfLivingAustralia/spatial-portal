@@ -18,13 +18,6 @@ public class ActiveLayersLegendEventListener extends PortalEvent implements Even
 			Listitem listItem = (Listitem) target.getParent().getParent();
 			MapLayer activeLayer = (MapLayer) listItem.getValue();
                         listItem.setSelected(true);
-
-			if (activeLayer != null) {
-//                            mapComposer.toggleLayerControls();
-			} else {
-				//logger.debug("nothing selected in active layers list will do nothing");
-                            System.out.println("LEGEND: active layer is null"); 
-			}
 		}
 		else {
 			logger.debug("MapController reports unsafe to perform action");

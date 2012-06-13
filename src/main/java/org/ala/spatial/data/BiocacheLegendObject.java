@@ -41,6 +41,9 @@ public class BiocacheLegendObject extends LegendObject {
         } catch (IOException ex) {
             Logger.getLogger(BiocacheLegendObject.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        boolean isDecade = colourMode.startsWith("occurrence_year_decade");
+        boolean isYear = colourMode.contains("occurrence_year") && !isDecade;
 
         int count = 0;
         int sum = 0;
@@ -52,6 +55,16 @@ public class BiocacheLegendObject extends LegendObject {
         for (int i = 1; i < csv.size(); i++) {
             String[] c = csv.get(i);
             String[] p = (i > 1) ? csv.get(i - 1) : null;
+
+            if(isYear) {
+                c[0] = c[0].replace("-01-01T00:00:00Z", "");
+                c[0] = c[0].replace("-12-31T00:00:00Z", "");
+            } else if(isDecade) {
+                for(int j=0;j<=9;j++) {
+                    c[0] = c[0].replace(j + "-01-01T00:00:00Z", "0");
+                    c[0] = c[0].replace(j + "-12-31T00:00:00Z", "0");
+                }
+            }
 
             int rc = Integer.parseInt(c[4]);
             if(rc == 0) {
@@ -70,7 +83,8 @@ public class BiocacheLegendObject extends LegendObject {
 
             //check for endpoint (repitition of colour)
             if (p != null && c.length > 4 && p.length > 4
-                    && p[1].equals(c[1]) && p[2].equals(c[2]) && p[3].equals(c[3])) {
+                    && p[1].equals(c[1]) && p[2].equals(c[2]) && p[3].equals(c[3])
+                    && !isDecade && !isYear) {
                 if (count == 0) {
                     count = 1;
                     sum = Integer.parseInt(p[4]);

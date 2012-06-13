@@ -169,13 +169,21 @@ public class Facet implements Serializable {
     public Facet(String field, String strMin, String strMax, boolean includeRange) {
         this.field = field;
 
+        if(field.equals("occurrence_year")) {
+            strMin = strMin.replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "");
+            strMax = strMax.replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "");
+        }
         double[] d = {strMin.equals("*") ? Double.NEGATIVE_INFINITY : Double.parseDouble(strMin),
             strMax.equals("*") ? Double.POSITIVE_INFINITY : Double.parseDouble(strMax)};
         this.min = d[0];
         this.max = d[1];
         this.includeRange = includeRange;
 
-        this.value = "[" + strMin + " TO " + strMax + "]";
+        if(field.equals("occurrence_year")) {
+            this.value = "[" + strMin + "-01-01T00:00:00Z TO " + strMax + "-12-31T00:00:00Z]";
+        } else {
+            this.value = "[" + strMin + " TO " + strMax + "]";
+        }
 
         this.valueArray = null;
 
@@ -194,15 +202,41 @@ public class Facet implements Serializable {
 
     @Override
     public String toString() {
+        String facet = "";
         if (parameter == null) {
             if ((value.startsWith("\"") && value.endsWith("\"")) || value.equals("*")) {
-                return (includeRange ? "" : "-") + field + ":" + value;
+                facet = (includeRange ? "" : "-") + field + ":" + value;
             } else {
-                return (includeRange ? "" : "-") + field + ":\"" + value + "\"";
+                facet = (includeRange ? "" : "-") + field + ":\"" + value + "\"";
+            }
+
+            if (field.equals("occurrence_year")) {
+                facet = facet.replace(" TO ","-01-01T00:00:00Z TO ").replace("]","-12-31T00:00:00Z]");
+            } else if (field.equals("occurrence_year_decade")) {
+                if(value.contains("before")) {
+                    facet = (includeRange ? "" : "-") + field + ":[* TO 1849-12-31T00:00:00Z]";
+                } else {
+                    String yr = value.replace("\"","");
+                    yr = yr.substring(0, yr.length()-1);
+                    facet = (includeRange ? "" : "-") + field + ":[" + yr + "0-01-01T00:00:00Z TO " + yr + "9-12-31T00:00:00Z]";
+                }
+                facet = facet.replace("_decade","");
             }
         } else {
-            return parameter;
+            facet = parameter;
+
+            if(!facet.contains("-01-01T00:00:00Z")
+                    && !facet.contains("-12-31T00:00:00Z")
+                    && facet.contains("occurrence_year")) {
+                if (field.equals("occurrence_year")) {
+                    parameter = parameter.replace(" TO ","-01-01T00:00:00Z TO ").replace("]","-12-31T00:00:00Z]");
+                } else if (field.equals("occurrence_year_decade")) {
+                    //TODO: make this work
+                }
+            }
         }
+
+        return facet;
     }
 
     public String[] getFields() {
