@@ -254,7 +254,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
             System.out.println("Failed with exception: " + e.getMessage());
             setProgress(1, "failed: " + e.getMessage());
             setCurrentState(FAILED);
-            setMessage("Error processing your Sites By Species request. Please try again or if problem persists, contact the Administrator\nPlease quote the Prediction ID: " + getName());
+            setMessage("Error processing your Sites By Species request. Please try again or if problem persists, contact the Administrator.\n\nPlease quote the Analysis ID: " + getName());
         }
     }
 
@@ -272,10 +272,12 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
         long t1 = 0, t2 = 0, t3 = 0;
 
         if (stage <= 0) { //data load; 0 to 0.2
+            t1 = 180000;
             t1 = t1 + progTime - stageTimes[0];
         }
         if (stage <= 1) { //running; 0.2 to 0.9
             if (stage == 1) {
+                t2 = 110000;
                 t2 = t2 + progTime - stageTimes[1];
             }
         }

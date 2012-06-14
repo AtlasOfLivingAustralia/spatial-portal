@@ -297,9 +297,8 @@ public class GridCutter {
             System.out.println("extentsC, " + w + ", " + h + ": " + extents[0][0] + ", " + extents[0][1] + ", " + extents[1][0] + ", " + extents[1][1]);
         } else if (envelopes != null) {
             h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
-            h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
             w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
-            mask = getEnvelopeMaskAndUpdateExtents(resolution, res, extents, w, h, envelopes);
+            mask = getEnvelopeMaskAndUpdateExtents(resolution, res, extents, h, w, envelopes);
             h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
             w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
         } else {

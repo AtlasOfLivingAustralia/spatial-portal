@@ -343,7 +343,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
             System.out.println("Failed with exception: " + e.getMessage());
             setProgress(1, "failed: " + e.getMessage());
             setCurrentState(FAILED);
-            setMessage("Error processing your Prediction request. Please try again or if problem persists, contact the Administrator\nPlease quote the Prediction ID: " + getName());
+            setMessage("Error processing your Prediction request. Please try again or if problem persists, contact the Administrator.\n\nPlease quote the Prediction ID: " + getName());
         }
     }
 
