@@ -90,7 +90,7 @@
                 </listhead>
             </listbox>
             </div>
-            <vbox height="30px" >
+            <vbox height="30px" visible="false">
                 <separator height="15px" />
                 <div id="divContinous" visible="false">
                    <label id="dlabel" width="350px" />

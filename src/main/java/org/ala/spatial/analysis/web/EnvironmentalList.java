@@ -100,10 +100,10 @@ public class EnvironmentalList extends Listbox {
                 @Override
                 public void render(Listitem li, Object data) {                    
                     Listcell n = new Listcell(((ListEntry) data).catagoryNames());
-                    n.setHflex("1");
+                    //n.setHflex("1");
                     n.setParent(li);
                     n = new Listcell(((ListEntry) data).displayname);
-                    n.setHflex("1");
+                    //n.setHflex("1");
                     n.setParent(li);
 
                     Listcell lc = new Listcell();

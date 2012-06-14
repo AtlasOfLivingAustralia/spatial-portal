@@ -1345,9 +1345,10 @@ public class AddToolComposer extends UtilityComposer {
                         if (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
                                 || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
                             System.out.println("error in getSelectedSpecies value=" + searchSpeciesAuto.getSelectedItem().getValue() + " text=" + searchSpeciesAuto.getText());
+                        } else {
+                            species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+                            q = QueryUtil.get(species, getMapComposer(), false, applycheckboxes ? getGeospatialKosher() : null);
                         }
-                        species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                        q = QueryUtil.get(species, getMapComposer(), false, applycheckboxes ? getGeospatialKosher() : null);
                     }
                 }
             } catch (Exception e) {

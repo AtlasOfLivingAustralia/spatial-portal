@@ -878,34 +878,34 @@ public class AddFacetController extends UtilityComposer {
     }
 
     public void checkboxClick(Event event) {
-        if (divContinous.isVisible()) {
-            int[] state = getState();
-            dunknown.setChecked(state[1] > 0);
-
-            setEnableContinousControls(state[0] <= 1);
-
-            if (state[0] > 0 || state[1] > 0) {
-                minValue = facet.getMin();
-                maxValue = facet.getMax();
-                if (Double.isInfinite(minValue)) {
-                    minValue = gMinValue;
-                }
-                if (Double.isInfinite(maxValue)) {
-                    maxValue = gMaxValue;
-                }
-            } else {
-                minValue = gMinValue;
-                maxValue = gMaxValue;
-
-                if (state[1] == 0) {
-                    dunknown.setChecked(true);
-                }
-            }
-
-            //if (state[0] <= 1) {
-            //    updateD();
-            //}
-        }
+//        if (divContinous.isVisible()) {
+//            int[] state = getState();
+//            dunknown.setChecked(state[1] > 0);
+//
+//            setEnableContinousControls(state[0] <= 1);
+//
+//            if (state[0] > 0 || state[1] > 0) {
+//                minValue = facet.getMin();
+//                maxValue = facet.getMax();
+//                if (Double.isInfinite(minValue)) {
+//                    minValue = gMinValue;
+//                }
+//                if (Double.isInfinite(maxValue)) {
+//                    maxValue = gMaxValue;
+//                }
+//            } else {
+//                minValue = gMinValue;
+//                maxValue = gMaxValue;
+//
+//                if (state[1] == 0) {
+//                    dunknown.setChecked(true);
+//                }
+//            }
+//
+//            //if (state[0] <= 1) {
+//            //    updateD();
+//            //}
+//        }
     }
 
     public void onClick$clearSelection(Event e) {
@@ -913,16 +913,16 @@ public class AddFacetController extends UtilityComposer {
         uncheckAll();
         btnOk.setDisabled(true);
 
-        if (divContinous.isVisible()) {
-            setEnableContinousControls(true);
-            minValue = gMinValue;
-            maxValue = gMaxValue;
-            dunknown.setChecked(true);
-            //updateD();
-        } else {
-            //mapLayer.setHighlight(getSelectionFacet());
-            //getMapComposer().applyChange(mapLayer);
-        }
+//        if (divContinous.isVisible()) {
+//            setEnableContinousControls(true);
+//            minValue = gMinValue;
+//            maxValue = gMaxValue;
+//            dunknown.setChecked(true);
+//            //updateD();
+//        } else {
+//            //mapLayer.setHighlight(getSelectionFacet());
+//            //getMapComposer().applyChange(mapLayer);
+//        }
     }
 
     public void onClick$selectAll(Event event) {

@@ -234,8 +234,8 @@ padding: 1px 0px 0px 5px;
                                     <doublebox id="dblAnimationSeconds" width="30px" value="3.5"/>
                                 </hbox>
                                 <hbox>
-                                    <button label="restart" id="btnAnimationStart" />
-                                    <button label="stop" id="btnAnimationStop" disabled="true" />
+                                    <button label="Start" id="btnAnimationStart" />
+                                    <button label="Stop" id="btnAnimationStop" disabled="true" />
                                 </hbox>
                                 <n:div id="animationStatus" style="background-color:yellow;font-weight:bold;font-size:150%;text-align:right"></n:div>
                             </vbox>
