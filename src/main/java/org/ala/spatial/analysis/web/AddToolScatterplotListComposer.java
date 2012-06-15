@@ -352,6 +352,35 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         }
 
         this.detach();
+        
+        
+        try {
+            String extras = "";
+            if (highlightSa != null) {
+                extras += "highlight=" + highlightSa.getWkt();
+            }
+            if (backgroundLsid != null && backgroundLsid instanceof BiocacheQuery) {
+                extras += "background=" + ((BiocacheQuery) backgroundLsid).getLsids();
+            } else if (backgroundLsid != null && backgroundLsid instanceof UploadQuery) {
+                extras += "background=" + ((UploadQuery) backgroundLsid).getQ();
+            } else {
+                extras += "background=none";
+            }
+
+            if (lsidQuery instanceof BiocacheQuery) {
+                BiocacheQuery bq = (BiocacheQuery) lsidQuery;
+                extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), bq.getLsids(), sbenvsel, pid, extras, "SUCCESSFUL");
+            } else if (lsidQuery instanceof UploadQuery) {
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), ((UploadQuery) lsidQuery).getQ(), sbenvsel, pid, extras, "SUCCESSFUL");
+            } else {
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot", filterSa.getWkt(), "", sbenvsel, pid, extras, "SUCCESSFUL");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        
 
         return true;
     }

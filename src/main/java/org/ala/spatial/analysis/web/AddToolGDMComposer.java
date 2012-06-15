@@ -63,6 +63,11 @@ public class AddToolGDMComposer extends AddToolComposer {
     Label sitesslidermin, sitesslidermax, sitessliderper, sitessliderdef;
     Hbox sliderbox;
     double MAX_SCROLL = 100;
+    
+    SelectedArea sa = null;
+    Query query = null;
+    String sbenvsel = "";
+    String area = null;
 
     @Override
     public void afterCompose() {
@@ -84,10 +89,6 @@ public class AddToolGDMComposer extends AddToolComposer {
                 public void onEvent(Event event) throws Exception {
                     if (event instanceof ScrollEvent) {
                         ScrollEvent se = (ScrollEvent) event;
-//                        if (se.getPos() > MAX_SCROLL) {
-//                            sitesslider.setCurpos(MAX_SCROLL);
-//                        }
-
                         double a = se.getPos();
                         double b = (a / MAX_SCROLL);
                         long p = Math.round(b * 100);
@@ -126,7 +127,7 @@ public class AddToolGDMComposer extends AddToolComposer {
 
     @Override
     public boolean onFinish() {
-        Query query = getSelectedSpecies();
+        //Query query = getSelectedSpecies();
         if (query == null) {
             getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
             return false;
@@ -159,12 +160,12 @@ public class AddToolGDMComposer extends AddToolComposer {
         super.onClick$btnOk(event);
 
     }
-
+    
     public boolean runGDMStep1() {
         try {
-            SelectedArea sa = getSelectedArea();
-            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
-            String sbenvsel = getSelectedLayers();
+            sa = getSelectedArea();
+            query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
+            sbenvsel = getSelectedLayers();
             String[] speciesData = getSpeciesData(query);
 
             StringBuffer sbProcessUrl = new StringBuffer();
@@ -176,7 +177,6 @@ public class AddToolGDMComposer extends AddToolComposer {
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
 
-            String area = null;
             if (sa.getMapLayer() != null && sa.getMapLayer().getData("envelope") != null) {
                 area = "ENVELOPE(" + (String) sa.getMapLayer().getData("envelope") + ")";
             } else {
@@ -344,77 +344,24 @@ public class AddToolGDMComposer extends AddToolComposer {
 
             String fileUrl = CommonData.satServer + "/ws/download/" + pid;
             Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
+            
+            String options = "";
+            options += "cutpoint: " + cutpoint.getSelectedItem().getValue();
+            options += ";useDistance: " + rgdistance.getSelectedItem().getValue();
+            options += ";weighting: " + weighting;
+            options += ";useSubSample: " + (useSubSample.isChecked() ? "1" : "0");
+            options += ";sitePairsSize: " + sitePairsSize.getValue();
+            if (query instanceof BiocacheQuery) {
+                BiocacheQuery bq = (BiocacheQuery) query;
+                options = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + options;
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, bq.getLsids(), sbenvsel.toString(), pid, options, "STARTED");
+            } else {
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, query.getName() + "__" + query.getQ(), sbenvsel.toString(), pid, options, "STARTED");
+            }
 
             return true;
         } catch (Exception ex) {
             Logger.getLogger(AddToolGDMComposer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return false;
-    }
-
-    public boolean rungdmfull() {
-        try {
-            SelectedArea sa = getSelectedArea();
-            Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
-            String sbenvsel = getSelectedLayers();
-            String[] speciesData = getSpeciesData(query);
-
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/ws/gdm/process2?");
-            //sbProcessUrl.append("http://localhost:8080/alaspatial/ws/gdm/process2?");
-            sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
-
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(sbProcessUrl.toString());
-
-            String area = null;
-            if (sa.getMapLayer() != null && sa.getMapLayer().getData("envelope") != null) {
-                area = "ENVELOPE(" + (String) sa.getMapLayer().getData("envelope") + ")";
-            } else {
-                area = sa.getWkt();
-            }
-            if (getSelectedArea() != null) {
-                get.addParameter("area", area);
-            }
-
-            //check for no data
-            if (speciesData[0] == null) {
-                if (speciesData[1] == null) {
-                    getMapComposer().showMessage("No records available for Modelling", this);
-                } else {
-                    getMapComposer().showMessage("All species and records selected are marked as sensitive", this);
-                }
-                return false;
-            }
-            get.addParameter("speciesdata", speciesData[0]);
-            if (speciesData[1] != null) {
-                get.addParameter("removedspecies", speciesData[1]);
-            }
-
-            get.addRequestHeader("Accept", "text/plain");
-
-            System.out.println("calling gdm ws");
-            int result = client.executeMethod(get);
-
-            pid = get.getResponseBodyAsString();
-
-            this.setVisible(false);
-
-            getMapComposer().showMessage("Output for the GDM is available at http://spatial-dev.ala.org.au/output/gdm/" + pid + "/", getMapComposer());
-
-            String fileUrl = CommonData.satServer + "/ws/download/" + pid;
-            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
-
-            return true;
-        } catch (NoSpeciesFoundException e) {
-            System.out.println("GDM error: NoSpeciesFoundException");
-            e.printStackTrace(System.out);
-            getMapComposer().showMessage("No species occurrences found in the current area. \nPlease select a larger area and re-run the analysis", this);
-        } catch (Exception e) {
-            System.out.println("GDM error: ");
-            e.printStackTrace(System.out);
-            getMapComposer().showMessage("Unknown error.", this);
         }
 
         return false;

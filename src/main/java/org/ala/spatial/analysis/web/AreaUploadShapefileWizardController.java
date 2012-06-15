@@ -172,7 +172,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             cmd[3] = column;
             cmd[4] = filters;
             
-            proc = runtime.exec(c);
+            proc = runtime.exec(cmd);
 
             InputStreamReader isr = new InputStreamReader(proc.getInputStream());
             BufferedReader br = new BufferedReader(isr);
