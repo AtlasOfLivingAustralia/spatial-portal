@@ -948,7 +948,7 @@ public class TabulationGenerator {
         try {
             String sql = "delete from tabulation where the_geom is not null and st_area(the_geom) = 0;";
             conn = getConnection();
-            conn.createStatement().executeQuery(sql);
+            conn.createStatement().execute(sql);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
