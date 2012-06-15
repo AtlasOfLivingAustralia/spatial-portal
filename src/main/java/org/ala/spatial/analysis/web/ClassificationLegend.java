@@ -263,6 +263,7 @@ public class ClassificationLegend extends UtilityComposer {
 
                     //count
                     try {
+                        long count = Long.parseLong(ss[4]); //don't display if it is not a number
                         lhFourthColumn.setVisible(true);
                         lc = new Listcell(ss[4]);
                         lc.setParent(li);
