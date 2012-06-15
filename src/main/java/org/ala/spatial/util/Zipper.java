@@ -1,17 +1,9 @@
 package org.ala.spatial.util;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import java.util.zip.*;
 
 /**
  *
@@ -37,13 +29,20 @@ public class Zipper {
             String type = "";
 
             while ((ze = zis.getNextEntry()) != null) {
+                String fname = outputpath + ze.getName();
+                File destFile = new File(fname);
+                if (destFile.isHidden()) {
+                    continue;
+                }
+                destFile.getParentFile().mkdirs();
                 System.out.println("ze.file: " + ze.getName());
                 if (ze.getName().endsWith(".shp")) {
                     shpfile = ze.getName();
                     type = "shp";
                 }
-                String fname = outputpath + ze.getName();
-                copyInputStream(zis, new BufferedOutputStream(new FileOutputStream(fname)));
+                if (!ze.isDirectory()) {
+                    copyInputStream(zis, new BufferedOutputStream(new FileOutputStream(fname)));
+                }                
                 zis.closeEntry();
             }
             zis.close();
@@ -58,7 +57,7 @@ public class Zipper {
 
             output.put("type", type);
             output.put("file", outputpath + shpfile);
-
+            
             return output;
 
         } catch (Exception e) {

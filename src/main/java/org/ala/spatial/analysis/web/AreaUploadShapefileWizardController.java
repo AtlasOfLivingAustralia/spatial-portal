@@ -155,13 +155,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
         Process proc;
         try {
             System.out.println("Generating image via Runtime");
-            //String outputdirbase = getMapComposer().getSettingsSupplementary().getValue("analysis_output_dir");
-
-            //String shapepath = "/Users/ajay/Downloads/MEOW_zip/MEOW2/meow_ecos.shp";
-            //String shapefilter = "none";
-            //String shapeout = "/Users/ajay/Downloads/MEOW_zip/";
             String shapeimageexe = getMapComposer().getSettingsSupplementary().getValue("shapeimagepath");
-            //String shapeout = outputdirbase + "/layers/";
             String shapeout = shapepath.substring(0, shapepath.lastIndexOf("/") + 1);
 
             if (StringUtils.isBlank(column)) {
@@ -171,14 +165,14 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 filters = "none";
             }
 
-            ////shapeimageexe = "cd /usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/classes && java -classpath .:../lib/* org.ala.spatial.util.ShapefileRenderer ";
-            //shapeimageexe = "java -classpath /usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/classes:/usr/local/tomcat/instance_03_webportal/webapps/webportal/WEB-INF/lib/* org.ala.spatial.util.ShapefileRenderer ";
-
-            //String command = shapeimageexe + " \"" + shapepath + "\" \"" + shapeout + "\" \"" + column + "\" \"" + filters + "\"";
-            String command = shapeimageexe + " " + shapepath + " " + shapeout + " " + column + " " + filters + "";
-            System.out.println("Running " + command);
-
-            proc = runtime.exec(command);
+            String[] cmd = new String[5];
+            cmd[0] = shapeimageexe;
+            cmd[1] = shapepath;
+            cmd[2] = shapeout;
+            cmd[3] = column;
+            cmd[4] = filters;
+            
+            proc = runtime.exec(c);
 
             InputStreamReader isr = new InputStreamReader(proc.getInputStream());
             BufferedReader br = new BufferedReader(isr);
