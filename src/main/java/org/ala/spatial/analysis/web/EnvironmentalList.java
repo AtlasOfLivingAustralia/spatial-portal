@@ -88,7 +88,7 @@ public class EnvironmentalList extends Listbox {
 
             @Override
             public int compare(ListEntry e1, ListEntry e2) {
-                return (e1.catagory1 + " " + e1.catagory2).compareTo(e2.catagory1 + " " + e2.catagory2);
+                return (e1.catagory1 + " " + e1.catagory2 + " " + e1.displayname).compareTo(e2.catagory1 + " " + e2.catagory2 + " " + e2.displayname);
             }
         });
     }
