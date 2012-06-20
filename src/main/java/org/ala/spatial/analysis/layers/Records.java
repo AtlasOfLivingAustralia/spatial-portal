@@ -165,7 +165,7 @@ public class Records {
         System.out.println("Got " + getRecordsSize() + " records of " + getSpeciesSize() + " species");
     }
 
-    Records(String filename) throws IOException {
+    public Records(String filename) throws IOException {
         int speciesEstimate = 250000;
         int recordsEstimate = 26000000;
 
@@ -180,36 +180,38 @@ public class Records {
 
         String[] line;
         String rawline;
-        int[] header = new int[3]; //to contain [0]=lsid, [1]=longitude, [2]=latitude
+        int[] header = new int[4]; //to contain [0]=lsid, [1]=longitude, [2]=latitude
         int row = start;
         int currentCount = 0;
         String lat, lng, sp;
-        int p1, p2;
-        line = new String[3];
+        int p1, p2, p3;
+        line = new String[4];
         //while((line = csv.readNext()) != null) {
         while ((rawline = br.readLine()) != null) {
             currentCount++;
 
             p1 = rawline.indexOf(',');
             p2 = rawline.indexOf(',', p1 + 1);
-            if (p1 < 0 || p2 < 0) {
+            p3 = rawline.indexOf(',', p2 + 1);
+            if (p1 < 0 || p2 < 0 || p3 < 0) {
                 continue;
             }
             line[0] = rawline.substring(0, p1);
             line[1] = rawline.substring(p1 + 1, p2);
-            line[2] = rawline.substring(p2 + 1, rawline.length());
+            line[2] = rawline.substring(p2 + 1, p3);
+            line[3] = rawline.substring(p3 + 1, rawline.length());
 
             if (currentCount % 100000 == 0) {
-                System.out.print("\rreading row " + currentCount);
+                System.out.print("\rreading row: " + currentCount);
             }
 
             String facetName = "names_and_lsid";
             if (row == 0) {
                 //determine header
                 for (int i = 0; i < line.length; i++) {
-//                    if (line[i].equals("names_and_lsid")) {
-//                        header[0] = i;
-//                    }
+                    if (line[i].equals(facetName)) {
+                        header[0] = i;
+                    }
                     if (line[i].equals("longitude")) {
                         header[1] = i;
                     }
@@ -220,6 +222,8 @@ public class Records {
                         header[3] = i;
                     }
                 }
+                System.out.println("line: " + line[0] + "," + line[1] + "," + line[2] + "," + line[3]);
+                System.out.println("header: " + header[0] + "," + header[1] + "," + header[2] + "," + header[3]);
                 boolean notZero = header[1] == 0 || header[2] == 0 || (header[3] == 0 && line.length > 3); //'year' may be absent
                 boolean notOne = line.length < 1 || header[1] == 1 || header[2] == 1 || header[3] == 1;
                 boolean notTwo = line.length < 2 || header[1] == 2 || header[2] == 2 || header[3] == 2;
@@ -228,12 +232,121 @@ public class Records {
                 if (!notOne) header[0] = 1;
                 if (!notTwo) header[0] = 2;
                 if (!notThree) header[0] = 3;
-                facetName = line[header[0]];
+                System.out.println("header: " + header[0] + "," + header[1] + "," + header[2] + "," + header[3]);
             } else {
                 if (line.length >= 3) {
                     try {
                         double longitude = Double.parseDouble(line[header[1]]);
                         double latitude = Double.parseDouble(line[header[2]]);
+                        points.add(longitude);
+                        points.add(latitude);
+                        String species = line[header[0]];
+                        Integer idx = lsidMap.get(species);
+                        if (idx == null) {
+                            idx = lsidMap.size();
+                            lsidMap.put(species, idx);
+                        }
+                        lsidIdx.add(idx);
+                    } catch (Exception e) {
+                    }
+                }
+            }
+            row++;
+        }
+        if (start == 0) {
+            start = row - 1; //offset for header
+        } else {
+            start = row;
+        }
+
+        //csv.close();
+        br.close();
+
+        //make lsid list
+        lsids = new String[lsidMap.size()];
+        for (Entry<String, Integer> e : lsidMap.entrySet()) {
+            lsids[e.getValue()] = e.getKey();
+        }
+
+        System.out.println("\nGot " + getRecordsSize() + " records of " + getSpeciesSize() + " species");
+    }
+
+    public Records(String filename, SimpleRegion region) throws IOException {
+        int speciesEstimate = 250000;
+        int recordsEstimate = 26000000;
+
+        points = new ArrayList<Double>(recordsEstimate);
+        lsidIdx = new ArrayList<Integer>(recordsEstimate);
+        HashMap<String, Integer> lsidMap = new HashMap<String, Integer>(speciesEstimate);
+
+        int start = 0;
+
+        BufferedReader br = new BufferedReader(new FileReader(filename));
+        //CSVReader csv = new CSVReader(new FileReader(filename));
+
+        String[] line;
+        String rawline;
+        int[] header = new int[4]; //to contain [0]=lsid, [1]=longitude, [2]=latitude
+        int row = start;
+        int currentCount = 0;
+        String lat, lng, sp;
+        int p1, p2, p3;
+        line = new String[4];
+        //while((line = csv.readNext()) != null) {
+        while ((rawline = br.readLine()) != null) {
+            currentCount++;
+
+            p1 = rawline.indexOf(',');
+            p2 = rawline.indexOf(',', p1 + 1);
+            p3 = rawline.indexOf(',', p2 + 1);
+            if (p1 < 0 || p2 < 0 || p3 < 0) {
+                continue;
+            }
+            line[0] = rawline.substring(0, p1);
+            line[1] = rawline.substring(p1 + 1, p2);
+            line[2] = rawline.substring(p2 + 1, p3);
+            line[3] = rawline.substring(p3 + 1, rawline.length());
+
+            if (currentCount % 100000 == 0) {
+                System.out.print("\rreading row: " + currentCount);
+            }
+
+            String facetName = "names_and_lsid";
+            if (row == 0) {
+                //determine header
+                for (int i = 0; i < line.length; i++) {
+                    if (line[i].equals(facetName)) {
+                        header[0] = i;
+                    }
+                    if (line[i].equals("longitude")) {
+                        header[1] = i;
+                    }
+                    if (line[i].equals("latitude")) {
+                        header[2] = i;
+                    }
+                    if (line[i].equals("year")) {
+                        header[3] = i;
+                    }
+                }
+                System.out.println("line: " + line[0] + "," + line[1] + "," + line[2] + "," + line[3]);
+                System.out.println("header: " + header[0] + "," + header[1] + "," + header[2] + "," + header[3]);
+                boolean notZero = header[1] == 0 || header[2] == 0 || (header[3] == 0 && line.length > 3); //'year' may be absent
+                boolean notOne = line.length < 1 || header[1] == 1 || header[2] == 1 || header[3] == 1;
+                boolean notTwo = line.length < 2 || header[1] == 2 || header[2] == 2 || header[3] == 2;
+                boolean notThree = line.length < 3 || header[1] == 3 || header[2] == 3 || header[3] == 3;
+                if (!notZero) header[0] = 0;
+                if (!notOne) header[0] = 1;
+                if (!notTwo) header[0] = 2;
+                if (!notThree) header[0] = 3;
+                System.out.println("header: " + header[0] + "," + header[1] + "," + header[2] + "," + header[3]);
+            } else {
+                if (line.length >= 3) {
+                    try {
+                        double longitude = Double.parseDouble(line[header[1]]);
+                        double latitude = Double.parseDouble(line[header[2]]);
+                        if(region != null && !region.isWithin(longitude, latitude)) {
+                            continue;
+                        }
                         points.add(longitude);
                         points.add(latitude);
                         String species = line[header[0]];

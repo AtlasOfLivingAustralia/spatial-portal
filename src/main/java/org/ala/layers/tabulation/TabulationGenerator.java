@@ -32,7 +32,6 @@ import org.ala.layers.dao.FieldDAO;
 import org.ala.layers.dao.LayerDAO;
 import org.ala.layers.dao.LayerIntersectDAO;
 import org.ala.layers.dao.ObjectDAO;
-import org.ala.layers.dao.Records;
 import org.ala.layers.dto.Field;
 import org.ala.layers.dto.Layer;
 import org.ala.layers.dto.Objects;
@@ -40,6 +39,7 @@ import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
 import org.ala.layers.util.SpatialUtil;
+import org.ala.spatial.analysis.layers.Records;
 
 /**
  *
@@ -903,6 +903,10 @@ public class TabulationGenerator {
                     System.out.println(sb.toString());
                 }
             }
+
+            //set nulls
+            statement.execute("UPDATE tabulation SET occurrences=0 WHERE occurrences is null;");
+            statement.execute("UPDATE tabulation SET species=0 WHERE species is null;");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

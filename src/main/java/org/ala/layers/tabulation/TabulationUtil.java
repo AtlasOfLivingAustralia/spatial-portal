@@ -16,7 +16,9 @@
 package org.ala.layers.tabulation;
 
 import java.io.IOException;
-import org.ala.layers.dao.Records;
+import org.ala.layers.intersect.SimpleRegion;
+import org.ala.layers.intersect.SimpleShapeFile;
+import org.ala.spatial.analysis.layers.Records;
 
 /**
  *
@@ -24,15 +26,15 @@ import org.ala.layers.dao.Records;
  */
 public class TabulationUtil {
     static public int calculateOccurrences(String pathToRecords, String wkt) throws IOException {
-        System.out.println(wkt);
-        Records records = new Records(pathToRecords, wkt);
+        SimpleRegion region = SimpleShapeFile.parseWKT(wkt);
+        Records records = new Records(pathToRecords, region);
         int result = records.getRecordsSize();
         return result;
     }
     
     static public int calculateSpecies(String pathToRecords, String wkt) throws IOException {
-        System.out.println(wkt);
-        Records records = new Records(pathToRecords, wkt);
+        SimpleRegion region = SimpleShapeFile.parseWKT(wkt);
+        Records records = new Records(pathToRecords, region);
         int result = records.getSpeciesSize();
         return result;
     }
