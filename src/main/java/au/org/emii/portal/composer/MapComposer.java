@@ -1159,6 +1159,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void toggleActiveLayer(boolean bCheck) {
         Listitem selected = (Listitem) activeLayersList.getSelectedItem();
+        toggleLayer(selected, bCheck);
+    }
+
+    public void toggleLayer(Listitem selected, boolean bCheck) {
+        //Listitem selected = (Listitem) activeLayersList.getSelectedItem();
 
         if (selected != null) {
             for (Object cell : ((Listitem) selected).getChildren()) {
@@ -2990,6 +2995,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void onClick$btnAddWMSLayer(Event event) {
         openModal("WEB-INF/zul/AddWMSLayer.zul", null, "addLayerWindow");
+    }
+
+    public void toggleLayers(Event event) {
+        Checkbox checkbox = (Checkbox) event.getTarget();
+        boolean checked = checkbox.isChecked();
+        Iterator it2 = activeLayersList.getItems().iterator();
+        while (it2.hasNext()) {
+            Listitem  li = (Listitem) it2.next();
+            MapLayer ml = (MapLayer)li.getValue(); 
+            if (ml.getType() != LayerUtilities.MAP) {
+                toggleLayer(li, checked);
+            }
+        }
     }
 
     public void onClick$btnAddGDM(Event event) {
