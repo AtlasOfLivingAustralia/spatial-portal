@@ -260,6 +260,35 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                     <br />
                     <p>Returns: analysis id.  E.g. “123”.</p>
                 </li>
+                <li><strong>Generalized dissimilarity modelling (GDM)</strong>
+                    <p>GDM is split into 2 seperate steps. The first step generates a set of possible thresholds for site pairs. The second step takes
+                    the selected threshold and finishes the process</p>
+                    <p>Start GDM /ws/gdm/step1, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/gdm/step1</p>
+                    Parameters:
+                    <ul>
+                        <li>speciesdata - A comma separated set of species data. Header: Longitude, Latitude, SpeciesIndex</li>
+                        <li>area - bounding area in Well Known Text (WKT) format.  E.g.  “POLYGON((118 -30,146 -30,146 -11,118 -11,118 -30))”.</li>
+                        <li>envlist – a list of environmental layers as colon separated short names.  E.g. “bioclim_bio1:bioclim_bio12:bioclim_bio2”.
+                            <ul>
+                                <li>List of analysis valid environmental layer short names <a href="http://spatial.ala.org.au/alaspatial/ws/spatial/settings/layers/environmental/string">here</a>. These are a subset of all layers <a href="http://spatial.ala.org.au/layers.">here</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <br />
+                    <p>Returns: analysis id and a threshold in a CSV format.</p>
+                    <p>Step 2: /ws/gdm/step2, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/gdm/step2</p>
+                    Parameters:
+                    <ul>
+                        <li>pid - A unique ID generated in Step 1</li>
+                        <li>cutpoint - The threshold value generated in Step 1 and selected by the user.</li>
+                        <li>useDistance - Use geographic distance as additional predictor.</li>
+                        <li>weighting - How the sites weighted (either equally (0) or by number of species (1)).</li>
+                        <li>useSubSample - Sample size.</li>
+                        <li>sitePairsSize - Set if 'useSubSample' is set to true .</li>
+                    </ul>
+                    <br />
+                    <p>Returns: analysis id with which you can pull up the generated data and information.</p>
+                </li>
                 <li><strong>Sites by Species, Occurrence density, Species richness</strong>
                     <p>Start with /ws/sitesbyspecies/processgeoq, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/sitesbyspecies/processgeoq</p>
                     Parameters, must include at least one of the optional parameters:
