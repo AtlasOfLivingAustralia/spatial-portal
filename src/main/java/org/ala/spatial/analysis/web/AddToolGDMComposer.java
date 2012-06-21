@@ -141,10 +141,12 @@ public class AddToolGDMComposer extends AddToolComposer {
         return rungdm();
     }
     Vector<String> vSp = new Vector<String>();
-
+    boolean isAssemblage = false; 
     private int getSpLoc(String sp) {
         if (vSp.indexOf(sp) == -1) {
             vSp.add(sp);
+        } else {
+            isAssemblage = true;
         }
 
         return vSp.indexOf(sp);
@@ -154,7 +156,10 @@ public class AddToolGDMComposer extends AddToolComposer {
         System.out.println("Completing step " + currentStep + " for GDM");
         if (currentStep == 3) {
             System.out.println("checking with server for step 1");
-            runGDMStep1();
+            boolean step1 = runGDMStep1();
+            if (!step1) {
+                return; 
+            }
         }
 
         super.onClick$btnOk(event);
@@ -167,12 +172,18 @@ public class AddToolGDMComposer extends AddToolComposer {
             query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
             sbenvsel = getSelectedLayers();
             String[] speciesData = getSpeciesData(query);
+            
+            if (!isAssemblage || vSp.size() < 2) {
+                getMapComposer().showMessage("An assembalge of species with multiple occurrences for each species is required by GDM.", this);
+                return false;
+            }
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/gdm/step1?");
             //sbProcessUrl.append("http://localhost:8080/alaspatial/ws/gdm/process2?");
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
             sbProcessUrl.append("&taxacount=" + vSp.size());
+            //sbProcessUrl.append("&taxalist=" + query.speciesList());
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
@@ -234,8 +245,6 @@ public class AddToolGDMComposer extends AddToolComposer {
 
                 li.setValue("0");
                 li.setParent(cutpoint);
-
-
             }
 
             while (s.hasNext()) {
@@ -257,6 +266,11 @@ public class AddToolGDMComposer extends AddToolComposer {
             }
 
             cutpoint.setSelectedIndex(0);
+            
+            if (cutpoint.getItemCount() < 2) {
+                getMapComposer().showMessage("An assembalge of species with multiple occurrences \nfor each species is required by GDM.", this);
+                return false;
+            }
 
 
             // setup the range slider for the sub samples
