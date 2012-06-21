@@ -83,7 +83,7 @@ public class CitationService {
             sbReadme.append("prediction.gri                             Diva-GIS grid file").append(NEW_LINE);
             sbReadme.append("prediction_removedSpecies.txt                 A list of removed sensitive species from the Prediction model").append(NEW_LINE);
             sbReadme.append("prediction_maskedOutSensitiveSpecies.csv      'Sensitive species' have been masked out of the model. See: http://www.ala.org.au/about/program-of-projects/sds/").append(NEW_LINE);
-            sbReadme.append("species.html                                  The main output file, containing statistical analyses, plots, pictures of the model, and links to other files.Ê It also documents parameter and control settings that were used to do the run.").append(NEW_LINE);
+            sbReadme.append("species.html                                  The main output file, containing statistical analyses, plots, pictures of the model, and links to other files. It also documents parameter and control settings that were used to do the run.").append(NEW_LINE);
             sbReadme.append("species_sampleAverages.csv                    Average values for layers in model").append(NEW_LINE);
             sbReadme.append("species_points.csv                            List of all point locations used in the model").append(NEW_LINE);
             sbReadme.append("species.asc                                   Contains the probabilities in ESRI ASCII grid format").append(NEW_LINE);
