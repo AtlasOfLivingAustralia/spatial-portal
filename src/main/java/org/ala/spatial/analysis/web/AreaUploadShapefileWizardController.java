@@ -16,11 +16,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -54,13 +50,7 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.MouseEvent;
-import org.zkoss.zul.Button;
-import org.zkoss.zul.Imagemap;
-import org.zkoss.zul.Listbox;
-import org.zkoss.zul.Listcell;
-import org.zkoss.zul.Listhead;
-import org.zkoss.zul.Listheader;
-import org.zkoss.zul.Listitem;
+import org.zkoss.zul.*;
 
 /**
  *
@@ -280,7 +270,15 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             e.printStackTrace(System.out);
         }
     }
-
+    
+    public void onClick$btnSelectAll(Event event) {
+        lAttributes.selectAll(); 
+    }
+    
+    public void onClick$btnDeselectAll(Event event) {
+        lAttributes.clearSelection();
+    }
+    
     public void onClick$btnRefresh(Event event) {
         String column = "fid";
         String filter = "";
