@@ -179,9 +179,9 @@ public class ShapefileRenderer {
             gr.setPaint(Color.WHITE);
             gr.fill(imageBounds);
             renderer.paint(gr, imageBounds, mapBounds);
-            ImageIO.write(image, "jpeg", new File(outputdir + typename + "_" + userFilter + ".jpg"));
+            ImageIO.write(image, "jpeg", new File(outputdir + typename + ".jpg"));
 
-            return outputdir + typename + "_" + userFilter + ".jpg";
+            return outputdir + typename + ".jpg";
             
         } catch (NoSuchAuthorityCodeException ex) {
             Logger.getLogger(ShapefileRenderer.class.getName()).log(Level.SEVERE, null, ex);
