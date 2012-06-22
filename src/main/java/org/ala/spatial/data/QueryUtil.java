@@ -51,7 +51,7 @@ public class QueryUtil {
             return baseQuery.newWkt(null, forMapping);
         }
         Query q = null;
-        if (sa.getMapLayer() != null) {
+        if (sa.getMapLayer() != null && (baseQuery == null || !(baseQuery instanceof UploadQuery))) {
             if (sa.getMapLayer().getData("facets") != null) {
                 ArrayList<Facet> facets = (ArrayList<Facet>) sa.getMapLayer().getData("facets");
                 if (baseQuery == null) {

@@ -83,7 +83,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
     public void afterCompose() {
         super.afterCompose();
 
-        this.selectedMethod = "Scatterplot";
+        this.selectedMethod = "Scatterplot List";
         this.totalSteps = 5;
 
         this.setIncludeAnalysisLayersForAnyQuery(true);
@@ -116,6 +116,10 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
         }
 
         Query lsid = getSelectedSpecies();
+        SelectedArea filterSa = getSelectedArea();
+        SelectedArea highlightSa = getSelectedAreaHighlight();
+        Query lsidQuery = QueryUtil.queryFromSelectedArea(lsid, filterSa, false, getGeospatialKosher());
+
         String name = getSelectedSpeciesName();
 
 //        JSONObject jo = (JSONObject) cbLayer1.getSelectedItem().getValue();
@@ -256,6 +260,11 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             }
         }
 
+        if(lsidQuery == null || lsidQuery.getOccurrenceCount() == 0) {
+            getMapComposer().showMessage("No occurrences found for the selected species in the selected area.");
+            return false;
+        }
+
         String pid = "";
         Rectangle2D.Double selection = null;
         boolean enabled = true;
@@ -267,12 +276,7 @@ public class AddToolScatterplotListComposer extends AddToolComposer {
             backgroundLsid = QueryUtil.get((String) bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), false, getGeospatialKosher());
         }
 
-        SelectedArea filterSa = getSelectedArea();
-        SelectedArea highlightSa = getSelectedAreaHighlight();
-
-        boolean envGrid = chkShowEnvIntersection.isChecked();
-
-        Query lsidQuery = QueryUtil.queryFromSelectedArea(lsid, filterSa, false, getGeospatialKosher());
+        boolean envGrid = chkShowEnvIntersection.isChecked();        
 
         Query backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false, getGeospatialKosherBk());
 
