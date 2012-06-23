@@ -74,12 +74,14 @@ public class AnalysisLayerUtil {
                 + "operate on one grid file by fieldId\n"
                 + "args[0] = fieldId\n");
 
-        //args = new String[]{"auto"};
+        if(args == null || args.length == 0) {
+            args = new String[]{"all","grids"};
+        }
 
-        if (args.length == 1 && args[0].equals("auto")) {                        
+        if (args.length == 1 && (args[0].equals("auto") || args[0].equals("all"))) {
             processShapeFiles();
             processGridFiles();
-        } else if (args.length == 2 && args[0].equals("auto")) {
+        } else if (args.length == 2 && (args[0].equals("auto") || args[0].equals("all"))) {
             if (args[1].equals("shapes")) {
                 processShapeFiles();
             } else {
@@ -293,8 +295,8 @@ public class AnalysisLayerUtil {
                     for (; i < resolutions.size(); i++) {
                         if (resolutions.get(i) == minRes) {
                             break;
-                        } else if (i > 0 && resolutions.get(i) > minRes) {
-                            i--;
+                        } else if (resolutions.get(i) > minRes) {
+                            if(i > 0) i--;
                             break;
                         }
                     }

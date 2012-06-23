@@ -265,7 +265,7 @@ public class Bil2diva {
     }
 
     static void updateMinMax(double[] minmax, double d, double missingValue) {
-        if (d != missingValue) {
+        if ((float) d != (float) missingValue) {
             if (Double.isNaN(minmax[0])) {
                 minmax[0] = d;
                 minmax[1] = d;

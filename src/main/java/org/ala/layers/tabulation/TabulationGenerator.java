@@ -94,7 +94,7 @@ public class TabulationGenerator {
         if (args.length < 5) {
             System.out.println("all");
 
-//            updateSingleObjects();
+            updatePairObjects();
 
             deleteInvalidObjects();
 
