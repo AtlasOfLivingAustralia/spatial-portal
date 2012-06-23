@@ -32,41 +32,58 @@ public class LayerDistanceIndex {
     double[][] range;
     static double[][] all_measures;
 
-    public void occurrencesUpdate(int threadcount) throws InterruptedException {
+    public void occurrencesUpdate(int threadcount, String[] onlyThesePairs) throws InterruptedException {
+
+        File layerDistancesFile = new File(AlaspatialProperties.getAnalysisWorkingDir()
+                + LAYER_DISTANCE_FILE);
+        if (!layerDistancesFile.exists()) {
+            try {
+                FileWriter fw = new FileWriter(layerDistancesFile);
+                fw.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
 
         Map<String, Double> map = loadDistances();
 
         LinkedBlockingQueue<String> todo = new LinkedBlockingQueue();
 
-        //find all environmental layer analysis files
-        File root = new File(AlaspatialProperties.getAnalysisLayersDir());
-        File [] dirs = root.listFiles(new FileFilter() {
-
-            @Override
-            public boolean accept(File pathname) {
-                return pathname != null && pathname.isDirectory();
+        if (onlyThesePairs != null || onlyThesePairs.length == 0) {
+            for (String s : onlyThesePairs) {
+                todo.add(s);
             }
-
-        });
-        for(File dir : dirs) {
-            //iterate through files
-            File[] files = new File(dir.getPath()).listFiles(new FileFilter() {
+        } else {
+            //find all environmental layer analysis files
+            File root = new File(AlaspatialProperties.getAnalysisLayersDir());
+            File[] dirs = root.listFiles(new FileFilter() {
 
                 @Override
                 public boolean accept(File pathname) {
-                    return pathname.getName().endsWith(".grd") && pathname.getName().startsWith("el");
+                    return pathname != null && pathname.isDirectory();
                 }
             });
+            for (File dir : dirs) {
+                //iterate through files
+                File[] files = new File(dir.getPath()).listFiles(new FileFilter() {
 
-            for (int i = 0; i < files.length; i++) {
-                for (int j = i + 1; j < files.length; j++) {
-                    String file1 = files[i].getName().replace(".grd", "");
-                    String file2 = files[j].getName().replace(".grd", "");
+                    @Override
+                    public boolean accept(File pathname) {
+                        return pathname.getName().endsWith(".grd") && pathname.getName().startsWith("el");
+                    }
+                });
 
-                    String key = (file1.compareTo(file2) < 0) ? file1 + " " + file2 : file2 + " " + file1;
+                for (int i = 0; i < files.length; i++) {
+                    for (int j = i + 1; j < files.length; j++) {
+                        String file1 = files[i].getName().replace(".grd", "");
+                        String file2 = files[j].getName().replace(".grd", "");
 
-                    if (!map.containsKey(key)) {
-                        todo.put(key);
+                        String key = (file1.compareTo(file2) < 0) ? file1 + " " + file2 : file2 + " " + file1;
+
+                        if (!map.containsKey(key)) {
+                            todo.put(key);
+                        }
                     }
                 }
             }
@@ -75,32 +92,42 @@ public class LayerDistanceIndex {
         LinkedBlockingQueue<String> toDisk = new LinkedBlockingQueue<String>();
         //int threadcount = 4;
         CountDownLatch cdl = new CountDownLatch(todo.size());
-        CalcThread [] threads = new CalcThread[threadcount];
-        for(int i=0;i<threadcount;i++) {
-            threads[i] = new CalcThread(cdl,todo, toDisk);
+        CalcThread[] threads = new CalcThread[threadcount];
+        for (int i = 0; i < threadcount; i++) {
+            threads[i] = new CalcThread(cdl, todo, toDisk);
             threads[i].start();
         }
 
         ToDiskThread toDiskThread = new ToDiskThread(AlaspatialProperties.getAnalysisWorkingDir()
-                    + LAYER_DISTANCE_FILE, toDisk);
+                + LAYER_DISTANCE_FILE, toDisk);
         toDiskThread.start();
 
         cdl.await();
 
-        for(int i=0;i<threadcount;i++) {
+        for (int i = 0; i < threadcount; i++) {
             threads[i].interrupt();
         }
 
         //wait 10s and then close
-        Thread.currentThread().wait(10*1000);
+        //Thread.currentThread().wait(10*1000);
 
         toDiskThread.interrupt();
     }
 
     static public void main(String[] args) throws InterruptedException {
         System.out.println("args[0] = threadcount, e.g. 1");
+        System.out.println("or");
+        System.out.println("args[0] = threadcount, e.g. 1");
+        System.out.println("args[1] = list of layer pairs to rerun, e.g. el813_el814,el813_el815,el814_el815");
+        if (args.length < 1) {
+            args = new String[]{"1"};//, "el1030_el1036","el1030_el775,el1036_el775"};
+        }
+        String[] pairs = null;
+        if (args.length >= 2) {
+            pairs = args[1].replace("_", " ").split(",");
+        }
         LayerDistanceIndex ldi = new LayerDistanceIndex();
-        ldi.occurrencesUpdate(Integer.parseInt(args[0]));
+        ldi.occurrencesUpdate(Integer.parseInt(args[0]), pairs);
     }
 
     static public Map<String, Double> loadDistances() {
@@ -111,9 +138,9 @@ public class LayerDistanceIndex {
                     + LAYER_DISTANCE_FILE));
 
             String line;
-            while((line = br.readLine()) != null) {
-                if(line.length() > 0) {
-                    String [] keyvalue = line.split("=");
+            while ((line = br.readLine()) != null) {
+                if (line.length() > 0) {
+                    String[] keyvalue = line.split("=");
                     double d = Double.NaN;
                     try {
                         d = Double.parseDouble(keyvalue[1]);
@@ -126,7 +153,7 @@ public class LayerDistanceIndex {
         } catch (Exception e) {
             e.printStackTrace(System.out);
         } finally {
-            if(br != null) {
+            if (br != null) {
                 try {
                     br.close();
                 } catch (Exception e) {
@@ -140,6 +167,7 @@ public class LayerDistanceIndex {
 }
 
 class CalcThread extends Thread {
+
     CountDownLatch cdl;
     LinkedBlockingQueue<String> lbq;
     LinkedBlockingQueue<String> toDisk;
@@ -152,9 +180,9 @@ class CalcThread extends Thread {
 
     public void run() {
         try {
-            while(true) {
+            while (true) {
                 String key = lbq.take();
-                String [] layers = key.split(" ");
+                String[] layers = key.split(" ");
 
                 try {
                     Double distance = calculateDistance(layers[0], layers[1]);
@@ -202,6 +230,7 @@ class CalcThread extends Thread {
 }
 
 class ToDiskThread extends Thread {
+
     String filename;
     LinkedBlockingQueue<String> toDisk;
 
@@ -215,7 +244,7 @@ class ToDiskThread extends Thread {
         try {
             fw = new FileWriter(filename, true);
             try {
-                while(true) {
+                while (true) {
                     String s = toDisk.take();
                     fw.append(s);
                     fw.append("\n");
@@ -226,7 +255,7 @@ class ToDiskThread extends Thread {
         } catch (IOException ex) {
             Logger.getLogger(ToDiskThread.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
-            if(fw != null) {
+            if (fw != null) {
                 try {
                     fw.close();
                 } catch (Exception e) {
