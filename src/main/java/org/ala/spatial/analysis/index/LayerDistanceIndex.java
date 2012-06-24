@@ -10,12 +10,15 @@ import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ala.layers.client.Client;
+import org.ala.layers.dto.Layer;
 import org.ala.layers.intersect.Grid;
 import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.GridCutter;
@@ -50,7 +53,7 @@ public class LayerDistanceIndex {
 
         LinkedBlockingQueue<String> todo = new LinkedBlockingQueue();
 
-        if (onlyThesePairs != null || onlyThesePairs.length == 0) {
+        if (onlyThesePairs != null && onlyThesePairs.length == 0) {
             for (String s : onlyThesePairs) {
                 todo.add(s);
             }
@@ -64,6 +67,8 @@ public class LayerDistanceIndex {
                     return pathname != null && pathname.isDirectory();
                 }
             });
+
+            HashMap<String, String> domains = new HashMap<String, String>();
             for (File dir : dirs) {
                 //iterate through files
                 File[] files = new File(dir.getPath()).listFiles(new FileFilter() {
@@ -79,10 +84,28 @@ public class LayerDistanceIndex {
                         String file1 = files[i].getName().replace(".grd", "");
                         String file2 = files[j].getName().replace(".grd", "");
 
+                        String domain1 = domains.get(file1);
+                        if(domain1 == null) {
+                            String pid1 = Client.getFieldDao().getFieldById(file1).getSpid();
+                            domain1 = Client.getLayerDao().getLayerById(Integer.parseInt(pid1)).getdomain();
+                            domains.put(file1, domain1);
+                        }
+                        String domain2 = domains.get(file2);
+                        if(domain2 == null) {
+                            String pid2 = Client.getFieldDao().getFieldById(file2).getSpid();
+                            domain2 = Client.getLayerDao().getLayerById(Integer.parseInt(pid2)).getdomain();
+                            domains.put(file2, domain2);
+                        }
+
                         String key = (file1.compareTo(file2) < 0) ? file1 + " " + file2 : file2 + " " + file1;
 
-                        if (!map.containsKey(key)) {
-                            todo.put(key);
+                        //domain test
+                        if (isSameDomain(parseDomain(domain1), parseDomain(domain2))) {
+                            if (!map.containsKey(key) && !todo.contains(key)) {
+                                todo.put(key);
+                            }
+                        } else {
+                            System.out.println("differing domains: " + key);
                         }
                     }
                 }
@@ -164,6 +187,33 @@ public class LayerDistanceIndex {
 
         return map;
     }
+
+    static String [] parseDomain(String domain) {
+        if(domain == null || domain.length() == 0) {
+            return null;
+        }
+        String [] domains = domain.split(",");
+        for(int i=0;i<domains.length;i++) {
+            domains[i] = domains[i].trim();
+        }
+        return domains;
+    }
+
+    static boolean isSameDomain(String[] domain1, String[] domain2) {
+        if (domain1 == null || domain2 == null) {
+            return true;
+        }
+
+        for (String s1 : domain1) {
+            for (String s2 : domain2) {
+                if (s1.equalsIgnoreCase(s2)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
 
 class CalcThread extends Thread {
@@ -225,6 +275,7 @@ class CalcThread extends Thread {
                 }
             }
         }
+
         return sum / count;
     }
 }
