@@ -322,6 +322,8 @@ public class Grid { //  implements Serializable
     }
 
     public float[] getGrid() {
+        int maxArrayLength = Integer.MAX_VALUE - 10;
+
         if (grid_data != null) {
             return grid_data;
         }
@@ -329,7 +331,6 @@ public class Grid { //  implements Serializable
 
         float[] ret = new float[length];
 
-        int i;
         RandomAccessFile afile;
         File f2 = new File(filename + ".GRI");
 
@@ -340,58 +341,80 @@ public class Grid { //  implements Serializable
                 afile = new RandomAccessFile(filename + ".GRI", "r");
             }
 
-            byte[] b = new byte[(int) afile.length()];
-            afile.read(b);
-            ByteBuffer bb = ByteBuffer.wrap(b);
-            afile.close();
+            byte[] b = new byte[(int)Math.min(afile.length(),maxArrayLength)];
 
-            if (byteorderLSB) {
-                bb.order(ByteOrder.LITTLE_ENDIAN);
-            }
+            int i = 0;
+            int max = 0;
+            int len;
+            while((len = afile.read(b)) > 0) {
+                ByteBuffer bb = ByteBuffer.wrap(b);
 
-            if (datatype.equalsIgnoreCase("UBYTE")) {
-                for (i = 0; i < length; i++) {
-                    ret[i] = bb.get();
-                    if (ret[i] < 0) {
-                        ret[i] += 256;
+                if (byteorderLSB) {
+                    bb.order(ByteOrder.LITTLE_ENDIAN);
+                }
+
+                if (datatype.equalsIgnoreCase("UBYTE")) {
+                    max += len;
+                    max = Math.min(max, ret.length);
+                    for (;i < max; i++) {
+                        ret[i] = bb.get();
+                        if (ret[i] < 0) {
+                            ret[i] += 256;
+                        }
+                    }
+                } else if (datatype.equalsIgnoreCase("BYTE")) {
+                    max += len;
+                    max = Math.min(max, ret.length);
+                    for (; i < max; i++) {
+                        ret[i] = bb.get();
+                    }
+                } else if (datatype.equalsIgnoreCase("SHORT")) {
+                    max += len/2;
+                    max = Math.min(max, ret.length);
+                    for (; i < max; i++) {
+                        ret[i] = bb.getShort();
+                    }
+                } else if (datatype.equalsIgnoreCase("INT")) {
+                    max += len/4;
+                    max = Math.min(max, ret.length);
+                    for (; i < max; i++) {
+                        ret[i] = bb.getInt();
+                    }
+                } else if (datatype.equalsIgnoreCase("LONG")) {
+                    max += len/8;
+                    max = Math.min(max, ret.length);
+                    for (; i < max; i++) {
+                        ret[i] = bb.getLong();
+                    }
+                } else if (datatype.equalsIgnoreCase("FLOAT")) {
+                    max += len/4;
+                    max = Math.min(max, ret.length);
+                    for (; i < max; i++) {
+                        ret[i] = bb.getFloat();
+                    }
+                } else if (datatype.equalsIgnoreCase("DOUBLE")) {
+                   max += len/8;
+                   max = Math.min(max, ret.length);
+                    for (; i < max; i++) {
+                        ret[i] = (float) bb.getDouble();
+                    }
+                } else {
+                    // / should not happen; catch anyway...
+                    max += len/4;
+                    for (; i < max; i++) {
+                        ret[i] = Float.NaN;
                     }
                 }
-            } else if (datatype.equalsIgnoreCase("BYTE")) {
-                for (i = 0; i < length; i++) {
-                    ret[i] = bb.get();
-                }
-            } else if (datatype.equalsIgnoreCase("SHORT")) {
-                for (i = 0; i < length; i++) {
-                    ret[i] = bb.getShort();
-                }
-            } else if (datatype.equalsIgnoreCase("INT")) {
-                for (i = 0; i < length; i++) {
-                    ret[i] = bb.getInt();
-                }
-            } else if (datatype.equalsIgnoreCase("LONG")) {
-                for (i = 0; i < length; i++) {
-                    ret[i] = bb.getLong();
-                }
-            } else if (datatype.equalsIgnoreCase("FLOAT")) {
-                for (i = 0; i < length; i++) {
-                    ret[i] = bb.getFloat();
-                }
-            } else if (datatype.equalsIgnoreCase("DOUBLE")) {
-                for (i = 0; i < length; i++) {
-                    ret[i] = (float) bb.getDouble();
-                }
-            } else {
-                // / should not happen; catch anyway...
-                for (i = 0; i < length; i++) {
-                    ret[i] = Float.NaN;
-                }
             }
+            
             //replace not a number
             for (i = 0; i < length; i++) {
                 if ((float) ret[i] == (float) nodatavalue) {
                     ret[i] = Float.NaN;
                 }
             }
+
+            afile.close();
         } catch (Exception e) {
             logger.error("An error has occurred - probably a file error");
             logger.error(ExceptionUtils.getFullStackTrace(e));
