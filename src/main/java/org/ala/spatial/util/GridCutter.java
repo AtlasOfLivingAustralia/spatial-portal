@@ -1,6 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
  */
 package org.ala.spatial.util;
 
@@ -108,7 +117,6 @@ public class GridCutter {
             job.setProgress(0.2, "determined target cells");
         }
 
-//TODO: test for zero length cells
         if (job != null) {
             job.log("Cut cells count: " + cells.length);
         } else {
@@ -124,8 +132,6 @@ public class GridCutter {
 
         //initialize data structure to hold everything
         // each data piece: row1[col1, col2, ...] row2[col1, col2, ...] row3...
-        //TODO: new class to house pieces, writing to disk instead of
-        //keeping all of it in memory.
         int remainingLength = cells.length;
         int step = (int) Math.floor(remainingLength / (double) pieces);
         for (int i = 0; i < pieces; i++) {
@@ -254,17 +260,20 @@ public class GridCutter {
     /**
      * exports a list of layers cut against a region
      *
-     * Cut layer files generated are input layers with
-     * grid cells outside of region set as missing.
+     * Cut layer files generated are input layers with grid cells outside of
+     * region set as missing.
      *
-     * Headers are copied, for test data only.
-     *
-     * @param layers list of layers to cut as Layer
-     * @param region 
-     * @return
+     * @param layers list of layer fieldIds to be cut as String[].
+     * @param resolution target resolution as String
+     * @param region null or region to cut against as SimpleRegion. Cannot be
+     * used with envelopes.
+     * @param envelopes nul or region to cut against as LayerFilter[]. Cannot be
+     * used with region.
+     * @param extentsFilename output filename and path for writing output
+     * extents.
+     * @return directory containing the cut grid files.
      */
     public static String cut2(String[] layers, String resolution, SimpleRegion region, LayerFilter[] envelopes, String extentsFilename) {
-        System.out.println("RESOLUTION: " + resolution);
         //check if resolution needs changing
         resolution = confirmResolution(layers, resolution);
 
@@ -272,7 +281,6 @@ public class GridCutter {
         double[][] extents = getLayerExtents(resolution, layers[0]);
         for (int i = 1; i < layers.length; i++) {
             extents = internalExtents(extents, getLayerExtents(resolution, layers[i]));
-            System.out.println("extents: " + extents[0][0] + ", " + extents[0][1] + ", " + extents[1][0] + ", " + extents[1][1]);
             if (!isValidExtents(extents)) {
                 return null;
             }
@@ -282,10 +290,8 @@ public class GridCutter {
         byte[][] mask;
         int w = 0, h = 0;
         double res = Double.parseDouble(resolution);
-        System.out.println("resolution: " + resolution + ", " + res);
         if (region != null) {
             extents = internalExtents(extents, region.getBoundingBox());
-            System.out.println("extentsB, " + w + ", " + h + ": " + extents[0][0] + ", " + extents[0][1] + ", " + extents[1][0] + ", " + extents[1][1]);
 
             if (!isValidExtents(extents)) {
                 return null;
@@ -294,7 +300,6 @@ public class GridCutter {
             h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
             w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
             mask = getRegionMask(res, extents, w, h, region);
-            System.out.println("extentsC, " + w + ", " + h + ": " + extents[0][0] + ", " + extents[0][1] + ", " + extents[1][0] + ", " + extents[1][1]);
         } else if (envelopes != null) {
             h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
             w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
@@ -306,13 +311,11 @@ public class GridCutter {
             w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
             mask = getMask(res, extents, w, h);
         }
-        System.out.println("extentsD, " + w + ", " + h + ": " + extents[0][0] + ", " + extents[0][1] + ", " + extents[1][0] + ", " + extents[1][1]);
 
         //mkdir in index location
         String newPath = null;
         try {
             newPath = AlaspatialProperties.getAnalysisWorkingDir() + System.currentTimeMillis() + java.io.File.separator;
-            System.out.println("cut2 path: " + newPath);
             File directory = new File(newPath);
             directory.mkdir();
         } catch (Exception e) {
@@ -322,7 +325,6 @@ public class GridCutter {
         //apply mask
         for (int i = 0; i < layers.length; i++) {
             applyMask(newPath, resolution, extents, w, h, mask, layers[i]);
-            System.out.println("extentsE, " + w + ", " + h + ": " + extents[0][0] + ", " + extents[0][1] + ", " + extents[1][0] + ", " + extents[1][1]);
         }
 
         //write extents file
@@ -370,7 +372,6 @@ public class GridCutter {
                 for (File dir : new File(AlaspatialProperties.getAnalysisLayersDir()).listFiles()) {
                     if (dir.isDirectory()) {
                         try {
-                            System.out.println(dir.getName());
                             resolutionDirs.put(Double.parseDouble(dir.getName()), dir.getName());
                         } catch (Exception e) {
                         }
@@ -395,7 +396,6 @@ public class GridCutter {
             return layerPath;
         } else {
             //look for an analysis layer
-            System.out.println("getLayerPath, not a default layer, checking analysis output for: " + layer);
             String[] info = Client.getLayerIntersectDao().getConfig().getAnalysisLayerInfo(layer);
             if (info != null) {
                 return info[1];
@@ -454,6 +454,19 @@ public class GridCutter {
         }
     }
 
+    /**
+     * Get a region mask.
+     *
+     * Note: using decimal degree grid, probably should be EPSG900913 grid.
+     *
+     * @param res resolution as double
+     * @param extents extents as double[][] with [0][0]=xmin, [0][1]=ymin,
+     * [1][0]=xmax, [1][1]=ymax.
+     * @param h height as int.
+     * @param w width as int.
+     * @param region area for the mask as SimpleRegion.
+     * @return
+     */
     private static byte[][] getRegionMask(double res, double[][] extents, int w, int h, SimpleRegion region) {
         byte[][] mask = new byte[h][w];
 
@@ -484,6 +497,18 @@ public class GridCutter {
         return mask;
     }
 
+    /**
+     * Get a mask, 0=absence, 1=presence, for a given envelope and extents.
+     *
+     * @param resolution resolution as String.
+     * @param res resultions as double.
+     * @param extents extents as double[][] with [0][0]=xmin, [0][1]=ymin,
+     * [1][0]=xmax, [1][1]=ymax.
+     * @param h height as int.
+     * @param w width as int.
+     * @param envelopes
+     * @return mask as byte[][]
+     */
     private static byte[][] getEnvelopeMaskAndUpdateExtents(String resolution, double res, double[][] extents, int h, int w, LayerFilter[] envelopes) {
         byte[][] mask = new byte[h][w];
 
@@ -563,6 +588,14 @@ public class GridCutter {
         return smallerMask;
     }
 
+    /**
+     * Write a diva grid to disk for the envelope, 0 = absence, 1 = presence.
+     *
+     * @param filename output filename for the grid as String.
+     * @param resolution target resolution in decimal degrees as String.
+     * @param envelopes envelope specification as LayerFilter[].
+     * @return area in sq km as double.
+     */
     public static double makeEnvelope(String filename, String resolution, LayerFilter[] envelopes) {
 
         //get extents for all layers
@@ -610,6 +643,16 @@ public class GridCutter {
         return areaSqKm;
     }
 
+    /**
+     * Test if the layer filter is valid.
+     *
+     * The common problem is that a filter may refer to a layer that is not
+     * available.
+     *
+     * @param resolution target resolution as String.
+     * @param filter layer filter as LayerFilter[].
+     * @return true iff valid filter.
+     */
     public static boolean isValidLayerFilter(String resolution, LayerFilter[] filter) {
         for (LayerFilter lf : filter) {
             if (GridCutter.getLayerPath(resolution, lf.getLayername()) == null) {
@@ -621,7 +664,7 @@ public class GridCutter {
 
     /**
      * Determine the grid resolution that will be in use.
-     * 
+     *
      * @param layers list of layers to be used as String []
      * @param resolution target resolution as String
      * @return resolution that will be used

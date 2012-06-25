@@ -1,6 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
  */
 package org.ala.spatial.util;
 
@@ -19,6 +28,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Manages the analysis queue. Maximum number of analysis jobs running at the
+ * same time is set by limit.jobs in alaspatial.properties.
+ *
+ * Has two threads, a job consumer and a finished job monitor.
+ *
+ * All analysis jobs are serialised into workingdir set in alaspatial.properties
+ * as files with the name "JOB" + analysisId.
+ *
+ * All analysis jobs extend AnalysisJob.
+ *
+ * Use:
+ * <code>AlaysisQueue.addJob(analysisJob);</code>
  *
  * @author Adam
  */
@@ -40,28 +61,29 @@ public class AnalysisQueue {
         //search for saved jobs to load
         File f = new File(AlaspatialProperties.getAnalysisWorkingDir());
         String[] js = f.list(new FilenameFilter() {
+
             public boolean accept(File dir, String name) {
                 return name.startsWith("JOB");
             }
         });
 
         for (String j : js) {
-            try{
+            try {
                 String name = j.substring(j.lastIndexOf("JOB") + 3);
                 AnalysisJob jb = getSavedJob(name);
                 jb.setName(name);
-                
+
                 //addJob(jb);
                 finishedJobs.put(jb.getName(), jb);
-            }catch(Exception e){
+            } catch (Exception e) {
                 System.out.println("failed to load " + j);
             }
         }
     }
 
-    public static void cancelJob(String pid){
+    public static void cancelJob(String pid) {
         AnalysisJob job = getJob(pid);
-        if(job != null && !job.isFinished()){
+        if (job != null && !job.isFinished()) {
             job.setCurrentState(AnalysisJob.CANCELLED);
         }
         //don't wait for it to finish.
@@ -260,13 +282,13 @@ public class AnalysisQueue {
                     + "JOB" + pid);
             BufferedInputStream bis = new BufferedInputStream(fis);
             ObjectInputStream ois = new ObjectInputStream(bis);
-            try{
+            try {
                 j = (AnalysisJob) ois.readObject();
             } finally {
                 ois.close();
             }
         } catch (Exception e) {
-          //  e.printStackTrace();
+            //  e.printStackTrace();
         }
         return j;
     }
@@ -329,12 +351,12 @@ public class AnalysisQueue {
 
     public static String copy(String pid) {
         AnalysisJob j = getJob(pid);
-        if(j != null){
-          //  AnalysisJob jcopy = j.copy();
-          //  if(jcopy != null){
-          //      addJob(jcopy);
-          //      return jcopy.getName();
-          //  }
+        if (j != null) {
+            //  AnalysisJob jcopy = j.copy();
+            //  if(jcopy != null){
+            //      addJob(jcopy);
+            //      return jcopy.getName();
+            //  }
         }
         return null;
     }
@@ -414,8 +436,8 @@ class AnalysisJobFinishedConsumer extends Thread {
     void removeFinishedJobs() {
         for (Entry<String, AnalysisJob> e : runningJobs.entrySet()) {
             if (!e.getValue().isAlive()) {
-                if(!((AnalysisJob)e.getValue()).isFinished()){
-                    ((AnalysisJob)e.getValue()).setCurrentState(AnalysisJob.FAILED);
+                if (!((AnalysisJob) e.getValue()).isFinished()) {
+                    ((AnalysisJob) e.getValue()).setCurrentState(AnalysisJob.FAILED);
                 }
                 runningJobs.remove(e.getValue().getName());
                 finishedJobs.put(e.getValue().getName(), e.getValue());

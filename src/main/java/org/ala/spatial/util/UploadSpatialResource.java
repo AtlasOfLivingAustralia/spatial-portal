@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.util;
 
 import java.io.File;
@@ -10,29 +23,26 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.FileRequestEntity;
 import org.apache.commons.httpclient.methods.RequestEntity;
-import org.ala.spatial.util.SpatialLogger;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
 
 /**
- * UploadSpatialResource helps with loading any dynamically generated
- * spatial data into geoserver.
+ * UploadSpatialResource helps with loading any dynamically generated spatial
+ * data into geoserver.
  *
- * Main code from: 
+ * Main code from:
  * http://svn.apache.org/viewvc/httpcomponents/oac.hc3x/trunk/src/examples/BasicAuthenticationExample.java?view=log
- * 
+ *
  * @author ajay
  */
 public class UploadSpatialResource {
-	
-	/**
-	 * HTTP request type PUT
-	 */
-	public static final int PUT = 0;
-	
-	/**
-	 * HTTP request type POST
-	 */
-	public static final int POST = 1;
+
+    /**
+     * HTTP request type PUT
+     */
+    public static final int PUT = 0;
+    /**
+     * HTTP request type POST
+     */
+    public static final int POST = 1;
 
     /**
      * Contructor for UploadSpatialResource
@@ -54,25 +64,25 @@ public class UploadSpatialResource {
         put.setDoAuthentication(true);
 
         //put.addRequestHeader("Content-type", "application/zip");
-        
+
         // Request content will be retrieved directly 
         // from the input stream 
         RequestEntity entity = new FileRequestEntity(input, "application/zip");
-        put.setRequestEntity(entity); 
-        
+        put.setRequestEntity(entity);
+
         // Execute the request 
         try {
             int result = client.executeMethod(put);
-            
+
             // get the status code
             System.out.println("Response status code: " + result);
-            
+
             // Display response
             System.out.println("Response body: ");
             System.out.println(put.getResponseBodyAsString());
 
-            output += result; 
-            
+            output += result;
+
         } catch (Exception e) {
             System.out.println("Something went wrong with UploadSpatialResource");
             e.printStackTrace(System.out);
@@ -225,55 +235,59 @@ public class UploadSpatialResource {
     }
 
     /**
-     * sends a PUT or POST call to a URL using authentication and including a file upload
-     * 
-     * @param type one of UploadSpatialResource.PUT for a PUT call or UploadSpatialResource.POST for a POST call
+     * sends a PUT or POST call to a URL using authentication and including a
+     * file upload
+     *
+     * @param type one of UploadSpatialResource.PUT for a PUT call or
+     * UploadSpatialResource.POST for a POST call
      * @param url URL for PUT/POST call
      * @param username account username for authentication
      * @param password account password for authentication
-     * @param resourcepath local path to file to upload, null for no file to upload
+     * @param resourcepath local path to file to upload, null for no file to
+     * upload
      * @param contenttype file MIME content type
-     * @return server response status code as String or empty String if unsuccessful
+     * @return server response status code as String or empty String if
+     * unsuccessful
      */
     public static String httpCall(int type, String url, String username, String password, String resourcepath, String contenttype) {
-    	String output = "";
+        String output = "";
 
         HttpClient client = new HttpClient();
         client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
-        
-        
-        RequestEntity entity = null;        
+
+
+        RequestEntity entity = null;
         if (resourcepath != null) {
-	        File input = new File(resourcepath);	
-	        entity = new FileRequestEntity(input, contenttype);
+            File input = new File(resourcepath);
+            entity = new FileRequestEntity(input, contenttype);
         }
-        
-        HttpMethod call = null;;        
+
+        HttpMethod call = null;;
         if (type == PUT) {
-        	PutMethod put = new PutMethod(url);
-        	put.setDoAuthentication(true);
-        	if (entity != null) {
-    	        put.setRequestEntity(entity); 
+            PutMethod put = new PutMethod(url);
+            put.setDoAuthentication(true);
+            if (entity != null) {
+                put.setRequestEntity(entity);
             }
-        	call = put;
+            call = put;
         } else if (type == POST) {
-        	PostMethod post = new PostMethod(url);
-        	if (entity != null) {
-    	        post.setRequestEntity(entity); 
+            PostMethod post = new PostMethod(url);
+            if (entity != null) {
+                post.setRequestEntity(entity);
             }
-        	call = post;
+            call = post;
         } else {
-        	SpatialLogger.log("UploadSpatialResource","invalid type: " + type);
-        	return output;
+            SpatialLogger.log("UploadSpatialResource", "invalid type: " + type);
+            return output;
         }
-        
+
         // Execute the request 
         try {
             int result = client.executeMethod(call);
-            
-            output += result;             
+
+            output += result;
         } catch (Exception e) {
-        	SpatialLogger.log("UploadSpatialResource","failed upload to: " + url);
+            SpatialLogger.log("UploadSpatialResource", "failed upload to: " + url);
         } finally {
             // Release current connection to the connection pool once you are done 
             call.releaseConnection();

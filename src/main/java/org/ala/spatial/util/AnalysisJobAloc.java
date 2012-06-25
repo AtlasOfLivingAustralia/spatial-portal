@@ -1,6 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
  */
 package org.ala.spatial.util;
 
@@ -14,7 +23,8 @@ import org.ala.spatial.analysis.service.AlocServiceImpl;
 import org.ala.spatial.analysis.service.AlocSettings;
 
 /**
- *
+ * Use to run ALOC requests.
+ * 
  * @author Adam
  */
 public class AnalysisJobAloc extends AnalysisJob {
@@ -45,16 +55,14 @@ public class AnalysisJobAloc extends AnalysisJob {
         resolution = resolution_;
 
         layerCount = envlist.split(":").length;
-
-        //TODO: remove rough estimate
+        
         if (region != null) {
             cells = (int) Math.ceil((region.getWidth() / Double.parseDouble(resolution))
                     * (region.getHeight() / Double.parseDouble(resolution)));
         } else {
             cells = 1000000; //or something
         }
-        //cells = GridCutter.countCells(region, envelope);
-
+        
         stageTimes = new long[4];
 
         setStage(0);
@@ -92,14 +100,12 @@ public class AnalysisJobAloc extends AnalysisJob {
             setProgress(0.3);
 
             String outputfile = CoordinateTransformer.transformToGoogleMercator(filepath + "aloc.png");
-            System.out.println("OUT2: " + outputfile);
             setProgress(0.4);
 
             AnalysisJobMaxent.readReplace(filepath + "classification.html", "<insert job number here>", getName());
 
             /* register with LayerImgService */
             StringBuffer legend = new StringBuffer();
-            System.out.println("legend path:" + filepath + "classification_means.csv");
             BufferedReader flegend = new BufferedReader(new FileReader(filepath + "classification_means.csv"));
             while ((line = flegend.readLine()) != null) {
                 legend.append(line);
@@ -107,8 +113,7 @@ public class AnalysisJobAloc extends AnalysisJob {
             }
             flegend.close();
 
-            StringBuffer metadata = new StringBuffer();
-            System.out.println("meatadata path:" + filepath + "classification.html");
+            StringBuffer metadata = new StringBuffer();            
             BufferedReader fmetadata = new BufferedReader(new FileReader(filepath + "classification.html"));
             while ((line = fmetadata.readLine()) != null) {
                 metadata.append(line);
@@ -135,7 +140,6 @@ public class AnalysisJobAloc extends AnalysisJob {
             Zipper.zipFiles(infiles, ascZipFile);
 
             // Upload the file to GeoServer using REST calls
-            System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
             UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
 
             //Create style
@@ -185,31 +189,6 @@ public class AnalysisJobAloc extends AnalysisJob {
                         + AlaspatialProperties.getAnalysisAlocEstimateAdd0()); //default
             }
         }
-//        if (stage <= 1) { //seeding; 0.2 to 0.3
-//            if (prog > 0.22) {
-//                //t2 = (long) (timeElapsed * (.1 - (prog-.2))/(prog-.2)) ;   //projected
-//                t2 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult1()) * (double) layerCount * numberOfGroups
-//                        + AlaspatialProperties.getAnalysisAlocEstimateAdd1()); //default
-//                t2 = t2 + progTime - stageTimes[1];
-//            }
-//            if (t2 <= 0 || prog <= 0.22) {
-//                t2 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult1()) * (double) layerCount * numberOfGroups
-//                        + AlaspatialProperties.getAnalysisAlocEstimateAdd1()); //default
-//            }
-//        }
-//        if (stage <= 2) { //iterations; 0.3 to 0.9
-//            if (prog > 0.3) {
-//                //t3 = (long) (timeElapsed  * (.6 - (prog-.3))/(prog-.3));   //projected
-//
-//                t3 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult2()) * (double) numberOfGroups * layerCount * layerCount
-//                        + AlaspatialProperties.getAnalysisAlocEstimateAdd2()); //default
-//                t3 = t3 + progTime - stageTimes[2];
-//            }
-//            if (t3 <= 0 || prog <= 0.3) {
-//                t3 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult2()) * (double) numberOfGroups * layerCount * layerCount
-//                        + AlaspatialProperties.getAnalysisAlocEstimateAdd2()); //default
-//            }
-//        }
         if (stage <= 2) { //seeding and iterations
             if (prog > 0.22) {
                 t2 = (long) ((cells * AlaspatialProperties.getAnalysisAlocEstimateMult1()) * (double) layerCount * numberOfGroups
@@ -244,11 +223,7 @@ public class AnalysisJobAloc extends AnalysisJob {
     public void setProgress(double d) {
         if (stage == 0) { //data load; 0 to 0.2
             progress = d / 5;
-//        } else if (stage == 1) { //seeding; 0.2 to 0.3
-//            progress = 0.2 + d / 10;
-//        } else if (stage == 2) { //iterations; 0.3 to 0.9
-//            progress = 0.3 + d * 6 / 10;
-        } else if (stage == 1) { //seeding and iterations; 0.2 to 0.9
+        } else if (stage == 1 || stage == 2) { //seeding and iterations; 0.2 to 0.9
             progress = 0.2 + d * 7 / 10;
         } else {    //transforming data; 0.9 to 1.0
             progress = 0.9 + d / 10;
@@ -324,7 +299,6 @@ public class AnalysisJobAloc extends AnalysisJob {
 
             String[] envnameslist = envlist.split(":");
             String cutDataPath = GridCutter.cut2(envnameslist, resolution, region, envelope, null);
-            System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
 
             AlocSettings msets = new AlocSettings();
             msets.setAlocPath(AlaspatialProperties.getAnalysisAlocCmd());
@@ -341,7 +315,6 @@ public class AnalysisJobAloc extends AnalysisJob {
             int exitValue = aloc.process(this);
             System.out.println("Completed: " + exitValue);
             setProgress(1, "Aloc finished with exit value=" + exitValue);
-            //AlocService.run(filename, layers, numberOfGroups, region, envelope, getName(), this);
 
             if (isCancelled()) {
                 return;
@@ -359,7 +332,6 @@ public class AnalysisJobAloc extends AnalysisJob {
         } catch (Exception e) {
             setProgress(1, "failed: " + e.toString());
             setCurrentState(FAILED);
-            System.out.println("ALOC ERROR");
             e.printStackTrace();
         }
     }

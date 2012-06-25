@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.analysis.layers;
 
 import java.io.File;
@@ -8,25 +21,41 @@ import java.util.BitSet;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
 import org.json.simple.JSONObject;
 
 /**
+ * Generate a sites by species tabulated table.
  *
  * @author Adam
  */
 public class SitesBySpeciesTabulated {
 
+    /**
+     * all occurrence records for this occurrence density grid.
+     */
     Records records;
+    /**
+     * output grid resolution as decimal degrees.
+     */
     double resolution;
+    /**
+     * output grid bounds as xmin,ymin,xmax,ymax.
+     */
     double[] bbox;
+    /**
+     * output grid dimensions.
+     */
     int width, height;
 
+    /**
+     *
+     * @param resolution decimal degrees as double.
+     * @param bbox bounding area as double [] with xmin, ymin, xmax, ymax.
+     */
     public SitesBySpeciesTabulated(double resolution, double[] bbox) {
         this.resolution = resolution;
         this.bbox = bbox;
@@ -35,23 +64,54 @@ public class SitesBySpeciesTabulated {
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
+    /**
+     *
+     * @param resolution
+     */
     void setResolution(double resolution) {
         this.resolution = resolution;
         width = (int) ((bbox[2] - bbox[0]) / resolution);
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
+    /**
+     *
+     * @param bbox
+     */
     void setBBox(double[] bbox) {
         this.bbox = bbox;
         width = (int) ((bbox[2] - bbox[0]) / resolution);
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
+    /**
+     * Generate and write the sites by species list.
+     *
+     * Output files have both .csv and .json decades, tabulation by decades
+     * decadecounts, tabulation by (species in) sequential decades
+     * bioregionName, tabulation by bioregions (from ssf or grid & gridColumns)
+     *
+     * @param records all occurrence records for this density grid as Records.
+     * @param outputDirectory path to the output directory.
+     * @param region area restriction, or null for everywhere the occurrences
+     * appear, as SimpleRegion.
+     * @param envelopeGrid area restriction as an envelope grid, or null for
+     * everywhere the occurrences appear, as Grid
+     * @param bioregionName null or output bioregion name.
+     * @param ssf null or bioregion as shape file with a single column as
+     * SimpleRegion.
+     * @param grid null or bioregion as Grid. Must also have gridColumns.
+     * @param gridColumns null or grid bioregion category lookup values as
+     * String [].
+     * @param decade true to generate decades and decadecounts output
+     * tabulations.
+     * @throws IOException
+     */
     public void write(Records records, String outputDirectory, SimpleRegion region, Grid envelopeGrid, String bioregionName, SimpleShapeFile ssf, Grid grid, String[] gridColumns, boolean decade) throws IOException {
-
         String[] columns = null;
         int[] gridIntersections = null;
         int numberOfBioregions = 0;
+        // get columns for bioregion categories from ssf or gridColumns.
         if (ssf != null) {
             columns = ssf.getColumnLookup();
         } else if (grid != null) {
@@ -83,12 +143,12 @@ public class SitesBySpeciesTabulated {
 
         HashMap<Integer, Integer>[] bioMap = new HashMap[numberOfBioregions];
         HashMap<Integer, Integer>[] decMap = new HashMap[numberOfDecades];
-        HashMap<Integer, Integer>[] decCountMap = new HashMap[numberOfDecades+1];
+        HashMap<Integer, Integer>[] decCountMap = new HashMap[numberOfDecades + 1];
         for (int i = 0; i < bioMap.length; i++) {
             bioMap[i] = new HashMap<Integer, Integer>();
         }
         for (int i = 0; i < decMap.length; i++) {
-            decMap[i] = new HashMap<Integer, Integer>();            
+            decMap[i] = new HashMap<Integer, Integer>();
         }
         for (int i = 0; i < decCountMap.length; i++) {
             decCountMap[i] = new HashMap<Integer, Integer>();
@@ -104,9 +164,8 @@ public class SitesBySpeciesTabulated {
         for (int j = 0; j < numberOfDecades; j++) {
             bsDecades[j] = new BitSet(uniqueSpeciesCount);
         }
-        int [] decContinousCounts = new int[records.getSpeciesSize()];
+        int[] decContinousCounts = new int[records.getSpeciesSize()];
 
-        System.out.println("finished setup of bsBioregions and bsDecades");
         for (int pos = 0; pos < records.getRecordsSize();) {
             //find end pos
             int x = (int) ((records.getLongitude(pos) - bbox[0]) / resolution);
@@ -141,15 +200,15 @@ public class SitesBySpeciesTabulated {
                 }
 
                 //reset
-                for(int j=0;j<decContinousCounts.length;j++) {
+                for (int j = 0; j < decContinousCounts.length; j++) {
                     decContinousCounts[j] = 0;
                 }
                 //sum
                 for (int j = 0; j < numberOfDecades; j++) {
                     BitSet bs = bsDecades[j];
                     if (bs.cardinality() > 0) {
-                        for(int k=0;k<bs.length();k++) {
-                            if(bs.get(k)) {
+                        for (int k = 0; k < bs.length(); k++) {
+                            if (bs.get(k)) {
                                 decContinousCounts[k]++;
                             }
                         }
@@ -158,17 +217,17 @@ public class SitesBySpeciesTabulated {
                 //count
                 java.util.Arrays.sort(decContinousCounts);
                 int count = 1;
-                for(int j=1;j<decContinousCounts.length;j++) {
-                    if(decContinousCounts[j] == decContinousCounts[j-1]) {
+                for (int j = 1; j < decContinousCounts.length; j++) {
+                    if (decContinousCounts[j] == decContinousCounts[j - 1]) {
                         count++;
                     } else {
-                        Integer c = decCountMap[decContinousCounts[j-1]].get(count);
-                        decCountMap[decContinousCounts[j-1]].put(count, c==null?1:c + 1);
+                        Integer c = decCountMap[decContinousCounts[j - 1]].get(count);
+                        decCountMap[decContinousCounts[j - 1]].put(count, c == null ? 1 : c + 1);
                         count = 1;
                     }
                 }
-                Integer c = decCountMap[decContinousCounts[decContinousCounts.length-1]].get(count);
-                decCountMap[decContinousCounts[decContinousCounts.length-1]].put(count, c==null?1:c + 1);
+                Integer c = decCountMap[decContinousCounts[decContinousCounts.length - 1]].get(count);
+                decCountMap[decContinousCounts[decContinousCounts.length - 1]].put(count, c == null ? 1 : c + 1);
             }
 
             pos = endPos;
@@ -181,6 +240,18 @@ public class SitesBySpeciesTabulated {
         writeDecadeCounts(outputDirectory, decCountMap);
     }
 
+    /**
+     * Prepare data for the next row.
+     *
+     * @param records
+     * @param start
+     * @param end
+     * @param bsBioregion
+     * @param bsDecade
+     * @param ssf
+     * @param gridIntersections
+     * @param decadeIdx
+     */
     void getNextIntArrayRow(Records records, int start, int end, BitSet[] bsBioregion, BitSet[] bsDecade, SimpleShapeFile ssf, int[] gridIntersections, short[] decadeIdx) {
         //translate into bitset for each grid cell
         if (bsBioregion != null) {
@@ -211,6 +282,12 @@ public class SitesBySpeciesTabulated {
         }
     }
 
+    /**
+     * Get list of decades for records.
+     *
+     * @param records
+     * @return list of decades as short[]
+     */
     private short[] getDecadeIdx(Records records) {
         short min = (short) (Calendar.getInstance().get(Calendar.YEAR));
         short max = 0;
@@ -220,8 +297,6 @@ public class SitesBySpeciesTabulated {
         }
         max = (short) Math.min(max, (Calendar.getInstance().get(Calendar.YEAR)));
 
-        System.out.println("min year: " + min + ", max year: " + max);
-
         short[] idx = new short[max + 1];
         for (int i = 0; i < idx.length; i++) {
             idx[i] = (short) Math.ceil(i / 10.0);
@@ -230,6 +305,16 @@ public class SitesBySpeciesTabulated {
         return idx;
     }
 
+    /**
+     * write decades tabulation.
+     *
+     * Output filename is "decades.csv" and "decades.json".
+     *
+     * @param outputDirectory path to output directory.
+     * @param decadeIdx array of decades.
+     * @param decMap array of map of values to write.
+     * @return
+     */
     private Map writeDecades(String outputDirectory, short[] decadeIdx, HashMap<Integer, Integer>[] decMap) {
         Map map = new HashMap();
         ArrayList array = new ArrayList();
@@ -301,6 +386,16 @@ public class SitesBySpeciesTabulated {
         return map;
     }
 
+    /**
+     * write decade counts tabulation.
+     *
+     * Output filename is "decadecounts.csv" and "decadecounts.json".
+     *
+     * @param outputDirectory path to output directory.
+     * @param decadeIdx array of decades.
+     * @param decMap array of map of values to write.
+     * @return
+     */
     private Map writeDecadeCounts(String outputDirectory, HashMap<Integer, Integer>[] decCountMap) {
         Map map = new HashMap();
         ArrayList array = new ArrayList();
@@ -364,6 +459,17 @@ public class SitesBySpeciesTabulated {
         return map;
     }
 
+    /**
+     * write bioregion tabulation.
+     *
+     * Output filename is name + ".csv" and name + ".json".
+     *
+     * @param name output filename
+     * @param outputDirectory directory for output.
+     * @param columns list of the bioregion names.
+     * @param bioMap data to write.
+     * @return
+     */
     private Map writeBioregions(String name, String outputDirectory, String[] columns, HashMap<Integer, Integer>[] bioMap) {
         Map map = new HashMap();
         ArrayList array = new ArrayList();

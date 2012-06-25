@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.analysis.service;
 
 import java.awt.image.BufferedImage;
@@ -25,29 +38,23 @@ import org.ala.spatial.util.GridCutter;
 
 /**
  * entry into running Aloc
- * 
+ *
  * use run
- * 
+ *
  * @author adam
  *
  */
 public class AlocService {
 
     /**
-     * exports means and colours of a classification (ALOC) into
-     * a csv
+     * exports means and colours of a classification (ALOC) into a csv
      *
      * @param filename csv filename to export into
-     * @param means mean values for each legend record as [n][m]
-     * where 
-     * 	n is number of records
-     *  m is number of layers used to generate the classification (ALOC)
-     * @param colours RGB colours of legend records as [n][3] 
-     * where 
-     *  n is number of records
-     *  [][0] is red
-     *  [][1] is green
-     *  [][2] is blue
+     * @param means mean values for each legend record as [n][m] where n is
+     * number of records m is number of layers used to generate the
+     * classification (ALOC)
+     * @param colours RGB colours of legend records as [n][3] where n is number
+     * of records [][0] is red [][1] is green [][2] is blue
      * @param layers layers used to generate the classification as Layer[]
      */
     static void exportMeansColours(String filename, double[][] means, int[][] colours, Layer[] layers) {
@@ -55,7 +62,9 @@ public class AlocService {
             FileWriter fw = new FileWriter(filename);
             int i, j;
 
-            /* header */
+            /*
+             * header
+             */
             fw.append("group number");
             fw.append(",red");
             fw.append(",green");
@@ -66,7 +75,9 @@ public class AlocService {
             }
             fw.append("\r\n");
 
-            /* outputs */
+            /*
+             * outputs
+             */
             for (i = 0; i < means.length; i++) {
                 fw.append(String.valueOf(i + 1));
                 fw.append(",");
@@ -167,20 +178,15 @@ public class AlocService {
 
     /**
      * exports a geoserver sld file for legend generation
-     * 
+     *
      * TODO: find out why it reports error when attached layer is called
-     * 
+     *
      * @param filename sld filename to export into
-     * @param means mean values for each legend record as [n][m]
-     * where 
-     * 	n is number of records
-     *  m is number of layers used to generate the classification (ALOC)
-     * @param colours RGB colours of legend records as [n][3] 
-     * where 
-     *  n is number of records
-     *  [][0] is red
-     *  [][1] is green
-     *  [][2] is blue
+     * @param means mean values for each legend record as [n][m] where n is
+     * number of records m is number of layers used to generate the
+     * classification (ALOC)
+     * @param colours RGB colours of legend records as [n][3] where n is number
+     * of records [][0] is red [][1] is green [][2] is blue
      * @param layers layers used to generate the classification as Layer[]
      * @param id unique id (likely to be session_id) as String
      */
@@ -189,7 +195,9 @@ public class AlocService {
             StringBuffer sld = new StringBuffer();
             sld.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>");
 
-            /* header */
+            /*
+             * header
+             */
             sld.append("<StyledLayerDescriptor version=\"1.0.0\" xmlns=\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\"");
             sld.append(" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
             sld.append(" xsi:schemaLocation=\"http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd\">");
@@ -206,7 +214,9 @@ public class AlocService {
             int i, j;
             String s;
 
-            /* outputs */
+            /*
+             * outputs
+             */
             for (i = 0; i < colours.length; i++) {
                 j = 0x00000000 | ((colours[i][0] << 16) | (colours[i][1] << 8) | colours[i][2]);
                 s = Integer.toHexString(j).toUpperCase();
@@ -216,10 +226,14 @@ public class AlocService {
                 sld.append("<ColorMapEntry color=\"#" + s + "\" quantity=\"" + (i + 1) + ".0\" label=\"group " + (i + 1) + "\" opacity=\"1\"/>\r\n");
             }
 
-            /* footer */
+            /*
+             * footer
+             */
             sld.append("</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>");
 
-            /* write */
+            /*
+             * write
+             */
             FileWriter fw = new FileWriter(filename);
             fw.append(sld.toString());
             fw.close();
@@ -250,12 +264,6 @@ public class AlocService {
     }
 
     public static void main(String[] args) {
-//        args = new String[]{
-//                    "e:\\mnt\\ala\\data\\index\\tabulation\\1329792717628\\",
-//                    "20",
-//                    "4",
-//                    "d:\\"
-//                };
         System.out.println("args[0] = grid files directory\n"
                 + "args[1] = number of groups\n"
                 + "args[2] = number of threads\n"
@@ -276,7 +284,9 @@ public class AlocService {
             job.log("start ALOC");
         }
 
-        /* get data, remove missing values, restrict by optional region */
+        /*
+         * get data, remove missing values, restrict by optional region
+         */
         int i, j;
         j = 0;
         int width = 0, height = 0;
@@ -349,8 +359,9 @@ public class AlocService {
             invariantLayers[i] = new Layer(invariantFiles[i].getName(), invariantFiles[i].getName(), "", "");
         }
 
-        /* run aloc
-         * Note: requested number of groups may not always equal request
+        /*
+         * run aloc Note: requested number of groups may not always equal
+         * request
          */
         int[] iterationCount = new int[1];
         int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, layers, job, numberOfThreads, iterationCount);
@@ -365,7 +376,9 @@ public class AlocService {
             job.log("identified groups");
         }
 
-        /* recalculate group counts */
+        /*
+         * recalculate group counts
+         */
         int newNumberOfGroups = 0;
         for (i = 0; i < groups.length; i++) {
             if (groups[i] > newNumberOfGroups) {
@@ -375,11 +388,15 @@ public class AlocService {
         newNumberOfGroups++; //group number is 0..n-1
         numberOfGroups = newNumberOfGroups;
 
-        /* calculate group means */
+        /*
+         * calculate group means
+         */
         double[][] group_means = new double[numberOfGroups][layers.length];
         int[][] group_counts = new int[numberOfGroups][layers.length];
 
-        /* determine group means */
+        /*
+         * determine group means
+         */
         int row = 0;
         for (int k = 0; k < pieces; k++) {
             float[] d = (float[]) data_pieces.get(k);
@@ -407,20 +424,26 @@ public class AlocService {
             job.log("determined group means");
         }
 
-        /* get RGB for colouring group means via PCA */
+        /*
+         * get RGB for colouring group means via PCA
+         */
         int[][] colours = Pca.getColours(group_means_copy);
         if (job != null) {
             job.log("determined group colours");
         }
 
 
-        /* export means + colours */
+        /*
+         * export means + colours
+         */
         exportMeansColours(filename.replace("aloc.png", "classification_means.csv"), group_means, colours, layers);
         if (job != null) {
             job.log("exported group means and colours");
         }
 
-        /* export metadata html */
+        /*
+         * export metadata html
+         */
         String urlpth = AlaspatialProperties.getBaseOutputURL() + "aloc/<insert job number here>/classification_means.csv";
         exportMetadata(filename.replace("aloc.png", "classification") + ".html", numberOfGroups, layers, invariantLayers,
                 (job != null) ? job.getName() : "<insert job number here>",
@@ -429,10 +452,14 @@ public class AlocService {
                 width, height, extents[2], extents[3], extents[4], extents[5],
                 iterationCount[0]);
 
-        /* export geoserver sld file for legend */
+        /*
+         * export geoserver sld file for legend
+         */
         exportSLD(filename + ".sld", group_means, colours, layers, "");
 
-        /* map back as colours, grey scale for now */
+        /*
+         * map back as colours, grey scale for now
+         */
         BufferedImage image = new BufferedImage(width, height,
                 BufferedImage.TYPE_INT_ARGB);
         int[] image_bytes;
@@ -440,7 +467,9 @@ public class AlocService {
         image_bytes = image.getRGB(0, 0, image.getWidth(), image.getHeight(),
                 null, 0, image.getWidth());
 
-        /* try transparency as missing value */
+        /*
+         * try transparency as missing value
+         */
         for (i = 0; i < image_bytes.length; i++) {
             image_bytes[i] = 0x00000000;
         }
@@ -456,11 +485,15 @@ public class AlocService {
             image_bytes[cells[i][0] + (height - cells[i][1] - 1) * width] = 0xff000000 | ((colour[0] << 16) | (colour[1] << 8) | colour[2]);
         }
 
-        /* write bytes to image */
+        /*
+         * write bytes to image
+         */
         image.setRGB(0, 0, image.getWidth(), image.getHeight(),
                 image_bytes, 0, image.getWidth());
 
-        /* save image */
+        /*
+         * save image
+         */
         try {
             ImageIO.write(image, "png",
                     new File(filename));
@@ -575,7 +608,6 @@ public class AlocService {
             spWriter.close();
 
         } catch (IOException ex) {
-            System.out.println("error writing species file:");
             ex.printStackTrace(System.out);
         }
     }

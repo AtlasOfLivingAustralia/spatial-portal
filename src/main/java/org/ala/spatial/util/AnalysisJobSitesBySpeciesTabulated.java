@@ -1,6 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
  */
 package org.ala.spatial.util;
 
@@ -24,6 +33,7 @@ import org.ala.spatial.analysis.layers.Records;
 import org.ala.spatial.analysis.layers.SitesBySpeciesTabulated;
 
 /**
+ * Use for sites by species tabulated requests.
  *
  * @author Adam
  */
@@ -84,8 +94,12 @@ public class AnalysisJobSitesBySpeciesTabulated extends AnalysisJob {
 
             // dump the species data to a file
             setProgress(0, "getting species data");
-            Records records = new Records(biocacheserviceurl/*TabulationSettings.biocache_service*/,
-                    speciesq, bbox, /*currentPath + File.separator + "raw_data.csv"*/ null, region, facetName);
+            Records records = new Records(biocacheserviceurl/*
+                     * TabulationSettings.biocache_service
+                     */,
+                    speciesq, bbox, /*
+                     * currentPath + File.separator + "raw_data.csv"
+                     */ null, region, facetName);
 
             //update bbox with spatial extent of records
             double minx = 180, miny = 90, maxx = -180, maxy = -90;
@@ -109,13 +123,9 @@ public class AnalysisJobSitesBySpeciesTabulated extends AnalysisJob {
             int boundingboxcellcount = (int) ((bbox[2] - bbox[0])
                     * (bbox[3] - bbox[1])
                     / (gridsize * gridsize));
-            System.out.println("SitesBySpecies for " + occurrenceCount + " occurrences in up to " + boundingboxcellcount + " grid cells.");
             String error = null;
-            /*if (boundingboxcellcount > AlaspatialProperties.getAnalysisLimitGridCells()) {
-            error = "Too many potential output grid cells.  Decrease area or increase resolution.";
-            } else if (occurrenceCount > AlaspatialProperties.getAnalysisLimitOccurrences()) {
-            error = "Too many occurrences for the selected species.  " + occurrenceCount + " occurrences found, must be less than " + AlaspatialProperties.getAnalysisLimitOccurrences();
-            } else*/ if (occurrenceCount == 0) {
+
+            if (occurrenceCount == 0) {
                 error = "No occurrences found";
             }
             if (error != null) {
@@ -189,12 +199,7 @@ public class AnalysisJobSitesBySpeciesTabulated extends AnalysisJob {
 
             setProgress(1, "finished");
 
-            // generate the readme.txt file
-            //CitationService.generateSitesBySpeciesReadme(currentPath + File.separator, sitesbyspecies, occurrencedensity, speciesdensity);
-
             setCurrentState(SUCCESSFUL);
-
-            System.out.println("finished building sites by species matrix");
 
         } catch (Exception e) {
             e.printStackTrace();

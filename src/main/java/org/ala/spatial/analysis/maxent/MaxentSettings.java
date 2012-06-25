@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.analysis.maxent;
 
 import java.util.Iterator;
@@ -6,9 +19,9 @@ import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.Layers;
 
 /**
- * Settings for the MaxEnt process. Sets up the basic/default settings
- * allow for more settings to be added as needed
- * 
+ * Settings for the MaxEnt process. Sets up the basic/default settings allow for
+ * more settings to be added as needed
+ *
  * @author ajayr
  */
 public class MaxentSettings {
@@ -134,7 +147,7 @@ public class MaxentSettings {
     }
 
     public void setEnvList(List<String> envList) {
-        for(int i=0;i<envList.size();i++) {
+        for (int i = 0; i < envList.size(); i++) {
             envList.set(i, Layers.getFieldId(envList.get(i)));
         }
         this.envList = envList;

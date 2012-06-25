@@ -1,22 +1,31 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.util;
 
-import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 
 /**
  * Generates a integer-based domain grid based on a set of grid values
- * 
- * 1 for positive intersecting values
- * -9999 for no intersecting values
+ *
+ * 1 for positive intersecting values -9999 for no intersecting values
  *
  * @author ajay
  */
 public class DomainGrid {
 
     public static void generate(String envPath, Layer[] layers, SimpleRegion region, String outputdir) {
-
 //        TabulationSettings.load();
-
 //        TabulationSettings.index_path = "/Users/ajay/Downloads/gdm/test/work/";
 //        TabulationSettings.environmental_data_path = "/Users/ajay/Downloads/gdm/test/layers/";
 //        TabulationSettings.grd_xmin = 112.900000;
@@ -27,7 +36,6 @@ public class DomainGrid {
 //        TabulationSettings.grd_nrows = 3480;
 //        TabulationSettings.grd_xdiv = 0.010000;
 //        TabulationSettings.grd_ydiv = 0.010000;
-
 //        //mkdir in index location
 //        String newPath = null;
 //        try {
@@ -38,7 +46,9 @@ public class DomainGrid {
 //            e.printStackTrace();
 //        }
 
-        /* get data, remove missing values, restrict by optional region */
+        /*
+         * get data, remove missing values, restrict by optional region
+         */
 //        int i;
 //        int width;
 //        int height;
@@ -137,8 +147,6 @@ public class DomainGrid {
 //                maxx,
 //                maxy,
 //                TabulationSettings.grd_xdiv, TabulationSettings.grd_ydiv, height, width);
-
-
     }
 
     /**

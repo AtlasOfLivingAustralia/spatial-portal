@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.web.services;
 
 import java.io.BufferedReader;
@@ -34,6 +47,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
+ * Sites by species tabulated webservices.
  *
  * @author ajay
  */
@@ -43,8 +57,7 @@ public class SitesBySpeciesWSControllerTabulated {
     static Object lockProperties = new Object();
 
     @RequestMapping(value = "/ws/sitesbyspeciestabulated", method = {RequestMethod.POST, RequestMethod.GET})
-    public
-    @ResponseBody
+    public @ResponseBody
     String processgeoq(HttpServletRequest req) {
 
         try {
@@ -96,7 +109,6 @@ public class SitesBySpeciesWSControllerTabulated {
             return pid;
 
         } catch (Exception e) {
-            System.out.println("Error processing SitesBySpecies request:");
             e.printStackTrace(System.out);
         }
 
@@ -113,7 +125,7 @@ public class SitesBySpeciesWSControllerTabulated {
 
             @Override
             public int compare(SxS s1, SxS s2) {
-                if(s2.getAnalysisId() != null && s1.getAnalysisId() != null) {
+                if (s2.getAnalysisId() != null && s1.getAnalysisId() != null) {
                     return s2.getAnalysisId().compareTo(s1.getAnalysisId());
                 } else if (s2.getAnalysisId() != null) {
                     return 1;
@@ -121,7 +133,6 @@ public class SitesBySpeciesWSControllerTabulated {
                     return 0;
                 }
             }
-
         });
 
         ModelMap m = new ModelMap();
@@ -220,8 +231,7 @@ public class SitesBySpeciesWSControllerTabulated {
      * list distribution table records, GET
      */
     @RequestMapping(value = "sxsrun", method = RequestMethod.GET)
-    public
-    @ResponseBody
+    public @ResponseBody
     String sxsRun(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         run();
 
@@ -311,16 +321,16 @@ public class SitesBySpeciesWSControllerTabulated {
         String bs = URLEncoder.encode(AlaspatialProperties.getBiocacheWsURL(), "UTF-8");
         String gridsize = req.getParameter("gridsize");
 
-        String minuncertainty = req.getParameter("minuncertainty")==null?"":req.getParameter("minuncertainty");
-        String maxuncertainty = req.getParameter("maxuncertainty")==null?"":req.getParameter("maxuncertainty");
-        String nulluncertainty = req.getParameter("nulluncertainty")==null?"false":req.getParameter("nulluncertainty");
-        
-        String min = minuncertainty.length() == 0?"*":minuncertainty;
-        String max = maxuncertainty.length() == 0?"*":maxuncertainty;
+        String minuncertainty = req.getParameter("minuncertainty") == null ? "" : req.getParameter("minuncertainty");
+        String maxuncertainty = req.getParameter("maxuncertainty") == null ? "" : req.getParameter("maxuncertainty");
+        String nulluncertainty = req.getParameter("nulluncertainty") == null ? "false" : req.getParameter("nulluncertainty");
 
-        if(nulluncertainty.equals("true")) {
+        String min = minuncertainty.length() == 0 ? "*" : minuncertainty;
+        String max = maxuncertainty.length() == 0 ? "*" : maxuncertainty;
+
+        if (nulluncertainty.equals("true")) {
             speciesquery = "(" + speciesquery + ")%20AND%20coordinate_uncertainty:%5B" + min + "%20TO%20" + max + "%5D";
-        } else if(minuncertainty.length() + maxuncertainty.length() > 0) {
+        } else if (minuncertainty.length() + maxuncertainty.length() > 0) {
             speciesquery = "(" + speciesquery + ")%20AND%20-(coordinate_uncertainty:*%20AND%20-coordinate_uncertainty:%5B" + min + "%20TO%20" + max + "%5D)";
         }
 

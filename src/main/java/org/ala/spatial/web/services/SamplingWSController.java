@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.web.services;
 
 import java.io.File;
@@ -17,82 +30,70 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- *
+ * 
  * @author ajay
  */
 @Controller
 public class SamplingWSController {
 
     /**
-     * chart basis: occurrence or area
-     * filter: [lsid] + [area]
-     * series: [taxon level] or [string attribute] or [boolean attribute] or [shape file layer]
-     * xaxis: [taxon level] or [attribute] or [layer]
-     *        Optional ',' + min + ' ' max
-     *        Optional ',' + categories delimited by '\t'
-     * yaxis: [taxon level] or [attribute] or [layer] or [count type=countspecies, countoccurrence, size of area]
-     *        Optional ',' + min + ' ' max
-     *        Optional ',' + categories delimited by '\t'
-     * zaxis: [count type=species, occurrence, size of area]
+     * chart basis: occurrence or area filter: [lsid] + [area] series: [taxon
+     * level] or [string attribute] or [boolean attribute] or [shape file layer]
+     * xaxis: [taxon level] or [attribute] or [layer] Optional ',' + min + ' '
+     * max Optional ',' + categories delimited by '\t' yaxis: [taxon level] or
+     * [attribute] or [layer] or [count type=countspecies, countoccurrence, size
+     * of area] Optional ',' + min + ' ' max Optional ',' + categories delimited
+     * by '\t' zaxis: [count type=species, occurrence, size of area]
      *
-     * Types of chart basis:
-     * bA. Occurrence locations.
-     * bB. Layer intersections.
+     * Types of chart basis: bA. Occurrence locations. bB. Layer intersections.
      *
-     * Types of variables:
-     * tA. catagorical (e.g. STRING ATTRIBUTES[bA], SHAPE FILE INTERSECTION, TAXON NAMES[bA])
-     * tB. continous (e.g. INT or DOUBLE ATTRIBUTES[bA] and GRID FILE INTERSECTION)
-     * tC. presence (e.g. BOOLEAN ATTRIBUTES[bA], BOOLEAN=TRUE COUNT[bA], SPECIES COUNT[bA] and OCCURRENCE COUNT[bA], INTERSECTION AREA SIZE[bB])
+     * Types of variables: tA. catagorical (e.g. STRING ATTRIBUTES[bA], SHAPE
+     * FILE INTERSECTION, TAXON NAMES[bA]) tB. continous (e.g. INT or DOUBLE
+     * ATTRIBUTES[bA] and GRID FILE INTERSECTION) tC. presence (e.g. BOOLEAN
+     * ATTRIBUTES[bA], BOOLEAN=TRUE COUNT[bA], SPECIES COUNT[bA] and OCCURRENCE
+     * COUNT[bA], INTERSECTION AREA SIZE[bB])
      *
-     * Valid variables for Filtering:
-     * fZ. none.
-     * fA. catagorical (e.g. STRING ATTRIBUTES[bA], SHAPE FILE INTERSECTION, TAXON NAMES[bA])
-     * fB. continous (e.g. INT or DOUBLE ATTRIBUTES[bA] and GRID FILE INTERSECTION)
-     * fC. presence (e.g. BOOLEAN ATTRIBUTES[bA])
-     * fD. Active Area
+     * Valid variables for Filtering: fZ. none. fA. catagorical (e.g. STRING
+     * ATTRIBUTES[bA], SHAPE FILE INTERSECTION, TAXON NAMES[bA]) fB. continous
+     * (e.g. INT or DOUBLE ATTRIBUTES[bA] and GRID FILE INTERSECTION) fC.
+     * presence (e.g. BOOLEAN ATTRIBUTES[bA]) fD. Active Area
      *
-     * Valid variables for Series:
-     * sZ. none
-     * sA. catagorical (e.g. STRING ATTRIBUTES[bA], SHAPE FILE INTERSECTION, TAXON NAMES[bA])
-     * sB. presence (e.g. BOOLEAN ATTRIBUTES[bA])
+     * Valid variables for Series: sZ. none sA. catagorical (e.g. STRING
+     * ATTRIBUTES[bA], SHAPE FILE INTERSECTION, TAXON NAMES[bA]) sB. presence
+     * (e.g. BOOLEAN ATTRIBUTES[bA])
      *
-     * Valid variables for Y-Axis:
-     * yA. catagorical (e.g. STRING ATTRIBUTES[bA], SHAPE FILE INTERSECTION, TAXON NAMES[bA])
-     * yB. continous (e.g. INT or DOUBLE ATTRIBUTES[bA] and GRID FILE INTERSECTION)
-     * yC. presence (e.g. BOOLEAN=TRUE COUNT[bA], SPECIES COUNT[bA] and OCCURRENCE COUNT[bA], INTERSECTION AREA SIZE[bB])
+     * Valid variables for Y-Axis: yA. catagorical (e.g. STRING ATTRIBUTES[bA],
+     * SHAPE FILE INTERSECTION, TAXON NAMES[bA]) yB. continous (e.g. INT or
+     * DOUBLE ATTRIBUTES[bA] and GRID FILE INTERSECTION) yC. presence (e.g.
+     * BOOLEAN=TRUE COUNT[bA], SPECIES COUNT[bA] and OCCURRENCE COUNT[bA],
+     * INTERSECTION AREA SIZE[bB])
      *
-     * Valid variables for X-Axis:
-     * tA. catagorical (e.g. STRING ATTRIBUTES[bA], SHAPE FILE INTERSECTION, TAXON NAMES[bA])
-     * tB. continous (e.g. INT or DOUBLE ATTRIBUTES[bA] and GRID FILE INTERSECTION)
+     * Valid variables for X-Axis: tA. catagorical (e.g. STRING ATTRIBUTES[bA],
+     * SHAPE FILE INTERSECTION, TAXON NAMES[bA]) tB. continous (e.g. INT or
+     * DOUBLE ATTRIBUTES[bA] and GRID FILE INTERSECTION)
      *
-     * Valid variables for Z-Axis:
-     * zZ. none.
-     * zA. presence (e.g. BOOLEAN=TRUE COUNT[bA], SPECIES COUNT[bA] and OCCURRENCE COUNT[bA], INTERSECTION AREA SIZE[bB])
+     * Valid variables for Z-Axis: zZ. none. zA. presence (e.g. BOOLEAN=TRUE
+     * COUNT[bA], SPECIES COUNT[bA] and OCCURRENCE COUNT[bA], INTERSECTION AREA
+     * SIZE[bB])
      *
      *
      * Axis Combinations
      *
-     * table for bA
-     * yA			yB					yC
-     * tA	(1) XYBlockChart	Box & Whisker				Histogram
-     * tB	(2)			Scatterplot or (1) XYBlockChart		Histogram
+     * table for bA yA	yB	yC tA	(1) XYBlockChart	Box & Whisker	Histogram tB	(2)
+     * Scatterplot or (1) XYBlockChart	Histogram
      *
-     * table for bB
-     * yA			yB					yC
-     * tA	(1) XYBlockChart	Box & Whisker				(2)
-     * tB	(2)			(1) XYBlockChart			(2)
+     * table for bB yA	yB	yC tA	(1) XYBlockChart	Box & Whisker	(2) tB	(2)	(1)
+     * XYBlockChart	(2)
      *
-     * (1) requires Z-Axis variable.
-     * (2) not allowed
+     * (1) requires Z-Axis variable. (2) not allowed
      *
-     * 
+     *
      *
      * @param req
      * @return
      */
     @RequestMapping(value = "/ws/chart", method = RequestMethod.GET)
-    public
-    @ResponseBody
+    public @ResponseBody
     String chart(HttpServletRequest req) {
         try {
             String wkt = (req.getParameter("wkt") == null) ? null : URLDecoder.decode(req.getParameter("wkt"), "UTF-8");

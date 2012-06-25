@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.util;
 
 import java.io.BufferedWriter;
@@ -40,7 +53,7 @@ public class SpatialTransformer {
 
             fw.append("NODATA_value ").append(String.valueOf(-1));
 
-            float [] grid_data = grid.getGrid();
+            float[] grid_data = grid.getGrid();
             System.out.println("grid_data: " + grid_data.length);
             System.out.println("grid_data[0]: " + grid_data[0]);
             for (int i = 0; i < grid.nrows; i++) {
@@ -65,7 +78,7 @@ public class SpatialTransformer {
             writeProjectionFile(ascfilename.replace(".asc", ".prj"));
         } catch (Exception e) {
             throw e;
-        } 
+        }
     }
 
     private static void writeProjectionFile(String filename) {
@@ -103,5 +116,4 @@ public class SpatialTransformer {
             e.printStackTrace(System.out);
         }
     }
-
 }

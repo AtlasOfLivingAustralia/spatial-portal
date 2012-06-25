@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.analysis.maxent;
 
 import org.ala.spatial.util.StreamGobbler;
@@ -9,7 +22,7 @@ import org.ala.spatial.util.AnalysisJobMaxent;
 
 /**
  * Gets the submitted parameters and runs a maxent model
- * 
+ *
  * @author ajayr
  */
 public class MaxentServiceImpl implements MaxentService {
@@ -30,7 +43,7 @@ public class MaxentServiceImpl implements MaxentService {
 
     /**
      * The generateSessionDirectory allows creating a session directory
-     * 
+     *
      * @param thePath
      * @return
      */
@@ -59,7 +72,7 @@ public class MaxentServiceImpl implements MaxentService {
 
     /**
      * The runCommand method does the fork'ing
-     * 
+     *
      * @param command The command to be run
      * @return success int value if the process was successful
      */
@@ -72,7 +85,6 @@ public class MaxentServiceImpl implements MaxentService {
             acmd[1] = "/C";
             acmd[2] = command;
 
-            //System.out.println("Execing " + acmd[0] + " " + acmd[1] + " " + acmd[2]);
             System.out.println("Exec'ing " + command);
             Process proc = runtime.exec(command);
 
@@ -86,33 +98,9 @@ public class MaxentServiceImpl implements MaxentService {
             errorGobbler.start();
             outputGobbler.start();
 
-//            System.out.println("Setting up output stream readers");
-//            InputStreamReader isre = new InputStreamReader(proc.getErrorStream());
-//            BufferedReader bre = new BufferedReader(isre);
-//            InputStreamReader isr = new InputStreamReader(proc.getInputStream());
-//            BufferedReader br = new BufferedReader(isr);
-//            String line;
-
             System.out.printf("Output of running %s is:", command);
-            // Arrays.toString(acmd)
-
-//            while ((line = bre.readLine()) != null) {
-//                System.out.println(line);
-//            }
-//
-//            while ((line = br.readLine()) != null) {
-//                System.out.println(line);
-//            }
 
             int exitVal = proc.waitFor();
-
-            /*
-            // if good, add it to geoserver
-            if (exitVal == 0) {
-            String cmd2 =
-            Process proc2 = runtime.exec()
-            }
-             */
 
             errorGobbler.interrupt();
             outputGobbler.interrupt();
@@ -120,8 +108,6 @@ public class MaxentServiceImpl implements MaxentService {
             // any error???
             return exitVal;
         } catch (Exception e) {
-            System.out.println("OOOOPPPSSS: " + e.toString());
-            System.out.println("{success: false , responseText: 'Error occurred' + " + e.toString() + "}");
             e.printStackTrace(System.out);
         }
 
@@ -181,7 +167,6 @@ class MaxentThread extends Thread {
             acmd[1] = "/C";
             acmd[2] = command;
 
-            //System.out.println("Execing " + acmd[0] + " " + acmd[1] + " " + acmd[2]);
             System.out.println("Exec'ing " + command);
             proc = runtime.exec(command);
 
@@ -195,12 +180,16 @@ class MaxentThread extends Thread {
             System.out.printf("Output of running %s is:", command);
 
             while ((line = bre.readLine()) != null) {
-                if(job != null) job.log(line);
+                if (job != null) {
+                    job.log(line);
+                }
                 System.out.println(line);
             }
 
             while ((line = br.readLine()) != null) {
-                if(job != null) job.log(line);
+                if (job != null) {
+                    job.log(line);
+                }
                 System.out.println(line);
             }
 
@@ -210,8 +199,6 @@ class MaxentThread extends Thread {
             exitValue = exitVal;
             return;
         } catch (Exception e) {
-            System.out.println("OOOOPPPSSS: " + e.toString());
-            System.out.println("{success: false , responseText: 'Error occurred' + " + e.toString() + "}");
             e.printStackTrace(System.out);
         }
 

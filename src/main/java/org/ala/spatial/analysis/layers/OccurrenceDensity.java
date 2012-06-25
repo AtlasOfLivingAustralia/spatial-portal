@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.analysis.layers;
 
 import java.io.BufferedOutputStream;
@@ -11,17 +24,43 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- *
+ * Produce an occurrence density layer with a moving average.
+ * 
+ * Output is diva grid and/or ascii grid.
+ * 
+ * Construct then run .write
+ * 
  * @author Adam
  */
 public class OccurrenceDensity {
 
+    /**
+     * all occurrence records for this occurrence density grid.
+     */
     Records records;
+    /**
+     * gridSize is (moving average-1)/2.
+     */
     int gridSize;
+    /**
+     * output grid resolution as decimal degrees.
+     */
     double resolution;
+    /**
+     * output grid bounds as xmin,ymin,xmax,ymax.
+     */
     double[] bbox;
+    /**
+     * output grid dimensions.
+     */
     int width, height;
-
+    
+    /**
+     * 
+     * @param gridSize this is (moving average - 1) / 2 as int.
+     * @param resolution output grid resolution as double in decimal degrees.
+     * @param bbox output grid bounds xmin,ymin,xmax,ymax as double [].
+     */
     public OccurrenceDensity(int gridSize, double resolution, double[] bbox) {
         this.gridSize = gridSize;
         this.resolution = resolution;
@@ -31,22 +70,44 @@ public class OccurrenceDensity {
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
+    /**
+     * 
+     * @param gridSize 
+     */
     void setGridSize(int gridSize) {
         this.gridSize = gridSize;
     }
 
+    /**
+     * 
+     * @param resolution 
+     */
     void setResolution(double resolution) {
         this.resolution = resolution;
         width = (int) ((bbox[2] - bbox[0]) / resolution);
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
+    /**
+     * 
+     * @param bbox 
+     */
     void setBBox(double[] bbox) {
         this.bbox = bbox;
         width = (int) ((bbox[2] - bbox[0]) / resolution);
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
+    /**
+     * Generate and write the occurrence density grid.
+     * @param records all occurrence records for this density grid as Records.
+     * @param outputDirectory path to output directory as String.
+     * @param filename output filename as String.  No file extentions.
+     * @param threadCount number of threads to use during calculations as int.
+     * @param outputDivaGrid true to write a diva grid, as boolean.
+     * @param outputASC true to write an ascii grid, as boolean.
+     * @throws IOException 
+     */
     public void write(Records records, String outputDirectory, String filename, int threadCount, boolean outputDivaGrid, boolean outputASC) throws IOException {
         if (filename == null) {
             filename = "_occurrence_density_av_" + gridSize + "x" + gridSize + "_" + String.valueOf(resolution).replace(".", "");
@@ -62,24 +123,23 @@ public class OccurrenceDensity {
         }
 
         //write data
-//        RandomAccessFile raf = new RandomAccessFile(outputDirectory + filename + ".gri", "rw");
         byte[] bytes = null;
         ByteBuffer bb = null;
         if (outputDivaGrid) {
             bytes = new byte[4 * width];
-            ;
             bb = ByteBuffer.wrap(bytes);
             bb.order(ByteOrder.LITTLE_ENDIAN);
             bb.mark();
         }
 
-//        FileWriter fw = new FileWriter(outputDirectory + filename + ".asc");
-        bw.append("ncols " + width + "\n"
-                + "nrows " + height + "\n"
-                + "xllcorner " + bbox[0] + "\n"
-                + "yllcorner " + bbox[1] + "\n"
-                + "cellsize " + resolution + "\n"
-                + "NODATA_value -9999\n");
+        if(bw != null) {
+            bw.append("ncols " + width + "\n"
+                    + "nrows " + height + "\n"
+                    + "xllcorner " + bbox[0] + "\n"
+                    + "yllcorner " + bbox[1] + "\n"
+                    + "cellsize " + resolution + "\n"
+                    + "NODATA_value -9999\n");
+        }
 
         int[][] cRows = new int[gridSize][];
         double max = 0;
@@ -99,7 +159,6 @@ public class OccurrenceDensity {
             int[] oldRow = cRows[0];
             if (row == 0) {
                 for (int i = 0; i < gridSize; i++) {
-                    //System.out.println("getting bitset row " + (row + i) + " or " + height);
                     cRows[i] = getNextCountsRow(records, rowStarts, row + i, null);
                 }
             } else {
@@ -107,7 +166,6 @@ public class OccurrenceDensity {
                     if (i + 1 < cRows.length) {
                         cRows[i] = cRows[i + 1];
                     } else {
-                        //  System.out.println("getting bitset row " + (row + i) + " or " + height);
                         cRows[i] = getNextCountsRow(records, rowStarts, row + i, oldRow);
                     }
                 }
@@ -154,9 +212,7 @@ public class OccurrenceDensity {
 
                     if (bw != null) {
                         if (i > 0) {
-                            if (bw != null) {
-                                bw.append(" ");
-                            }
+                            bw.append(" ");
                         }
                         if (value == 0) {
                             bw.append("0");
@@ -173,7 +229,6 @@ public class OccurrenceDensity {
                 }
             }
             long end = System.currentTimeMillis();
-            //System.out.println("row " + row + " get=" + (t1 - start) + "ms, write=" + (end - t1) + "ms");
         }
 
         for (int i = 0; i < threadCount; i++) {
@@ -181,14 +236,21 @@ public class OccurrenceDensity {
         }
         if (bos != null) {
             bos.close();
+            DensityLayers.writeHeader(outputDirectory + filename + ".grd", resolution, height, width, bbox[0], bbox[1], bbox[2], bbox[3], 0, max, -1);
         }
         if (bw != null) {
             bw.close();
-        }
-
-        DensityLayers.writeHeader(outputDirectory + filename + ".grd", resolution, height, width, bbox[0], bbox[1], bbox[2], bbox[3], 0, max, -1);
+        }        
     }
 
+    /**
+     * Get grid cell counts for the next row.
+     * @param records
+     * @param rowStarts
+     * @param row
+     * @param counts
+     * @return 
+     */
     int[] getNextCountsRow(Records records, int[] rowStarts, int row, int[] counts) {
         //get count for each grid cell
         if (counts == null) {

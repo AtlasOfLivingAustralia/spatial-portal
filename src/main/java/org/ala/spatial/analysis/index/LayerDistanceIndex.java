@@ -1,6 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
  */
 package org.ala.spatial.analysis.index;
 
@@ -15,28 +24,41 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.ala.layers.client.Client;
-import org.ala.layers.dto.Layer;
 import org.ala.layers.intersect.Grid;
 import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.GridCutter;
 
 /**
+ * Generates inter layer association distances for analysis environmental grid
+ * files.
+ *
+ * Operates on layers-store prepared analysis grid files.
+ *
+ * Path to analysis grid files is set by layer.dir in alaspatial.properties.
  *
  * @author Adam
  */
 public class LayerDistanceIndex {
 
+    /**
+     * Filename of the layer distances store.
+     *
+     * Actual file is located in workingdir set in alaspatial.properties.
+     */
     final public static String LAYER_DISTANCE_FILE = "layerDistances.properties";
-    double[][] min;
-    double[][] max;
-    double[][] range;
-    static double[][] all_measures;
 
+    /**
+     *
+     * @param threadcount number of threads to run analysis.
+     * @param onlyThesePairs array of distances to run as fieldId1 + " " +
+     * fieldId2 where fieldId1.compareTo(fieldId2) &lt 0 or null for all missing
+     * distances.
+     * @throws InterruptedException
+     */
     public void occurrencesUpdate(int threadcount, String[] onlyThesePairs) throws InterruptedException {
 
+        //create distances file if it does not exist.
         File layerDistancesFile = new File(AlaspatialProperties.getAnalysisWorkingDir()
                 + LAYER_DISTANCE_FILE);
         if (!layerDistancesFile.exists()) {
@@ -46,14 +68,13 @@ public class LayerDistanceIndex {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
 
         Map<String, Double> map = loadDistances();
 
         LinkedBlockingQueue<String> todo = new LinkedBlockingQueue();
 
-        if (onlyThesePairs != null && onlyThesePairs.length == 0) {
+        if (onlyThesePairs != null && onlyThesePairs.length > 0) {
             for (String s : onlyThesePairs) {
                 todo.add(s);
             }
@@ -70,7 +91,7 @@ public class LayerDistanceIndex {
 
             HashMap<String, String> domains = new HashMap<String, String>();
             for (File dir : dirs) {
-                //iterate through files
+                //iterate through files so we get everything
                 File[] files = new File(dir.getPath()).listFiles(new FileFilter() {
 
                     @Override
@@ -84,28 +105,31 @@ public class LayerDistanceIndex {
                         String file1 = files[i].getName().replace(".grd", "");
                         String file2 = files[j].getName().replace(".grd", "");
 
-                        String domain1 = domains.get(file1);
-                        if(domain1 == null) {
-                            String pid1 = Client.getFieldDao().getFieldById(file1).getSpid();
-                            domain1 = Client.getLayerDao().getLayerById(Integer.parseInt(pid1)).getdomain();
-                            domains.put(file1, domain1);
-                        }
-                        String domain2 = domains.get(file2);
-                        if(domain2 == null) {
-                            String pid2 = Client.getFieldDao().getFieldById(file2).getSpid();
-                            domain2 = Client.getLayerDao().getLayerById(Integer.parseInt(pid2)).getdomain();
-                            domains.put(file2, domain2);
-                        }
+                        //only operate on file names that are valid fields
+                        if (Client.getFieldDao().getFieldById(file1) != null
+                                && Client.getFieldDao().getFieldById(file2) != null) {
 
-                        String key = (file1.compareTo(file2) < 0) ? file1 + " " + file2 : file2 + " " + file1;
-
-                        //domain test
-                        if (isSameDomain(parseDomain(domain1), parseDomain(domain2))) {
-                            if (!map.containsKey(key) && !todo.contains(key)) {
-                                todo.put(key);
+                            String domain1 = domains.get(file1);
+                            if (domain1 == null) {
+                                String pid1 = Client.getFieldDao().getFieldById(file1).getSpid();
+                                domain1 = Client.getLayerDao().getLayerById(Integer.parseInt(pid1)).getdomain();
+                                domains.put(file1, domain1);
                             }
-                        } else {
-                            System.out.println("differing domains: " + key);
+                            String domain2 = domains.get(file2);
+                            if (domain2 == null) {
+                                String pid2 = Client.getFieldDao().getFieldById(file2).getSpid();
+                                domain2 = Client.getLayerDao().getLayerById(Integer.parseInt(pid2)).getdomain();
+                                domains.put(file2, domain2);
+                            }
+
+                            String key = (file1.compareTo(file2) < 0) ? file1 + " " + file2 : file2 + " " + file1;
+
+                            //domain test
+                            if (isSameDomain(parseDomain(domain1), parseDomain(domain2))) {
+                                if (!map.containsKey(key) && !todo.contains(key)) {
+                                    todo.put(key);
+                                }
+                            }
                         }
                     }
                 }
@@ -113,7 +137,6 @@ public class LayerDistanceIndex {
         }
 
         LinkedBlockingQueue<String> toDisk = new LinkedBlockingQueue<String>();
-        //int threadcount = 4;
         CountDownLatch cdl = new CountDownLatch(todo.size());
         CalcThread[] threads = new CalcThread[threadcount];
         for (int i = 0; i < threadcount; i++) {
@@ -131,12 +154,15 @@ public class LayerDistanceIndex {
             threads[i].interrupt();
         }
 
-        //wait 10s and then close
-        //Thread.currentThread().wait(10*1000);
-
         toDiskThread.interrupt();
     }
 
+    /**
+     * Entry to start updating a specific or all missing layer distances.
+     *
+     * @param args
+     * @throws InterruptedException
+     */
     static public void main(String[] args) throws InterruptedException {
         System.out.println("args[0] = threadcount, e.g. 1");
         System.out.println("or");
@@ -153,6 +179,12 @@ public class LayerDistanceIndex {
         ldi.occurrencesUpdate(Integer.parseInt(args[0]), pairs);
     }
 
+    /**
+     * Get all available inter layer association distances.
+     *
+     * @return Map of all available distances as Map&ltString, Double&gt. The
+     * key String is fieldId1 + " " + fieldId2 where fieldId1 &lt fieldId2.
+     */
     static public Map<String, Double> loadDistances() {
         Map<String, Double> map = new ConcurrentHashMap<String, Double>();
         BufferedReader br = null;
@@ -188,17 +220,30 @@ public class LayerDistanceIndex {
         return map;
     }
 
-    static String [] parseDomain(String domain) {
-        if(domain == null || domain.length() == 0) {
+    /**
+     * Convert a domains string to a list of domains.
+     *
+     * @param domain comma separated domain list as String.
+     * @return array of domains as String [].
+     */
+    static String[] parseDomain(String domain) {
+        if (domain == null || domain.length() == 0) {
             return null;
         }
-        String [] domains = domain.split(",");
-        for(int i=0;i<domains.length;i++) {
+        String[] domains = domain.split(",");
+        for (int i = 0; i < domains.length; i++) {
             domains[i] = domains[i].trim();
         }
         return domains;
     }
 
+    /**
+     * Test if two domain arrays contain a common domain.
+     *
+     * @param domain1 list of domains as String []
+     * @param domain2 list of domains as String []
+     * @return true iff the domains overlap.
+     */
     static boolean isSameDomain(String[] domain1, String[] domain2) {
         if (domain1 == null || domain2 == null) {
             return true;
@@ -216,6 +261,7 @@ public class LayerDistanceIndex {
     }
 }
 
+// layer distance calculation thread.
 class CalcThread extends Thread {
 
     CountDownLatch cdl;
@@ -236,8 +282,8 @@ class CalcThread extends Thread {
 
                 try {
                     Double distance = calculateDistance(layers[0], layers[1]);
-                    System.out.println(key + "=" + distance);
                     toDisk.put(key + "=" + distance);
+                    System.out.println(key + "=" + distance);
                 } catch (Exception e) {
                     System.out.println(key + ":error");
                     e.printStackTrace(System.out);
@@ -249,6 +295,15 @@ class CalcThread extends Thread {
         }
     }
 
+    /**
+     * Calculate the distance between two layers. Default analysis layer
+     * resolution is used if available.
+     *
+     * @param layer1 fieldId of the first layer to compare as String.
+     * @param layer2 fieldId of the second layer to compare as String.
+     * @return distance between the two layers as Double in the range &gt= 0 and
+     * &lt=1.
+     */
     private Double calculateDistance(String layer1, String layer2) {
         Grid g1 = Grid.getGridStandardized(GridCutter.getLayerPath(AlaspatialProperties.getLayerResolutionDefault(), layer1));
         Grid g2 = Grid.getGridStandardized(GridCutter.getLayerPath(AlaspatialProperties.getLayerResolutionDefault(), layer2));
@@ -280,6 +335,7 @@ class CalcThread extends Thread {
     }
 }
 
+//appends to the LayerDistanceIndex.LAYER_DISTANCE_FILE file.
 class ToDiskThread extends Thread {
 
     String filename;
@@ -297,14 +353,26 @@ class ToDiskThread extends Thread {
             try {
                 while (true) {
                     String s = toDisk.take();
-                    fw.append(s);
-                    fw.append("\n");
+                    fw.append(s + "\n");
                     fw.flush();
                 }
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
+                //This is expected to occur after all distances are
+                //calculated and the calling of interrupt.  
+                //Might as well attempt to finish up.
+                try {
+                    while (toDisk.size() > 0) {
+                        String s = toDisk.take();
+                        fw.append(s + "\n");
+                        fw.flush();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
             }
         } catch (IOException ex) {
-            Logger.getLogger(ToDiskThread.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
         } finally {
             if (fw != null) {
                 try {

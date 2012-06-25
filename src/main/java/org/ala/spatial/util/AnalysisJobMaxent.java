@@ -1,6 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
  */
 package org.ala.spatial.util;
 
@@ -228,7 +237,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
                                 paramlist += "<li>Classification (" + envnameslist[ei].split("_")[1] + ")</li>";
                             } else {
                                 paramlist += "<li>" + envnameslist[ei] + "</li>";
-                            }                            
+                            }
                         }
                     }
                     paramlist += "</ul>";
@@ -250,7 +259,9 @@ public class AnalysisJobMaxent extends AnalysisJob {
                         if (msets.getEnvVarToggler().length() > 0) {
                             sbTable.append("<pre>");
                             for (String ctx : ctxlist) {
-                                if (ctx.startsWith("aloc_")) continue; 
+                                if (ctx.startsWith("aloc_")) {
+                                    continue;
+                                }
                                 sbTable.append("<span style='font-weight: bold; text-decoration: underline'>" + ctx + " legend</span><br />");
                                 //sbTable.append(IOUtils.toString(new FileInputStream(/*TabulationSettings.environmental_data_path + ctx + ".txt"*/"")));
                                 sbTable.append(IOUtils.toString(new FileInputStream(GridCutter.getLayerPath(resolution, ctx) + ".txt")));

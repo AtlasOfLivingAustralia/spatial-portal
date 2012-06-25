@@ -1,24 +1,32 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.util;
 
-import au.com.bytecode.opencsv.CSVReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 
 /**
- * Connects to the appropriate citation service and gets
- * the citation details to be included with the samples download
- * 
+ * Connects to the appropriate citation service and gets the citation details to
+ * be included with the samples download
+ *
  * @author ajay
  */
 public class CitationService {
@@ -50,10 +58,10 @@ public class CitationService {
                     for (Iterator ekeys = params.keySet().iterator(); ekeys.hasNext();) {
                         String key = (String) ekeys.next();
                         String value = (String) params.get(key);
-                        sbParams.append(value); 
+                        sbParams.append(value);
                     }
 
-                    RequestEntity entity = new StringRequestEntity(sbParams.toString(),"text/plain", "UTF-8");
+                    RequestEntity entity = new StringRequestEntity(sbParams.toString(), "text/plain", "UTF-8");
                     post.setRequestEntity(entity);
                 }
             }
@@ -73,6 +81,7 @@ public class CitationService {
     public static void generatePredictionReadme(String outputdir, String pointsfile) {
         generatePredictionReadme(new File(outputdir), pointsfile);
     }
+
     public static void generatePredictionReadme(File fDir, String pointsfile) {
         try {
             StringBuilder sbReadme = new StringBuilder();
@@ -108,6 +117,7 @@ public class CitationService {
     public static void generateClassificationReadme(String outputdir, String gridName) {
         generateClassificationReadme(new File(outputdir), gridName);
     }
+
     public static void generateClassificationReadme(File fDir, String gridName) {
         try {
             StringBuilder sbReadme = new StringBuilder();
@@ -135,17 +145,18 @@ public class CitationService {
     public static void generateSitesBySpeciesReadme(String outputdir, boolean sitesBySpecies, boolean occurrenceDensity, boolean speciesRichness) {
         generateSitesBySpeciesReadme(new File(outputdir), sitesBySpecies, occurrenceDensity, speciesRichness);
     }
+
     public static void generateSitesBySpeciesReadme(File fDir, boolean sitesBySpecies, boolean occurrenceDensity, boolean speciesRichness) {
         try {
             StringBuilder sbReadme = new StringBuilder();
 
-            if(sitesBySpecies) {
+            if (sitesBySpecies) {
                 sbReadme.append("SitesBySpecies.csv             Sites by species output csv.").append(NEW_LINE);
                 sbReadme.append("sxs_metadata.html              Sites by species metadata").append(NEW_LINE);
                 sbReadme.append(NEW_LINE);
             }
 
-            if(occurrenceDensity) {
+            if (occurrenceDensity) {
                 sbReadme.append("occurrence_density.asc         Occurrence density layer as ESRI ASCII").append(NEW_LINE);
                 sbReadme.append("occurrence_density.grd         Occurrence density layer as Diva grid file header").append(NEW_LINE);
                 sbReadme.append("occurrence_density.gri         Occurrence density layer as Diva grid file").append(NEW_LINE);
@@ -156,7 +167,7 @@ public class CitationService {
                 sbReadme.append("odensity_metadata.html         Occurrence density layer metadata").append(NEW_LINE);
                 sbReadme.append(NEW_LINE);
             }
-            if(speciesRichness) {
+            if (speciesRichness) {
                 sbReadme.append("species_richness.asc           Species richness layer as ESRI ASCII").append(NEW_LINE);
                 sbReadme.append("species_richness.grd           Species richness layer as Diva grid file header").append(NEW_LINE);
                 sbReadme.append("species_richness.gri           Species richness layer as Diva grid file").append(NEW_LINE);

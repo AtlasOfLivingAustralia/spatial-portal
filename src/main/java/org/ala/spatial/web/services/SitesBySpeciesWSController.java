@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.web.services;
 
 import java.io.File;
@@ -15,15 +28,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- *
+ * Sites by species webservices.
+ * 
  * @author ajay
  */
 @Controller
 public class SitesBySpeciesWSController {
 
     @RequestMapping(value = "/ws/sitesbyspecies", method = RequestMethod.POST)
-    public
-    @ResponseBody
+    public @ResponseBody
     String processgeoq(HttpServletRequest req) {
 
         try {
@@ -75,7 +88,6 @@ public class SitesBySpeciesWSController {
             return pid;
 
         } catch (Exception e) {
-            System.out.println("Error processing SitesBySpecies request:");
             e.printStackTrace(System.out);
         }
 
@@ -83,8 +95,7 @@ public class SitesBySpeciesWSController {
     }
 
     @RequestMapping(value = "/ws/sitesbyspecies/estimate", method = RequestMethod.POST)
-    public
-    @ResponseBody
+    public @ResponseBody
     String processgeoqEstimate(HttpServletRequest req) {
 
         try {
@@ -133,10 +144,9 @@ public class SitesBySpeciesWSController {
             sbs.setInputs(inputs.toString());
             //AnalysisQueue.addJob(sbs);
 
-            return String.valueOf(sbs.getEstimate()); 
+            return String.valueOf(sbs.getEstimate());
 
         } catch (Exception e) {
-            System.out.println("Error processing SitesBySpecies request:");
             e.printStackTrace(System.out);
         }
 

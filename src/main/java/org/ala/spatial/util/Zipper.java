@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.util;
 
 import java.io.BufferedOutputStream;
@@ -15,8 +28,7 @@ import java.util.zip.ZipOutputStream;
 import org.ala.layers.intersect.Grid;
 
 /**
- * Zipper helper class to zip up files.
- * Quick zipper helper class
+ * Zipper helper class to zip up files. Quick zipper helper class
  *
  * @author ajay
  */
@@ -34,8 +46,8 @@ public class Zipper {
     }
 
     /**
-     * zipFile method for zipping a single file. Output filename generated
-     * based on the input file
+     * zipFile method for zipping a single file. Output filename generated based
+     * on the input file
      *
      * @param infile Input file to be zipped
      * @return Output zipped filename
@@ -149,7 +161,8 @@ public class Zipper {
      * @param name Name of the file without the path
      * @param data InputStream data
      * @param basepath String path where the file will be unzipped to
-     * @param createDirectory If the unzipped file should be unzipped into it's own folder or the base folder
+     * @param createDirectory If the unzipped file should be unzipped into it's
+     * own folder or the base folder
      * @return
      */
     public static boolean unzipFile(String name, InputStream data, String basepath, boolean createDirectory) {
@@ -190,7 +203,6 @@ public class Zipper {
     }
 
     public static void cleanUpZip(String zipfile, String[] deleteFiles, String[] renameFile) {
-        
     }
 
     private static void copyInputStream(InputStream in, OutputStream out) throws IOException, Exception {
@@ -214,11 +226,11 @@ public class Zipper {
      */
     public static void main(String[] args) {
         /*
-        String infile = "/Users/ajay/projects/ala/code/alageospatialportal/alaspatial/target/ala-spatial-1.0-SNAPSHOT/output/maxent/F3F24BCAEE7732FBD6D93E21A4B65E81/species.asc";
-        String outfile = "";
-
-        outfile = zipFile(infile);
-        System.out.println("outfile: " + outfile);
+         * String infile =
+         * "/Users/ajay/projects/ala/code/alageospatialportal/alaspatial/target/ala-spatial-1.0-SNAPSHOT/output/maxent/F3F24BCAEE7732FBD6D93E21A4B65E81/species.asc";
+         * String outfile = "";
+         *
+         * outfile = zipFile(infile); System.out.println("outfile: " + outfile);
          *
          */
 

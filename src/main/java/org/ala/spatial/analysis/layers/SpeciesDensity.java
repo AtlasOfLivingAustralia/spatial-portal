@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.analysis.layers;
 
 import java.io.BufferedOutputStream;
@@ -12,17 +25,43 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
+ * Produce a species richness layer with a moving average.
+ *
+ * Output is diva grid and/or ascii grid.
+ *
+ * Construct then run .write
  *
  * @author Adam
  */
 public class SpeciesDensity {
 
+    /**
+     * all occurrence records for this occurrence density grid.
+     */
     Records records;
+    /**
+     * gridSize is (moving average-1)/2.
+     */
     int gridSize;
+    /**
+     * output grid resolution as decimal degrees.
+     */
     double resolution;
+    /**
+     * output grid bounds as xmin,ymin,xmax,ymax.
+     */
     double[] bbox;
+    /**
+     * output grid dimensions.
+     */
     int width, height;
 
+    /**
+     *
+     * @param gridSize this is (moving average - 1) / 2 as int.
+     * @param resolution output grid resolution as double in decimal degrees.
+     * @param bbox output grid bounds xmin,ymin,xmax,ymax as double [].
+     */
     public SpeciesDensity(int gridSize, double resolution, double[] bbox) {
         this.gridSize = gridSize;
         this.resolution = resolution;
@@ -32,22 +71,45 @@ public class SpeciesDensity {
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
+    /**
+     *
+     * @param gridSize
+     */
     void setGridSize(int gridSize) {
         this.gridSize = gridSize;
     }
 
+    /**
+     *
+     * @param resolution
+     */
     void setResolution(double resolution) {
         this.resolution = resolution;
         width = (int) ((bbox[2] - bbox[0]) / resolution);
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
+    /**
+     *
+     * @param bbox
+     */
     void setBBox(double[] bbox) {
         this.bbox = bbox;
         width = (int) ((bbox[2] - bbox[0]) / resolution);
         height = (int) ((bbox[3] - bbox[1]) / resolution);
     }
 
+    /**
+     * Generate and write the species richness grid.
+     *
+     * @param records all occurrence records for this density grid as Records.
+     * @param outputDirectory path to output directory as String.
+     * @param filename output filename as String. No file extentions.
+     * @param threadCount number of threads to use during calculations as int.
+     * @param outputDivaGrid true to write a diva grid, as boolean.
+     * @param outputASC true to write an ascii grid, as boolean.
+     * @throws IOException
+     */
     public void write(Records records, String outputDirectory, String filename, int threadCount, boolean outputDivaGrid, boolean outputASC) throws IOException {
         if (filename == null) {
             filename = "_species_density_av_" + gridSize + "x" + gridSize + "_" + String.valueOf(resolution).replace(".", "");
@@ -63,7 +125,6 @@ public class SpeciesDensity {
             bos = new BufferedOutputStream(new FileOutputStream(outputDirectory + filename + ".gri"));
         }
 
-//        RandomAccessFile raf = new RandomAccessFile(outputDirectory + filename + ".gri", "rw");
         byte[] bytes = null;
         ByteBuffer bb = null;
         if (outputDivaGrid) {
@@ -73,13 +134,14 @@ public class SpeciesDensity {
             bb.mark();
         }
 
-//        FileWriter fw = new FileWriter(outputDirectory + filename + ".asc");
-        bw.append("ncols " + width + "\n"
-                + "nrows " + height + "\n"
-                + "xllcorner " + bbox[0] + "\n"
-                + "yllcorner " + bbox[1] + "\n"
-                + "cellsize " + resolution + "\n"
-                + "NODATA_value -9999\n");
+        if (bw != null) {
+            bw.append("ncols " + width + "\n"
+                    + "nrows " + height + "\n"
+                    + "xllcorner " + bbox[0] + "\n"
+                    + "yllcorner " + bbox[1] + "\n"
+                    + "cellsize " + resolution + "\n"
+                    + "NODATA_value -9999\n");
+        }
 
         int uniqueSpeciesCount = records.getSpeciesSize();
 
@@ -97,10 +159,7 @@ public class SpeciesDensity {
 
         int[] rowStarts = records.sortedRowStarts(bbox[1], height, resolution);
 
-        System.out.println("thread count = " + threadCount);
-        System.out.println("Memory usage (total/used/free):" + (Runtime.getRuntime().totalMemory() / 1024 / 1024) + "MB / " + (Runtime.getRuntime().totalMemory() / 1024 / 1024 - Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB / " + (Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB");
         for (int row = 0; row < height; row++) {
-            long start = System.currentTimeMillis();
             //get data
             BitSet[] oldBs = bsRows[0];
             for (int i = 0; i < gridSize; i++) {
@@ -116,7 +175,6 @@ public class SpeciesDensity {
                     }
                 }
             }
-            long t1 = System.currentTimeMillis();
 
             //calculate and write data
             int startRow = (row == 0) ? 0 : row + gridSize / 2; //gridSize is odd
@@ -145,7 +203,6 @@ public class SpeciesDensity {
                     cdl.await();
                 } catch (InterruptedException e) {
                 }
-                long t2 = System.currentTimeMillis();
 
                 //write this row
                 for (int i = 0; i < width; i++) {
@@ -177,9 +234,6 @@ public class SpeciesDensity {
                 if (bw != null) {
                     bw.append("\n");
                 }
-
-                long end = System.currentTimeMillis();
-                //System.out.println("row " + currentRow + " get=" + (t1 - start) + "ms, calc=" + (t2-t1) + "ms, write=" + (end - t2) + "ms");
             }
         }
 
@@ -188,14 +242,23 @@ public class SpeciesDensity {
         }
         if (bos != null) {
             bos.close();
+            DensityLayers.writeHeader(outputDirectory + filename + ".grd", resolution, height, width, bbox[0], bbox[1], bbox[2], bbox[3], 0, max, gridSize);
         }
         if (bw != null) {
             bw.close();
         }
-
-        DensityLayers.writeHeader(outputDirectory + filename + ".grd", resolution, height, width, bbox[0], bbox[1], bbox[2], bbox[3], 0, max, gridSize);
     }
 
+    /**
+     * Get grid cell species lists for the next row.
+     *
+     * @param records
+     * @param rowStarts
+     * @param row
+     * @param uniqueSpeciesCount
+     * @param bs
+     * @return
+     */
     BitSet[] getNextBitSetRow(Records records, int[] rowStarts, int row, int uniqueSpeciesCount, BitSet[] bs) {
         //translate into bitset for each grid cell
         if (bs == null) {

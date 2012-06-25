@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.web.services;
 
 import java.io.File;
@@ -20,15 +33,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
+ * Envelope webservices.
  *
  * @author ajay
  */
 @Controller
 public class EnvelopeWSController {
 
-    @RequestMapping(value = "/ws/envelope", method = { RequestMethod.POST, RequestMethod.GET })
-    public
-    @ResponseBody
+    @RequestMapping(value = "/ws/envelope", method = {RequestMethod.POST, RequestMethod.GET})
+    public @ResponseBody
     String envelope(HttpServletRequest req) {
         try {
             String currentPath = AlaspatialProperties.getBaseOutputDir();
@@ -40,11 +53,11 @@ public class EnvelopeWSController {
             }
 
             LayerFilter[] filter = null;
-            if (area != null /* && area.startsWith("ENVELOPE")*/) {
+            if (area != null /*
+                     * && area.startsWith("ENVELOPE")
+                     */) {
                 filter = LayerFilter.parseLayerFilters(area);
             }
-
-            System.out.println("filter: " + filter);
 
             //test envelope
             if (!GridCutter.isValidLayerFilter(resolution, filter)) {
@@ -105,7 +118,6 @@ public class EnvelopeWSController {
         Zipper.zipFiles(infiles, ascZipFile);
 
         // Upload the file to GeoServer using REST calls
-        System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
         UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
 
         //Apply style

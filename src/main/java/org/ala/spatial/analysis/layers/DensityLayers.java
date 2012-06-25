@@ -1,3 +1,16 @@
+/**
+ * ************************************************************************
+ * Copyright (C) 2010 Atlas of Living Australia All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * *************************************************************************
+ */
 package org.ala.spatial.analysis.layers;
 
 import java.io.File;
@@ -6,6 +19,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
+ * Generate occurrence density and species richness layers.
+ * 
+ * Outputs are diva grids.
  *
  * @author Adam
  */
@@ -43,6 +59,8 @@ public class DensityLayers {
             bbox[2] = Double.parseDouble(sbbox[2]);
             bbox[3] = Double.parseDouble(sbbox[3]);
 
+            // load up the reference existing records file, or generate a new 
+            // one if it does not exist.
             String recordsFile = args[1] + "_records.csv";
             Records records = null;
             if (new File(recordsFile).exists()) {
@@ -78,7 +96,6 @@ public class DensityLayers {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        printUsage();
     }
 
     static void printUsage() {
@@ -90,6 +107,21 @@ public class DensityLayers {
                 + "args[5] = max threads, e.g. 1");
     }
 
+    /**
+     * Write the header for a diva grid file.
+     *
+     * @param filename
+     * @param resolution
+     * @param nrows
+     * @param ncols
+     * @param minx
+     * @param miny
+     * @param maxx
+     * @param maxy
+     * @param minvalue
+     * @param maxvalue
+     * @param nodatavalue
+     */
     static void writeHeader(String filename, double resolution, int nrows, int ncols, double minx, double miny, double maxx, double maxy, double minvalue, double maxvalue, double nodatavalue) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
@@ -97,7 +129,7 @@ public class DensityLayers {
             FileWriter fw = new FileWriter(filename);
             fw.append("[General]\nCreator=alaspatial\nCreated=" + sdf.format(new Date()) + "\nTitle=" + file.getName() + "\n\n");
 
-            fw.append("[GeoReference]\nProjection=\nDatum=nMapunits=\nColumns=" + ncols
+            fw.append("[GeoReference]\nProjection=\nDatum=\nMapunits=\nColumns=" + ncols
                     + "\nRows=" + nrows + "\nMinX=" + minx + "\nMaxX=" + maxx
                     + "\nMinY=" + miny + "\nMaxY=" + maxy + "\nResolutionX=" + resolution
                     + "\nResolutionY=" + resolution + "\n\n");
