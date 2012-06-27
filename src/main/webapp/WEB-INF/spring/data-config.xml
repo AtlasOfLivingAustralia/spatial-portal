@@ -14,26 +14,6 @@
                           proxy-target-class="true" />
 
     <!-- DataSourceAdapter connection pooling -->
-    <!--
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
-        <property name="driverClassName" value="org.postgresql.Driver" />
-        <property name="url" value="jdbc:postgresql://localhost/layersdb:5432" />
-        <property name="username" value="postgres" />
-        <property name="password" value="P0stgres" />
-        <property name="minIdle" value="1" />
-        <property name="maxActive" value="10" />
-    </bean>
-    -->
-    <!--
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
-        <property name="driverClassName" value="org.postgresql.Driver" />
-        <property name="url" value="jdbc:postgresql://ala-devmaps.vm.csiro.au/layersdb:5432" />
-        <property name="username" value="postgres" />
-        <property name="password" value="postgres" />
-        <property name="minIdle" value="1" />
-        <property name="maxActive" value="10" />
-    </bean>
-    -->
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
 				destroy-method="close"
 				p:driverClass="org.postgresql.Driver"
@@ -46,7 +26,7 @@
 				p:maxStatements="10"
 				p:minPoolSize="4" />
 
-    <!--
+                <!--
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.simple.SimpleJdbcTemplate">
         <property name="dataSource" ref="dataSource"/>
     </bean>

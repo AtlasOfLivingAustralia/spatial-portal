@@ -16,6 +16,7 @@
 package org.ala.layers.web;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import java.security.Principal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -25,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.ala.layers.dao.LayerDAO;
 import org.ala.layers.dto.Layer;
 import org.apache.log4j.Logger;
+import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -109,9 +111,37 @@ public class LayersAdminService {
      * @return
      */
     @RequestMapping(value = "/layers/view", method = RequestMethod.GET)
-    public ModelAndView viewLayers() {
+    public ModelAndView viewLayers(HttpServletRequest req) {
         logger.info("Retriving all layers");
+//        
+//        System.out.println("**************************************");
+//        System.out.println("      Authentication details ");
+//        System.out.println("**************************************");
+//        String useremail = "guest@ala.org.au";
+//        if (req.getUserPrincipal() != null) {
+//            Principal principal = req.getUserPrincipal();
+//            if (principal instanceof AttributePrincipal) {
+//                AttributePrincipal ap = (AttributePrincipal) principal;
+//                System.out.println("ap: " + ap.getAttributes().toString());
+//                useremail = (String) ap.getAttributes().get("email");
+//            } else {
+//                System.out.println("principal.class: " + principal.getClass().getCanonicalName());
+//                useremail = principal.getName();
+//            }
+//        } else {
+//            System.out.println("req.getUserPrincipal is NULL");
+//        }
+//        System.out.println("**************************************");
+//        
+//        
         return new ModelAndView("layers/index", "layers", layerDao.getLayers());
+//        String useremail = AuthenticationUtil.getUserEmail(req);
+//        ModelAndView mv = new ModelAndView("layers/index");
+//        mv.addObject("layers", layerDao.getLayers());
+//        mv.addObject("useremail", useremail);
+//        mv.addObject("isAdmin",AuthenticationUtil.isUserAdmin(req));
+//        
+//        return mv;
     }
 
     /**
