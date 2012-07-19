@@ -1327,7 +1327,7 @@ public class BiocacheQuery implements Query, Serializable {
             }
         }
 
-        html += "<tr class='" + lastClass + "'><td class='md_th' colspan=3><a href='" + biocacheWebServer + "/occurrences/search?q=" + getQ() + "' target='_blank'>view records in biocache</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
+        html += "<tr class='" + lastClass + "'><td class='md_th' colspan=3><a href='" + biocacheWebServer + "/occurrences/search?q=" + getQ() + "' target='_blank'>Table view of these records</a></td><td class='md_spacer'/><td class='md_value'></td></tr>";
         html += "</table>";
 
         return html;
