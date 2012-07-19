@@ -940,8 +940,8 @@ public class BiocacheQuery implements Query, Serializable {
         if (facetFieldList == null) {
             ArrayList<QueryField> fields = new ArrayList<QueryField>();
             // Taxonomic
-            fields.add(new QueryField("taxon_name", "Scientific Name", QueryField.FieldType.STRING));
-            fields.add(new QueryField("raw_taxon_name", "Scientific Name (unprocessd)", QueryField.FieldType.STRING));
+            fields.add(new QueryField("taxon_name", "Scientific name", QueryField.FieldType.STRING));
+            fields.add(new QueryField("raw_taxon_name", "Scientific name (unprocessed)", QueryField.FieldType.STRING));
             fields.add(new QueryField("subspecies_name", "Subspecies", QueryField.FieldType.STRING));
             //fields.add(new QueryField("species", "Species", QueryField.FieldType.STRING));
             fields.add(new QueryField("genus", "Genus", QueryField.FieldType.STRING));
@@ -951,19 +951,19 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("phylum", "Phylum", QueryField.FieldType.STRING));
             fields.add(new QueryField("kingdom", "Kingdom", QueryField.FieldType.STRING));
             fields.add(new QueryField("species_group", "Lifeform", QueryField.FieldType.STRING));
-            fields.add(new QueryField("rank", "Identified to Rank", QueryField.FieldType.STRING));
-            fields.add(new QueryField("interaction", "Species Interaction", QueryField.FieldType.INT));
+            fields.add(new QueryField("rank", "Identified to rank", QueryField.FieldType.STRING));
+            fields.add(new QueryField("interaction", "Species interaction", QueryField.FieldType.INT));
             // Geospatial
-            fields.add(new QueryField("coordinate_uncertainty", "Spatial Uncertainty(m)", QueryField.FieldType.INT));
+            fields.add(new QueryField("coordinate_uncertainty", "Spatial uncertainty(m)", QueryField.FieldType.INT));
             fields.add(new QueryField("sensitive", "Sensitive", QueryField.FieldType.STRING));
-            fields.add(new QueryField("state_conservation", "State Conservation Status", QueryField.FieldType.STRING));
-            fields.add(new QueryField("raw_state_conservation", "State Conservation (unprocessed)", QueryField.FieldType.STRING));
-            fields.add(new QueryField("places", "LGA Boundaries", QueryField.FieldType.STRING));
+            fields.add(new QueryField("state_conservation", "State conservation status", QueryField.FieldType.STRING));
+            fields.add(new QueryField("raw_state_conservation", "State conservation (unprocessed)", QueryField.FieldType.STRING));
+            fields.add(new QueryField("places", "LGA boundaries", QueryField.FieldType.STRING));
             fields.add(new QueryField("state", "Australian States and Territories", QueryField.FieldType.STRING));
-            fields.add(new QueryField("country", "Country Boundaries", QueryField.FieldType.STRING));
-            fields.add(new QueryField("ibra", "IBRA Regions", QueryField.FieldType.STRING));
-            fields.add(new QueryField("imcra", "IMCRA Regions", QueryField.FieldType.STRING));
-            fields.add(new QueryField("cl918", "Dynamic Land Cover", QueryField.FieldType.STRING));
+            fields.add(new QueryField("country", "Country boundaries", QueryField.FieldType.STRING));
+            fields.add(new QueryField("ibra", "IBRA regions", QueryField.FieldType.STRING));
+            fields.add(new QueryField("imcra", "IMCRA regions", QueryField.FieldType.STRING));
+            fields.add(new QueryField("cl918", "Dynamic land cover", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl617", "Vegetation types - native", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl620", "Vegetation types - present", QueryField.FieldType.STRING));
             //fields.add(new QueryField("geospatial_kosher", "Location Quality", QueryField.FieldType.STRING));
@@ -973,13 +973,13 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("year", "Year (by highest counts)", QueryField.FieldType.STRING));
             fields.add(new QueryField("occurrence_year_decade", "Decade", QueryField.FieldType.STRING));
             // Record details
-            fields.add(new QueryField("basis_of_record", "Record Type", QueryField.FieldType.STRING));
-            fields.add(new QueryField("type_status", "Specimen Type", QueryField.FieldType.STRING));
+            fields.add(new QueryField("basis_of_record", "Record type", QueryField.FieldType.STRING));
+            fields.add(new QueryField("type_status", "Specimen type", QueryField.FieldType.STRING));
             fields.add(new QueryField("multimedia", "Multimedia", QueryField.FieldType.STRING));
             fields.add(new QueryField("collector", "Collector", QueryField.FieldType.STRING));
             // Attribution
             fields.add(new QueryField("data_resource", "Dataset", QueryField.FieldType.STRING));
-            fields.add(new QueryField("data_provider", "Data Provider", QueryField.FieldType.STRING));
+            fields.add(new QueryField("data_provider", "Data provider", QueryField.FieldType.STRING));
             fields.add(new QueryField("collection_name", "Collection", QueryField.FieldType.STRING));
             //fields.add(new QueryField("collection_uid", "Collection", QueryField.FieldType.STRING));
             fields.add(new QueryField("institution_name", "Institution", QueryField.FieldType.STRING));
@@ -987,9 +987,11 @@ public class BiocacheQuery implements Query, Serializable {
             //fields.add(new QueryField("institution_uid", "Institution", QueryField.FieldType.STRING));
             // Record Assertions
             fields.add(new QueryField("assertions", "Record Issues", QueryField.FieldType.STRING));
-            fields.add(new QueryField("outlier_layer", "Outlier for Layer", QueryField.FieldType.STRING));
-            fields.add(new QueryField("outlier_layer_count", "Outlier Layer Count", QueryField.FieldType.STRING));
-            fields.add(new QueryField("taxonomic_issue", "Taxon Identification Issue", QueryField.FieldType.STRING));
+            fields.add(new QueryField("outlier_layer", "Outlier for layer", QueryField.FieldType.STRING));
+            fields.add(new QueryField("outlier_layer_count", "Outlier layer count", QueryField.FieldType.STRING));
+            fields.add(new QueryField("taxonomic_issue", "Taxon identification issue", QueryField.FieldType.STRING));
+            fields.add(new QueryField("establishment_means", "Cultivation status", QueryField.FieldType.STRING));            
+            fields.add(new QueryField("duplicate_status", "Duplicate status", QueryField.FieldType.STRING));            
 
             //fields.add(new QueryField("biogeographic_region", "Biogeographic Region", QueryField.FieldType.STRING));
             //fields.add(new QueryField("species_guid", "Species", QueryField.FieldType.STRING));
