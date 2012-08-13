@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="au.org.emii.portal.wms">
+  <class lazy="false" name="WMSStyle">
+    <id name="id" type="long">
+      <column name="id"/>
+      <generator class="sequence">
+        <param name="sequence">userdata_id_seq</param>
+      </generator>
+    </id>
+    <property name="maplayerid" type="long">
+      <column name="maplayerid"/>
+    </property>
+    <property name="name" type="string">
+      <column name="name"/>
+    </property>
+    <property name="title" type="string">
+      <column name="title"/>
+    </property>
+    <property name="description" type="string">
+      <column name="description"/>
+    </property>
+    <property name="legendUri" type="string">
+      <column name="legendUri"/>
+    </property>
+    <property name="legendFormat" type="string">
+      <column name="legendFormat"/>
+    </property>
+  </class>
+</hibernate-mapping>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated Dec 17, 2009 1:45:04 PM by Hibernate Tools 3.2.1.GA -->
+<hibernate-mapping>
+  <class lazy="false" name="au.org.emii.portal.servlet.WorldDepth" schema="bathy" table="world_depth">
+    <id name="id" type="long">
+      <column name="id"/>
+      <generator class="assigned"/>
+    </id>
+    <property name="longitude" type="java.lang.Double">
+      <column name="longitude" precision="17" scale="17"/>
+    </property>
+    <property name="latitude" type="java.lang.Double">
+      <column name="latitude" precision="17" scale="17"/>
+    </property>
+    <property name="depth" type="integer">
+      <column name="depth"/>
+    </property>
+    <property name="geom" type="serializable">
+      <column name="geom"/>
+    </property>
+  </class>
+</hibernate-mapping>

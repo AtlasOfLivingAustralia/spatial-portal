@@ -1,0 +1,104 @@
+
+
+<?page id="portalMsgZul" title="ALA Spatial Portal" cacheable="false"
+	language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"?>
+<?link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"?>
+
+<zk xmlns="http://www.zkoss.org/2005/zul" xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+
+
+	<script src="/scripts/jquery-1.2.6.min.js" type="text/javascript"></script>
+
+
+
+
+	<window id="mapPortalPage" width="100%" height="100%">
+		<div id="rawMessageHackHolder" visible="false">
+			<iframe id="rawMessageIframeHack" width="100%" height="250px" />
+		</div>
+
+		<borderlayout width="100%">
+			<north id="header" height="100">
+
+				<div>
+					<!--  static menu links -->
+					<div sclass="toplinks">
+						<!-- zk forEach="${session.attributes.portalSession.staticMenuLinks}">
+
+							<toolbarbutton if="${each.external}" label="${each.name}"
+								tooltiptext="${each.description}" zclass="leftmenu_ahref" href="${each.uri}" />
+
+							<toolbarbutton if="${! each.external}" label="${each.name}"
+								tooltiptext="${each.description}" zclass="leftmenu_ahref"
+								forward="onClick=onActivateLink()">
+								<custom-attributes link="${each}" />
+							</toolbarbutton>
+
+						</zk -->
+						
+						
+					</div>
+				</div>
+			</north>
+			
+
+
+			<center id="center"  >
+				<div sclass="msgcenter" >
+				<div style="width:400px">
+				<label value="Sorry, your session has timed out." sclass="h1" /><separator height="20px"/>
+				
+
+
+<separator height="20px"/>
+				<button label="RELOAD PORTAL"  href="./" />
+				</div>
+				
+				</div>	
+			</center>
+
+
+			<south id="footer">
+				<html><![CDATA[ 	       
+	<span id="ft">
+	<p><a href="http://www.ala.org.au" title="Atlas of Living Australia">ALA</a> is supported by the Australian Government through the
+	<a href="http://www.innovation.gov.au/Section/AboutDIISR/FactSheets/Pages/NationalCollaborativeResearchInfrastructureStrategy(NCRIS)FactSheet.aspx">
+	National Collaborative Research Infrastructure Strategy</a>
+	and the Super Science Initiative.<BR />
+	</p></span>        ]]></html>
+
+			</south>
+		</borderlayout>
+
+		
+
+
+	</window>
+
+	<style>		
+		.z-center-body {	
+			background-color: #375b7b;
+			border: 0px solid #ccc !important;
+		}
+		.msgcenter  {
+			background: white;
+			margin: 0px 30px;
+			height: 100%;
+			padding: 20px;
+		}
+	</style>
+	<style>
+		.z-north {
+			background: #375c79 url(img/portal-logo.jpg) no-repeat top left;
+			height: 100px;
+		}
+		.z-south {
+			background: url(img/body.png) top left;
+		}
+	</style>
+	<style src="css/zkcomponents.css" />
+</zk>
+
+

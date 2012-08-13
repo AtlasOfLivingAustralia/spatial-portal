@@ -1,0 +1,12 @@
+<language-addon>
+    <language-name>xul/html</language-name>
+    <addon-name>myapp</addon-name>
+    <component>
+        <component-name>button</component-name>
+        <extends>button</extends>
+        <property>
+            <property-name>autodisable</property-name>
+            <property-value>self</property-value>
+        </property>
+    </component>
+</language-addon>

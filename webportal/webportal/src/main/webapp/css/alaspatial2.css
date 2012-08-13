@@ -1,0 +1,24 @@
+/* 
+    Document   : alaspatial21
+    Created on : Oct 26, 2010, 5:03:56 PM
+    Author     : ajay
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+body {
+    color: #01716e;
+}
+
+.z-tabs-cnt {
+    color: #fff;
+}
+
+.z-tab .z-tab-text {
+    color: #fff;
+}
+
+.z-tabs-left-scroll, .z-tabs-right-scroll {
+    color: #01716e;
+}
+
