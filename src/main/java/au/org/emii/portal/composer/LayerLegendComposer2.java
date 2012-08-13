@@ -98,7 +98,9 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     Button btnAnimationStart;
     Button btnAnimationStop;
     Intbox intAnimationStep;
-    Label lblAnimationLabel;
+    Intbox intAnimationYearStart;
+    Intbox intAnimationYearEnd;
+    //Label lblAnimationLabel;
     Doublebox dblAnimationSeconds;
 
     @Override
@@ -814,13 +816,8 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
             mapLayer.setData("animation_step", step);
             mapLayer.setData("animation_interval", interval);
 
-            Integer start = 1;
-            Integer end =  12;
-            if(monthOrYear == 1){
-                start = (Integer) mapLayer.getData("first_year");
-                end =  (Integer) mapLayer.getData("last_year");
-            }
-
+            Integer start = (Integer) intAnimationYearStart.getValue();
+            Integer end =  (Integer) intAnimationYearEnd.getValue();
             String script = "mapFrame.animateStart('" + StringEscapeUtils.escapeJavaScript(mapLayer.getNameJS()) + "',"
                         + monthOrYear + ","
                         + interval * 1000 + ","
@@ -840,10 +837,10 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     public void selectYearOrMonth() {
         if("1".equals(cbAnimationDenomination.getValue()) || "Year".equals(cbAnimationDenomination.getValue())){
             dAnimationStep.setVisible(true);
-            lblAnimationLabel.setVisible(true);
+            //lblAnimationLabel.setVisible(true);
         } else {
             dAnimationStep.setVisible(false);
-            lblAnimationLabel.setVisible(false);
+            //lblAnimationLabel.setVisible(false);
         }
     }
 
@@ -881,7 +878,9 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                 }
 
                 if(firstYear < lastYear) {
-                    lblAnimationLabel.setValue("years " + firstYear + " to " + lastYear);
+                    //lblAnimationLabel.setValue("years " + firstYear + " to " + lastYear);
+                    intAnimationYearStart.setValue(firstYear);
+                    intAnimationYearEnd.setValue(lastYear);
                     divAnimation.setVisible(true);
                 }
             }

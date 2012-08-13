@@ -266,13 +266,21 @@ padding: 1px 5px 0px 0px;
                                        <doublebox id="dblAnimationSeconds" width="30px" value="1"/>
                                     </div>
                                 </hbox>
-
-                                <label id="lblAnimationLabel" sclass="h3" width="125px" visible="false"/>
+                                <hbox>
+                                    <div style="padding-top:3px" width="125px">
+                                        <label value="Year range" sclass="h3"/>
+                                    </div>
+                                    <div>
+                                      <intbox id="intAnimationYearStart" width="30px" value="10"/>
+                                      to
+                                      <intbox id="intAnimationYearEnd" width="30px" value="10"/>
+                                    </div>
+                                </hbox>
                                 <hbox>
                                     <button label="Start" id="btnAnimationStart" />
                                     <button label="Stop" id="btnAnimationStop" disabled="true" />
+                                    <n:div id="animationStatus" style="font-size:150%;text-align:right"></n:div>
                                 </hbox>
-                                <n:div id="animationStatus" style="background-color:yellow;font-weight:bold;font-size:150%;text-align:right"></n:div>
                             </vbox>
                         </div>
                     </hbox>

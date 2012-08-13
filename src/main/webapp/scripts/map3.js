@@ -2078,35 +2078,50 @@ function animateStart(layername, animateDenom, interval, start, end, step) {
         layer.url_orig = layer.url;
         layer.animate = "playing"
     }
-
-    //create layers
-    var newlayers = [];
-    var page = 0;
     console.log("step:" + step);
     console.log("start:" + start);
     console.log("end:" + end);
-    console.log("page:" + page);
 
-    while (page * step + start <= end) {
-        newlayers[page] = layer.clone();
-        newlayers[page].setName(layer.name + "__animation__" + page);
-        var facet = (animateDenom != 0) ? "year" : "month";
-        if(animateDenom != 0){
-            newlayers[page].url = layer.url_orig + "&fq=year:[" + (1 * start + step * (page)) + " TO " + (1*start + step*(page+1)) + "]";
-        } else {
-            var currentMonth = 1 * start + step * (page);
-            var currentMonthAsString =  currentMonth <10 ? "0" + currentMonth : ""+currentMonth
-            newlayers[page].url = layer.url_orig + "&fq=month:" + currentMonthAsString;
-        }
-
-        console.log("Adding layer URL: " + newlayers[page].url);
-        page = page + 1
+    //create layers
+    var newlayers = [];
+    if(animateDenom != 0){
+        newlayers = getYearLayers(layer,start, end, step);
+    } else {
+        newlayers = getMonthLayers(layer,start, end);
     }
 
     map.addLayers(newlayers);
     layer.animated_layers = newlayers;
 
     animateLayered(layername, animateDenom, interval, start, end, step, 0);
+}
+
+function getYearLayers(layer,startYear,endYear, step){
+    var newlayers = [];
+    var page = 0;
+    while (page * step + startYear <= endYear) {
+        newlayers[page] = layer.clone();
+        newlayers[page].setName(layer.name + "__animation__" + page);
+        newlayers[page].url = layer.url_orig + "&fq=year:[" + (1 * startYear + step * (page)) + " TO " + (1*startYear + step*(page+1)) + "]";
+        console.log("Adding layer URL: " + newlayers[page].url);
+        page = page + 1;
+    }
+    return newlayers;
+}
+
+function getMonthLayers(layer,startYear,endYear){
+    var newlayers = [];
+    var page = 0;
+    while (page <= 11) {
+        var currentMonth = page + 1;
+        newlayers[page] = layer.clone();
+        newlayers[page].setName(layer.name + "__animation__" + page);
+        var currentMonthAsString =  currentMonth<10 ? "0" + currentMonth : ""+currentMonth;
+        newlayers[page].url = layer.url_orig + "&fq=month:" + currentMonthAsString+"&fq=year:[" + startYear + " TO " + endYear + "]";
+        console.log("Adding layer URL: " + newlayers[page].url);
+        page = page + 1
+    }
+    return newlayers;
 }
 
 function animateLayered(layername, animateDenom, interval, start, end, step, page) {
@@ -2154,20 +2169,20 @@ function animateLayered(layername, animateDenom, interval, start, end, step, pag
             if(animateDenom == "1"){
                 status.innerHTML = ""  + (1*start + step*(page)) + " to " + (1*start + step*(page+1));
             } else {
-                switch(1*start + step*(page))
+                switch(page)
                 {
-                    case 1: status.innerHTML = "January";  break;
-                    case 2: status.innerHTML = "February";  break;
-                    case 3: status.innerHTML = "March";  break;
-                    case 4: status.innerHTML = "April";  break;
-                    case 5: status.innerHTML = "May";  break;
-                    case 6: status.innerHTML = "June";  break;
-                    case 7: status.innerHTML = "July";  break;
-                    case 8: status.innerHTML = "August";  break;
-                    case 9: status.innerHTML = "September";  break;
-                    case 10: status.innerHTML = "October";  break;
-                    case 11: status.innerHTML = "November";  break;
-                    case 12: status.innerHTML = "December";  break;
+                    case 0: status.innerHTML = "January";  break;
+                    case 1: status.innerHTML = "February";  break;
+                    case 2: status.innerHTML = "March";  break;
+                    case 3: status.innerHTML = "April";  break;
+                    case 4: status.innerHTML = "May";  break;
+                    case 5: status.innerHTML = "June";  break;
+                    case 6: status.innerHTML = "July";  break;
+                    case 7: status.innerHTML = "August";  break;
+                    case 8: status.innerHTML = "September";  break;
+                    case 9: status.innerHTML = "October";  break;
+                    case 10: status.innerHTML = "November";  break;
+                    case 11: status.innerHTML = "December";  break;
                 }
             }
         }
