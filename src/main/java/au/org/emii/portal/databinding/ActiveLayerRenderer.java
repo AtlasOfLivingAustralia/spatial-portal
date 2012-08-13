@@ -34,14 +34,14 @@ public class ActiveLayerRenderer implements ListitemRenderer {
     public void render(Listitem item, Object data) throws Exception {
         final MapLayer layer = (MapLayer) data;
         Listcell listcell = new Listcell();
-        Checkbox checkbox = new Checkbox();
-
+        Checkbox checkbox = null;
         /*
          * In the past it was assumed that we just set true here - this is not
          * the case because this method is called to re-render the list after
          * the user has been fiddling with the checkboxes in some cases (dnd
          * events)
          */
+        checkbox = new Checkbox();
         checkbox.setChecked(layer.isDisplayed());
         checkbox.setParent(listcell);
         checkbox.setTooltiptext("Hide");
@@ -57,6 +57,10 @@ public class ActiveLayerRenderer implements ListitemRenderer {
                     mapComposer.toggleLayers(event);
                 }
             });
+        }
+        if(!layer.isRemoveable()){
+            checkbox.setStyle("float:left; visibility:hidden; ");
+            checkbox.setDisabled(true);
         }
 
         Label label = new Label(layerUtilities.chompLayerName(layer.getDisplayName()));
@@ -78,35 +82,40 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 
         //label.addEventListener("onClick", new ActiveLayersInfoEventListener());
         label.setStyle("float:left;");
-        checkbox.setStyle("float:left;");
 
+        if(layer.isRemoveable()){
+            checkbox.setStyle("float:left;");
+        }
 
         /*
-         * show the legend graphic when the user hovers over the pallette icon
-         * if
+         * show the legend graphic when the user hovers over the palette icon
          */
-        Image remove = new Image(languagePack.getLang("layer_remove_icon"));
-        remove.addEventListener("onClick", new ActiveLayersRemoveEventListener());
-        remove.setParent(listcell);
-        remove.setStyle("float:right;");
-        remove.setTooltiptext("remove layer");
+        if(layer.isRemoveable()){
+            Image remove = new Image(languagePack.getLang("layer_remove_icon"));
+            remove.addEventListener("onClick", new ActiveLayersRemoveEventListener());
+            remove.setParent(listcell);
+            remove.setStyle("float:right;");
+            remove.setTooltiptext("remove layer");
+        }
 
-        Image info = new Image(languagePack.getLang("layer_info_icon"));
-        info.setParent(listcell);
-        info.setStyle("float:right;");
-        info.setTooltiptext("metadata");
-        info.addEventListener("onClick", new ActiveLayersInfoEventListener());
+        if(layer.isHasMetadata()){
+            Image info = new Image(languagePack.getLang("layer_info_icon"));
+            info.setParent(listcell);
+            info.setStyle("float:right;");
+            info.setTooltiptext("metadata");
+            info.addEventListener("onClick", new ActiveLayersInfoEventListener());
+        }
 
-
-        Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
-        zoomextent.setParent(listcell);
-        zoomextent.setStyle("float:right");
-        zoomextent.setTooltiptext("zoom to extent");
-        zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
+        if(layer.isHasExtent()){
+            Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
+            zoomextent.setParent(listcell);
+            zoomextent.setStyle("float:right");
+            zoomextent.setTooltiptext("zoom to extent");
+            zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
+        }
 
         //Set the legend graphic based on the layer type
-        Image legend;
-        legend = new Image();
+        Image legend = new Image();
         if (layer.isGridLayer()) {
             legend = new Image(languagePack.getLang("icon_grid"));
         } else if (layer.isSpeciesLayer()) {
@@ -121,15 +130,11 @@ public class ActiveLayerRenderer implements ListitemRenderer {
         }
 
         //todo: support analysis layers (languagePack.getLang("icon_analysis"))
-
         legend.setStyle("float:left;");
         legend.setParent(listcell);
         legend.setTooltiptext("View/edit the legend");
         legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
-
-
         label.setParent(listcell);
-
     }
 
     public LanguagePack getLanguagePack() {

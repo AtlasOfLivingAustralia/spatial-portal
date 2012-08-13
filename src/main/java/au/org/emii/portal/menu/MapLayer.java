@@ -28,7 +28,7 @@ import org.apache.commons.lang.StringEscapeUtils;
  *
  * IMPORTANT - READ NOTES HERE BEFORE MODIFYING THIS CLASS!!
  * ========================================================= IF YOU ADD FIELDS
- * TO THIS CLASS THAT AREN'T SIMPLE PRIMATIVE TYPES, MAKE SURE YOU UPDATE THE
+ * TO THIS CLASS THAT AREN'T SIMPLE PRIMITIVE TYPES, MAKE SURE YOU UPDATE THE
  * clone() METHOD TO ENSURE YOUR CHANGES ARE PICKED UP WHEN THE MAPLAYERS ARE
  * COPIED FOR SESSION CREATION!
  *
@@ -136,6 +136,22 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      * flag to determine if this is a polygon layer
      */
     private boolean polygonLayer = false;
+
+    /*
+     * Flag indicating if this layer is removeable
+     */
+    private boolean removeable = true;
+
+    /*
+    * Flag indicating if this layer is removeable
+    */
+    private boolean hasMetadata = true;
+
+    /*
+    * Flag indicating if this layer is removeable
+    */
+    private boolean hasExtent = true;
+
     /*
      * layer sub type. e.g. source
      */
@@ -660,13 +676,37 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         return defaultStyleLegendUriSet;
     }
 
+    public boolean isRemoveable() {
+        return removeable;
+    }
+
+    public void setRemoveable(boolean removeable) {
+        this.removeable = removeable;
+    }
+
+    public boolean isHasMetadata() {
+        return hasMetadata;
+    }
+
+    public void setHasMetadata(boolean hasMetadata) {
+        this.hasMetadata = hasMetadata;
+    }
+
+    public boolean isHasExtent() {
+        return hasExtent;
+    }
+
+    public void setHasExtent(boolean hasExtent) {
+        this.hasExtent = hasExtent;
+    }
+
     /**
      * Recursive search for a MapLayer instance matching a given id.
      *
      * CAREFUL! MapLayer IDs are not plain strings, they are formed by
      * concatenating some variables - see method getId() for details
      *
-     * @param uri
+     * @param layer
      * @return
      */
     public MapLayer findByLayer(String layer) {

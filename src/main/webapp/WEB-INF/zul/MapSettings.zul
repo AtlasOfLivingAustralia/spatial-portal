@@ -5,13 +5,10 @@
             apply="org.ala.spatial.analysis.web.MapOptions" style="padding-top:1px; margin-left: 3px;" >
         <vbox width="100%" style="padding-top:1px;">
             <vbox width="100%">
-                <div style="padding-top:0px" width="65px">
-                    <label value="Base map" sclass="h3" />
-                </div>
                 <radiogroup id="rgBaseMap">
                     <listbox>
                         <listhead>
-                            <listheader label="name" width="100px" />
+                            <listheader label="Base map" width="100px" />
                             <listheader label=" "  />
                         </listhead>
                         <listitem>

@@ -16,9 +16,7 @@
         <n:a class="fancybox-help" n:onClick="loadHelp('species-add-to-map')" style="display: inline" />
 
         <separator />
-        <vbox style="padding-left: 10px" >            
-            <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
-            <separator />
+        <vbox style="padding-left:10px" >
             <radiogroup id="rgArea" orient="vertical" focus="true" onOK="addspeciesinareawindow.onClick$btnOk(null)">
                 <radio id="rAreaCurrent" label="Current extent" value="current" />
                 <radio id="rAreaAustralia" label="Australia" value="australia" />

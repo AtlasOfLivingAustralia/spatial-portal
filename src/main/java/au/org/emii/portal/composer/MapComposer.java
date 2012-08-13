@@ -918,7 +918,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         // tell the list about them...
         if (activeLayers.size() == 0) {
-            activeLayers.add(remoteMap.createLocalLayer(LayerUtilities.MAP, "Map options"));
+            MapLayer ml = remoteMap.createLocalLayer(LayerUtilities.MAP, "Map options");
+            ml.setRemoveable(false);
+            ml.setHasMetadata(false);
+            ml.setHasExtent(false);
+            activeLayers.add(ml);
         }
 
         activeLayersList.setModel(activeLayerModel);
@@ -953,7 +957,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * Add a WMS layer identified by the given parameters to the menu system and
      * activate it
      *
-     * @param label Name of map layer
+     * @param name Name of map layer
      * @param uri URI for the WMS service
      * @param opacity 0 for invisible, 1 for solid
      * @param filter filter
@@ -3441,6 +3445,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         && ((MapLayer) li.getValue()).getName().equals("Map options")) {
                     li.setDraggable("false");
                     li.setDroppable("false");
+                    li.setCheckable(false);
                 }
             }
         }

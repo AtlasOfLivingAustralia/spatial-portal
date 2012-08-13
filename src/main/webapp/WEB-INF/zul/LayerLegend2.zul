@@ -4,18 +4,20 @@
     <window id="layerlegend" use="au.org.emii.portal.composer.LayerLegendComposer2"
     apply="au.org.emii.portal.composer.LayerLegendComposer2" width="400px">
 
-        <div id="layerControls" >
+        <div id="layerControls" style="padding-left:8px">
             <div>
                 <hbox width="100%">
-                    <div style="padding-top:0px" width="65px">
+                    <div style="padding-top:0px" width="65px"  >
                         <label value="Layer name" sclass="h3" />
                     </div>
-                    <textbox id="txtLayerName" width="250px" onFocus="btnLayerName.setDisabled(false)" />
+                    <textbox id="txtLayerName" width="230px" onFocus="btnLayerName.setDisabled(false)" />
                     <button id="btnLayerName" sclass="goButton" label="Rename" forward="onOK$txtLayerName" disabled="true" />
                 </hbox>
             </div>
+
             <separator />
-            
+
+            <!-- points or grids -->
             <div id="clusterpoints" align="left" style="padding-top:0px">
                 <hbox width="100%">
                     <div style="padding-top:0px" width="65px">
@@ -28,42 +30,12 @@
                     </radiogroup>
                 </hbox>
             </div>
-            <separator />
 
-            <!-- opacity-->
-            <div id="opacityControls" >
-                <vbox>
-                    <hbox>
-                        <div style="padding-top:0px" width="65px">
-                            <label value="Opacity" sclass="h3" />
-                        </div>
-                        <div  width="250px">
-                            <slider id="opacitySlider" width="95%" />
-                        </div>
-                        <div align="right" style="padding-top:0px">
-                            <label id="opacityLabel" />
-                        </div>
+            <div width="100%">
 
-                    </hbox>
-                </vbox>
-            </div>
-            <div  width="100%">
-                <div id="sizeChooser" visible="false" width="100%">
+                <div id="colourChooser" style="padding-top:10px;padding-bottom:3px;">
                     <hbox>
-                        <div style="padding-top:0px" width="65px">
-                            <label value="Size" sclass="h3" />
-                        </div>
-                        <div width="250px">
-                            <slider id="sizeSlider" maxpos="30" width="95%" />
-                        </div>
-                        <div align="right" style="padding-top:0px">
-                            <label id="sizeLabel" />
-                        </div>
-                    </hbox>
-                </div>
-                <div id="colourChooser" >
-                    <hbox>
-                        <div style="padding-top:0px" width="65px">
+                        <div width="65px">
                             <label value="Facet" sclass="h3" />
                         </div>
                         <combobox id="cbColour" width="280px" readonly="true">
@@ -90,11 +62,11 @@ border-top: none;
 border-left: none;
 border-right: none;
 border-bottom: none;
-padding: 1px 0px 0px 5px;
+padding: 1px 5px 0px 0px;
 }
 
                             </style>
-                            <grid id="cpGrid" width="280px" sclass="noborder" >
+                            <grid id="cpGrid" width="280px" sclass="noborder" style="padding-left:2px;" >
                                 <rows>
                                     <row>
                                         <div style="background-color:#8b0000" height="12px" onClick="layerlegend.selectColour(self)" />
@@ -142,112 +114,106 @@ padding: 1px 0px 0px 5px;
                             </grid>
                         </hbox>
 
-                        <vbox >
-                            <separator />
+                        <vbox>
                             <hbox>
-                                <div style="padding-top:0px" width="65px">
-                                    <label value="Red" sclass="h3" />
+                                <div style="padding-top:10px">
+                                    <hbox>
+                                        <div style="padding-top:3px" width="65px">
+                                            <label value="Red" sclass="h3" />
+                                        </div>
+                                        <div width="210px">
+                                            <slider id="redSlider" maxpos="255" width="95%" />
+                                        </div>
+                                        <div align="right" style="padding-top:3px">
+                                            <label id="redLabel" />
+                                        </div>
+                                    </hbox>
+                                    <hbox>
+                                        <div style="padding-top:3px" width="65px">
+                                            <label value="Green" sclass="h3" />
+                                        </div>
+                                        <div  width="210px">
+                                            <slider id="greenSlider" maxpos="255" width="95%" />
+                                        </div>
+                                        <div align="right" style="padding-top:3px">
+                                            <label id="greenLabel" />
+                                        </div>
+                                    </hbox>
+                                    <hbox>
+                                        <div style="padding-top:3px" width="65px">
+                                            <label value="Blue" sclass="h3" />
+                                        </div>
+                                        <div  width="210px">
+                                            <slider id="blueSlider" maxpos="255" width="95%" />
+                                        </div>
+                                        <div align="right" style="padding-top:3px">
+                                            <label id="blueLabel" />
+                                        </div>
+                                    </hbox>
                                 </div>
-
-                                <div width="250px">
-                                    <slider id="redSlider" maxpos="255" width="95%" />
-                                </div>
-
-                                <div align="right" style="padding-top:0px">
-                                    <label id="redLabel" />
-                                </div>
-                            </hbox>
-                            <hbox>
-                                <div style="padding-top:0px" width="65px">
-                                    <label value="Green" sclass="h3" />
-                                </div>
-
-                                <div  width="250px">
-                                    <slider id="greenSlider" maxpos="255" width="95%" />
-                                </div>
-
-                                <div align="right" style="padding-top:0px">
-                                    <label id="greenLabel" />
-                                </div>
-                            </hbox>
-                            <hbox>
-                                <div style="padding-top:0px" width="65px">
-                                    <label value="Blue" sclass="h3" />
-                                </div>
-
-                                <div  width="250px">
-                                    <slider id="blueSlider" maxpos="255" width="95%" />
-                                </div>
-
-                                <div align="right" style="padding-top:0px">
-                                    <label id="blueLabel" />
+                                <div>
+                                    <div width="100%" style="padding-top:8px; padding-left:15px; float:right;">
+                                        <image id="legendImg" width="60px" height="60px" />
+                                    </div>
                                 </div>
                             </hbox>
                         </vbox>
+                        <!-- opacity-->
+                        <vbox>
+                            <hbox>
+                                <div style="padding-top:3px" width="65px">
+                                    <label value="Opacity" sclass="h3" />
+                                </div>
+                                <div  width="210px">
+                                    <slider id="opacitySlider" width="95%" />
+                                </div>
+                                <div align="right" style="padding-top:3px">
+                                    <label id="opacityLabel" />
+                                </div>
+                            </hbox>
+                        </vbox>
+                        <div id="sizeChooser" visible="false" width="100%">
+                            <hbox>
+                                <div style="padding-top:3px" width="65px">
+                                    <label value="Size" sclass="h3" />
+                                </div>
+                                <div width="210px">
+                                    <slider id="sizeSlider" maxpos="30" width="95%" />
+                                </div>
+                                <div align="right" style="padding-top:3px">
+                                    <label id="sizeLabel" />
+                                </div>
+                            </hbox>
+                        </div>
                     </div>
-                    <vbox>
-                        <hbox width="100%" >
-                            <div id="uncertainty" align="left" style="padding-top:0px" visible="false">
-                                <separator />
-                                <separator />
-                                <checkbox id="chkUncertaintySize" label=" Display spatial uncertainty as a circle" />
-                                <separator />
-                                <hbox id="uncertaintyLegend" visible="false">
-                                    <separator orient="vertical" spacing="20px" />
-                                    <vbox>
-                                        <label value="Uncertainty Legend" />
-                                        <hbox>
-                                            <image src="img/orangecircle.png" />
-                                            <label value="&lt; 30km (mapped with actual radius)" />
-                                        </hbox>
-                                        <hbox>
-                                            <image src="img/greencircle.png" />
-                                            <label value="&gt; 30km (mapped with 30km radius)" />
-                                        </hbox>
-<!--                                        <hbox>
-                                            <image src="img/yellowcircle.png" />
-                                            <label value="unknown (mapped with 30km radius)" />
-                                        </hbox>-->
-                                    </vbox>
-                                </hbox>
-                                <separator />
-                            </div>
-                            <separator />
-                        </hbox>
-                    </vbox>
-                </div>
-                <separator />
-                <div id="divAnimation" visible="false">
-                    <hbox>
-                        <div style="padding-top:0px" width="65px">
-                            <label value="Animation" sclass="h3" />
-                        </div>
-                        <div  width="315px">
-                            <vbox>
-                                <label id="lblAnimationLabel" />
-                                <hbox>
-                                    <label value="Frame size in years" />
-                                    <intbox id="intAnimationStep" width="30px" value="10"/>
-                                </hbox>
-                                <hbox>
-                                    <label value="Time between frames (s)" />
-                                    <doublebox id="dblAnimationSeconds" width="30px" value="3.5"/>
-                                </hbox>
-                                <hbox>
-                                    <button label="Start" id="btnAnimationStart" />
-                                    <button label="Stop" id="btnAnimationStop" disabled="true" />
-                                </hbox>
-                                <n:div id="animationStatus" style="background-color:yellow;font-weight:bold;font-size:150%;text-align:right"></n:div>
-                            </vbox>
-                        </div>
-                    </hbox>
-                </div>
-                <div style="padding-top:0px" width="65px">
-                    <label value="Legend" sclass="h3" />
                 </div>
                 <div  width="60%">
-                    <image id="legendImg" width="50px" height="50px" />
+                    <image id="legendImgUri" visible="false"/>
                 </div>
+                <div id="legendHtml" visible="true"/>
+                <vbox>
+                    <hbox width="100%" >
+                        <div id="uncertainty" align="left" style="padding-top:0px" visible="false">
+                            <checkbox id="chkUncertaintySize" label=" Display spatial uncertainty as a circle" />
+                            <separator />
+                            <hbox id="uncertaintyLegend" visible="false">
+                                <label value="Uncertainty legend" sclass="h3" />
+                                <vbox>
+                                    <hbox>
+                                        <image src="img/orangecircle.png" />
+                                        <label value="&lt; 30km (mapped with actual radius)" />
+                                    </hbox>
+                                    <hbox>
+                                        <image src="img/greencircle.png" />
+                                        <label value="&gt; 30km (mapped with 30km radius)" />
+                                    </hbox>
+                                </vbox>
+                            </hbox>
+                            <separator />
+                        </div>
+                        <separator />
+                    </hbox>
+                </vbox>
                 <div align="right" style="padding-top:0px" visible="false">
                     <label id="legendLabel" value="Click symbol to edit" />
                 </div>
@@ -267,10 +233,50 @@ padding: 1px 0px 0px 5px;
                         </hbox>
                     </div>
                 </vbox>
-                <div  width="60%">
-                    <image id="legendImgUri" visible="false"/>
+                <separator />
+                <div id="divAnimation" visible="false">
+                    <label value="Animation" sclass="h2" />
+                    <hbox>
+                        <div width="315px">
+                            <vbox>
+                                <hbox>
+                                    <div style="padding-top:3px" width="125px">
+                                        <label value="Month/year"  sclass="h3"/>
+                                    </div>
+                                    <div>
+                                        <combobox id="cbAnimationDenomination" value="Month" width="80px" onChange="layerlegend.selectYearOrMonth()">
+                                            <comboitem label="Month" id="animationByMonth" value="0" />
+                                            <comboitem label="Year" id="animationByYear" value="1" />
+                                        </combobox>
+                                    </div>
+                                </hbox>
+                                <hbox id="dAnimationStep" visible="false">
+                                    <div style="padding-top:3px" width="125px" >
+                                       <label value="Frame size in years" sclass="h3"/>
+                                    </div>
+                                    <div>
+                                       <intbox id="intAnimationStep" width="30px" value="10"/>
+                                    </div>
+                                </hbox>
+                                <hbox>
+                                    <div style="padding-top:3px" width="125px">
+                                        <label value="Time between frames (s)" sclass="h3"/>
+                                    </div>
+                                    <div>
+                                       <doublebox id="dblAnimationSeconds" width="30px" value="1"/>
+                                    </div>
+                                </hbox>
+
+                                <label id="lblAnimationLabel" sclass="h3" width="125px" visible="false"/>
+                                <hbox>
+                                    <button label="Start" id="btnAnimationStart" />
+                                    <button label="Stop" id="btnAnimationStop" disabled="true" />
+                                </hbox>
+                                <n:div id="animationStatus" style="background-color:yellow;font-weight:bold;font-size:150%;text-align:right"></n:div>
+                            </vbox>
+                        </div>
+                    </hbox>
                 </div>
-                <div id="legendHtml" visible="true"/>                
             </div>
         </div>
     </window>

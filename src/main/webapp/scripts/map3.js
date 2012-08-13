@@ -2056,7 +2056,17 @@ function animateStop(layername) {
     layer.animate = "stop";
 }
 
-function animateStart(layername, interval, start, end, step) {
+/**
+ * Start the animation.
+ *
+ * @param layername layer to animate
+ * @param animateDenom 0=month, 1=year
+ * @param interval time interval between loading layers
+ * @param start startYear or startMonth
+ * @param end endYear or startMonth
+ * @param step gaps between layers - e.g. 1 year, 5 year
+ */
+function animateStart(layername, animateDenom, interval, start, end, step) {
     var layers = map.getLayersByName(layername);
     if (layers.length == 0) {
         cleanupAnimationLayers(layername);
@@ -2072,21 +2082,34 @@ function animateStart(layername, interval, start, end, step) {
     //create layers
     var newlayers = [];
     var page = 0;
-    while (page * step + start < end) {
+    console.log("step:" + step);
+    console.log("start:" + start);
+    console.log("end:" + end);
+    console.log("page:" + page);
+
+    while (page * step + start <= end) {
         newlayers[page] = layer.clone();
         newlayers[page].setName(layer.name + "__animation__" + page);
-        newlayers[page].url = layer.url_orig + "&fq=year:[" + (1*start + step*(page)) + " TO " + (1*start + step*(page+1)) + "]";
+        var facet = (animateDenom != 0) ? "year" : "month";
+        if(animateDenom != 0){
+            newlayers[page].url = layer.url_orig + "&fq=year:[" + (1 * start + step * (page)) + " TO " + (1*start + step*(page+1)) + "]";
+        } else {
+            var currentMonth = 1 * start + step * (page);
+            var currentMonthAsString =  currentMonth <10 ? "0" + currentMonth : ""+currentMonth
+            newlayers[page].url = layer.url_orig + "&fq=month:" + currentMonthAsString;
+        }
 
+        console.log("Adding layer URL: " + newlayers[page].url);
         page = page + 1
     }
 
     map.addLayers(newlayers);
     layer.animated_layers = newlayers;
 
-    animateLayered(layername, interval, start, end, step, 0);
+    animateLayered(layername, animateDenom, interval, start, end, step, 0);
 }
 
-function animateLayered(layername, interval, start, end, step, page) {
+function animateLayered(layername, animateDenom, interval, start, end, step, page) {
     var layers = map.getLayersByName(layername);
     if (layers.length == 0) {
         cleanupAnimationLayers(layername);
@@ -2094,11 +2117,10 @@ function animateLayered(layername, interval, start, end, step, page) {
     }
     var layer = layers[0];
 
-    var status = parent.document.getElementById('animationStatus')
+    var status = parent.document.getElementById('animationStatus');
 
     if(page >= layer.animated_layers.length) {
         page = 0;
-        
         //end animation when at the end
         cleanupAnimationLayers(layername);
         if(status) status.innerHTML = "stopped";
@@ -2128,8 +2150,30 @@ function animateLayered(layername, interval, start, end, step, page) {
             layer.animated_layers[i].display(false);
         }
 
-        if(status) status.innerHTML = ""  + (1*start + step*(page)) + " to " + (1*start + step*(page+1));
-        setTimeout("animateLayered('" + layername + "'," + interval + ", " + start + ", " + end + ", " + step + ", " + (page + 1) + ")", interval);
+        if (status) {
+            if(animateDenom == "1"){
+                status.innerHTML = ""  + (1*start + step*(page)) + " to " + (1*start + step*(page+1));
+            } else {
+                switch(1*start + step*(page))
+                {
+                    case 1: status.innerHTML = "January";  break;
+                    case 2: status.innerHTML = "February";  break;
+                    case 3: status.innerHTML = "March";  break;
+                    case 4: status.innerHTML = "April";  break;
+                    case 5: status.innerHTML = "May";  break;
+                    case 6: status.innerHTML = "June";  break;
+                    case 7: status.innerHTML = "July";  break;
+                    case 8: status.innerHTML = "August";  break;
+                    case 9: status.innerHTML = "September";  break;
+                    case 10: status.innerHTML = "October";  break;
+                    case 11: status.innerHTML = "November";  break;
+                    case 12: status.innerHTML = "December";  break;
+                }
+            }
+        }
+        var callback = "animateLayered('" + layername+ "'," + animateDenom + ", " + interval + ", " + start + ", " + end + ", " + step + ", " + (page + 1) + ")";
+        console.log("Setting callback to: " + callback);
+        setTimeout(callback, interval);
     }
 }
 

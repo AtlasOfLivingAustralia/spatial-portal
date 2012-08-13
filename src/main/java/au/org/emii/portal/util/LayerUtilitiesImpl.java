@@ -426,7 +426,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
 
     /**
      * Chomp the layer name if we need to
-     * @param originalName
+     * @param layerName
      * @return The original name if under maxLength or a chomped name
      * if over
      */

@@ -75,6 +75,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     Div legendHtml;
     Label legendLabel;
     Div divUserColours;
+    Hbox dAnimationStep;
     Combobox cbColour;
     Comboitem ciColourUser; //User selected colour
     Label layerName;
@@ -93,6 +94,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     Combobox cbClassificationGroup;
     Div divClassificationPicker;
     Div divAnimation;
+    Combobox cbAnimationDenomination;
     Button btnAnimationStart;
     Button btnAnimationStop;
     Intbox intAnimationStep;
@@ -121,7 +123,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         int green = greenSlider.getCurpos();
         Color c = new Color(red, green, blue);
 
-        legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
+        legendImg.setContent(lm.singleCircleImage(c, 60, 60, 50.0));
 //        sizeChooser.setVisible(true);
 
         if (cbColour.getSelectedItem() != ciColourUser) {
@@ -634,7 +636,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                 }
                 if (ci.getValue().equals("occurrence_year_decade")) {
                     Comboitem seperator3 = new Comboitem("seperator");
-                    seperator3.setLabel("------------------Record Details------------------");
+                    seperator3.setLabel("------------------Record details------------------");
                     seperator3.setParent(cbColour);
                     seperator3.setDisabled(true);
                 }
@@ -646,7 +648,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                 }
                 if (ci.getValue().equals("institution_name")) {
                     Comboitem seperator5 = new Comboitem("seperator");
-                    seperator5.setLabel("------------------Record Assertions------------------");
+                    seperator5.setLabel("------------------Record assertions------------------");
                     seperator5.setParent(cbColour);
                     seperator5.setDisabled(true);
                 }
@@ -785,10 +787,22 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 
     public void onClick$btnAnimationStart(Event event) {
         try {
-            Integer step = intAnimationStep.getValue();
-            if(step < 1) {
-                step = 1;
-                intAnimationStep.setValue(1);
+
+            Integer monthOrYear = 0; //0=month, 1=year
+
+            if("1".equals(cbAnimationDenomination.getValue()) || "Year".equalsIgnoreCase(cbAnimationDenomination.getValue())){
+                monthOrYear = 1;
+            }
+
+            System.out.println("Animation: " + monthOrYear);
+
+            Integer step = 1;
+            if(monthOrYear != 0){
+                step = intAnimationStep.getValue();
+                if(step < 1) {
+                    step = 1;
+                    intAnimationStep.setValue(1);
+                }
             }
             
             Double interval = dblAnimationSeconds.getValue();
@@ -797,20 +811,39 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                 dblAnimationSeconds.setValue(0.2);
             }
 
-            Integer firstYear = (Integer) mapLayer.getData("first_year");
-            Integer lastYear =  (Integer) mapLayer.getData("last_year");
-
             mapLayer.setData("animation_step", step);
             mapLayer.setData("animation_interval", interval);
 
+            Integer start = 1;
+            Integer end =  12;
+            if(monthOrYear == 1){
+                start = (Integer) mapLayer.getData("first_year");
+                end =  (Integer) mapLayer.getData("last_year");
+            }
+
             String script = "mapFrame.animateStart('" + StringEscapeUtils.escapeJavaScript(mapLayer.getNameJS()) + "',"
-                    + interval * 1000 + "," + firstYear + "," + lastYear + "," + step + ");";
+                        + monthOrYear + ","
+                        + interval * 1000 + ","
+                        + start + ","
+                        + end + ","
+                        + step + ");";
+            System.out.println("Script: " + script );
 
             getMapComposer().getOpenLayersJavascript().execute(script);
 
             btnAnimationStop.setDisabled(false);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void selectYearOrMonth() {
+        if("1".equals(cbAnimationDenomination.getValue()) || "Year".equals(cbAnimationDenomination.getValue())){
+            dAnimationStep.setVisible(true);
+            lblAnimationLabel.setVisible(true);
+        } else {
+            dAnimationStep.setVisible(false);
+            lblAnimationLabel.setVisible(false);
         }
     }
 

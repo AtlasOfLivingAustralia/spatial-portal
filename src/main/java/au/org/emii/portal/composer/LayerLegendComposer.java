@@ -92,7 +92,7 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         int green = greenSlider.getCurpos();
         Color c = new Color(red, green, blue);
 
-        legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
+        legendImg.setContent(lm.singleCircleImage(c, 120, 120, 50.0));
         sizeChooser.setVisible(true);
 
         if (cbColour.getSelectedItem() != ciColourUser) {
