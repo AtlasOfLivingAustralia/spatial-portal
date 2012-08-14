@@ -106,7 +106,6 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-
         cbColour.setSelectedIndex(0);
     }
 

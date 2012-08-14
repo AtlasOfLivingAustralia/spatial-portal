@@ -2,6 +2,6 @@
 <zk>
     <window id="contextualMenuWindow" use="org.ala.spatial.analysis.web.ContextualMenu"
     apply="org.ala.spatial.analysis.web.ContextualMenu" width="100%">
-        <vbox id="contents" sclass="ctxbox" />
+            <vbox id="contents" sclass="ctxbox"/>
     </window>
 </zk>

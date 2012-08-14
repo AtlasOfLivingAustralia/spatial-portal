@@ -235,15 +235,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     <div id="menucontainerwest" />
                     <div id="westContent" class="westContent" visible="true" height="100%">
                         <borderlayout style="position:absolute;top:0px;left:0px">
-                            <north height="219px">
+                            <north height="189px">
                                 <div>
                                     <!-- space for top level menu -->
                                     <div height="39px" />
-
-                                    <div id="activeLayersHolder"  width="400px" style="overflow: auto;background:white" height="180px">
+                                    <div id="activeLayersHolder" width="400px" style="overflow: auto;background:white" height="160px">
                                         <listbox id="activeLayersList" width="100%" />
                                     </div>
-
                                     <div width="100%" height="1px" sclass="selectedLayerDiv" />
                                 </div>
                             </north>
@@ -256,9 +254,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <div  id="layerControls"/>
                                 </vlayout>
                             </center>
-                            <south height="100px">
-                                <div sclass="contextualDiv" height="90px" width="390px">
-                                    <contextualMenu id="contextualMenu" style="margin:2px" width="390px" />
+                            <south height="100px;">
+                                <div sclass="contextualDivMenu" height="90px" width="390px">
+                                    <contextualMenu id="contextualMenu" style="margin:2px;" width="390px" />
                                 </div>
                             </south>
                         </borderlayout>

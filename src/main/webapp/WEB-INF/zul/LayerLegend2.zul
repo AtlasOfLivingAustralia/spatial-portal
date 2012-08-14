@@ -235,7 +235,7 @@ padding: 1px 5px 0px 0px;
                 </vbox>
                 <separator />
                 <div id="divAnimation" visible="false">
-                    <label value="Animation" sclass="h2" />
+                    <label value="Animation" sclass="h2" style="padding-top:0px;" />
                     <hbox>
                         <div width="315px">
                             <vbox>
@@ -279,7 +279,7 @@ padding: 1px 5px 0px 0px;
                                 <hbox>
                                     <button label="Start" id="btnAnimationStart" />
                                     <button label="Stop" id="btnAnimationStop" disabled="true" />
-                                    <n:div id="animationStatus" style="font-size:150%;text-align:right"></n:div>
+                                    <n:div id="animationStatus" style="font-size:150%;text-align:right;"></n:div>
                                 </hbox>
                             </vbox>
                         </div>

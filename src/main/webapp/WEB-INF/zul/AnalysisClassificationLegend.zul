@@ -12,24 +12,16 @@
                 border: 2px solid red;
              }
         </style>            
-            <div id="dCreateButtons" height="20px" style="bottom: 0px;right: 0px;margin: 0px 5px 5px 0px;padding: 0px 5px 5px 0px;" >
-                <button id="selectAll" label="Select all" sclass="goButton" />
-                <button id="createInGroup" label="Create layer" sclass="goButton" visible="true" />
-                <button id="clearSelection" label="Clear selection" sclass="goButton" visible="true" />
-            </div>
-
-            <listbox sclass="legendlist" id="legend" width="360px" vflex="true"  >
+            <listbox sclass="legendlist" id="legend" width="360px" vflex="true" >
                 <listhead>
                     <listheader label="   " width="20px" id="lhFirstColumn" />
-                    <listheader label="class" width="210px" id="lhSecondColumn"></listheader>
+                    <listheader label="class" width="230px" id="lhSecondColumn"></listheader>
                     <listheader label="colour" width="50px" id="lhThirdColumn" ></listheader>
                     <listheader label="count" width="60px" align="right" id="lhFourthColumn"></listheader>
                 </listhead>
             </listbox>
-
-            <vbox height="120px" >
-                <separator height="15px" />
-                <div id="divContinous" visible="false">
+            <vbox>
+                <div id="divContinous" visible="false" style="max-height:60px; overflow:auto;">
                    <label id="dlabel" width="350px" />
                     <rangeslider id="dslider" width="350px" />
                     <hbox>
@@ -44,7 +36,10 @@
                     <checkbox id="dunknown" label="Select Unknown" checked="true" />
                  </div>
             </vbox>
-
+            <div id="dCreateButtons" height="20px" style="bottom: 0px;right: 0px;margin: 0px 5px 5px 0px;padding: 0px 5px 5px 0px;" >
+                <button id="selectAll" label="Select all" sclass="goButton" />
+                <button id="createInGroup" label="Create layer" sclass="goButton" visible="true" />
+                <button id="clearSelection" label="Clear selection" sclass="goButton" visible="true" />
+            </div>
     </window>
-
 </zk>

@@ -16,8 +16,7 @@
         <caption label="Add Area" />
 
         <vbox width="100%">
-            <separator />
-            <label sclass="wLabel" value="Select method to define area."/>
+            <label sclass="wLabel" value="Select method to define area." style="margin-left:20px"/>
             <div style="margin-left:20px" >
                 <radiogroup id="cbAreaSelection" orient="vertical" onOK="addareawindow.onClick$btnOk(null)" >
                     <vbox>

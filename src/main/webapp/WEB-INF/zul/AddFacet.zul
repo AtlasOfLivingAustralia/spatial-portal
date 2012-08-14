@@ -14,8 +14,6 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="addfacetwindow.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('layers-add-to-map')" style="display: inline" />
-        
-        
         <separator />
         <hbox id="stepCounter">
             <vbox style="padding-left: 25px">
@@ -77,10 +75,9 @@
             <!--div id="dCreateButtons"  height="20px" style="bottom: 0px; right: 100px 5px 5px 100px;padding: 0px 5px 5px 0px;"-->
             <div id="dCreateButtons"  height="25px" align="right">
                 <button id="selectAll" label="Select all" sclass="goButton" />
-                <!--button id="createInGroup" label="Create layer" sclass="goButton"/-->
                 <button id="clearSelection" label="Clear selection" sclass="goButton"/>
             </div>
-            <div height="420px"  >
+            <div height="420px">
             <listbox sclass="legendlist2" id="legend" width="550px" height="100%" vflex="true">
                 <listhead sizable="true">
                     <listheader label="   " width="25px" id="lhFirstColumn" />
@@ -116,7 +113,6 @@
                 <button sclass="goButton" label="Cancel" id="btnCancel" />
                 <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
                 <button sclass="goButton" label="Next &gt;" id="btnOk" disabled="true" />
-                
             </hbox>
         </div>
     </window>

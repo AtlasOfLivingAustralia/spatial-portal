@@ -1029,7 +1029,7 @@ public class AddFacetController extends UtilityComposer {
                         }
                         if (ci.getValue().equals("occurrence_year_decade")) {
                             Comboitem seperator3 = new Comboitem("seperator");
-                            seperator3.setLabel("------------------  Record Details  ------------------");
+                            seperator3.setLabel("------------------  Record details  ------------------");
                             seperator3.setParent(cbColour);
                             seperator3.setDisabled(true);
                         }
@@ -1041,7 +1041,7 @@ public class AddFacetController extends UtilityComposer {
                         }
                         if (ci.getValue().equals("institution_name")) {
                             Comboitem seperator5 = new Comboitem("seperator");
-                            seperator5.setLabel("------------------ Record Assertions ------------------");
+                            seperator5.setLabel("------------------ Record assertions ------------------");
                             seperator5.setParent(cbColour);
                             seperator5.setDisabled(true);
                         }

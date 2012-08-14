@@ -29,11 +29,6 @@ public class ContextualMenu extends UtilityComposer {
     SettingsSupplementary settingsSupplementary;
     Vbox contents;
 
-    @Override
-    public void afterCompose() {
-        super.afterCompose();
-    }
-
     public void refresh() {
         for (int i = contents.getChildren().size() - 1; i >= 0; i--) {
             ((Component) contents.getChildren().get(i)).detach();

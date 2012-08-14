@@ -28,7 +28,7 @@
                 </hbox>
             </div>
             <separator />
-            <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
+            <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" />
             <div style="float:right;margin-right:5px">
                 <hbox>
                     <button sclass="goButton" label="Clear" id="btnClear" disabled="true"/>                    
