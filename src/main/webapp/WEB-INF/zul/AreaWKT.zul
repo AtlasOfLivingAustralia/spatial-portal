@@ -42,7 +42,7 @@
             ]]></html>
             
             <separator />
-            <textbox id="displayGeom" readonly="false" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
+            <textbox id="displayGeom" readonly="false" width="100%" visible="true" multiline="true" height="100px" />
             <label id="invalidWKT" width="100%" style="color: red" visible="false"/>
             <div style="float:right;margin-right:5px">
                 <hbox>

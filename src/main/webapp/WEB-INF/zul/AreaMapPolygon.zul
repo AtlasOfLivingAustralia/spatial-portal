@@ -49,7 +49,7 @@
                     <ContextualLayersTree id="layerTree" height="400px"/>
                 </div>
             </vbox>
-            <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
+            <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px"  />
             <separator />
             <checkbox id="displayAsWms" label="display as WMS layer"  visible="false" checked="true" />
             <div sclass="embedWindowsButtons">
