@@ -14,9 +14,6 @@
                     <button id="btnLayerName" sclass="goButton" label="Rename" forward="onOK$txtLayerName" disabled="true" />
                 </hbox>
             </div>
-
-            <separator />
-
             <!-- points or grids -->
             <div id="clusterpoints" align="left" style="padding-top:0px">
                 <hbox width="100%">
@@ -30,9 +27,7 @@
                     </radiogroup>
                 </hbox>
             </div>
-
             <div width="100%">
-
                 <div id="colourChooser" style="padding-top:10px;padding-bottom:3px;">
                     <hbox>
                         <div width="65px">
@@ -44,29 +39,22 @@
                     </hbox>
                     <div id="divUserColours" >
                         <separator />
-                        <hbox >
-                            <separator orient="vertical" />
-                            <separator orient="vertical" />
-                            <separator orient="vertical" />
-                            <separator orient="vertical" />
-                            <separator orient="vertical" />
+                        <hbox>
                             <style dynamic="true">
-
-			<!-- cut/hide the vertical borders in the grid rows -->
-                        .noborder  tr.z-row td.z-row-inner, tr.z-row .z-cell, div.z-grid
-{
-border: none;
-zoom: 1;
-background: white;
-border-top: none;
-border-left: none;
-border-right: none;
-border-bottom: none;
-padding: 1px 5px 0px 0px;
-}
-
+			                    <!-- cut/hide the vertical borders in the grid rows -->
+                                .noborder  tr.z-row td.z-row-inner, tr.z-row .z-cell, div.z-grid
+                                {
+                                    border: none;
+                                    zoom: 1;
+                                    background: white;
+                                    border-top: none;
+                                    border-left: none;
+                                    border-right: none;
+                                    border-bottom: none;
+                                    padding: 1px 5px 0px 0px;
+                                }
                             </style>
-                            <grid id="cpGrid" width="280px" sclass="noborder" style="padding-left:2px;" >
+                            <grid id="cpGrid" width="280px" sclass="noborder" style="padding-left:2px;margin-left:65px;" >
                                 <rows>
                                     <row>
                                         <div style="background-color:#8b0000" height="12px" onClick="layerlegend.selectColour(self)" />
@@ -113,7 +101,6 @@ padding: 1px 5px 0px 0px;
                                 </rows>
                             </grid>
                         </hbox>
-
                         <vbox>
                             <hbox>
                                 <div style="padding-top:10px">
@@ -158,38 +145,36 @@ padding: 1px 5px 0px 0px;
                                 </div>
                             </hbox>
                         </vbox>
-
                     </div>
                 </div>
-                        <!-- opacity-->
-                        <vbox>
-                            <hbox>
-                                <div style="padding-top:3px" width="65px">
-                                    <label value="Opacity" sclass="h3" />
-                                </div>
-                                <div  width="210px">
-                                    <slider id="opacitySlider" width="95%" />
-                                </div>
-                                <div align="right" style="padding-top:3px">
-                                    <label id="opacityLabel" />
-                                </div>
-                            </hbox>
-                        </vbox>
-                        <div id="sizeChooser" visible="false" width="100%">
-                            <hbox>
-                                <div style="padding-top:3px" width="65px">
-                                    <label value="Size" sclass="h3" />
-                                </div>
-                                <div width="210px">
-                                    <slider id="sizeSlider" maxpos="30" width="95%" />
-                                </div>
-                                <div align="right" style="padding-top:3px">
-                                    <label id="sizeLabel" />
-                                </div>
-                            </hbox>
+                <!-- opacity-->
+                <vbox>
+                    <hbox>
+                        <div style="padding-top:3px" width="65px">
+                            <label value="Opacity" sclass="h3" />
                         </div>
-
-                <div  width="60%">
+                        <div  width="210px">
+                            <slider id="opacitySlider" width="95%" />
+                        </div>
+                        <div align="right" style="padding-top:3px">
+                            <label id="opacityLabel" />
+                        </div>
+                    </hbox>
+                </vbox>
+                <div id="sizeChooser" visible="false" width="100%">
+                    <hbox>
+                        <div style="padding-top:3px" width="65px">
+                            <label value="Size" sclass="h3" />
+                        </div>
+                        <div width="210px">
+                            <slider id="sizeSlider" maxpos="30" width="95%" />
+                        </div>
+                        <div align="right" style="padding-top:3px">
+                            <label id="sizeLabel" />
+                        </div>
+                    </hbox>
+                </div>
+                <div id="legendImgUriDiv" width="60%">
                     <image id="legendImgUri" visible="false"/>
                 </div>
                 <div id="legendHtml" visible="true"/>
@@ -210,9 +195,7 @@ padding: 1px 5px 0px 0px;
                                     </hbox>
                                 </vbox>
                             </hbox>
-                            <separator />
                         </div>
-                        <separator />
                     </hbox>
                 </vbox>
                 <div align="right" style="padding-top:0px" visible="false">
@@ -223,7 +206,6 @@ padding: 1px 5px 0px 0px;
                         <label value="Highlight group: " />
                         <combobox id="cbClassificationGroup" />
                     </hbox>
-                    <separator />
                 </div>
                 <vbox>
                     <div id="dGroupBox" visible="false">

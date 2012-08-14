@@ -269,6 +269,8 @@ public class ClassificationLegend extends UtilityComposer {
                         lc.setParent(li);
                     } catch (Exception e) {
                         lhFourthColumn.setVisible(false);
+                        lhThirdColumn.setWidth("100%");
+                        dCreateButtons.setVisible(!readonly);
                     }
                 }
             });

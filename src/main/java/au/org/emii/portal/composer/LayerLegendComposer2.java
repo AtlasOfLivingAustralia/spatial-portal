@@ -495,6 +495,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                     legendImg.setVisible(true);
                     legendHtml.setVisible(false);
                 }
+
             } else if (currentSelection.getSelectedStyle() != null) {
                 /* 1. classification legend has uri with ".zul" content
                  * 2. prediction legend works here

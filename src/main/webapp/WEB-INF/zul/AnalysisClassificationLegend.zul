@@ -14,9 +14,9 @@
             <listbox sclass="legendlist" id="legend" width="360px" vflex="true" >
                 <listhead>
                     <listheader label="   " width="20px" id="lhFirstColumn" />
-                    <listheader label="class" width="230px" id="lhSecondColumn"></listheader>
-                    <listheader label="colour" width="50px" id="lhThirdColumn" ></listheader>
-                    <listheader label="count" width="60px" align="right" id="lhFourthColumn"></listheader>
+                    <listheader label="class" width="230px" id="lhSecondColumn"/>
+                    <listheader label="colour" width="50px" id="lhThirdColumn"/>
+                    <listheader label="count" width="60px" align="right" id="lhFourthColumn"/>
                 </listhead>
             </listbox>
             <vbox>

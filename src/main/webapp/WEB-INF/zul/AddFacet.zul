@@ -78,7 +78,7 @@
                 <button id="clearSelection" label="Clear selection" sclass="goButton"/>
             </div>
             <div height="420px">
-            <listbox sclass="legendlist2" id="legend" width="550px" height="100%" vflex="true">
+            <listbox sclass="legendlist2" id="legend" width="525px" height="100%" vflex="true">
                 <listhead sizable="true">
                     <listheader label="   " width="25px" id="lhFirstColumn" />
                     <listheader label="class" width="300px" id="lhSecondColumn"></listheader>
