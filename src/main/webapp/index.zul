@@ -254,17 +254,15 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <div  id="layerControls"/>
                                 </vlayout>
                             </center>
-                            <south height="100px;">
-                                <div sclass="contextualDivMenu" height="90px" width="390px">
+                            <south height="110px;">
+                                <div sclass="contextualDivMenu" height="90px" width="390px" style="margin:0; padding:0px;">
                                     <contextualMenu id="contextualMenu" style="margin:2px;" width="390px" />
                                 </div>
                             </south>
                         </borderlayout>
                     </div>
-                    
                     <leftMenuSearch id="leftMenuSearch" visible="false" />
                 </div>
-
             </west>
 
             <center id="center">

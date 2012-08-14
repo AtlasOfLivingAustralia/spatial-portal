@@ -240,7 +240,7 @@ padding: 1px 5px 0px 0px;
                         <div width="315px">
                             <vbox>
                                 <hbox>
-                                    <div style="padding-top:3px" width="125px">
+                                    <div style="padding-top:3px" width="60px">
                                         <label value="Month/year"  sclass="h3"/>
                                     </div>
                                     <div>
@@ -249,9 +249,15 @@ padding: 1px 5px 0px 0px;
                                             <comboitem label="Year" id="animationByYear" value="1" />
                                         </combobox>
                                     </div>
+                                    <div style="padding-top:3px; margin-left:15px;" width="70px">
+                                        <label value="Frame rate (s)" sclass="h3"/>
+                                    </div>
+                                    <div>
+                                       <doublebox id="dblAnimationSeconds" width="30px" value="3"/>
+                                    </div>
                                 </hbox>
                                 <hbox id="dAnimationStep" visible="false">
-                                    <div style="padding-top:3px" width="125px" >
+                                    <div style="padding-top:3px" width="60px" >
                                        <label value="Frame size in years" sclass="h3"/>
                                     </div>
                                     <div>
@@ -259,15 +265,10 @@ padding: 1px 5px 0px 0px;
                                     </div>
                                 </hbox>
                                 <hbox>
-                                    <div style="padding-top:3px" width="125px">
-                                        <label value="Time between frames (s)" sclass="h3"/>
-                                    </div>
-                                    <div>
-                                       <doublebox id="dblAnimationSeconds" width="30px" value="1"/>
-                                    </div>
+
                                 </hbox>
                                 <hbox>
-                                    <div style="padding-top:3px" width="125px">
+                                    <div style="padding-top:3px" width="60px">
                                         <label value="Year range" sclass="h3"/>
                                     </div>
                                     <div>
