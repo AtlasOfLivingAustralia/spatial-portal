@@ -195,11 +195,10 @@ padding: 1px 5px 0px 0px;
                 <div id="legendHtml" visible="true"/>
                 <vbox>
                     <hbox width="100%" >
-                        <div id="uncertainty" align="left" style="padding-top:0px" visible="false">
+                        <div id="uncertainty" align="left" style="padding-top:5px; margin-left:65px;" visible="false">
                             <checkbox id="chkUncertaintySize" label=" Display spatial uncertainty as a circle" />
                             <separator />
                             <hbox id="uncertaintyLegend" visible="false">
-                                <label value="Uncertainty legend" sclass="h3" />
                                 <vbox>
                                     <hbox>
                                         <image src="img/orangecircle.png" />
@@ -251,7 +250,7 @@ padding: 1px 5px 0px 0px;
                                             <comboitem label="Year" id="animationByYear" value="1" />
                                         </combobox>
                                     </div>
-                                    <div style="padding-top:3px; margin-left:15px;" width="70px">
+                                    <div style="padding-top:3px; margin-left:15px;" width="75px">
                                         <label value="Frame rate (s)" sclass="h3"/>
                                     </div>
                                     <div>

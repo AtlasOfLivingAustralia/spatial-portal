@@ -35,19 +35,15 @@
                             </listcell>
                             <listcell image="/img/information.png" onClick='mapPortalPage.activateLink("http://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'></listcell>
                         </listitem>
-                        <listfoot>
-                            <listfooter span="2">
-                                <hbox>
-                                    <button sclass="goButton" label="Add WMS Layer" onClick='Clients.evalJavaScript("addWMSLayerAction();")' />
-                                    <separator />
-                                    <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
-                                    <separator />
-                                    <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
-                                </hbox>
-                            </listfooter>
-                        </listfoot>
                     </listbox>
                 </radiogroup>
+                <hbox style="margin-top:10px;">
+                    <button sclass="goButton" label="Add WMS Layer" onClick='Clients.evalJavaScript("addWMSLayerAction();")' />
+                    <separator />
+                    <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
+                    <separator />
+                    <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
+                </hbox>
             </vbox>
         </vbox>
     </window>

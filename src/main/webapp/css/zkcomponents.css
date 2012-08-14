@@ -22,6 +22,12 @@ html, body *{
 }
 */
 
+div.z-listbox-footer {
+    background-color: #FFFFFF;
+    background: #FFFFFF;
+    border-top: 1px solid #FFFFFF;
+}
+
 div.z-listbox {
     border:0px;
     background-image: -moz-linear-gradient(bottom, #fafbf5, #e8eace); /* FF3.6 */
