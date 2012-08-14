@@ -158,6 +158,9 @@ padding: 1px 5px 0px 0px;
                                 </div>
                             </hbox>
                         </vbox>
+
+                    </div>
+                </div>
                         <!-- opacity-->
                         <vbox>
                             <hbox>
@@ -185,8 +188,7 @@ padding: 1px 5px 0px 0px;
                                 </div>
                             </hbox>
                         </div>
-                    </div>
-                </div>
+
                 <div  width="60%">
                     <image id="legendImgUri" visible="false"/>
                 </div>
