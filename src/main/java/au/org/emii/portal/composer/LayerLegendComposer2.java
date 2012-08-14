@@ -483,6 +483,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                 }
 
                 colourChooser.setVisible(pointtype.getSelectedItem() != rGrid);
+                uncertainty.setVisible(pointtype.getSelectedItem() != rGrid);
 
                 if ((cbColour.getSelectedItem() != ciColourUser || pointtype.getSelectedItem() == rGrid)
                         && m.isSpeciesLayer() /*&& !m.isClustered()*/) {
