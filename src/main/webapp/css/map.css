@@ -6,12 +6,16 @@ html, body {
     background-color: #7391ad;
     height:100%;
 }
+
+h2 { font-size: 20px; font-family:'Arial Narrow',Arial,Helvetica,sans-serif; font-weight: normal; }
+
+/*
 h2 { color:#3B6E8F; font-size: 16px; font-weight: bold;}
 h3 { color:#3B6E8F; font-size: 14px; font-weight: bold; margin-bottom:2px;margin-top:0px;}
 h4 { color:#3B6E8F; font-size: 12px;  margin: 0px 2px;}
 h5 { color:#3B6E8F; font-size: 11px;  margin: 0px 2px;}
 h6 { color:#3B6E8F; font-size: 11px;  margin: 0px 2px; display:inline;	}
-
+*/
 
 a {
     color: black;
@@ -824,3 +828,5 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     display: inline-block;
     vertical-align: top;
 }
+
+#sppopup2 { line-height: 16px;}

@@ -8,7 +8,7 @@ var popup;
 var selectControl;
 
 var popupWidth = 435; //pixels
-var popupHeight = 320; //pixels
+var popupHeight = 370; //pixels
 
 var requestCount = 0; // getFeatureInfo request count
 var queries = new Object(); // current getFeatureInfo requests
@@ -164,6 +164,7 @@ function loadBaseMap() {
 //        setTimeout("map.pan(1,1);",500);
 //    });
 }
+
 function goToLocation(lon, lat, zoom) {
     // Google.v3 uses EPSG:900913 as projection, so we have to
     // transform our coordinates
@@ -340,6 +341,7 @@ function autoSwitchBaseMap() {
 var query_
 var query_layer
 var query_size
+var query_ui_forall = "";
 function iterateSpeciesInfoQuery(curr) {
     var pos = 0;
     var curpos = curr;
@@ -361,6 +363,7 @@ function iterateSpeciesInfoQuery(curr) {
     } catch (err) {}
 
     var url = query_url[pos] + "&start=" + curpos;
+    //alert(url);
     $.getJSON(proxy_script + URLEncode(url), function(data) {
         if (!query_layer[pos].bs) {
             var ulyr = query_[pos];
@@ -371,7 +374,7 @@ function iterateSpeciesInfoQuery(curr) {
 
             var data = ulyr_meta.replace(/_n_/g,"<br />");
 
-            var heading = "<h2>Occurrence information (" + (curr+1) + " of " + query_count_total + ")</h2>";
+            var heading = "<h2 class='z-label'>Occurrence information (" + (curr+1) + " of " + query_count_total + ")</h2>";
             if (query_count_total==1) {
                 heading = "<h2>Occurrence information (1 occurrence)</h2>";
             }
@@ -753,7 +756,7 @@ function setupPopup(count, centerlonlat) {
     }
     popup = new OpenLayers.Popup.FramedCloud("featurePopup",
         centerlonlat,
-        new OpenLayers.Size(100,150),
+        new OpenLayers.Size(100,170),
         "<div id='sppopup'>" + waitmsg + "</div>" //  style='width: 350px; height: 250px;'
         ,
         null, true, onPopupClose);
@@ -812,13 +815,16 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
     var uncertainty = occinfo.coordinateUncertaintyInMeters;
     var uncertaintyText = uncertainty + " metres";
     if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
-        uncertaintyText = "<b>Undefined! </b>"; // setting to 10km
+        uncertaintyText = "<b>Not supplied </b>"; // setting to 10km
         uncertainty = 10000;
     }
     var heading = "<h2>Occurrence information (" + (curr+1) + " of " + total + ")</h2>";
     if (total==1) {
         heading = "<h2>Occurrence information (1 occurrence)</h2>";
     }
+
+    var fullQueryLink = "";
+    if(total>1) fullQueryLink = "More detail:  <a href='" + query_ui_forall + "' target='_blank'>All records at this point</a>";
 
     var checked = parent.isFlaggedRecord(query_layer[pos].name, occinfo.uuid);
     var checkstate = "";
@@ -833,7 +839,8 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
     " Longitude: "+occinfo.decimalLongitude + " , Latitude: " + occinfo.decimalLatitude + " (<a href='javascript:goToLocation("+occinfo.decimalLongitude+", "+occinfo.decimalLatitude+", 15);relocatePopup("+occinfo.decimalLongitude+", "+occinfo.decimalLatitude+");'>zoom to</a>) <br/>" +
     " Spatial uncertainty in metres: " + uncertaintyText + "<br />" +
     " Occurrence date: " + occurrencedate + " <br />" +
-    "Species Occurence <a href='" + biocache + "/occurrences/" + occinfo.uuid + "' target='_blank'>View details</a> <br /> <br />" +
+    "Full record: <a href='" + biocache + "/occurrences/" + occinfo.uuid + "' target='_blank'>View details</a> <br />" +
+        fullQueryLink + " <br /><br/>" +
     "<input type='checkbox' " + checkstate + " onClick='parent.flagRecord(\"" + query_layer[pos].name + "\",\"" + occinfo.uuid + "\",this.checked)' />Assign record to <i>ad hoc</i> group<br/>" +
     "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
@@ -945,7 +952,7 @@ function selected (evt) {
         if (attrs["oi"] != null) {
             popup = new OpenLayers.Popup.FramedCloud("featurePopup",
                 feature.geometry.getBounds().getCenterLonLat(),
-                new OpenLayers.Size(100,150),
+                new OpenLayers.Size(100,170),
                 "<div id='sppopup'>Retrieving data... </div>" //  style='width: 350px; height: 250px;'
                 ,
                 null, true, onPopupClose);
@@ -986,7 +993,7 @@ function selected (evt) {
 
             popup = new OpenLayers.Popup.FramedCloud("featurePopup",
                 feature.geometry.getBounds().getCenterLonLat(),
-                new OpenLayers.Size(100,150),
+                new OpenLayers.Size(100,170),
                 html
                 ,
                 null, true, onPopupClose);
@@ -1760,10 +1767,14 @@ function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {
         map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
     var lonSize = Math.abs(lon - lonlat.lon);
     var latSize = Math.abs(lat - lonlat.lat);
-    var url = layer.bs + "/webportal/occurrences?q=" + query
+    console.log(layer);
+    var url = layer.bs + "/occurrences/search?q=" + query
     + "&fq=longitude:[" + (lon-lonSize) + "%20TO%20" + (lon+lonSize) + "]"
     + "&fq=latitude:[" + (lat-latSize) + "%20TO%20" + (lat+latSize) + "]"
     + "&pageSize=1&facet=false";
+    var url_ui = layer.ws + "/occurrences/search?q=" + query
+        + "&fq=longitude:[" + (lon-lonSize) + "%20TO%20" + (lon+lonSize) + "]"
+        + "&fq=latitude:[" + (lat-latSize) + "%20TO%20" + (lat+latSize) + "]";
     var ret = null;
     $.ajax({
         url: proxy_script + URLEncode(url + "&start=" + start),
@@ -1779,6 +1790,7 @@ function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {
         query_size[pos] = ret.totalRecords;
         query_[pos] = query;
         query_url[pos] = url;
+        query_ui_forall = url_ui;
         return ret.occurrences[0];
     } else {
         return null;
