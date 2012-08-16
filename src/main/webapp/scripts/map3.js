@@ -840,7 +840,7 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
     " Spatial uncertainty in metres: " + uncertaintyText + "<br />" +
     " Occurrence date: " + occurrencedate + " <br />" +
     "Full record: <a href='" + biocache + "/occurrences/" + occinfo.uuid + "' target='_blank'>View details</a> <br />" +
-        fullQueryLink + " <br /><br/>" +
+        fullQueryLink + " <br/>" +
     "<input type='checkbox' " + checkstate + " onClick='parent.flagRecord(\"" + query_layer[pos].name + "\",\"" + occinfo.uuid + "\",this.checked)' />Assign record to <i>ad hoc</i> group<br/>" +
     "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
@@ -1767,7 +1767,7 @@ function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {
         map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
     var lonSize = Math.abs(lon - lonlat.lon);
     var latSize = Math.abs(lat - lonlat.lat);
-    console.log(layer);
+    //console.log(layer);
     var url = layer.bs + "/occurrences/search?q=" + query
     + "&fq=longitude:[" + (lon-lonSize) + "%20TO%20" + (lon+lonSize) + "]"
     + "&fq=latitude:[" + (lat-latSize) + "%20TO%20" + (lat+latSize) + "]"
