@@ -54,7 +54,12 @@
             <artifactId>ala-header-and-tails</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-        
+        <!-- ALA common UI - contains JSONP filter -->
+        <dependency>
+            <groupId>au.org.ala</groupId>
+            <artifactId>ala-common-ui</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <!--  Central Authorisation Service (CAS) client -->
         <dependency>
             <groupId>org.jasig.cas.client</groupId>

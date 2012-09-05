@@ -18,6 +18,15 @@
         <filter-name>characterEncodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+    <!-- JSONP callback filter -->
+    <filter>
+        <filter-name>JsonpFilter</filter-name>
+        <filter-class>au.org.ala.web.filter.JsonpFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>JsonpFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
     <!-- Enables clean URLs with JSP views e.g. /welcome instead of /app/welcome -->
     <filter>
         <filter-name>UrlRewriteFilter</filter-name>
@@ -59,4 +68,5 @@
         <listener-class>org.ala.layers.util.DBConnection</listener-class>
     </listener>
     -->
+
 </web-app>
