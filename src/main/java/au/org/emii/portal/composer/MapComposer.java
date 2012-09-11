@@ -430,16 +430,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 String content = "";
                 if (label.equalsIgnoreCase("download")) {
+                    // Added fast download option -
+                    // TODO refactor so this can be generated from same code that sets the downloadUrl (uri) in BiocacheQuery.java
+                    String fastDownloadUrl = uri.replaceFirst("/occurrences/download","/occurrences/index/download");
+
                     StringBuilder sbContent = new StringBuilder();
-                    sbContent.append("<p id='termsOfUseDownload'>");
+                    sbContent.append("<p id='termsOfUseDownload' style='padding:10px; margin-bottom: 0;'>");
                     sbContent.append("By downloading this content you are agreeing to use it in accordance ");
                     sbContent.append("with the Atlas of Living Australia <a href='http://www.ala.org.au/about/terms-of-use/#TOUusingcontent'>Terms of Use</a>");
                     sbContent.append(" and any Data Provider Terms associated with the data download. ");
                     sbContent.append("<br/><br/>");
-                    sbContent.append("Please provide the following <b>optional</b> details before downloading:");
+                    sbContent.append("Please provide the following details before downloading (* required)");
                     sbContent.append("</p>");
-                    sbContent.append("    <form id='downloadForm' onSubmit='downloadSubmitButtonClick(); return false;'>");
+                    sbContent.append("    <form id='downloadForm' onSubmit='downloadSubmitButtonClick(); return false;' style='padding:10px;'>");
                     sbContent.append("        <input type='hidden' name='url' id='downloadUrl' value='" + uri + "'/>");
+                    sbContent.append("        <input type='hidden' name='url' id='fastDownloadUrl' value='" + fastDownloadUrl + "'/>");
                     //sbContent.append("        <input type='hidden' name='url' id='downloadChecklistUrl' value='http://biocache.ala.org.au/ws/occurrences/facets/download?q=text:macropus rufus'/>");
                     //sbContent.append("        <input type='hidden' name='url' id='downloadFieldGuideUrl' value='/occurrences/fieldguide/download?q=text:macropus rufus'/>");
                     sbContent.append("        <fieldset>");
@@ -463,7 +468,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
                     sbContent.append("            <select></p>");
 
-                    sbContent.append("            <input type='submit' value='Download All Records' id='downloadSubmitButton'/>&nbsp;");
+                    sbContent.append("            <div style='padding: 10px 0;'>");
+                    sbContent.append("                <label for='filename' style='float: left;'>Download type</label>");
+                    sbContent.append("                <div style='display: inline-block; width: 55%; float: left; line-height: 20px; padding-left: 5px;'>");
+                    sbContent.append("                    <input type='radio' name='downloadType' value='fast' class='tooltip' checked='checked' title='Faster download but fewer fields are included'>&nbsp;All Records (fast)<br>");
+                    sbContent.append("                    <input type='radio' name='downloadType' value='detailed' class='tooltip' title='Slower download but more fields are included'>&nbsp;All Records (detailed)");
+                    sbContent.append("                </div>");
+                    sbContent.append("            </div>");
+                    sbContent.append("            <p style='clear:both;'>&nbsp;</p>");
+                    sbContent.append("            <p style='text-align:center;'><input type='submit' value='Download All Records' id='downloadSubmitButton'/></p>");
                     //sbContent.append("            <input type='submit' value='Download All Records' id='downloadSubmitButton'/>&nbsp;");
                     //sbContent.append("            <input type='submit' value='Download Species Checklist' id='downloadCheckListSubmitButton'/>&nbsp;");
                     //sbContent.append("            <input type='submit' value='Download Species Field Guide' id='downloadFieldGuideSubmitButton'/>&nbsp;");

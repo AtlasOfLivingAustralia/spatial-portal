@@ -514,19 +514,27 @@ console.log(currentbaselayertxt);
 
         <script><![CDATA[
 
-        function downloadSubmitButtonClick() {
+    function downloadSubmitButtonClick() {
         //e.preventDefault();
         if (validateForm()) {
-        var downloadUrl = $("input#downloadUrl").val().replace(/\\ /g, " ");
-        var reason = $("#reasonTypeId").val();
-        if(typeof reason == "undefined")
-            reason = "";
-        downloadUrl = downloadUrl + "&type=&email="+$("#email").val()+ "&reasonTypeId="+$("#reasonTypeId").val()+"&reason="+encodeURIComponent(reason)+"&file="+$("#filename").val();
-        //console.log("downloadUrl = " + downloadUrl);
-        //alert("downloadUrl = " + downloadUrl);
-        window.location.href = downloadUrl;
-        zk.Widget.$(jq('$externalContentWindow')).detach();
-        return false; 
+            var downloadUrl = $("input#downloadUrl").val().replace(/\\ /g, " ");
+            var fastDownloadUrl = $("input#fastDownloadUrl").val().replace(/\\ /g, " ");
+            var downloadType = $('input:radio[name=downloadType]:checked').val();
+            var reason = $("#reasonTypeId").val();
+            if(typeof reason == "undefined")
+                reason = "";
+
+            if (downloadType == "fast") {
+                downloadUrl = fastDownloadUrl + "&type=&email="+$("#email").val()+ "&reasonTypeId="+$("#reasonTypeId").val()+"&reason="+encodeURIComponent(reason)+"&file="+$("#filename").val();
+            } else {
+                downloadUrl = downloadUrl + "&type=&email="+$("#email").val()+ "&reasonTypeId="+$("#reasonTypeId").val()+"&reason="+encodeURIComponent(reason)+"&file="+$("#filename").val();
+            }
+
+            //console.log("downloadUrl = " + downloadUrl);
+            //alert("downloadUrl = " + downloadUrl);
+            window.location.href = downloadUrl;
+            zk.Widget.$(jq('$externalContentWindow')).detach();
+            return false;
         }
     }
 
