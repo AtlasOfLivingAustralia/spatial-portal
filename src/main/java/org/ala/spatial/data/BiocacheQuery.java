@@ -21,6 +21,9 @@ import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import net.sf.json.JSONArray;
 import org.ala.spatial.exception.NoSpeciesFoundException;
@@ -79,6 +82,7 @@ public class BiocacheQuery implements Query, Serializable {
     String qc;
     String biocacheWebServer;
     String biocacheServer;
+    boolean supportsDynamicFacets;
     boolean forMapping;
     //stored query responses.
     String speciesList = null;
@@ -139,7 +143,7 @@ public class BiocacheQuery implements Query, Serializable {
         makeParamId();
     }
 
-    public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, boolean[] geospatialKosher, String biocacheServer, String biocacheWebServer) {
+    public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, boolean[] geospatialKosher, String biocacheServer, String biocacheWebServer, boolean supportsDynamicFacets) {
         this.lsids = lsids;
         if (facets != null) {
             this.facets = (ArrayList<Facet>) facets.clone();
@@ -148,6 +152,7 @@ public class BiocacheQuery implements Query, Serializable {
         this.extraParams = extraParams;
         this.forMapping = forMapping;
         this.qc = CommonData.biocacheQc;
+        this.supportsDynamicFacets = supportsDynamicFacets;
 
         if (biocacheServer != null && biocacheWebServer != null) {
             this.biocacheWebServer = biocacheWebServer;
@@ -290,14 +295,11 @@ public class BiocacheQuery implements Query, Serializable {
             }
         }
 
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, geospatialKosher, biocacheServer, biocacheWebServer);
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, geospatialKosher, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
     }
 
     /**
      * Further restrict records by field values.
-     *
-     * @param field
-     * @param values
      */
     @Override
     public BiocacheQuery newFacet(Facet facet, boolean forMapping) {
@@ -313,7 +315,7 @@ public class BiocacheQuery implements Query, Serializable {
             newFacets.add(facet);
         }
 
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer);
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
     }
 
     /**
@@ -330,7 +332,7 @@ public class BiocacheQuery implements Query, Serializable {
             if (this.forMapping || !forMapping) {
                 return this;
             } else {
-                return new BiocacheQuery(lsids, wkt, extraParams, facets, forMapping, null, biocacheServer, biocacheWebServer);
+                return new BiocacheQuery(lsids, wkt, extraParams, facets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
             }
         }
 
@@ -344,7 +346,7 @@ public class BiocacheQuery implements Query, Serializable {
                 newWkt = (new WKTWriter()).write(intersectionGeom).replace(" (", "(").replace(", ", ",").replace(") ", ")");
             }
 
-            sq = new BiocacheQuery(lsids, newWkt, extraParams, facets, forMapping, null, biocacheServer, biocacheWebServer);
+            sq = new BiocacheQuery(lsids, newWkt, extraParams, facets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -933,12 +935,77 @@ public class BiocacheQuery implements Query, Serializable {
     public String getWMSpath() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
     ArrayList<QueryField> facetFieldList = null;
+
+    private Pattern dataResourceUidP = Pattern.compile("data_resource_uid:([\\\"]{0,1}[a-z]{2,3}[0-9]{1,}[\\\"]{0,1})");
+
+    /**
+     * TODO This functionality might be better placed in the service layer.
+     *
+     * @return
+     */
+    private List<String> retrieveCustomFacets() {
+        List<String> customFacets = new ArrayList<String>();
+
+        List<String> drs = new ArrayList<String>();
+        if(extraParams != null){
+            Matcher m = dataResourceUidP.matcher(extraParams);
+            while(m.find()){
+                for(int x =0; x<m.groupCount(); x++){
+                    drs.add(m.group(x).replaceAll("data_resource_uid:", "").replaceAll("\\\"",""));
+                }
+            }
+        }
+
+        if(getQc() != null){
+            Matcher m = dataResourceUidP.matcher(getQc());
+            while(m.find()){
+                for(int x =0; x<m.groupCount(); x++){
+                    drs.add(m.group(x).replaceAll("data_resource_uid:", "").replaceAll("\\\"",""));
+                }
+            }
+        }
+
+        //look up facets
+        for(String dr: drs){
+            try {
+                final String jsonUri = biocacheServer + "/upload/customIndexes/" +dr + ".json";
+                HttpClient client = new HttpClient();
+                GetMethod get = new GetMethod(jsonUri);
+                get.addRequestHeader("Content-type", "application/json");
+                int result = client.executeMethod(get);
+                String slist = get.getResponseBodyAsString();
+
+                JSONArray ja = JSONArray.fromObject(slist);
+
+                for(Object arrayElement: ja){
+                    System.out.println("Adding custom index : " + arrayElement);
+                    customFacets.add(arrayElement.toString());
+                }
+
+            } catch (Exception e){
+                System.err.println("Unable to load custom facets for : " + dr);
+                e.printStackTrace();
+            }
+        }
+
+        return customFacets;
+    }
 
     @Override
     public ArrayList<QueryField> getFacetFieldList() {
         if (facetFieldList == null) {
             ArrayList<QueryField> fields = new ArrayList<QueryField>();
+
+            //TODO does this list support dynamic facets......
+            if(supportsDynamicFacets){
+                //TODO add additional method to biocache-service
+                for(String facet: retrieveCustomFacets()){
+                    fields.add(new QueryField(facet, facet, QueryField.FieldType.STRING));
+                }
+            }
+
             // Taxonomic
             fields.add(new QueryField("taxon_name", "Scientific name", QueryField.FieldType.STRING));
             fields.add(new QueryField("raw_taxon_name", "Scientific name (unprocessed)", QueryField.FieldType.STRING));
@@ -954,7 +1021,7 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("rank", "Identified to rank", QueryField.FieldType.STRING));
             fields.add(new QueryField("interaction", "Species interaction", QueryField.FieldType.INT));
             // Geospatial
-            fields.add(new QueryField("coordinate_uncertainty", "Spatial uncertainty(m)", QueryField.FieldType.INT));
+            fields.add(new QueryField("coordinate_uncertainty", "Spatial uncertainty (metres)", QueryField.FieldType.INT));
             fields.add(new QueryField("sensitive", "Sensitive", QueryField.FieldType.STRING));
             fields.add(new QueryField("state_conservation", "State conservation status", QueryField.FieldType.STRING));
             fields.add(new QueryField("raw_state_conservation", "State conservation (unprocessed)", QueryField.FieldType.STRING));
@@ -1062,18 +1129,20 @@ public class BiocacheQuery implements Query, Serializable {
         }
         if (lo == null) {
             HttpClient client = new HttpClient();
-            String url = biocacheServer
-                    + LEGEND_SERVICE_CSV
-                    + DEFAULT_ROWS
-                    + "&q=" + getQ()
-                    + "&cm=" + (colourmode.equals("occurrence_year_decade")?"occurrence_year":translateFieldForSolr(colourmode))
-                    + getQc();
-            System.out.println(url);
-            GetMethod get = new GetMethod(url);
-
-            String legend = null;
+            String facetToColourBy = colourmode.equals("occurrence_year_decade")?"occurrence_year":translateFieldForSolr(colourmode);
 
             try {
+                String url = biocacheServer
+                        + LEGEND_SERVICE_CSV
+                        + DEFAULT_ROWS
+                        + "&q=" + getQ()
+                        + "&cm=" + URLEncoder.encode(facetToColourBy, "UTF-8")
+                        + getQc();
+                System.out.println(url);
+                GetMethod get = new GetMethod(url);
+
+                //String legend = null;
+
                 int result = client.executeMethod(get);
                 String s = get.getResponseBodyAsString();
                 //in the first line do field name replacement
@@ -1191,7 +1260,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
         newFacets.addAll(facets);
 
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer);
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
     }
 
     @Override
@@ -1478,7 +1547,7 @@ public class BiocacheQuery implements Query, Serializable {
                 + "&q=" + getQ()
                 + getQc()
                 + "&pageSize=0&facet=false";
-        System.out.println(url);
+        System.out.println("Retrieving query metadata: " + url);
         GetMethod get = new GetMethod(url);
 
         try {
@@ -1614,6 +1683,6 @@ public class BiocacheQuery implements Query, Serializable {
             newFacets.addAll(facets);
         }
         newFacets.add(Facet.parseFacet(sb.toString()));
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer);
+        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
     }
 }

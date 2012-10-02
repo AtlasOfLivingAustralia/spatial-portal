@@ -1339,6 +1339,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return null;
     }
 
+    /**
+     * Parsing of "q" and  "fq" params
+     * 
+     * @return
+     */
     private MapLayer loadUrlParameters() {
         String params = null;
         
@@ -1394,6 +1399,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Double radius = null;
             String savedsession = "";
             boolean[] geospatialKosher = null;
+            boolean supportDynamic = false;
             if (userParams != null) {
                 for (int i = 0; i < userParams.size(); i++) {
                     String key = userParams.get(i).getKey();
@@ -1474,6 +1480,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         radius = Double.parseDouble(value);
                     } else if (key.equals("ss")) {
                         savedsession = value.trim();
+                    } else if (key.equals("dynamic")) {
+                        supportDynamic = Boolean.parseBoolean(value);
                     }
                 }
 
@@ -1496,13 +1504,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     System.out.println("No saved session to load");
                 }
 
-
-
                 System.out.println("url query: " + sb.toString());
                 if (sb.toString().length() > 0) {
-                    String query = sb.toString();
 
-                    BiocacheQuery q = new BiocacheQuery(null, wkt, sb.toString(), null, true, geospatialKosher, bs, ws);
+                    BiocacheQuery q = new BiocacheQuery(null, wkt, sb.toString(), null, true, geospatialKosher, bs, ws, supportDynamic);
 
                     if (qc != null) {
                         q.setQc(qc);
