@@ -605,22 +605,26 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         }
 
         Query q = (Query) m.getData("query");
-//        Object [] o = (Object []) RecordsLookup.getData(q.getQ());
-//        ArrayList<QueryField> fields = (ArrayList<QueryField>) o[1];
+
         if (q != null) {
             ArrayList<QueryField> fields = q.getFacetFieldList();
-            /*for (int i = 0; i < fields.size(); i++) {
-            Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
-            ci.setValue(fields.get(i).getName());
-            ci.setParent(cbColour);
+
+            if (!fields.get(0).getName().equals("taxon_name")) {
+                Comboitem seperator1 = new Comboitem("seperator");
+                seperator1.setLabel("------------------Custom fields------------------");
+                seperator1.setParent(cbColour);
+                seperator1.setDisabled(true);
             }
-             *
-             */
-            Comboitem seperator = new Comboitem("seperator");
-            seperator.setLabel("------------------Taxonomic------------------");
-            seperator.setParent(cbColour);
-            seperator.setDisabled(true);
+
             for (int i = 0; i < fields.size(); i++) {
+
+                if (fields.get(i).getName().equals("taxon_name")) {
+                    Comboitem seperator1 = new Comboitem("seperator");
+                    seperator1.setLabel("------------------Taxonomic------------------");
+                    seperator1.setParent(cbColour);
+                    seperator1.setDisabled(true);
+                }
+
                 Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
                 ci.setValue(fields.get(i).getName());
                 ci.setParent(cbColour);

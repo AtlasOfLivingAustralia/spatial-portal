@@ -30,6 +30,7 @@ import org.ala.spatial.exception.NoSpeciesFoundException;
 import org.ala.spatial.sampling.SimpleRegion;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -941,55 +942,35 @@ public class BiocacheQuery implements Query, Serializable {
     private Pattern dataResourceUidP = Pattern.compile("data_resource_uid:([\\\"]{0,1}[a-z]{2,3}[0-9]{1,}[\\\"]{0,1})");
 
     /**
-     * TODO This functionality might be better placed in the service layer.
+     * Retrieves a list of custom facets for the supplied query.
      *
      * @return
      */
-    private List<String> retrieveCustomFacets() {
-        List<String> customFacets = new ArrayList<String>();
-
-        List<String> drs = new ArrayList<String>();
-        if(extraParams != null){
-            Matcher m = dataResourceUidP.matcher(extraParams);
-            while(m.find()){
-                for(int x =0; x<m.groupCount(); x++){
-                    drs.add(m.group(x).replaceAll("data_resource_uid:", "").replaceAll("\\\"",""));
-                }
-            }
-        }
-
-        if(getQc() != null){
-            Matcher m = dataResourceUidP.matcher(getQc());
-            while(m.find()){
-                for(int x =0; x<m.groupCount(); x++){
-                    drs.add(m.group(x).replaceAll("data_resource_uid:", "").replaceAll("\\\"",""));
-                }
-            }
-        }
-
+    private List<QueryField> retrieveCustomFacets() {
+        List<QueryField> customFacets = new ArrayList<QueryField>();
         //look up facets
-        for(String dr: drs){
-            try {
-                final String jsonUri = biocacheServer + "/upload/customIndexes/" +dr + ".json";
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(jsonUri);
-                get.addRequestHeader("Content-type", "application/json");
-                int result = client.executeMethod(get);
-                String slist = get.getResponseBodyAsString();
+        try {
+            final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" +getFullQ(true) + "&qc="+getQc();
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(jsonUri);
+            get.addRequestHeader("Content-type", "application/json");
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
 
-                JSONArray ja = JSONArray.fromObject(slist);
+            JSONArray ja = JSONArray.fromObject(slist);
 
-                for(Object arrayElement: ja){
-                    System.out.println("Adding custom index : " + arrayElement);
-                    customFacets.add(arrayElement.toString());
-                }
+            for(Object arrayElement: ja){
+                JSONObject jsonObject = (JSONObject) arrayElement;
+                String facetName = jsonObject.getString("name");
+                String facetDisplayName = jsonObject.getString("displayName");
 
-            } catch (Exception e){
-                System.err.println("Unable to load custom facets for : " + dr);
-                e.printStackTrace();
+                System.out.println("Adding custom index : " + arrayElement);
+                customFacets.add(new QueryField(facetName, facetDisplayName, QueryField.FieldType.STRING));
             }
+        } catch (Exception e){
+            //System.err.println("Unable to load custom facets for : " + dr);
+            e.printStackTrace();
         }
-
         return customFacets;
     }
 
@@ -997,15 +978,9 @@ public class BiocacheQuery implements Query, Serializable {
     public ArrayList<QueryField> getFacetFieldList() {
         if (facetFieldList == null) {
             ArrayList<QueryField> fields = new ArrayList<QueryField>();
-
-            //TODO does this list support dynamic facets......
             if(supportsDynamicFacets){
-                //TODO add additional method to biocache-service
-                for(String facet: retrieveCustomFacets()){
-                    fields.add(new QueryField(facet, facet, QueryField.FieldType.STRING));
-                }
+                fields.addAll(retrieveCustomFacets());
             }
-
             // Taxonomic
             fields.add(new QueryField("taxon_name", "Scientific name", QueryField.FieldType.STRING));
             fields.add(new QueryField("raw_taxon_name", "Scientific name (unprocessed)", QueryField.FieldType.STRING));
@@ -1376,7 +1351,11 @@ public class BiocacheQuery implements Query, Serializable {
             html += "</td></tr>";
             lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
         }
-        html += "<tr class='" + lastClass + "'><td class='md_th'>Data providers: </td><td class='md_spacer'/><td class='md_value'>" + getDataProviders() + "</td></tr>";
+
+        String dataProviders = StringUtils.trimToNull(getDataProviders());
+        if(dataProviders != null){
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Data providers: </td><td class='md_spacer'/><td class='md_value'>" + getDataProviders() + "</td></tr>";
+        }
         lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
 
         if (lsids != null && lsids.length() > 0) {
