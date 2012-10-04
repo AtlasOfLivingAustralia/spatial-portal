@@ -24,6 +24,7 @@ import au.org.emii.portal.util.SessionPrint;
 import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
+import com.sun.jersey.core.util.StringIgnoreCaseKeyComparator;
 import com.thoughtworks.xstream.persistence.FilePersistenceStrategy;
 import com.thoughtworks.xstream.persistence.PersistenceStrategy;
 import com.thoughtworks.xstream.persistence.XmlArrayList;
@@ -41,6 +42,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.servlet.http.Cookie;
@@ -553,7 +555,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /**
      * Activate a map layer on the map
      *
-     * @param layer MapLayer instance to activate
      * @param doJavaScript set false to defer execution of JavaScript which
      * actually adds the layer to the openlayers menu
      *
@@ -892,9 +893,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /**
      * Add a map layer to the user defined map layers group (My Layers)
      *
-     * @param layer
-     *
-     *
+     * @param mapLayer
      */
     public void addUserDefinedLayerToMenu(MapLayer mapLayer, boolean activate) {
         if (safeToPerformMapAction()) {
@@ -1337,6 +1336,27 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return null;
     }
 
+    private Pattern layerNameParamPattern = Pattern.compile("ly\\.[0-9]{1,}");
+
+    public void mapMultiQueryLayers(boolean[] geospatialKosher, String baseBiocacheUrl, String baseWSBiocacheUrl, boolean supportDynamic){
+        Map<String, String> userParams = getQueryParameterMap(Executions.getCurrent().getDesktop().getQueryString());
+        for(String key: userParams.keySet()){
+            if(layerNameParamPattern.matcher(key).find()){
+                //we have a layer, retrieve the other bits
+                String layerName = userParams.get(key);
+                String query = userParams.get(key + ".q");
+                //format the query
+                if(query.contains(",")){
+                    String[] queryComponents = query.split(",");
+                    query = StringUtils.join(queryComponents, " OR ");
+                }
+                String style = userParams.get(key + ".s");
+                BiocacheQuery q = new BiocacheQuery(null, null, query, null, true, geospatialKosher, baseBiocacheUrl, baseWSBiocacheUrl, supportDynamic);
+                mapSpecies(q, layerName, "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, 0, 4, 0.8f, Integer.decode(style));
+            }
+        }
+    }
+
     /**
      * Parsing of "q" and  "fq" params
      * 
@@ -1367,7 +1387,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String bs = null;
             String ws = null;
             String wkt = null;
-            int size = 3;
+            int size = 4;
             float opacity = 0.6f;
             int colour = 0xff0000;
             String pointtype = "auto";
@@ -1502,19 +1522,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                                     + "  new OpenLayers.Projection('EPSG:4326'),"
                                     + "  map.getProjectionObject()), true);";
                             openLayersJavascript.setAdditionalScript(script);
-                        } else {
-//                            if(bb.startsWith("n")) {
-//                                openLayersJavascript.setAdditionalScript("map.zoomToExtent(new OpenLayers.Bounds("
-//                                    + bb.substring(1) + ")"
-//                                    + ".transform("
-//                                    + "  new OpenLayers.Projection('EPSG:4326'),"
-//                                    + "  map.getProjectionObject()), true);");
-//                            } else {
-//                                openLayersJavascript.setAdditionalScript("map.zoomToExtent(new OpenLayers.Bounds("
-//                                    + bb.substring(1) + "), true);");
-//                            }
                         }
-
                         //mappable attributes
                         int setGrid = -1;
                         if (pointtype.equals("grid")) {
@@ -1526,9 +1534,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         return mapSpecies(q, q.getSolrName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, setGrid, size, opacity, colour);
                     }
                 }
+
+                mapMultiQueryLayers(geospatialKosher, bs, ws, supportDynamic);
             }
         } catch (Exception e) {
-            System.out.println("Opps error loading url parameters: " + params);
+            System.out.println("Error loading url parameters: " + params);
             e.printStackTrace(System.out);
         }
 
@@ -3490,6 +3500,31 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         return list;
     }
+
+
+    private Map<String, String> getQueryParameterMap(String params) {
+        if (params == null || params.length() == 0) {
+            return null;
+        }
+
+        HashMap<String, String> map = new HashMap<String, String>();
+        for (String s : params.split("&")) {
+            String[] keyvalue = s.split("=");
+            if (keyvalue.length >= 2) {
+                String key = keyvalue[0];
+                String value = keyvalue[1];
+                try {
+                    value = URLDecoder.decode(value, "UTF-8");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                map.put(key, value);
+            }
+        }
+
+        return map;
+    }
+
 
     public ArrayList<LayerSelection> getLayerSelections() {
         return selectedLayers;
