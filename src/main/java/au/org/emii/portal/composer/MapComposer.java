@@ -973,8 +973,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @param name Name of map layer
      * @param uri URI for the WMS service
      * @param opacity 0 for invisible, 1 for solid
-     * @param filter filter
-     * @param legend URI for map layer legend
      */
     public MapLayer addWMSLayer(String name, String displayName, String uri, float opacity, String metadata, String legendUri, int subType, String cqlfilter, String envParams) {
         return addWMSLayer(name, displayName, uri, opacity, metadata, legendUri, subType, cqlfilter, envParams, null);
@@ -1346,24 +1344,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     private MapLayer loadUrlParameters() {
         String params = null;
-        
-//        Cookie[] cookies = ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies();
-//        if (cookies != null) {
-//            for (Cookie cookie : cookies) {
-//                if (cookie.getName().equals("analysis_layer_selections")) {
-//                    try {
-//                        String[] s = URLDecoder.decode(cookie.getValue(), "UTF-8").split("\n");
-//                        for (int i = 0; i < s.length; i++) {
-//                            String[] ls = s[i].split(" // ");
-//                            selectedLayers.add(new LayerSelection(ls[0], ls[1]));
-//                        }
-//                        break;
-//                    } catch (Exception e) {
-//                    }
-//
-//                }
-//            }
-//        }
 
         try {
             String analysis_layer_selections = getCookieValue("analysis_layer_selections");
