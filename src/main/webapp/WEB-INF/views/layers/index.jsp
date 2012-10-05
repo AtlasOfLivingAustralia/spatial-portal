@@ -139,9 +139,12 @@
                                     <td>${layer.keywords}</td>
                                     <td>
                                         <img src="/output/layerthumbs/ALA:${layer.name}.jpg" width="200px" />
+                                        <br/>
+			                           <a href="http://spatial.ala.org.au/?layers=${layer.name}">Click to view this layer</a>
                                         <!-- <img src="/geoserver/wms/reflect?layers=ALA:${layer.name}&width=200&height=200" /> -->
                                         <br />
                                         <!--<a href="/geoserver/wms/kml?layers=ALA:${layer.name}">KML</a>-->
+                                        <a href="http://spatial.ala.org.au/?layers=${layer.name}">Click to view this layer</a>
                                     </td>
                                     <!-- <td>${layer.citation_date}</td> -->
                                     <!--

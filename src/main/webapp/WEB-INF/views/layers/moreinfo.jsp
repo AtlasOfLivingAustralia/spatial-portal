@@ -116,6 +116,14 @@
                             </c:forEach>
                         </td>
                     </tr>
+                    
+                    <tr>
+                        <td class="title">View in spatial portal :</td>
+                        <td>
+                           <a href="http://spatial.ala.org.au/?layers=${layer.name}">Click to view this layer</a>
+                        </td>
+                    </tr>                    
+                    
                 </table>
 
 
