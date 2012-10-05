@@ -1363,22 +1363,24 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     public void mapLayerFromParams(){
         Map<String, String> userParams = getQueryParameterMap(Executions.getCurrent().getDesktop().getQueryString());
-        String layersCSV = userParams.get("layers");
-        if(StringUtils.trimToNull(layersCSV) == null) return;
-        String[] layers =  layersCSV.split(",");
-        for (String s : layers) {
-            JSONArray layerlist = CommonData.getLayerListJSONArray();
-            for (int j = 0; j < layerlist.size(); j++) {
-                JSONObject jo = layerlist.getJSONObject(j);
-                String name = jo.getString("name");
-                if (name.equalsIgnoreCase(s)) {
-                    String uid = jo.getString("id");
-                    String type = jo.getString("type");
-                    String treeName = StringUtils.capitalize(jo.getString("displayname"));
-                    String treePath = jo.getString("displaypath");
-                    String legendurl = CommonData.geoServer + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
-                    String metadata = CommonData.layersServer + "/layers/view/more/" + uid;
-                    getMapComposer().addWMSLayer(s, treeName, treePath, (float) 0.75, metadata, legendurl, type.equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL, null, null, null);
+        if(userParams !=null){
+            String layersCSV = userParams.get("layers");
+            if(StringUtils.trimToNull(layersCSV) == null) return;
+            String[] layers =  layersCSV.split(",");
+            for (String s : layers) {
+                JSONArray layerlist = CommonData.getLayerListJSONArray();
+                for (int j = 0; j < layerlist.size(); j++) {
+                    JSONObject jo = layerlist.getJSONObject(j);
+                    String name = jo.getString("name");
+                    if (name.equalsIgnoreCase(s)) {
+                        String uid = jo.getString("id");
+                        String type = jo.getString("type");
+                        String treeName = StringUtils.capitalize(jo.getString("displayname"));
+                        String treePath = jo.getString("displaypath");
+                        String legendurl = CommonData.geoServer + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
+                        String metadata = CommonData.layersServer + "/layers/view/more/" + uid;
+                        getMapComposer().addWMSLayer(s, treeName, treePath, (float) 0.75, metadata, legendurl, type.equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL, null, null, null);
+                    }
                 }
             }
         }
