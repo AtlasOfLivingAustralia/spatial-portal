@@ -1345,14 +1345,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 //we have a layer, retrieve the other bits
                 String layerName = userParams.get(key);
                 String query = userParams.get(key + ".q");
+                String style = userParams.get(key + ".s");
+
+                System.out.println(String.format("Add layer: '%s', query: '%s', style: '%s', key: '%s'", layerName, query, style, key));
+
                 //format the query
-                if(query.contains(",")){
+                if(query != null && query.contains(",")){
                     String[] queryComponents = query.split(",");
                     query = StringUtils.join(queryComponents, " OR ");
                 }
-                String style = userParams.get(key + ".s");
-                BiocacheQuery q = new BiocacheQuery(null, null, query, null, true, geospatialKosher, baseBiocacheUrl, baseWSBiocacheUrl, supportDynamic);
-                mapSpecies(q, layerName, "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, 0, 4, 0.8f, Integer.decode(style));
+                if(query !=null && style !=null && layerName !=null){
+
+                    BiocacheQuery q = new BiocacheQuery(null, null, query, null, true, geospatialKosher, baseBiocacheUrl, baseWSBiocacheUrl, supportDynamic);
+                    mapSpecies(q, layerName, "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, 0, 4, 0.8f, Integer.decode(style));
+                }
             }
         }
     }
