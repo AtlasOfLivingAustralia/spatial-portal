@@ -16,6 +16,8 @@
 package org.ala.layers.dao;
 
 import java.util.List;
+import java.util.Map;
+
 import org.ala.layers.dto.Distribution;
 
 /**
@@ -44,4 +46,22 @@ public interface DistributionDAO {
     public Distribution getDistributionBySpcode(long spcode, String type);
 
     public List<Distribution> getDistributionByLSID(String[] lsids);
+    
+    /**
+     * Identify points which fall outside an expert distribution
+     * 
+     * @param lsid
+     *            the lsid associated with the species whose expert distribution
+     *            we are interested in.
+     * @param points
+     *            Map containing point information. Keys are point ids
+     *            (typically the uuids of the associated occurence records),
+     *            values are maps containing the point's decimal latitude (with
+     *            key "decimalLatitude") and decimal longitude (with key
+     *            "decimalLongitude").
+     * @return A map containing the distance outside the expert distribution for
+     *         each point which falls outside the area defined by the
+     *         distribution. Keys are point ids, values are the distances
+     */
+    public Map<String, Double> identifyOutlierPointsForDistribution(String lsid, Map<String, Map<String, Double>> points);
 }
