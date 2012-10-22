@@ -74,7 +74,7 @@ public class DistributionDAOImpl implements DistributionDAO {
 
     @Override
     public Distribution getDistributionBySpcode(long spcode, String type) {
-        String sql = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,max_depth,pelagic_fl,metadata_u,wmsurl,lsid,type,area_name,pid, ST_AsText(the_geom) as geometry, checklist_name, area_km, notes, geom_idx from distributions where spcode= ? and type= ? ";
+        String sql = SELECT_CLAUSE + ", ST_AsText(the_geom) AS geometry FROM " + viewName + " WHERE spcode= ? AND type= ?";
         List<Distribution> d = updateWMSUrl(jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), (double) spcode, type));
         if (d.size() > 0) {
             return d.get(0);
@@ -116,7 +116,7 @@ public class DistributionDAOImpl implements DistributionDAO {
 
     @Override
     public List<Distribution> getDistributionByLSID(String[] lsids) {
-        String sql = SELECT_CLAUSE + " from " + viewName + " where lsid IN (:lsids)";
+        String sql = SELECT_CLAUSE + ", ST_AsText(the_geom) AS geometry FROM " + viewName + " WHERE lsid IN (:lsids)";
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("lsids", Arrays.asList(lsids));
         params.put("type", Distribution.EXPERT_DISTRIBUTION);
