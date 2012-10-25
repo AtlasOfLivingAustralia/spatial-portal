@@ -221,6 +221,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                         }
                         if (!m.containsKey("value")) {
                             m.put("value", (Float.isNaN(v[0]) ? "n/a" : v[0]));
+                            m.put("units", layer.getEnvironmentalvalueunits());
                         }
                         out.add(m);
                     } else {
@@ -255,6 +256,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                                 //s = "{\"value\":" + v[0] + ",\"layername\":\"" + name + " (" + gid + ")\"}";
                                 m.put("value", (Float.isNaN(v[0]) ? "n/a" : v[0]));
                             }
+
                             out.add(m);
                         }
                     }
