@@ -338,8 +338,14 @@ public class TabulationGenerator {
         resolution = Double.parseDouble(confirmResolution(new String[]{fieldId1, fieldId2}, String.valueOf(resolution)));
 
         //get extents for all layers
-        double[][] extents = getLayerExtents(String.valueOf(resolution), fieldId1);
-        extents = internalExtents(extents, getLayerExtents(String.valueOf(resolution), fieldId2));
+        double[][] field1Extents = getLayerExtents(String.valueOf(resolution), fieldId1);
+        System.out.println("Extents for " + fieldId1 + ": " + field1Extents);
+        
+        double[][] field2Extents = getLayerExtents(String.valueOf(resolution), fieldId2);
+        System.out.println("Extents for " + fieldId2 + ": " + field2Extents);
+        
+        double[][] extents = internalExtents(field1Extents, field2Extents);
+        System.out.println("Internal extents: " + extents);
         if (!isValidExtents(extents)) {
             System.out.println("Warning, no overlap between grids: " + fieldId1 + " and " + fieldId2);
             return null;
