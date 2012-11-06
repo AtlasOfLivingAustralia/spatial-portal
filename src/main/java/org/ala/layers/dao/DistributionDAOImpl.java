@@ -14,11 +14,16 @@
  ***************************************************************************/
 package org.ala.layers.dao;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+
 import org.ala.layers.dto.Distribution;
+import org.ala.layers.dto.Facet;
 import org.ala.layers.intersect.IntersectConfig;
 import org.apache.log4j.Logger;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -73,6 +78,32 @@ public class DistributionDAOImpl implements DistributionDAO {
     }
 
     @Override
+    public List<Facet> queryDistributionsFamilyCounts(String wkt, double min_depth, double max_depth, Boolean pelagic, Boolean coastal, Boolean estuarine, Boolean desmersal, String groupName,
+            Integer geomIdx, String lsids, String[] families, String[] familyLsids, String[] genera, String[] generaLsids, String type) {
+        logger.info("Getting distributions list - family counts");
+
+        StringBuilder whereClause = new StringBuilder();
+        Map<String, Object> params = new HashMap<String, Object>();
+        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids, families, familyLsids, genera, generaLsids, type, params, whereClause);
+        if (wkt != null && wkt.length() > 0) {
+            if (whereClause.length() > 0) {
+                whereClause.append(" AND ");
+            }
+            whereClause.append("ST_INTERSECTS(the_geom, ST_GEOMFROMTEXT( :wkt , 4326))");
+            params.put("wkt", wkt);
+        }
+
+        String sql = "Select family as name, count(*) as count from " + viewName;
+        if (whereClause.length() > 0) {
+            sql += " WHERE " + whereClause.toString();
+        }
+        sql = sql + " group by family";
+        
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Facet.class), params);
+    }
+    
+    
+    @Override
     public Distribution getDistributionBySpcode(long spcode, String type) {
         String sql = SELECT_CLAUSE + ", ST_AsText(the_geom) AS geometry FROM " + viewName + " WHERE spcode= ? AND type= ?";
         List<Distribution> d = updateWMSUrl(jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), (double) spcode, type));
@@ -101,7 +132,7 @@ public class DistributionDAOImpl implements DistributionDAO {
         params.put("type", type);
         String pointGeom = "POINT(" + longitude + " " + latitude + ")";
 
-        String sql = SELECT_CLAUSE + " from " + viewName + " " + "where ST_Distance_Sphere(the_geom, ST_GeomFromText('" + pointGeom + "', 4326)) <= :radius";
+        String sql = SELECT_CLAUSE + " from " + viewName + " " + "where ST_DWithin(the_geom, ST_GeomFromText('" + pointGeom + "', 4326), :radius)";
 
         // add additional criteria
         StringBuilder whereClause = new StringBuilder();
@@ -114,6 +145,37 @@ public class DistributionDAOImpl implements DistributionDAO {
         return updateWMSUrl(jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params));
     }
 
+    /**
+     * Query by radius
+     * 
+     * @return set of species with distributions intersecting the radius
+     */
+    public List<Facet> queryDistributionsByRadiusFamilyCounts(float longitude, float latitude, float radiusInMetres, double min_depth, double max_depth, Boolean pelagic, Boolean coastal,
+            Boolean estuarine, Boolean desmersal, String groupName, Integer geomIdx, String lsids, String[] families, String[] familyLsids, String[] genera, String[] generaLsids, String type) {
+        logger.info("Getting distributions list with a radius");
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("radius", radiusInMetres);
+        params.put("type", type);
+        String pointGeom = "POINT(" + longitude + " " + latitude + ")";
+
+        String sql = "Select family as name, count(*) as count from " + viewName + " " + "where ST_DWithin(the_geom, ST_GeomFromText('" + pointGeom + "', 4326), :radius)";
+
+        // add additional criteria
+        StringBuilder whereClause = new StringBuilder();
+
+        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids, families, familyLsids, genera, generaLsids, type, params, whereClause);
+
+        if (whereClause.length() > 0) {
+            sql += " AND " + whereClause.toString();
+        }
+        
+        sql = sql + " group by family";
+        
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Facet.class), params);
+    }    
+    
+    
     @Override
     public List<Distribution> getDistributionByLSID(String[] lsids) {
         String sql = SELECT_CLAUSE + ", ST_AsText(the_geom) AS geometry FROM " + viewName + " WHERE lsid IN (:lsids)";
@@ -277,6 +339,7 @@ public class DistributionDAOImpl implements DistributionDAO {
             // if no points were supplied (empty map) then just return an empty
             // result map
             if (points.isEmpty()) {
+                System.out.println("Empty points map supplied");
                 return outlierDistances;
             }
 
@@ -286,6 +349,7 @@ public class DistributionDAOImpl implements DistributionDAO {
             // Insert all the points into the temporary table, along with the
             // uuids
             // for the points
+            System.out.println("Inserting points");
             for (String uuid : points.keySet()) {
                 Map<String, Double> pointDetails = points.get(uuid);
                 if (pointDetails != null) {
@@ -299,20 +363,20 @@ public class DistributionDAOImpl implements DistributionDAO {
                 }
             }
 
-            // return the distance of all points that are located outside the
-            // expert distribution, and also are inside the bounding box for the
-            // expert distribution - the bounds of the area for which the
-            // expert distribution was generated.
+            System.out.println("Calculating distances");
+            // for points that fall outside the distribution, return the
+            // distance from the distribution
+            
+            //select id from temp_exp_dist_outliers where (SELECT bounding_box FROM distributiondata where lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:c20d9b40-9c19-47e9-9602-c793ae028244') IS NULL OR NOT ST_Intersects(point, Geography((SELECT bounding_box FROM distributiondata where lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:c20d9b40-9c19-47e9-9602-c793ae028244')))
+            
             List<Map<String, Object>> outlierDistancesQueryResult = jdbcTemplate
                     .queryForList(
-                            "SELECT id, ST_DISTANCE(point, (SELECT Geography(the_geom) from distributionshapes where id = ?)) as distance from test_temp_exp_dist_outliers where (SELECT bounding_box FROM distributiondata where geom_idx = ?) IS NULL OR ST_Intersects(point, Geography((SELECT bounding_box FROM distributiondata where geom_idx = ?)))",
-                            expertDistributionShapeId, expertDistributionShapeId, expertDistributionShapeId);
+                            "SELECT id, ST_DISTANCE(point, (SELECT Geography(the_geom) from distributionshapes where id = ?)) as distance from temp_exp_dist_outliers where ST_Intersects(point, Geography((SELECT bounding_box FROM distributiondata where geom_idx = ?)))",
+                            expertDistributionShapeId, expertDistributionShapeId);
 
             for (Map<String, Object> queryResultRow : outlierDistancesQueryResult) {
                 String uuid = (String) queryResultRow.get("id");
                 Double distance = (Double) queryResultRow.get("distance");
-                // Zero distance implies that the point is inside the
-                // distribution
                 if (distance > 0) {
                     outlierDistances.put(uuid, distance);
                 }
@@ -320,6 +384,8 @@ public class DistributionDAOImpl implements DistributionDAO {
         } catch (EmptyResultDataAccessException ex) {
             throw new IllegalArgumentException("No expert distribution associated with lsid " + lsid, ex);
         }
+
+        System.out.println(outlierDistances);
 
         return outlierDistances;
     }
