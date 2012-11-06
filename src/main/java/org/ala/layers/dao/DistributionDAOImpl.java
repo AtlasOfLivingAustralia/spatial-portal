@@ -339,7 +339,6 @@ public class DistributionDAOImpl implements DistributionDAO {
             // if no points were supplied (empty map) then just return an empty
             // result map
             if (points.isEmpty()) {
-                System.out.println("Empty points map supplied");
                 return outlierDistances;
             }
 
@@ -349,7 +348,6 @@ public class DistributionDAOImpl implements DistributionDAO {
             // Insert all the points into the temporary table, along with the
             // uuids
             // for the points
-            System.out.println("Inserting points");
             for (String uuid : points.keySet()) {
                 Map<String, Double> pointDetails = points.get(uuid);
                 if (pointDetails != null) {
@@ -363,20 +361,20 @@ public class DistributionDAOImpl implements DistributionDAO {
                 }
             }
 
-            System.out.println("Calculating distances");
-            // for points that fall outside the distribution, return the
-            // distance from the distribution
-            
-            //select id from temp_exp_dist_outliers where (SELECT bounding_box FROM distributiondata where lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:c20d9b40-9c19-47e9-9602-c793ae028244') IS NULL OR NOT ST_Intersects(point, Geography((SELECT bounding_box FROM distributiondata where lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:c20d9b40-9c19-47e9-9602-c793ae028244')))
-            
+            // return the distance of all points that are located outside the
+            // expert distribution, and also are inside the bounding box for the
+            // expert distribution - the bounds of the area for which the
+            // expert distribution was generated.
             List<Map<String, Object>> outlierDistancesQueryResult = jdbcTemplate
                     .queryForList(
-                            "SELECT id, ST_DISTANCE(point, (SELECT Geography(the_geom) from distributionshapes where id = ?)) as distance from temp_exp_dist_outliers where ST_Intersects(point, Geography((SELECT bounding_box FROM distributiondata where geom_idx = ?)))",
-                            expertDistributionShapeId, expertDistributionShapeId);
+                            "SELECT id, ST_DISTANCE(point, (SELECT Geography(the_geom) from distributionshapes where id = ?)) as distance from test_temp_exp_dist_outliers where (SELECT bounding_box FROM distributiondata where geom_idx = ?) IS NULL OR ST_Intersects(point, Geography((SELECT bounding_box FROM distributiondata where geom_idx = ?)))",
+                            expertDistributionShapeId, expertDistributionShapeId, expertDistributionShapeId);
 
             for (Map<String, Object> queryResultRow : outlierDistancesQueryResult) {
                 String uuid = (String) queryResultRow.get("id");
                 Double distance = (Double) queryResultRow.get("distance");
+                // Zero distance implies that the point is inside the
+                // distribution
                 if (distance > 0) {
                     outlierDistances.put(uuid, distance);
                 }
@@ -384,8 +382,6 @@ public class DistributionDAOImpl implements DistributionDAO {
         } catch (EmptyResultDataAccessException ex) {
             throw new IllegalArgumentException("No expert distribution associated with lsid " + lsid, ex);
         }
-
-        System.out.println(outlierDistances);
 
         return outlierDistances;
     }
