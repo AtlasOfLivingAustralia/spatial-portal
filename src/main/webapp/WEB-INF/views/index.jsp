@@ -25,15 +25,15 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
         <div class="col-wide last" style="width:100%">
 
 
-            <h3>Layers Web Services</h3>
+        <h3>Layers Web Services</h3>
 
         <p>
-            These webservices provide spatial search capabilities.
+            These webservices provide spatial search capabilities. These services are in addition to occurrence searching
+            services available at <a href="http://biocache.ala.org.au/ws">http://biocache.ala.org.au/ws</a>
             <br/>
             Please send any bug reports, suggestions for improvements or new services to:
             <strong>developers 'AT' ala.org.au</strong>
         </p>
-
 
             <ul>
                 <li>Layers<ul>
@@ -86,6 +86,11 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                             <li><strong>genusLsid</strong> - e.g. "urn:lsid:biodiversity.org.au:afd.taxon:557d7f85-a430-4424-a7ae-7fca52b8b443"</li>
                         </ul>
                     </li>
+                    <li><strong>Get a count of all distributions by family:</strong> <a href="/ws/distributions/counts">/ws/distributions/counts</a>
+                    	<p>
+                    		Same supported parameters as <a href="/ws/distributions/counts">/ws/distributions/</a>.
+                    	</p>	
+                   </li> 	                    
                     <li><strong>Get a list of all distributions for radius:</strong> <a href="/ws/distributions/radius">/ws/distributions/radius</a>
                         <ul>
                             <li><strong>lat</strong> - latitude</li>
@@ -104,6 +109,12 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                             <li><strong>genusLsid</strong> - e.g. "urn:lsid:biodiversity.org.au:afd.taxon:557d7f85-a430-4424-a7ae-7fca52b8b443"</li>
                         </ul>
                     </li>
+                    <li><strong>Get a count of all distributions for radius by family:</strong> <a href="/ws/distributions/radius/counts">/ws/distributions/radius</a>
+                    	<p>
+                    		Same supported parameters as <a href="/ws/distributions/radius">/ws/distributions/radius</a>.
+                    	</p>	
+                   </li> 	                    
+                    
                     <li><strong>Get information about a specific distribution, given a spcode:</strong> /ws/distribution/{spcode} e.g. <a href="/ws/distribution/37031044">/ws/distribution/37031044</a> (Arafura Skate)</li>
                     <li><strong>Get information about a specific distribution, given a LSID:</strong> /ws/distribution/lsid/{lsid} e.g. <a href="/ws/distribution/lsid/urn:lsid:biodiversity.org.au:afd.taxon:2386db84-1fdd-4c33-a2ea-66e13bfc8cf8">/ws/distribution/lsid/urn:lsid:biodiversity.org.au:afd.taxon:2386db84-1fdd-4c33-a2ea-66e13bfc8cf8</a> (Kapala Stingaree)</li>
                 </ul></li>

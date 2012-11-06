@@ -23,14 +23,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.ala.layers.dao.DistributionDAO;
 import org.ala.layers.dao.ObjectDAO;
 import org.ala.layers.dto.Distribution;
+import org.ala.layers.dto.Facet;
 import org.ala.layers.dto.Objects;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -45,7 +44,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class DistributionsService {
 
     private final String WS_DISTRIBUTIONS = "/distributions";
+    private final String WS_DISTRIBUTIONS_COUNTS = "/distributions/counts";
     private final String WS_DISTRIBUTIONS_RADIUS = "/distributions/radius";
+    private final String WS_DISTRIBUTIONS_RADIUS_COUNTS = "/distributions/radius/counts";
     private final String WS_DISTRIBUTION_ID = "/distribution/{spcode}";
     private final String WS_DISTRIBUTION_LSID = "/distribution/lsid/{lsid:.+}";
     private final String WS_DISTRIBUTION_OVERVIEWMAP = "/distribution/map/{lsid:.+}";
@@ -93,6 +94,40 @@ public class DistributionsService {
         return distributionDao.queryDistributions(wkt, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids, genera, generaLsids,
                 Distribution.EXPERT_DISTRIBUTION);
     }
+    
+    /*
+     * list distribution table records, GET
+     */
+    @RequestMapping(value = WS_DISTRIBUTIONS_COUNTS, method = { RequestMethod.GET, RequestMethod.POST })
+    public @ResponseBody
+    List<Facet> listDistributionsGetCounts(@RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+            @RequestParam(value = "min_depth", required = false, defaultValue = "-1") Double min_depth, @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth,
+            @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids, @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx,
+            @RequestParam(value = "fid", required = false) String fid, @RequestParam(value = "objectName", required = false) String objectName,
+            @RequestParam(value = "pelagic", required = false) Boolean pelagic, @RequestParam(value = "coastal", required = false) Boolean coastal,
+            @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
+            @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
+            @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, HttpServletResponse response) {
+
+        if (StringUtils.isEmpty(wkt) && fid != null && objectName != null) {
+            List<Objects> objects = objectDao.getObjectByFidAndName(fid, objectName);
+            // TODO this might be better served with a stored proc
+            // so that the polygon isn't passed from DB to java
+            wkt = objects.get(0).getGeometry();
+            if (wkt == null) {
+                logger.info("Unmatched geometry for name: " + objectName + " and layer " + fid);
+                try {
+                    response.sendError(400);
+                } catch (Exception e) {
+                    logger.error("Error sending response code 400 to client.");
+                }
+                return null;
+            }
+        }
+        return distributionDao.queryDistributionsFamilyCounts(wkt, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids, genera, generaLsids,
+                Distribution.EXPERT_DISTRIBUTION);
+    }    
 
     @RequestMapping(value = WS_DISTRIBUTIONS_RADIUS, method = { RequestMethod.GET, RequestMethod.POST })
     public @ResponseBody
@@ -109,6 +144,21 @@ public class DistributionsService {
                 genera, generaLsids, Distribution.EXPERT_DISTRIBUTION);
     }
 
+    @RequestMapping(value = WS_DISTRIBUTIONS_RADIUS_COUNTS, method = { RequestMethod.GET, RequestMethod.POST })
+    public @ResponseBody
+    List<Facet> listDistributionCountsForRadiusGet(@RequestParam(value = "min_depth", required = false, defaultValue = "-1") Double min_depth,
+            @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth, @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids,
+            @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx, @RequestParam(value = "lon", required = true) Float longitude,
+            @RequestParam(value = "lat", required = true) Float latitude, @RequestParam(value = "radius", required = true) Float radius,
+            @RequestParam(value = "pelagic", required = false) Boolean pelagic, @RequestParam(value = "coastal", required = false) Boolean coastal,
+            @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
+            @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
+            @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids) {
+        return distributionDao.queryDistributionsByRadiusFamilyCounts(longitude, latitude, radius, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids,
+                genera, generaLsids, Distribution.EXPERT_DISTRIBUTION);
+    }    
+    
     /*
      * get distribution by id
      */
