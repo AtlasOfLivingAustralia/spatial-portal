@@ -125,14 +125,15 @@ public class DistributionDAOImpl implements DistributionDAO {
      */
     public List<Distribution> queryDistributionsByRadius(float longitude, float latitude, float radiusInMetres, double min_depth, double max_depth, Boolean pelagic, Boolean coastal,
             Boolean estuarine, Boolean desmersal, String groupName, Integer geomIdx, String lsids, String[] families, String[] familyLsids, String[] genera, String[] generaLsids, String type) {
-        logger.info("Getting distributions list with a radius");
+        logger.info("Getting distributions list with a radius - " + radiusInMetres + "m");
 
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("radius", radiusInMetres);
+        params.put("radius", convertMetresToDecimalDegrees(radiusInMetres));
         params.put("type", type);
         String pointGeom = "POINT(" + longitude + " " + latitude + ")";
 
-        String sql = SELECT_CLAUSE + " from " + viewName + " where ST_Distance_Sphere(the_geom, ST_GeomFromText('" + pointGeom + "', 4326)) <= :radius";
+        //String sql = SELECT_CLAUSE + " from " + viewName + " where ST_Distance_Sphere(the_geom, ST_GeomFromText('" + pointGeom + "', 4326)) <= :radius";
+        String sql = SELECT_CLAUSE + " from " + viewName + " where ST_DWithin(the_geom, ST_GeomFromText('" + pointGeom + "', 4326), :radius)";
         // add additional criteria
         StringBuilder whereClause = new StringBuilder();
 
@@ -154,11 +155,14 @@ public class DistributionDAOImpl implements DistributionDAO {
         logger.info("Getting distributions list with a radius");
 
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("radius", radiusInMetres);
+        params.put("radius", convertMetresToDecimalDegrees(radiusInMetres));
         params.put("type", type);
         String pointGeom = "POINT(" + longitude + " " + latitude + ")";
 
-        String sql = "Select family as name, count(*) as count from " + viewName + " where ST_Distance_Sphere(the_geom, ST_GeomFromText('" + pointGeom + "', 4326)) <= :radius";
+        //String sql = "Select family as name, count(*) as count from " + viewName + " where ST_Distance_Sphere(the_geom, ST_GeomFromText('" + pointGeom + "', 4326)) <= :radius";
+        //String sql = "Select family as name, count(*) as count from " + viewName + " where ST_Distance_Sphere(the_geom, ST_GeomFromText('" + pointGeom + "', 4326)) <= :radius";
+        //select count(*) from distributions where ST_DWithin(the_geom, ST_GeomFromText('POINT(150.2177 -35.7316)', 4326), 10000);
+        String sql = "Select family as name, count(*) as count from " + viewName + " where ST_DWithin(the_geom, ST_GeomFromText('" + pointGeom + "', 4326), :radius)";
 
         // add additional criteria
         StringBuilder whereClause = new StringBuilder();
@@ -184,6 +188,16 @@ public class DistributionDAOImpl implements DistributionDAO {
         return updateWMSUrl(jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params));
     }
 
+    /**
+     * WARNING: This conversion isnt accurate..
+     * @return
+     */
+    public Double convertMetresToDecimalDegrees(Float metres){
+    	//0.01 degrees is approximately 1110 metres
+    	//0.00001 1.11 m
+    	return ( metres / 1.11 ) * 0.00001;
+    }
+    
     /**
      * 
      * @param min_depth
