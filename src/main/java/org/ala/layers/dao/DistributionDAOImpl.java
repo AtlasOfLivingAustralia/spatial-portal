@@ -366,7 +366,7 @@ public class DistributionDAOImpl implements DistributionDAO {
             // expert distribution was generated.
             List<Map<String, Object>> outlierDistancesQueryResult = jdbcTemplate
                     .queryForList(
-                            "SELECT id, ST_DISTANCE(point, (SELECT Geography(the_geom) from distributionshapes where id = ?)) as distance from test_temp_exp_dist_outliers where (SELECT bounding_box FROM distributiondata where geom_idx = ?) IS NULL OR ST_Intersects(point, Geography((SELECT bounding_box FROM distributiondata where geom_idx = ?)))",
+                            "SELECT id, ST_DISTANCE(point, (SELECT Geography(the_geom) from distributionshapes where id = ?)) as distance from temp_exp_dist_outliers where (SELECT bounding_box FROM distributiondata where geom_idx = ?) IS NULL OR ST_Intersects(point, Geography((SELECT bounding_box FROM distributiondata where geom_idx = ?)))",
                             expertDistributionShapeId, expertDistributionShapeId, expertDistributionShapeId);
 
             for (Map<String, Object> queryResultRow : outlierDistancesQueryResult) {
