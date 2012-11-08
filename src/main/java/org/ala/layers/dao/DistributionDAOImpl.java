@@ -132,8 +132,7 @@ public class DistributionDAOImpl implements DistributionDAO {
         params.put("type", type);
         String pointGeom = "POINT(" + longitude + " " + latitude + ")";
 
-        String sql = SELECT_CLAUSE + " from " + viewName + " " + "where ST_DWithin(the_geom, ST_GeomFromText('" + pointGeom + "', 4326), :radius)";
-
+        String sql = SELECT_CLAUSE + " from " + viewName + " where ST_Distance_Sphere(the_geom, ST_GeomFromText('" + pointGeom + "', 4326)) <= :radius";
         // add additional criteria
         StringBuilder whereClause = new StringBuilder();
 
@@ -159,7 +158,7 @@ public class DistributionDAOImpl implements DistributionDAO {
         params.put("type", type);
         String pointGeom = "POINT(" + longitude + " " + latitude + ")";
 
-        String sql = "Select family as name, count(*) as count from " + viewName + " " + "where ST_DWithin(the_geom, ST_GeomFromText('" + pointGeom + "', 4326), :radius)";
+        String sql = "Select family as name, count(*) as count from " + viewName + " where ST_Distance_Sphere(the_geom, ST_GeomFromText('" + pointGeom + "', 4326)) <= :radius";
 
         // add additional criteria
         StringBuilder whereClause = new StringBuilder();
@@ -367,7 +366,7 @@ public class DistributionDAOImpl implements DistributionDAO {
             // expert distribution was generated.
             List<Map<String, Object>> outlierDistancesQueryResult = jdbcTemplate
                     .queryForList(
-                            "SELECT id, ST_DISTANCE(point, (SELECT Geography(the_geom) from distributionshapes where id = ?)) as distance from temp_exp_dist_outliers where (SELECT bounding_box FROM distributiondata where geom_idx = ?) IS NULL OR ST_Intersects(point, Geography((SELECT bounding_box FROM distributiondata where geom_idx = ?)))",
+                            "SELECT id, ST_DISTANCE(point, (SELECT Geography(the_geom) from distributionshapes where id = ?)) as distance from test_temp_exp_dist_outliers where (SELECT bounding_box FROM distributiondata where geom_idx = ?) IS NULL OR ST_Intersects(point, Geography((SELECT bounding_box FROM distributiondata where geom_idx = ?)))",
                             expertDistributionShapeId, expertDistributionShapeId, expertDistributionShapeId);
 
             for (Map<String, Object> queryResultRow : outlierDistancesQueryResult) {
