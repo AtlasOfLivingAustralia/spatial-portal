@@ -2,7 +2,7 @@
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
     <window id="scatterplotlayerlegend" use="au.org.emii.portal.composer.LayerLegendComposer"
-    apply="au.org.emii.portal.composer.LayerLegendComposer" title="Scatterplot legend" width="290px" height="420px"
+    apply="au.org.emii.portal.composer.LayerLegendComposer" title="Scatterplot legend" width="310px" height="420px" style="padding:10px;"
          xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -15,53 +15,11 @@
         <a sclass="fancybox-close" onClick="scatterplotlayerlegend.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('sampling-tools')" style="display: inline" />
 
-        <div id="layerControls"  >
+        <div id="layerControls" style="padding:10px;">
             <separator height="10px"/>
             <label value="Press the Apply button after changes using the sliders, colour palette or facet selection." sclass="wSubLabel"/>
             <separator height="10px"/>
-            <!-- opacity-->
-            <div id="opacityControls" >
-                <vbox>
-                    <hbox>
-                        <div style="padding-top:0px" width="60px">
-                            <label value="Opacity" sclass="h3" />
-                        </div>
-                        <div  width="180px">
-                            <slider id="opacitySlider" width="95%" />
-                        </div>
-                        <div align="right" style="padding-top:0px">
-                            <label id="opacityLabel" />
-                        </div>
-
-                    </hbox>
-                </vbox>
-            </div>
-
             <div  width="100%">
-                <div id="sizeChooser"  width="100%">
-                    <hbox>
-                        <div style="padding-top:0px" width="60px">
-                            <label value="Map Size" sclass="h3" />
-                        </div>
-                        <div width="180px">
-                            <slider id="sizeSlider" maxpos="30" width="95%" />
-                        </div>
-                        <div align="right" style="padding-top:0px">
-                            <label id="sizeLabel" />
-                        </div>
-                    </hbox>
-                    <hbox>
-                        <div style="padding-top:0px" width="60px">
-                            <label value="Plot Size" sclass="h3" />
-                        </div>
-                        <div width="180px">
-                            <slider id="plotSizeSlider" maxpos="30" width="95%" />
-                        </div>
-                        <div align="right" style="padding-top:0px">
-                            <label id="plotSizeLabel" />
-                        </div>
-                    </hbox>
-                </div>
                 <div id="colourChooser" >
                     <hbox>
                         <label value="Facet" sclass="h3" />
@@ -74,21 +32,20 @@
                         <separator />
                         <hbox >
                             <style dynamic="true">
-
-			<!-- cut/hide the vertical borders in the grid rows -->
-                        .noborder  tr.z-row td.z-row-inner, tr.z-row .z-cell,div.z-grid
-{
-border: none;
-zoom: 1;
-background: white;
-border-top: none;
-border-left: none;
-border-right: none;
-border-bottom: none;
-}
-
+			                    <!-- cut/hide the vertical borders in the grid rows -->
+                                .noborder  tr.z-row td.z-row-inner, tr.z-row .z-cell, div.z-grid
+                                {
+                                    border: none;
+                                    zoom: 1;
+                                    background: white;
+                                    border-top: none;
+                                    border-left: none;
+                                    border-right: none;
+                                    border-bottom: none;
+                                    padding: 1px 5px 0px 0px;
+                                }
                             </style>
-                            <grid id="cpGrid" width="280px" sclass="noborder" >
+                            <grid id="cpGrid" width="280px" sclass="noborder">
                                 <rows>
                                     <row>
                                         <div style="background-color:#8b0000" height="12px" onClick="scatterplotlayerlegend.selectColour(self)" />
@@ -135,7 +92,7 @@ border-bottom: none;
                                 </rows>
                             </grid>
                         </hbox>
-                        <vbox >
+                        <vbox style="padding-top:10px" >
                             <hbox>
                                 <div style="padding-top:0px" width="60px">
                                     <label value="Red" sclass="h3" />
@@ -178,6 +135,49 @@ border-bottom: none;
                         </vbox>
                     </div>
                 </div>
+				<!-- opacity-->
+				<div id="opacityControls">
+					<vbox>
+						<hbox>
+							<div style="padding-top:0px" width="60px">
+								<label value="Opacity" sclass="h3" />
+							</div>
+							<div  width="180px">
+								<slider id="opacitySlider" width="95%" />
+							</div>
+							<div align="right" style="padding-top:0px">
+								<label id="opacityLabel" />
+							</div>
+	
+						</hbox>
+					</vbox>
+				</div>
+				<div id="sizeChooser"  width="100%">
+					<hbox>
+						<div style="padding-top:0px" width="60px">
+							<label value="Map Size" sclass="h3" />
+						</div>
+						<div width="180px">
+							<slider id="sizeSlider" maxpos="30" width="95%" />
+						</div>
+						<div align="right" style="padding-top:0px">
+							<label id="sizeLabel" />
+						</div>
+					</hbox>
+				</div>	
+				<div id="plotChooser"  width="100%">				
+					<hbox>
+						<div style="padding-top:0px" width="60px">
+							<label value="Plot Size" sclass="h3" />
+						</div>
+						<div width="180px">
+							<slider id="plotSizeSlider" maxpos="30" width="95%" />
+						</div>
+						<div align="right" style="padding-top:0px">
+							<label id="plotSizeLabel" />
+						</div>
+					</hbox>
+				</div>                                
                 <div height="200px">
                     <div style="padding-top:0px" width="60px">
                         <label value="Legend" sclass="h3" />
