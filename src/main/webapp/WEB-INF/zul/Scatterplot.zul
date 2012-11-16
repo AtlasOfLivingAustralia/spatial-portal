@@ -37,7 +37,7 @@
             <toolbarbutton id="btnEmbedded" label="Docked" visible="false" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatEmbedded")[0]),"onClick", null));'/>
             <toolbarbutton id="btnOverlapped" label="Floating" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatOverlapped")[0]),"onClick", null));'/>
         </caption-->
-        <div id="scatControls" visible="false" width="100%" style="padding-left:8px">
+        <div id="scatControls" visible="false" width="100%" style="padding-left:8px;">
             <vbox >
                 <separator />
                 <checkbox id="chkRestrictOccurrencesToActiveArea" label="Only use occurrences in Active Area" />
@@ -100,22 +100,7 @@
                 </groupbox>
             </vbox>
         </div>
-        <html><![CDATA[
-        <div id="chartDivBack" class="chartDiv">
-        <div id="chartDiv" class="chartDiv" 
-            onMouseDown="doMouseDown(event)"
-            onMouseMove="doMouseDrag(event)"
-            onMouseUp="doMouseUp(event)"></div></div>
-        <div id="rband"
-            onMouseDown="doMouseDown(event)"
-            onMouseMove="doMouseDrag(event)"
-            onMouseUp="doMouseUp(event)"></div>
-        ]]>
-        </html>
-
-        <div id="chartImg" width="300px" height="300px" style="float:left;" />
-
-        <vbox >
+        <vbox style="padding-left:8px;">
             <button id="btnEditAppearance1" label="Species display settings" sclass="goButton" style="float:left" />
             <div id="scatterplotDownloads" visible="false">
                 <hbox>
@@ -141,7 +126,7 @@
             <separator />
             <div width="100%" >
                 <label id="lblMissing" value="No records available for the scatterplot" visible="false" style="float:left;"/>
-            </div>
+            </div>    
             <div id="divHighlightArea" >
                 <label value="Highlight occurrences on the scatterplot that are in an area" />
                 <hbox>
@@ -151,13 +136,25 @@
                 <separator />
             </div>
         </vbox>
+        
+        
+        <html><![CDATA[       
+        <div id="chartDivBack" class="chartDiv">
+        <div id="chartDiv" class="chartDiv" 
+            onMouseDown="doMouseDown(event)"
+            onMouseMove="doMouseDrag(event)"
+            onMouseUp="doMouseUp(event)"></div></div>
+        <div id="rband"
+            onMouseDown="doMouseDown(event)"
+            onMouseMove="doMouseDrag(event)"
+            onMouseUp="doMouseUp(event)"></div>
+        ]]>
+        </html>
+
+        <div id="chartImg" width="300px" height="300px" style="float:left;" />
 
         <!-- chartImg.height = scatterplotwindow.height - tbxChartSelection.height -->
         <textbox id="tbxChartSelection" visible="false" height="215px" />
-
-
-
-
         <script type="text/JavaScript"><![CDATA[
 var startx = 0;
 var starty = 0;
