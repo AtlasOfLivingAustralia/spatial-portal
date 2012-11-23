@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 /**
  *
@@ -98,6 +99,11 @@ public class LayersService {
 //        return Utils.resultSetToJSON(r);
         return layerDao.getLayersByContextual();
 
+    }
+    
+    @RequestMapping(value = "/layers/aands", method = RequestMethod.GET)
+    public ModelAndView generatesAandsXml(HttpServletRequest req) {
+        return new ModelAndView("layers/aands", "layers", layerDao.getLayers());
     }
     
 }
