@@ -49,6 +49,8 @@ public class BiocacheQuery implements Query, Serializable {
     static final String BOUNDING_BOX_CSV = "/webportal/bbox?";
     static final String INDEXED_FIELDS_LIST = "/indexed/fields?";
     static final String POST_SERVICE = "/webportal/params?";
+    static final String ENDEMIC_COUNT_SERVICE="/explore/counts/endemic?";
+    static final String ENDEMIC_SPECIES_SERVICE_CSV="/explore/endemic/species.csv?";
     static final String DEFAULT_ROWS = "pageSize=1000000";
     static final String DEFAULT_ROWS_LARGEST = "pageSize=100000000";
     /** DEFAULT_VALIDATION must not be null */
@@ -87,7 +89,9 @@ public class BiocacheQuery implements Query, Serializable {
     boolean forMapping;
     //stored query responses.
     String speciesList = null;
+    String endemicSpeciesList = null;
     int speciesCount = -1;
+    int endemicSpeciesCount=-1;
     int occurrenceCount = -1;
     double[] points = null;
     String solrName = null;
@@ -424,6 +428,29 @@ public class BiocacheQuery implements Query, Serializable {
 
         return speciesList;
     }
+    
+    public String endemicSpeciesList() {
+      if (endemicSpeciesList != null) {
+          return endemicSpeciesList;
+      }
+
+      HttpClient client = new HttpClient();
+      String url = biocacheServer
+              + ENDEMIC_SPECIES_SERVICE_CSV              
+              + "q=" + getQ()
+              + getQc();
+      System.out.println(url);
+      GetMethod get = new GetMethod(url);
+
+      try {
+          int result = client.executeMethod(get);
+          endemicSpeciesList = get.getResponseBodyAsString();
+      } catch (Exception e) {
+          e.printStackTrace();
+      }
+
+      return endemicSpeciesList;
+  }
 
     /**
      * Get number of occurrences in this query.
@@ -486,6 +513,43 @@ public class BiocacheQuery implements Query, Serializable {
     int speciesCountKosher = -1, speciesCountCoordinates = -1, speciesCountAny = -1;
     int occurrenceCountKosher = -1, occurrenceCountCoordinates = -1, occurrenceCountAny = -1;
 
+    
+    @Override
+    public int getEndemicSpeciesCount(){
+        if(endemicSpeciesCount >= 0 || wkt ==null)
+            return endemicSpeciesCount;
+        //fill endemic species list
+        endemicSpeciesList();
+        
+        endemicSpeciesCount = 0; //first line is header, last line is not \n terminated
+        int p = 0;
+        while ((p = endemicSpeciesList.indexOf('\n', p + 1)) > 0) {
+            endemicSpeciesCount++;
+        }
+
+        return endemicSpeciesCount;
+        
+        //othewise we need to determine the endemic species count.
+//        HttpClient client = new HttpClient();
+//        String url = biocacheServer
+//                + ENDEMIC_COUNT_SERVICE                
+//                + "q=" + getQ()
+//                + getQc() 
+//                +"&facets=species_guid";
+//        System.out.println(url);
+//        GetMethod get = new GetMethod(url);
+//
+//        try {
+//            int result = client.executeMethod(get);
+//            String value = get.getResponseBodyAsString();
+//            endemicSpeciesCount=Integer.parseInt(value);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        
+//        return endemicSpeciesCount;
+    }
+    
     public int getSpeciesCountKosher() {
         if (speciesCountKosher >= 0) {
             return speciesCountKosher;
@@ -1305,6 +1369,8 @@ public class BiocacheQuery implements Query, Serializable {
                 html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>" + getSpeciesCountKosher() + " without a flagged spatial issue<br>" + getSpeciesCountCoordinates() + " with any coordinates</td></tr>";
                 lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
                 html += "<tr class='" + lastClass + "'><td class='md_th'>Number of occurrences: </td><td class='md_spacer'/><td class='md_value'>" + getOccurrenceCountKosher() + " without a flagged spatial issue<br>" + getOccurrenceCountCoordinates() + " with any coordinates</td></tr>";
+                lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Number of endemic species: </td><td class='md_spacer'/><td class='md_value'>" + getEndemicSpeciesCount()+"</td></tr>";
                 lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
             } else {
                 html += "<tr class='md_grey-bg'><td class='md_th'>Number of species: </td><td class='md_spacer'/><td class='md_value'>" + getSpeciesCountKosher() + " without a flagged spatial issue<br>" + getSpeciesCountCoordinates() + " with any coordinates<br>" + getSpeciesCountAny() + " total including records without coordinates</td></tr>";

@@ -120,7 +120,7 @@ public class AddToolComposer extends UtilityComposer {
     boolean includeAnalysisLayersForUploadQuery = false;
     boolean includeAnalysisLayersForAnyQuery = false;
     boolean mpLayersIncludeAnalysisLayers = false;
-    Checkbox chkGeoKosherTrue, chkGeoKosherFalse, chkGeoKosherNull;
+    Checkbox chkGeoKosherTrue, chkGeoKosherFalse, chkGeoKosherNull, chkEndemicSpecies;
     Checkbox chkGeoKosherTrueBk, chkGeoKosherFalseBk, chkGeoKosherNullBk;
     boolean[] defaultGeospatialKosher = {true, true, false};
     
@@ -2541,6 +2541,14 @@ public class AddToolComposer extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public void setChooseEndemic(boolean choose){
+        chkEndemicSpecies.setChecked(choose);
+    }
+    
+    public boolean getIsEndemic(){
+        return chkEndemicSpecies.isChecked();
     }
 
     public boolean[] getGeospatialKosher() {

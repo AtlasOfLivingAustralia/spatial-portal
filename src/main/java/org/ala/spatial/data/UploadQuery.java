@@ -138,6 +138,10 @@ public class UploadQuery implements Query, Serializable {
     public String speciesList() {
         return null;
     }
+    
+    public String endemicSpeciesList(){
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Get number of occurrences in this query.
@@ -159,6 +163,10 @@ public class UploadQuery implements Query, Serializable {
         return 1;
     }
 
+    public int getEndemicSpeciesCount(){
+        throw new UnsupportedOperationException();
+    }
+    
     /**
      * Get parsed coordinates and optional fields for this query.
      *

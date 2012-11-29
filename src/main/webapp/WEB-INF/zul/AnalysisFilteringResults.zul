@@ -37,6 +37,14 @@
                     <label id="results_label2_species" style="cursor:pointer;" />
                 </n:td>
             </n:tr>
+            <n:tr height="18px" if="${arg.includeEndemic}">
+                <n:td>
+                    <label value="Number of endemic species" />
+                </n:td>
+                <n:td>
+                    <label id="results_label2_endemic_species" style="cursor:pointer;" />
+                </n:td>
+            </n:tr>            
             <n:tr height="18px" >
                 <n:td>                    
                     <label value="Occurrences" /><label id="lblWorldNoteOccurrences" value="*" />
@@ -59,6 +67,14 @@
                     <label id="results_label2_species_kosher" style="cursor:pointer;" />
                 </n:td>
             </n:tr>
+            <n:tr height="18px" if="${arg.includeEndemic}" >
+                <n:td>
+                    <label value="Number of endemic species - spatially valid only" />
+                </n:td>
+                <n:td>
+                    <label id="results_label2_endemic_species_kosher" style="cursor:pointer;" />
+                </n:td>
+            </n:tr>  
             <n:tr height="18px" >
                 <n:td>
                     <label value="Occurrences - spatially valid only" />

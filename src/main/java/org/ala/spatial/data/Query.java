@@ -29,6 +29,8 @@ public interface Query {
      * @return species list as String containing CSV.
      */
     String speciesList();
+    
+    String endemicSpeciesList();
 
     /**
      * Get number of occurrences in this query.
@@ -44,6 +46,14 @@ public interface Query {
      */
     int getSpeciesCount();
 
+    /**
+     * Gets the number of species that are endemic to the WKT area of this query.
+     * 
+     * @return The number of endemic species or -1 on error
+     */
+    int getEndemicSpeciesCount();
+    
+    
     /**
      * Get parsed coordinates and optional field data for this query.
      *

@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
@@ -55,8 +56,10 @@ public class FilteringResultsWCController extends UtilityComposer {
     public Button mapspecieskosher;
     public Label results_label2_occurrences;
     public Label results_label2_species;
+    public Label results_label2_endemic_species;
     public Label results_label2_occurrences_kosher;
     public Label results_label2_species_kosher;
+    public Label results_label2_endemic_species_kosher;
     public Label sdLabel;
     public Label clLabel;
     public Label aclLabel;
@@ -69,8 +72,10 @@ public class FilteringResultsWCController extends UtilityComposer {
     private SettingsSupplementary settingsSupplementary = null;
     int results_count = 0;
     int results_count_occurrences = 0;
+    int endemic_count =0;
     int results_count_kosher = 0;
     int results_count_occurrences_kosher = 0;
+    int endemic_count_kosher =0;
     boolean addedListener = false;
     Label lblArea;
     Label lblBiostor;
@@ -79,6 +84,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     String areaName = "Area Report";
     String areaDisplayName = "Area Report";
     String areaSqKm = null;
+    boolean includeEndemic;
     double[] boundingBox = null;
     HashMap<String, String> data = new HashMap<String, String>();
     Div divWorldNote;
@@ -88,12 +94,18 @@ public class FilteringResultsWCController extends UtilityComposer {
     JSONArray gazPoints = null;
     Button mapGazPoints;
 
-    public void setReportArea(SelectedArea sa, String name, String displayname, String areaSqKm, double[] boundingBox) {
+    
+    public boolean shouldIncludeEndemic(){
+        return includeEndemic;
+    }
+    
+    public void setReportArea(SelectedArea sa, String name, String displayname, String areaSqKm, double[] boundingBox, boolean includeEndemic) {
         selectedArea = sa;
         areaName = name;
         areaDisplayName = displayname;
         this.areaSqKm = areaSqKm;
         this.boundingBox = boundingBox;
+        this.includeEndemic = includeEndemic;
         setTitle(displayname);
 
         if (name.equals("Current extent")) {
@@ -163,8 +175,12 @@ public class FilteringResultsWCController extends UtilityComposer {
         if (set) {
             results_label2_occurrences.setValue("updating...");
             results_label2_species.setValue("updating...");
+            if(includeEndemic)
+                results_label2_endemic_species.setValue("updating...");
             results_label2_occurrences_kosher.setValue("updating...");
             results_label2_species_kosher.setValue("updating...");
+            if(includeEndemic)
+                results_label2_endemic_species_kosher.setValue("updating...");
             sdLabel.setValue("updating...");
             clLabel.setValue("updating...");
             aclLabel.setValue("updating...");
@@ -225,7 +241,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     void startRefreshCount() {
         //countdown includes; intersectWithSpecies, calcuateArea, counts
         counter = new CountDownLatch(5);
-
+        final boolean worldAreaSelected = CommonData.WORLD_WKT.equals(selectedArea.getWkt());
         Thread t1 = new Thread() {
 
             @Override
@@ -260,7 +276,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             @Override
             public void run() {
                 setPriority(Thread.MIN_PRIORITY);
-                counts();
+                counts(worldAreaSelected);
                 decCounter();
             }
         };
@@ -292,7 +308,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         t5.start();
         t6.start();
 
-        boolean worldAreaSelected = CommonData.WORLD_WKT.equals(selectedArea.getWkt());
+        
         divWorldNote.setVisible(worldAreaSelected);
         lblWorldNoteOccurrences.setVisible(worldAreaSelected);
         lblWorldNoteSpecies.setVisible(worldAreaSelected);
@@ -327,8 +343,12 @@ public class FilteringResultsWCController extends UtilityComposer {
         lblBiostor.setValue(data.get("biostor"));
         lblArea.setValue(data.get("area"));
         results_label2_species.setValue(data.get("speciesCount"));
+        if(includeEndemic)
+            results_label2_endemic_species.setValue(data.get("endemicCount"));
         results_label2_occurrences.setValue(data.get("occurrencesCount"));
         results_label2_species_kosher.setValue(data.get("speciesCountKosher"));
+        if(includeEndemic)
+            results_label2_endemic_species_kosher.setValue(data.get("endemicCountKosher"));
         results_label2_occurrences_kosher.setValue(data.get("occurrencesCountKosher"));
         gazLabel.setValue(data.get("countGazPoints"));
 
@@ -363,6 +383,19 @@ public class FilteringResultsWCController extends UtilityComposer {
         } else {
             results_label2_occurrences.setSclass("");
         }
+        if(includeEndemic){
+            if (isNumberGreaterThanZero(results_label2_endemic_species.getValue())){
+                results_label2_endemic_species.setSclass("underline");
+            } else {
+                results_label2_endemic_species.setSclass("");
+            }
+            if (isNumberGreaterThanZero(results_label2_endemic_species_kosher.getValue())){
+                results_label2_endemic_species_kosher.setSclass("underline");            
+            } else {
+                results_label2_endemic_species_kosher.setSclass("");
+            }
+        }
+        
 
         // toggle the map button
         if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
@@ -398,15 +431,18 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
-    void counts() {
+    void counts(boolean worldSelected) {
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
             results_count = sq.getSpeciesCount();
             results_count_occurrences = sq.getOccurrenceCount();
+            endemic_count = worldSelected || !includeEndemic? results_count:sq.getEndemicSpeciesCount();
 
             Query sq2 = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, false, false});
             results_count_kosher = sq2.getSpeciesCount();
             results_count_occurrences_kosher = sq2.getOccurrenceCount();
+            //based the endemic count on the geospatially kosher - endemic is everything if the world is selected 
+            endemic_count_kosher = worldSelected || !includeEndemic?results_count_kosher:sq2.getEndemicSpeciesCount();
 
             //setUpdatingCount(false);
 
@@ -430,8 +466,12 @@ public class FilteringResultsWCController extends UtilityComposer {
             //results_label2_species.setValue(String.format("%,d", results_count));
             //results_label2_occurrences.setValue(String.format("%,d", results_count_occurrences));
             data.put("speciesCount", String.format("%,d", results_count));
+            if(includeEndemic)
+                data.put("endemicCount",String.format("%d", endemic_count));
             data.put("occurrencesCount", String.format("%,d", results_count_occurrences));
             data.put("speciesCountKosher", String.format("%,d", results_count_kosher));
+            if(includeEndemic)
+                data.put("endemicCountKosher", String.format("%d",endemic_count_kosher));
             data.put("occurrencesCountKosher", String.format("%,d", results_count_occurrences_kosher));
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -445,6 +485,28 @@ public class FilteringResultsWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public void onClick$results_label2_endemic_species(){
+        if( isNumberGreaterThanZero(results_label2_endemic_species.getValue())){
+            SpeciesListEvent sle = new SpeciesListEvent(getMapComposer(),areaName,1, null, true);
+            try {
+                sle.onEvent(null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    public void onClick$results_label2_endemic_species_kosher(){
+        if( isNumberGreaterThanZero(results_label2_endemic_species_kosher.getValue())){
+            SpeciesListEvent sle = new SpeciesListEvent(getMapComposer(), areaName, 1, new boolean[]{true, false, false}, true);
+              try {
+                  sle.onEvent(null);
+              } catch (Exception e) {
+                  e.printStackTrace();
+              }
+          }
     }
 
     public void onClick$results_label2_occurrences() {
@@ -522,13 +584,15 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
-    static public void open(SelectedArea sa, String name, String displayName, String areaSqKm, double[] boundingBox) {
+    static public void open(SelectedArea sa, String name, String displayName, String areaSqKm, double[] boundingBox, boolean includeEndemic) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("includeEndemic", includeEndemic);
         FilteringResultsWCController win = (FilteringResultsWCController) Executions.createComponents(
-                "/WEB-INF/zul/AnalysisFilteringResults.zul", null, null);
+                "/WEB-INF/zul/AnalysisFilteringResults.zul", null, params);
         try {
             win.doOverlapped();
             win.setPosition("center");
-            win.setReportArea(sa, name, displayName, areaSqKm, boundingBox);
+            win.setReportArea(sa, name, displayName, areaSqKm, boundingBox,includeEndemic);
         } catch (Exception e) {
             e.printStackTrace();
         }

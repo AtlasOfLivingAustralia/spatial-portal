@@ -42,6 +42,7 @@ public class SpeciesListResults extends UtilityComposer {
     int results_count_occurrences = 0;
     SelectedArea selectedArea;
     boolean[] geospatialKosher;
+    boolean chooseEndemic;
 
     @Override
     public void afterCompose() {
@@ -49,6 +50,7 @@ public class SpeciesListResults extends UtilityComposer {
 
         selectedArea = (SelectedArea) Executions.getCurrent().getArg().get("selectedarea");
         geospatialKosher = (boolean[]) Executions.getCurrent().getArg().get("geospatialKosher");
+        chooseEndemic = (Boolean) Executions.getCurrent().getArg().get("chooseEndemic");
 
         populateList();
     }
@@ -72,7 +74,7 @@ public class SpeciesListResults extends UtilityComposer {
             }
 
             //remove header
-            String speciesList = sq.speciesList();
+            String speciesList = chooseEndemic? sq.endemicSpeciesList():sq.speciesList();
             results = speciesList.substring(speciesList.indexOf('\n') + 1).split("\n");
 
             java.util.Arrays.sort(results);
@@ -123,10 +125,10 @@ public class SpeciesListResults extends UtilityComposer {
                                 lc.setParent(li);
                             }
 
-                            if (ss.length > 4) {
-                                lc = new Listcell(ss[4]);
-                                lc.setParent(li);
-                            }
+//                            if (ss.length > 4) {
+//                                lc = new Listcell(ss[4]);
+//                                lc.setParent(li);
+//                            }
 
                             if (ss.length > 5) {
                                 lc = new Listcell(ss[5]);

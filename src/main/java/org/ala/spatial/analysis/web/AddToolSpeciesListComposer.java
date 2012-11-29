@@ -52,6 +52,7 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
         HashMap<String, Object> hm = new HashMap<String, Object>();
         hm.put("selectedarea", sa);
         hm.put("geospatialKosher", getGeospatialKosher());
+        hm.put("chooseEndemic", Boolean.valueOf(chkEndemicSpecies.isChecked()));
         SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", getMapComposer(), hm);
         try {
             window.doModal();

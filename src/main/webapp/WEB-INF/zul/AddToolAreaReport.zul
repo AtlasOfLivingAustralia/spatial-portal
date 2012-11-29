@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolAreaReportComposer"
-    apply="org.ala.spatial.analysis.web.AddToolAreaReportComposer" width="500px" height="300px"
+    apply="org.ala.spatial.analysis.web.AddToolAreaReportComposer" width="500px" height="310px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -16,8 +16,8 @@
         <n:a class="fancybox-help" n:onClick="loadHelp('area-report-tools')" style="display: inline" />
 
         <separator />
-        <vbox style="padding-left: 10px" >
-            <div id="atstep1" visible="true" zclass="first optional last" sclass="atstep" style="padding:5px;">
+        <vbox style="padding-left: 10px" height="200px" >
+            <div id="atstep1" visible="true" zclass="first optional last" sclass="atstep" style="padding:5px;" height="200px">
                 <label id="atstep1_desc" value="Select area" />
                 <label id="atstep1_label" value="" />
                 <separator />
@@ -27,7 +27,12 @@
                     <radio id="rAreaWorld" label="World" value="world" />
                     <radio id="rAreaCustom" label="Define new area" value="custom" />
                 </radiogroup>
+                <separator spacing="20px"/> 
+                <checkbox id="chkEndemicSpecies" label="Include Endemic Counts" />
+                <separator spacing="1px"/>
+                <label id="endemic_note" value="Please note this may take several minutes depending on the area selected."/>                              
             </div>
+
         </vbox>
         <div sclass="wizButtonContainer">
             <hbox>

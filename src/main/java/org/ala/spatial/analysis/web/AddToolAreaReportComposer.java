@@ -45,6 +45,7 @@ public class AddToolAreaReportComposer extends AddToolComposer {
         SelectedArea sa = getSelectedArea();
         String areaName = getSelectedAreaName();
         String areaDisplayName = getSelectedAreaDisplayName();
+        boolean includeEndemic = getIsEndemic();
         MapLayer ml = getMapComposer().getMapLayer(areaName);
         double[] bbox = null;
         if (ml != null && ml.getMapLayerMetadata() != null
@@ -57,7 +58,7 @@ public class AddToolAreaReportComposer extends AddToolComposer {
             bbox[3] = ml.getMapLayerMetadata().getBbox().get(3);
         }
         FilteringResultsWCController.open(sa, areaName, areaDisplayName,
-                (String) ((ml == null) ? null : ml.getData("area")), bbox);
+                (String) ((ml == null) ? null : ml.getData("area")), bbox, includeEndemic);
         detach();
 
         return true;
