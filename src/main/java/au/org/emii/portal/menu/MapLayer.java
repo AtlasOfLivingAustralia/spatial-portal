@@ -6,6 +6,7 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.wms.WMSStyle;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Map.Entry;
 import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.UploadQuery;
+import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.Util;
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -1034,5 +1036,11 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
     public void setSubType(int type) {
         subType = type;
+    }
+    
+    public String calculateAndStoreArea() {
+        String area = new SelectedArea(this,null).getKm2Area();
+        setData("area", area);
+        return area;        
     }
 }

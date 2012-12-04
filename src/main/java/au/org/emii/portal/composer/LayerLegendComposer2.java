@@ -285,13 +285,16 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 
         sizeSlider.setCurpos(size);
         onScroll$sizeSlider();
-
+        
         for (Comboitem item : (List<Comboitem>) cbColour.getItems()) {
             if (item.getValue() != null && item.getValue().equals(colourMode)) {
                 cbColour.setSelectedItem(item);
+                //System.out.println("LAYER LEGEND COMPOSER 2: set colour by item: " + item);
                 break;
             }
         }
+        
+        
         this.listener = listener;
 
         if (type == 0) {
@@ -308,6 +311,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         updateLegendImage();
 
         setupLayerControls(ml);
+        
         
         updateAnimationDiv();
 
@@ -635,7 +639,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                     seperator1.setParent(cbColour);
                     seperator1.setDisabled(true);
                 }
-                if (ci.getValue().equals("cl620")) {
+                if (ci.getValue().equals("geospatial_kosher")) {
                     Comboitem seperator2 = new Comboitem("seperator");
                     seperator2.setLabel("------------------Temporal------------------");
                     seperator2.setParent(cbColour);

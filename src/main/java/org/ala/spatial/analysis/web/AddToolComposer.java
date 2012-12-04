@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URLEncoder;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,6 +34,7 @@ import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.UserData;
+import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
@@ -105,7 +107,7 @@ public class AddToolComposer extends UtilityComposer {
     EnvLayersCombobox cbLayer, cbLayerEnvironmentalOnly, cbLayerMix;
     Button bLayerListDownload1;
     Button bLayerListDownload2;
-    Label lLayersSelected;
+    Label lLayersSelected,lendemicNote;
     Button btnClearSelection;
     Menupopup mpLayer2, mpLayer1;
     Doublebox dResolution;
@@ -509,7 +511,9 @@ public class AddToolComposer extends UtilityComposer {
                     }
                 }
             }
+            updateEndemicCheckBox();
             Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
+            
 
         } catch (Exception e) {
             System.out.println("Unable to load active area layers:");
@@ -680,6 +684,62 @@ public class AddToolComposer extends UtilityComposer {
         if (chkGeoKosherNull != null && chkGeoKosherNull.isVisible()) {
             chkGeoKosherNull.setDisabled(rAreaSelected != rAreaWorld);
         }
+        //case for enabling the endemic checkbox
+        //System.out.println("RADIO SELECTED = " + rAreaSelected.getValue());
+        
+        updateEndemicCheckBox();
+        
+    }
+    
+    private void updateEndemicCheckBox(){
+        //check to see if the area is within the required size...
+      boolean showEndemic = false;
+      String value = rAreaSelected.getValue();
+      if(rAreaSelected != null){
+          if(value.equals("australia") || value.equals("world") || value.equals("custom")){
+              //System.out.println("Large areas");
+              
+              
+          }
+          else{
+            
+            
+                String areaName =rAreaSelected.getLabel();            
+                MapLayer ml = getMapComposer().getMapLayer(areaName);
+                String sarea="";
+                if(value.equals("current")){
+                  //check to see if the current extent is within the maximum area
+                  SelectedArea sa = getSelectedArea();
+                  sarea = sa.getKm2Area();
+                }
+                else if(ml != null){
+                    sarea = (String)ml.getData("area");            
+                    if(sarea == null)
+                        sarea = ml.calculateAndStoreArea();  
+                }
+                else{
+                    //for 'all areas'              
+                    SelectedArea sa = new SelectedArea(null, rAreaSelected.getValue());
+                    sarea = sa.getKm2Area();
+                  
+                }
+                try{
+                    Float area = Float.parseFloat(sarea.replaceAll(",",""));                
+                    showEndemic = (area<=CommonData.maxEndemicArea);
+                }
+                catch(NumberFormatException e){
+                  
+                }
+            
+          }
+      }
+        chkEndemicSpecies.setDisabled(!showEndemic);
+        chkEndemicSpecies.setChecked(false);
+        
+        if(showEndemic)
+            lendemicNote.setValue("Please note this may take several minutes depending on the area selected.");
+        else
+            lendemicNote.setValue("The selected area is too large to be considered for endemic species.");
     }
 
     public void onCheck$rgAreaHighlight(Event event) {
@@ -2548,7 +2608,7 @@ public class AddToolComposer extends UtilityComposer {
     }
     
     public boolean getIsEndemic(){
-        return chkEndemicSpecies.isChecked();
+        return chkEndemicSpecies !=null &&chkEndemicSpecies.isChecked();
     }
 
     public boolean[] getGeospatialKosher() {

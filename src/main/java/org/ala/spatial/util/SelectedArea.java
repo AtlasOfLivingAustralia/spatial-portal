@@ -6,6 +6,7 @@ package org.ala.spatial.util;
 
 import au.org.emii.portal.menu.MapLayer;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 
 /**
  *
@@ -17,6 +18,7 @@ public class SelectedArea implements Serializable {
 
     MapLayer mapLayer;
     String wkt;
+    String area;
 
     public SelectedArea(MapLayer mapLayer, String wkt) {
         this.mapLayer = mapLayer;
@@ -33,5 +35,24 @@ public class SelectedArea implements Serializable {
 
     public MapLayer getMapLayer() {
         return mapLayer;
+    }
+    /**
+     * Calculates the area in km2 and returns a "pretty" string version
+     * @return
+     */
+    public String getKm2Area(){
+        if(area == null){
+          try {
+            double totalarea = Util
+                .calculateArea(getWkt());
+            DecimalFormat df = new DecimalFormat("###,###.##");
+            area = df.format(totalarea / 1000 / 1000);
+            
+    
+        } catch (Exception e) {
+           area = ""; 
+        }
+        }
+        return area;
     }
 }

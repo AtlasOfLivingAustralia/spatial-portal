@@ -43,6 +43,7 @@ public class CommonData {
     static final String MAX_Q_LENGTH = "max_q_length";
     static final String BIOCACHE_QC = "biocache_qc";
     static final String ANALYSIS_LAYER_SETS = "analysis_layer_sets";
+    static final String MAX_AREA_FOR_ENDEMIC="max_area_endemic";
     //(2) for EnvironmentalList
     static JSONObject distances;
     static HashMap<String, HashMap<String, Double>> distances_map;
@@ -96,6 +97,7 @@ public class CommonData {
     static public String print_output_url;
     static public String[][] facetNameExceptions; //{{"cl22", "state"}, {"cl959", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
     static public Set<String> biocacheLayerList;
+    static public int maxEndemicArea;
 
     /*
      * initialize common data from geoserver and satserver
@@ -113,6 +115,9 @@ public class CommonData {
         biocacheWebServer = settings.get(BIOCACHE_WEBAPP_URL);
         defaultFieldString = settings.get(DEFAULT_UPLOAD_SAMPLING);
         maxQLength = Integer.parseInt(settings.get(MAX_Q_LENGTH));
+        //handle the situation where there is no config value for endemic area and use default value of 50,000km
+        String maxendemic = settings.get(MAX_AREA_FOR_ENDEMIC) !=null? settings.get(MAX_AREA_FOR_ENDEMIC) : "50000";
+        maxEndemicArea= Integer.parseInt(maxendemic);
         biocacheQc = settings.get(BIOCACHE_QC);
         if (biocacheQc == null) {
             biocacheQc = "";

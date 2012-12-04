@@ -1432,6 +1432,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Double lat = null;
             Double lon = null;
             Double radius = null;
+            String colourBy=null;
             String savedsession = "";
             boolean[] geospatialKosher = null;
             boolean supportDynamic = false;
@@ -1517,6 +1518,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         savedsession = value.trim();
                     } else if (key.equals("dynamic")) {
                         supportDynamic = Boolean.parseBoolean(value);
+                    } else if (key.equals("cm")){
+                        colourBy=value.trim();
                     }
                 }
 
@@ -1547,7 +1550,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     if (qc != null) {
                         q.setQc(qc);
                     }
-
+                    
                     if (getMapLayerDisplayName(q.getSolrName()) == null) {
                         if (bb == null) {
                             List<Double> bbox = q.getBBox();
@@ -1565,8 +1568,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         } else if (pointtype.equals("point")) {
                             setGrid = 0;
                         }
-
-                        return mapSpecies(q, q.getSolrName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, setGrid, size, opacity, colour);
+                        
+                        return mapSpecies(q, q.getSolrName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, setGrid, size, opacity, colour,colourBy);
+                        
                     }
                 }
 
@@ -2007,8 +2011,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         westMinimised.setVisible(maximise);
         menus.setSplittable(!maximise);
     }
-
+    
+    /**
+     * gets a species map that doesn't have colourby set 
+     */
     public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid, int size, float opacity, int colour) {
+        return mapSpecies(sq, species, rank, count, subType, wkt, setGrid, size, opacity, colour, null);
+    }
+    
+    public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid, int size, float opacity, int colour, String colourBy) {
 
         if (species == null) {
             species = sq.getName();
@@ -2029,8 +2040,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             grid = sq.getOccurrenceCount() > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD);
         }
         MapLayer ml = mapSpeciesFilter(sq, species, rank, count, subType, wkt, grid, size, opacity, colour);
-
+        
         if (ml != null) {
+            if(colourBy != null)
+                ml.setColourMode(colourBy);
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
                 md = new MapLayerMetadata();
@@ -2072,6 +2085,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             updateLayerControls();
             refreshContextualMenu();
+            //changes need to be apply when the colour by is not null this allows the map to be updated to reflect the correct facet
+            if(colourBy != null){                
+                applyChange(ml);
+            }
         }
 
         return ml;

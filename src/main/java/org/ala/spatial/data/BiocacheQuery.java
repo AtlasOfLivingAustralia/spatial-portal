@@ -1072,6 +1072,7 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("cl918", "Dynamic land cover", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl617", "Vegetation types - native", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl620", "Vegetation types - present", QueryField.FieldType.STRING));
+            fields.add(new QueryField("geospatial_kosher", "Spatial Validity", QueryField.FieldType.STRING));
             //fields.add(new QueryField("geospatial_kosher", "Location Quality", QueryField.FieldType.STRING));
             // Temporal
             fields.add(new QueryField("month", "Month", QueryField.FieldType.STRING));
