@@ -1488,7 +1488,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             }
 
                             count++;
-                            sb.append("(").append(value).append(")");
+                            //can't put extra brackets around "not" operators this will prevent SOLR from returning results
+                            if(value.startsWith("-"))
+                                sb.append(value);
+                            else
+                                sb.append("(").append(value).append(")");
                         }
                     } else if (key.equals("qc")) {
                         qc = "&qc=" + URLEncoder.encode(value, "UTF-8");

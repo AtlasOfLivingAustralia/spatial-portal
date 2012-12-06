@@ -775,7 +775,8 @@ public class BiocacheQuery implements Query, Serializable {
                         facet = t + facet.substring(p);
                     }
                 }
-                if (facet.contains(" OR ")) {
+                //can't put extra brackets around "not" operators
+                if (facet.contains(" OR ") && !facet.startsWith("-")) {
                     facet = "(" + facet + ")";
                 }
                 sb.append(facet);
