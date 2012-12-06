@@ -55,6 +55,9 @@
                 <n:td>
                     <button label="Map all" id="mapspecies" visible="false" sclass="goButton"/>
                 </n:td>
+                <n:td>
+                    <a label="View records" id="viewrecords" visible="false" target="_blank"/>
+                </n:td>
             </n:tr>
             <div id="divWorldNote" visible="false">
                 <label value="* World area includes records without coordinates" />
@@ -84,6 +87,9 @@
                 </n:td>
                 <n:td>
                     <button label="Map all" id="mapspecieskosher" visible="false" sclass="goButton"/>
+                </n:td>
+                <n:td>
+                    <a label="View records" id="viewrecordskosher" visible="false" target="_blank"/>
                 </n:td>
             </n:tr>
             <n:tr height="18px" >

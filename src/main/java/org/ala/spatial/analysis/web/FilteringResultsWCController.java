@@ -53,6 +53,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     private static Logger logger = Logger.getLogger(FilteringResultsWCController.class);
     RemoteLogger remoteLogger;
     public Button mapspecies;
+    public org.zkoss.zul.A viewrecords, viewrecordskosher;
     public Button mapspecieskosher;
     public Label results_label2_occurrences;
     public Label results_label2_species;
@@ -400,8 +401,11 @@ public class FilteringResultsWCController extends UtilityComposer {
         // toggle the map button
         if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
             mapspecies.setVisible(true);
+            viewrecords.setVisible(true);
+            viewrecords.setHref(data.get("viewRecordsUrl"));
         } else {
             mapspecies.setVisible(false);
+            viewrecords.setVisible(false);
         }
 
         if (isNumberGreaterThanZero(results_label2_species_kosher.getValue())) {
@@ -418,8 +422,11 @@ public class FilteringResultsWCController extends UtilityComposer {
         // toggle the map button
         if (results_count_kosher > 0 && results_count_occurrences_kosher <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
             mapspecieskosher.setVisible(true);
+            viewrecordskosher.setVisible(true);
+            viewrecordskosher.setHref(data.get("viewRecordsKosherUrl"));
         } else {
             mapspecieskosher.setVisible(false);
+            viewrecordskosher.setVisible(false);
         }
 
         mapGazPoints.setVisible(gazPoints != null && gazPoints.size() < 5000);
@@ -453,14 +460,22 @@ public class FilteringResultsWCController extends UtilityComposer {
                 data.put("speciesCount", "0");
                 data.put("occurrencesCount", "0");
                 mapspecies.setVisible(false);
+                viewrecords.setVisible(false);
                 return;
+            }
+            else{
+                data.put("viewRecordsUrl",CommonData.biocacheWebServer+"/occurrences/search?q="+sq.getQ()+"&qc="+sq.getQc());
             }
 
             if (results_count == 0) {
                 data.put("speciesCountKosher", "0");
                 data.put("occurrencesCountKosher", "0");
                 mapspecieskosher.setVisible(false);
+                viewrecordskosher.setVisible(false);
                 return;
+            }
+            else{
+                data.put("viewRecordsKosherUrl",CommonData.biocacheWebServer+"/occurrences/search?q="+sq2.getQ()+"&qc="+sq2.getQc());
             }
 
             //results_label2_species.setValue(String.format("%,d", results_count));
@@ -621,8 +636,10 @@ public class FilteringResultsWCController extends UtilityComposer {
         // toggle the map button
         if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
             mapspecies.setVisible(true);
+            viewrecords.setVisible(true);
         } else {
             mapspecies.setVisible(false);
+            viewrecords.setVisible(false);
         }
     }
 
