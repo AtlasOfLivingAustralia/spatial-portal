@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,10 +39,12 @@ public class Endemism {
 
     private GeometryFactory _geometryFactory;
 
-    private Map<String, Integer> speciesCellCounts;
-    private Map<String, Double> speciesCellAreas;
+    private Map<String, Integer> _speciesCellCounts;
+    private Map<String, Double> _speciesCellAreas;
+    
+    //private MathContext _mathContext;
 
-    private Map<Pair<Double, Double>, Set<String>> cellSpecies;
+    private Map<Pair<BigDecimal, BigDecimal>, Set<String>> cellSpecies;
 
     public static void main(String[] args) throws Exception {
         new Endemism().createEndemismLayer();
@@ -49,9 +52,10 @@ public class Endemism {
 
     public Endemism() {
         _geometryFactory = new GeometryFactory();
-        speciesCellCounts = new HashMap<String, Integer>();
-        speciesCellAreas = new HashMap<String, Double>();
-        cellSpecies = new HashMap<Pair<Double, Double>, Set<String>>();
+        _speciesCellCounts = new HashMap<String, Integer>();
+        _speciesCellAreas = new HashMap<String, Double>();
+        cellSpecies = new HashMap<Pair<BigDecimal, BigDecimal>, Set<String>>();
+        //_mathContext = new MathContext(2);
     }
 
     public void createEndemismLayer() throws Exception {
@@ -65,14 +69,15 @@ public class Endemism {
         speciesLsids.remove(0);
 
         for (String lsid : speciesLsids.subList(0, 5)) {
-            System.out.println(lsid);
+            
             List<String> occurrencePoints = doFacetDownload("taxon_concept_lsid:" + lsid + " AND geospatial_kosher:true", "point-0.001");
-
+            System.out.println(lsid + ": " + occurrencePoints.size());
+            
             // remove first line as this will contain the text
             // "taxon_concept_id"
             occurrencePoints.remove(0);
 
-            Set<String> roundedPointsSet = new HashSet<String>();
+            Set<Pair<BigDecimal, BigDecimal>> roundedPointsSet = new HashSet<Pair<BigDecimal, BigDecimal>>();
 
             double minLatitude = Double.POSITIVE_INFINITY;
             double maxLatitude = Double.NEGATIVE_INFINITY;
@@ -118,10 +123,12 @@ public class Endemism {
                     }
                 }
 
-                double roundedLatitude = Precision.round(rawLatitude, 2, BigDecimal.ROUND_CEILING);
-                double roundedLongitude = Precision.round(rawLongitude, 2, BigDecimal.ROUND_FLOOR);
+                //double roundedLatitude = Precision.round(rawLatitude, 2, BigDecimal.ROUND_CEILING);
+                //double roundedLongitude = Precision.round(rawLongitude, 2, BigDecimal.ROUND_FLOOR);
+                BigDecimal roundedLatitude = new BigDecimal(rawLatitude).setScale(2, BigDecimal.ROUND_CEILING);
+                BigDecimal roundedLongitude = new BigDecimal(rawLongitude).setScale(2, BigDecimal.ROUND_FLOOR);
 
-                Pair<Double, Double> cellCoordPair = new Pair<Double, Double>(roundedLatitude, roundedLongitude);
+                Pair<BigDecimal, BigDecimal> cellCoordPair = new Pair<BigDecimal, BigDecimal>(roundedLatitude, roundedLongitude);
                 Set<String> thisCellSpecies = cellSpecies.get(cellCoordPair);
                 if (thisCellSpecies == null) {
                     thisCellSpecies = new HashSet<String>();
@@ -129,10 +136,10 @@ public class Endemism {
                 }
                 thisCellSpecies.add(lsid);
 
-                roundedPointsSet.add(roundedLatitude + "," + roundedLongitude);
+                roundedPointsSet.add(cellCoordPair);
             }
 
-            speciesCellCounts.put(lsid, roundedPointsSet.size());
+            _speciesCellCounts.put(lsid, roundedPointsSet.size());
 
             double roundedMinLatitude = Precision.round(minLatitude, 2, BigDecimal.ROUND_FLOOR);
             double roundedMaxLatitude = Precision.round(maxLatitude, 2, BigDecimal.ROUND_CEILING);
@@ -140,7 +147,7 @@ public class Endemism {
             double roundedMaxLongitude = Precision.round(maxLongitude, 2, BigDecimal.ROUND_CEILING);
 
             double areaRegular = (roundedMaxLongitude - roundedMinLongitude) * (roundedMaxLatitude - roundedMinLatitude);
-            speciesCellAreas.put(lsid, areaRegular);
+            _speciesCellAreas.put(lsid, areaRegular);
             // System.out.println("Regular area: " + areaRegular);
             // System.out.println("POLYGON((" + minLongitude + " " + maxLatitude
             // + ", " + maxLongitude + " " + maxLatitude + ", " + maxLongitude +
@@ -152,7 +159,7 @@ public class Endemism {
                 double roundedPlus360MaxLongitude = Precision.round(plus360MaxLongitude, 2, BigDecimal.ROUND_CEILING);
                 double areaPlus360 = (roundedPlus360MaxLongitude - roundedPlus360MinLongitude) * (roundedMaxLatitude - roundedMinLatitude);
                 if (areaPlus360 < areaRegular) {
-                    speciesCellAreas.put(lsid, areaPlus360);
+                    _speciesCellAreas.put(lsid, areaPlus360);
                 }
                 // System.out.println("+360 area: " + areaPlus360);
                 // System.out.println("POLYGON((" + plus360MinLongitude + " " +
@@ -192,49 +199,65 @@ public class Endemism {
             pw.println("cellsize 0.01");
             pw.println("NODATA_value -9999");
             
-            List<Pair<Double, Double>> sortedCoords = new ArrayList<Pair<Double,Double>>(cellSpecies.keySet());
-            Collections.sort(sortedCoords, new PairComparator());
+//            List<Pair<Double, Double>> sortedCoords = new ArrayList<Pair<Double,Double>>(cellSpecies.keySet());
+//            Collections.sort(sortedCoords, new PairComparator());
             
-            for (double lat=90.0; lat >= -90.0; lat -= 0.01) {
+            BigDecimal gridSize = new BigDecimal("0.01");
+            BigDecimal maxLatitude = new BigDecimal("90.00");
+            BigDecimal minLatitude = new BigDecimal("-90.00");
+            BigDecimal minLongitude = new BigDecimal("-180.00"); 
+            BigDecimal maxLongitude = new BigDecimal("180.00");
+            
+            //int gridCount = 0;
+            
+            for (BigDecimal lat=maxLatitude; lat.compareTo(minLatitude) > -1; lat = lat.subtract(gridSize)) {
                 // a row for each 0.01 latitude    
-                
-                for (double lon=-180.0; lon <= 180.0; lon += 0.01) {
+                System.out.println(lat.doubleValue());
+                for (BigDecimal lon= minLongitude; lon.compareTo(maxLongitude) < 1; lon = lon.add(gridSize)) {
                     // a column for each 0.01 longitude
+                    //System.out.println(lon.doubleValue());
                     
-                    Pair<Double, Double> coordPair = new Pair<Double, Double>(lat, lon);
+                    Pair<BigDecimal, BigDecimal> coordPair = new Pair<BigDecimal, BigDecimal>(lat, lon);
                     
-                    double endemicityValue = 0;
+                    
                     
                     if (cellSpecies.containsKey(coordPair)) {
+                        double endemicityValue = 0; // No data value = -9999
                         Set<String> speciesLsids = cellSpecies.get(coordPair);
                         for (String lsid: speciesLsids) {
-                            int speciesCellCount = speciesCellCounts.get(lsid);
+                            int speciesCellCount = _speciesCellCounts.get(lsid);
                             endemicityValue += 1.0 / speciesCellCount;
                         }
+                        //gridCount++;
+                        pw.print(endemicityValue + " ");
+                        //System.out.println(lat + ", " + lon + ": " + endemicityValue);
+                    } else {
+                        pw.print("-9999 ");
                     }
                     
-                    pw.println(endemicityValue + " ");
+                    
                 }
-                
+                //pw.println();
             }
+            //System.out.println(gridCount);
             
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private class PairComparator implements Comparator<Pair<Double, Double>> {
-
-        @Override
-        public int compare(Pair<Double, Double> o1, Pair<Double, Double> o2) {
-            if (o1.getKey().equals(o2.getKey())) {
-                return (o1.getValue().compareTo(o2.getValue()));
-            } else {
-                return (o1.getKey().compareTo(o2.getKey()));
-            }
-        }
-
-    }
+//    private class PairComparator implements Comparator<Pair<Double, Double>> {
+//
+//        @Override
+//        public int compare(Pair<Double, Double> o1, Pair<Double, Double> o2) {
+//            if (o1.getKey().equals(o2.getKey())) {
+//                return (o1.getValue().compareTo(o2.getValue()));
+//            } else {
+//                return (o1.getKey().compareTo(o2.getKey()));
+//            }
+//        }
+//
+//    }
 
     private List<String> doFacetDownload(String query, String facet) throws Exception {
         URLCodec urlCodec = new URLCodec();
