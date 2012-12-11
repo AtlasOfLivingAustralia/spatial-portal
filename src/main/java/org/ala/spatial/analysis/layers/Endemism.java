@@ -1,16 +1,10 @@
 package org.ala.spatial.analysis.layers;
 
-import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,25 +18,16 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.commons.math3.util.Precision;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.Polygon;
-
 public class Endemism {
 
     private static String FACET_DOWNLOAD_URL_TEMPLATE = "/occurrences/facets/download?q={0}&facets={1}";
-    private static String SPECIES_BOUNDING_BOX_URL_TEMPLATE = "/mapping/bbox?q=taxon_concept_lsid:{0}";
 
-    // private String biocache_service_url = "http://biocache.ala.org.au/ws";
-    private String biocache_service_url = "http://ala-rufus.it.csiro.au/biocache-service/";
-
-    private GeometryFactory _geometryFactory;
+    private String biocache_service_url = "http://biocache.ala.org.au/ws";
+    //private String biocache_service_url = "http://ala-rufus.it.csiro.au/biocache-service/";
 
     private Map<String, Integer> _speciesCellCounts;
     private Map<String, Double> _speciesCellAreas;
-    
-    //private MathContext _mathContext;
+
 
     private Map<Pair<BigDecimal, BigDecimal>, Set<String>> cellSpecies;
 
@@ -51,11 +36,9 @@ public class Endemism {
     }
 
     public Endemism() {
-        _geometryFactory = new GeometryFactory();
         _speciesCellCounts = new HashMap<String, Integer>();
         _speciesCellAreas = new HashMap<String, Double>();
         cellSpecies = new HashMap<Pair<BigDecimal, BigDecimal>, Set<String>>();
-        //_mathContext = new MathContext(2);
     }
 
     public void createEndemismLayer() throws Exception {
@@ -69,10 +52,10 @@ public class Endemism {
         speciesLsids.remove(0);
 
         for (String lsid : speciesLsids.subList(0, 5)) {
-            
+
             List<String> occurrencePoints = doFacetDownload("taxon_concept_lsid:" + lsid + " AND geospatial_kosher:true", "point-0.001");
             System.out.println(lsid + ": " + occurrencePoints.size());
-            
+
             // remove first line as this will contain the text
             // "taxon_concept_id"
             occurrencePoints.remove(0);
@@ -123,8 +106,6 @@ public class Endemism {
                     }
                 }
 
-                //double roundedLatitude = Precision.round(rawLatitude, 2, BigDecimal.ROUND_CEILING);
-                //double roundedLongitude = Precision.round(rawLongitude, 2, BigDecimal.ROUND_FLOOR);
                 BigDecimal roundedLatitude = new BigDecimal(rawLatitude).setScale(2, BigDecimal.ROUND_CEILING);
                 BigDecimal roundedLongitude = new BigDecimal(rawLongitude).setScale(2, BigDecimal.ROUND_FLOOR);
 
@@ -148,11 +129,7 @@ public class Endemism {
 
             double areaRegular = (roundedMaxLongitude - roundedMinLongitude) * (roundedMaxLatitude - roundedMinLatitude);
             _speciesCellAreas.put(lsid, areaRegular);
-            // System.out.println("Regular area: " + areaRegular);
-            // System.out.println("POLYGON((" + minLongitude + " " + maxLatitude
-            // + ", " + maxLongitude + " " + maxLatitude + ", " + maxLongitude +
-            // " " + minLatitude + ", " + minLongitude + " "
-            // + minLatitude + ", " + minLongitude + " " + maxLatitude + "))");
+
 
             if (plus360MinLongitude != Double.POSITIVE_INFINITY && plus360MaxLongitude != Double.NEGATIVE_INFINITY) {
                 double roundedPlus360MinLongitude = Precision.round(plus360MinLongitude, 2, BigDecimal.ROUND_FLOOR);
@@ -161,19 +138,8 @@ public class Endemism {
                 if (areaPlus360 < areaRegular) {
                     _speciesCellAreas.put(lsid, areaPlus360);
                 }
-                // System.out.println("+360 area: " + areaPlus360);
-                // System.out.println("POLYGON((" + plus360MinLongitude + " " +
-                // maxLatitude + ", " + plus360MaxLongitude + " " + maxLatitude
-                // + ", " + plus360MaxLongitude + " " + minLatitude + ", "
-                // + plus360MinLongitude + " " + minLatitude + ", " +
-                // plus360MinLongitude + " " + maxLatitude + "))");
+
             }
-
-            // System.out.println(pointsSet.size());
-
-            // System.out.println(getSpeciesArea(lsid));
-            // speciesCellCounts.put(lsid, roundedPointsSet.size());
-            // speciesCellAreas.put(lsid, getSpeciesArea(lsid));
         }
 
         // for each species,
@@ -186,78 +152,59 @@ public class Endemism {
     }
 
     private void writeGrid() {
-        
-        
+
         try {
             FileWriter fw = new FileWriter("C:\\Users\\ChrisF\\eclipse-workspace\\alaspatial\\testgrid.asc");
             PrintWriter pw = new PrintWriter(fw);
-            
+
             pw.println("ncols 36000");
             pw.println("nrows 18000");
             pw.println("xllcorner -180.0");
             pw.println("yllcorner -90.0");
             pw.println("cellsize 0.01");
             pw.println("NODATA_value -9999");
-            
-//            List<Pair<Double, Double>> sortedCoords = new ArrayList<Pair<Double,Double>>(cellSpecies.keySet());
-//            Collections.sort(sortedCoords, new PairComparator());
-            
+
             BigDecimal gridSize = new BigDecimal("0.01");
             BigDecimal maxLatitude = new BigDecimal("90.00");
             BigDecimal minLatitude = new BigDecimal("-90.00");
-            BigDecimal minLongitude = new BigDecimal("-180.00"); 
+            BigDecimal minLongitude = new BigDecimal("-180.00");
             BigDecimal maxLongitude = new BigDecimal("180.00");
             
-            //int gridCount = 0;
-            
-            for (BigDecimal lat=maxLatitude; lat.compareTo(minLatitude) > -1; lat = lat.subtract(gridSize)) {
-                // a row for each 0.01 latitude    
+            for (BigDecimal lat = maxLatitude; lat.compareTo(minLatitude) == 1; lat = lat.subtract(gridSize)) {
+                // a row for each 0.01 latitude
                 System.out.println(lat.doubleValue());
-                for (BigDecimal lon= minLongitude; lon.compareTo(maxLongitude) < 1; lon = lon.add(gridSize)) {
+                for (BigDecimal lon = minLongitude; lon.compareTo(maxLongitude) == -1; lon = lon.add(gridSize)) {
                     // a column for each 0.01 longitude
-                    //System.out.println(lon.doubleValue());
-                    
+                    // System.out.println(lon.doubleValue());
+
                     Pair<BigDecimal, BigDecimal> coordPair = new Pair<BigDecimal, BigDecimal>(lat, lon);
-                    
-                    
-                    
+
                     if (cellSpecies.containsKey(coordPair)) {
-                        double endemicityValue = 0; // No data value = -9999
+                        double endemicityValue = 0; 
                         Set<String> speciesLsids = cellSpecies.get(coordPair);
-                        for (String lsid: speciesLsids) {
+                        for (String lsid : speciesLsids) {
                             int speciesCellCount = _speciesCellCounts.get(lsid);
                             endemicityValue += 1.0 / speciesCellCount;
                         }
-                        //gridCount++;
-                        pw.print(endemicityValue + " ");
-                        //System.out.println(lat + ", " + lon + ": " + endemicityValue);
+                        pw.print(endemicityValue);
                     } else {
-                        pw.print("-9999 ");
+                        pw.print("-9999"); // No data value = -9999
                     }
                     
-                    
+                    if (lon.compareTo(maxLongitude) != 0) {
+                        pw.print(" ");
+                    }
                 }
-                //pw.println();
+                pw.println();
             }
-            //System.out.println(gridCount);
             
+            pw.flush();
+            pw.close();
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
-
-//    private class PairComparator implements Comparator<Pair<Double, Double>> {
-//
-//        @Override
-//        public int compare(Pair<Double, Double> o1, Pair<Double, Double> o2) {
-//            if (o1.getKey().equals(o2.getKey())) {
-//                return (o1.getValue().compareTo(o2.getValue()));
-//            } else {
-//                return (o1.getKey().compareTo(o2.getKey()));
-//            }
-//        }
-//
-//    }
 
     private List<String> doFacetDownload(String query, String facet) throws Exception {
         URLCodec urlCodec = new URLCodec();
@@ -280,86 +227,5 @@ public class Endemism {
             get.releaseConnection();
         }
     }
-
-    // private double getSpeciesArea(String lsid) throws Exception {
-    // String bboxString = getSpeciesBbox(lsid);
-    // String[] bboxCoords = bboxString.split(",");
-    // String strMinLong = bboxCoords[0];
-    // String strMinLat = bboxCoords[1];
-    // String strMaxLong = bboxCoords[2];
-    // String strMaxLat = bboxCoords[3];
-    //
-    // // Round the bounding box corners to the nearest 0.01 degree as we are
-    // // interested in the area of the 0.01 degree squares
-    // // in which the occurrences fall
-    // // val roundedMinLong =
-    // // math.floor(java.lang.Double.parseDouble(strMinLong))
-    // // val roundedMinLat =
-    // // math.floor(java.lang.Double.parseDouble(strMinLat))
-    // // val roundedMaxLong =
-    // // math.ceil(java.lang.Double.parseDouble(strMaxLong))
-    // // val roundedMaxLat =
-    // // math.ceil(java.lang.Double.parseDouble(strMaxLat))
-    //
-    // double roundedMinLong = Precision.round(Double.parseDouble(strMinLong),
-    // 2, BigDecimal.ROUND_FLOOR);
-    // double roundedMinLat = Precision.round(Double.parseDouble(strMinLat), 2,
-    // BigDecimal.ROUND_FLOOR);
-    // double roundedMaxLong = Precision.round(Double.parseDouble(strMaxLong),
-    // 2, BigDecimal.ROUND_CEILING);
-    // double roundedMaxLat = Precision.round(Double.parseDouble(strMaxLat), 2,
-    // BigDecimal.ROUND_CEILING);
-    //
-    // // val roundedMinLong = 75.759307861328
-    // // val roundedMinLat = -56.214631594657
-    // // val roundedMaxLong = 213.22024536133
-    // // val roundedMaxLat = 16.222085414693
-    //
-    // Coordinate coord1 = new Coordinate(roundedMinLong, roundedMaxLat);
-    // Coordinate coord2 = new Coordinate(roundedMaxLong, roundedMaxLat);
-    // Coordinate coord3 = new Coordinate(roundedMaxLong, roundedMinLat);
-    // Coordinate coord4 = new Coordinate(roundedMinLong, roundedMinLat);
-    // Coordinate coord5 = new Coordinate(roundedMinLong, roundedMaxLat);
-    //
-    // // System.out.println("POLYGON((" + strMinLong + " " + strMaxLat + ", "
-    // // + strMaxLong + " " + strMaxLat + ", " + strMaxLong + " " + strMinLat
-    // // + ", " + strMinLong + " "
-    // // + strMinLat + ", " + strMinLong + " " + strMaxLat + "))");
-    //
-    // System.out.println("POLYGON((" + roundedMinLong + " " + roundedMaxLat +
-    // ", " + roundedMaxLong + " " + roundedMaxLat + ", " + roundedMaxLong + " "
-    // + roundedMinLat + ", " + roundedMinLong + " "
-    // + roundedMinLat + ", " + roundedMinLong + " " + roundedMaxLat + "))");
-    //
-    // Coordinate[] coordArray = new Coordinate[] { coord1, coord2, coord3,
-    // coord4, coord5 };
-    //
-    // LinearRing polygonBoundary =
-    // _geometryFactory.createLinearRing(coordArray);
-    // Polygon polygon = _geometryFactory.createPolygon(polygonBoundary, null);
-    //
-    // return polygon.getArea();
-    // }
-    //
-    // private String getSpeciesBbox(String lsid) throws Exception {
-    // String url = MessageFormat.format(biocache_service_url +
-    // SPECIES_BOUNDING_BOX_URL_TEMPLATE, lsid);
-    //
-    // HttpClient httpClient = new HttpClient();
-    // GetMethod get = new GetMethod(url);
-    // try {
-    // int responseCode = httpClient.executeMethod(get);
-    // if (responseCode == 200) {
-    // InputStream contentStream = get.getResponseBodyAsStream();
-    // String bbox = IOUtils.toString(contentStream);
-    // return bbox;
-    // } else {
-    // throw new Exception("facet download request failed (" + responseCode +
-    // ")");
-    // }
-    // } finally {
-    // get.releaseConnection();
-    // }
-    // }
 
 }
