@@ -1,12 +1,15 @@
 package org.ala.spatial.analysis.layers;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,147 +17,51 @@ import java.util.Set;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.math3.util.Pair;
-import org.apache.commons.math3.util.Precision;
 
 public class Endemism {
 
-    private static String FACET_DOWNLOAD_URL_TEMPLATE = "/occurrences/facets/download?q={0}&facets={1}";
-
-    private String biocache_service_url = "http://biocache.ala.org.au/ws";
-    //private String biocache_service_url = "http://ala-rufus.it.csiro.au/biocache-service/";
-
     private Map<String, Integer> _speciesCellCounts;
-    private Map<String, Double> _speciesCellAreas;
-
-
-    private Map<Pair<BigDecimal, BigDecimal>, Set<String>> cellSpecies;
+    private Map<Pair<BigDecimal, BigDecimal>, List<String>> _cellSpecies;
 
     public static void main(String[] args) throws Exception {
-        new Endemism().createEndemismLayer();
+        File speciesCellCountFile = new File(args[0]);
+        File cellSpeciesFile = new File(args[2]);
+        File gridOutputFile = new File(args[3]);
+        
+        new Endemism(speciesCellCountFile, cellSpeciesFile).writeGrid(gridOutputFile);
     }
 
-    public Endemism() {
+    public Endemism(File speciesCellCountFile, File cellSpeciesFile) throws IOException {
         _speciesCellCounts = new HashMap<String, Integer>();
-        _speciesCellAreas = new HashMap<String, Double>();
-        cellSpecies = new HashMap<Pair<BigDecimal, BigDecimal>, Set<String>>();
-    }
-
-    public void createEndemismLayer() throws Exception {
-        // get list of species
-        List<String> speciesLsids = doFacetDownload("taxon_concept_lsid:[* TO *]", "taxon_concept_lsid");
-        System.out.println(speciesLsids.size());
-        // List<String> speciesLsids = new ArrayList<String>();
-        // speciesLsids.add("urn:lsid:biodiversity.org.au:afd.taxon:3b127a18-0d9e-408e-b622-6dadbdc9f2f3");
-
-        // remove first line as this will contain the text "taxon_concept_id"
-        speciesLsids.remove(0);
-
-        for (String lsid : speciesLsids.subList(0, 5)) {
-
-            List<String> occurrencePoints = doFacetDownload("taxon_concept_lsid:" + lsid + " AND geospatial_kosher:true", "point-0.001");
-            System.out.println(lsid + ": " + occurrencePoints.size());
-
-            // remove first line as this will contain the text
-            // "taxon_concept_id"
-            occurrencePoints.remove(0);
-
-            Set<Pair<BigDecimal, BigDecimal>> roundedPointsSet = new HashSet<Pair<BigDecimal, BigDecimal>>();
-
-            double minLatitude = Double.POSITIVE_INFINITY;
-            double maxLatitude = Double.NEGATIVE_INFINITY;
-            double minLongitude = Double.POSITIVE_INFINITY;
-            double maxLongitude = Double.NEGATIVE_INFINITY;
-
-            double plus360MinLongitude = Double.POSITIVE_INFINITY;
-            double plus360MaxLongitude = Double.NEGATIVE_INFINITY;
-
-            for (String point : occurrencePoints) {
-                String[] splitPoint = point.split(",");
-                String strLatitude = splitPoint[0];
-                String strLongitude = splitPoint[1];
-
-                double rawLatitude = Double.parseDouble(strLatitude);
-                double rawLongitude = Double.parseDouble(strLongitude);
-
-                if (rawLatitude < minLatitude) {
-                    minLatitude = rawLatitude;
-                }
-
-                if (rawLatitude > maxLatitude) {
-                    maxLatitude = rawLatitude;
-                }
-
-                if (rawLongitude < minLongitude) {
-                    minLongitude = rawLongitude;
-                }
-
-                if (rawLongitude > maxLongitude) {
-                    maxLongitude = rawLongitude;
-                }
-
-                if (rawLongitude < 0) {
-                    double plus360Longitude = rawLongitude + 360;
-
-                    if (plus360Longitude > plus360MaxLongitude) {
-                        plus360MaxLongitude = plus360Longitude;
-                    }
-                } else {
-                    if (rawLongitude < plus360MinLongitude) {
-                        plus360MinLongitude = rawLongitude;
-                    }
-                }
-
-                BigDecimal roundedLatitude = new BigDecimal(rawLatitude).setScale(2, BigDecimal.ROUND_CEILING);
-                BigDecimal roundedLongitude = new BigDecimal(rawLongitude).setScale(2, BigDecimal.ROUND_FLOOR);
-
-                Pair<BigDecimal, BigDecimal> cellCoordPair = new Pair<BigDecimal, BigDecimal>(roundedLatitude, roundedLongitude);
-                Set<String> thisCellSpecies = cellSpecies.get(cellCoordPair);
-                if (thisCellSpecies == null) {
-                    thisCellSpecies = new HashSet<String>();
-                    cellSpecies.put(cellCoordPair, thisCellSpecies);
-                }
-                thisCellSpecies.add(lsid);
-
-                roundedPointsSet.add(cellCoordPair);
-            }
-
-            _speciesCellCounts.put(lsid, roundedPointsSet.size());
-
-            double roundedMinLatitude = Precision.round(minLatitude, 2, BigDecimal.ROUND_FLOOR);
-            double roundedMaxLatitude = Precision.round(maxLatitude, 2, BigDecimal.ROUND_CEILING);
-            double roundedMinLongitude = Precision.round(minLongitude, 2, BigDecimal.ROUND_FLOOR);
-            double roundedMaxLongitude = Precision.round(maxLongitude, 2, BigDecimal.ROUND_CEILING);
-
-            double areaRegular = (roundedMaxLongitude - roundedMinLongitude) * (roundedMaxLatitude - roundedMinLatitude);
-            _speciesCellAreas.put(lsid, areaRegular);
-
-
-            if (plus360MinLongitude != Double.POSITIVE_INFINITY && plus360MaxLongitude != Double.NEGATIVE_INFINITY) {
-                double roundedPlus360MinLongitude = Precision.round(plus360MinLongitude, 2, BigDecimal.ROUND_FLOOR);
-                double roundedPlus360MaxLongitude = Precision.round(plus360MaxLongitude, 2, BigDecimal.ROUND_CEILING);
-                double areaPlus360 = (roundedPlus360MaxLongitude - roundedPlus360MinLongitude) * (roundedMaxLatitude - roundedMinLatitude);
-                if (areaPlus360 < areaRegular) {
-                    _speciesCellAreas.put(lsid, areaPlus360);
-                }
-
-            }
+        _cellSpecies = new HashMap<Pair<BigDecimal, BigDecimal>, List<String>>();
+        
+        List<String> speciesCellCountLines = FileUtils.readLines(speciesCellCountFile); 
+        for (String line: speciesCellCountLines) {
+            String[] tokens = line.split(",");
+            String speciesLsid = tokens[0];
+            int cellCount = Integer.parseInt(tokens[1]);
+            _speciesCellCounts.put(speciesLsid, cellCount);
         }
-
-        // for each species,
-        // get no of grid cells occurring in
-        // get area of bounding box of records - rounded out to complete 1
-        // degree cells.
-        // record data
-
-        writeGrid();
+        
+        List<String> cellSpeciesLines = FileUtils.readLines(cellSpeciesFile);
+        for (String line: speciesCellCountLines) {
+            String[] tokens = line.split(",");
+            BigDecimal latitude = new BigDecimal(tokens[0]);
+            BigDecimal longitude = new BigDecimal(tokens[1]);
+            List<String> speciesLsids = Arrays.asList(Arrays.copyOfRange(tokens, 2, tokens.length));
+            _cellSpecies.put(new Pair(latitude, longitude), speciesLsids);
+        }
     }
+    
+    
 
-    private void writeGrid() {
+    public void writeGrid(File gridOutputFile) {
 
         try {
-            FileWriter fw = new FileWriter("C:\\Users\\ChrisF\\eclipse-workspace\\alaspatial\\testgrid.asc");
+            FileWriter fw = new FileWriter(gridOutputFile);
             PrintWriter pw = new PrintWriter(fw);
 
             pw.println("ncols 36000");
@@ -179,9 +86,9 @@ public class Endemism {
 
                     Pair<BigDecimal, BigDecimal> coordPair = new Pair<BigDecimal, BigDecimal>(lat, lon);
 
-                    if (cellSpecies.containsKey(coordPair)) {
+                    if (_cellSpecies.containsKey(coordPair)) {
                         double endemicityValue = 0; 
-                        Set<String> speciesLsids = cellSpecies.get(coordPair);
+                        List<String> speciesLsids = _cellSpecies.get(coordPair);
                         for (String lsid : speciesLsids) {
                             int speciesCellCount = _speciesCellCounts.get(lsid);
                             endemicityValue += 1.0 / speciesCellCount;
@@ -203,28 +110,6 @@ public class Endemism {
 
         } catch (Exception ex) {
             ex.printStackTrace();
-        }
-    }
-
-    private List<String> doFacetDownload(String query, String facet) throws Exception {
-        URLCodec urlCodec = new URLCodec();
-
-        String url = MessageFormat.format(biocache_service_url + FACET_DOWNLOAD_URL_TEMPLATE, urlCodec.encode(query), urlCodec.encode(facet));
-
-        HttpClient httpClient = new HttpClient();
-        GetMethod get = new GetMethod(url);
-        try {
-            int responseCode = httpClient.executeMethod(get);
-            if (responseCode == 200) {
-                InputStream contentStream = get.getResponseBodyAsStream();
-
-                List<String> lines = IOUtils.readLines(contentStream);
-                return lines;
-            } else {
-                throw new Exception("facet download request failed (" + responseCode + ")");
-            }
-        } finally {
-            get.releaseConnection();
         }
     }
 
