@@ -204,6 +204,10 @@ public class ClassificationLegend extends UtilityComposer {
                 }
             }
 
+            if("geospatial_kosher".equals(colourmode)){
+                setupForBiocacheGeospatialKosher();
+            }
+
             /* apply something to line onclick in lb */
             legend.setItemRenderer(new ListitemRenderer() {
 
@@ -783,7 +787,7 @@ public class ClassificationLegend extends UtilityComposer {
                 String[] ss = s.split(" TO ");
                 if (ss.length > 1) {
                     if (ss[1].equals("01")) {
-                        s = "January";
+                        s = "Januaryyyyy";
                     } else if (ss[1].equals("02")) {
                         s = "February";
                     } else if (ss[1].equals("03")) {
@@ -812,6 +816,26 @@ public class ClassificationLegend extends UtilityComposer {
                 legend_lines.set(j, s + back);
             }
 
+        }
+    }
+
+    private void setupForBiocacheGeospatialKosher() {
+        legend_facets = new HashMap<String, String>();
+        //update text in legend lines
+        for (int j = 0; j < legend_lines.size(); j++) {
+            String s = legend_lines.get(j);
+            int firstDelim = s.indexOf(',');
+            String value = s.substring(0,firstDelim);
+            String back = s.substring(firstDelim);
+            if (value.equals("\"true\"")) {
+                s = "Spatially valid";
+            } else if (value.equals("\"false\"")) {
+                s = "Spatially suspect";
+            } else {
+                s = "Coordinates not supplied";
+            }
+            legend_facets.put(s, "geospatial_kosher:" + value);
+            legend_lines.set(j, s + back);
         }
     }
 
