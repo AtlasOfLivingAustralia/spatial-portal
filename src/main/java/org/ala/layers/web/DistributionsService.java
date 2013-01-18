@@ -74,7 +74,9 @@ public class DistributionsService {
             @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
             @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
             @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, HttpServletResponse response) {
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids,
+            @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids,
+            HttpServletResponse response) {
 
         if (StringUtils.isEmpty(wkt) && fid != null && objectName != null) {
             List<Objects> objects = objectDao.getObjectByFidAndName(fid, objectName);
@@ -91,8 +93,9 @@ public class DistributionsService {
                 return null;
             }
         }
-        return distributionDao.queryDistributions(wkt, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids, genera, generaLsids,
-                Distribution.EXPERT_DISTRIBUTION);
+        return distributionDao.queryDistributions(wkt, min_depth, max_depth, pelagic, coastal, estuarine, desmersal,
+                groupName, geom_idx, lsids, families, familyLsids, genera, generaLsids,
+                Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
     }
     
     /*
@@ -108,7 +111,9 @@ public class DistributionsService {
             @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
             @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
             @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, HttpServletResponse response) {
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids,
+            @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids,
+            HttpServletResponse response) {
 
         if (StringUtils.isEmpty(wkt) && fid != null && objectName != null) {
             List<Objects> objects = objectDao.getObjectByFidAndName(fid, objectName);
@@ -125,8 +130,9 @@ public class DistributionsService {
                 return null;
             }
         }
-        return distributionDao.queryDistributionsFamilyCounts(wkt, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids, genera, generaLsids,
-                Distribution.EXPERT_DISTRIBUTION);
+        return distributionDao.queryDistributionsFamilyCounts(wkt, min_depth, max_depth, pelagic, coastal, estuarine,
+                desmersal, groupName, geom_idx, lsids, families, familyLsids, genera, generaLsids,
+                Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
     }    
 
     @RequestMapping(value = WS_DISTRIBUTIONS_RADIUS, method = { RequestMethod.GET, RequestMethod.POST })
@@ -139,9 +145,12 @@ public class DistributionsService {
             @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
             @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
             @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids) {
-        return distributionDao.queryDistributionsByRadius(longitude, latitude, radius, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids,
-                genera, generaLsids, Distribution.EXPERT_DISTRIBUTION);
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids,
+            @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids
+    ) {
+        return distributionDao.queryDistributionsByRadius(longitude, latitude, radius, min_depth, max_depth, pelagic,
+                coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids,
+                genera, generaLsids, Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
     }
 
     @RequestMapping(value = WS_DISTRIBUTIONS_RADIUS_COUNTS, method = { RequestMethod.GET, RequestMethod.POST })
@@ -154,9 +163,10 @@ public class DistributionsService {
             @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
             @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
             @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids) {
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids,
+            @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids) {
         return distributionDao.queryDistributionsByRadiusFamilyCounts(longitude, latitude, radius, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids,
-                genera, generaLsids, Distribution.EXPERT_DISTRIBUTION);
+                genera, generaLsids, Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
     }    
     
     /*

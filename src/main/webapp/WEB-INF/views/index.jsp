@@ -38,7 +38,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
             <ul>
                 <li>Layers<ul>
                         <li><strong>Get a list of all layers:</strong> <a href="/ws/layers">/ws/layers</a></li>
-                        <li><strong>Get a list of all environmental/grided layers:</strong> <a href="/ws/layers/grids">/ws/layers/grids</a></li>
+                        <li><strong>Get a list of all environmental/gridded layers:</strong> <a href="/ws/layers/grids">/ws/layers/grids</a></li>
                         <li><strong>Get a list of all contextual layers:</strong> <a href="/ws/layers/shapes">/ws/layers/shapes</a></li>
                     </ul></li>
 
@@ -57,7 +57,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                     </ul></li>
 
                 <li>Search<ul>
-                        <li><strong>Search for gazzetter localities:</strong> /search?q={free text} e.g. <a href="/ws/search?q=canberra">/ws/search?q=canberra</a></li>
+                        <li><strong>Search for gazetteer localities:</strong> /search?q={free text} e.g. <a href="/ws/search?q=canberra">/ws/search?q=canberra</a></li>
                     </ul></li>
 
                 <li>Intersect<ul>
@@ -84,6 +84,9 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                             <li><strong>familyLsid</strong> - e.g. "urn:lsid:biodiversity.org.au:afd.taxon:7cb7f40d-143f-49cc-839d-613259786a42"</li>
                             <li><strong>genus</strong> - e.g. "Alopias" For multiple genera add multiple "&genus=?" params to URL</li>
                             <li><strong>genusLsid</strong> - e.g. "urn:lsid:biodiversity.org.au:afd.taxon:557d7f85-a430-4424-a7ae-7fca52b8b443"</li>
+                            <li><strong>dataResourceUid</strong> - e.g. "dr803" to only retrieve distributions supplied by a specific resource
+                                e.g. <a href="http://collections.ala.org.au/public/show/dr803">ANFC (dr803)</a>
+                            </li>
                         </ul>
                     </li>
                     <li><strong>Get a count of all distributions by family:</strong> <a href="/ws/distributions/counts">/ws/distributions/counts</a>
@@ -107,6 +110,9 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                             <li><strong>familyLsid</strong> - e.g. "urn:lsid:biodiversity.org.au:afd.taxon:7cb7f40d-143f-49cc-839d-613259786a42"</li>
                             <li><strong>genus</strong> - e.g. "Alopias" For multiple genera add multiple "&genus=?" params to URL</li>
                             <li><strong>genusLsid</strong> - e.g. "urn:lsid:biodiversity.org.au:afd.taxon:557d7f85-a430-4424-a7ae-7fca52b8b443"</li>
+                            <li><strong>dataResourceUid</strong> - e.g. "dr803" to only retrieve distributions supplied by a specific resource
+                                e.g. <a href="http://collections.ala.org.au/public/show/dr803">ANFC (dr803)</a>
+                            </li>
                         </ul>
                     </li>
                     <li><strong>Get a count of all distributions for radius by family:</strong> <a href="/ws/distributions/radius/counts">/ws/distributions/radius</a>

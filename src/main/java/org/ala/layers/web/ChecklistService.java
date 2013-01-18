@@ -57,7 +57,7 @@ public class ChecklistService {
             @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx,
             HttpServletRequest req) {
 
-        return distributionDao.queryDistributions(wkt, min_depth, max_depth, geom_idx, lsids, Distribution.SPECIES_CHECKLIST);
+        return distributionDao.queryDistributions(wkt, min_depth, max_depth, geom_idx, lsids, Distribution.SPECIES_CHECKLIST, null);
     }
 
     /*
