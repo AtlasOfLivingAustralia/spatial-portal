@@ -16,12 +16,18 @@ package org.ala.layers.intersect;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author Adam
  */
 public class SimpleShapeFileCache {
+
+    /**
+     * Log4j instance
+     */
+    protected Logger logger = Logger.getLogger(this.getClass());
 
     HashMap<String, SimpleShapeFile> cache;
     HashMap<String, SimpleShapeFile> cacheByFieldId;
@@ -59,7 +65,7 @@ public class SimpleShapeFileCache {
 //        }
 
         //add layers not loaded
-        System.out.println("start caching shape files");
+        logger.info("start caching shape files");
         System.gc();
         System.out.println("Memory usage (total/used/free):" + (Runtime.getRuntime().totalMemory() / 1024 / 1024) + "MB / " + (Runtime.getRuntime().totalMemory() / 1024 / 1024 - Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB / " + (Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB");
         for (int i = 0; i < layers.length; i++) {
@@ -67,15 +73,15 @@ public class SimpleShapeFileCache {
                 try {
                     SimpleShapeFile ssf = new SimpleShapeFile(layers[i], columns[i]);
                     System.gc();
-                    System.out.println(layers[i] + " loaded, Memory usage (total/used/free):" + (Runtime.getRuntime().totalMemory() / 1024 / 1024) + "MB / " + (Runtime.getRuntime().totalMemory() / 1024 / 1024 - Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB / " + (Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB");
+                    logger.info(layers[i] + " loaded, Memory usage (total/used/free):" + (Runtime.getRuntime().totalMemory() / 1024 / 1024) + "MB / " + (Runtime.getRuntime().totalMemory() / 1024 / 1024 - Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB / " + (Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB");
 
                     if (ssf != null) {
                         cache.put(layers[i], ssf);
                         cacheByFieldId.put(fieldIds[i], ssf);
                     }
                 } catch (Exception e) {
-                    System.out.println("error with shape file: " + layers[i] + ", field: " + columns[i]);
-                    e.printStackTrace();
+                    logger.error("error with shape file: " + layers[i] + ", field: " + columns[i]);
+                    logger.error(e.getMessage(), e);
                 }
             }
         }

@@ -198,7 +198,7 @@ public class IniReader {
             out.close();
 
         } catch (Exception e) {
-            System.out.println("Unable to write ini to " + filename);
+            logger.error("Unable to write ini to " + filename);
             e.printStackTrace(System.out);
         }
     }

@@ -46,21 +46,25 @@ public class DistributionDAOImpl implements DistributionDAO {
     private String viewName = "distributions";
     private final String SELECT_CLAUSE = "select gid,spcode,scientific,authority_,common_nam,\"family\",genus_name,specific_n,min_depth,"
             + "max_depth,pelagic_fl,coastal_fl,desmersal_fl,estuarine_fl,family_lsid,genus_lsid,caab_species_number,"
-            + "caab_family_number,group_name,metadata_u,wmsurl,lsid,type,area_name,pid,checklist_name,area_km, notes, geom_idx";
+            + "caab_family_number,group_name,metadata_u,wmsurl,lsid,type,area_name,pid,checklist_name,area_km,notes,"
+            + "geom_idx,image_quality,data_resource_uid";
 
     @Override
-    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, Integer geomIdx, String lsids, String type) {
-        return queryDistributions(wkt, min_depth, max_depth, null, null, null, null, null, geomIdx, lsids, null, null, null, null, type);
+    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, Integer geomIdx, String lsids, String type, String[] dataResources) {
+        return queryDistributions(wkt, min_depth, max_depth, null, null, null, null, null, geomIdx, lsids, null, null, null, null, type, dataResources);
     }
 
     @Override
-    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, Boolean pelagic, Boolean coastal, Boolean estuarine, Boolean desmersal, String groupName,
-            Integer geomIdx, String lsids, String[] families, String[] familyLsids, String[] genera, String[] generaLsids, String type) {
+    public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, Boolean pelagic,
+                                Boolean coastal, Boolean estuarine, Boolean desmersal, String groupName,
+                                Integer geomIdx, String lsids, String[] families, String[] familyLsids, String[] genera,
+                                String[] generaLsids, String type, String[] dataResources) {
         logger.info("Getting distributions list");
 
         StringBuilder whereClause = new StringBuilder();
         Map<String, Object> params = new HashMap<String, Object>();
-        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids, families, familyLsids, genera, generaLsids, type, params, whereClause);
+        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids,
+                families, familyLsids, genera, generaLsids, type, dataResources, params, whereClause);
         if (wkt != null && wkt.length() > 0) {
             if (whereClause.length() > 0) {
                 whereClause.append(" AND ");
@@ -79,12 +83,13 @@ public class DistributionDAOImpl implements DistributionDAO {
 
     @Override
     public List<Facet> queryDistributionsFamilyCounts(String wkt, double min_depth, double max_depth, Boolean pelagic, Boolean coastal, Boolean estuarine, Boolean desmersal, String groupName,
-            Integer geomIdx, String lsids, String[] families, String[] familyLsids, String[] genera, String[] generaLsids, String type) {
+            Integer geomIdx, String lsids, String[] families, String[] familyLsids, String[] genera, String[] generaLsids, String type, String[] dataResources) {
         logger.info("Getting distributions list - family counts");
 
         StringBuilder whereClause = new StringBuilder();
         Map<String, Object> params = new HashMap<String, Object>();
-        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids, families, familyLsids, genera, generaLsids, type, params, whereClause);
+        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids,
+                families, familyLsids, genera, generaLsids, type, dataResources, params, whereClause);
         if (wkt != null && wkt.length() > 0) {
             if (whereClause.length() > 0) {
                 whereClause.append(" AND ");
@@ -113,9 +118,11 @@ public class DistributionDAOImpl implements DistributionDAO {
         return null;
     }
 
-    public List<Distribution> queryDistributionsByRadius(float longitude, float latitude, float radiusInMetres, double min_depth, double max_depth, Integer geomIdx, String lsids, String[] families,
-            String[] familyLsids, String[] genera, String[] generaLsids, String type) {
-        return queryDistributionsByRadius(longitude, latitude, radiusInMetres, min_depth, max_depth, null, null, null, null, null, geomIdx, lsids, families, familyLsids, genera, generaLsids, type);
+    public List<Distribution> queryDistributionsByRadius(float longitude, float latitude, float radiusInMetres,
+                                                         double min_depth, double max_depth, Integer geomIdx, String lsids, String[] families,
+            String[] familyLsids, String[] genera, String[] generaLsids, String type, String[] dataResources) {
+        return queryDistributionsByRadius(longitude, latitude, radiusInMetres, min_depth, max_depth, null, null, null, null, null,
+                geomIdx, lsids, families, familyLsids, genera, generaLsids, type, dataResources);
     }
 
     /**
@@ -124,7 +131,8 @@ public class DistributionDAOImpl implements DistributionDAO {
      * @return set of species with distributions intersecting the radius
      */
     public List<Distribution> queryDistributionsByRadius(float longitude, float latitude, float radiusInMetres, double min_depth, double max_depth, Boolean pelagic, Boolean coastal,
-            Boolean estuarine, Boolean desmersal, String groupName, Integer geomIdx, String lsids, String[] families, String[] familyLsids, String[] genera, String[] generaLsids, String type) {
+            Boolean estuarine, Boolean desmersal, String groupName, Integer geomIdx, String lsids,
+            String[] families, String[] familyLsids, String[] genera, String[] generaLsids, String type, String[] dataResources) {
         logger.info("Getting distributions list with a radius - " + radiusInMetres + "m");
 
         Map<String, Object> params = new HashMap<String, Object>();
@@ -137,7 +145,8 @@ public class DistributionDAOImpl implements DistributionDAO {
         // add additional criteria
         StringBuilder whereClause = new StringBuilder();
 
-        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids, families, familyLsids, genera, generaLsids, type, params, whereClause);
+        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids,
+                families, familyLsids, genera, generaLsids, type, dataResources, params, whereClause);
 
         if (whereClause.length() > 0) {
             sql += " AND " + whereClause.toString();
@@ -151,7 +160,8 @@ public class DistributionDAOImpl implements DistributionDAO {
      * @return set of species with distributions intersecting the radius
      */
     public List<Facet> queryDistributionsByRadiusFamilyCounts(float longitude, float latitude, float radiusInMetres, double min_depth, double max_depth, Boolean pelagic, Boolean coastal,
-            Boolean estuarine, Boolean desmersal, String groupName, Integer geomIdx, String lsids, String[] families, String[] familyLsids, String[] genera, String[] generaLsids, String type) {
+            Boolean estuarine, Boolean desmersal, String groupName, Integer geomIdx, String lsids, String[] families, String[] familyLsids,
+            String[] genera, String[] generaLsids, String type, String[] dataResources) {
         logger.info("Getting distributions list with a radius");
 
         Map<String, Object> params = new HashMap<String, Object>();
@@ -167,7 +177,8 @@ public class DistributionDAOImpl implements DistributionDAO {
         // add additional criteria
         StringBuilder whereClause = new StringBuilder();
 
-        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids, families, familyLsids, genera, generaLsids, type, params, whereClause);
+        constructWhereClause(min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geomIdx, lsids,
+                families, familyLsids, genera, generaLsids, type, dataResources, params, whereClause);
 
         if (whereClause.length() > 0) {
             sql += " AND " + whereClause.toString();
@@ -207,8 +218,10 @@ public class DistributionDAOImpl implements DistributionDAO {
      * @param params
      * @param where
      */
-    private void constructWhereClause(double min_depth, double max_depth, Boolean pelagic, Boolean coastal, Boolean estuarine, Boolean desmersal, String groupName, Integer geomIdx, String lsids,
-            String[] families, String[] familyLsids, String[] genera, String[] generaLsids, String type, Map<String, Object> params, StringBuilder where) {
+    private void constructWhereClause(double min_depth, double max_depth, Boolean pelagic, Boolean coastal,
+                                      Boolean estuarine, Boolean desmersal, String groupName, Integer geomIdx,
+                                      String lsids, String[] families, String[] familyLsids, String[] genera,
+                                      String[] generaLsids, String type, String[] dataResources, Map<String, Object> params, StringBuilder where) {
         if (geomIdx != null && geomIdx >= 0) {
             where.append(" geom_idx = :geom_idx ");
             params.put("geom_idx", geomIdx);
@@ -220,6 +233,14 @@ public class DistributionDAOImpl implements DistributionDAO {
             }
             where.append(":lsids LIKE '% '||lsid||' %'  ");
             params.put("lsids", " " + lsids.replace(",", " ") + " ");
+        }
+
+        if(dataResources != null && dataResources.length>0){
+            if (where.length() > 0) {
+                where.append(" AND ");
+            }
+            where.append("data_resource_uid IN (:dataResources) ");
+            params.put("dataResources", Arrays.asList(dataResources));
         }
 
         if (min_depth != -1 && max_depth != -1) {

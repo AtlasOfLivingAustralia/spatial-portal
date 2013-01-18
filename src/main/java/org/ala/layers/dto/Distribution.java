@@ -29,7 +29,6 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 public class Distribution {
     public static final String EXPERT_DISTRIBUTION = "e";
     public static final String SPECIES_CHECKLIST = "c";
-
     Long gid;
     Long spcode;
     String scientific;
@@ -61,6 +60,24 @@ public class Distribution {
     Boolean desmersal_fl;
     String caab_species_number;
     String caab_family_number;
+    String data_resource_uid;
+    String image_quality;
+
+    public String getData_resource_uid() {
+        return data_resource_uid;
+    }
+
+    public void setData_resource_uid(String data_resource_uid) {
+        this.data_resource_uid = data_resource_uid;
+    }
+
+    public String getImage_quality() {
+        return image_quality;
+    }
+
+    public void setImage_quality(String image_quality) {
+        this.image_quality = image_quality;
+    }
 
     public String getFamily_lsid() {
         return family_lsid;

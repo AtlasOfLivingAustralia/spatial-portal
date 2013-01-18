@@ -117,7 +117,7 @@ public class SamplingThread extends Thread {
             }
         } catch (Exception e) {
             logger.error("Error with grid: " + filename, e);
-            e.printStackTrace();
+            logger.error(e.getMessage(),e);
         }
     }
 
@@ -149,7 +149,7 @@ public class SamplingThread extends Thread {
             }
         } catch (Exception e) {
             logger.error("Error with grid: " + filename, e);
-            e.printStackTrace();
+            logger.error(e.getMessage(),e);
         }
     }
 
@@ -190,8 +190,8 @@ public class SamplingThread extends Thread {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
             logger.error("Error with shapefile: " + filename, e);
+            logger.error(e.getMessage(),e);
         }
     }
 }

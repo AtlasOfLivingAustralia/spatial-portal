@@ -799,9 +799,9 @@ public class Grid { //  implements Serializable
             }
         }
         if (min != this.minval || max != this.maxval) {
-            System.out.println(this.filename + " ERR header(" + this.minval + " " + this.maxval + ") actual(" + min + " " + max + ") number missing(" + numMissing + " of " + data.length + ")");
+            logger.error(this.filename + " ERR header(" + this.minval + " " + this.maxval + ") actual(" + min + " " + max + ") number missing(" + numMissing + " of " + data.length + ")");
         } else {
-            System.out.println(this.filename + " OK header(" + this.minval + " " + this.maxval + ") number missing(" + numMissing + " of " + data.length + ")");
+            logger.error(this.filename + " OK header(" + this.minval + " " + this.maxval + ") number missing(" + numMissing + " of " + data.length + ")");
         }
     }
 

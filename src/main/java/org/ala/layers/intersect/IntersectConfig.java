@@ -597,9 +597,9 @@ public class IntersectConfig {
             String[] gdmparts = new String [] {id.substring(0,pos), id.substring(pos+1) };
             gid = gdmparts[0];
             filename = getAlaspatialOutputPath() + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1] + "Tran";
-            System.out.println("id: " + id);
-            System.out.println("parts: " + gdmparts[0] + ", " + gdmparts[1]);
-            System.out.println("filename: " + filename);
+            logger.debug("id: " + id);
+            logger.debug("parts: " + gdmparts[0] + ", " + gdmparts[1]);
+            logger.debug("filename: " + filename);
             //Layer tmpLayer = layerDao.getLayerByName(gdmparts[1].replaceAll("Tran", ""));
             //name = "Transformed " + tmpLayer.getDisplayname();
             name = "Transformed " + getIntersectionFile(gdmparts[1]).getFieldName();

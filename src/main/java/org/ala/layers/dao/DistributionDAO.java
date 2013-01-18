@@ -30,30 +30,33 @@ public interface DistributionDAO {
 
     public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, Integer geomIdx,
                                                 String lsids,
-                                                String type);
+                                                String type,
+                                                String[] dataResources
+    );
 
     public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth,
-                                                Boolean pelagic, Boolean coastal, Boolean estuarine,Boolean desmersal,String groupName,
-                                                Integer geomIdx, String lsids,
+                                                Boolean pelagic, Boolean coastal, Boolean estuarine,Boolean desmersal,
+                                                String groupName, Integer geomIdx, String lsids,
                                                 String[] families, String[] familyLsids, String[] genera, String[] generaLsids,
-                                                String type);
+                                                String type,String[] dataResources);
     
     public List<Facet> queryDistributionsFamilyCounts(String wkt, double min_depth, double max_depth,
 									            Boolean pelagic, Boolean coastal, Boolean estuarine,Boolean desmersal,String groupName,
 									            Integer geomIdx, String lsids,
 									            String[] families, String[] familyLsids, String[] genera, String[] generaLsids,
-									            String type);
+									            String type, String[] dataResources);
 
     public List<Distribution> queryDistributionsByRadius(float longitude, float latitude, float radiusInMetres, double min_depth, double max_depth,
                                                 Boolean pelagic, Boolean coastal, Boolean estuarine, Boolean desmersal, String groupName,
                                                 Integer geomIdx, String lsids,
                                                 String[] families, String[] familyLsids, String[] genera, String[] generaLsids,
-                                                String type);
+                                                String type, String[] dataResources);
     
     public List<Facet> queryDistributionsByRadiusFamilyCounts(float longitude, float latitude, float radiusInMetres, double min_depth, 
     											double max_depth, Boolean pelagic, Boolean coastal,
     											Boolean estuarine, Boolean desmersal, String groupName, Integer geomIdx, String lsids, 
-    											String[] families, String[] familyLsids, String[] genera, String[] generaLsids, String type);
+    											String[] families, String[] familyLsids, String[] genera,
+                                                String[] generaLsids, String type, String[] dataResources);
     
     public Distribution getDistributionBySpcode(long spcode, String type);
 
