@@ -839,7 +839,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                 if (jo == null) {
                     return null;
                 } else {
-                    String[] output = new String[13];
+                    String[] output = new String[14];
                     //"SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,LSID,AREA_NAME,AREA_SQ_KM";
 
                     //String spcode = jo.containsKey("spcode") ? jo.getString("spcode") : "";
@@ -856,6 +856,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                     String lsid = jo.containsKey("lsid") ? jo.getString("lsid") : "";
                     String area_name = jo.containsKey("area_name") ? jo.getString("area_name") : "";
                     String area_km = jo.containsKey("area_km") ? jo.getString("area_km") : "";
+                    String data_resource_id = jo.containsKey("data_resource_uid") ? jo.getString("data_resource_uid") : "";
 
                     output[0] = spcode;
                     output[1] = scientific;
@@ -870,6 +871,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                     output[10] = lsid;
                     output[11] = area_name;
                     output[12] = area_km;
+                    output[13] = data_resource_id;
 
                     return output;
                 }

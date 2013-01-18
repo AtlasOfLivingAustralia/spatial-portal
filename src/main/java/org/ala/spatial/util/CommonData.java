@@ -39,6 +39,7 @@ public class CommonData {
     static final String BIE_URL = "bie_url";
     static final String BIOCACHE_SERVICE_URL = "biocache_service_url";
     static final String BIOCACHE_WEBAPP_URL = "biocache_webapp_url";
+    static final String COLLECTORY_URL = "collectory_url";
     static final String DEFAULT_UPLOAD_SAMPLING = "default_upload_sampling";
     static final String MAX_Q_LENGTH = "max_q_length";
     static final String BIOCACHE_QC = "biocache_qc";
@@ -85,6 +86,7 @@ public class CommonData {
     static public String bieServer;
     static public String biocacheServer;
     static public String biocacheWebServer;
+    static public String collectoryServer;
     static public int maxQLength;
     static public Map<String, String> settings;
     //lsid counts, for species autocomplete
@@ -113,6 +115,7 @@ public class CommonData {
         bieServer = settings.get(BIE_URL);
         biocacheServer = settings.get(BIOCACHE_SERVICE_URL);
         biocacheWebServer = settings.get(BIOCACHE_WEBAPP_URL);
+        collectoryServer = settings.get(COLLECTORY_URL);
         defaultFieldString = settings.get(DEFAULT_UPLOAD_SAMPLING);
         maxQLength = Integer.parseInt(settings.get(MAX_Q_LENGTH));
         //handle the situation where there is no config value for endemic area and use default value of 50,000km
@@ -130,7 +133,7 @@ public class CommonData {
 
         setupAnalysisLayerSets();
 
-        initLayerDistances();
+        //initLayerDistances();
 
         //(3) for layer list json
         initLayerList();

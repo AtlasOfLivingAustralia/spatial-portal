@@ -13,6 +13,8 @@ import java.util.Date;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.Util;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.A;
@@ -29,7 +31,7 @@ import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
 
 /**
- *
+ * 
  * @author ajay
  */
 public class DistributionsWCController extends UtilityComposer {
@@ -52,8 +54,7 @@ public class DistributionsWCController extends UtilityComposer {
             try {
                 double min = Double.parseDouble(original_data.get(i)[7]);
                 double max = Double.parseDouble(original_data.get(i)[8]);
-                if ((minDepth.getValue() == null || minDepth.getValue() <= min)
-                        && (maxDepth.getValue() == null || maxDepth.getValue() >= max)) {
+                if ((minDepth.getValue() == null || minDepth.getValue() <= min) && (maxDepth.getValue() == null || maxDepth.getValue() >= max)) {
                     new_data.add(original_data.get(i));
                 }
             } catch (Exception e) {
@@ -70,11 +71,11 @@ public class DistributionsWCController extends UtilityComposer {
     }
 
     public void onClick$btnDownload(Event event) {
-//        try {
-//            el.onEvent(event);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        // try {
+        // el.onEvent(event);
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // }
         try {
             String spid = String.valueOf(System.currentTimeMillis());
 
@@ -89,10 +90,11 @@ public class DistributionsWCController extends UtilityComposer {
                 sb.append(s);
             }
 
-//            File f = new File(System.getProperty("java.io.tmpdir") + File.separator + type + "_" + sdate + "_" + spid + ".csv");
-//            FileOutputStream fos = new FileOutputStream(f);
-//            fos.write(sb.toString().getBytes("UTF-8"));
-//            Filedownload.save(f, "text/html;charset=UTF-8");
+            // File f = new File(System.getProperty("java.io.tmpdir") +
+            // File.separator + type + "_" + sdate + "_" + spid + ".csv");
+            // FileOutputStream fos = new FileOutputStream(f);
+            // fos.write(sb.toString().getBytes("UTF-8"));
+            // Filedownload.save(f, "text/html;charset=UTF-8");
 
             Filedownload.save(sb.toString(), "text/plain;charset=UTF-8", type + "_" + sdate + "_" + spid + ".csv");
         } catch (Exception e) {
@@ -115,7 +117,7 @@ public class DistributionsWCController extends UtilityComposer {
                         StringReader sreader = new StringReader(text[i]);
                         CSVReader reader = new CSVReader(sreader);
 
-                        //last row indicates if it is mapped or not
+                        // last row indicates if it is mapped or not
                         String[] row = reader.readNext();
                         String[] newrow = java.util.Arrays.copyOf(row, 15);
                         try {
@@ -158,30 +160,33 @@ public class DistributionsWCController extends UtilityComposer {
                             b.setSclass("goButton");
                             if ((cells[14] != null && cells[14].length() > 0)
                                     || (CommonData.getSpeciesChecklistWMSFromSpcode(cells[0]) != null && getMapComposer().getMapLayerWMS(CommonData.getSpeciesChecklistWMSFromSpcode(cells[0])[1]) != null)
-                                    || (CommonData.getSpeciesDistributionWMSFromSpcode(cells[0]) != null && getMapComposer().getMapLayerWMS(CommonData.getSpeciesDistributionWMSFromSpcode(cells[0])[1]) != null)) {
+                                    || (CommonData.getSpeciesDistributionWMSFromSpcode(cells[0]) != null && getMapComposer()
+                                            .getMapLayerWMS(CommonData.getSpeciesDistributionWMSFromSpcode(cells[0])[1]) != null)) {
                                 b.setDisabled(true);
                             } else {
                                 b.addEventListener("onClick", new EventListener() {
 
                                     @Override
                                     public void onEvent(Event event) throws Exception {
-                                        //get spcode
+                                        // get spcode
                                         Listcell lc = (Listcell) event.getTarget().getParent().getNextSibling();
                                         String spcode = lc.getLabel();
 
-                                        //row as metadata
+                                        // row as metadata
                                         Listitem li = (Listitem) lc.getParent();
                                         String[] row = (String[]) li.getValue();
                                         String layerName = getMapComposer().getNextAreaLayerName(row[0] + " area");
                                         String html = getMetadataHtmlFor(row[0], row, layerName);
 
-                                        //map it
+                                        // map it
                                         String[] mapping = CommonData.getSpeciesDistributionWMSFromSpcode(spcode);
                                         if (mapping == null) {
                                             mapping = CommonData.getSpeciesChecklistWMSFromSpcode(spcode);
                                         }
                                         String displayName = mapping[0] + " area";
-                                        if (row[11] != null && row[11].length() > 0) {//&& !row[11].startsWith(EXPERT_DISTRIBUTION_AREA_NAME)) {
+                                        if (row[11] != null && row[11].length() > 0) {// &&
+                                                                                      // !row[11].startsWith(EXPERT_DISTRIBUTION_AREA_NAME))
+                                                                                      // {
                                             displayName = row[11];
                                         }
                                         MapLayer ml = getMapComposer().addWMSLayer(layerName, displayName, mapping[1], 0.6f, html, null, LayerUtilities.WKT, null, null);
@@ -189,27 +194,21 @@ public class DistributionsWCController extends UtilityComposer {
                                         MapComposer.setupMapLayerAsDistributionArea(ml);
                                         getMapComposer().updateLayerControls();
 
-                                        //disable this button
+                                        // disable this button
                                         ((Button) event.getTarget()).setDisabled(true);
 
-                                        //flag as mapped by area_name or spcode
+                                        // flag as mapped by area_name or spcode
                                         for (int i = 0; i < original_data.size(); i++) {
                                             if (original_data.get(i)[0].length() > 0
-                                                    && (original_data.get(i)[0].equals(row[0])
-                                                    || (original_data.get(i)[11] != null
-                                                    && original_data.get(i)[11].length() > 0
-                                                    && !original_data.get(i)[11].startsWith(EXPERT_DISTRIBUTION_AREA_NAME)
-                                                    && original_data.get(i)[11].equals(row[11])))) {
+                                                    && (original_data.get(i)[0].equals(row[0]) || (original_data.get(i)[11] != null && original_data.get(i)[11].length() > 0
+                                                            && !original_data.get(i)[11].startsWith(EXPERT_DISTRIBUTION_AREA_NAME) && original_data.get(i)[11].equals(row[11])))) {
                                                 original_data.get(i)[14] = "1";
                                             }
                                         }
                                         for (int i = 0; i < current_data.size(); i++) {
                                             if (current_data.get(i)[0].length() > 0
-                                                    && (current_data.get(i)[0].equals(row[0])
-                                                    || (current_data.get(i)[11] != null
-                                                    && current_data.get(i)[11].length() > 0
-                                                    && !current_data.get(i)[11].startsWith(EXPERT_DISTRIBUTION_AREA_NAME)
-                                                    && current_data.get(i)[11].equals(row[11])))) {
+                                                    && (current_data.get(i)[0].equals(row[0]) || (current_data.get(i)[11] != null && current_data.get(i)[11].length() > 0
+                                                            && !current_data.get(i)[11].startsWith(EXPERT_DISTRIBUTION_AREA_NAME) && current_data.get(i)[11].equals(row[11])))) {
                                                 current_data.get(i)[14] = "1";
                                             }
                                         }
@@ -228,7 +227,7 @@ public class DistributionsWCController extends UtilityComposer {
                         lc.setParent(li);
 
                         for (int i = 0; i < 14; i++) {
-                            if (i == 9) {               //metadata url
+                            if (i == 9) { // metadata url
                                 lc = new Listcell();
                                 if (cells[i] != null && cells[i].length() > 0) {
                                     A a = new A("link");
@@ -237,7 +236,7 @@ public class DistributionsWCController extends UtilityComposer {
                                     a.setParent(lc);
                                 }
                                 lc.setParent(li);
-                            } else if (i == 10) {       //lsid
+                            } else if (i == 10) { // lsid
                                 lc = new Listcell();
                                 if (cells[i] != null && cells[i].length() > 0) {
                                     A a = new A("more...");
@@ -266,11 +265,13 @@ public class DistributionsWCController extends UtilityComposer {
         for (int i = 0; i < head.getChildren().size(); i++) {
             Listheader lh = (Listheader) head.getChildren().get(i);
 
-            //-1 for first column containing buttons.
-            if (i == 8 || i == 9 || i == 13) {       //min depth, max depth, area_km
+            // -1 for first column containing buttons.
+            if (i == 8 || i == 9 || i == 13) { // min depth, max depth, area_km
                 lh.setSortAscending(new DListComparator(true, true, i - 1));
                 lh.setSortDescending(new DListComparator(false, true, i - 1));
-            } else if (i > 0 && i != 10 && i != 11) { //exclude 'map button', 'metadata link', 'BIE link'
+            } else if (i > 0 && i != 10 && i != 11) { // exclude 'map button',
+                                                      // 'metadata link', 'BIE
+                                                      // link'
                 lh.setSortAscending(new DListComparator(true, false, i - 1));
                 lh.setSortDescending(new DListComparator(false, false, i - 1));
             }
@@ -292,37 +293,106 @@ public class DistributionsWCController extends UtilityComposer {
         if (row == null) {
             return null;
         }
+
+        String scientificName = row[1];
+        String commonName = row[3];
+        String familyName = row[4];
+        String minDepth = row[7];
+        String maxDepth = row[8];
+        String metadataLink = row[9];
+        String lsid = row[10];
+        String area = row[12];
+        String dataResourceUid = row[13];
+
+        String[] distributionCollectoryDetails = getDistributionCollectoryDetails(dataResourceUid);
+        String websiteUrl = distributionCollectoryDetails[0];
+        String citation = distributionCollectoryDetails[1];
+        String logoUrl = distributionCollectoryDetails[2];
+        
+        String speciesPageUrl = CommonData.bieServer + "/species/" + lsid;
+
         String html = "Expert Distribution\n";
         html += "<table class='md_table'>";
-        html += "<tr class='md_grey-bg'><td class='md_th'>spcode: </td><td class='md_spacer'/><td class='md_value'>" + row[0] + "</td></tr>";
-        html += "<tr><td class='md_th'>Scientific name: </td><td class='md_spacer'/><td class='md_value'>" + row[1] + "</td></tr>";
-        html += "<tr class='md_grey-bg'><td class='md_th'>Authority full: </td><td class='md_spacer'/><td class='md_value'>" + row[2] + "</td></tr>";
-        html += "<tr><td class='md_th'>Common name: </td><td class='md_spacer'/><td class='md_value'>" + row[3] + "</td></tr>";
-        html += "<tr class='md_grey-bg'><td class='md_th'>Family name: </td><td class='md_spacer'/><td class='md_value'>" + row[4] + "</td></tr>";
-        html += "<tr><td class='md_th'>Genus name: </td><td class='md_spacer'/><td class='md_value'>" + row[5] + "</td></tr>";
-        html += "<tr class='md_grey-bg'><td class='md_th'>Specific name: </td><td class='md_spacer'/><td class='md_value'>" + row[6] + "</td></tr>";
-        html += "<tr><td class='md_th'>Min depth: </td><td class='md_spacer'/><td class='md_value'>" + row[7] + "</td></tr>";
-        html += "<tr class='md_grey-bg'><td class='md_th'>Max depth: </td><td class='md_spacer'/><td class='md_value'>" + row[8] + "</td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Scientific name: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + speciesPageUrl + "'>" + scientificName
+                    + "</a></td></tr>";
+        html += "<tr><td class='md_th'>Common name: </td><td class='md_spacer'/><td class='md_value'>" + commonName + "</td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Family name: </td><td class='md_spacer'/><td class='md_value'>" + familyName + "</td></tr>";
         String lastClass = "";
+        if (row[7] != null && row[7].length() > 0) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Min depth: </td><td class='md_spacer'/><td class='md_value'>" + minDepth + "</td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+        }
+        if (row[8] != null && row[8].length() > 0) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Max depth: </td><td class='md_spacer'/><td class='md_value'>" + maxDepth + "</td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+        }
         if (row[9] != null && row[9].length() > 0) {
-            html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + row[9] + "'>" + row[9] + "'</a></td></tr>";
-            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
-        }
-        if (row[10] != null && row[10].length() > 0) {
-            html += "<tr class='" + lastClass + "'><td class='md_th'>LSID: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + CommonData.bieServer + "/species/" + row[10] + "'>" + row[10] + "</a></td></tr>";
-            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
-        }
-        if (row[11] != null && row[11].length() > 0) {
-            html += "<tr class='" + lastClass + "'><td class='md_th'>Area name: </td><td class='md_spacer'/><td class='md_value'>" + row[11] + "</td></tr>";
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + metadataLink + "'>" + metadataLink
+                    + "</a></td></tr>";
             lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
         }
         if (row[12] != null && row[12].length() > 0) {
-            html += "<tr class='" + lastClass + "'><td class='md_th'>Area sq km: </td><td class='md_spacer'/><td class='md_value'>" + row[12] + "</td></tr>";
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Area sq km: </td><td class='md_spacer'/><td class='md_value'>" + area + "</td></tr>";
             lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
         }
+        html += "<tr class='" + lastClass + "'><td class='md_th'>Source website: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + websiteUrl + "'>" + websiteUrl
+                + "</a></td></tr>";
+        lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+
+        if (citation != null) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Citation: </td><td class='md_spacer'/><td class='md_value'>" + citation + "</td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+        }
+
+        if (logoUrl != null) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'></td><td class='md_spacer'/><td class='md_value'><img src=\"" + logoUrl + "\"/></td></tr>";
+        }
+
         html += "</table>";
 
         return html;
+    }
+
+    // Fetches the website url, citation and logo url from the data resource
+    // associated with an expert distribution.
+    public static String[] getDistributionCollectoryDetails(String dataResourceUid) {
+        try {
+            String url = CommonData.collectoryServer + "/dataResource/" + dataResourceUid;
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(url);
+            System.out.println(url);
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+            if (result == 200) {
+                String txt = get.getResponseBodyAsString();
+                JSONObject jo = JSONObject.fromObject(txt);
+                if (jo == null) {
+                    return null;
+                } else {
+                    String[] output = new String[13];
+                    String websiteUrl = jo.containsKey("websiteUrl") ? jo.getString("websiteUrl") : "";
+                    String citation = (jo.containsKey("citation") && jo.containsValue("citation")) ? jo.getString("citation") : null;
+                    String logoUrl = null;
+
+                    if (jo.containsKey("logoRef")) {
+                        JSONObject logoObject = jo.getJSONObject("logoRef");
+                        if (logoObject.containsKey("uri")) {
+                            logoUrl = logoObject.getString("uri");
+                        }
+                    }
+
+                    output[0] = websiteUrl;
+                    output[1] = citation;
+                    output[2] = logoUrl;
+
+                    return output;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static String getMetadataHtmlForAreaChecklist(String spcode, String layerName) {
@@ -347,7 +417,8 @@ public class DistributionsWCController extends UtilityComposer {
             String lastClass = "";
 
             if (layerName != null && jo.containsKey("geom_idx")) {
-                html += "<tr class='" + lastClass + "'><td class='md_th'>Number of scientific names: </td><td class='md_spacer'/><td class='md_value'><a href='#' onClick='openAreaChecklist(\"" + jo.getString("geom_idx") + "\")'>" + count + "</a></td></tr>";
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Number of scientific names: </td><td class='md_spacer'/><td class='md_value'><a href='#' onClick='openAreaChecklist(\""
+                        + jo.getString("geom_idx") + "\")'>" + count + "</a></td></tr>";
             } else {
                 html += "<tr class='" + lastClass + "'><td class='md_th'>Number of scientific names: </td><td class='md_spacer'/><td class='md_value'>" + count + "</td></tr>";
             }
@@ -355,7 +426,8 @@ public class DistributionsWCController extends UtilityComposer {
             lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
 
             if (jo != null && jo.containsKey("metadata_u")) {
-                html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + jo.getString("metadata_u") + "'>" + jo.getString("metadata_u") + "</a></td></tr>";
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + jo.getString("metadata_u") + "'>"
+                        + jo.getString("metadata_u") + "</a></td></tr>";
                 lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
             }
             if (jo != null && jo.containsKey("area_name")) {
@@ -373,7 +445,8 @@ public class DistributionsWCController extends UtilityComposer {
                     String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
                     if (spid != null) {
                         String layerInfoUrl = CommonData.layersServer + "/layers/view/more/" + spid;
-                        html += "<tr class='" + lastClass + "'><td class='md_th'>More about this area: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + layerInfoUrl + "'>" + layerInfoUrl + "</a></td></tr>";
+                        html += "<tr class='" + lastClass + "'><td class='md_th'>More about this area: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + layerInfoUrl
+                                + "'>" + layerInfoUrl + "</a></td></tr>";
                         lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
                     }
                 }
