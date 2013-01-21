@@ -133,7 +133,7 @@ public class CommonData {
 
         setupAnalysisLayerSets();
 
-        //initLayerDistances();
+        initLayerDistances();
 
         //(3) for layer list json
         initLayerList();
