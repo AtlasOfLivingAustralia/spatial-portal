@@ -1519,7 +1519,7 @@ public class BiocacheQuery implements Query, Serializable {
     @Override
     public String getDownloadUrl(String[] extraFields) {
         StringBuilder sb = new StringBuilder();
-        sb.append("&extra=").append("coordinateUncertaintyInMeters");
+        sb.append("&extra=").append(CommonData.extraDownloadFields);
         if (extraFields != null && extraFields.length > 0) {
             for (int i = 0; i < extraFields.length; i++) {
                 //Solr download has some default fields

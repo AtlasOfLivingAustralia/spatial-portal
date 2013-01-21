@@ -39,12 +39,14 @@ public class CommonData {
     static final String BIE_URL = "bie_url";
     static final String BIOCACHE_SERVICE_URL = "biocache_service_url";
     static final String BIOCACHE_WEBAPP_URL = "biocache_webapp_url";
+    static final String SPECIES_LIST_URL = "species_list_url";
     static final String COLLECTORY_URL = "collectory_url";
     static final String DEFAULT_UPLOAD_SAMPLING = "default_upload_sampling";
     static final String MAX_Q_LENGTH = "max_q_length";
     static final String BIOCACHE_QC = "biocache_qc";
     static final String ANALYSIS_LAYER_SETS = "analysis_layer_sets";
     static final String MAX_AREA_FOR_ENDEMIC="max_area_endemic";
+    static final String EXTRA_DOWNLOAD_FIELDS="occurrence_extra_download";
     //(2) for EnvironmentalList
     static JSONObject distances;
     static HashMap<String, HashMap<String, Double>> distances_map;
@@ -86,6 +88,7 @@ public class CommonData {
     static public String bieServer;
     static public String biocacheServer;
     static public String biocacheWebServer;
+    static public String speciesListServer;
     static public String collectoryServer;
     static public int maxQLength;
     static public Map<String, String> settings;
@@ -100,6 +103,7 @@ public class CommonData {
     static public String[][] facetNameExceptions; //{{"cl22", "state"}, {"cl959", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
     static public Set<String> biocacheLayerList;
     static public int maxEndemicArea;
+    static public String extraDownloadFields="coordinateUncertaintyInMeters";
 
     /*
      * initialize common data from geoserver and satserver
@@ -115,6 +119,7 @@ public class CommonData {
         bieServer = settings.get(BIE_URL);
         biocacheServer = settings.get(BIOCACHE_SERVICE_URL);
         biocacheWebServer = settings.get(BIOCACHE_WEBAPP_URL);
+        speciesListServer = settings.get(SPECIES_LIST_URL);
         collectoryServer = settings.get(COLLECTORY_URL);
         defaultFieldString = settings.get(DEFAULT_UPLOAD_SAMPLING);
         maxQLength = Integer.parseInt(settings.get(MAX_Q_LENGTH));
@@ -130,6 +135,8 @@ public class CommonData {
         print_output_path = settings.get("print_output_path");
         print_output_url = settings.get("print_output_url");
         facetNameExceptions = parseFacetNameExceptions(settings.get("facet_name_exceptions"));
+        if(settings.containsKey(EXTRA_DOWNLOAD_FIELDS))
+            extraDownloadFields = settings.get(EXTRA_DOWNLOAD_FIELDS);
 
         setupAnalysisLayerSets();
 
