@@ -988,14 +988,20 @@ public class CommonData {
                 Set<String> set = new HashSet<String>();
                 JSONArray ja = JSONArray.fromObject(get.getResponseBodyAsString());
                 System.out.println("size: " + ja.size());
+                
+                // Populate the biocache layer list with the names of all
+                // indexed fields. The additional non-layer field names will
+                // not cause a problem here.
                 for (int i = 0; i < ja.size(); i++) {
-                    String layer = ja.getJSONObject(i).getString("name");                    
+                    String layer = ja.getJSONObject(i).getString("name");   
+                    set.add(layer);
                 }
                 if (ja.size() > 0) {
-                    //include field names that get translated 
+                    // remove the "translated" names for particular layers. E.g.
+                    // "state" for cl22, "places" for cl959, "ibra" for  "cl20", "imcra"
                     for (int i = 0; i < facetNameExceptions.length; i++) {
-                        if (set.contains(facetNameExceptions[i][1])) {
-                            set.add(facetNameExceptions[i][0]);
+                        if (set.contains(facetNameExceptions[i][0])) {
+                            set.remove(facetNameExceptions[i][1]);
                         }
                     }
                     biocacheLayerList = set;

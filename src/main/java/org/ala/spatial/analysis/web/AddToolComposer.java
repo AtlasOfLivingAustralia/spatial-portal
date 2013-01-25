@@ -71,7 +71,7 @@ import org.zkoss.zul.Vbox;
 import org.zkoss.zul.Window;
 
 /**
- *
+ * 
  * @author ajay
  */
 public class AddToolComposer extends UtilityComposer {
@@ -96,7 +96,7 @@ public class AddToolComposer extends UtilityComposer {
     EnvLayersCombobox cbLayer2;
     String winTop = "300px";
     String winLeft = "500px";
-    //boolean setCustomArea = false;
+    // boolean setCustomArea = false;
     boolean hasCustomArea = false;
     MapLayer prevTopArea = null;
     Fileupload fileUpload;
@@ -107,7 +107,7 @@ public class AddToolComposer extends UtilityComposer {
     EnvLayersCombobox cbLayer, cbLayerEnvironmentalOnly, cbLayerMix;
     Button bLayerListDownload1;
     Button bLayerListDownload2;
-    Label lLayersSelected,lendemicNote;
+    Label lLayersSelected, lendemicNote;
     Button btnClearSelection;
     Menupopup mpLayer2, mpLayer1;
     Doublebox dResolution;
@@ -124,15 +124,14 @@ public class AddToolComposer extends UtilityComposer {
     boolean mpLayersIncludeAnalysisLayers = false;
     Checkbox chkGeoKosherTrue, chkGeoKosherFalse, chkGeoKosherNull, chkEndemicSpecies;
     Checkbox chkGeoKosherTrueBk, chkGeoKosherFalseBk, chkGeoKosherNullBk;
-    boolean[] defaultGeospatialKosher = {true, true, false};
-    
+    boolean[] defaultGeospatialKosher = { true, true, false };
+
     private Label lEstimateMessage;
     private Button bLogin;
     private Div notLoggedIn;
     private Div isLoggedIn;
-    boolean isBackgroundProcess = true; 
+    boolean isBackgroundProcess = true;
     boolean hasEstimated = false;
-
 
     @Override
     public void afterCompose() {
@@ -153,7 +152,7 @@ public class AddToolComposer extends UtilityComposer {
             lbListLayers.updateDistances();
         }
 
-        //init mpLayer1 and mpLayer2
+        // init mpLayer1 and mpLayer2
         if (mpLayer1 != null && mpLayer2 != null) {
             for (MapLayer ml : getMapComposer().getGridLayers()) {
                 addToMpLayers(ml, false);
@@ -167,7 +166,7 @@ public class AddToolComposer extends UtilityComposer {
             mSearchSpeciesAutoBk.setBiocacheOnly(true);
         }
 
-        //init includeLayers
+        // init includeLayers
         if (cbLayer != null) {
             cbLayer.setIncludeLayers("AllLayers");
             cbLayer.refresh("");
@@ -205,7 +204,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     void addToMpLayers(MapLayer ml, boolean analysis) {
-        //get layer name
+        // get layer name
         String name = null;
         String url = ml.getUri();
         if (analysis) {
@@ -221,7 +220,7 @@ public class AddToolComposer extends UtilityComposer {
             }
         }
 
-        //cbLayer1
+        // cbLayer1
         Menuitem mi = new Menuitem(ml.getDisplayName());
         mi.setValue(name);
         mi.addEventListener("onClick", new EventListener() {
@@ -244,7 +243,7 @@ public class AddToolComposer extends UtilityComposer {
         });
         mi.setParent(mpLayer1);
 
-        //cbLayer2
+        // cbLayer2
         mi = new Menuitem(ml.getDisplayName());
         mi.setValue(name);
         mi.addEventListener("onClick", new EventListener() {
@@ -347,9 +346,7 @@ public class AddToolComposer extends UtilityComposer {
 
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
-                if (biocacheOnly
-                        && lyr.getData("query") != null
-                        && !(lyr.getData("query") instanceof BiocacheQuery)) {
+                if (biocacheOnly && lyr.getData("query") != null && !(lyr.getData("query") instanceof BiocacheQuery)) {
                     continue;
                 }
                 if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
@@ -380,8 +377,7 @@ public class AddToolComposer extends UtilityComposer {
                 rgSpecies.setSelectedItem(rgSpecies.getItemAtIndex(1));
             } else {
                 for (int i = 0; i < rgSpecies.getItemCount(); i++) {
-                    if (rgSpecies.getItemAtIndex(i).isVisible()
-                            && rgSpecies.getItemAtIndex(i) != rSpeciesAll) {
+                    if (rgSpecies.getItemAtIndex(i).isVisible() && rgSpecies.getItemAtIndex(i) != rSpeciesAll) {
                         rgSpecies.setSelectedItem(rgSpecies.getItemAtIndex(i));
                         break;
                     }
@@ -434,7 +430,7 @@ public class AddToolComposer extends UtilityComposer {
     public void loadAreaLayers(String selectedAreaName) {
         try {
             Radiogroup rgArea = (Radiogroup) getFellowIfAny("rgArea");
-            //remove all radio buttons that don't have an id
+            // remove all radio buttons that don't have an id
             for (int i = rgArea.getItemCount() - 1; i >= 0; i--) {
                 String id = ((Radio) rgArea.getItems().get(i)).getId();
                 if (id == null || id.length() == 0) {
@@ -479,8 +475,7 @@ public class AddToolComposer extends UtilityComposer {
             }
 
             if (!layers.isEmpty() && count_not_envelopes > 1) {
-                Radio rAr = new Radio("All area layers"
-                        + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
+                Radio rAr = new Radio("All area layers" + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
                 rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
@@ -511,9 +506,12 @@ public class AddToolComposer extends UtilityComposer {
                     }
                 }
             }
-            updateEndemicCheckBox();
+
+            if (chkEndemicSpecies != null) {
+                updateEndemicCheckBox();
+            }
+
             Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
-            
 
         } catch (Exception e) {
             System.out.println("Unable to load active area layers:");
@@ -524,7 +522,7 @@ public class AddToolComposer extends UtilityComposer {
     public void loadAreaHighlightLayers(String selectedAreaName) {
         try {
             Radiogroup rgArea = (Radiogroup) getFellowIfAny("rgAreaHighlight");
-            //remove all radio buttons that don't have an id
+            // remove all radio buttons that don't have an id
             for (int i = rgArea.getItemCount() - 1; i >= 0; i--) {
                 String id = ((Radio) rgArea.getItems().get(i)).getId();
                 if (id == null || id.length() == 0) {
@@ -559,19 +557,17 @@ public class AddToolComposer extends UtilityComposer {
                     allWKT.append(wkt);
                 }
 
-
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrentHighlight);
 
                 if (selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
                     rSelectedLayer = rAr;
-                    //rAreaSelected = rAr;
+                    // rAreaSelected = rAr;
                 }
             }
 
             if (!layers.isEmpty() && count_not_envelopes > 1) {
-                Radio rAr = new Radio("All area layers"
-                        + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
+                Radio rAr = new Radio("All area layers" + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
                 rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrentHighlight);
@@ -592,7 +588,7 @@ public class AddToolComposer extends UtilityComposer {
             } else {
                 for (int i = 0; i < rgArea.getItemCount(); i++) {
                     if (rgArea.getItemAtIndex(i).isVisible()) {
-                        //rAreaSelected = rgArea.getItemAtIndex(i);
+                        // rAreaSelected = rgArea.getItemAtIndex(i);
                         rgArea.setSelectedItem(rgArea.getItemAtIndex(i));
                         break;
                     }
@@ -648,7 +644,7 @@ public class AddToolComposer extends UtilityComposer {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (int i = 0; i < layers.size(); i++) {
                     MapLayer lyr = layers.get(i);
-                    //System.out.println(lyr.getDisplayName());
+                    // System.out.println(lyr.getDisplayName());
                 }
             }
 
@@ -668,7 +664,7 @@ public class AddToolComposer extends UtilityComposer {
         if (rgArea == null) {
             return;
         }
-        //setCustomArea = false;
+        // setCustomArea = false;
         hasCustomArea = false;
         rAreaSelected = rgArea.getSelectedItem();
         try {
@@ -676,67 +672,63 @@ public class AddToolComposer extends UtilityComposer {
         } catch (Exception e) {
         }
         if (rAreaSelected == rAreaCustom) {
-            //setCustomArea = true;
+            // setCustomArea = true;
             hasCustomArea = false;
         }
 
-        //case for enabling chkGeoKosherNull
+        // case for enabling chkGeoKosherNull
         if (chkGeoKosherNull != null && chkGeoKosherNull.isVisible()) {
             chkGeoKosherNull.setDisabled(rAreaSelected != rAreaWorld);
         }
-        //case for enabling the endemic checkbox
-        //System.out.println("RADIO SELECTED = " + rAreaSelected.getValue());
-        
-        updateEndemicCheckBox();
-        
+        // case for enabling the endemic checkbox
+        // System.out.println("RADIO SELECTED = " + rAreaSelected.getValue());
+
+        if (chkEndemicSpecies != null) {
+            updateEndemicCheckBox();
+        }
     }
-    
-    private void updateEndemicCheckBox(){
-        //check to see if the area is within the required size...
-      boolean showEndemic = false;
-      String value = rAreaSelected.getValue();
-      if(rAreaSelected != null){
-          if(value.equals("australia") || value.equals("world") || value.equals("custom")){
-              //System.out.println("Large areas");
-              
-              
-          }
-          else{
-            
-            
-                String areaName =rAreaSelected.getLabel();            
+
+    private void updateEndemicCheckBox() {
+        // check to see if the area is within the required size...
+        boolean showEndemic = false;
+        String value = rAreaSelected.getValue();
+        if (rAreaSelected != null) {
+            if (value.equals("australia") || value.equals("world") || value.equals("custom")) {
+                // System.out.println("Large areas");
+
+            } else {
+
+                String areaName = rAreaSelected.getLabel();
                 MapLayer ml = getMapComposer().getMapLayer(areaName);
-                String sarea="";
-                if(value.equals("current")){
-                  //check to see if the current extent is within the maximum area
-                  SelectedArea sa = getSelectedArea();
-                  sarea = sa.getKm2Area();
-                }
-                else if(ml != null){
-                    sarea = (String)ml.getData("area");            
-                    if(sarea == null)
-                        sarea = ml.calculateAndStoreArea();  
-                }
-                else{
-                    //for 'all areas'              
+                String sarea = "";
+                if (value.equals("current")) {
+                    // check to see if the current extent is within the maximum
+                    // area
+                    SelectedArea sa = getSelectedArea();
+                    sarea = sa.getKm2Area();
+                } else if (ml != null) {
+                    sarea = (String) ml.getData("area");
+                    if (sarea == null)
+                        sarea = ml.calculateAndStoreArea();
+                } else {
+                    // for 'all areas'
                     SelectedArea sa = new SelectedArea(null, rAreaSelected.getValue());
                     sarea = sa.getKm2Area();
-                  
+
                 }
-                try{
-                    Float area = Float.parseFloat(sarea.replaceAll(",",""));                
-                    showEndemic = (area<=CommonData.maxEndemicArea);
+                try {
+                    Float area = Float.parseFloat(sarea.replaceAll(",", ""));
+                    showEndemic = (area <= CommonData.maxEndemicArea);
+                } catch (NumberFormatException e) {
+
                 }
-                catch(NumberFormatException e){
-                  
-                }
-            
-          }
-      }
+
+            }
+        }
         chkEndemicSpecies.setDisabled(!showEndemic);
         chkEndemicSpecies.setChecked(false);
-        
-        if(showEndemic)
+
+        if (showEndemic)
             lendemicNote.setValue("Please note this may take several minutes depending on the area selected.");
         else
             lendemicNote.setValue("The selected area is too large to be considered for endemic species.");
@@ -746,10 +738,10 @@ public class AddToolComposer extends UtilityComposer {
         if (rgAreaHighlight == null) {
             return;
         }
-        //setCustomArea = false;
+        // setCustomArea = false;
         hasCustomArea = false;
         if (rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight")) {
-            //setCustomArea = true;
+            // setCustomArea = true;
             hasCustomArea = false;
         }
     }
@@ -764,7 +756,7 @@ public class AddToolComposer extends UtilityComposer {
         } catch (Exception e) {
         }
         try {
-            //Check to see if we are perform a normal or background upload
+            // Check to see if we are perform a normal or background upload
             if (rgSpecies != null && selectedItem == rSpeciesSearch) {
                 if (divSpeciesSearch != null) {
                     divSpeciesSearch.setVisible(true);
@@ -779,10 +771,9 @@ public class AddToolComposer extends UtilityComposer {
                 divSpeciesSearch.setVisible(false);
             }
 
-            if (selectedItem == rSpeciesUploadSpecies
-                    || selectedItem == rSpeciesUploadLSID) {
-                //btnOk.setVisible(false);
-                //fileUpload.setVisible(true);
+            if (selectedItem == rSpeciesUploadSpecies || selectedItem == rSpeciesUploadLSID) {
+                // btnOk.setVisible(false);
+                // fileUpload.setVisible(true);
                 btnOk.setVisible(true);
                 vboxMultiple.setVisible(false);
             } else if (rMultiple != null && rMultiple.isSelected()) {
@@ -796,13 +787,12 @@ public class AddToolComposer extends UtilityComposer {
                 toggles();
             }
 
-            //set default geospatial kosher checkboxes unless a map layers has been chosen
+            // set default geospatial kosher checkboxes unless a map layers has
+            // been chosen
             MapLayer ml = null;
             Query q = null;
-            if (rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue() != null
-                    && (ml = getMapComposer().getMapLayer(rgSpecies.getSelectedItem().getValue())) != null
-                    && (q = (Query) ml.getData("query")) != null
-                    && q instanceof BiocacheQuery) {
+            if (rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue() != null && (ml = getMapComposer().getMapLayer(rgSpecies.getSelectedItem().getValue())) != null
+                    && (q = (Query) ml.getData("query")) != null && q instanceof BiocacheQuery) {
                 setGeospatialKosherCheckboxes(((BiocacheQuery) q).getGeospatialKosher());
             } else {
                 setGeospatialKosherCheckboxes(defaultGeospatialKosher);
@@ -838,8 +828,8 @@ public class AddToolComposer extends UtilityComposer {
             }
 
             if (selectedItem == rSpeciesUploadSpeciesBk || selectedItem == rSpeciesUploadLSIDBk) {
-                //btnOk.setVisible(false);
-                //fileUpload.setVisible(true);
+                // btnOk.setVisible(false);
+                // fileUpload.setVisible(true);
                 btnOk.setVisible(true);
             }
 
@@ -853,13 +843,12 @@ public class AddToolComposer extends UtilityComposer {
                 toggles();
             }
 
-            //set default geospatial kosher checkboxes unless a map layers has been chosen
+            // set default geospatial kosher checkboxes unless a map layers has
+            // been chosen
             MapLayer ml = null;
             Query q = null;
-            if (rgSpeciesBk.getSelectedItem() != null && rgSpeciesBk.getSelectedItem().getValue() != null
-                    && (ml = getMapComposer().getMapLayer(rgSpeciesBk.getSelectedItem().getValue())) != null
-                    && (q = (Query) ml.getData("query")) != null
-                    && q instanceof BiocacheQuery) {
+            if (rgSpeciesBk.getSelectedItem() != null && rgSpeciesBk.getSelectedItem().getValue() != null && (ml = getMapComposer().getMapLayer(rgSpeciesBk.getSelectedItem().getValue())) != null
+                    && (q = (Query) ml.getData("query")) != null && q instanceof BiocacheQuery) {
                 setGeospatialKosherCheckboxesBk(((BiocacheQuery) q).getGeospatialKosher());
             } else {
                 setGeospatialKosherCheckboxesBk(defaultGeospatialKosher);
@@ -906,8 +895,6 @@ public class AddToolComposer extends UtilityComposer {
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
         Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
         Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep - 1))) : null;
-
-
 
         if (currentDiv.getZclass().contains("first")) {
             btnBack.setDisabled(true);
@@ -1107,8 +1094,7 @@ public class AddToolComposer extends UtilityComposer {
             }
 
             if (successful) {
-                if (nextDiv != null && rgSpecies != null
-                        && (includeAnalysisLayersForUploadQuery || includeAnalysisLayersForAnyQuery)) {
+                if (nextDiv != null && rgSpecies != null && (includeAnalysisLayersForUploadQuery || includeAnalysisLayersForAnyQuery)) {
                     Query q = getSelectedSpecies();
                     if (q != null) {
                         boolean test = (includeAnalysisLayersForAnyQuery || (q instanceof UploadQuery));
@@ -1156,16 +1142,15 @@ public class AddToolComposer extends UtilityComposer {
                                 cbLayerMix.setIncludeAnalysisLayers(test);
                             }
                         }
-                        if (mpLayer1 != null && mpLayer2 != null
-                                && mpLayersIncludeAnalysisLayers != test) {
-                            //remove
+                        if (mpLayer1 != null && mpLayer2 != null && mpLayersIncludeAnalysisLayers != test) {
+                            // remove
                             while (mpLayer1.getChildren().size() > 0) {
                                 mpLayer1.removeChild(mpLayer1.getFirstChild());
                             }
                             while (mpLayer2.getChildren().size() > 0) {
                                 mpLayer2.removeChild(mpLayer2.getFirstChild());
                             }
-                            //add
+                            // add
                             for (MapLayer ml : getMapComposer().getGridLayers()) {
                                 addToMpLayers(ml, false);
                             }
@@ -1199,7 +1184,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     void fixFocus() {
-        //set element of focus
+        // set element of focus
     }
 
     public void onLastPanel() {
@@ -1224,17 +1209,17 @@ public class AddToolComposer extends UtilityComposer {
     public long getEstimate() {
         return -1;
     }
-    
+
     public void onClick$bLogin(Event event) {
         getMapComposer().activateLink("https://auth.ala.org.au/cas/login", "Login", false);
 
-//        Window extWin = (Window) getFellowIfAny("externalContentWindow");
-//        extWin.addEventListener("onClose", new EventListener() {
-//            @Override
-//            public void onEvent(Event event) throws Exception {
-//                checkEstimate(null);
-//            }
-//        });
+        // Window extWin = (Window) getFellowIfAny("externalContentWindow");
+        // extWin.addEventListener("onClose", new EventListener() {
+        // @Override
+        // public void onEvent(Event event) throws Exception {
+        // checkEstimate(null);
+        // }
+        // });
     }
 
     public void checkEstimate() {
@@ -1252,40 +1237,40 @@ public class AddToolComposer extends UtilityComposer {
             System.out.println("Got estimate for process: " + estimate);
             System.out.println("Estimate in minutes: " + estimateInMin);
 
-            //String message = "Your process is going to take approximately " + estimateInMin + " minutes. ";
+            // String message = "Your process is going to take approximately " +
+            // estimateInMin + " minutes. ";
             lEstimateMessage.setValue(estimateInMin);
 
-            hasEstimated = true;            
+            hasEstimated = true;
             isBackgroundProcess = true;
             if (estimate > 300000) {
                 if (!isUserLoggedIn()) {
 
                     notLoggedIn.setVisible(true);
                     isLoggedIn.setVisible(false);
-                    //btnOk.setDisabled(true);
+                    // btnOk.setDisabled(true);
                     hasEstimated = false;
 
                     return;
                 }
-                //isBackgroundProcess = true;
+                // isBackgroundProcess = true;
             } else {
-                //isBackgroundProcess = false; 
+                // isBackgroundProcess = false;
             }
 
             notLoggedIn.setVisible(false);
             isLoggedIn.setVisible(true);
-            //btnOk.setDisabled(false);            
-
+            // btnOk.setDisabled(false);
 
         } catch (Exception e) {
             System.out.println("Unable to get estimate for the process");
             e.printStackTrace(System.out);
         }
     }
-    
+
     public boolean isUserLoggedIn() {
         String authCookie = getMapComposer().getCookieValue("ALA-Auth");
-        return (authCookie != null) ? true : false; 
+        return (authCookie != null) ? true : false;
     }
 
     public SelectedArea getSelectedArea() {
@@ -1307,7 +1292,7 @@ public class AddToolComposer extends UtilityComposer {
                     }
                 }
 
-                //for 'all areas'
+                // for 'all areas'
                 if (sa == null) {
                     sa = new SelectedArea(null, area);
                 }
@@ -1341,7 +1326,7 @@ public class AddToolComposer extends UtilityComposer {
                     }
                 }
 
-                //for 'all areas'
+                // for 'all areas'
                 if (sa == null) {
                     sa = new SelectedArea(null, area);
                 }
@@ -1380,18 +1365,19 @@ public class AddToolComposer extends UtilityComposer {
                     q = new BiocacheQuery(null, null, null, null, false, applycheckboxes ? getGeospatialKosher() : null);
                 } else if (ml == null && species.equals("allmapped")) {
 
-                    //                species = "";
-                    //                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+                    // species = "";
+                    // List<MapLayer> layers =
+                    // getMapComposer().getSpeciesLayers();
                     //
-                    //                BiocacheQuery sq = new BiocacheQuery();
-                    //                for (int i = 0; i < layers.size(); i++) {
-                    //                    MapLayer lyr = layers.get(i);
-                    //                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
-                    //                        sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
-                    //                    }
-                    //                }
+                    // BiocacheQuery sq = new BiocacheQuery();
+                    // for (int i = 0; i < layers.size(); i++) {
+                    // MapLayer lyr = layers.get(i);
+                    // if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
+                    // sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
+                    // }
+                    // }
                     //
-                    //                species = sq.getShortQuery();
+                    // species = sq.getShortQuery();
                     throw new UnsupportedOperationException("Not yet implemented");
                 } else if (species.equals("multiple")) {
                     String lsids = getMultipleLsids();
@@ -1402,8 +1388,7 @@ public class AddToolComposer extends UtilityComposer {
                     }
                 } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                     if (searchSpeciesAuto.getSelectedItem() != null) {
-                        if (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
-                                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
+                        if (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
                             System.out.println("error in getSelectedSpecies value=" + searchSpeciesAuto.getSelectedItem().getValue() + " text=" + searchSpeciesAuto.getText());
                         } else {
                             species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
@@ -1444,18 +1429,19 @@ public class AddToolComposer extends UtilityComposer {
                     species = "none";
                     q = new BiocacheQuery(null, null, null, null, false, applycheckboxes ? getGeospatialKosherBk() : null);
                 } else if (species.equals("allmapped")) {
-                    //                species = "";
-                    //                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+                    // species = "";
+                    // List<MapLayer> layers =
+                    // getMapComposer().getSpeciesLayers();
                     //
-                    //                BiocacheQuery sq = new BiocacheQuery();
-                    //                for (int i = 0; i < layers.size(); i++) {
-                    //                    MapLayer lyr = layers.get(i);
-                    //                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
-                    //                        sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
-                    //                    }
-                    //                }
+                    // BiocacheQuery sq = new BiocacheQuery();
+                    // for (int i = 0; i < layers.size(); i++) {
+                    // MapLayer lyr = layers.get(i);
+                    // if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
+                    // sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
+                    // }
+                    // }
                     //
-                    //                species = sq.getShortQuery();
+                    // species = sq.getShortQuery();
                     throw new UnsupportedOperationException("Not yet implemented");
                 } else if (species.equals("multiple")) {
                     String lsids = getMultipleLsidsBk();
@@ -1485,15 +1471,15 @@ public class AddToolComposer extends UtilityComposer {
         try {
             if (species.equals("allspecies")) {
             } else if (species.equals("allmapped")) {
-//                species = "";
-//                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
-//
-//                for (int i = 0; i < layers.size(); i++) {
-//                    MapLayer lyr = layers.get(i);
-//                    Radio rSp = new Radio(lyr.getDisplayName());
-//                    species += lyr.getMapLayerMetadata().getSpeciesLsid() + ",";
-//                }
-//                species = species.substring(0, species.length() - 1);
+                // species = "";
+                // List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+                //
+                // for (int i = 0; i < layers.size(); i++) {
+                // MapLayer lyr = layers.get(i);
+                // Radio rSp = new Radio(lyr.getDisplayName());
+                // species += lyr.getMapLayerMetadata().getSpeciesLsid() + ",";
+                // }
+                // species = species.substring(0, species.length() - 1);
 
                 species = "All mapped species";
             } else if (species.equals("search")) {
@@ -1581,11 +1567,10 @@ public class AddToolComposer extends UtilityComposer {
                     List list = searchSpeciesAuto.getItems();
                     for (int i = 0; i < list.size(); i++) {
                         Comboitem ci = (Comboitem) list.get(i);
-                        //compare name
+                        // compare name
                         if (ci.getLabel().equalsIgnoreCase(searchSpeciesAuto.getValue())) {
-                            //compare lsid
-                            if (ci.getAnnotatedProperties() != null
-                                    && ((String) ci.getAnnotatedProperties().get(0)).equals(lsid)) {
+                            // compare lsid
+                            if (ci.getAnnotatedProperties() != null && ((String) ci.getAnnotatedProperties().get(0)).equals(lsid)) {
                                 searchSpeciesAuto.setSelectedItem(ci);
                                 break;
                             }
@@ -1628,11 +1613,10 @@ public class AddToolComposer extends UtilityComposer {
                 List list = bgSearchSpeciesAuto.getItems();
                 for (int i = 0; i < list.size(); i++) {
                     Comboitem ci = (Comboitem) list.get(i);
-                    //compare name
+                    // compare name
                     if (ci.getLabel().equalsIgnoreCase(bgSearchSpeciesAuto.getValue())) {
-                        //compare lsid
-                        if (ci.getAnnotatedProperties() != null
-                                && ((String) ci.getAnnotatedProperties().get(0)).equals(lsid)) {
+                        // compare lsid
+                        if (ci.getAnnotatedProperties() != null && ((String) ci.getAnnotatedProperties().get(0)).equals(lsid)) {
                             bgSearchSpeciesAuto.setSelectedItem(ci);
                             break;
                         }
@@ -1652,7 +1636,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     void toggles() {
-        //btnOk.setDisabled(true);
+        // btnOk.setDisabled(true);
         btnOk.setDisabled(false);
         btnOk.setVisible(true);
 
@@ -1669,7 +1653,7 @@ public class AddToolComposer extends UtilityComposer {
             } else if (currentDiv.getZclass().contains("optional")) {
                 btnOk.setDisabled(false);
             }
-            //test for max
+            // test for max
             if (currentDiv.getZclass().contains("maxlayers")) {
                 int start = currentDiv.getZclass().indexOf("maxlayers") + "maxlayers".length();
                 int end = Math.max(currentDiv.getZclass().indexOf(" ", start), currentDiv.getZclass().length());
@@ -1692,8 +1676,7 @@ public class AddToolComposer extends UtilityComposer {
         if (currentDiv.getZclass().contains("layers2auto")) {
             cbLayer2 = (EnvLayersCombobox) getFellowIfAny("cbLayer2");
             cbLayer1 = (EnvLayersCombobox) getFellowIfAny("cbLayer1");
-            btnOk.setDisabled(cbLayer2.getSelectedItem() == null
-                    || cbLayer1.getSelectedItem() == null);
+            btnOk.setDisabled(cbLayer2.getSelectedItem() == null || cbLayer1.getSelectedItem() == null);
         }
 
         if (currentDiv.getZclass().contains("optional")) {
@@ -1701,12 +1684,11 @@ public class AddToolComposer extends UtilityComposer {
         }
 
         if (currentDiv.getZclass().contains("species")) {
-            //if (divSpeciesSearch != null && divSpeciesSearch.isVisible()){
+            // if (divSpeciesSearch != null && divSpeciesSearch.isVisible()){
             if (divSpeciesSearch.isVisible()) {
                 btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() != null
-                        && (searchSpeciesAuto.getSelectedItem().getValue() == null
-                        || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
-                        || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));
+                        && (searchSpeciesAuto.getSelectedItem().getValue() == null || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null || searchSpeciesAuto.getSelectedItem()
+                                .getAnnotatedProperties().size() == 0));
             } else if (vboxMultiple.isVisible()) {
                 btnOk.setDisabled(getMultipleLsids().length() == 0);
             }
@@ -1773,8 +1755,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     boolean isAreaHighlightCustom() {
-        return isAreaHighlightTab() && rgAreaHighlight != null
-                && rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight");
+        return isAreaHighlightTab() && rgAreaHighlight != null && rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight");
     }
 
     public void onSelect$selectedLayersCombobox(Event event) {
@@ -1814,10 +1795,10 @@ public class AddToolComposer extends UtilityComposer {
             return;
         }
 
-        //support new line separated layer names
+        // support new line separated layer names
         layersList = layersList.replace("\n", ",");
 
-        //check the whole layer string as well as the one at the end
+        // check the whole layer string as well as the one at the end
         String[] layers = layersList.split(",");
         String[] list = new String[layers.length * 2];
         for (int i = 0; i < layers.length; i++) {
@@ -1833,7 +1814,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void saveLayerSelection() {
-        //save layer selection
+        // save layer selection
         if (lbListLayers != null && lbListLayers.getSelectedCount() > 0) {
             String list = getLayerListShortText();
             LayerSelection ls = new LayerSelection(selectedMethod, tToolName.getText(), System.currentTimeMillis(), list);
@@ -1861,8 +1842,7 @@ public class AddToolComposer extends UtilityComposer {
 
     void updateLayerListText() {
         try {
-            if (lbListLayers != null && lbListLayers.getSelectedCount() > 0
-                    && tLayerList != null) {
+            if (lbListLayers != null && lbListLayers.getSelectedCount() > 0 && tLayerList != null) {
                 String lyrtext = getLayerListText();
                 System.out.println("Setting Layer text: \n" + lyrtext);
                 tLayerList.setText(lyrtext);
@@ -1883,7 +1863,8 @@ public class AddToolComposer extends UtilityComposer {
                     sb.append(",");
                 }
 
-                //String displayname = CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
+                // String displayname =
+                // CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
                 String displayname = CommonData.getLayerDisplayName(s);
                 if (displayname != null && displayname.length() > 0) {
                     sb.append(displayname).append(" (").append(s).append(")");
@@ -1916,7 +1897,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void onChange$cbLayer(Event event) {
-        //seek to and select the same layer in the list
+        // seek to and select the same layer in the list
         if (lbListLayers != null && cbLayer.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) cbLayer.getSelectedItem().getValue();
             String[] layer = jo.getString("name").split("/");
@@ -1927,7 +1908,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void onChange$cbLayerEnvironmentalOnly(Event event) {
-        //seek to and select the same layer in the list
+        // seek to and select the same layer in the list
         if (lbListLayers != null && cbLayerEnvironmentalOnly.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) cbLayerEnvironmentalOnly.getSelectedItem().getValue();
             String[] layer = jo.getString("name").split("/");
@@ -1938,7 +1919,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void onChange$cbLayerMix(Event event) {
-        //seek to and select the same layer in the list
+        // seek to and select the same layer in the list
         if (lbListLayers != null && cbLayerMix.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) cbLayerMix.getSelectedItem().getValue();
             String[] layer = jo.getString("name").split("/");
@@ -1966,7 +1947,7 @@ public class AddToolComposer extends UtilityComposer {
             if (lbListLayers.getSelectedCount() == 1) {
                 lLayersSelected.setValue("1 layer selected");
             } else {
-                //test for max
+                // test for max
                 String error = "";
                 Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
                 if (currentDiv.getZclass().contains("maxlayers")) {
@@ -2041,12 +2022,12 @@ public class AddToolComposer extends UtilityComposer {
         UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", this, null);
         usc.addToMap = false;
 
-        //is it bk or normal lsid
-//        if (rgSpeciesBk != null
-//                && (rgSpeciesBk.getSelectedItem() == rSpeciesUploadLSIDBk
-//                || rgSpeciesBk.getSelectedItem() == rSpeciesUploadSpeciesBk)) {
-//            usc.setUploadType("bk");
-//        }
+        // is it bk or normal lsid
+        // if (rgSpeciesBk != null
+        // && (rgSpeciesBk.getSelectedItem() == rSpeciesUploadLSIDBk
+        // || rgSpeciesBk.getSelectedItem() == rSpeciesUploadSpeciesBk)) {
+        // usc.setUploadType("bk");
+        // }
         if (rgSpeciesBk != null) {
             if (rgSpeciesBk.getSelectedItem() == rSpeciesUploadLSIDBk) {
                 usc.setUploadType("assemblagebk");
@@ -2106,7 +2087,7 @@ public class AddToolComposer extends UtilityComposer {
                     loaded = true;
                     System.out.println("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
-                    //last one, report error
+                    // last one, report error
                     getMapComposer().showMessage("Unable to load your file.");
                     System.out.println("unable to load user layer list: ");
                     e.printStackTrace();
@@ -2119,7 +2100,7 @@ public class AddToolComposer extends UtilityComposer {
 
     private void loadLayerList(Reader r) throws Exception {
         CSVReader reader = new CSVReader(r);
-        //one line, read it
+        // one line, read it
         StringBuilder sb = new StringBuilder();
         for (String s : reader.readNext()) {
             if (sb.length() > 0) {
@@ -2138,8 +2119,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public void mChooseSelected(Event event) {
         Comboitem ci = mSearchSpeciesAuto.getSelectedItem();
-        if (ci != null && ci.getAnnotatedProperties() != null
-                && ((String) ci.getAnnotatedProperties().get(0)) != null) {
+        if (ci != null && ci.getAnnotatedProperties() != null && ((String) ci.getAnnotatedProperties().get(0)) != null) {
             String lsid = ((String) ci.getAnnotatedProperties().get(0));
 
             try {
@@ -2176,8 +2156,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public void mChooseSelectedBk(Event event) {
         Comboitem ci = mSearchSpeciesAutoBk.getSelectedItem();
-        if (ci != null && ci.getAnnotatedProperties() != null
-                && ((String) ci.getAnnotatedProperties().get(0)) != null) {
+        if (ci != null && ci.getAnnotatedProperties() != null && ((String) ci.getAnnotatedProperties().get(0)) != null) {
             String lsid = ((String) ci.getAnnotatedProperties().get(0));
 
             try {
@@ -2239,12 +2218,10 @@ public class AddToolComposer extends UtilityComposer {
                         }
                     }
 
-                    //is 's' an LSID?
+                    // is 's' an LSID?
                     if ((lsid == null || lsid.length() == 0) && s.matches(".*[0-9].*")) {
                         Map<String, String> sr = BiocacheQuery.getClassification(s);
-                        if (sr.size() > 0
-                                && sr.get("scientificName") != null
-                                && sr.get("scientificName").length() > 0) {
+                        if (sr.size() > 0 && sr.get("scientificName") != null && sr.get("scientificName").length() > 0) {
                             lsid = s;
                             sciname = sr.get("scientificName");
                             family = sr.get("family");
@@ -2312,12 +2289,10 @@ public class AddToolComposer extends UtilityComposer {
                         }
                     }
 
-                    //is 's' an LSID?
+                    // is 's' an LSID?
                     if (lsid == null || lsid.length() == 0) {
                         Map<String, String> sr = BiocacheQuery.getClassification(s);
-                        if (sr.size() > 0
-                                && sr.get("scientificName") != null
-                                && sr.get("scientificName").length() > 0) {
+                        if (sr.size() > 0 && sr.get("scientificName") != null && sr.get("scientificName").length() > 0) {
                             lsid = s;
                             sciname = sr.get("scientificName");
                             family = sr.get("family");
@@ -2378,15 +2353,14 @@ public class AddToolComposer extends UtilityComposer {
         for (Listitem li : (List<Listitem>) lMultiple.getItems()) {
             Listcell lsidCell = (Listcell) li.getLastChild();
             Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
-            if ((lsid != null && lsidCell.getLabel().equals(lsid))
-                    || (sciname != null && scinameCell.getLabel().replace("(not found)", "").trim().equals(sciname))) {
+            if ((lsid != null && lsidCell.getLabel().equals(lsid)) || (sciname != null && scinameCell.getLabel().replace("(not found)", "").trim().equals(sciname))) {
                 return;
             }
         }
 
         Listitem li = new Listitem();
 
-        //remove button
+        // remove button
         Listcell lc = new Listcell("x");
         lc.setSclass("xRemove");
         lc.addEventListener("onClick", new EventListener() {
@@ -2400,7 +2374,7 @@ public class AddToolComposer extends UtilityComposer {
         });
         lc.setParent(li);
 
-        //sci name
+        // sci name
         if (lsid == null) {
             lc = new Listcell(sciname + " (not found)");
             lc.setSclass("notFoundSciname");
@@ -2409,7 +2383,7 @@ public class AddToolComposer extends UtilityComposer {
         }
         lc.setParent(li);
 
-        //family
+        // family
         if (lsid == null) {
             lc = new Listcell("click to search");
             lc.setSclass("notFoundFamily");
@@ -2432,11 +2406,11 @@ public class AddToolComposer extends UtilityComposer {
         }
         lc.setParent(li);
 
-        //kingdom
+        // kingdom
         lc = new Listcell(kingdom);
         lc.setParent(li);
 
-        //count
+        // count
         if (lsid != null) {
             int count = new BiocacheQuery(lsid, null, null, null, false, getGeospatialKosher()).getOccurrenceCount();
             if (count > 0) {
@@ -2449,7 +2423,7 @@ public class AddToolComposer extends UtilityComposer {
         }
         lc.setParent(li);
 
-        //lsid
+        // lsid
         lc = new Listcell(lsid);
         lc.setParent(li);
 
@@ -2464,15 +2438,14 @@ public class AddToolComposer extends UtilityComposer {
         for (Listitem li : (List<Listitem>) lMultipleBk.getItems()) {
             Listcell lsidCell = (Listcell) li.getLastChild();
             Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
-            if ((lsid != null && lsidCell.getLabel().equals(lsid))
-                    || (sciname != null && scinameCell.getLabel().replace("(not found)", "").trim().equals(sciname))) {
+            if ((lsid != null && lsidCell.getLabel().equals(lsid)) || (sciname != null && scinameCell.getLabel().replace("(not found)", "").trim().equals(sciname))) {
                 return;
             }
         }
 
         Listitem li = new Listitem();
 
-        //remove button
+        // remove button
         Listcell lc = new Listcell("x");
         lc.setSclass("xRemove");
         lc.addEventListener("onClick", new EventListener() {
@@ -2486,7 +2459,7 @@ public class AddToolComposer extends UtilityComposer {
         });
         lc.setParent(li);
 
-        //sci name
+        // sci name
         if (lsid == null) {
             lc = new Listcell(sciname + " (not found)");
             lc.setSclass("notFoundSciname");
@@ -2495,7 +2468,7 @@ public class AddToolComposer extends UtilityComposer {
         }
         lc.setParent(li);
 
-        //family
+        // family
         if (lsid == null) {
             lc = new Listcell("click to search");
             lc.setSclass("notFoundFamily");
@@ -2518,11 +2491,11 @@ public class AddToolComposer extends UtilityComposer {
         }
         lc.setParent(li);
 
-        //kingdom
+        // kingdom
         lc = new Listcell(kingdom);
         lc.setParent(li);
 
-        //count
+        // count
         if (lsid != null) {
             int count = new BiocacheQuery(lsid, null, null, null, false, getGeospatialKosherBk()).getOccurrenceCount();
             if (count > 0) {
@@ -2535,7 +2508,7 @@ public class AddToolComposer extends UtilityComposer {
         }
         lc.setParent(li);
 
-        //lsid
+        // lsid
         lc = new Listcell(lsid);
         lc.setParent(li);
 
@@ -2595,29 +2568,29 @@ public class AddToolComposer extends UtilityComposer {
                 usc.setTbInstructions("3. Select file");
             }
             usc.addToMap = true;
-            //usc.setDefineArea(chkArea.isChecked());
+            // usc.setDefineArea(chkArea.isChecked());
             usc.doModal();
             return;
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
-    public void setChooseEndemic(boolean choose){
+
+    public void setChooseEndemic(boolean choose) {
         chkEndemicSpecies.setChecked(choose);
     }
-    
-    public boolean getIsEndemic(){
-        return chkEndemicSpecies !=null &&chkEndemicSpecies.isChecked();
+
+    public boolean getIsEndemic() {
+        return chkEndemicSpecies != null && chkEndemicSpecies.isChecked();
     }
 
     public boolean[] getGeospatialKosher() {
         if (chkGeoKosherTrue == null || chkGeoKosherFalse == null || chkGeoKosherNull == null) {
             System.out.println("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
-            return new boolean[]{true, true, true};
+            return new boolean[] { true, true, true };
         } else {
-            return new boolean[]{chkGeoKosherTrue.isChecked(), chkGeoKosherFalse.isChecked(), chkGeoKosherNull.isChecked()};
+            return new boolean[] { chkGeoKosherTrue.isChecked(), chkGeoKosherFalse.isChecked(), chkGeoKosherNull.isChecked() };
         }
     }
 
@@ -2625,9 +2598,9 @@ public class AddToolComposer extends UtilityComposer {
         if (chkGeoKosherTrueBk == null || chkGeoKosherFalseBk == null || chkGeoKosherNullBk == null) {
             System.out.println("Error in AddToolComposer.  Expect checkboxes for geospatial kosher background species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
-            return new boolean[]{true, true, true};
+            return new boolean[] { true, true, true };
         } else {
-            return new boolean[]{chkGeoKosherTrueBk.isChecked(), chkGeoKosherFalseBk.isChecked(), chkGeoKosherNullBk.isChecked()};
+            return new boolean[] { chkGeoKosherTrueBk.isChecked(), chkGeoKosherFalseBk.isChecked(), chkGeoKosherNullBk.isChecked() };
         }
     }
 
@@ -2638,11 +2611,10 @@ public class AddToolComposer extends UtilityComposer {
             return;
         }
 
-        //get selected species
+        // get selected species
         Query q = getSelectedSpecies(false, true);
         boolean[] gk;
-        if (q instanceof BiocacheQuery
-                && (gk = ((BiocacheQuery) q).getGeospatialKosher()) != null) {
+        if (q instanceof BiocacheQuery && (gk = ((BiocacheQuery) q).getGeospatialKosher()) != null) {
             chkGeoKosherTrue.setDisabled(false);
             chkGeoKosherFalse.setDisabled(false);
             chkGeoKosherNull.setDisabled(false);
@@ -2687,11 +2659,10 @@ public class AddToolComposer extends UtilityComposer {
             return;
         }
 
-        //get selected species
+        // get selected species
         Query q = getSelectedSpeciesBk(false, true);
         boolean[] gk;
-        if (q instanceof BiocacheQuery
-                && (gk = ((BiocacheQuery) q).getGeospatialKosher()) != null) {
+        if (q instanceof BiocacheQuery && (gk = ((BiocacheQuery) q).getGeospatialKosher()) != null) {
             chkGeoKosherTrueBk.setDisabled(false);
             chkGeoKosherFalseBk.setDisabled(false);
             chkGeoKosherNullBk.setDisabled(false);
@@ -2804,14 +2775,14 @@ public class AddToolComposer extends UtilityComposer {
         try {
             Media m = ue.getMedia();
 
-            //forget content types, do 'try'
+            // forget content types, do 'try'
             boolean loaded = false;
             try {
                 importList(readerToString(m.getReaderData()));
                 loaded = true;
                 System.out.println("read type " + m.getContentType() + " with getReaderData");
             } catch (Exception e) {
-                //e.printStackTrace();
+                // e.printStackTrace();
             }
             if (!loaded) {
                 try {
@@ -2819,7 +2790,7 @@ public class AddToolComposer extends UtilityComposer {
                     loaded = true;
                     System.out.println("read type " + m.getContentType() + " with getByteData");
                 } catch (Exception e) {
-                    //e.printStackTrace();
+                    // e.printStackTrace();
                 }
             }
             if (!loaded) {
@@ -2828,7 +2799,7 @@ public class AddToolComposer extends UtilityComposer {
                     loaded = true;
                     System.out.println("read type " + m.getContentType() + " with getStreamData");
                 } catch (Exception e) {
-                    //e.printStackTrace();
+                    // e.printStackTrace();
                 }
             }
             if (!loaded) {
@@ -2837,7 +2808,7 @@ public class AddToolComposer extends UtilityComposer {
                     loaded = true;
                     System.out.println("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
-                    //last one, report error
+                    // last one, report error
                     getMapComposer().showMessage("Unable to load your file. Please try again.");
                     System.out.println("unable to load user points: ");
                     e.printStackTrace();
