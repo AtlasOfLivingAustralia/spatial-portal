@@ -5,7 +5,11 @@
 GEOSERVER_USRPWD="user:password"
 GEOSERVER_URL="http://localhost:8082/geoserver"
 PTH="/data/ala/data/layers"
+OUTPUTDIR="$PTH/process/endemism/$DATE"
 GDAL_TRANSLATE="/data/ala/utils/gdal-1.9.0/apps/gdal_translate"
+
+# Create directory to store output files:
+mkdir $OUTPUTDIR
 
 # download generated data from the biocache
 echo "downloading data from biocache"
@@ -14,22 +18,22 @@ wget http://biocache.ala.org.au/archives/exports/species-cell-counts-0.1-degree.
 
 # generate ASCII grid and DIVA grid
 echo "generating grid files"
-java -Xmx3G -cp alaspatial/WEB-INF/classes/.:alaspatial/WEB-INF/lib/* org.ala.spatial.analysis.layers.Endemism 0.1 species-cell-counts-0.1-degree.txt cell-species-lists-0.1-degree.txt . testendemism
+java -Xmx3G -cp alaspatial/WEB-INF/classes/.:alaspatial/WEB-INF/lib/* org.ala.spatial.analysis.layers.Endemism 0.1 species-cell-counts-0.1-degree.txt cell-species-lists-0.1-degree.txt $OUTPUTDIR endemism
 
-cp testendemism.gr* $PTH/ready/diva
+cp $OUTPUTDIR/endemism.gr* $PTH/ready/diva
 
 # Generate geotiff
 echo "generating geotiff"
-$GDAL_TRANSLATE -of GTiff -ot Float32 -a_srs EPSG:4326 testendemism.asc testendemism.tif
-cp testendemism.tif $PTH/ready/geotiff
+$GDAL_TRANSLATE -of GTiff -ot Float32 -a_srs EPSG:4326 $OUTPUTDIR/endemism.asc $OUTPUTDIR/endemism.tif
+cp endemism.tif $PTH/ready/geotiff
 
 # Generate legend
 echo "generating legend"
-java -Xmx3G -cp "./alaspatial/WEB-INF/lib/*" org.ala.layers.legend.GridLegend $PTH/ready/diva/testendemism $PTH/test/testendemism 8 1
+java -Xmx3G -cp "./alaspatial/WEB-INF/lib/*" org.ala.layers.legend.GridLegend $PTH/ready/diva/endemism $PTH/test/endemism 8 1
 
 # Upload to geoserver
 echo "uploading to geoserver"
-curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/plain"  -d "file://$PTH/ready/geotiff/testendemism.tif" $GEOSERVER_URL/rest/workspaces/ALA/coveragestores/testendemism/external.geotiff
-#curl -u $GEOSERVER_USRPWD -XPOST -H "Content-type: text/xml"  -d "<style><name>testendemism_style</name><filename>srichness.sld</filename></style>"  $GEOSERVER_URL/rest/styles
-curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: application/vnd.ogc.sld+xml"  -d @$PTH/test/testendemism.sld $GEOSERVER_URL/rest/styles/testendemism_style
-curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/xml"   -d "<layer><enabled>true</enabled><defaultStyle><name>testendemism_style</name></defaultStyle></layer>" $GEOSERVER_URL/rest/layers/ALA:testendemism
+curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/plain"  -d "file://$PTH/ready/geotiff/endemism.tif" $GEOSERVER_URL/rest/workspaces/ALA/coveragestores/endemism/external.geotiff
+curl -u $GEOSERVER_USRPWD -XPOST -H "Content-type: text/xml"  -d "<style><name>endemism_style</name><filename>endemism.sld</filename></style>"  $GEOSERVER_URL/rest/styles
+curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: application/vnd.ogc.sld+xml"  -d @$PTH/test/endemism.sld $GEOSERVER_URL/rest/styles/endemism_style
+curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/xml"   -d "<layer><enabled>true</enabled><defaultStyle><name>endemism_style</name></defaultStyle></layer>" $GEOSERVER_URL/rest/layers/ALA:endemism
