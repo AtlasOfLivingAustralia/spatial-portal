@@ -52,7 +52,7 @@ public class BiocacheQuery implements Query, Serializable {
     static final String ENDEMIC_COUNT_SERVICE="/explore/counts/endemic?";
     static final String ENDEMIC_SPECIES_SERVICE_CSV="/explore/endemic/species.csv?";
     static final String DEFAULT_ROWS = "pageSize=1000000";
-    static final String DEFAULT_ROWS_LARGEST = "pageSize=100000000";
+    static final String DEFAULT_ROWS_LARGEST = "pageSize=1000000";
     /** DEFAULT_VALIDATION must not be null */
     //static final String DEFAULT_VALIDATION = "longitude:[-180 TO 180] AND latitude:[-90 TO 90]";
     static final String DEFAULT_VALIDATION = "";

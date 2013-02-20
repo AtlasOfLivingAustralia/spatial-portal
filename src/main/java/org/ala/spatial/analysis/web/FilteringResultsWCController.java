@@ -9,13 +9,8 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,51 +31,47 @@ import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Events;
-import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Window;
 
 /**
+ * This class supports the Area Report in the spatial portal.
+ *
+ * DM 20/02/2013 - rewrite of this to allow for update of fields in the UI once a query has finished.
+ * Previously these updates only happened was all queries had returned.
  *
  * @author adam
+ * @author Dave Martin
  */
 public class FilteringResultsWCController extends UtilityComposer {
 
+    public static final int MAX_GAZ_POINT = 5000;
     private static Logger logger = Logger.getLogger(FilteringResultsWCController.class);
     RemoteLogger remoteLogger;
-    public Button mapspecies;
+    public Button mapspecies, mapspecieskosher;
+    public Button sample, samplekosher;
     public org.zkoss.zul.A viewrecords, viewrecordskosher;
-    public Button mapspecieskosher;
     public Label results_label2_occurrences;
     public Label results_label2_species;
     public Label results_label2_endemic_species;
     public Label results_label2_occurrences_kosher;
     public Label results_label2_species_kosher;
     public Label results_label2_endemic_species_kosher;
-    public Label sdLabel;
-    public Label clLabel;
-    public Label aclLabel;
+    public Label sdLabel, clLabel, aclLabel;
     String[] speciesDistributionText = null;
     String[] speciesChecklistText = null;
     String[] areaChecklistText = null;
     Window window = null;
     public String pid;
-    //String shape;
     private SettingsSupplementary settingsSupplementary = null;
-    int results_count = 0;
-    int results_count_occurrences = 0;
-    int endemic_count =0;
-    int results_count_kosher = 0;
-    int results_count_occurrences_kosher = 0;
-    int endemic_count_kosher =0;
     boolean addedListener = false;
     Label lblArea;
     Label lblBiostor;
-    //String reportArea = null;
     SelectedArea selectedArea = null;
     String areaName = "Area Report";
     String areaDisplayName = "Area Report";
@@ -94,16 +85,19 @@ public class FilteringResultsWCController extends UtilityComposer {
     Label gazLabel;
     JSONArray gazPoints = null;
     Button mapGazPoints;
+    Map<String, Future<Map<String,String>>> futures = null;
+    long futuresStart = -1;
+    ExecutorService pool = null;
+    List<String> firedEvents = null;
 
-    
     public boolean shouldIncludeEndemic(){
         return includeEndemic;
     }
     
     public void setReportArea(SelectedArea sa, String name, String displayname, String areaSqKm, double[] boundingBox, boolean includeEndemic) {
-        selectedArea = sa;
-        areaName = name;
-        areaDisplayName = displayname;
+        this.selectedArea = sa;
+        this.areaName = name;
+        this.areaDisplayName = displayname;
         this.areaSqKm = areaSqKm;
         this.boundingBox = boundingBox;
         this.includeEndemic = includeEndemic;
@@ -114,12 +108,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         try {
-            refreshCount();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
+            startQueries();
             String extras = "";
             extras += "areaSqKm: " + areaSqKm;
             extras += ";boundingBox: " + boundingBox;
@@ -128,33 +117,14 @@ public class FilteringResultsWCController extends UtilityComposer {
             e.printStackTrace();
         }
 
-    }
-
-    @Override
-    public void afterCompose() {
-        super.afterCompose();
-
-//        try {
-//            refreshCount();
-//        }catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        //start checking of completed threads
+        Events.echoEvent("checkFutures", this, null);
     }
 
     @Override
     public void detach() {
         getMapComposer().getLeftmenuSearchComposer().removeViewportEventListener("filteringResults");
-
         super.detach();
-    }
-
-    @Override
-    public void redraw(Writer out) throws java.io.IOException {
-        super.redraw(out);
-
-        if (selectedArea != null) {
-            setUpdatingCount(true);
-        }
     }
 
     void addListener() {
@@ -162,10 +132,9 @@ public class FilteringResultsWCController extends UtilityComposer {
             addedListener = true;
             //register for viewport changes
             EventListener el = new EventListener() {
-
                 public void onEvent(Event event) throws Exception {
                     selectedArea = new SelectedArea(null, getMapComposer().getViewArea());
-                    refreshCount();
+                    //refreshCount();
                 }
             };
             getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
@@ -176,194 +145,334 @@ public class FilteringResultsWCController extends UtilityComposer {
         if (set) {
             results_label2_occurrences.setValue("updating...");
             results_label2_species.setValue("updating...");
-            if(includeEndemic)
-                results_label2_endemic_species.setValue("updating...");
             results_label2_occurrences_kosher.setValue("updating...");
             results_label2_species_kosher.setValue("updating...");
-            if(includeEndemic)
-                results_label2_endemic_species_kosher.setValue("updating...");
             sdLabel.setValue("updating...");
             clLabel.setValue("updating...");
             aclLabel.setValue("updating...");
             lblArea.setValue("updating...");
             lblBiostor.setValue("updating...");
             gazLabel.setValue("updating...");
+
+            if(includeEndemic){
+                results_label2_endemic_species.setValue("updating...");
+                results_label2_endemic_species_kosher.setValue("updating...");
+            }
         }
     }
 
-//    public void populateList() {
-//        try {
-//            StringBuffer sbProcessUrl = new StringBuffer();
-//            sbProcessUrl.append("/filtering/apply");
-//            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-//            sbProcessUrl.append("/species/list");
-//
-//            String out = postInfo(sbProcessUrl.toString());
-//            //remove trailing ','
-//            if (out.length() > 0 && out.charAt(out.length() - 1) == ',') {
-//                out = out.substring(0, out.length() - 1);
-//            }
-//            results = out.split("\\|");
-//            java.util.Arrays.sort(results);
-//
-//            if (results.length == 0 || results[0].trim().length() == 0) {
-//                //results_label2_species.setValue("0");
-//                //results_label2_occurrences.setValue("0");
-//                data.put("speciesCount", "0");
-//                data.put("occurrencesCount", "0");
-//                mapspecies.setVisible(false);
-//                results = null;
-//                return;
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
     boolean isTabOpen() {
         return true; //getMapComposer().getPortalSession().getCurrentNavigationTab() == PortalSession.LINK_TAB;
     }
 
-    public void refreshCount() {
-        //check if tab is open
-//        if (!isTabOpen() || !updateParameters()) {
-//            return;
-//        }
+
+    void startQueries() {
 
         setUpdatingCount(true);
 
-        startRefreshCount();
-
-        Events.echoEvent("finishRefreshCount", this, null);
-    }
-    CountDownLatch counter = null;
-    long start = 0;
-    Thread biostorThread;
-
-    void startRefreshCount() {
-        //countdown includes; intersectWithSpecies, calcuateArea, counts
-        counter = new CountDownLatch(5);
         final boolean worldAreaSelected = CommonData.WORLD_WKT.equals(selectedArea.getWkt());
-        Thread t1 = new Thread() {
-
-            @Override
-            public void run() {
-                setPriority(Thread.MIN_PRIORITY);
-                intersectWithSpeciesDistributions();
-                decCounter();
-            }
-        };
-
-        Thread t2 = new Thread() {
-
-            @Override
-            public void run() {
-                setPriority(Thread.MIN_PRIORITY);
-                calculateArea();
-                decCounter();
-            }
-        };
-
-        biostorThread = new Thread() {
-
-            @Override
-            public void run() {
-                setPriority(Thread.MIN_PRIORITY);
-                biostor();
-            }
-        };
-
-        Thread t4 = new Thread() {
-
-            @Override
-            public void run() {
-                setPriority(Thread.MIN_PRIORITY);
-                counts(worldAreaSelected);
-                decCounter();
-            }
-        };
-
-        Thread t5 = new Thread() {
-
-            @Override
-            public void run() {
-                setPriority(Thread.MIN_PRIORITY);
-                intersectWithSpeciesChecklists();
-                decCounter();
-            }
-        };
-
-        Thread t6 = new Thread() {
-
-            @Override
-            public void run() {
-                setPriority(Thread.MIN_PRIORITY);
-                countGazPoints();
-                decCounter();
-            }
-        };
-
-        t1.start();
-        t2.start();
-        biostorThread.start();
-        t4.start();
-        t5.start();
-        t6.start();
-
-        
         divWorldNote.setVisible(worldAreaSelected);
         lblWorldNoteOccurrences.setVisible(worldAreaSelected);
         lblWorldNoteSpecies.setVisible(worldAreaSelected);
-
-        long start = System.currentTimeMillis();
-
         getMapComposer().updateUserLogAnalysis("species count", "area: " + selectedArea.getWkt(), "", "species list in area");
+
+
+        Callable occurrenceCount = new Callable<Map<String,Object>>() {
+            @Override
+            public Map<String,Object> call() {
+                return occurrenceCount(worldAreaSelected);
+            }
+        };
+
+        Callable occurrenceCountKosher = new Callable<Map<String,Object>>() {
+            @Override
+            public Map<String,Object> call() {
+                return occurrenceCountKosher(worldAreaSelected);
+            }
+        };
+
+        Callable speciesCount = new Callable<Map<String,Integer>>() {
+            @Override
+            public Map<String,Integer> call() {
+                return speciesCount(worldAreaSelected);
+            }
+        };
+
+        Callable speciesCountKosher = new Callable<Map<String,Integer>>() {
+            @Override
+            public Map<String,Integer> call() {
+                return speciesCountKosher(worldAreaSelected);
+            }
+        };
+
+        Callable endemismCount = new Callable<Map<String,Integer>>() {
+            @Override
+            public Map<String,Integer> call() {
+                return endemismCount(worldAreaSelected);
+            }
+        };
+
+        Callable endemismCountKosher = new Callable<Map<String,Integer>>() {
+            @Override
+            public Map<String,Integer> call() {
+                return endemismCountKosher(worldAreaSelected);
+            }
+        };
+
+        Callable speciesDistributions = new Callable<Map<String,Integer>>() {
+            @Override
+            public Map<String,Integer> call() {
+                return intersectWithSpeciesDistributions();
+            }
+        };
+
+        Callable calculatedArea = new Callable<Map<String,String>>() {
+            @Override
+            public Map<String,String> call() {
+                return calculateArea();
+            }
+        };
+
+        Callable speciesChecklists = new Callable<Map<String,String>>() {
+            @Override
+            public Map<String,String> call() {
+                return intersectWithSpeciesChecklists();
+            }
+        };
+
+        Callable gazPoints = new Callable<Map<String,String>>() {
+            @Override
+            public Map<String,String> call() {
+                return countGazPoints();
+            }
+        };
+
+        Callable biostor = new Callable<Map<String,String>>() {
+            @Override
+            public Map<String,String> call() {
+                return biostor();
+            }
+        };
+
+        try {
+            this.pool = Executors.newFixedThreadPool(9);
+            this.futures = new HashMap<String,Future<Map<String,String>>>();
+            this.firedEvents = new ArrayList<String>();
+            //add all futures
+            futures.put("CalculatedArea", pool.submit(calculatedArea));
+            futures.put("OccurrenceCount", pool.submit(occurrenceCount));
+            futures.put("OccurrenceCountKosher", pool.submit(occurrenceCountKosher));
+            futures.put("SpeciesCount", pool.submit(speciesCount));
+            futures.put("SpeciesCountKosher", pool.submit(speciesCountKosher));
+            futures.put("GazPoints", pool.submit(gazPoints));
+            futures.put("SpeciesChecklists", pool.submit(speciesChecklists));
+            futures.put("SpeciesDistributions", pool.submit(speciesDistributions));
+            futures.put("Biostor", pool.submit(biostor));
+            if(includeEndemic){
+                futures.put("EndemicCount", pool.submit(endemismCount));
+                futures.put("EndemicCountKosher", pool.submit(endemismCountKosher));
+            }
+            futuresStart = System.currentTimeMillis();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
-    public void finishRefreshCount() {
+    public void checkFutures() {
         try {
-            counter.await();
-        } catch (InterruptedException ex) {
-            java.util.logging.Logger.getLogger(FilteringResultsWCController.class.getName()).log(Level.SEVERE, null, ex);
+            logger.debug("Check futures.....");
+            for(Map.Entry<String,Future<Map<String,String>>> futureEntry : futures.entrySet()){
+                String eventToFire = "render" + futureEntry.getKey();
+                //logger.debug("eventToFire: " + eventToFire + ", is done: " + futureEntry.getValue().isDone());
+                if(futureEntry.getValue().isDone() && !firedEvents.contains(eventToFire)){
+                    try {
+                        this.getClass().getMethod(eventToFire, Map.class, Boolean.class).invoke(this, futureEntry.getValue().get(), Boolean.TRUE);
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                    firedEvents.add(eventToFire);
+                }
+
+                // if biostor and greater than timeout....
+                if("Biostor".equals(futureEntry.getKey()) && !futureEntry.getValue().isDone() && (System.currentTimeMillis() - futuresStart) > 10000){
+                    futureEntry.getValue().cancel(true);
+                    Map<String,String> biostorData = new HashMap<String,String>();
+                    biostorData.put("biostor", "na");
+                    renderBiostor(biostorData, Boolean.FALSE);
+                    Clients.evalJavaScript("displayBioStorCount('biostorrow','na');");
+                }
+
+                //kill anything taking longer than 60 secs
+                if(!futureEntry.getValue().isDone() && (System.currentTimeMillis() - futuresStart) > 60000){
+                    futureEntry.getValue().cancel(true);
+                }
+            }
+            logger.debug("Fired events: " + firedEvents.size() + ", Futures: " + futures.size());
+
+            boolean allComplete = firedEvents.size() == futures.size();
+
+            if(!allComplete){
+                Thread.sleep(1000);
+                Events.echoEvent("checkFutures", this, null);
+            } else {
+                logger.debug("All futures completed.");
+                this.pool.shutdown();
+                futures = null;
+            }
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void setTimedOut(Label lbl){
+        lbl.setValue("Request timed out");
+        lbl.setSclass("");
+    }
+
+    public void renderOccurrenceCount(Map<String,Object> recordCounts, Boolean complete) {
+        logger.debug("1. Rendering occurrence count...");
+        if(!complete){
+            setTimedOut(results_label2_occurrences);
+            mapspecies.setVisible(false);
+            sample.setVisible(false);
+            viewrecords.setVisible(false);
+            return;
         }
 
-        //wait up to 5s for biostor
-        while (biostorThread.isAlive() && (System.currentTimeMillis() - start) < 5000) {
-        }
-
-        //terminate wait on biostor if still active
-        if (biostorThread.isAlive()) {
-            biostorThread.interrupt();
-            data.put("biostor", "na");
-            Clients.evalJavaScript("displayBioStorCount('biostorrow','na');");
-        }
-
-        //set labels
-        sdLabel.setValue(data.get("intersectWithSpeciesDistributions"));
-        clLabel.setValue(data.get("intersectWithSpeciesChecklists"));
-        aclLabel.setValue(data.get("intersectWithAreaChecklists"));
-        lblBiostor.setValue(data.get("biostor"));
-        lblArea.setValue(data.get("area"));
-        results_label2_species.setValue(data.get("speciesCount"));
-        if(includeEndemic)
-            results_label2_endemic_species.setValue(data.get("endemicCount"));
-        results_label2_occurrences.setValue(data.get("occurrencesCount"));
-        results_label2_species_kosher.setValue(data.get("speciesCountKosher"));
-        if(includeEndemic)
-            results_label2_endemic_species_kosher.setValue(data.get("endemicCountKosher"));
-        results_label2_occurrences_kosher.setValue(data.get("occurrencesCountKosher"));
-        gazLabel.setValue(data.get("countGazPoints"));
-
-        //underline?
-        if (isNumberGreaterThanZero(lblBiostor.getValue())) {
-            lblBiostor.setSclass("underline");
+        Integer occurrenceCount = (Integer) recordCounts.get("occurrencesCount");
+        results_label2_occurrences.setValue(String.format("%,d",occurrenceCount));
+        if (occurrenceCount > 0 && occurrenceCount <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
+            results_label2_occurrences.setSclass("underline");
+            mapspecies.setVisible(true);
+            sample.setVisible(true);
+            viewrecords.setVisible(true);
+            viewrecords.setHref((String) recordCounts.get("viewRecordsUrl"));
         } else {
-            lblBiostor.setSclass("");
+            results_label2_occurrences.setSclass("");
+            mapspecies.setVisible(false);
+            sample.setVisible(false);
+            viewrecords.setVisible(false);
         }
-        if (isNumberGreaterThanZero(sdLabel.getValue())) {
-            sdLabel.setSclass("underline");
+    }
+
+    public void renderOccurrenceCountKosher(Map<String,Object> recordCounts, Boolean complete) {
+
+        if(!complete){
+            setTimedOut(results_label2_occurrences);
+            mapspecieskosher.setVisible(false);
+            samplekosher.setVisible(false);
+            viewrecordskosher.setVisible(false);
+            return;
+        }
+
+        logger.debug("2. Rendering occurrence count kosher...");
+        Integer occurrenceCountKosher = (Integer) recordCounts.get("occurrencesCountKosher");
+        results_label2_occurrences_kosher.setValue(String.format("%,d", occurrenceCountKosher));
+        if (occurrenceCountKosher > 0 && occurrenceCountKosher <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
+            results_label2_occurrences_kosher.setSclass("underline");
+            mapspecieskosher.setVisible(true);
+            samplekosher.setVisible(true);
+            viewrecordskosher.setVisible(true);
+            viewrecordskosher.setHref((String) recordCounts.get("viewRecordsKosherUrl"));
         } else {
-            sdLabel.setSclass("");
+            results_label2_occurrences_kosher.setSclass("");
+            mapspecieskosher.setVisible(false);
+            samplekosher.setVisible(false);
+            viewrecordskosher.setVisible(false);
         }
+    }
+
+    public void renderSpeciesCount(Map<String,Integer> recordCounts, Boolean complete) {
+
+        if(!complete){
+            setTimedOut(results_label2_species);
+            return;
+        }
+
+        logger.debug("3. Rendering species count...");
+        results_label2_species.setValue(String.format("%,d", recordCounts.get("speciesCount")));
+        if (isNumberGreaterThanZero(results_label2_species.getValue())) {
+            results_label2_species.setSclass("underline");
+        } else {
+            results_label2_species.setSclass("");
+        }
+    }
+
+    public void renderSpeciesCountKosher(Map<String,Integer> recordCounts, Boolean complete) {
+
+        if(!complete){
+            setTimedOut(results_label2_species_kosher);
+            return;
+        }
+
+        logger.debug("4. Rendering species count kosher...");
+        results_label2_species_kosher.setValue(String.format("%,d", recordCounts.get("speciesCountKosher")));
+        if (isNumberGreaterThanZero(results_label2_species_kosher.getValue())) {
+            results_label2_species_kosher.setSclass("underline");
+        } else {
+            results_label2_species_kosher.setSclass("");
+        }
+    }
+
+    public void renderEndemicCount(Map<String,Integer> recordCounts, Boolean complete) {
+        logger.debug("5. Rendering endemic counts...");
+        if(!complete){
+            setTimedOut(results_label2_endemic_species);
+            return;
+        }
+
+        results_label2_endemic_species.setValue(String.format("%,d", recordCounts.get("endemicSpeciesCount")));
+        if (isNumberGreaterThanZero(results_label2_endemic_species.getValue())){
+            results_label2_endemic_species.setSclass("underline");
+        } else {
+            results_label2_endemic_species.setSclass("");
+        }
+    }
+
+    public void renderEndemicCountKosher(Map<String,String> recordCounts, Boolean complete) {
+        logger.debug("6. Rendering endemic kosher counts...");
+        if(!complete){
+            setTimedOut(results_label2_endemic_species_kosher);
+            return;
+        }
+
+        results_label2_endemic_species_kosher.setValue(String.format("%,d", recordCounts.get("endemicSpeciesCountKosher")));
+        if (isNumberGreaterThanZero(results_label2_endemic_species_kosher.getValue())){
+            results_label2_endemic_species_kosher.setSclass("underline");
+        } else {
+            results_label2_endemic_species_kosher.setSclass("");
+        }
+    }
+
+    public void renderSpeciesDistributions(Map<String,Integer> recordCounts, Boolean complete) {
+        logger.debug("7. Rendering species distributions...");
+        if(!complete){
+            setTimedOut(sdLabel);
+            return;
+        }
+
+
+        Integer count = (Integer) recordCounts.get("intersectWithSpeciesDistributions");
+        sdLabel.setValue(String.format("%,d",count));
+        if(count>0){
+          sdLabel.setSclass("underline");
+        } else {
+          sdLabel.setSclass("");
+        }
+    }
+
+    public void renderSpeciesChecklists(Map<String,String> recordCounts, Boolean complete) {
+        logger.debug("8. Rendering checklists...");
+
+        if(!complete){
+            setTimedOut(clLabel);
+            setTimedOut(aclLabel);
+            return;
+        }
+
+        clLabel.setValue(recordCounts.get("intersectWithSpeciesChecklists"));
+        aclLabel.setValue(recordCounts.get("intersectWithAreaChecklists"));
         if (isNumberGreaterThanZero(clLabel.getValue())) {
             clLabel.setSclass("underline");
         } else {
@@ -374,123 +483,140 @@ public class FilteringResultsWCController extends UtilityComposer {
         } else {
             aclLabel.setSclass("");
         }
-        if (isNumberGreaterThanZero(results_label2_species.getValue())) {
-            results_label2_species.setSclass("underline");
-        } else {
-            results_label2_species.setSclass("");
-        }
-        if (isNumberGreaterThanZero(results_label2_occurrences.getValue())) {
-            results_label2_occurrences.setSclass("underline");
-        } else {
-            results_label2_occurrences.setSclass("");
-        }
-        if(includeEndemic){
-            if (isNumberGreaterThanZero(results_label2_endemic_species.getValue())){
-                results_label2_endemic_species.setSclass("underline");
-            } else {
-                results_label2_endemic_species.setSclass("");
-            }
-            if (isNumberGreaterThanZero(results_label2_endemic_species_kosher.getValue())){
-                results_label2_endemic_species_kosher.setSclass("underline");            
-            } else {
-                results_label2_endemic_species_kosher.setSclass("");
-            }
-        }
-        
-
-        // toggle the map button
-        if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
-            mapspecies.setVisible(true);
-            viewrecords.setVisible(true);
-            viewrecords.setHref(data.get("viewRecordsUrl"));
-        } else {
-            mapspecies.setVisible(false);
-            viewrecords.setVisible(false);
-        }
-
-        if (isNumberGreaterThanZero(results_label2_species_kosher.getValue())) {
-            results_label2_species_kosher.setSclass("underline");
-        } else {
-            results_label2_species_kosher.setSclass("");
-        }
-        if (isNumberGreaterThanZero(results_label2_occurrences_kosher.getValue())) {
-            results_label2_occurrences_kosher.setSclass("underline");
-        } else {
-            results_label2_occurrences_kosher.setSclass("");
-        }
-
-        // toggle the map button
-        if (results_count_kosher > 0 && results_count_occurrences_kosher <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
-            mapspecieskosher.setVisible(true);
-            viewrecordskosher.setVisible(true);
-            viewrecordskosher.setHref(data.get("viewRecordsKosherUrl"));
-        } else {
-            mapspecieskosher.setVisible(false);
-            viewrecordskosher.setVisible(false);
-        }
-
-        mapGazPoints.setVisible(gazPoints != null && gazPoints.size() < 5000);
     }
 
-    void decCounter() {
-        if (counter != null) {
-            counter.countDown();
+    public void renderGazPoints(Map<String,String> recordCounts, Boolean complete) {
+        logger.debug("9. Rendering gaz points...");
+        if(!complete){
+            setTimedOut(gazLabel);
+            return;
+        }
+
+        gazLabel.setValue(recordCounts.get("countGazPoints"));
+        mapGazPoints.setVisible(gazPoints != null && gazPoints.size() < MAX_GAZ_POINT);
+    }
+
+    public void renderCalculatedArea(Map<String,String> recordCounts, Boolean complete) {
+        logger.debug("10. Rendering calculated area...");
+        if(!complete){
+            setTimedOut(lblArea);
+            return;
+        }
+
+        lblArea.setValue(recordCounts.get("area"));
+    }
+
+    public void renderBiostor(Map<String,String> recordCounts, Boolean complete) {
+        logger.debug("11. Rendering biostor...");
+        if(!complete){
+            setTimedOut(lblBiostor);
+            return;
+        }
+
+        lblBiostor.setValue(recordCounts.get("biostor"));
+        if (isNumberGreaterThanZero(lblBiostor.getValue())) {
+            lblBiostor.setSclass("underline");
+        } else {
+            lblBiostor.setSclass("");
         }
     }
 
-    void counts(boolean worldSelected) {
+    Map<String,Integer> endemismCount(boolean worldSelected) {
+        Map<String,Integer> countsData = new HashMap<String,Integer>();
+        Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
+        int endemic_count = sq.getEndemicSpeciesCount();
+        countsData.put("endemicSpeciesCount", sq.getEndemicSpeciesCount());
+        return countsData;
+    }
+
+    Map<String,Integer> endemismCountKosher(boolean worldSelected) {
+        Map<String,Integer> countsData = new HashMap<String,Integer>();
+        Query sq2 = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, false, false});
+        //based the endemic count on the geospatially kosher - endemic is everything if the world is selected
+        countsData.put("endemicSpeciesCountKosher",sq2.getEndemicSpeciesCount());
+        return countsData;
+    }
+
+    Map<String, Integer> speciesCount(boolean worldSelected) {
+
+        Map<String,Integer> countsData = new HashMap<String,Integer>();
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
-            results_count = sq.getSpeciesCount();
-            results_count_occurrences = sq.getOccurrenceCount();
-            endemic_count = worldSelected || !includeEndemic? results_count:sq.getEndemicSpeciesCount();
-
-            Query sq2 = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, false, false});
-            results_count_kosher = sq2.getSpeciesCount();
-            results_count_occurrences_kosher = sq2.getOccurrenceCount();
-            //based the endemic count on the geospatially kosher - endemic is everything if the world is selected 
-            endemic_count_kosher = worldSelected || !includeEndemic?results_count_kosher:sq2.getEndemicSpeciesCount();
-
-            //setUpdatingCount(false);
+            int results_count = sq.getSpeciesCount();
 
             if (results_count == 0) {
-                //results_label.setValue("no species in active area");
-                //results_label2_species.setValue("0");
-                //results_label2_occurrences.setValue("0");
-                data.put("speciesCount", "0");
-                data.put("occurrencesCount", "0");
+                countsData.put("speciesCount", 0);
                 mapspecies.setVisible(false);
-                viewrecords.setVisible(false);
-                return;
+                return countsData;
             }
-            else{
-                data.put("viewRecordsUrl",CommonData.biocacheWebServer+"/occurrences/search?q="+sq.getQ()+"&qc="+sq.getQc());
-            }
-
-            if (results_count == 0) {
-                data.put("speciesCountKosher", "0");
-                data.put("occurrencesCountKosher", "0");
-                mapspecieskosher.setVisible(false);
-                viewrecordskosher.setVisible(false);
-                return;
-            }
-            else{
-                data.put("viewRecordsKosherUrl",CommonData.biocacheWebServer+"/occurrences/search?q="+sq2.getQ()+"&qc="+sq2.getQc());
-            }
-
-            //results_label2_species.setValue(String.format("%,d", results_count));
-            //results_label2_occurrences.setValue(String.format("%,d", results_count_occurrences));
-            data.put("speciesCount", String.format("%,d", results_count));
-            if(includeEndemic)
-                data.put("endemicCount",String.format("%d", endemic_count));
-            data.put("occurrencesCount", String.format("%,d", results_count_occurrences));
-            data.put("speciesCountKosher", String.format("%,d", results_count_kosher));
-            if(includeEndemic)
-                data.put("endemicCountKosher", String.format("%d",endemic_count_kosher));
-            data.put("occurrencesCountKosher", String.format("%,d", results_count_occurrences_kosher));
+            countsData.put("speciesCount", results_count);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        return countsData;
+    }
+
+    Map<String, Integer> speciesCountKosher(boolean worldSelected) {
+
+        Map<String,Integer> countsData = new HashMap<String,Integer>();
+
+        try {
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, false, false});
+            int results_count_kosher = sq.getSpeciesCount();
+
+            if (results_count_kosher == 0) {
+                countsData.put("speciesCountKosher", 0);
+                mapspecieskosher.setVisible(false);
+                return countsData;
+            }
+            countsData.put("speciesCountKosher", results_count_kosher);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return countsData;
+    }
+
+    Map<String, Object> occurrenceCount(boolean worldSelected) {
+
+        Map<String,Object> countsData = new HashMap<String,Object>();
+        try {
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
+            int results_count_occurrences = sq.getOccurrenceCount();
+            if (results_count_occurrences == 0) {
+                countsData.put("occurrencesCount", "0");
+                viewrecords.setVisible(false);
+                return countsData;
+            } else {
+                countsData.put("viewRecordsUrl",CommonData.biocacheWebServer+"/occurrences/search?q="+sq.getQ()+"&qc="+sq.getQc());
+            }
+
+            countsData.put("occurrencesCount", results_count_occurrences);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return countsData;
+    }
+
+    Map<String, Object> occurrenceCountKosher(boolean worldSelected) {
+
+        Map<String,Object> countsData = new HashMap<String,Object>();
+        try {
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, false, false});
+            int results_count_occurrences_kosher = sq.getOccurrenceCount();
+
+            if (results_count_occurrences_kosher == 0) {
+                countsData.put("occurrencesCountKosher", 0);
+                viewrecordskosher.setVisible(false);
+                return countsData;
+            } else {
+                countsData.put("viewRecordsKosherUrl",CommonData.biocacheWebServer+"/occurrences/search?q="+sq.getQ()+"&qc="+sq.getQc());
+            }
+
+            countsData.put("occurrencesCountKosher", results_count_occurrences_kosher);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return countsData;
     }
 
     public void onClick$results_label2_species() {
@@ -533,6 +659,15 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
+    public void onClick$sample() {
+        SamplingEvent sle = new SamplingEvent(getMapComposer(), null, areaName, null, 2, null);
+        try {
+            sle.onEvent(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void onClick$results_label2_species_kosher() {
         SpeciesListEvent sle = new SpeciesListEvent(getMapComposer(), areaName, 1, new boolean[]{true, false, false});
         try {
@@ -551,13 +686,20 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
+    public void onClick$samplekosher() {
+        SamplingEvent sle = new SamplingEvent(getMapComposer(), null, areaName, null, 2, new boolean[]{true, false, false});
+        try {
+            sle.onEvent(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void onClick$mapspecies() {
-        //getMapComposer().addToSession("Occurrences in Active area", "lsid=aa");
         onMapSpecies(null);
     }
 
     public void onClick$mapspecieskosher() {
-        //getMapComposer().addToSession("Occurrences in Active area", "lsid=aa");
         onMapSpeciesKosher(null);
     }
 
@@ -613,37 +755,8 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
-    void refreshCount(int newCount, int newOccurrencesCount) {
-        results_count = newCount;
-        results_count_occurrences = newOccurrencesCount;
-        if (results_count == 0) {
-            //results_label2_species.setValue(String.format("%,d", results_count));
-            //results_label2_occurrences.setValue(String.format("%,d", results_count_occurrences));
-            data.put("occurrencesCount", String.format("%,d", results_count_occurrences));
-            data.put("speciesCount", String.format("%,d", results_count));
-            data.put("occurrencesCountKosher", String.format("%,d", results_count_occurrences_kosher));
-            data.put("speciesCountKosher", String.format("%,d", results_count_kosher));
-        }
-
-        //results_label2_species.setValue(String.format("%,d", results_count));
-        //results_label2_occurrences.setValue(String.format("%,d", results_count_occurrences));
-        data.put("occurrencesCount", String.format("%,d", results_count_occurrences));
-        data.put("speciesCount", String.format("%,d", results_count));
-        data.put("occurrencesCountKosher", String.format("%,d", results_count_occurrences_kosher));
-        data.put("speciesCountKosher", String.format("%,d", results_count_kosher));
-        setUpdatingCount(false);
-
-        // toggle the map button
-        if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
-            mapspecies.setVisible(true);
-            viewrecords.setVisible(true);
-        } else {
-            mapspecies.setVisible(false);
-            viewrecords.setVisible(false);
-        }
-    }
-
-    public void intersectWithSpeciesDistributions() {
+    public Map<String,Integer> intersectWithSpeciesDistributions() {
+        Map<String,Integer> speciesDistributions = new HashMap<String,Integer>();
         try {
             String wkt = selectedArea.getWkt();
             if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
@@ -658,17 +771,184 @@ public class FilteringResultsWCController extends UtilityComposer {
             String[] lines = getDistributionsOrChecklists("distributions", wkt, null, null);
 
             if (lines == null || lines.length <= 1) {
-                data.put("intersectWithSpeciesDistributions", "0");
+                speciesDistributions.put("intersectWithSpeciesDistributions", 0);
                 speciesDistributionText = null;
             } else {
-                data.put("intersectWithSpeciesDistributions", String.format("%,d", lines.length - 1));
+                speciesDistributions.put("intersectWithSpeciesDistributions", lines.length - 1);
                 speciesDistributionText = lines;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return speciesDistributions;
     }
 
+
+    public Map<String,String> intersectWithSpeciesChecklists() {
+        Map<String,String> checklistsCounts = new HashMap<String,String>();
+        try {
+            String wkt = selectedArea.getWkt();
+            if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+                //use boundingbox
+                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
+                double long1 = bbox.get(0);
+                double lat1 = bbox.get(1);
+                double long2 = bbox.get(2);
+                double lat2 = bbox.get(3);
+                wkt = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+            }
+
+            String[] lines = getDistributionsOrChecklists("checklists", wkt, null, null);
+
+            if (lines == null || lines.length <= 1) {
+                checklistsCounts.put("intersectWithSpeciesChecklists", "0");
+                checklistsCounts.put("intersectWithAreaChecklists", "0");
+                speciesChecklistText = null;
+            } else {
+                checklistsCounts.put("intersectWithSpeciesChecklists", String.format("%,d", lines.length - 1));
+
+                areaChecklistText = getAreaChecklists(lines);
+                checklistsCounts.put("intersectWithAreaChecklists", String.format("%,d", areaChecklistText.length - 1));
+                speciesChecklistText = lines;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return checklistsCounts;
+    }
+
+    public Map<String,String> countGazPoints() {
+        Map<String,String> gazPointsCounts = new HashMap<String,String>();
+        try {
+            String wkt = selectedArea.getWkt();
+            if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+                //use boundingbox
+                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
+                double long1 = bbox.get(0);
+                double lat1 = bbox.get(1);
+                double long2 = bbox.get(2);
+                double lat2 = bbox.get(3);
+                wkt = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+            }
+
+            JSONArray ja = getGazPoints(wkt);
+
+            if (ja == null || ja.size() == 0) {
+                gazPointsCounts.put("countGazPoints", "0");
+                speciesChecklistText = null;
+            } else {
+                gazPointsCounts.put("countGazPoints", String.format("%,d", ja.size()));
+                gazPoints = ja;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return gazPointsCounts;
+    }
+
+
+    String biostorHtml = null;
+
+    Map<String,String> biostor() {
+
+        Map<String,String> countData = new HashMap<String,String>();
+
+        try {
+            String area = selectedArea.getWkt();
+            double lat1 = 0;
+            double lat2 = 0;
+            double long1 = 0;
+            double long2 = 0;
+            if (area.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+                //use boundingbox
+                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
+                long1 = bbox.get(0);
+                lat1 = bbox.get(1);
+                long2 = bbox.get(2);
+                lat2 = bbox.get(3);
+            } else {
+                Pattern coord = Pattern.compile("[+-]?[0-9]*\\.?[0-9]* [+-]?[0-9]*\\.?[0-9]*");
+                Matcher matcher = coord.matcher(area);
+
+                boolean first = true;
+                while (matcher.find()) {
+                    String[] p = matcher.group().split(" ");
+                    double[] d = {Double.parseDouble(p[0]), Double.parseDouble(p[1])};
+
+                    if (first || long1 > d[0]) {
+                        long1 = d[0];
+                    }
+                    if (first || long2 < d[0]) {
+                        long2 = d[0];
+                    }
+                    if (first || lat1 > d[1]) {
+                        lat1 = d[1];
+                    }
+                    if (first || lat2 < d[1]) {
+                        lat2 = d[1];
+                    }
+
+                    first = false;
+                }
+            }
+
+            String biostorurl = "http://biostor.org/bounds.php?";
+            biostorurl += "bounds=" + long1 + "," + lat1 + "," + long2 + "," + lat2;
+
+            HttpClient client = new HttpClient();
+            client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
+            GetMethod get = new GetMethod(biostorurl);
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+
+            biostorHtml = null;
+            if (result == HttpStatus.SC_OK) {
+                String slist = get.getResponseBodyAsString();
+                if (slist != null) {
+
+                    JSONArray list = JSONObject.fromObject(slist).getJSONArray("list");
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("<ol>");
+                    for (int i = 0; i < list.size(); i++) {
+                        sb.append("<li>");
+                        sb.append("<a href=\"http://biostor.org/reference/");
+                        sb.append(list.getJSONObject(i).getString("id"));
+                        sb.append("\" target=\"_blank\">");
+                        sb.append(list.getJSONObject(i).getString("title"));
+                        sb.append("</li>");
+                    }
+                    sb.append("</ol>");
+
+                    if (list.size() > 0) {
+                        biostorHtml = sb.toString();
+                    }
+
+                    countData.put("biostor", String.valueOf(list.size()));
+                }
+            } else {
+                //lblBiostor.setValue("BioStor currently down");
+                countData.put("biostor", "Biostor currently down");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+            //lblBiostor.setValue("BioStor currently down");
+            countData.put("biostor", "Biostor currently down");
+        }
+        return countData;
+    }
+
+    /**
+     * Generates data for rendering of distributions table.
+     *
+     * @param type
+     * @param wkt
+     * @param lsids
+     * @param geom_idx
+     * @return
+     */
     public static String[] getDistributionsOrChecklists(String type, String wkt, String lsids, String geom_idx) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
@@ -783,7 +1063,6 @@ public class FilteringResultsWCController extends UtilityComposer {
                     csv.close();
                 }
                 java.util.Arrays.sort(data, new Comparator<String[]>() {
-
                     @Override
                     public int compare(String[] o1, String[] o2) {
                         //compare WMS urls
@@ -880,64 +1159,6 @@ public class FilteringResultsWCController extends UtilityComposer {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public void intersectWithSpeciesChecklists() {
-        try {
-            String wkt = selectedArea.getWkt();
-            if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
-                //use boundingbox
-                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
-                double long1 = bbox.get(0);
-                double lat1 = bbox.get(1);
-                double long2 = bbox.get(2);
-                double lat2 = bbox.get(3);
-                wkt = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
-            }
-
-            String[] lines = getDistributionsOrChecklists("checklists", wkt, null, null);
-
-            if (lines == null || lines.length <= 1) {
-                data.put("intersectWithSpeciesChecklists", "0");
-                data.put("intersectWithAreaChecklists", "0");
-                speciesChecklistText = null;
-            } else {
-                data.put("intersectWithSpeciesChecklists", String.format("%,d", lines.length - 1));
-
-                areaChecklistText = getAreaChecklists(lines);
-                data.put("intersectWithAreaChecklists", String.format("%,d", areaChecklistText.length - 1));
-                speciesChecklistText = lines;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void countGazPoints() {
-        try {
-            String wkt = selectedArea.getWkt();
-            if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
-                //use boundingbox
-                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
-                double long1 = bbox.get(0);
-                double lat1 = bbox.get(1);
-                double long2 = bbox.get(2);
-                double lat2 = bbox.get(3);
-                wkt = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
-            }
-
-            JSONArray ja = getGazPoints(wkt);
-
-            if (ja == null || ja.size() == 0) {
-                data.put("countGazPoints", "0");
-                speciesChecklistText = null;
-            } else {
-                data.put("countGazPoints", String.format("%,d", ja.size()));
-                gazPoints = ja;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     static String wrap(String s) {
@@ -1077,11 +1298,14 @@ public class FilteringResultsWCController extends UtilityComposer {
         Filedownload.save(sb.toString(), "text/plain", "Area_checklists_" + sdate + "_" + spid + ".csv");
     }
 
-    private void calculateArea() {
+    protected Map<String,String> calculateArea() {
+
+        Map<String,String> areaCalc = new HashMap<String,String>();
+
         if (areaSqKm != null) {
-            data.put("area", areaSqKm);
+            areaCalc.put("area", areaSqKm);
             speciesDistributionText = null;
-            return;
+            return areaCalc;
         }
 
         try {
@@ -1090,115 +1314,20 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             //lblArea.setValue(String.format("%,d", (int) (totalarea / 1000 / 1000)));
             //data.put("area",String.format("%,f", (totalarea / 1000 / 1000)));
-            data.put("area", df.format(totalarea / 1000 / 1000));
+            areaCalc.put("area", df.format(totalarea / 1000 / 1000));
 
         } catch (Exception e) {
             System.out.println("Error in calculateArea");
             e.printStackTrace(System.out);
-            data.put("area", "");
+            areaCalc.put("area", "");
         }
+        return areaCalc;
     }
 
     public void onClick$btnCancel(Event event) {
         this.detach();
     }
-    String biostorHtml = null;
 
-    private void biostor() {
-        try {
-            String area = selectedArea.getWkt();
-
-            double lat1 = 0;
-            double lat2 = 0;
-            double long1 = 0;
-            double long2 = 0;
-            if (area.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
-                //use boundingbox
-                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
-                long1 = bbox.get(0);
-                lat1 = bbox.get(1);
-                long2 = bbox.get(2);
-                lat2 = bbox.get(3);
-            } else {
-                Pattern coord = Pattern.compile("[+-]?[0-9]*\\.?[0-9]* [+-]?[0-9]*\\.?[0-9]*");
-                Matcher matcher = coord.matcher(area);
-
-                boolean first = true;
-                while (matcher.find()) {
-                    String[] p = matcher.group().split(" ");
-                    double[] d = {Double.parseDouble(p[0]), Double.parseDouble(p[1])};
-
-                    if (first || long1 > d[0]) {
-                        long1 = d[0];
-                    }
-                    if (first || long2 < d[0]) {
-                        long2 = d[0];
-                    }
-                    if (first || lat1 > d[1]) {
-                        lat1 = d[1];
-                    }
-                    if (first || lat2 < d[1]) {
-                        lat2 = d[1];
-                    }
-
-                    first = false;
-                }
-            }
-
-            String biostorurl = "http://biostor.org/bounds.php?";
-            biostorurl += "bounds=" + long1 + "," + lat1 + "," + long2 + "," + lat2;
-
-            HttpClient client = new HttpClient();
-            client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
-            GetMethod get = new GetMethod(biostorurl);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
-
-            biostorHtml = null;
-            if (result == HttpStatus.SC_OK) {
-                String slist = get.getResponseBodyAsString();
-                if (slist != null) {
-
-                    JSONArray list = JSONObject.fromObject(slist).getJSONArray("list");
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("<ol>");
-                    for (int i = 0; i < list.size(); i++) {
-                        sb.append("<li>");
-                        sb.append("<a href=\"http://biostor.org/reference/");
-                        sb.append(list.getJSONObject(i).getString("id"));
-                        sb.append("\" target=\"_blank\">");
-                        sb.append(list.getJSONObject(i).getString("title"));
-                        sb.append("</li>");
-                    }
-                    sb.append("</ol>");
-
-                    if (list.size() > 0) {
-                        biostorHtml = sb.toString();
-                    }
-
-//                $.getJSON(proxy_script + biostorurl, function(data){
-//                            var html = '<ol>';
-//                            for(var i=0, item; item=data.list[i]; i++) {
-//                                html += '<li>' + '<a href="http://biostor.org/reference/' + item.id + '" target="_blank">' + item.title + '</a></li>';
-//                            }
-//                            html += '</ol>';
-//                            parent.displayHTMLInformation("biostormsg","<u>" + data.list.length + "</u>");
-//                            parent.displayHTMLInformation('biostorlist',html);
-//                        });
-                    //lblBiostor.setValue(String.valueOf(list.size()));
-                    data.put("biostor", String.valueOf(list.size()));
-                }
-            } else {
-                //lblBiostor.setValue("BioStor currently down");
-                data.put("biostor", "Biostor currently down");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-            //lblBiostor.setValue("BioStor currently down");
-            data.put("biostor", "Biostor currently down");
-        }
-    }
 
     public void onClick$lblBiostor(Event event) {
         if (biostorHtml != null) {
@@ -1213,7 +1342,6 @@ public class FilteringResultsWCController extends UtilityComposer {
             ret = Double.parseDouble(value.replace(",", "")) > 0;
         } catch (Exception e) {
         }
-
         return ret;
     }
 

@@ -82,7 +82,6 @@ public class SpeciesAutoComplete extends Combobox {
         //Do something about geocounts.
         //High limit because geoOnly=true cuts out valid matches, e.g. "Macropus"
         //String snUrl = CommonData.bieServer + "/search.json?limit=20&q=";
-
         try {
 
             System.out.println("Looking for common name: " + isSearchCommon());
@@ -134,7 +133,13 @@ public class SpeciesAutoComplete extends Combobox {
                             myci.setParent(this);
                         }
 
-                        String desc = spVal[2] + " - " + spVal[3] + " records";
+                        String desc = "";
+                        if(spVal.length>=4){
+                            desc = spVal[2] + " - " + spVal[3];
+                        } else {
+                            desc = spVal[2];
+                        }
+                         /* spVal[2] + " - " + spVal[3] + " records"*/;
                         String[] wmsDistributions = CommonData.getSpeciesDistributionWMS(spVal[1]);
                         if (wmsDistributions != null && wmsDistributions.length > 0) {
                             if (wmsDistributions.length == 1) {
@@ -163,7 +168,6 @@ public class SpeciesAutoComplete extends Combobox {
                         myci.setValue(taxon);
                     }
                 }
-
             }
             while (it != null && it.hasNext()) {
                 it.next();
@@ -174,7 +178,6 @@ public class SpeciesAutoComplete extends Combobox {
             System.out.println("Oopss! something went wrong in SpeciesAutoComplete.refresh");
             e.printStackTrace(System.out);
         }
-
     }
 
     private MapComposer getThisMapComposer() {
@@ -246,7 +249,7 @@ public class SpeciesAutoComplete extends Combobox {
             try {
                 long count = CommonData.lsidCounts.getCount(o.getLong("left"), o.getLong("right"));
 
-                if(count > 0 && o.containsKey("name") && o.containsKey("guid") && o.containsKey("rank")) {
+                if( /*count > 0 && */ o.containsKey("name") && o.containsKey("guid") && o.containsKey("rank")) {
                     if(slist.length() > 0) {
                         slist.append("\n");
                     }
@@ -333,7 +336,7 @@ public class SpeciesAutoComplete extends Combobox {
                     try {
                         long count = CommonData.lsidCounts.getCount(o.getLong("left"), o.getLong("right"));
 
-                        if(count > 0 && o.containsKey("name") && o.containsKey("guid") && o.containsKey("rankString")) {
+                        if(/* count > 0 && */ o.containsKey("name") && o.containsKey("guid") && o.containsKey("rankString")) {
                             if(lsids.contains(o.getString("guid"))) {
                                 continue;
                             }
@@ -376,16 +379,16 @@ public class SpeciesAutoComplete extends Combobox {
                                 slist.append(o.getString("guid")).append("/");
                                 slist.append(o.getString("rankString"));
                                 slist.append(", ").append(o.getString("name").replace("/",","));
-                                slist.append("/found ");
-                                slist.append(count);
+//                                slist.append("/found ");
+//                                slist.append(count);
                             } else {
                                 //slist.append(o.getString("name").replace("/",",")).append(" /");
                                 slist.append(matchedName).append(" /");
                                 slist.append(o.getString("guid")).append("/");
                                 slist.append(o.getString("rankString"));
                                 if(commonName != null) slist.append(", ").append(commonName);
-                                slist.append("/found ");
-                                slist.append(count);
+//                                slist.append("/found ");
+//                                slist.append(count);
                             }
                         }
                     } catch (Exception e) {

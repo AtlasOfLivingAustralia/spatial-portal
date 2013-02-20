@@ -21,7 +21,6 @@ public class UtilityComposer extends GenericAutowireAutoforwardComposer {
 	/**
 	 * Stop user dragging windows outsize viewport - if they 
 	 * try to do this, nudge it back again!
-	 * @param window
 	 */
 	public void onNudgeToView() {
 		/*
@@ -36,7 +35,7 @@ public class UtilityComposer extends GenericAutowireAutoforwardComposer {
 		 * string starts with the '-' character.  If it does, we do
 		 * the nudge 
 		 */
-		logger.debug("nudgeing window");
+		logger.debug("nudging window");
 		String top = getTop();
 		if ((! Validate.empty(top)) && (top.charAt(0) == '-'))  {
 			logger.debug("moving window from " + top + " to 0px");
@@ -60,7 +59,6 @@ public class UtilityComposer extends GenericAutowireAutoforwardComposer {
 
     @Override
 	public void doAfterCompose(Component component) throws Exception {
-
 	}
 
     @Override
