@@ -14,17 +14,21 @@
  ***************************************************************************/
 package org.ala.layers.web;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
 import org.ala.layers.dao.DistributionDAO;
 import org.ala.layers.dao.ObjectDAO;
-import org.ala.layers.dto.Distribution;
-import org.ala.layers.dto.Facet;
-import org.ala.layers.dto.Objects;
+import org.ala.layers.dto.*;
+import org.ala.layers.util.AttributionCache;
+import org.ala.layers.util.MapCache;
+import org.ala.layers.util.UserProperties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.simple.parser.JSONParser;
@@ -50,7 +54,10 @@ public class DistributionsService {
     private final String WS_DISTRIBUTION_ID = "/distribution/{spcode}";
     private final String WS_DISTRIBUTION_LSID = "/distribution/lsid/{lsid:.+}";
     private final String WS_DISTRIBUTION_OVERVIEWMAP = "/distribution/map/{lsid:.+}";
+    private final String WS_DISTRIBUTION_OVERVIEWMAP_PNG = "/distribution/map/png/{geomIdx}";
+    private final String WS_DISTRIBUTION_OVERVIEWMAP_SEED = "/distribution/map/seed";
     private final String WS_DISTRIBUTION_OUTLIERS = "/distribution/outliers/{lsid:.+}";
+    private final String WS_ATTRIBUTION_CACHE = "/attribution/clearCache";
 
     /** Log4j instance */
     protected Logger logger = Logger.getLogger(this.getClass());
@@ -60,6 +67,8 @@ public class DistributionsService {
 
     @Resource(name = "objectDao")
     private ObjectDAO objectDao;
+
+    private Properties userProperties = (new UserProperties()).getProperties();
 
     /*
      * list distribution table records, GET
@@ -197,18 +206,73 @@ public class DistributionsService {
      * get distribution by id
      */
     @RequestMapping(value = WS_DISTRIBUTION_OVERVIEWMAP, method = RequestMethod.GET)
-    public void getDistributionOverviewMap(@PathVariable String lsid, @RequestParam(value = "height", required = false, defaultValue = "504") Integer height,
+    public @ResponseBody MapDTO getDistributionOverviewMap(@PathVariable String lsid, @RequestParam(value = "height", required = false, defaultValue = "504") Integer height,
             @RequestParam(value = "width", required = false, defaultValue = "512") Integer width, HttpServletResponse response) throws Exception {
-        List<Distribution> distributions = distributionDao.getDistributionByLSID(new String[] { lsid });
-        if (distributions != null && !distributions.isEmpty()) {
-            Distribution distribution = distributions.get(0);
-            logger.info("Sending redirect to WMS request for: " + lsid);
-            response.sendRedirect("http://spatial.ala.org.au/geoserver/ALA/wms?service=WMS&version=1.1.0&request=GetMap" + "&layers=ALA:aus1,ALA:distributions&styles="
-                    + "&bbox=112.911,-54.778,159.113,-9.221" + "&width=" + width + "&height=" + height + "&srs=EPSG:4326" + "&format=image/png" + "&viewparams=s:" + distribution.getGeom_idx());
+        Distribution distribution = distributionDao.findDistributionByLSIDOrName(lsid);
+        if (distribution != null) {
+            MapDTO m = new MapDTO();
+            m.setDataResourceUID(distribution.getData_resource_uid());
+            m.setUrl(userProperties.getProperty("layers_service_url") + "/distribution/map/png/" + distribution.getGeom_idx());
+            //set the attribution info
+            AttributionDTO dto = AttributionCache.getCache().getAttributionFor(distribution.getData_resource_uid());
+            m.setAvailable(true);
+            m.setDataResourceName(dto.getName());
+            m.setLicenseType(dto.getLicenseType());
+            m.setLicenseVersion(dto.getLicenseVersion());
+            m.setRights(dto.getRights());
+            m.setDataResourceUrl(dto.getWebsiteUrl());
+            m.setMetadataUrl(dto.getAlaPublicUrl());
+            return m;
         } else {
-            logger.info("Unrecognised LSID for distribution: " + lsid);
-            response.sendError(404);
+            return new MapDTO();
         }
+    }
+
+    /*
+     * get distribution by id
+     */
+    @RequestMapping(value = WS_ATTRIBUTION_CACHE, method = RequestMethod.GET)
+    public void clearAttributionCache() throws Exception {
+        AttributionCache.getCache().clear();
+    }
+
+    @RequestMapping(value = WS_DISTRIBUTION_OVERVIEWMAP_SEED, method = RequestMethod.GET)
+    public void getDistributionOverviewMapSeed() throws Exception {
+
+        Thread t = new Thread(){
+            @Override
+            public void run() {
+                try {
+                    List<Distribution> distributions = distributionDao.queryDistributions(null, -1, -1, null, null, null, null,
+                            null, null, null, null, null, null, null,
+                            Distribution.EXPERT_DISTRIBUTION, null);
+
+                    for(Distribution d: distributions){
+                      MapCache.getMapCache().cacheMap(d.getGeom_idx().toString());
+                    }
+                } catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+        };
+        t.start();
+    }
+
+    /*
+     * get distribution by id
+     */
+    @RequestMapping(value = WS_DISTRIBUTION_OVERVIEWMAP_PNG, method = RequestMethod.GET)
+    public void getDistributionOverviewMapPng(@PathVariable String geomIdx, HttpServletResponse response) throws Exception {
+        InputStream input = MapCache.getMapCache().getCachedMap(geomIdx);
+        OutputStream out = response.getOutputStream();
+        byte[] buff = new byte[1024];
+        int read = 0;
+        while((read=input.read(buff))>0){
+            out.write(buff, 0,read);
+        }
+        out.flush();
+        out.close();
+        input.close();
     }
 
     /**

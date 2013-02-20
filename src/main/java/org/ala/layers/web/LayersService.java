@@ -66,7 +66,6 @@ public class LayersService {
     /**
      * This method returns a single layer, provided an id
      * 
-     * @param uuid
      * @param req
      * @return
      */

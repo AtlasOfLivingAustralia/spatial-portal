@@ -40,6 +40,7 @@ import org.ala.layers.intersect.IntersectConfig;
 import org.ala.layers.util.BatchConsumer;
 import org.ala.layers.util.BatchProducer;
 import org.ala.layers.util.IntersectUtil;
+import org.ala.layers.util.UserProperties;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,8 +61,6 @@ public class IntersectService {
     private final String WS_INTERSECT_BATCH_DOWNLOAD = "/intersect/batch/download/{id}";
     private final String WS_INTERSECT_RELOAD_CONFIG = "/intersect/reloadconfig";
 
-    private final String USER_PROPERTIES = "user.properties";
-
     /**
      * Log4j instance
      */
@@ -74,6 +73,7 @@ public class IntersectService {
     private ObjectDAO objectDao;
     @Resource(name = "layerIntersectDao")
     private LayerIntersectDAO layerIntersectDao;
+    private Properties userProperties = (new UserProperties()).getProperties();
 
     /*
      * return intersection of a point on layers(s)
@@ -105,38 +105,12 @@ public class IntersectService {
         return -1;
     }
 
-//    @RequestMapping(value = WS_INTERSECT_BATCH, method = RequestMethod.GET)
-//    public void batchGet(
-//            @RequestParam(value = "fids", required = false, defaultValue = "") String fids,
-//            @RequestParam(value = "points", required = false, defaultValue = "") String pointsString,
-//            HttpServletRequest request, HttpServletResponse response) {
-//        try {
-//            String [] pointsArray = pointsString.split(",");
-//            String [] fields = fids.split(",");
-//
-//            ArrayList<String> sample = layerIntersectDao.sampling(fids, pointsString);
-//
-//            //setup output stream
-//            OutputStream os = response.getOutputStream();
-//
-//            IntersectUtil.writeSampleToStream(fields, pointsArray, sample, os);
-//
-//            os.flush();
-//            os.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    Properties userProperties = null;    
-
     @RequestMapping(value = WS_INTERSECT_BATCH, method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
     public Map batch(
             @RequestParam(value = "fids", required = false, defaultValue = "") String fids,
             @RequestParam(value = "points", required = false, defaultValue = "") String pointsString,
             HttpServletRequest request, HttpServletResponse response) {
-        initUserProperties();
 
         Map map = new HashMap();
         String batchId = null;
@@ -181,19 +155,6 @@ public class IntersectService {
             }
 
             return map;
-
-//            ArrayList<String> sample = layerIntersectDao.sampling(fids, pointsString);
-//
-//            //setup output stream
-//            OutputStream os = response.getOutputStream();
-//            GZIPOutputStream gzip = new GZIPOutputStream(os);
-//
-//            IntersectUtil.writeSampleToStream(fids.split(","), pointsString.split(","), sample, gzip);
-//
-//            gzip.flush();
-//            gzip.close();
-//            os.flush();
-//            os.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -207,7 +168,6 @@ public class IntersectService {
     public Map batchStatus(
             @PathVariable("id") String id,
             HttpServletRequest request, HttpServletResponse response) {
-        initUserProperties();
 
         Map map = new HashMap();
         try {
@@ -226,7 +186,6 @@ public class IntersectService {
     public void batchDownload(
             @PathVariable("id") String id,
             HttpServletRequest request, HttpServletResponse response) {
-        initUserProperties();
 
         try {
             Map map = new HashMap();
@@ -249,31 +208,7 @@ public class IntersectService {
         return;
     }
 
-    /**
-     *
-     * @return null if successful or error as String
-     */
-    String initUserProperties() {
-        String error = null;
-        userProperties = new Properties();
-        try {
-            InputStream is = IntersectService.class.getResourceAsStream("/" + USER_PROPERTIES);
-            if (is != null) {
-                userProperties.load(is);
-            } else {
-                logger.error("failed to load " + USER_PROPERTIES);
-                error = "failed to load " + USER_PROPERTIES;
-            }
-        } catch (IOException e) {
-            logger.error("failed to load " + USER_PROPERTIES, e);
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            pw.close();
-            error = "failed to load " + USER_PROPERTIES + "\n" + sw.getBuffer().toString();
-        }
-        return error;
-    }
+
 
     @RequestMapping(value = WS_INTERSECT_RELOAD_CONFIG, method = RequestMethod.GET)
     @ResponseBody
@@ -286,11 +221,9 @@ public class IntersectService {
                 || userProperties.getProperty("reload_config_password").equals(p)) {
             map.put("result","authorised");
             
-            String error = initUserProperties();
-            map.put("user.properties",error==null?"successful":error);
-
-            error = layerIntersectDao.reload();
-            map.put("layerIntersectDao",error==null?"successful":error);
+            (new UserProperties()).getProperties();
+            layerIntersectDao.reload();
+            map.put("layerIntersectDao","successful");
         } else {
             map.put("result","not authorised");
         }
