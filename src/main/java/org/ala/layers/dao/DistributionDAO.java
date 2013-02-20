@@ -57,11 +57,31 @@ public interface DistributionDAO {
     											Boolean estuarine, Boolean desmersal, String groupName, Integer geomIdx, String lsids, 
     											String[] families, String[] familyLsids, String[] genera,
                                                 String[] generaLsids, String type, String[] dataResources);
-    
+
+    /**
+     * Find a distributions by SPCode
+     *
+     * @param spcode
+     * @return
+     */
     public Distribution getDistributionBySpcode(long spcode, String type);
 
+    /**
+     * Find a distributions by LSIDs
+     *
+     * @param lsids
+     * @return
+     */
     public List<Distribution> getDistributionByLSID(String[] lsids);
-    
+
+    /**
+     * Find a distribution by name or LSID
+     *
+     * @param lsidOrName
+     * @return
+     */
+    public Distribution findDistributionByLSIDOrName(String lsidOrName);
+
     /**
      * Identify points which fall outside an expert distribution
      * 

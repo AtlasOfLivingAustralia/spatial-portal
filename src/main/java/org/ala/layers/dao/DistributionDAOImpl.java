@@ -49,6 +49,28 @@ public class DistributionDAOImpl implements DistributionDAO {
             + "caab_family_number,group_name,metadata_u,wmsurl,lsid,type,area_name,pid,checklist_name,area_km,notes,"
             + "geom_idx,image_quality,data_resource_uid";
 
+    public Distribution findDistributionByLSIDOrName(String lsidOrName){
+        String sql = SELECT_CLAUSE + " from " + viewName + " WHERE " +
+                "lsid=:lsid OR caab_species_number=:caab_species_number " +
+                "OR scientific like :scientificName OR scientific like :scientificNameWithSubgenus limit 1";
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("lsid", lsidOrName);
+        params.put("scientificName", lsidOrName);
+        params.put("scientificNameWithSubgenus", removeSubGenus(lsidOrName));
+        params.put("caab_species_number", lsidOrName);
+        List<Distribution> ds =  updateWMSUrl(jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), params));
+        if(!ds.isEmpty())
+            return ds.get(0);
+        else
+            return null;
+    }
+
+    private String removeSubGenus(String str){
+        if(str !=null && str.contains("(") && str.contains(")"))
+            return str.replaceAll(" \\([A-Z][a-z]{1,}\\) ", " ");
+        return str;
+    }
+
     @Override
     public List<Distribution> queryDistributions(String wkt, double min_depth, double max_depth, Integer geomIdx, String lsids, String type, String[] dataResources) {
         return queryDistributions(wkt, min_depth, max_depth, null, null, null, null, null, geomIdx, lsids, null, null, null, null, type, dataResources);
@@ -356,7 +378,6 @@ public class DistributionDAOImpl implements DistributionDAO {
                 }
             }
         }
-
         return distributions;
     }
 
