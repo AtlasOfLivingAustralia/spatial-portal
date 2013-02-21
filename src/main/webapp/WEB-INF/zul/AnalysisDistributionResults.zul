@@ -6,9 +6,9 @@
             closable="true" mode="embedded" width="90%">
                 
             <separator />
-            <label id="distributionLabel" value=""/>
+            <label id="distributionLabel" value="" style="margin-left:10px"/>
             <separator height="20px"/>
-            <hbox>
+            <hbox style="margin-left:10px">
                 <label value="min depth" />
                 <doublebox id="minDepth" />
                 <separator orient="vertical" />
@@ -18,26 +18,26 @@
                 <button id="btnClearDepthFilter" label="Clear" />
             </hbox>
             <separator />
-            <div height="500px">
+            <div height="400px" style="margin-left:10px">
                 <separator/>
                 <label value="Click on headers to sort columns" />
                 <listbox id="distributionListbox" mold="paging" vflex="true" autopaging="true" sizedByContent="true">
                     <listhead>
                         <listheader width="50px" />
-                        <listheader label="SPCODE" sort="auto" />
+                        <listheader label="SPCODE" sort="auto" visible="false" />
                         <listheader label="Scientific name" sort="auto" />
-                        <listheader label="Authority full" sort="auto" />
+                        <listheader label="Authority full" sort="auto" visible="false" />
                         <listheader label="Common name" sort="auto" />
                         <listheader label="Family name" sort="auto" />
-                        <listheader label="Genus name" sort="auto" />
-                        <listheader label="Specific name" sort="auto" />
+                        <listheader label="Genus name" sort="auto" visible="false" />
+                        <listheader label="Specific name" sort="auto" visible="false"/>
                         <listheader label="Min depth" sort="auto" />
                         <listheader label="Max depth" sort="auto" />
                         <listheader label="Metadata"/>
-                        <listheader label="LSID"/>
+                        <listheader label="LSID" visible="false"/>
                         <listheader label="Area name" sort="auto"/>
                         <listheader label="Area sq km" sort="auto"/>
-                        <listheader label="Species" sort="auto"/>
+                        <listheader label="DataResourceUID" sort="auto" visible="false"/>
                     </listhead>
                 </listbox>
             </div>            

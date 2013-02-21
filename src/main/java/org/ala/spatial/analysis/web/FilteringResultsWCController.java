@@ -85,6 +85,8 @@ public class FilteringResultsWCController extends UtilityComposer {
     Label gazLabel;
     JSONArray gazPoints = null;
     Button mapGazPoints;
+//    , downloadspecies, downloadspecieskosher, downloadexpert, downloadchecklist,downloadendemic,
+//            downloadendemickosher;
     Map<String, Future<Map<String,String>>> futures = null;
     long futuresStart = -1;
     ExecutorService pool = null;
@@ -164,7 +166,6 @@ public class FilteringResultsWCController extends UtilityComposer {
     boolean isTabOpen() {
         return true; //getMapComposer().getPortalSession().getCurrentNavigationTab() == PortalSession.LINK_TAB;
     }
-
 
     void startQueries() {
 
@@ -387,6 +388,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         if(!complete){
             setTimedOut(results_label2_species);
+//            downloadspecies.setVisible(false);
             return;
         }
 
@@ -394,8 +396,10 @@ public class FilteringResultsWCController extends UtilityComposer {
         results_label2_species.setValue(String.format("%,d", recordCounts.get("speciesCount")));
         if (isNumberGreaterThanZero(results_label2_species.getValue())) {
             results_label2_species.setSclass("underline");
+//            downloadspecies.setVisible(true);
         } else {
             results_label2_species.setSclass("");
+//            downloadspecies.setVisible(false);
         }
     }
 
@@ -403,6 +407,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         if(!complete){
             setTimedOut(results_label2_species_kosher);
+//            downloadspecieskosher.setVisible(false);
             return;
         }
 
@@ -410,8 +415,10 @@ public class FilteringResultsWCController extends UtilityComposer {
         results_label2_species_kosher.setValue(String.format("%,d", recordCounts.get("speciesCountKosher")));
         if (isNumberGreaterThanZero(results_label2_species_kosher.getValue())) {
             results_label2_species_kosher.setSclass("underline");
+//            downloadspecieskosher.setVisible(true);
         } else {
             results_label2_species_kosher.setSclass("");
+//            downloadspecieskosher.setVisible(false);
         }
     }
 
@@ -419,14 +426,17 @@ public class FilteringResultsWCController extends UtilityComposer {
         logger.debug("5. Rendering endemic counts...");
         if(!complete){
             setTimedOut(results_label2_endemic_species);
+//            downloadendemic.setVisible(false);
             return;
         }
 
         results_label2_endemic_species.setValue(String.format("%,d", recordCounts.get("endemicSpeciesCount")));
         if (isNumberGreaterThanZero(results_label2_endemic_species.getValue())){
             results_label2_endemic_species.setSclass("underline");
+//            downloadendemic.setVisible(true);
         } else {
             results_label2_endemic_species.setSclass("");
+//            downloadendemic.setVisible(false);
         }
     }
 
@@ -434,14 +444,17 @@ public class FilteringResultsWCController extends UtilityComposer {
         logger.debug("6. Rendering endemic kosher counts...");
         if(!complete){
             setTimedOut(results_label2_endemic_species_kosher);
+//            downloadendemickosher.setVisible(false);
             return;
         }
 
         results_label2_endemic_species_kosher.setValue(String.format("%,d", recordCounts.get("endemicSpeciesCountKosher")));
         if (isNumberGreaterThanZero(results_label2_endemic_species_kosher.getValue())){
             results_label2_endemic_species_kosher.setSclass("underline");
+//            downloadendemickosher.setVisible(true);
         } else {
             results_label2_endemic_species_kosher.setSclass("");
+//            downloadendemickosher.setVisible(false);
         }
     }
 
@@ -449,16 +462,18 @@ public class FilteringResultsWCController extends UtilityComposer {
         logger.debug("7. Rendering species distributions...");
         if(!complete){
             setTimedOut(sdLabel);
+//            downloadexpert.setVisible(false);
             return;
         }
-
 
         Integer count = (Integer) recordCounts.get("intersectWithSpeciesDistributions");
         sdLabel.setValue(String.format("%,d",count));
         if(count>0){
           sdLabel.setSclass("underline");
+//          downloadexpert.setVisible(true);
         } else {
           sdLabel.setSclass("");
+//          downloadexpert.setVisible(false);
         }
     }
 
@@ -468,6 +483,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         if(!complete){
             setTimedOut(clLabel);
             setTimedOut(aclLabel);
+//            downloadchecklist.setVisible(false);
             return;
         }
 
@@ -475,8 +491,10 @@ public class FilteringResultsWCController extends UtilityComposer {
         aclLabel.setValue(recordCounts.get("intersectWithAreaChecklists"));
         if (isNumberGreaterThanZero(clLabel.getValue())) {
             clLabel.setSclass("underline");
+//            downloadchecklist.setVisible(true);
         } else {
             clLabel.setSclass("");
+//            downloadchecklist.setVisible(false);
         }
         if (isNumberGreaterThanZero(aclLabel.getValue())) {
             aclLabel.setSclass("underline");
@@ -992,6 +1010,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                         String lsid = jo.containsKey("lsid") ? jo.getString("lsid") : "";
                         String area_name = jo.containsKey("area_name") ? jo.getString("area_name") : "";
                         String area_km = jo.containsKey("area_km") ? jo.getString("area_km") : "";
+                        String data_resource_uid = jo.containsKey("data_resource_uid") ? jo.getString("data_resource_uid") : "";
 
                         StringBuilder sb = new StringBuilder();
                         sb.append(spcode).append(",");
@@ -1006,7 +1025,8 @@ public class FilteringResultsWCController extends UtilityComposer {
                         sb.append(wrap(md)).append(",");
                         sb.append(wrap(lsid)).append(",");
                         sb.append(wrap(area_name)).append(",");
-                        sb.append(wrap(area_km));
+                        sb.append(wrap(area_km)).append(",");
+                        sb.append(wrap(data_resource_uid));
 
                         lines[i + 1] = sb.toString();
                     }
@@ -1241,6 +1261,10 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
+    public void onClick$downloadexpert(Event event) {
+       onClick$sdDownload(event);
+    }
+
     public void onClick$sdDownload(Event event) {
         String spid = pid;
         if (spid == null || spid.equals("none")) {
@@ -1258,6 +1282,10 @@ public class FilteringResultsWCController extends UtilityComposer {
             sb.append(s);
         }
         Filedownload.save(sb.toString(), "text/plain", "Species_distributions_" + sdate + "_" + spid + ".csv");
+    }
+
+    public void onClick$downloadchecklist(Event event) {
+       onClick$clDownload(event);
     }
 
     public void onClick$clDownload(Event event) {
@@ -1327,7 +1355,6 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void onClick$btnCancel(Event event) {
         this.detach();
     }
-
 
     public void onClick$lblBiostor(Event event) {
         if (biostorHtml != null) {
