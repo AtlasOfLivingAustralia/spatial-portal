@@ -846,7 +846,7 @@ public class AddFacetController extends UtilityComposer {
                 String[] ss = s.split(" TO ");
                 if (ss.length > 1) {
                     if (ss[1].equals("01")) {
-                        s = "Januaryyyyyyy";
+                        s = "January";
                     } else if (ss[1].equals("02")) {
                         s = "February";
                     } else if (ss[1].equals("03")) {

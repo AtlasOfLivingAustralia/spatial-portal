@@ -787,7 +787,7 @@ public class ClassificationLegend extends UtilityComposer {
                 String[] ss = s.split(" TO ");
                 if (ss.length > 1) {
                     if (ss[1].equals("01")) {
-                        s = "Januaryyyyy";
+                        s = "January";
                     } else if (ss[1].equals("02")) {
                         s = "February";
                     } else if (ss[1].equals("03")) {
