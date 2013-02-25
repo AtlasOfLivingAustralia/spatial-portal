@@ -30,5 +30,6 @@ CREATE INDEX distributions_genus_exemplar_idx ON distributions(genus_exemplar);
 CREATE INDEX distributions_family_exemplar_idx ON distributions(family_exemplar);
 CREATE INDEX distributions_data_resource_uid_idx ON distributions(data_resource_uid);
 CREATE INDEX distributions_image_quality ON distributions(image_quality);
+CREATE INDEX distributions_geom ON distributions USING GIST (the_geom);
 
 ALTER TABLE distributions OWNER TO postgres;
