@@ -1369,7 +1369,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     public void mapLayerFromParams(){
         Map<String, String> userParams = getQueryParameterMap(Executions.getCurrent().getDesktop().getQueryString());
-        if(userParams !=null){
+        if(userParams != null){
             String layersCSV = userParams.get("layers");
             if(StringUtils.trimToNull(layersCSV) == null) return;
             String[] layers =  layersCSV.split(",");
@@ -1572,9 +1572,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         } else if (pointtype.equals("point")) {
                             setGrid = 0;
                         }
-                        
-                        return mapSpecies(q, q.getSolrName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, setGrid, size, opacity, colour,colourBy);
-                        
+                        return mapSpecies(q, q.getSolrName(), "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, setGrid, size, opacity, colour,colourBy, true);
                     }
                 }
 
@@ -1996,8 +1994,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /**
      * Maximise map display area - currently just hides the left
      * menumapNavigationTabContent
-     *
-     * @param maximise
      */
     void maximise() {
         boolean maximise = getPortalSession().isMaximised();
@@ -2020,10 +2016,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * gets a species map that doesn't have colourby set 
      */
     public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid, int size, float opacity, int colour) {
-        return mapSpecies(sq, species, rank, count, subType, wkt, setGrid, size, opacity, colour, null);
+        return mapSpecies(sq, species, rank, count, subType, wkt, setGrid, size, opacity, colour, null, false);
     }
     
-    public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid, int size, float opacity, int colour, String colourBy) {
+    public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid, int size, float opacity, int colour, String colourBy, Boolean loadExpertLayer) {
 
         if (species == null) {
             species = sq.getName();
@@ -2044,7 +2040,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             grid = sq.getOccurrenceCount() > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD);
         }
         MapLayer ml = mapSpeciesFilter(sq, species, rank, count, subType, wkt, grid, size, opacity, colour);
-        
+
         if (ml != null) {
             if(colourBy != null)
                 ml.setColourMode(colourBy);
@@ -2078,11 +2074,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     BiocacheQuery bq = (BiocacheQuery) sq;
                     String extra = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false);
                     remoteLogger.logMapSpecies(ml.getDisplayName(), bq.getLsids(), wkt, layerType, extra);
+
                 } else if (sq instanceof UploadQuery) {
                     remoteLogger.logMapSpecies(ml.getDisplayName(), "user-" + ((UploadQuery) sq).getSpeciesCount() + " records", wkt, layerType, sq.getMetadataHtml());
                 } else {
                     remoteLogger.logMapSpecies(ml.getDisplayName(), species, wkt, layerType, sq.getMetadataHtml());
                 }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -2347,8 +2345,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (q instanceof BiocacheQuery) {
             String lsids = ((BiocacheQuery) q).getLsids();
+            List<String> extraLsids = ((BiocacheQuery) q).getLsidFromExtraParams();
             if (lsids != null && lsids.length() > 0) {
                 loadDistributionMap(lsids, species, wkt);
+            }
+            for(String extraLsid: extraLsids){
+                System.out.println("loading layer for: " + extraLsid);
+                loadDistributionMap(extraLsid, species, wkt);
             }
         }
 
@@ -2894,7 +2897,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * get Active Area as WKT string, from a layer name
      *
      * @param layer name of layer as String
-     * @param register_shape true to register the shape with alaspatial shape
      * register
      * @return
      */

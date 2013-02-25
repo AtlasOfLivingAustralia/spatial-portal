@@ -1579,8 +1579,24 @@ public class BiocacheQuery implements Query, Serializable {
         return null;
     }
 
+    //LSID match """lsid:"?([a-z0-9\:]*)"?""".r
+    Pattern lsidPattern = Pattern.compile("(?:lsid:)\"?([a-z0-9\\:\\.\\-]*)\"?");
+
     public String getLsids() {
         return lsids;
+    }
+
+
+    public List<String> getLsidFromExtraParams() {
+        List<String> extraLsids = new ArrayList<String>();
+        if(extraParams!=null){
+            //extraLsids
+            Matcher matcher = lsidPattern.matcher(extraParams);
+            while(matcher.find()){
+                extraLsids.add(matcher.group().replaceFirst("lsid:", "").replaceAll("\"",""));
+            }
+        }
+        return extraLsids;
     }
 
     public String getSolrName() {

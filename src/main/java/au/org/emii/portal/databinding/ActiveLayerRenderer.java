@@ -81,7 +81,7 @@ public class ActiveLayerRenderer implements ListitemRenderer {
         label.setTooltiptext(layerUtilities.getTooltip(layer.getDisplayName(), layer.getDescription()));
 
         //label.addEventListener("onClick", new ActiveLayersInfoEventListener());
-        label.setStyle("float:left;");
+//        label.setStyle("float:left;");
 
         if(layer.isRemoveable()){
             checkbox.setStyle("float:left;");
