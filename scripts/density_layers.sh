@@ -62,6 +62,28 @@ curl -u $GEOSERVER_USRPWD -XPOST -H 'Content-type: text/xml' -d '<?xml version="
 
 curl -u $GEOSERVER_USRPWD -XPOST -H 'Content-type: text/xml' -d '<?xml version="1.0" encoding="UTF-8"?><seedRequest><name>ALA:srichness</name><srs><number>900913</number></srs><zoomStart>0</zoomStart><zoomStop>10</zoomStop><format>image/png</format><type>reseed</type><threadCount>1</threadCount></seedRequest>' $GEOSERVER_URL/gwc/rest/seed/ALA:srichness.xml  >> $PTH/process/density/$DATE/build.log
 
+#Fix mode and ownership of diva grids
+chmod 777 $PTH/ready/diva/* >> $PTH/process/density/$DATE/build.log
+chown tomcat:wheel $PTH/ready/diva/* >> $PTH/process/density/$DATE/build.log
+
+#Fix mode and ownership of geotiffs
+chmod 777 $PTH/ready/geotiff/* >> $OUTPUTDIR/build.log
+chown tomcat:wheel $PTH/ready/geotiff/* >> $PTH/process/density/$DATE/build.log
+
+# Regenerate layer analysis and distances
+echo "regenerating layer analysis and distances" >> $PTH/process/density/$DATE/build.log
+rm -f /data/ala/data/layers/analysis/0.5/el898.gr* >> $PTH/process/density/$DATE/build.log
+rm -f /data/ala/data/layers/analysis/0.5/el899.gr* >> $PTH/process/density/$DATE/build.log
+rm -f /data/ala/data/layers/analysis/0.01/el898.gr* >> $PTH/process/density/$DATE/build.log
+rm -f /data/ala/data/layers/analysis/0.01/el899.gr* >> $PTH/process/density/$DATE/build.log
+rm -f /data/ala/data/layers/analysis/0.0025/el898.gr* >> $PTH/process/density/$DATE/build.log
+rm -f /data/ala/data/layers/analysis/0.0025/el899.gr* >> $PTH/process/density/$DATE/build.log
+cp /data/ala/data/alaspatial/layerDistances.properties /data/ala/data/alaspatial/layerDistances.properties_old >> $PTH/process/density/$DATE/build.log
+sed -i '/el898\|el899/d' /data/ala/data/alaspatial/layerDistances.properties >> $PTH/process/density/$DATE/build.log
+
+cd ./layer-ingestion-1.0-SNAPSHOT >> $PTH/process/density/$DATE/build.log
+sh ./environmental_background_processing.sh >> $PTH/process/density/$DATE/build.log
+
 echo "finished" >> $PTH/process/density/$DATE/build.log
 
 cp $PTH/process/density/$DATE/build.log /data/ala/runtime/output/density_layers.log

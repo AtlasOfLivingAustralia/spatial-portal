@@ -11,58 +11,73 @@ OUTPUTDIR="$PTH/process/endemism/$DATE"
 GDAL_TRANSLATE="/data/ala/utils/gdal-1.9.0/apps/gdal_translate"
 
 # Create directory to store output files:
-mkdir $OUTPUTDIR
+mkdir $OUTPUTDIR 
+
+echo $DATE > $OUTPUTDUR/build.log
 
 # download generated data from the biocache
 echo "downloading data from biocache"
-wget http://biocache.ala.org.au/archives/exports/cell-species-lists-0.1-degree.txt
-wget http://biocache.ala.org.au/archives/exports/species-cell-counts-0.1-degree.txt
-wget http://biocache.ala.org.au/archives/exports/cell-species-lists-0.1-degree-non-marine.txt
-wget http://biocache.ala.org.au/archives/exports/species-cell-counts-0.1-degree-non-marine.txt
-mv *.txt $OUTPUTDIR
+wget http://biocache.ala.org.au/archives/exports/cell-species-lists-0.1-degree.txt >> $OUTPUTDIR/build.log
+wget http://biocache.ala.org.au/archives/exports/species-cell-counts-0.1-degree.txt >> $OUTPUTDIR/build.log
+wget http://biocache.ala.org.au/archives/exports/cell-species-lists-0.1-degree-non-marine.txt >> $OUTPUTDIR/build.log
+wget http://biocache.ala.org.au/archives/exports/species-cell-counts-0.1-degree-non-marine.txt >> $OUTPUTDIR/build.log
+mv *.txt $OUTPUTDIR >> $OUTPUTDIR/build.log
 
 # generate ASCII grid and DIVA grid
-echo "generating grid files"
-java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.spatial.analysis.layers.Endemism 0.1 $OUTPUTDIR/species-cell-counts-0.1-degree.txt $OUTPUTDIR/cell-species-lists-0.1-degree.txt $OUTPUTDIR endemism
-java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.spatial.analysis.layers.Endemism 0.1 $OUTPUTDIR/species-cell-counts-0.1-degree-non-marine.txt $OUTPUTDIR/cell-species-lists-0.1-degree-non-marine.txt $OUTPUTDIR endemism_non_marine
+echo "generating grid files" >> $OUTPUTDIR/build.log
+java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.spatial.analysis.layers.Endemism 0.1 $OUTPUTDIR/species-cell-counts-0.1-degree.txt $OUTPUTDIR/cell-species-lists-0.1-degree.txt $OUTPUTDIR endemism  >> $OUTPUTDIR/build.log
+java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.spatial.analysis.layers.Endemism 0.1 $OUTPUTDIR/species-cell-counts-0.1-degree-non-marine.txt $OUTPUTDIR/cell-species-lists-0.1-degree-non-marine.txt $OUTPUTDIR endemism_non_marine  >> $OUTPUTDIR/build.log
 
-cp $OUTPUTDIR/endemism.gr* $PTH/ready/diva
-cp $OUTPUTDIR/endemism_non_marine.gr* $PTH/ready/diva
+
+cp $OUTPUTDIR/endemism.gr* $PTH/ready/diva >> $OUTPUTDIR/build.log
+cp $OUTPUTDIR/endemism_non_marine.gr* $PTH/ready/diva >> $OUTPUTDIR/build.log
+
+#Fix mode and ownership of diva grids
+chmod 777 $PTH/ready/diva/* >> $OUTPUTDIR/build.log
+chown tomcat:wheel $PTH/ready/diva/* >> $OUTPUTDIR/build.log
 
 # Generate geotiff
 echo "generating geotiff"
-$GDAL_TRANSLATE -of GTiff -ot Float32 -a_srs EPSG:4326 $OUTPUTDIR/endemism.asc $OUTPUTDIR/endemism.tif
-cp $OUTPUTDIR/endemism.tif $PTH/ready/geotiff
-$GDAL_TRANSLATE -of GTiff -ot Float32 -a_srs EPSG:4326 $OUTPUTDIR/endemism_non_marine.asc $OUTPUTDIR/endemism_non_marine.tif
-cp $OUTPUTDIR/endemism_non_marine.tif $PTH/ready/geotiff
+$GDAL_TRANSLATE -of GTiff -ot Float32 -a_srs EPSG:4326 $OUTPUTDIR/endemism.asc $OUTPUTDIR/endemism.tif >> $OUTPUTDIR/build.log
+cp $OUTPUTDIR/endemism.tif $PTH/ready/geotiff >> $OUTPUTDIR/build.log
+$GDAL_TRANSLATE -of GTiff -ot Float32 -a_srs EPSG:4326 $OUTPUTDIR/endemism_non_marine.asc $OUTPUTDIR/endemism_non_marine.tif >> $OUTPUTDIR/build.log
+cp $OUTPUTDIR/endemism_non_marine.tif $PTH/ready/geotiff >> $OUTPUTDIR/build.log
+
+#Fix mode and ownership of geotiffs
+chmod 777 $PTH/ready/geotiff/* >> $OUTPUTDIR/build.log
+chown tomcat:wheel $PTH/ready/geotiff/* >> $OUTPUTDIR/build.log
 
 # Generate legend
-echo "generating legend"
-java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.layers.legend.GridLegend $PTH/ready/diva/endemism $PTH/test/endemism 8 1
-java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.layers.legend.GridLegend $PTH/ready/diva/endemism_non_marine $PTH/test/endemism_non_marine 8 1
+echo "generating legend" >> $OUTPUTDIR/build.log
+java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.layers.legend.GridLegend $PTH/ready/diva/endemism $PTH/test/endemism 8 1 >> $OUTPUTDIR/build.log
+java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.layers.legend.GridLegend $PTH/ready/diva/endemism_non_marine $PTH/test/endemism_non_marine 8 1 >> $OUTPUTDIR/build.log
 
 # Upload to geoserver
-echo "uploading to geoserver"
-curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/plain"  -d "file://$PTH/ready/geotiff/endemism.tif" $GEOSERVER_URL/rest/workspaces/ALA/coveragestores/endemism/external.geotiff
-curl -u $GEOSERVER_USRPWD -XPOST -H "Content-type: text/xml"  -d "<style><name>endemism_style</name><filename>endemism.sld</filename></style>"  $GEOSERVER_URL/rest/styles
-curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: application/vnd.ogc.sld+xml"  -d @$PTH/test/endemism.sld $GEOSERVER_URL/rest/styles/endemism_style
-curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/xml"   -d "<layer><enabled>true</enabled><defaultStyle><name>endemism_style</name></defaultStyle></layer>" $GEOSERVER_URL/rest/layers/ALA:endemism
+echo "uploading to geoserver" >> $OUTPUTDIR/build.log
+curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/plain"  -d "file://$PTH/ready/geotiff/endemism.tif" $GEOSERVER_URL/rest/workspaces/ALA/coveragestores/endemism/external.geotiff >> $OUTPUTDIR/build.log
+curl -u $GEOSERVER_USRPWD -XPOST -H "Content-type: text/xml"  -d "<style><name>endemism_style</name><filename>endemism.sld</filename></style>"  $GEOSERVER_URL/rest/styles >> $OUTPUTDIR/build.log
+curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: application/vnd.ogc.sld+xml"  -d @$PTH/test/endemism.sld $GEOSERVER_URL/rest/styles/endemism_style >> $OUTPUTDIR/build.log
+curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/xml"   -d "<layer><enabled>true</enabled><defaultStyle><name>endemism_style</name></defaultStyle></layer>" $GEOSERVER_URL/rest/layers/ALA:endemism >> $OUTPUTDIR/build.log
 
-curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/plain"  -d "file://$PTH/ready/geotiff/endemism_non_marine.tif" $GEOSERVER_URL/rest/workspaces/ALA/coveragestores/endemism_non_marine/external.geotiff
-curl -u $GEOSERVER_USRPWD -XPOST -H "Content-type: text/xml"  -d "<style><name>endemism_non_marine_style</name><filename>endemism_non_marine.sld</filename></style>"  $GEOSERVER_URL/rest/styles
-curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: application/vnd.ogc.sld+xml"  -d @$PTH/test/endemism_non_marine.sld $GEOSERVER_URL/rest/styles/endemism-non-marne_style
-curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/xml"   -d "<layer><enabled>true</enabled><defaultStyle><name>endemism_non_marine_style</name></defaultStyle></layer>" $GEOSERVER_URL/rest/layers/ALA:endemism_non_marine
+curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/plain"  -d "file://$PTH/ready/geotiff/endemism_non_marine.tif" $GEOSERVER_URL/rest/workspaces/ALA/coveragestores/endemism_non_marine/external.geotiff >> $OUTPUTDIR/build.log
+curl -u $GEOSERVER_USRPWD -XPOST -H "Content-type: text/xml"  -d "<style><name>endemism_non_marine_style</name><filename>endemism_non_marine.sld</filename></style>"  $GEOSERVER_URL/rest/styles >> $OUTPUTDIR/build.log
+curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: application/vnd.ogc.sld+xml"  -d @$PTH/test/endemism_non_marine.sld $GEOSERVER_URL/rest/styles/endemism_non_marine_style >> $OUTPUTDIR/build.log
+curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/xml"   -d "<layer><enabled>true</enabled><defaultStyle><name>endemism_non_marine_style</name></defaultStyle></layer>" $GEOSERVER_URL/rest/layers/ALA:endemism_non_marine >> $OUTPUTDIR/build.log
 
 # Regenerate layer analysis and distances
-echo "regenerating layer analysis and distances"
-rm -f /data/ala/data/layers/analysis/0.5/el1055.gr*
-rm -f /data/ala/data/layers/analysis/0.5/el1056.gr*
-rm -f /data/ala/data/layers/analysis/0.01/el1055.gr*
-rm -f /data/ala/data/layers/analysis/0.01/el1056.gr*
-rm -f /data/ala/data/layers/analysis/0.0025/el1055.gr*
-rm -f /data/ala/data/layers/analysis/0.0025/el1056.gr*
-cp /data/ala/data/alaspatial/layerDistances.properties /data/ala/data/alaspatial/layerDistances.properties_old
-sed -i '/el1055\|el1056/d' /data/ala/data/alaspatial/layerDistances.properties
+echo "regenerating layer analysis and distances" >> $OUTPUTDIR/build.log
+rm -f /data/ala/data/layers/analysis/0.5/el1055.gr* >> $OUTPUTDIR/build.log
+rm -f /data/ala/data/layers/analysis/0.5/el1056.gr* >> $OUTPUTDIR/build.log
+rm -f /data/ala/data/layers/analysis/0.01/el1055.gr* >> $OUTPUTDIR/build.log
+rm -f /data/ala/data/layers/analysis/0.01/el1056.gr* >> $OUTPUTDIR/build.log
+rm -f /data/ala/data/layers/analysis/0.0025/el1055.gr* >> $OUTPUTDIR/build.log
+rm -f /data/ala/data/layers/analysis/0.0025/el1056.gr* >> $OUTPUTDIR/build.log
+cp /data/ala/data/alaspatial/layerDistances.properties /data/ala/data/alaspatial/layerDistances.properties_old >> $OUTPUTDIR/build.log
+sed -i '/el1055\|el1056/d' /data/ala/data/alaspatial/layerDistances.properties >> $OUTPUTDIR/build.log
 
-./layer-ingestion-1.0-SNAPSHOT/environmental_background_processing.sh 
+cd ./layer-ingestion-1.0-SNAPSHOT >> $OUTPUTDIR/build.log
+sh ./environmental_background_processing.sh >> $OUTPUTDIR/build.log
 
+echo "finished" >> $OUTPUTDIR/build.log
+
+cp $OUTPUTDIR/build.log /data/ala/runtime/output/endemism.log
