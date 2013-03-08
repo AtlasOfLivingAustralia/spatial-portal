@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,9 @@ import net.sf.json.JSONObject;
 import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
+import org.ala.spatial.data.SpeciesListDTO;
+import org.ala.spatial.data.SpeciesListItemDTO;
+import org.ala.spatial.data.SpeciesListUtil;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -30,13 +34,17 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
+import org.zkoss.zul.A;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Filedownload;
+import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
+import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Textbox;
@@ -50,7 +58,7 @@ public class AddSpeciesController extends UtilityComposer {
 
     SettingsSupplementary settingsSupplementary;
     SpeciesAutoComplete searchSpeciesAuto;
-    Button btnOk, bMultiple;
+    Button btnOk, bMultiple,bAssemblageExport;
     Radio rSearch;
     Radio rMultiple;
     Radio rUploadCoordinates;
@@ -60,7 +68,9 @@ public class AddSpeciesController extends UtilityComposer {
     Vbox vboxSearch;
     Checkbox chkArea;
     Vbox vboxMultiple;
+    Vbox vboxImportSL; //the box layout for the import species list
     SpeciesAutoComplete mSearchSpeciesAuto;
+    //Combobox cbSpeciesLists;
     Textbox tMultiple;
     Listbox lMultiple;
     Event event;
@@ -70,6 +80,8 @@ public class AddSpeciesController extends UtilityComposer {
     String taxon;
     String multipleSpeciesUploadName = null;
     boolean prevAreaState = true;
+    boolean loadedAssemblage =false;
+    Listbox speciesListListbox;
 
     @Override
     public void afterCompose() {
@@ -80,9 +92,11 @@ public class AddSpeciesController extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
+        
         if (btnOk.isDisabled()) {
             return;
         }
+        loadedAssemblage = false;
         if (rAllSpecies.isSelected()) {
             AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
             window.setGeospatialKosher(getGeospatialKosher());
@@ -112,7 +126,10 @@ public class AddSpeciesController extends UtilityComposer {
             } else if (rMultiple.isSelected()) {
                 AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
                 String lsids = getMultipleLsids();
-                query = new BiocacheQuery(lsids, null, null, null, false, getGeospatialKosher());
+                lsids = lsids.length()>0? lsids:null;
+                String unmatchedNames = getNamesWithoutLsids();
+                System.out.println("%^&*(&^%$#^&*()&^%$#^&*():"+unmatchedNames);
+                query = new BiocacheQuery(lsids, null,unmatchedNames, null, false, getGeospatialKosher());
                 window.setSpeciesParams(query, rank, taxon);
                 window.loadAreaLayers();
                 window.setMultipleSpeciesUploadName(multipleSpeciesUploadName);
@@ -123,17 +140,55 @@ public class AddSpeciesController extends UtilityComposer {
                 } catch (SuspendNotAllowedException ex) {
                     Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            } else if (rUploadLSIDs.isSelected()){
+                //we need to populate the "create assemblage" with the values from the species list
+                //refreshAssemblage();
+                loadedAssemblage=true;
             } else {
                 onClick$btnUpload(event);
             }
         } else {
             if (rSearch.isSelected()) {
                 getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, null, getGeospatialKosher());
+            } else if (rUploadLSIDs.isSelected()){
+                  //we need to populate the "create assemblage" with the values from the species list
+                //refreshAssemblage();
+                loadedAssemblage=true;
             } else {
                 onClick$btnUpload(event);
             }
         }
-        this.detach();
+        if (!loadedAssemblage)
+            this.detach();       
+            
+    }
+    
+    public void enableImportAssemblage(){
+        rUploadLSIDs.setSelected(true);
+        onCheck$rgAddSpecies(null);
+    }
+    
+    private void refreshAssemblage(SpeciesListDTO list){
+        if(rUploadLSIDs.isSelected()){
+            //Comboitem ci = cbSpeciesLists.getSelectedItem();
+            //if(ci != null){
+             //   SpeciesListDTO list = (SpeciesListDTO)ci.getValue();
+                Collection<SpeciesListItemDTO> items = SpeciesListUtil.getListItems(list.getDataResourceUid());
+                System.out.println(items);
+                if(items != null){
+                    StringBuilder sb = new StringBuilder();
+                    boolean first=true;
+                    for(SpeciesListItemDTO item: items){
+                        if(!first)
+                            sb.append(",");
+                        else
+                            first = false;
+                        sb.append(item.getName());
+                    }
+                    setMultipleSpecies(sb.toString(), list.getListName() + " (" + list.getDataResourceUid() + ")");
+                }
+            }
+        //}
     }
 
     public void onClick$btnCancel(Event event) {
@@ -235,23 +290,107 @@ public class AddSpeciesController extends UtilityComposer {
         if (rSearch.isSelected()) {
             vboxSearch.setVisible(true);
             vboxMultiple.setVisible(false);
+            vboxImportSL.setVisible(false);
 //           searchSpeciesAuto.setFocus(true);
         } else if (rMultiple.isSelected()) {
             vboxSearch.setVisible(false);
             vboxMultiple.setVisible(true);
+            vboxImportSL.setVisible(false);
+            String authCookie = getMapComposer().getCookieValue("ALA-Auth");
+            bAssemblageExport.setDisabled(loadedAssemblage || authCookie == null);
+        } else if(rUploadLSIDs.isSelected()){
+            refreshSpeciesLists();
+            vboxSearch.setVisible(false);
+            vboxMultiple.setVisible(false);
+            vboxImportSL.setVisible(true);
         } else {
             vboxSearch.setVisible(false);
             vboxMultiple.setVisible(false);
+            vboxImportSL.setVisible(false);
         }
 
         refreshBtnOkDisabled();
+    }
+    /**
+     * Refreshes the content of the table that is display in "import assemblages"
+     */
+    private void refreshSpeciesLists(){
+        //retrieve the collection of species lists to display in the combo box
+        Collection<SpeciesListDTO> lists= SpeciesListUtil.getPublicSpeciesLists(getMapComposer().getCookieValue("ALA-Auth"));
+        if(lists != null){
+          //supply the custom rendering for the species list in the table. We need an add button and link to list.
+            speciesListListbox.setItemRenderer(new ListitemRenderer() {
+
+              @Override
+              public void render(Listitem li, Object data) {
+                  final SpeciesListDTO item = (SpeciesListDTO)data;
+                  li.setValue(item);
+                  //add a button to select the species list for the assemblage
+                  Listcell lc = new Listcell();
+                  Button b = new Button("add");
+                  b.setSclass("goButton");
+                  b.addEventListener("onClick", new EventListener() {
+                      @Override
+                      public void onEvent(Event event) throws Exception {
+                          //make the species list go in the create assemblage area...
+                        refreshAssemblage(item);
+                      }
+                  });
+                  b.setParent(lc);
+                  lc.setParent(li);
+                  Listcell name = new Listcell();
+                  A a = new A(item.getListName());
+                  a.setHref(CommonData.speciesListServer + "/speciesListItem/list/" + item.getDataResourceUid());
+                  a.setTarget("_blank");
+                  a.setParent(name);
+                  name.setParent(li);
+                  String sowner = item.getFullName() != null ? item.getFullName(): item.getFirstName() + " " + item.getSurname();
+                  Listcell owner = new Listcell(sowner);
+                  owner.setParent(li);
+//                  name.setParent(li);
+//                  Listcell type = new Listcell(item.getListType());
+//                  type.setParent(li);
+//                  Listcell uname = new Listcell(item.getUsername());
+//                  uname.setParent(li);
+//                  Listcell fname = new Listcell(item.getFirstName());
+//                  fname.setParent(li);
+//                  Listcell sname = new Listcell(item.getSurname());
+//                  sname.setParent(li);
+//                  Listcell link = new Listcell();
+//                  A a = new A("view items...");
+//                  a.setHref(CommonData.speciesListServer + "/speciesListItem/list/" + item.getDataResourceUid());
+//                  a.setTarget("_blank");
+//                  a.setParent(link);
+//                  link.setParent(li);
+//                  Listcell druid = new Listcell(item.getDataResourceUid());
+//                  druid.setParent(li);
+              }
+            });
+            ListModelList lme = new ListModelList(lists);
+            speciesListListbox.setModel(lme);
+        }
+        //The combobox will be deleted maybe?
+//        cbSpeciesLists.getItems().clear();
+//        if(lists != null){
+//          cbSpeciesLists.setDisabled(false);
+//            for(SpeciesListDTO list : lists){
+//                Comboitem ci = new Comboitem(list.getListName());
+//                ci.setValue(list);
+//                String desc = "Owner: " + list.getFirstName() + " " + list.getSurname()+"\nListType: " + list.getListType();                
+//                ci.setDescription(desc);
+//                ci.setParent(cbSpeciesLists);
+//            }
+//        }
+//        else{
+//            cbSpeciesLists.setDisabled(true);
+//        }
     }
 
     private void refreshBtnOkDisabled() {
         if (rSearch.isSelected()) {
             btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null || searchSpeciesAuto.getSelectedItem().getValue() == null);
         } else if (rMultiple.isSelected()) {
-            btnOk.setDisabled(getMultipleLsids().length() == 0);
+            btnOk.setDisabled(getMultipleLsids().length() == 0 && getNamesWithoutLsids() == null);
         } else {
             btnOk.setDisabled(false);
         }
@@ -290,8 +429,63 @@ public class AddSpeciesController extends UtilityComposer {
     public void onClick$bMultiple(Event event) {
         importList(tMultiple.getText());
     }
+    
+    /**
+     * imports a list of species names into the create assemblages table.
+     * 
+     * It will look up the scinetific name, common name in the BIE before displaying a record count.
+     * 
+     * When the name can not be located in the BIE a raw_name search on occurrence records is performed.
+     * 
+     * @param list
+     */
+    void importList(String list){
+        String[] speciesNames = list.replace("\n", ",").replace("\t",",").split(",");
+        ArrayList<String> notFound = new ArrayList<String>();
+        StringBuilder notFoundSb = new StringBuilder();
+        for (int i = 0; i < speciesNames.length; i++) {
+            String s = speciesNames[i].trim();
+            //see if we can find the lsid from the BIE
+            String lsid = BiocacheQuery.getGuid(s);
+            String sciname = "", family = "", kingdom = "";
+            String classLsid = lsid!= null?lsid:s;
+            Map<String,String> sr = BiocacheQuery.getClassification(classLsid);
+            if (sr.size() > 0
+                && sr.get("scientificName") != null
+                && sr.get("scientificName").length() > 0) {
+                
+                if(lsid == null)
+                    lsid = s;
+                sciname = sr.get("scientificName");
+                family = sr.get("family");
+                kingdom = sr.get("kingdom");
+                if (sciname == null) {
+                    sciname = "";
+                }
+                if (family == null) {
+                    family = "";
+                }
+                if (kingdom == null) {
+                    kingdom = "";
+                }
+            }
+          if (lsid != null && lsid.length() > 0) {
+              addTolMultiple(lsid, sciname, family, kingdom, false);
+          } else {
+              addTolMultiple(null, s, "", "", false);
+          }
 
-    void importList(String list) {
+          if (lsid == null || lsid.length() == 0) {
+              notFound.add(s);
+              notFoundSb.append(s + "\n");
+          }
+        }
+        if (notFound.size() > 0) {
+            getMapComposer().showMessage("The following list of scientific names could not be located. A free text search on the raw name will be performed:\n" + notFoundSb.toString(), this);
+        }
+    }
+    
+    void importListold(String list) {
         String[] speciesNames = list.replace("\n", ",").replace("\t",",").split(",");
         ArrayList<String> notFound = new ArrayList<String>();
         StringBuilder notFoundSb = new StringBuilder();
@@ -402,6 +596,8 @@ public class AddSpeciesController extends UtilityComposer {
                 Listitem li = (Listitem) event.getTarget().getParent();
                 li.detach();
                 refreshBtnOkDisabled();
+                if(loadedAssemblage && !multipleSpeciesUploadName.contains("subset"))
+                    multipleSpeciesUploadName += " - subset";
             }
         });
         lc.setParent(li);
@@ -446,11 +642,15 @@ public class AddSpeciesController extends UtilityComposer {
             int count = new BiocacheQuery(lsid, null, null, null, false, getGeospatialKosher()).getOccurrenceCount();
             if (count > 0) {
                 lc = new Listcell(String.valueOf(count));
-            } else {
+            } else {                
                 lc = new Listcell(kingdom);
             }
         } else {
-            lc = new Listcell(kingdom);
+            int count = new BiocacheQuery(null,null,"raw_name:\""+sciname+"\"", null,false, getGeospatialKosher()).getOccurrenceCount();
+            if(count >0)
+                lc = new Listcell(String.valueOf(count));
+            else
+                lc = new Listcell(kingdom);
         }
         lc.setParent(li);
 
@@ -463,6 +663,19 @@ public class AddSpeciesController extends UtilityComposer {
         } else {
             li.setParent(lMultiple);
         }
+    }
+    
+    private String getScientificName(){
+        StringBuilder sb = new StringBuilder();
+        for (Listitem li : (List<Listitem>) lMultiple.getItems()) {
+            Listcell sciNameCell = (Listcell)li.getChildren().get(1);
+            String name = sciNameCell.getLabel();
+            if (sb.length() > 0) {
+                sb.append(",");
+            }
+            sb.append(name.replaceAll("\\(not found\\)", "").trim());
+        }
+        return sb.toString();
     }
 
     private String getMultipleLsids() {
@@ -478,6 +691,27 @@ public class AddSpeciesController extends UtilityComposer {
         }
         return sb.toString();
     }
+    /**
+     * Constructs the query for names without matches.
+     * @return
+     */
+    private String getNamesWithoutLsids(){
+        StringBuilder sb = new StringBuilder();
+        for (Listitem li : (List<Listitem>) lMultiple.getItems()) {
+            //Listcell lsidCell = (Listcell) li.getLastChild();
+            Listcell sciNameCell = (Listcell)li.getChildren().get(1);
+            String name = sciNameCell.getLabel();
+            if(name.contains("(not found)")){
+               if(sb.length()>0)
+                   sb.append(" AND ");
+               sb.append("raw_name:\"").append(name.replaceAll("\\(not found\\)", "").trim()).append("\"");
+            }
+        }
+        if(sb.length()>0)
+            return sb.toString();
+        else
+            return null;
+    }
 
     public void setMultipleSpecies(String splist, String layername) {
         tMultiple.setText(splist);
@@ -485,6 +719,7 @@ public class AddSpeciesController extends UtilityComposer {
         rMultiple.setSelected(true);
         vboxSearch.setVisible(false);
         vboxMultiple.setVisible(true);
+        vboxImportSL.setVisible(false);
         bMultiple.focus();
         this.onClick$bMultiple(event);
         multipleSpeciesUploadName = layername;
@@ -514,10 +749,29 @@ public class AddSpeciesController extends UtilityComposer {
             chkGeoKosherTrue.setChecked(true);
         }
     }
-
+    /**
+     * Exporting an assemblage will create a new species list for the species that are contained in the create assemblage table.
+     * @param event
+     */
     public void onClick$bAssemblageExport(Event event) {
-        SimpleDateFormat sdf = new SimpleDateFormat("ddmmyyyy_hhmm");
-        Filedownload.save(getLsids(), "text/plain", "species_assemblage_" + sdf.format(new Date()) + ".txt");
+        String values = getScientificName();//tMultiple.getValue().replace("\n", ",").replace("\t",",");
+        if(values.length()>0){
+            UploadToSpeciesListController dialog = (UploadToSpeciesListController)Executions.createComponents("WEB-INF/zul/UploadToSpeciesList.zul", this, null);
+            dialog.setSpecies(values);
+            try{
+                dialog.doModal();
+            }
+            catch(Exception e){
+                logger.error("Unable to export assemblage",e);
+            }
+        }
+        
+        //dialog
+      //AddSpeciesController window = (AddSpeciesController) Executions.createComponents("WEB-INF/zul/AddSpecies.zul", getMapComposer(), null);
+        //loading the assemblage list to a new species list
+        //TODO create a dialog that asks for a title, url etc...
+        //SimpleDateFormat sdf = new SimpleDateFormat("ddmmyyyy_hhmm");
+        //Filedownload.save(getLsids(), "text/plain", "species_assemblage_" + sdf.format(new Date()) + ".txt");
     }
 
     String getLsids() {

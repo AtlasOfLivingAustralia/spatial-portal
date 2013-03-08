@@ -55,7 +55,7 @@
                         </hbox>
                         <separator />
                         <separator />     
-                        <listbox id="lMultiple" width="590px" height="200px" >
+                        <listbox id="lMultiple" width="590px" height="180px" >
                             <listhead>
                                 <listheader label="" width="20px" />
                                 <listheader label="scientific name" id="lhSciName" width="250px"/>
@@ -70,7 +70,27 @@
                         <separator height="5px"/>
                     </vbox>
                     
-                    <radio id ="rUploadLSIDs" label="Import assemblage" />
+                    <radio id ="rUploadLSIDs" label="Import assemblage"/>
+                    <vbox id="vboxImportSL" visible="false">
+                    	
+                    	
+		                <listbox id="speciesListListbox" mold="paging" vflex="true" pageSize="10">
+		                    <listhead>
+		                        <listheader width="50px" />		                        
+		                        <listheader label="List Name" />
+		                        <listheader label="Owner" />
+		                        <!-- <listheader label="List Type"/>
+		                        <listheader label="Username" />
+		                        <listheader label="First Name"/>
+		                        <listheader label="Surname" />
+		                        <listheader width="50px" /> -->
+		                        <listheader label="DataResourceUID"  visible="false"/>
+		                    </listhead>
+		                </listbox>
+                    	
+                    	
+                    	<!-- <combobox id="cbSpeciesLists" autodrop="true" width="330px" /> -->
+                    </vbox>
                     
                     <radio id ="rUploadCoordinates" label="Import points" />
                 </vbox>

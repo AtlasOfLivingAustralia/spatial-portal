@@ -50,6 +50,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.logger.client.RemoteLogger;
+import org.ala.spatial.analysis.web.AddSpeciesController;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.ContextualMenu;
 import org.ala.spatial.analysis.web.DistributionsWCController;
@@ -3667,19 +3668,39 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return null;
     }
 
-    public void importSpecies(Event event) {
-        UploadSpeciesController usc = (UploadSpeciesController) openModal("WEB-INF/zul/UploadSpecies.zul", null, "uploadspecieswindow");
-
+//    public void importSpecies(Event event) {
+//        UploadSpeciesController usc = (UploadSpeciesController) openModal("WEB-INF/zul/UploadSpecies.zul", null, "uploadspecieswindow");
+//
+//        String type = (String) event.getData();
+//        if (type != null && type.length() > 0) {
+//            if ("assemblage".equalsIgnoreCase(type)) {
+//                usc.setTbInstructions("3. Select the species list to import.");
+//            } else {
+//                usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
+//            }
+//            usc.addToMap = true;
+//        }
+//    }
+    /**
+     * Species are imported through the species list tool.
+     * @param event
+     */
+    public void importSpecies(Event event) {        
+  
         String type = (String) event.getData();
         if (type != null && type.length() > 0) {
             if ("assemblage".equalsIgnoreCase(type)) {
-                usc.setTbInstructions("3. Select file (text file, one LSID or name per line)");
+                AddSpeciesController asc =(AddSpeciesController)openModal("WEB-INF/zul/AddSpecies.zul", null, "addspecieswindow");
+                asc.enableImportAssemblage();                
+                //usc.setTbInstructions("3. Select the species list to import.");
             } else {
+                UploadSpeciesController usc = (UploadSpeciesController) openModal("WEB-INF/zul/UploadSpecies.zul", null, "uploadspecieswindow");
                 usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
+                usc.addToMap = true;
             }
-            usc.addToMap = true;
+            
         }
-    }
+  }
 
     public void importAreas(Event event) {
         openModal("WEB-INF/zul/ImportAreas.zul", null, "addareawindow");

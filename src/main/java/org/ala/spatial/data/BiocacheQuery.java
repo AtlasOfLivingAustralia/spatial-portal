@@ -1484,7 +1484,45 @@ public class BiocacheQuery implements Query, Serializable {
 
         return classification;
     }
-
+    /**
+     * Performs a scientific name or common name lookup and returns the guid if it exists in the BIE
+     * 
+     * TODO Move getGuid and getClassification to BIE Utilities...
+     * @param name
+     * @return
+     */
+    public static String getGuid(String name){
+        String url = CommonData.bieServer+"/ws/guid/" +name.replaceAll(" " ,"%20");
+        try{
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(url);
+            get.addRequestHeader("Content-type", "application/json");
+  
+            int result = client.executeMethod(get);
+            String body = get.getResponseBodyAsString();
+  
+            JSONArray ja = JSONArray.fromObject(body);
+            if(ja != null && ja.size()>0){
+                JSONObject jo = ja.getJSONObject(0);
+                if(jo != null && jo.has("acceptedIdentifier"))
+                    return jo.getString("acceptedIdentifier");
+                else
+                    return null;
+            }
+            else
+                return null;
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+    /**
+     * Retrieves the classification information from the BIE for the supplied GUID.
+     *  
+     * @param lsid
+     * @return
+     */
     public static Map<String, String> getClassification(String lsid) {
 
         String[] classificationList = {"kingdom", "phylum", "class", "order", "family", "genus", "species", "subspecies", "scientificName"};
@@ -1505,7 +1543,10 @@ public class BiocacheQuery implements Query, Serializable {
 
             JSONObject joOcc = jo.getJSONObject("classification");
             for (String c : classificationList) {
-                classification.put(c.replace("ss", "zz"), joOcc.getString(c.replace("ss", "zz")));
+              //NC stop exception where a rank can't be found
+                String value = joOcc.optString(c.replace("ss", "zz"),null);
+                if(value != null)
+                    classification.put(c.replace("ss", "zz"), value);
             }
 
         } catch (Exception e) {
