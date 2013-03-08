@@ -919,6 +919,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
             GetMethod get = new GetMethod(biostorurl);
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            get.addRequestHeader("User-Agent", "ALA Spatial Portal");
             int result = client.executeMethod(get);
 
             biostorHtml = null;
