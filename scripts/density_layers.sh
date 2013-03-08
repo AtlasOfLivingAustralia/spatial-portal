@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# This script generates the species richness and occurrence density layers. It should be run periodically via a cron job. 
-
 DATE=$(date +built_%y%m%d)
 GEOSERVER_USRPWD="user:password"
 GEOSERVER_URL="http://localhost:8082/geoserver"
@@ -81,8 +79,7 @@ rm -f /data/ala/data/layers/analysis/0.0025/el899.gr* >> $PTH/process/density/$D
 cp /data/ala/data/alaspatial/layerDistances.properties /data/ala/data/alaspatial/layerDistances.properties_old >> $PTH/process/density/$DATE/build.log
 sed -i '/el898\|el899/d' /data/ala/data/alaspatial/layerDistances.properties >> $PTH/process/density/$DATE/build.log
 
-cd ./layer-ingestion-1.0-SNAPSHOT >> $PTH/process/density/$DATE/build.log
-sh ./environmental_background_processing.sh >> $PTH/process/density/$DATE/build.log
+sh $PTH/process/layer-ingestion-1.0-SNAPSHOT/environmental_background_processing.sh 1>> $PTH/process/density/$DATE/build.log 2>&1
 
 echo "finished" >> $PTH/process/density/$DATE/build.log
 
