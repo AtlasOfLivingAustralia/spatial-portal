@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public class UploadDAOImpl implements UploadDAO {
 
     /** log4j logger */
-    private static final Logger logger = Logger.getLogger(TabulationDAOImpl.class);
+    private static final Logger logger = Logger.getLogger(UploadDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
     
     @Resource(name = "dataSource")
@@ -20,7 +20,7 @@ public class UploadDAOImpl implements UploadDAO {
     }
     
     public int uploadWKT(String wkt, String name, String description, String userid) {
-        String sql = "INSERT INTO uploaded (pid, name, description, user_id, the_geom) values (DEFAULT, ?, ?, ?, ST_GeomFromText(?, 4326))";
+        String sql = "INSERT INTO uploaded (pid, name, description, user_id, time_added, the_geom) values (DEFAULT, ?, ?, ?, now(), ST_GeomFromText(?, 4326))";
         jdbcTemplate.update(sql, name, description, userid, wkt);
         
         // get pid of uploaded layers
