@@ -40,7 +40,7 @@ public class UploadDAOImpl implements UploadDAO {
     
     @Override
     public int storeGeometryFromKML(String kml, String name, String description, String userid) {
-        String sql = "INSERT INTO uploaded (pid, name, description, user_id, time_added, the_geom) values (DEFAULT, ?, ?, ?, now(), ST_GeomFromKML(?, 4326))";
+        String sql = "INSERT INTO uploaded (pid, name, description, user_id, time_added, the_geom) values (DEFAULT, ?, ?, ?, now(), ST_GeomFromKML(?))";
         jdbcTemplate.update(sql, name, description, userid, kml);
         
         // get pid of uploaded layer
@@ -52,7 +52,7 @@ public class UploadDAOImpl implements UploadDAO {
 
     @Override
     public int storeGeometryFromGeoJSON(String geojson, String name, String description, String userid) {
-        String sql = "INSERT INTO uploaded (pid, name, description, user_id, time_added, the_geom) values (DEFAULT, ?, ?, ?, now(), ST_GeomFromGeoJSON(?, 4326))";
+        String sql = "INSERT INTO uploaded (pid, name, description, user_id, time_added, the_geom) values (DEFAULT, ?, ?, ?, now(), ST_GeomFromGeoJSON(?))";
         jdbcTemplate.update(sql, name, description, userid, geojson);
         
         // get pid of uploaded layer
