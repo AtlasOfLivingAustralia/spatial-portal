@@ -87,11 +87,40 @@ public class AreaWKT extends AreaToolComposer {
         }
         try {
             WKTReader wktReader = new WKTReader();
-            wktReader.read(wkt);
-            return true;
+            com.vividsolutions.jts.geom.Geometry g =wktReader.read(wkt);
+            //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
+            //logger.debug("GEOMETRY TYPE: " + g.getGeometryType());
+            IsValidOp op = new IsValidOp(g);
+            if(!op.isValid()){
+                invalidWKT.setValue("WKT is invalid. "+op.getValidationError().getMessage());
+                logger.warn("WKT is invalid."  + op.getValidationError().getMessage());
+                //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
+            }
+            else if(g.isRectangle()){
+                //NC 20130319: When the shape is a rectangle ensure that the points a specified in the correct order.
+                //get the new WKT for the rectangle will possibly need to change the order.
+                //com.vividsolutions.jts.geom.Geometry g2 = g.getBoundary();
+                //com.vividsolutions.jts.io.WKTWriter wktWriter = new com.vividsolutions.jts.io.WKTWriter();
+                //String wkt2 = wktWriter.write(g2);
+                com.vividsolutions.jts.geom.Envelope envelope =g.getEnvelopeInternal();
+                String wkt2 = "POLYGON(("
+                    + envelope.getMinX() + " " + envelope.getMinY() + ","
+                    + envelope.getMaxX() + " " + envelope.getMinY() + ","
+                    + envelope.getMaxX() + " " + envelope.getMaxY() + ","
+                    + envelope.getMinX() + " " + envelope.getMaxY() + ","               
+                    + envelope.getMinX() + " " + envelope.getMinY() + "))";
+                if(!wkt.equals(wkt2)){
+                    logger.debug("NEW WKT for Rectangle: " + wkt);
+                    invalidWKT.setValue("WKT for Rectangle is in incorrect order. We have automatically fixed this. Press next to accept this value.");
+                    displayGeom.setValue(wkt2);
+                    return false;
+                }
+                
+            }
+            return op.isValid();
         }
         catch(ParseException parseException) {
-            invalidWKT.setValue("WKT is Invalid");
+            invalidWKT.setValue("WKT is Invalid. " +parseException.getMessage());
             return false;
         } 
     }
