@@ -2774,12 +2774,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public String getViewArea() {
         //default to: current view to be dynamically returned on usage
         BoundingBox bb = getMapComposer().getLeftmenuSearchComposer().getViewportBoundingBox();
-
+        
+        //NC 20130319: Change the order of the rectangle polygon so that it is going in the correct direction for SOLR 
         String wkt = "POLYGON(("
                 + bb.getMinLongitude() + " " + bb.getMinLatitude() + ","
-                + bb.getMinLongitude() + " " + bb.getMaxLatitude() + ","
-                + bb.getMaxLongitude() + " " + bb.getMaxLatitude() + ","
                 + bb.getMaxLongitude() + " " + bb.getMinLatitude() + ","
+                + bb.getMaxLongitude() + " " + bb.getMaxLatitude() + ","
+                + bb.getMinLongitude() + " " + bb.getMaxLatitude() + ","               
                 + bb.getMinLongitude() + " " + bb.getMinLatitude() + "))";
 
         return wkt;

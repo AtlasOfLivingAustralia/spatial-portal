@@ -29,8 +29,9 @@ import org.apache.commons.httpclient.methods.GetMethod;
 public class CommonData {
 
     //common data
-    static public final String WORLD_WKT = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 84.999,179.999 -89.999,-179.999 -89.999))";
-    static public final String AUSTRALIA_WKT = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
+    static public final String WORLD_WKT = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 84.999,179.999 -89.999,-179.999 -89.999))";    
+    //NC: 20130319 changed to using the correct direction 
+    static public final String AUSTRALIA_WKT = "POLYGON((112.0 -44.0,154.0 -44.0,154.0 -9.0,112.0 -9.0,112.0 -44.0))";
     //common parameters
     static final String SAT_URL = "sat_url";
     static final String GEOSERVER_URL = "geoserver_url";
