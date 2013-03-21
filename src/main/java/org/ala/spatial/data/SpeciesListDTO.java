@@ -13,6 +13,8 @@ public class SpeciesListDTO {
     private String firstName;
     private String surname;
     private String fullName;
+    private String dateCreated;
+    private Integer itemCount=0;
     /**
      * @return the dataResourceUid
      */
@@ -99,16 +101,37 @@ public class SpeciesListDTO {
      * @return the fullName
      */
     public String getFullName() {
-      return fullName;
+        return fullName;
     }
     /**
      * @param fullName the fullName to set
      */
     public void setFullName(String fullName) {
-      this.fullName = fullName;
+        this.fullName = fullName;
     }
-    
-    
-    
-    
+    /**
+     * @return the itemCount
+     */
+    public Integer getItemCount() {
+        return itemCount;
+    }
+    /**
+     * @param itemCount the itemCount to set
+     */
+    public void setItemCount(Integer itemCount) {
+        this.itemCount = itemCount;
+    }
+    /**
+     * @return the dateCreated
+     */
+    public String getDateCreated() {
+        return dateCreated;
+    }
+    /**
+     * @param dateCreated the dateCreated to set
+     */
+    public void setDateCreated(String dateCreated) {
+        this.dateCreated = dateCreated.replaceAll("T"," ").replaceAll("Z", "");
+    }     
+        
 }

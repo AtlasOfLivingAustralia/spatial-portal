@@ -78,6 +78,7 @@ public class BiocacheQuery implements Query, Serializable {
     String name;
     String rank;
     String lsids;
+    String[] rawNames;
     ArrayList<Facet> facets;
     String wkt;
     String extraParams;
@@ -127,9 +128,12 @@ public class BiocacheQuery implements Query, Serializable {
         }
         return facetName;
     }
-
     public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, boolean[] geospatialKosher) {
+      this(lsids, null,wkt,extraParams,facets,forMapping,geospatialKosher);
+    }
+    public BiocacheQuery(String lsids, String[] rawNames, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, boolean[] geospatialKosher) {
         this.lsids = lsids;
+        this.rawNames=rawNames;
         if (facets != null) {
             this.facets = (ArrayList<Facet>) facets.clone();
         }
@@ -147,9 +151,12 @@ public class BiocacheQuery implements Query, Serializable {
 
         makeParamId();
     }
-
-    public BiocacheQuery(String lsids, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, boolean[] geospatialKosher, String biocacheServer, String biocacheWebServer, boolean supportsDynamicFacets) {
+    public BiocacheQuery(String lsids,  String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, boolean[] geospatialKosher, String biocacheServer, String biocacheWebServer, boolean supportsDynamicFacets) {
+        this(lsids, null,wkt,extraParams,facets,forMapping,geospatialKosher,biocacheServer, biocacheWebServer, supportsDynamicFacets);
+    }
+    public BiocacheQuery(String lsids, String[] rawNames, String wkt, String extraParams, ArrayList<Facet> facets, boolean forMapping, boolean[] geospatialKosher, String biocacheServer, String biocacheWebServer, boolean supportsDynamicFacets) {
         this.lsids = lsids;
+        this.rawNames=rawNames;
         if (facets != null) {
             this.facets = (ArrayList<Facet>) facets.clone();
         }
@@ -300,7 +307,7 @@ public class BiocacheQuery implements Query, Serializable {
             }
         }
 
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, geospatialKosher, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
+        return new BiocacheQuery(lsids,rawNames, wkt, extraParams, newFacets, forMapping, geospatialKosher, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
     }
 
     /**
@@ -320,7 +327,7 @@ public class BiocacheQuery implements Query, Serializable {
             newFacets.add(facet);
         }
 
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
+        return new BiocacheQuery(lsids, rawNames, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
     }
 
     /**
@@ -337,7 +344,7 @@ public class BiocacheQuery implements Query, Serializable {
             if (this.forMapping || !forMapping) {
                 return this;
             } else {
-                return new BiocacheQuery(lsids, wkt, extraParams, facets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
+                return new BiocacheQuery(lsids, rawNames, wkt, extraParams, facets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
             }
         }
 
@@ -351,7 +358,7 @@ public class BiocacheQuery implements Query, Serializable {
                 newWkt = (new WKTWriter()).write(intersectionGeom).replace(" (", "(").replace(", ", ",").replace(") ", ")");
             }
 
-            sq = new BiocacheQuery(lsids, newWkt, extraParams, facets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
+            sq = new BiocacheQuery(lsids, rawNames, newWkt, extraParams, facets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -749,6 +756,16 @@ public class BiocacheQuery implements Query, Serializable {
                     sb.append("(");
                 }
                 sb.append("lsid:").append(s);
+                queryTerms++;
+            }
+        }
+        if(rawNames != null && rawNames.length>0){
+            for(String rawName:rawNames){
+                if(queryTerms >0)
+                    sb.append(" OR ");
+                else
+                    sb.append("(");
+                sb.append("raw_name:\"").append(rawName).append("\"");
                 queryTerms++;
             }
         }
@@ -1301,7 +1318,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
         newFacets.addAll(facets);
 
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
+        return new BiocacheQuery(lsids, rawNames, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
     }
 
     @Override
@@ -1787,6 +1804,6 @@ public class BiocacheQuery implements Query, Serializable {
             newFacets.addAll(facets);
         }
         newFacets.add(Facet.parseFacet(sb.toString()));
-        return new BiocacheQuery(lsids, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
+        return new BiocacheQuery(lsids, rawNames, wkt, extraParams, newFacets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
     }
 }

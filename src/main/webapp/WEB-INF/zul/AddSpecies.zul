@@ -70,15 +70,17 @@
                         <separator height="5px"/>
                     </vbox>
                     
-                    <radio id ="rUploadLSIDs" label="Import assemblage"/>
+                    <radio id ="rUploadLSIDs" label="Use a predefined list"/>
                     <vbox id="vboxImportSL" visible="false">
                     	
                     	
 		                <listbox id="speciesListListbox" mold="paging" vflex="true" pageSize="10">
 		                    <listhead>
 		                        <listheader width="50px" />		                        
-		                        <listheader label="List Name" />
-		                        <listheader label="Owner" />
+		                        <listheader label="List Name" sort="auto" />
+		                        <listheader label="Date Created" sort="auto" />
+		                        <listheader label="Owner" sort="auto" />
+		                        <listheader label="Item Count" sort="auto" />
 		                        <!-- <listheader label="List Type"/>
 		                        <listheader label="Username" />
 		                        <listheader label="First Name"/>

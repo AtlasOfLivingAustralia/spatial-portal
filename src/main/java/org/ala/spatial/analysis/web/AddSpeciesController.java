@@ -8,6 +8,7 @@ import java.io.Reader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -35,20 +36,27 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zul.A;
+import org.zkoss.zul.AbstractListModel;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Filedownload;
+import org.zkoss.zul.ListModel;
+import org.zkoss.zul.ListModelExt;
 import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
+import org.zkoss.zul.Listhead;
+import org.zkoss.zul.Listheader;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Vbox;
+import org.zkoss.zul.event.ListDataEvent;
+import org.zkoss.zul.event.ListDataListener;
 
 /**
  *
@@ -127,9 +135,9 @@ public class AddSpeciesController extends UtilityComposer {
                 AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
                 String lsids = getMultipleLsids();
                 lsids = lsids.length()>0? lsids:null;
-                String unmatchedNames = getNamesWithoutLsids();
+                String[] unmatchedNames = getNamesWithoutLsids();
                 System.out.println("%^&*(&^%$#^&*()&^%$#^&*():"+unmatchedNames);
-                query = new BiocacheQuery(lsids, null,unmatchedNames, null, false, getGeospatialKosher());
+                query = new BiocacheQuery(lsids,unmatchedNames,null,null, null, false, getGeospatialKosher());
                 window.setSpeciesParams(query, rank, taxon);
                 window.loadAreaLayers();
                 window.setMultipleSpeciesUploadName(multipleSpeciesUploadName);
@@ -174,7 +182,7 @@ public class AddSpeciesController extends UtilityComposer {
             //if(ci != null){
              //   SpeciesListDTO list = (SpeciesListDTO)ci.getValue();
                 Collection<SpeciesListItemDTO> items = SpeciesListUtil.getListItems(list.getDataResourceUid());
-                System.out.println(items);
+                //System.out.println(items);
                 if(items != null){
                     StringBuilder sb = new StringBuilder();
                     boolean first=true;
@@ -187,6 +195,7 @@ public class AddSpeciesController extends UtilityComposer {
                     }
                     setMultipleSpecies(sb.toString(), list.getListName() + " (" + list.getDataResourceUid() + ")");
                 }
+                refreshBtnOkDisabled();
             }
         //}
     }
@@ -311,64 +320,166 @@ public class AddSpeciesController extends UtilityComposer {
 
         refreshBtnOkDisabled();
     }
+    
+    private class SpeciesListListModel extends AbstractListModel implements ListModelExt{
+        int pageSize=10;
+        int currentOffset=0;
+        List<SpeciesListDTO> currentLists;
+        String sort = null;
+        String order =null;
+        String user=getMapComposer().getCookieValue("ALA-Auth");
+        @Override
+        public Object getElementAt(int index) {
+          //System.out.println("Index : " + index + " currentOffset: " + currentOffset );
+          if(currentLists == null || index>=(currentOffset + pageSize) || index <currentOffset)
+              loadPageOfLists(index);
+          if(currentLists != null && currentLists.size()> index-currentOffset)  
+              return currentLists.get(index-currentOffset);
+          
+          return null;
+        }
+        /**
+         * Loads the page of lists from 
+         */
+        private void loadPageOfLists(int index){
+            //calculate the page that it would appear on
+            int page = index /pageSize;
+            //if(index%pageSize==0 && index!=0)
+            //    page++;
+            currentOffset = page * pageSize;
+            System.out.println("Current offset: " + currentOffset + " index " + index + " " + sort + " " + order);
+            currentLists = new ArrayList<SpeciesListDTO>(SpeciesListUtil.getPublicSpeciesLists(user, currentOffset, pageSize, sort, order));
+            
+        }
+  
+        @Override
+        public int getSize() {
+            //The maximum number of items in the species list list
+            return SpeciesListUtil.getNumberOfPublicSpeciesLists(user);
+        }
+
+        @Override
+        public void sort(Comparator cmpr, boolean ascending) {
+            if(cmpr instanceof SpeciesListComparator){
+                SpeciesListComparator c = (SpeciesListComparator)cmpr;
+                order = c.getOrder();
+                sort = c.getColumn();
+                //force the reload
+                currentLists=null;
+                fireEvent(ListDataEvent.CONTENTS_CHANGED, -1, -1);
+            }
+        }
+      
+    }
+    
+    private class SpeciesListComparator implements Comparator {
+        boolean ascending;
+        String column;
+  
+        public SpeciesListComparator(String column,boolean ascending) {
+            this.ascending = ascending;
+            this.column =column;
+            
+        }
+        @Override
+        public int compare(Object arg0, Object arg1) {
+            // we are not actually performing the compare within this object because th sort will be perfomed by the species list ws
+            return 0;
+        }
+        public String getColumn(){
+            return column;
+        }
+        public String getOrder(){
+            if(ascending)
+                return "asc";
+            else
+                return "desc";
+        }
+      
+    }
+    
     /**
      * Refreshes the content of the table that is display in "import assemblages"
      */
     private void refreshSpeciesLists(){
         //retrieve the collection of species lists to display in the combo box
-        Collection<SpeciesListDTO> lists= SpeciesListUtil.getPublicSpeciesLists(getMapComposer().getCookieValue("ALA-Auth"));
-        if(lists != null){
+        //Collection<SpeciesListDTO> lists= SpeciesListUtil.getPublicSpeciesLists(getMapComposer().getCookieValue("ALA-Auth"),null,null,null,null);
+        //if(lists != null){
           //supply the custom rendering for the species list in the table. We need an add button and link to list.
-            speciesListListbox.setItemRenderer(new ListitemRenderer() {
-
-              @Override
-              public void render(Listitem li, Object data) {
-                  final SpeciesListDTO item = (SpeciesListDTO)data;
-                  li.setValue(item);
-                  //add a button to select the species list for the assemblage
-                  Listcell lc = new Listcell();
-                  Button b = new Button("add");
-                  b.setSclass("goButton");
-                  b.addEventListener("onClick", new EventListener() {
-                      @Override
-                      public void onEvent(Event event) throws Exception {
-                          //make the species list go in the create assemblage area...
-                        refreshAssemblage(item);
-                      }
-                  });
-                  b.setParent(lc);
-                  lc.setParent(li);
-                  Listcell name = new Listcell();
-                  A a = new A(item.getListName());
-                  a.setHref(CommonData.speciesListServer + "/speciesListItem/list/" + item.getDataResourceUid());
-                  a.setTarget("_blank");
-                  a.setParent(name);
-                  name.setParent(li);
-                  String sowner = item.getFullName() != null ? item.getFullName(): item.getFirstName() + " " + item.getSurname();
-                  Listcell owner = new Listcell(sowner);
-                  owner.setParent(li);
-//                  name.setParent(li);
-//                  Listcell type = new Listcell(item.getListType());
-//                  type.setParent(li);
-//                  Listcell uname = new Listcell(item.getUsername());
-//                  uname.setParent(li);
-//                  Listcell fname = new Listcell(item.getFirstName());
-//                  fname.setParent(li);
-//                  Listcell sname = new Listcell(item.getSurname());
-//                  sname.setParent(li);
-//                  Listcell link = new Listcell();
-//                  A a = new A("view items...");
-//                  a.setHref(CommonData.speciesListServer + "/speciesListItem/list/" + item.getDataResourceUid());
-//                  a.setTarget("_blank");
-//                  a.setParent(link);
-//                  link.setParent(li);
-//                  Listcell druid = new Listcell(item.getDataResourceUid());
-//                  druid.setParent(li);
-              }
-            });
-            ListModelList lme = new ListModelList(lists);
-            speciesListListbox.setModel(lme);
+        if(speciesListListbox.getItemRenderer() == null){
+            //only initialise it once.
+              speciesListListbox.setItemRenderer(new ListitemRenderer() {
+  
+                @Override
+                public void render(Listitem li, Object data) {
+                    final SpeciesListDTO item = (SpeciesListDTO)data;
+                    li.setValue(item);
+                    //add a button to select the species list for the assemblage
+                    Listcell lc = new Listcell();
+                    Button b = new Button("add");
+                    b.setSclass("goButton");
+                    b.addEventListener("onClick", new EventListener() {
+                        @Override
+                        public void onEvent(Event event) throws Exception {
+                            //make the species list go in the create assemblage area...
+                          refreshAssemblage(item);
+                        }
+                    });
+                    b.setParent(lc);
+                    lc.setParent(li);
+                    Listcell name = new Listcell();
+                    A a = new A(item.getListName());
+                    a.setHref(CommonData.speciesListServer + "/speciesListItem/list/" + item.getDataResourceUid());
+                    a.setTarget("_blank");
+                    a.setParent(name);
+                    name.setParent(li);
+                    Listcell date = new Listcell(item.getDateCreated());
+                    date.setParent(li);
+                    String sowner = item.getFullName() != null ? item.getFullName(): item.getFirstName() + " " + item.getSurname();
+                    Listcell owner = new Listcell(sowner);
+                    owner.setParent(li);
+                    Listcell count = new Listcell(item.getItemCount().toString());
+                    count.setParent(li);
+  //                  name.setParent(li);
+  //                  Listcell type = new Listcell(item.getListType());
+  //                  type.setParent(li);
+  //                  Listcell uname = new Listcell(item.getUsername());
+  //                  uname.setParent(li);
+  //                  Listcell fname = new Listcell(item.getFirstName());
+  //                  fname.setParent(li);
+  //                  Listcell sname = new Listcell(item.getSurname());
+  //                  sname.setParent(li);
+  //                  Listcell link = new Listcell();
+  //                  A a = new A("view items...");
+  //                  a.setHref(CommonData.speciesListServer + "/speciesListItem/list/" + item.getDataResourceUid());
+  //                  a.setTarget("_blank");
+  //                  a.setParent(link);
+  //                  link.setParent(li);
+  //                  Listcell druid = new Listcell(item.getDataResourceUid());
+  //                  druid.setParent(li);
+                }
+              });
+              //ListModelList lme = new ListModelList(lists);
+              SpeciesListListModel model = new SpeciesListListModel();
+              speciesListListbox.setModel(model);
+              
+              //set the header sort stuff
+              Listhead head = speciesListListbox.getListhead();
+              Listheader namehead= (Listheader) head.getChildren().get(1);
+              namehead.setSortAscending(new SpeciesListComparator("listName",true));
+              namehead.setSortDescending(new SpeciesListComparator("listName",false));
+              Listheader datehead= (Listheader) head.getChildren().get(2);
+              datehead.setSortAscending(new SpeciesListComparator("dateCreated",true));
+              datehead.setSortDescending(new SpeciesListComparator("dateCreated",false));
+              Listheader ownerhead= (Listheader) head.getChildren().get(3);
+              ownerhead.setSortAscending(new SpeciesListComparator("username",true));
+              ownerhead.setSortDescending(new SpeciesListComparator("username",false));
+              Listheader counthead= (Listheader) head.getChildren().get(4);
+              counthead.setSortAscending(new SpeciesListComparator("count",true));
+              counthead.setSortDescending(new SpeciesListComparator("count",false));
         }
+            
+        //}
         //The combobox will be deleted maybe?
 //        cbSpeciesLists.getItems().clear();
 //        if(lists != null){
@@ -389,8 +500,10 @@ public class AddSpeciesController extends UtilityComposer {
     private void refreshBtnOkDisabled() {
         if (rSearch.isSelected()) {
             btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null || searchSpeciesAuto.getSelectedItem().getValue() == null);
-        } else if (rMultiple.isSelected()) {
+        } else if (rMultiple.isSelected()) {            
             btnOk.setDisabled(getMultipleLsids().length() == 0 && getNamesWithoutLsids() == null);
+        } else if(rUploadLSIDs.isSelected()) {
+            btnOk.setDisabled(true);
         } else {
             btnOk.setDisabled(false);
         }
@@ -695,20 +808,23 @@ public class AddSpeciesController extends UtilityComposer {
      * Constructs the query for names without matches.
      * @return
      */
-    private String getNamesWithoutLsids(){
+    private String[] getNamesWithoutLsids(){
         StringBuilder sb = new StringBuilder();
         for (Listitem li : (List<Listitem>) lMultiple.getItems()) {
             //Listcell lsidCell = (Listcell) li.getLastChild();
             Listcell sciNameCell = (Listcell)li.getChildren().get(1);
             String name = sciNameCell.getLabel();
             if(name.contains("(not found)")){
-               if(sb.length()>0)
-                   sb.append(" AND ");
-               sb.append("raw_name:\"").append(name.replaceAll("\\(not found\\)", "").trim()).append("\"");
+              if(sb.length()>0)
+                  sb.append("|");
+                sb.append(name.replaceAll("\\(not found\\)", "").trim());
+//               if(sb.length()>0)
+//                   sb.append(" AND ");
+//               sb.append("raw_name:\"").append(name.replaceAll("\\(not found\\)", "").trim()).append("\"");
             }
         }
         if(sb.length()>0)
-            return sb.toString();
+            return sb.toString().split("\\|");
         else
             return null;
     }
@@ -810,9 +926,9 @@ public class AddSpeciesController extends UtilityComposer {
                 //e.printStackTrace();
             }
             if (!loaded) {
-                try {
+                try {                    
                     importList(new String(m.getByteData()));
-                    loaded = true;
+                    loaded = true;                    
                     System.out.println("read type " + m.getContentType() + " with getByteData");
                 } catch (Exception e) {
                     //e.printStackTrace();

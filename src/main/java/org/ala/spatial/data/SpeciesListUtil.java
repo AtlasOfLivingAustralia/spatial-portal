@@ -29,16 +29,37 @@ public class SpeciesListUtil {
     private static Collection<SpeciesListDTO> publicSpeciesLists = null;
     private final static Logger logger = Logger.getLogger(SpeciesListUtil.class);
     
-    /**
-     * Retrieves all the publically available species lists  
-     * @return
-     */
-    public static Collection  getPublicSpeciesLists(String user){
-        String url = CommonData.speciesListServer + "/ws/speciesList" ;
-        if(user != null)
-          url += "?user="+user;
+    
+    public static int getNumberOfPublicSpeciesLists(String user){
+        //TO DO retrive from lists.ala.org.au
+        JSONObject jobject = getLists(user, 0,0,null,null);
+        if(jobject != null)
+            return jobject.getInt("listCount");
+        else
+            return 0;
+    }
+    
+    private static JSONObject getLists(String user,Integer offset, Integer max, String sort, String order){
+        //String url = CommonData.speciesListServer + "/ws/speciesList" ;
+        StringBuilder sb = new StringBuilder(CommonData.speciesListServer);
+        sb.append("/ws/speciesList");
+        
+        
+        sb.append("?user=");
+        if(user != null){
+            sb.append(user);        
+        }
+        if(offset != null){
+            sb.append("&offset=").append(offset.toString());
+        }
+        if(max != null)
+            sb.append("&max=").append(max);
+        if(sort!=null)
+          sb.append("&sort=").append(sort);
+        if(order != null)
+            sb.append("&order=").append(order);
         HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(url);
+        GetMethod get = new GetMethod(sb.toString());
         try{
             
             get.addRequestHeader("Content-type", "text/plain");
@@ -47,7 +68,9 @@ public class SpeciesListUtil {
             if(result == 200){
                 String rawJSON = get.getResponseBodyAsString();
                 //System.out.println(rawJSON);
-                publicSpeciesLists = JSONArray.toCollection(JSONArray.fromObject(rawJSON), SpeciesListDTO.class);
+                JSONObject object = JSONObject.fromObject(rawJSON);
+                
+                return object;
             }
             else{
                 logger.error("Unable to retrieve species list. " + result);
@@ -61,7 +84,44 @@ public class SpeciesListUtil {
         finally{
             get.releaseConnection();
         }
-        return publicSpeciesLists;
+        return null;
+    }
+    
+    /**
+     * Retrieves all the publically available species lists  
+     * @return
+     */
+    public static Collection  getPublicSpeciesLists(String user,Integer offset, Integer max, String sort, String order){
+        JSONObject jobject = getLists(user, offset, max, sort, order);
+        return JSONArray.toCollection(jobject.getJSONArray("lists"), SpeciesListDTO.class);
+//        String url = CommonData.speciesListServer + "/ws/speciesList" ;
+//        if(user != null)
+//          url += "?user="+user;
+//        HttpClient client = new HttpClient();
+//        GetMethod get = new GetMethod(url);
+//        try{
+//            
+//            get.addRequestHeader("Content-type", "text/plain");
+//      
+//            int result = client.executeMethod(get);
+//            if(result == 200){
+//                String rawJSON = get.getResponseBodyAsString();
+//                //System.out.println(rawJSON);
+//                publicSpeciesLists = JSONArray.toCollection(JSONArray.fromObject(rawJSON), SpeciesListDTO.class);
+//            }
+//            else{
+//                logger.error("Unable to retrieve species list. " + result);
+//                logger.info("Extra information about the error: " + get.getResponseBodyAsString());
+//            }
+//           
+//        }
+//        catch(Exception e){
+//            logger.error("Error retrieving public species list.",e);
+//        }
+//        finally{
+//            get.releaseConnection();
+//        }
+//        return publicSpeciesLists;
     }
     /**
      * Retrieves the items from the specified listUid
@@ -141,7 +201,7 @@ public class SpeciesListUtil {
     
     public static void main(String[] args){
         CommonData.speciesListServer="http://natasha.ala.org.au:8080/specieslist-webapp";
-        System.out.println(getPublicSpeciesLists(null));
-        System.out.println(createNewList("FirstTestList","Callocephalon fimbriatum,Ornithorhynchus anatinus","The description","The url","natasha.carter@csiro"));
+        System.out.println(getPublicSpeciesLists(null, null,null,null,null));
+        //System.out.println(createNewList("FirstTestList","Callocephalon fimbriatum,Ornithorhynchus anatinus","The description","The url","natasha.carter@csiro"));
     }
 }
