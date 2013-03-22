@@ -16,6 +16,7 @@ public class UploadToSpeciesListController extends UtilityComposer{
     Textbox tbName,tbDesc;
     Label tbInstructions;
     String species;
+    String dataResourceUid;
     /**
      * The species string needs to be set containing a comma separated list of scientificNames to include in the list.
      * @param species
@@ -28,7 +29,10 @@ public class UploadToSpeciesListController extends UtilityComposer{
         if(tbName.getValue().length()>0){
             String name = tbName.getValue();
             String description = tbDesc.getValue();
-            SpeciesListUtil.createNewList(name, species, description, null, getMapComposer().getCookieValue("ALA-Auth"));
+            dataResourceUid=SpeciesListUtil.createNewList(name, species, description, null, getMapComposer().getCookieValue("ALA-Auth"));
+            logger.debug("The data resource uid: " + dataResourceUid);
+            if(this.getParent() instanceof AddSpeciesController)
+                ((AddSpeciesController)this.getParent()).updateSpeciesListMessage(dataResourceUid);
             this.detach();
         }
         else{
@@ -44,5 +48,7 @@ public class UploadToSpeciesListController extends UtilityComposer{
         this.detach();
     }
     
-  
+    public String getDataResourceUid(){
+        return dataResourceUid;
+    }
 }

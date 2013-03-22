@@ -37,7 +37,7 @@
                         <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
                         <separator height="20px"/>
                     </vbox>
-                    <radio id="rMultiple" label="Create assemblage" />
+                    <radio id="rMultiple" label="Create species list" />
                     <vbox id="vboxMultiple" visible="false">
                         <separator />
                         <label value="Enter scientific names, LSIDs and common names separated by a comma or new line." />
@@ -66,11 +66,15 @@
                                 <listheader />
                             </listhead>
                         </listbox>
-                        <button id="bAssemblageExport" label="Export set" sclass="goButton" />
+                        <hbox>
+                        	<label id="lblMessage" />
+                        	<a id="aMessage" />
+                        </hbox>
+                        <!-- <button id="bAssemblageExport" label="Export set" sclass="goButton" /> -->
                         <separator height="5px"/>
                     </vbox>
                     
-                    <radio id ="rUploadLSIDs" label="Use a predefined list"/>
+                    <radio id ="rUploadLSIDs" label="Load a species list"/>
                     <vbox id="vboxImportSL" visible="false">
                     	
                     	
