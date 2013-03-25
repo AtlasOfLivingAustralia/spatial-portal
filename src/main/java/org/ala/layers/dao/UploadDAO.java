@@ -10,8 +10,6 @@ public interface UploadDAO {
     
     public int storeGeometryFromKML(String kml, String name, String description, String userid);
     
-    public int storeGeometryFromGeoJSON(String geojson, String name, String description, String userid);
-    
     public String getGeoJson(int pid);
     
     public String getKML(int pid);
@@ -20,6 +18,6 @@ public interface UploadDAO {
     
     public List<Integer> pointIntersect(double latitude, double longitude);
     
-    public void deleteGeometry(int pid);
+    public boolean deleteGeometry(int pid);
     
 }
