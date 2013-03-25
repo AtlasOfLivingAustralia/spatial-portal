@@ -77,7 +77,7 @@ public class SpatialConversionUtils {
         return null;
     }
 
-    public static void saveShapefile(File shpfile, String wktString) {
+    public static File saveShapefile(File shpfile, String wktString) {
         try {
             String wkttype = "POLYGON";
             if (wktString.contains("GEOMETRYCOLLECTION") || wktString.contains("MULTIPOLYGON")) {
@@ -129,10 +129,11 @@ public class SpatialConversionUtils {
             }
 
             System.out.println("Active Area shapefile written to: " + shpfile.getAbsolutePath());
-
+            return shpfile;
         } catch (Exception e) {
             System.out.println("Unable to save shapefile: ");
             e.printStackTrace(System.out);
+            return null;
         }
     }
 
