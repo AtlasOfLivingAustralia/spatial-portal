@@ -379,16 +379,16 @@ public class SpeciesAutoComplete extends Combobox {
                                 slist.append(o.getString("guid")).append("/");
                                 slist.append(o.getString("rankString"));
                                 slist.append(", ").append(o.getString("name").replace("/",","));
-//                                slist.append("/found ");
-//                                slist.append(count);
+                                slist.append("/found ");
+                                slist.append(count);
                             } else {
                                 //slist.append(o.getString("name").replace("/",",")).append(" /");
                                 slist.append(matchedName).append(" /");
                                 slist.append(o.getString("guid")).append("/");
                                 slist.append(o.getString("rankString"));
                                 if(commonName != null) slist.append(", ").append(commonName);
-//                                slist.append("/found ");
-//                                slist.append(count);
+                                slist.append("/found ");
+                                slist.append(count);
                             }
                         }
                     } catch (Exception e) {
