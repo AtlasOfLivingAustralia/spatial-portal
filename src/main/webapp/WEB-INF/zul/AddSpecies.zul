@@ -37,7 +37,7 @@
                         <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
                         <separator height="20px"/>
                     </vbox>
-                    <radio id="rMultiple" label="Create species list" />
+                    <radio id="rMultiple" label="Create new species list" />
                     <vbox id="vboxMultiple" visible="false">
                         <separator />
                         <label value="Enter scientific names, LSIDs and common names separated by a comma or new line." />
@@ -74,7 +74,7 @@
                         <separator height="5px"/>
                     </vbox>
                     
-                    <radio id ="rUploadLSIDs" label="Load a species list"/>
+                    <radio id ="rUploadLSIDs" label="Use existing species list"/>
                     <vbox id="vboxImportSL" visible="false">
                     	
                     	

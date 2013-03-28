@@ -357,6 +357,7 @@ public class AddSpeciesController extends UtilityComposer {
         int pageSize=10;
         int currentOffset=0;
         List<SpeciesListDTO> currentLists;
+        Integer size =null;
         String sort = null;
         String order =null;
         String user=getMapComposer().getCookieValue("ALA-Auth");
@@ -379,15 +380,22 @@ public class AddSpeciesController extends UtilityComposer {
             //if(index%pageSize==0 && index!=0)
             //    page++;
             currentOffset = page * pageSize;
-            System.out.println("Current offset: " + currentOffset + " index " + index + " " + sort + " " + order);
+            logger.debug("Current offset: " + currentOffset + " index " + index + " " + sort + " " + order);
             currentLists = new ArrayList<SpeciesListDTO>(SpeciesListUtil.getPublicSpeciesLists(user, currentOffset, pageSize, sort, order));
+            logger.debug("Finished getting items");
             
         }
   
         @Override
         public int getSize() {
             //The maximum number of items in the species list list
-            return SpeciesListUtil.getNumberOfPublicSpeciesLists(user);
+            if(size == null){
+                logger.debug("Starting to get page size...");
+                size = SpeciesListUtil.getNumberOfPublicSpeciesLists(user);
+                logger.debug("Finished getting page size");
+            }
+            return size;
+            //return SpeciesListUtil.getNumberOfPublicSpeciesLists(user);
         }
 
         @Override
@@ -934,19 +942,11 @@ public class AddSpeciesController extends UtilityComposer {
       //if a data resource exists check report it        
         logger.debug("Species list that was created : " + drUid);
         if(drUid != null){
-              //message = "Successfully created species list <a href='"+CommonData.speciesListServer+ ">" + dialog.getDataResourceUid() +"</a>";
-            lblMessage.setValue("Successfully created species list ");
-            aMessage.setLabel(drUid);
-            aMessage.setHref(CommonData.speciesListServer + "/speciesListItem/list/" + drUid);
-            aMessage.setTarget("_blank");
-            aMessage.setVisible(true);
-            //
             speciesListListbox.setItemRenderer((ListitemRenderer)null);
-        }
-        else{
-            lblMessage.setValue("ERROR");
-            aMessage.setVisible(false);
-        }
+            //rgAddSpecies.setS
+            rUploadLSIDs.setSelected(true);
+            onCheck$rgAddSpecies(null);
+        }        
     }
     /**
      * Exporting an assemblage will create a new species list for the species that are contained in the create assemblage table.
