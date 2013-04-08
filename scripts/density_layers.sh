@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script generates the occurrence density and species richness layers and then loads them into the spatial portal.
+
 DATE=$(date +built_%y%m%d)
 GEOSERVER_USRPWD="user:password"
 GEOSERVER_URL="http://localhost:8082/geoserver"
