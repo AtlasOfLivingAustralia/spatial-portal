@@ -5,7 +5,6 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -16,7 +15,6 @@ import org.junit.Test;
 public class GeometryServiceTest {
 
     @Test
-    @Ignore
     public void testgeometryWkt() throws Exception {
         String json = "{\"wkt\": \"POLYGON((125.5185546875 -21.446934836644,128.2431640625 -21.446934836644,128.2431640625 -19.138942324356,125.5185546875 -19.138942324356,125.5185546875 -21.446934836644))\", \"name\": \"test\", \"description\": \"test\", \"userid\": \"chris\"}";
         
@@ -35,7 +33,6 @@ public class GeometryServiceTest {
     }
 
     @Test
-    @Ignore
     public void testgeometryGeojson() throws Exception {
         String json = "{\"geojson\": \"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[125.5185546875,-21.446934836644001],[128.2431640625,-21.446934836644001],[128.2431640625,-19.138942324356002],[125.5185546875,-19.138942324356002],[125.5185546875,-21.446934836644001]]]}\", \"name\": \"test\", \"description\": \"test\", \"userid\": \"chris\"}";
         
@@ -54,7 +51,6 @@ public class GeometryServiceTest {
     }
     
     @Test
-    @Ignore
     public void testMalformedJSON() throws Exception{
         String json = "#%#%#";        
         HttpClient httpClient = new HttpClient();
@@ -72,7 +68,6 @@ public class GeometryServiceTest {
     }
     
     @Test
-    @Ignore
     public void testInvalidJSON() throws Exception{
         // Using a list here when we need a map
         String json = "[1, 2, 3]";        
@@ -91,7 +86,6 @@ public class GeometryServiceTest {
     }
     
     @Test
-    @Ignore
     public void testMalformedWkt() throws Exception {
         String json = "{\"wkt\": \"lalala\", \"name\": \"test\", \"description\": \"test\", \"userid\": \"chris\"}";
         
@@ -110,7 +104,6 @@ public class GeometryServiceTest {
     }
     
     @Test
-    @Ignore
     public void testMalformedGeoJSON() throws Exception {
         String json = "{\"geojson\": \"lalala\", \"name\": \"test\", \"description\": \"test\", \"userid\": \"chris\"}";
         
@@ -131,10 +124,9 @@ public class GeometryServiceTest {
     //Invalid pid
 
     @Test
-    @Ignore
     public void testGetGeoJson() throws Exception {
         HttpClient httpClient = new HttpClient();
-        GetMethod get = new GetMethod("http://localhost:8080/layers-service/geometry/1/geojson");
+        GetMethod get = new GetMethod("http://localhost:8080/layers-service/geometry/geojson/1");
 
         
         int returnCode = httpClient.executeMethod(get);
@@ -142,14 +134,13 @@ public class GeometryServiceTest {
         
         String responseText = get.getResponseBodyAsString();
         System.out.println(responseText);
-        Assert.assertTrue(responseText.equals("{\"geojson\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[125.5185546875,-21.446934836644001],[128.2431640625,-21.446934836644001],[128.2431640625,-19.138942324356002],[125.5185546875,-19.138942324356002],[125.5185546875,-21.446934836644001]]]}\",\"id\":1,\"name\":\"test\",\"description\":\"test\",\"user_id\":\"chris\",\"time_added\":\"1970-01-01T09:41+1000\"}")); 
+        Assert.assertTrue(responseText.equals("{\"geojson\":{\"type\":\"Polygon\",\"coordinates\":[[[125.5185546875,-21.446934836644],[128.2431640625,-21.446934836644],[128.2431640625,-19.138942324356],[125.5185546875,-19.138942324356],[125.5185546875,-21.446934836644]]]},\"id\":1,\"name\":\"test\",\"description\":\"test\",\"user_id\":\"chris\",\"time_added\":\"1970-01-01T09:41+1000\"}")); 
     }
 
     @Test
-    @Ignore
     public void testGetWkt() throws Exception {
         HttpClient httpClient = new HttpClient();
-        GetMethod get = new GetMethod("http://localhost:8080/layers-service/geometry/1/wkt");
+        GetMethod get = new GetMethod("http://localhost:8080/layers-service/geometry/wkt/1");
 
         
         int returnCode = httpClient.executeMethod(get);
@@ -161,7 +152,6 @@ public class GeometryServiceTest {
     }
 
     @Test
-    @Ignore
     public void testDelete() throws Exception {
         // Create layer
         String json = "{\"wkt\": \"POLYGON((125.5185546875 -21.446934836644,128.2431640625 -21.446934836644,128.2431640625 -19.138942324356,125.5185546875 -19.138942324356,125.5185546875 -21.446934836644))\", \"name\": \"test\", \"description\": \"test\", \"userid\": \"chris\"}";
@@ -184,7 +174,7 @@ public class GeometryServiceTest {
         Assert.assertTrue(responseText2.equals("{\"deleted\":true}"));
         
         // Check layer pid now invalid
-        GetMethod get = new GetMethod("http://localhost:8080/layers-service/geometry/" + pid + "/wkt");
+        GetMethod get = new GetMethod("http://localhost:8080/layers-service/geometry/wkt/" + pid);
 
         
         int returnCode3 = httpClient.executeMethod(get);
@@ -196,7 +186,6 @@ public class GeometryServiceTest {
     }
 
     @Test
-    @Ignore
     public void testPointRadiusIntersection() throws Exception {
         HttpClient httpClient = new HttpClient();
         GetMethod get = new GetMethod("http://localhost:8080/layers-service/geometry/intersect_point_radius");
@@ -211,7 +200,6 @@ public class GeometryServiceTest {
     }
     
     @Test
-    @Ignore
     public void testAreaIntersectionWkt() throws Exception {
         String json = "{\"wkt\": \"POLYGON((126.44140625 -20.297236602241,127.056640625 -20.297236602241,127.056640625 -19.636380658043,126.44140625 -19.636380658043,126.44140625 -20.297236602241))\"}";
         
@@ -230,7 +218,6 @@ public class GeometryServiceTest {
     }
     
     @Test
-    @Ignore
     public void testGeometryCollection() throws Exception {
         String json = "{\"wkt\": \"GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(4 6,7 10))\", \"name\": \"test\", \"description\": \"test\", \"userid\": \"chris\"}";
         
@@ -249,7 +236,6 @@ public class GeometryServiceTest {
     }
     
     @Test
-    @Ignore
     public void testInvalidGeometry() throws Exception {
         String json = "{\"wkt\": \"POLYGON((0 0,10 10,0 10,10 0,0 0))\", \"name\": \"test\", \"description\": \"test\", \"userid\": \"chris\"}";
         

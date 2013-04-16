@@ -82,7 +82,7 @@ public class GeometryService {
     }
 
     // Retrieve wkt
-    @RequestMapping(value = { "/geometry/{id}/wkt" }, method = RequestMethod.GET)
+    @RequestMapping(value = { "/geometry/wkt/{id}" }, method = RequestMethod.GET)
     @ResponseBody
     public Map<String, Object> getWKT(@PathVariable("id") int id) {
         // Use linked hash map to maintain ordering
@@ -151,14 +151,19 @@ public class GeometryService {
     }
 
     // Retrieve GeoJson
-    @RequestMapping(value = "/geometry/{id}/geojson", method = RequestMethod.GET)
+    @RequestMapping(value = "/geometry/geojson/{id}", method = RequestMethod.GET)
     @ResponseBody
     public Map<String, Object> getGeoJson(@PathVariable("id") int id) {
         // Use linked hash map to maintain ordering
         Map<String, Object> retMap = new LinkedHashMap<String, Object>();
         try {
             Map<String, Object> geoJsonAndMetadata = geometryDao.getGeoJSONAndMetadata(id);
-            retMap.put("geojson", geoJsonAndMetadata.get("geojson"));
+            
+            String strGeoJson = (String) geoJsonAndMetadata.get("geojson");
+            ObjectMapper mapper = new ObjectMapper();
+            Map parsedGeoJson = mapper.readValue(strGeoJson, Map.class);
+            
+            retMap.put("geojson", parsedGeoJson);
             retMap.put("id", geoJsonAndMetadata.get("id"));
             retMap.put("name", geoJsonAndMetadata.get("name"));
             retMap.put("description", geoJsonAndMetadata.get("description"));
