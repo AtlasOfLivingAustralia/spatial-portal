@@ -579,11 +579,12 @@ public class GridCutter {
             }
         }
 
-        //update extents
-        extents[0][0] += minx * res;
-        extents[1][0] -= (w - maxx - 1) * res;
-        extents[0][1] += miny * res;
-        extents[1][1] -= (h - maxy - 1) * res;
+
+        //update extents, must never be larger than the original extents (res is not negative, minx maxx miny mazy are not negative and < w & h respectively
+        extents[0][0] = Math.max(extents[0][0] + minx * res,extents[0][0]); //min x value
+        extents[1][0] = Math.min(extents[1][0] - (w - maxx - 1) * res,extents[1][0]); //max x value
+        extents[0][1] = Math.max(extents[0][1] + miny * res,extents[0][1]); //min y value
+        extents[1][1] = Math.min(extents[1][1] - (h - maxy - 1) * res,extents[1][1]); //max y value
 
         return smallerMask;
     }
