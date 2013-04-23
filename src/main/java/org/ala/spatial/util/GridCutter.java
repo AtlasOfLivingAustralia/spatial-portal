@@ -616,19 +616,29 @@ public class GridCutter {
         w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
         mask = getEnvelopeMaskAndUpdateExtents(resolution, res, extents, h, w, envelopes);
         h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
+        if(((int) Math.ceil((extents[1][1] + res - extents[0][1]) / res)) == h) {
+            extents[1][1] += res;
+        }
         w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
-
+        if(((int) Math.ceil((extents[1][0] + res - extents[0][0]) / res)) == w) {
+            extents[1][0] += res;
+        }
+        
         float[] values = new float[w * h];
         int pos = 0;
         double areaSqKm = 0;
         for (int i = h - 1; i >= 0; i--) {
             for (int j = 0; j < w; j++) {
-                values[pos] = mask[i][j];
-                pos++;
-
-                if (mask[i][j] > 0) {
-                    areaSqKm += SpatialUtil.cellArea(res, extents[0][1] + res * i);
+                if(i < mask.length && j < mask[i].length) {
+                    values[pos] = mask[i][j];
+                    
+                    if (mask[i][j] > 0) {
+                        areaSqKm += SpatialUtil.cellArea(res, extents[0][1] + res * i);
+                    }
+                } else {
+                    values[pos] = 0;
                 }
+                pos++;
             }
         }
 
@@ -643,6 +653,7 @@ public class GridCutter {
 
         return areaSqKm;
     }
+
 
     /**
      * Test if the layer filter is valid.
