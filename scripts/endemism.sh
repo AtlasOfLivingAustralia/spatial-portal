@@ -13,7 +13,7 @@ export GDAL_TRANSLATE="/data/ala/utils/gdal-1.9.0/apps/gdal_translate"
 # Create directory to store output files:
 mkdir $OUTPUTDIR 
 
-echo $DATE > $OUTPUTDUR/build.log
+echo $DATE > $OUTPUTDIR/build.log
 
 # download generated data from the biocache
 echo "downloading data from biocache" >> $OUTPUTDIR/build.log 
