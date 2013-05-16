@@ -1058,6 +1058,7 @@ public class BiocacheQuery implements Query, Serializable {
 
     @Override
     public ArrayList<QueryField> getFacetFieldList() {
+      //TODO NC20130516: This facet lists should be obtained from the biocache-service
         if (facetFieldList == null) {
             ArrayList<QueryField> fields = new ArrayList<QueryField>();
             if(supportsDynamicFacets){
@@ -1087,7 +1088,7 @@ public class BiocacheQuery implements Query, Serializable {
             fields.add(new QueryField("country", "Country boundaries", QueryField.FieldType.STRING));
             fields.add(new QueryField("ibra", "IBRA regions", QueryField.FieldType.STRING));
             fields.add(new QueryField("imcra", "IMCRA regions", QueryField.FieldType.STRING));
-            fields.add(new QueryField("cl918", "Dynamic land cover", QueryField.FieldType.STRING));
+            fields.add(new QueryField("cl1918", "Dynamic land cover", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl617", "Vegetation types - native", QueryField.FieldType.STRING));
             fields.add(new QueryField("cl620", "Vegetation types - present", QueryField.FieldType.STRING));
             fields.add(new QueryField("geospatial_kosher", "Spatial Validity", QueryField.FieldType.STRING));
