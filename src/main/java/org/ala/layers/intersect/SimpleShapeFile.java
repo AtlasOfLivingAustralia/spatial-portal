@@ -418,7 +418,6 @@ public class SimpleShapeFile extends Object implements Serializable {
  * represents partial shape file header structure
  *
  * @author adam
- *
  */
 class ShapeHeader extends Object implements Serializable {
 

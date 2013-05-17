@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import org.ala.layers.dao.IntersectCallback;
 import org.ala.layers.dto.GridClass;
 import org.ala.layers.dto.IntersectionFile;
 import org.apache.log4j.Logger;
@@ -38,8 +40,11 @@ public class SamplingThread extends Thread {
     int threadCount;
     SimpleShapeFileCache simpleShapeFileCache;
     int gridBufferSize;
+    IntersectCallback callback;
 
-    public SamplingThread(LinkedBlockingQueue<Integer> lbq, CountDownLatch cdl, IntersectionFile[] intersectionFiles, double[][] points, ArrayList<String> output, int threadCount, SimpleShapeFileCache simpleShapeFileCache, int gridBufferSize) {
+    public SamplingThread(LinkedBlockingQueue<Integer> lbq, CountDownLatch cdl, IntersectionFile[] intersectionFiles,
+                          double[][] points, ArrayList<String> output, int threadCount,
+                          SimpleShapeFileCache simpleShapeFileCache, int gridBufferSize, IntersectCallback callback) {
         this.lbq = lbq;
         this.cdl = cdl;
         this.points = points;
@@ -48,7 +53,7 @@ public class SamplingThread extends Thread {
         this.threadCount = threadCount;
         this.simpleShapeFileCache = simpleShapeFileCache;
         this.gridBufferSize = gridBufferSize;
-
+        this.callback = callback;
         setPriority(MIN_PRIORITY);
     }
 
@@ -56,16 +61,19 @@ public class SamplingThread extends Thread {
         try {
             while (true) {
                 int pos = lbq.take();
+                this.callback.setCurrentLayerIdx(pos);
                 try {
                     StringBuilder sb = new StringBuilder();
                     sample(points, intersectionFiles[pos], sb);
+                    this.callback.setCurrentLayer(intersectionFiles[pos]);
                     output.set(pos, sb.toString());
                 } catch (Exception e) {
+                    logger.error(e.getMessage(),e);
                 }
-
                 cdl.countDown();
             }
         } catch (Exception e) {
+            logger.trace(e.getMessage(),e);
         }
     }
 
@@ -73,13 +81,14 @@ public class SamplingThread extends Thread {
         if (intersectionFile == null) {
             return;
         }
-
         HashMap<Integer, GridClass> classes = intersectionFile.getClasses();
         String shapeFieldName = intersectionFile.getShapeFields();
         String fileName = intersectionFile.getFilePath();
         String name = intersectionFile.getFieldId();
         long start = System.currentTimeMillis();
-        logger.info("start sampling " + points.length + " points in " + name + ":" + fileName + (shapeFieldName == null ? "" : " field: " + shapeFieldName));
+        logger.info("Starting sampling " + points.length + " points in " + name + ":"
+                + fileName + (shapeFieldName == null ? "" : " field: " + shapeFieldName));
+        callback.progressMessage("Started sampling layer:" + intersectionFile.getLayerName());
         if (shapeFieldName != null) {
             intersectShape(fileName, shapeFieldName, points, sb);
         } else if (classes != null) {
@@ -88,7 +97,10 @@ public class SamplingThread extends Thread {
             intersectGrid(fileName, points, sb);
         }
 
-        logger.info("finished sampling " + points.length + " points in " + name + ":" + fileName + " in " + (System.currentTimeMillis() - start) + "ms");
+        logger.info("Finished sampling " + points.length + " points in " + name + ":"
+                + fileName + " in " + (System.currentTimeMillis() - start) + "ms");
+
+        callback.progressMessage("Finished sampling layer:" + intersectionFile.getLayerName()+". Points processed:" + points.length);
     }
 
     public void intersectGrid(String filename, double[][] points, StringBuilder sb) {
@@ -157,8 +169,7 @@ public class SamplingThread extends Thread {
         try {
             SimpleShapeFile ssf = null;
 
-            if (simpleShapeFileCache == null) {
-            } else {
+            if (simpleShapeFileCache != null) {
                 ssf = simpleShapeFileCache.get(filename);
             }
 
@@ -167,11 +178,10 @@ public class SamplingThread extends Thread {
                 ssf = new SimpleShapeFile(filename, fieldName);
             }
 
-            String[] catagories;
             int column_idx = ssf.getColumnIdx(fieldName);
-            catagories = ssf.getColumnLookup(column_idx);
+            String[] categories = ssf.getColumnLookup(column_idx);
 
-            int[] values = ssf.intersect(points, catagories, column_idx, threadCount);
+            int[] values = ssf.intersect(points, categories, column_idx, threadCount);
 
             if (values != null) {
                 for (int i = 0; i < values.length; i++) {
@@ -179,7 +189,7 @@ public class SamplingThread extends Thread {
                         sb.append("\n");
                     }
                     if (values[i] >= 0) {
-                        sb.append(catagories[values[i]]);
+                        sb.append(categories[values[i]]);
                     } else {
                         sb.append("n/a");
                     }

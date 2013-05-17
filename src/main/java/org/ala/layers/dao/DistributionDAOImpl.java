@@ -163,6 +163,10 @@ public class DistributionDAOImpl implements DistributionDAO {
         String pointGeom = "POINT(" + longitude + " " + latitude + ")";
 
         //String sql = SELECT_CLAUSE + " from " + viewName + " where ST_Distance_Sphere(the_geom, ST_GeomFromText('" + pointGeom + "', 4326)) <= :radius";
+
+        //ST_intersects(points_geom, ST_buffer(search_point_geom, Distance))
+
+
         String sql = SELECT_CLAUSE + " from " + viewName + " where ST_DWithin(the_geom, ST_GeomFromText('" + pointGeom + "', 4326), :radius)";
         // add additional criteria
         StringBuilder whereClause = new StringBuilder();

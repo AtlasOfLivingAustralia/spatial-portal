@@ -44,6 +44,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 /**
+ * Implementation of the sampling.
  *
  * @author adam
  */
@@ -62,7 +63,6 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
     LinkedBlockingQueue<GridCacheReader> gridReaders = null;
     int gridGroupCount = 0;
     Object initLock = new Object();
-//    Thread reloadThread = null;
 
     @Override
     public String reload() {
@@ -128,23 +128,6 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                     gridReaders = null;
                 }
             }
-//            reloadThread = new Thread() {
-//
-//                @Override
-//                public void run() {
-//                    while(true) {
-//                        try {
-//                            synchronized(reloadThread) {
-//                                reloadThread.wait(intersectConfig.getConfigReloadWait());
-//                            }
-//                        } catch (InterruptedException e) {
-//                            break;
-//                        }
-//                        reload();
-//                    }
-//                }
-//            };
-//            reloadThread.start();
         }
     }
 
@@ -206,17 +189,14 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                             GridClass gc = f.getClasses().get((int) v[0]);
                             m.put("value", (gc == null ? "n/a" : gc.getName()));
                             if (gc != null) {                                
-                                //TODO: re-enable intersection for type 'a' after correct implementation of 'defaultField' fields table column
-//                                    if (f.getType().equals("a")) {           //class pid
-//                                        m.put("pid", f.getLayerPid() + ":" + ((int) v[0]));
-//                                    } else { // if(f.getType().equals("b")) {//polygon pid
+                                //TODO: re-enable intersection for type 'a' after correct implementation
+                                //TODO: of 'defaultField' fields table column
                                 g = new Grid(f.getFilePath() + File.separator + "polygons");
                                 if (g != null) {
                                     int v0 = (int) v[0];
                                     v = g.getValues(p);
                                     m.put("pid", f.getLayerPid() + ":" + v0 + ":" + ((int) v[0]));
                                 }
-//                                }
                             }
                         }
                         if (!m.containsKey("value")) {
@@ -250,10 +230,8 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                             m.put("field", id);
                             m.put("layername", name + "(" + gid + ")");
                             if (Float.isNaN(v[0])) {
-                                //s = "{\"value\":\"no data\",\"layername\":\"" + name + " (" + gid + ")\"}";                                
                                 m.put("value", "n/a");
                             } else {
-                                //s = "{\"value\":" + v[0] + ",\"layername\":\"" + name + " (" + gid + ")\"}";
                                 m.put("value", (Float.isNaN(v[0]) ? "n/a" : v[0]));
                             }
 
@@ -269,7 +247,6 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
     /**
      * Single coordinate sampling.
-     *
      *
      * @param fieldIds comma separated field ids.
      * @param longitude
@@ -461,41 +438,50 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
     }
 
     @Override
-    public ArrayList<String> sampling(String[] fieldIds, double[][] points) {
+    public ArrayList<String> sampling(String[] fieldIds, double[][] points, IntersectCallback callback) {
         init();
-
         IntersectionFile[] intersectionFiles = new IntersectionFile[fieldIds.length];
         for (int i = 0; i < fieldIds.length; i++) {
             intersectionFiles[i] = intersectConfig.getIntersectionFile(fieldIds[i]);
-
             if (intersectionFiles[i] == null) {
                 logger.warn("failed to find layer for id '" + fieldIds[i] + "'");
             }
         }
+        if(callback == null)
+            callback = new DummyCallback();
+        return sampling(intersectionFiles, points, callback);
+    }
 
-        return sampling(intersectionFiles, points);
+    @Override
+    public ArrayList<String> sampling(String[] fieldIds, double[][] points) {
+       return sampling(fieldIds, points, new DummyCallback());
     }
 
     @Override
     public ArrayList<String> sampling(IntersectionFile[] intersectionFiles, double[][] points) {
-        init();
+       return sampling(intersectionFiles, points, new DummyCallback());
+    }
 
+    ArrayList<String> sampling(IntersectionFile[] intersectionFiles, double[][] points, IntersectCallback callback) {
+        init();
+        if(callback == null)
+            callback = new DummyCallback();
         if (intersectConfig.isLocalSampling()) {
-            return localSampling(intersectionFiles, points);
+            return localSampling(intersectionFiles, points, callback);
         } else {
-            return remoteSampling(intersectionFiles, points);
+            return remoteSampling(intersectionFiles, points, callback);
         }
     }
 
     @Override
     public IntersectConfig getConfig() {
         init();
-
         return intersectConfig;
     }
 
-    ArrayList<String> localSampling(IntersectionFile[] intersectionFiles, double[][] points) {
-        logger.info("begin LOCAL sampling, number of threads " + intersectConfig.getThreadCount() + ", number of layers=" + intersectionFiles.length + ", number of coordinates=" + points.length);
+    ArrayList<String> localSampling(IntersectionFile[] intersectionFiles, double[][] points, IntersectCallback callback) {
+        logger.info("begin LOCAL sampling, number of threads " + intersectConfig.getThreadCount()
+                + ", number of layers=" + intersectionFiles.length + ", number of coordinates=" + points.length);
         long start = System.currentTimeMillis();
         int threadCount = intersectConfig.getThreadCount();
         SamplingThread[] threads = new SamplingThread[threadCount];
@@ -507,24 +493,32 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
             lbq.add(i);
         }
 
+        callback.setLayersToSample(intersectionFiles);
+        logger.info("Initialising sampling threads: " + threadCount);
         for (int i = 0; i < threadCount; i++) {
-            threads[i] = new SamplingThread(lbq, cdl, intersectionFiles, points, output, intersectConfig.getThreadCount(), intersectConfig.getShapeFileCache(), intersectConfig.getGridBufferSize());
+            threads[i] = new SamplingThread(lbq,
+                    cdl,
+                    intersectionFiles,
+                    points,
+                    output,
+                    intersectConfig.getThreadCount(),
+                    intersectConfig.getShapeFileCache(),
+                    intersectConfig.getGridBufferSize(),
+                    callback
+            );
             threads[i].start();
         }
 
         try {
             cdl.await();
         } catch (InterruptedException ex) {
-            ex.printStackTrace();
-
-            logger.error(null, ex);
+            logger.error(ex.getMessage(), ex);
         } finally {
             for (int i = 0; i < threadCount; i++) {
                 try {
                     threads[i].interrupt();
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    logger.error(null, e);
+                    logger.error(e.getMessage(), e);
                 }
             }
         }
@@ -535,8 +529,9 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
         return output;
     }
 
-    ArrayList<String> remoteSampling(IntersectionFile[] intersectionFiles, double[][] points) {
-        logger.info("begin REMOTE sampling, number of threads " + intersectConfig.getThreadCount() + ", number of layers=" + intersectionFiles.length + ", number of coordinates=" + points.length);
+    ArrayList<String> remoteSampling(IntersectionFile[] intersectionFiles, double[][] points, IntersectCallback callback) {
+        logger.info("begin REMOTE sampling, number of threads " + intersectConfig.getThreadCount()
+                + ", number of layers=" + intersectionFiles.length + ", number of coordinates=" + points.length);
 
         ArrayList<String> output = null;
 
@@ -596,10 +591,11 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
             long end = System.currentTimeMillis();
 
-            logger.info("sample time for " + 5 + " layers and " + 3 + " coordinates: get response=" + (mid - start) + "ms, write response=" + (end - mid) + "ms");
+            logger.info("sample time for " + 5 + " layers and " + 3 + " coordinates: get response="
+                    + (mid - start) + "ms, write response=" + (end - mid) + "ms");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         return output;
     }
@@ -635,4 +631,15 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
         return gcr;
     }
+
+    /**
+     * A dummy callback for convenience.
+     */
+    class DummyCallback implements IntersectCallback {
+        public void setLayersToSample(IntersectionFile[] layersToSample) {}
+        public void setCurrentLayer(IntersectionFile layer) {}
+        public void setCurrentLayerIdx(Integer layer) {}
+        public void progressMessage(String message) {}
+    }
 }
+

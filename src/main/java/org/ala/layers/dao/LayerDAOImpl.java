@@ -42,12 +42,12 @@ public class LayerDAOImpl implements LayerDAO {
 
     @Resource(name = "dataSource")
     public void setDataSource(DataSource dataSource) {
-        System.out.println("setting data source in layers-store.layersDao");
+        logger.info("setting data source in layers-store.layersDao");
         if (dataSource != null) {
-            System.out.println("dataSource is NOT null");
-            System.out.println(dataSource.toString());
+            logger.info("dataSource is NOT null");
+            logger.info(dataSource.toString());
         } else {
-            System.out.println("dataSource is null");
+            logger.info("dataSource is null");
         }
         this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
         this.insertLayer = new SimpleJdbcInsert(dataSource).withTableName("layers").usingGeneratedKeyColumns("id");
@@ -88,7 +88,7 @@ public class LayerDAOImpl implements LayerDAO {
         List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
         updateDisplayPaths(l);
         updateMetadataPaths(l);
-        System.out.println("Searching for " + name + ": Found " + l.size() + " records. ");
+        logger.info("Searching for " + name + ": Found " + l.size() + " records. ");
         if (l.size() > 0) {
             return l.get(0);
         } else {

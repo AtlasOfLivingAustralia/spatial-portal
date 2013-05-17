@@ -82,7 +82,18 @@ public interface LayerIntersectDAO {
     /**
      * Sampling
      *
-     * @param fieldIds fields to intersect as IntersectionFile []
+     * @param fieldIds fields to intersect as field table ids in String [].
+     * @param points longitude, latitude coordinates as double [][2].
+     * [][0] is longitude, [][1] is latitude.
+     * @return one string for each fieldId, containing new line separated
+     * intersection values of the field and pointsString pairs.  As ArrayList<String>.
+     */
+    public ArrayList<String> sampling(String[] fieldIds, double[][] points, IntersectCallback callback);
+
+    /**
+     * Sampling
+     *
+     * @param intersectionFiles fields to intersect as IntersectionFile []
      * @param points longitude, latitude coordinates as double [][2].
      * [][0] is longitude, [][1] is latitude.
      * @return one string for each fieldId, containing new line separated
