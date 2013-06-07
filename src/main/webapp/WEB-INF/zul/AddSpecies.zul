@@ -78,7 +78,7 @@
                     <vbox id="vboxImportSL" visible="false">
                     	
                     	
-		                <listbox id="speciesListListbox" mold="paging" vflex="true" pageSize="10">
+		                <listbox id="speciesListListbox" mold="paging" height="400px" vflex="true" pageSize="10">
 		                    <listhead>
 		                        <listheader width="50px" />		                        
 		                        <listheader label="List Name" sort="auto" />
