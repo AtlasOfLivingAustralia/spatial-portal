@@ -154,13 +154,6 @@ public class GridClassBuilder {
                 //store map
                 wktMap = (int[]) wktIndexed.get("map");
 
-                gc.setMinShapeIdx(Grid2Shape.getArrayMin(wktMap));
-                gc.setMaxShapeIdx(Grid2Shape.getArrayMax(wktMap));
-
-                //for SLD
-                maxValues.add(gc.getMaxShapeIdx());
-                labels.add(name.replace("\"", "'"));
-
                 //write wkt index
                 FileWriter fw = new FileWriter(filePath + File.separator + key + ".wkt.index");
                 fw.append((String) wktIndexed.get("index"));
@@ -170,12 +163,24 @@ public class GridClassBuilder {
                 String[] index = ((String) wktIndexed.get("index")).split("\n");
                 int len = ((String) wktIndexed.get("wkt")).length();
                 WKTReader r = new WKTReader();
+                
+                int minPolygonNumber = 0;
+                int maxPolygonNumber = 0;
+                
                 for (int i = 0; i < index.length; i++) {
                     if (index[i].length() > 1) {
                         String[] cells = index[i].split(",");
-                        raf.writeInt(Integer.parseInt(cells[0]));   //polygon number
+                        int polygonNumber = Integer.parseInt(cells[0]);   
+                        raf.writeInt(polygonNumber);   //polygon number
                         int polygonStart = Integer.parseInt(cells[1]);
                         raf.writeInt(polygonStart);   //character offset
+                        
+                        if (i == 0) {
+                            minPolygonNumber = polygonNumber;
+                        } else if (i == index.length - 1) {
+                            maxPolygonNumber = polygonNumber;
+                        }
+                        
                         int polygonEnd = len;
                         if (i + 1 < index.length) {
                             polygonEnd = Integer.parseInt(index[i + 1].split(",")[1]) - 1; //-1 for comma
@@ -191,6 +196,12 @@ public class GridClassBuilder {
                 }
                 raf.close();
                 wktIndexed = null;
+                
+                //for SLD
+                maxValues.add(gc.getMaxShapeIdx());
+                labels.add(name.replace("\"", "'"));
+                gc.setMinShapeIdx(minPolygonNumber);
+                gc.setMaxShapeIdx(maxPolygonNumber);
 
                 System.out.println("getting multipolygon for " + filePath + " > " + key);
                 MultiPolygon mp = Envelope.getGridEnvelopeAsMultiPolygon(filePath + "," + key + "," + key);
