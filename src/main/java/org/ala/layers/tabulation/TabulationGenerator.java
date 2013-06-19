@@ -332,10 +332,11 @@ public class TabulationGenerator {
         FileWriter fw = new FileWriter(fieldId1 + "_" + fieldId2 + ".sql");
 
         List<Double> resolutions = Client.getLayerIntersectDao().getConfig().getAnalysisResolutions();
-        Double resolution = resolutions.get(resolutions.size() - 1);
-        System.out.println("RESOLUTION: " + resolution);
+        Double resolution = resolutions.get(0);
+        
         //check if resolution needs changing
         resolution = Double.parseDouble(confirmResolution(new String[]{fieldId1, fieldId2}, String.valueOf(resolution)));
+        System.out.println("RESOLUTION: " + resolution);
 
         //get extents for all layers
         double[][] field1Extents = getLayerExtents(String.valueOf(resolution), fieldId1);
