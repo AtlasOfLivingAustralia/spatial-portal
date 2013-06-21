@@ -219,8 +219,6 @@ public class TabulationGenerator {
                 threads[j] = new DistributionThread(getConnection().createStatement(), data);
                 threads[j].start();
             }
-
-            System.out.println("UPDATE PAIR OBJECTS FINISHED");
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
