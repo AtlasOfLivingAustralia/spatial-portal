@@ -65,10 +65,7 @@ public class TabulationGenerator {
             + "(select f4.id, f4.intersect, l2.domain from fields f4, layers l2 where f4.spid='' || l2.id) f2 " + "WHERE f1.id != f2.id " + "AND f1.intersect=true AND f2.intersect=true "
             + "group by fid1, fid2, domain1, domain2 " + "order by fid1, fid2";
 
-    static String incompleteTabulationsSQL = "select fid1, fid2 from tabulation where area is null and the_geom is not null group by fid1, fid2";
-    static String existingTabulationssql = "SELECT fid1, fid2 " + " FROM (select t1.* from " + "(select fid1, fid2, sum(area) a from tabulation group by fid1, fid2) t1 left join " + " ("
-            + incompleteTabulationsSQL + ") i on t1.fid1=i.fid1 and t1.fid2=i.fid2 where i.fid1 is null" + ") t" + ", fields fa, fields fb " + " WHERE fa.id = fid1 AND fb.id = fid2 AND a > 0 "
-            + " AND fa.intersect=true AND fb.intersect=true " + " GROUP BY fid1, fid2";
+    static String existingTabulationssql = "SELECT fid1, fid2 from tabulation group by fid1, fid2";
 
     static String fidPairsToProcessSQL = "SELECT a.fid1, a.domain1, a.fid2, a.domain2 FROM (" + allFidPairsSQL + ") a WHERE (a.fid1, a.fid2) NOT IN (" + existingTabulationssql
             + ") group by a.fid1, a.fid2, a.domain1, a.domain2;";
@@ -200,12 +197,12 @@ public class TabulationGenerator {
 
                 // domain test
                 if (isSameDomain(parseDomain(rs1.getString("domain1")), parseDomain(rs1.getString("domain2")))) {
-                    if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
-                        System.out.println("will to tabulation on: " + rs1.getString("fid1") + ", " + rs1.getString("fid2"));
+                    //if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
+                        System.err.println("will to tabulation on: " + rs1.getString("fid1") + ", " + rs1.getString("fid2"));
                         data.add(rs1.getString("fid1") + "," + rs1.getString("fid2"));
-                    } else {
+                    //} else {
                         // for gridToGrid
-                    }
+                    //}
                 }
             }
 
