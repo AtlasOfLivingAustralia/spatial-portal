@@ -125,7 +125,59 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                     <li><strong>Get information about a specific distribution, given a LSID:</strong> /ws/distribution/lsid/{lsid} e.g. <a href="/ws/distribution/lsid/urn:lsid:biodiversity.org.au:afd.taxon:2386db84-1fdd-4c33-a2ea-66e13bfc8cf8">/ws/distribution/lsid/urn:lsid:biodiversity.org.au:afd.taxon:2386db84-1fdd-4c33-a2ea-66e13bfc8cf8</a> (Kapala Stingaree)</li>
                 </ul></li>
 
-
+				<li>Geometry Upload<ul>
+						<li><strong>Upload geometry as WKT:</strong> POST request to /ws/geometry/wkt. POST data must be a json object containing the following fields:
+							<ul>
+						    <li><strong>wkt:</strong> a WKT string describing the geometry</li>
+						    <li><strong>name:</strong> the name of the geometry (string)</li>
+						    <li><strong>description:</strong> description of the geometry (string)</li>
+						    <li><strong>user_id:</strong> id of the user who uploaded the geometry</li>
+						    </ul>
+						    <strong>Example:</strong> {"wkt": "POLYGON((125.5185546875 -21.446934836644,128.2431640625 -21.446934836644,128.2431640625 -19.138942324356,125.5185546875 -19.138942324356,125.5185546875 -21.446934836644))", "name": "test", "description": "test description", "userid": "user1"}
+						    <strong>Return value:</strong> a JSON object containing the ID for the newly uploaded geometry e.g. {"id":55}
+						</li>
+						<li><strong>Upload geometry as geojson:</strong> POST request to /ws/geometry/geojson. POST data must be a json object containing the following fields:
+							<ul>
+						    <li><strong>geojson:</strong> a geojson string describing the geometry</li>
+						    <li><strong>name:</strong> the name of the geometry (string)</li>
+						    <li><strong>description:</strong> description of the geometry (string)</li>
+						    <li><strong>user_id:</strong> id of the user who uploaded the geometry</li>
+						    </ul>
+						    <strong>Example:</strong> {"geojson": "{\"type\":\"Polygon\",\"coordinates\":[[[125.5185546875,-21.446934836644001],[128.2431640625,-21.446934836644001],[128.2431640625,-19.138942324356002],[125.5185546875,-19.138942324356002],[125.5185546875,-21.446934836644001]]]}", "name": "test", "description": "test", "userid": "user1"}
+						    <strong>Return value:</strong> a JSON object containing the ID for the newly uploaded geometry e.g. {"id":55}
+						</li>		
+						<li><strong>Retrieve uploaded geometry in WKT format:</strong> GET request to /ws/geometry/wkt/{id} where {id} is the id of the uploaded geometry as returned by one of the geometry service calls above. Returns a json map containing the following:
+							<ul>
+							<li><strong>id:</strong> The id of the uploaded geometry</li>
+						    <li><strong>wkt:</strong> a WKT string describing the geometry</li>
+						    <li><strong>name:</strong> the name of the geometry (string)</li>
+						    <li><strong>description:</strong> description of the geometry (string)</li>
+						    <li><strong>user_id:</strong> id of the user who uploaded the geometry</li>
+						    <li><strong>time_added:</strong> date/time at which the geometry was uploaded</li>
+						    </ul>
+						</li>
+						<li><strong>Retrieve uploaded geometry in geojson format:</strong> GET request to /ws/geometry/geojson/{id} where {id} is the id of the uploaded geometry as returned by one of the geometry service calls above. Returns a json map containing the following:
+							<ul>
+							<li><strong>id:</strong> The id of the uploaded geometry</li>
+						    <li><strong>geojson:</strong> a WKT string describing the geometry</li>
+						    <li><strong>name:</strong> the name of the geometry (string)</li>
+						    <li><strong>description:</strong> description of the geometry (string)</li>
+						    <li><strong>user_id:</strong> id of the user who uploaded the geometry</li>
+						    <li><strong>time_added:</strong> date/time at which the geometry was uploaded</li>
+						    </ul>
+						</li>	
+						<li><strong>Delete uploaded geometry:</strong> HTTP DELETE to /ws/geometry/delete/{id} where {id} is the id of the uploaded geometry as returned by one of the geometry service calls above. Returns a json object with a single field "deleted" containing
+						 a boolean value indicating whether or not a geometry with the supplied id was successfully deleted.</li>
+						<li><strong>Point radius intersection with uploaded geometries</strong> GET request to /ws/geometry/intersect_point_radius?latitude={latitude}&longitude={longitude}&radius={radius}. Latitude and longtiude parameters
+						must be in decimal degrees, radius in kilometers. Returns a json object with a single field "intersecting_ids" whose value is a list of ids of all uploaded geometries that intersect with a circle with the specified radius, centered at the coordinates specified by the supplied latitude and longitude</li>
+						
+						<li><strong>WKT area intersection with uploaded geometries:</strong> POST request to /ws/intersect_area/wkt. POST body is a json object with a single field "wkt" which contains a WKT string describing a geometry. Returns a json object with a single field "intersecting_ids" whose
+						 value is a list of ids of all uploaded geometries that intersect with the geometry described in the POST body.</li>
+						<li><strong>geojson area intersection with uploaded geometries:</strong> POST request to /ws/intersect_area/geojson. POST body is a json object with a single field "geojson" which contains a geojson string describing a geometry. Returns a json object with a single field "intersecting_ids" whose
+						 value is a list of ids of all uploaded geometries that intersect with the geometry described in the POST body.</li>
+						 <li><strong>ERROR REPORTING: </strong>In the event of an error, all service calls listed above will return a json object with single field "error" whose value is a string containing an error message.</li>
+				</ul></li>
+				
                 <li>Tabulation<ul>
                         <li><strong>Get a list of tabulations:</strong> <a href="/ws/tabulations">/ws/tabulations</a></li>
                         <!-- <li><strong>Get a list of tabulations as HTML:</strong> <a href="/ws/tabulations/html">/ws/tabulations/html</a></li> -->
@@ -135,6 +187,10 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                         <li><strong>Get area tabulation as HTML for 2 layers, given their id's:</strong> /ws/tabulation/area/{id}/{id}/tabulation.html e.g. <a href="/ws/tabulation/area/cl22/cl23/tabulation.html">/ws/tabulation/area/cl22/cl23/tabulation.html</a></li>
                         <li><strong>Get tabulation within an area as HTML for 2 layers, given their id's:</strong> /ws/tabulation/{id}/{id}/html?wkt={valid wkt polygon geometry} e.g. <a href="/ws/tabulation/cl22/cl23/html.html?wkt=POLYGON((130%20-24,138%20-24,138%20-20,130%20-20,130%20-24))">/ws/tabulation/cl22/cl23/html.html?wkt=POLYGON((130 -24,138 -24,138 -20,130 -20,130 -24))</a></li>
                     </ul></li>
+                    
+               <li>RIF-CS<ul>
+					<li><strong>Layer information in <a href="http://ands.org.au/guides/cpguide/cpgrifcs.html">RIF-CS</a> format:</strong> <a href="/ws/layers/rif-cs.xml">/ws/layers/rif-cs.xml</a></li>               
+               </ul></li>
             </ul>
 
             <h3>Occurrences</h3>

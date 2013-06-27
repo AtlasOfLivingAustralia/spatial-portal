@@ -49,15 +49,15 @@ public class GeometryService {
             ObjectMapper mapper = new ObjectMapper();
             Map parsedJSON = mapper.readValue(json, Map.class);
 
-            if (!(parsedJSON.containsKey("wkt") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("userid"))) {
-                retMap.put("error", "JSON body must be an object with key value pairs for \"wkt\", \"name\", \"description\" and \"userid\"");
+            if (!(parsedJSON.containsKey("wkt") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id"))) {
+                retMap.put("error", "JSON body must be an object with key value pairs for \"wkt\", \"name\", \"description\" and \"user_id\"");
                 return retMap;
             }
 
             String wkt = (String) parsedJSON.get("wkt");
             String name = (String) parsedJSON.get("name");
             String description = (String) parsedJSON.get("description");
-            String userid = (String) parsedJSON.get("userid");
+            String userid = (String) parsedJSON.get("user_id");
 
             int pid = geometryDao.storeGeometryFromWKT(wkt, name, description, userid);
 
@@ -114,15 +114,15 @@ public class GeometryService {
             ObjectMapper mapper = new ObjectMapper();
             Map parsedJSON = mapper.readValue(json, Map.class);
 
-            if (!(parsedJSON.containsKey("geojson") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("userid"))) {
-                retMap.put("error", "JSON body must be an object with key value pairs for \"geojson\", \"name\", \"description\" and \"userid\"");
+            if (!(parsedJSON.containsKey("geojson") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id"))) {
+                retMap.put("error", "JSON body must be an object with key value pairs for \"geojson\", \"name\", \"description\" and \"user_id\"");
                 return retMap;
             }
 
             String geojson = (String) parsedJSON.get("geojson");
             String name = (String) parsedJSON.get("name");
             String description = (String) parsedJSON.get("description");
-            String userid = (String) parsedJSON.get("userid");
+            String userid = (String) parsedJSON.get("user_id");
 
             GeometryJSON gJson = new GeometryJSON();
             Geometry geometry = gJson.read(new StringReader(geojson));
