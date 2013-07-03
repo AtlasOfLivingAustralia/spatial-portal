@@ -96,6 +96,8 @@ public class SpatialUtil {
     }
 
     static public double calculateArea(String wkt) {
+        
+        
         double sumarea = 0;
 
         //GEOMETRYCOLLECTION
@@ -180,6 +182,10 @@ public class SpatialUtil {
                 area = area.replace("(", "");
 
                 String[] areaarr = area.split(",");
+                // Trim any leading or trailing whitespace off the coordinate pairs.
+                for (int i = 0; i < areaarr.length - 1; i++) {
+                    areaarr[i] = areaarr[i].trim();
+                }
 
                 // check if it's the 'world' bbox
                 boolean isWorld = true;

@@ -69,7 +69,7 @@ public class FieldDAOImpl implements FieldDAO {
         } else {
             //return hibernateTemplate.find("from Field where enabled=true and indb=true");
             logger.info("Getting a list of all enabled fields with indb");
-            String sql = "select * from fields where enabled=true and indb=true";
+            String sql = "select * from fields where enabled=TRUE and indb=TRUE";
             return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Field.class));
         }
 
