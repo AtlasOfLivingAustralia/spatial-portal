@@ -45,6 +45,12 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 
+/**
+ * Utilities for converting spatial data between formats
+ * 
+ * @author ChrisF
+ * 
+ */
 public class SpatialConversionUtils {
 
     /** log4j logger */
@@ -236,8 +242,8 @@ public class SpatialConversionUtils {
         builder.length(50).add("name", String.class); // <- 50 chars width for
                                                       // name field
         builder.length(100).add("desc", String.class); // 100 chars width
-                                                              // for description
-                                                              // field
+                                                       // for description
+                                                       // field
 
         // build the type
         final SimpleFeatureType ActiveArea = builder.buildFeatureType();
