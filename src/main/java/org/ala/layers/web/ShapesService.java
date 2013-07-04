@@ -14,17 +14,31 @@
  ***************************************************************************/
 package org.ala.layers.web;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.ala.layers.dao.ObjectDAO;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.geotools.geojson.geom.GeometryJSON;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  *
@@ -72,8 +86,21 @@ public class ShapesService {
 //                return "";
 //            }
 
-            if (type.equalsIgnoreCase("wkt") || type.equalsIgnoreCase("kml") || type.equalsIgnoreCase("geojson") || type.equalsIgnoreCase("shp")) {
+            if (type.equalsIgnoreCase("wkt")) {
+                resp.setContentType("application/wkt");
                 objectDao.streamObjectsGeometryById(os, id, type);
+            } else if (type.equalsIgnoreCase("kml")) {
+                resp.setContentType("application/vnd.google-earth.kml+xml");
+                objectDao.streamObjectsGeometryById(os, id, type);
+            } else if (type.equalsIgnoreCase("geojson")) {
+                resp.setContentType("application/json; subtype=geojson");
+                objectDao.streamObjectsGeometryById(os, id, type);
+            } else if (type.equalsIgnoreCase("shp")) {
+                resp.setContentType("application/zip");
+                resp.setHeader("Content-Disposition", "attachment;filename=" + id + ".zip");
+                objectDao.streamObjectsGeometryById(os, id, type);
+
+                
             } else {
                 os.write(("'" + type + "' type not supported yet.").getBytes());
             }
@@ -93,5 +120,86 @@ public class ShapesService {
 
     private String cleanObjectId(String id) {
         return id.replaceAll("[^a-zA-Z0-9]:", "");
+    }
+    
+    
+    // Create from geoJSON
+    @RequestMapping(value = "/shape/upload/geojson", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> uploadGeoJSON(@RequestBody String json) throws Exception {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Map parsedJSON = mapper.readValue(json, Map.class);
+
+            if (!(parsedJSON.containsKey("geojson") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id"))) {
+                retMap.put("error", "JSON body must be an object with key value pairs for \"geojson\", \"name\", \"description\" and \"user_id\"");
+                return retMap;
+            }
+
+            String geojson = (String) parsedJSON.get("geojson");
+            String name = (String) parsedJSON.get("name");
+            String description = (String) parsedJSON.get("description");
+            String userid = (String) parsedJSON.get("user_id");
+
+            GeometryJSON gJson = new GeometryJSON();
+            Geometry geometry = gJson.read(new StringReader(geojson));
+            String wkt = geometry.toText();
+
+            String pid = objectDao.createUserUploadedObject(wkt, name, description, userid);
+
+            retMap.put("id", Integer.parseInt(pid));
+        } catch (JsonParseException ex) {
+            logger.error("Malformed request. Expecting a JSON object.", ex);
+            retMap.put("error", "Malformed request. Expecting a JSON object.");
+        } catch (JsonMappingException ex) {
+            logger.error("Malformed request. Expecting a JSON object.", ex);
+            retMap.put("error", "Malformed request. Expecting a JSON object.");
+        } catch (IOException ex) {
+            logger.error("Malformed GeoJSON geometry. Note that only GeoJSON geometries can be supplied here. Features and FeatureCollections cannot.", ex);
+            retMap.put("error", "Malformed GeoJSON geometry. Note that only GeoJSON geometries can be supplied here. Features and FeatureCollections cannot.");
+        } catch (Exception ex) {
+            logger.error("Error uploading geojson", ex);
+            retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
+        }
+        return retMap;
+    }
+    
+    // Create from WKT
+    @RequestMapping(value = "/shape/upload/wkt", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> uploadWKT(@RequestBody String json) throws Exception {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Map parsedJSON = mapper.readValue(json, Map.class);
+
+            if (!(parsedJSON.containsKey("wkt") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id"))) {
+                retMap.put("error", "JSON body must be an object with key value pairs for \"wkt\", \"name\", \"description\" and \"user_id\"");
+                return retMap;
+            }
+
+            String wkt = (String) parsedJSON.get("wkt");
+            String name = (String) parsedJSON.get("name");
+            String description = (String) parsedJSON.get("description");
+            String userid = (String) parsedJSON.get("user_id");
+
+            String pid = objectDao.createUserUploadedObject(wkt, name, description, userid);
+
+            retMap.put("id", Integer.parseInt(pid));
+        } catch (DataAccessException ex) {
+            logger.error("Malformed WKT.", ex);
+            retMap.put("error", "Malformed WKT.");
+        } catch (JsonParseException ex) {
+            logger.error("Malformed request. Expecting a JSON object.", ex);
+            retMap.put("error", "Malformed request. Expecting a JSON object.");
+        } catch (JsonMappingException ex) {
+            logger.error("Malformed request. Expecting a JSON object.", ex);
+            retMap.put("error", "Malformed request. Expecting a JSON object.");
+        } catch (Exception ex) {
+            logger.error("Error uploading WKT", ex);
+            retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
+        }
+        return retMap;
     }
 }
