@@ -6,7 +6,10 @@ import java.util.Collection;
 import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.util.PropertySetStrategy;
 
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
@@ -93,7 +96,10 @@ public class SpeciesListUtil {
      */
     public static Collection  getPublicSpeciesLists(String user,Integer offset, Integer max, String sort, String order){
         JSONObject jobject = getLists(user, offset, max, sort, order);
-        return JSONArray.toCollection(jobject.getJSONArray("lists"), SpeciesListDTO.class);
+        JsonConfig cfg = new JsonConfig();
+        cfg.setPropertySetStrategy(new IgnoreUnknownPropsStrategyWrapper(PropertySetStrategy.DEFAULT));
+        cfg.setRootClass(SpeciesListDTO.class);
+        return JSONArray.toCollection(jobject.getJSONArray("lists"), cfg);
 //        String url = CommonData.speciesListServer + "/ws/speciesList" ;
 //        if(user != null)
 //          url += "?user="+user;
@@ -186,6 +192,11 @@ public class SpeciesListUtil {
                 int result = client.executeMethod(post);
                 logger.debug(result);
                 logger.debug(post.getResponseBodyAsString());
+//                for(org.apache.commons.httpclient.Header header : post.getResponseHeaders()){
+//                    logger.debug(header.getName() + " ::: " + header.getValue());
+//                }
+                //logger.debug("Response Header " + post.getResponseHeaders());
+                
                 if(result == 201)
                     return post.getResponseHeader("druid").getValue();
                 
@@ -203,5 +214,25 @@ public class SpeciesListUtil {
         CommonData.speciesListServer="http://natasha.ala.org.au:8080/specieslist-webapp";
         System.out.println(getPublicSpeciesLists(null, null,null,null,null));
         //System.out.println(createNewList("FirstTestList","Callocephalon fimbriatum,Ornithorhynchus anatinus","The description","The url","natasha.carter@csiro"));
+    }
+    
+   
+     
+    public static class IgnoreUnknownPropsStrategyWrapper extends PropertySetStrategy {
+     
+        private PropertySetStrategy original;
+     
+        public IgnoreUnknownPropsStrategyWrapper(PropertySetStrategy original) {
+            this.original = original;
+        }
+     
+        @Override
+        public void setProperty(Object o, String string, Object o1) throws JSONException {
+            try {
+                original.setProperty(o, string, o1);
+            } catch (Exception ex) {
+                //ignore
+            }
+        }
     }
 }
