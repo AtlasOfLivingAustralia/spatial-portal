@@ -39,6 +39,7 @@ import org.ala.layers.dto.GridClass;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.dto.Objects;
 import org.ala.layers.intersect.Grid;
+import org.ala.layers.intersect.IntersectConfig;
 import org.ala.layers.util.LayerFilter;
 import org.ala.layers.util.SpatialConversionUtils;
 import org.ala.layers.util.SpatialUtil;
@@ -634,7 +635,7 @@ public class ObjectDAOImpl implements ObjectDAO {
 
         // Insert shape into geometry table
         String sql = "INSERT INTO objects (pid, id, name, \"desc\", fid, the_geom, namesearch, bbox, area_km) values (nextval('objects_id_seq'::regclass), nextval('uploaded_objects_metadata_id_seq'::regclass), ?, ?, ?, ST_GeomFromText(?, 4326), true, ST_AsText(Box2D(ST_GeomFromText(?, 4326))), ?)";
-        jdbcTemplate.update(sql, name, description, "cl2000", wkt, wkt, area_km);
+        jdbcTemplate.update(sql, name, description, IntersectConfig.getUploadedShapesFieldId(), wkt, wkt, area_km);
 
         // Now write to metadata table
         String sql2 = "INSERT INTO uploaded_objects_metadata (pid, id, user_id, time_added) values (currval('objects_id_seq'::regclass), currval('uploaded_objects_metadata_id_seq'::regclass), ?, now())";

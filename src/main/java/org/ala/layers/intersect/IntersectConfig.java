@@ -66,6 +66,7 @@ public class IntersectConfig {
     static final String GDAL_PATH = "GDAL_PATH";
     static final String ANALYSIS_RESOLUTIONS = "ANALYSIS_RESOLUTIONS";
     static final String OCCURRENCE_SPECIES_RECORDS_FILENAME = "OCCURRENCE_SPECIES_RECORDS_FILENAME";
+    static final String UPLOADED_SHAPES_FIELD_ID = "UPLOADED_SHAPES_FIELD_ID";
     static final String LAYER_PROPERTIES = "layer.properties";
     static ObjectMapper mapper = new ObjectMapper();
     private FieldDAO fieldDao;
@@ -90,7 +91,8 @@ public class IntersectConfig {
     static String gdalPath;
     static List<Double> analysisResolutions;
     static String occurrenceSpeciesRecordsFilename;
-
+    static String uploadedShapesFieldId;
+    
     static {
         Properties properties = new Properties();
         try {
@@ -121,6 +123,7 @@ public class IntersectConfig {
         gdalPath = getProperty(GDAL_PATH, properties, null);
         analysisResolutions = getDoublesFrom(getProperty(ANALYSIS_RESOLUTIONS, properties, "0.5"));
         occurrenceSpeciesRecordsFilename = getProperty(OCCURRENCE_SPECIES_RECORDS_FILENAME, properties, null);
+        uploadedShapesFieldId = getProperty(UPLOADED_SHAPES_FIELD_ID, properties, null);
     }
 
     public IntersectConfig(FieldDAO fieldDao, LayerDAO layerDao) {
@@ -532,6 +535,10 @@ public class IntersectConfig {
 
     static public String getOccurrenceSpeciesRecordsFilename() {
         return occurrenceSpeciesRecordsFilename;
+    }
+    
+    static public String getUploadedShapesFieldId() {
+        return uploadedShapesFieldId;
     }
 
     public Map<String, IntersectionFile> getIntersectionFiles() {
