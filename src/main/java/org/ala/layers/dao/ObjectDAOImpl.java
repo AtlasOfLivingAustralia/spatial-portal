@@ -14,8 +14,6 @@
  ***************************************************************************/
 package org.ala.layers.dao;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTReader;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -26,15 +24,16 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
+
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+
 import org.ala.layers.dto.GridClass;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.dto.Objects;
@@ -52,10 +51,14 @@ import org.geotools.kml.KML;
 import org.geotools.kml.KMLConfiguration;
 import org.geotools.xml.Encoder;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * 
@@ -633,33 +636,52 @@ public class ObjectDAOImpl implements ObjectDAO {
 
         double area_km = SpatialUtil.calculateArea(wkt) / 1000.0 / 1000.0;
 
-        // Insert shape into geometry table
-        String sql = "INSERT INTO objects (pid, id, name, \"desc\", fid, the_geom, namesearch, bbox, area_km) values (nextval('objects_id_seq'::regclass), nextval('uploaded_objects_metadata_id_seq'::regclass), ?, ?, ?, ST_GeomFromText(?, 4326), true, ST_AsText(Box2D(ST_GeomFromText(?, 4326))), ?)";
-        jdbcTemplate.update(sql, name, description, IntersectConfig.getUploadedShapesFieldId(), wkt, wkt, area_km);
+        try {
+            // Insert shape into geometry table
+            String sql = "INSERT INTO objects (pid, id, name, \"desc\", fid, the_geom, namesearch, bbox, area_km) values (nextval('objects_id_seq'::regclass), nextval('uploaded_objects_metadata_id_seq'::regclass), ?, ?, ?, ST_GeomFromText(?, 4326), true, ST_AsText(Box2D(ST_GeomFromText(?, 4326))), ?)";
+            jdbcTemplate.update(sql, name, description, IntersectConfig.getUploadedShapesFieldId(), wkt, wkt, area_km);
 
-        // Now write to metadata table
-        String sql2 = "INSERT INTO uploaded_objects_metadata (pid, id, user_id, time_added) values (currval('objects_id_seq'::regclass), currval('uploaded_objects_metadata_id_seq'::regclass), ?, now())";
-        jdbcTemplate.update(sql2, userid);
-        
-        updateObjectNames();
+            // Now write to metadata table
+            String sql2 = "INSERT INTO uploaded_objects_metadata (pid, id, user_id, time_last_updated) values (currval('objects_id_seq'::regclass), currval('uploaded_objects_metadata_id_seq'::regclass), ?, now())";
+            jdbcTemplate.update(sql2, userid);
 
-        // get pid and id of new object
-        String sql3 = "SELECT MAX(pid) from uploaded_objects_metadata";
-        int pid = jdbcTemplate.queryForInt(sql3);
+            updateObjectNames();
 
-        return Integer.toString(pid);
+            // get pid and id of new object
+            String sql3 = "SELECT MAX(pid) from uploaded_objects_metadata";
+            int pid = jdbcTemplate.queryForInt(sql3);
+
+            return Integer.toString(pid);
+        } catch (DataAccessException ex) {
+            throw new IllegalArgumentException("Error writing to database. Check validity of wkt.", ex);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateUserUploadedObject(int pid, String wkt, String name, String description, String userid) {
+
+        try {
+            double area_km = SpatialUtil.calculateArea(wkt) / 1000.0 / 1000.0;
+
+            // First update metadata table
+            String sql = "UPDATE uploaded_objects_metadata SET user_id = ?, time_last_updated = now() WHERE pid = ?";
+            jdbcTemplate.update(sql, userid, Integer.toString(pid));
+
+            // Then update objects table
+            String sql2 = "UPDATE objects SET the_geom = ST_GeomFromText(?, 4326), bbox = ST_AsText(Box2D(ST_GeomFromText(?, 4326))), name = ?, \"desc\" = ?, area_km = ? where pid = ?";
+            jdbcTemplate.update(sql2, wkt, wkt, name, description, area_km, Integer.toString(pid));
+        } catch (DataAccessException ex) {
+            throw new IllegalArgumentException("Error writing to database. Check validity of wkt.", ex);
+        }
+
     }
 
     private void updateObjectNames() {
-        String sql = "INSERT INTO obj_names (name)" +
-        "  SELECT lower(objects.name) FROM fields, objects" + 
-        "  LEFT OUTER JOIN obj_names ON lower(objects.name)=obj_names.name" +
-        "  WHERE obj_names.name IS NULL" + "  AND fields.namesearch = true" + 
-        " AND fields.id = objects.fid" +
-        " GROUP BY lower(objects.name);" + 
-        "  UPDATE objects SET name_id=obj_names.id FROM obj_names WHERE name_id IS NULL AND lower(objects.name)=obj_names.name;";
+        String sql = "INSERT INTO obj_names (name)" + "  SELECT lower(objects.name) FROM fields, objects" + "  LEFT OUTER JOIN obj_names ON lower(objects.name)=obj_names.name"
+                + "  WHERE obj_names.name IS NULL" + "  AND fields.namesearch = true" + " AND fields.id = objects.fid" + " GROUP BY lower(objects.name);"
+                + "  UPDATE objects SET name_id=obj_names.id FROM obj_names WHERE name_id IS NULL AND lower(objects.name)=obj_names.name;";
         jdbcTemplate.update(sql);
     }
-    
-    
+
 }

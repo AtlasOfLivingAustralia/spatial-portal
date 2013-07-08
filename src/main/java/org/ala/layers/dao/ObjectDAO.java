@@ -40,4 +40,5 @@ public interface ObjectDAO {
     public List<Objects> getObjectsByIdAndIntersection(String id, Integer limit, LayerFilter layerFilter);
     public List<Objects> getObjectsByIdAndIntersection(String id, Integer limit, String intersectingPid);
     public String createUserUploadedObject(String wkt, String name, String description, String userid);
+    public void updateUserUploadedObject(int pid, String wkt, String name, String description, String userid);
 }
