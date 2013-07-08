@@ -3,20 +3,22 @@ package org.ala.layers.util;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FileDataStore;
@@ -32,18 +34,19 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.kml.KMLConfiguration;
+import org.geotools.referencing.crs.AbstractCRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.xml.Parser;
+import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.GeometryType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.io.Files;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
 
 /**
  * Utilities for converting spatial data between formats
@@ -56,48 +59,157 @@ public class SpatialConversionUtils {
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(SpatialConversionUtils.class);
 
-    // This code was adapted from the webportal class
-    // org.ala.spatial.util.ShapefileUtils, method loadShapeFile
-    public static String shapefileToWKT(File shpfile) {
-        try {
+    // // This code was adapted from the webportal class
+    // // org.ala.spatial.util.ShapefileUtils, method loadShapeFile
+    // public static String shapefileToWKT(File shpfile) {
+    // try {
+    //
+    // FileDataStore store = FileDataStoreFinder.getDataStore(shpfile);
+    //
+    // System.out.println("Loading shapefile. Reading content:");
+    // System.out.println(store.getTypeNames()[0]);
+    //
+    // SimpleFeatureSource featureSource =
+    // store.getFeatureSource(store.getTypeNames()[0]);
+    //
+    // SimpleFeatureCollection featureCollection = featureSource.getFeatures();
+    // SimpleFeatureIterator it = featureCollection.features();
+    //
+    // List<String> wktStrings = new ArrayList<String>();
+    //
+    // while (it.hasNext()) {
+    // SimpleFeature feature = (SimpleFeature) it.next();
+    // Geometry geom = (Geometry) feature.getDefaultGeometry();
+    // List<Object> attributes = feature.getAttributes();
+    // WKTWriter wkt = new WKTWriter();
+    //
+    // String wktString = wkt.write(geom);
+    //
+    // wktStrings.add(wktString);
+    // }
+    //
+    // featureCollection.close(it);
+    //
+    // if (wktStrings.size() > 1) {
+    // return "GEOMETRYCOLLECTION(" + StringUtils.join(wktStrings, ",") + ")";
+    // } else {
+    // return wktStrings.get(0);
+    // }
+    //
+    // } catch (Exception e) {
+    // System.out.println("Unable to load shapefile: ");
+    // e.printStackTrace(System.out);
+    // }
+    //
+    // return null;
+    // }
 
-            FileDataStore store = FileDataStoreFinder.getDataStore(shpfile);
+    public static void main(String[] args) throws Exception {
+        //getShapeFileFeatureAsWKT(new File("C:\\Users\\ChrisF\\spatial\\IBRA 7\\IBRA7_subregions\\IBRA7_subregions.shp"), 0);
+        extractZippedShapeFile(new File("C:\\Users\\ChrisF\\spatial\\IBRA 7\\IBRA7_subregions.zip"));
+        //extractZippedShapeFile(new File("C:\\Users\\ChrisF\\Downloads\\3742602.zip"));
+    }
 
-            System.out.println("Loading shapefile. Reading content:");
-            System.out.println(store.getTypeNames()[0]);
+    public static File extractZippedShapeFile(File zippedShpFile) throws IOException {
 
-            SimpleFeatureSource featureSource = store.getFeatureSource(store.getTypeNames()[0]);
+        File tempDir = Files.createTempDir();
+        System.out.println(tempDir.getAbsolutePath());
 
-            SimpleFeatureCollection featureCollection = featureSource.getFeatures();
-            SimpleFeatureIterator it = featureCollection.features();
+        // Unpack the zipped shape file into the temp directory
+        ZipFile zf = new ZipFile(zippedShpFile);
 
-            List<String> wktStrings = new ArrayList<String>();
+        boolean shpPresent = false;
+        boolean shxPresent = false;
+        boolean dbfPresent = false;
 
-            while (it.hasNext()) {
-                SimpleFeature feature = (SimpleFeature) it.next();
-                Geometry geom = (Geometry) feature.getDefaultGeometry();
-                List<Object> attributes = feature.getAttributes();
-                WKTWriter wkt = new WKTWriter();
+        Enumeration<? extends ZipEntry> entries = zf.entries();
+        
+        File shpFile = null;
+        
+        while (entries.hasMoreElements()) {
+            ZipEntry entry = entries.nextElement();
+            System.out.println(entry.getName());
+            InputStream inStream = zf.getInputStream(entry);
+            File f = new File(tempDir, entry.getName());
+            FileOutputStream outStream = new FileOutputStream(f);
+            IOUtils.copy(inStream, outStream);
 
-                String wktString = wkt.write(geom);
-
-                wktStrings.add(wktString);
+            if (entry.getName().endsWith(".shp")) {
+                shpPresent = true;
+                shpFile = f;
+            } else if (entry.getName().endsWith(".shx")) {
+                shxPresent = true;
+            } else if (entry.getName().endsWith(".dbf")) {
+                dbfPresent = true;
             }
-
-            featureCollection.close(it);
-
-            if (wktStrings.size() > 1) {
-                return "GEOMETRYCOLLECTION(" + StringUtils.join(wktStrings, ",") + ")";
-            } else {
-                return wktStrings.get(0);
-            }
-
-        } catch (Exception e) {
-            System.out.println("Unable to load shapefile: ");
-            e.printStackTrace(System.out);
         }
 
-        return null;
+        if (!shpPresent || !shxPresent || !dbfPresent) {
+            throw new IllegalArgumentException("Invalid archive. Must contain .shp, .shx and .dbf at a minimum.");
+        }
+        
+        ShapefileDataStore store = (ShapefileDataStore) FileDataStoreFinder.getDataStore(shpFile);
+        SimpleFeatureType schema = store.getSchema();
+        
+        CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
+        if (!((AbstractCRS)crs).equals(DefaultGeographicCRS.WGS84, false)) {
+            throw new IllegalArgumentException("Invalid shape file. Uploaded shapefiles required to be in CRS WGS84. ");
+        }
+
+        zf.close();
+
+        return shpFile;
+    }
+
+    public static List<List<Pair<String, Object>>> getShapeFileManifest(File shpFile) throws IOException {
+        List<List<Pair<String, Object>>> manifestData = new ArrayList<List<Pair<String, Object>>>();
+        
+        FileDataStore store = FileDataStoreFinder.getDataStore(shpFile);
+
+        SimpleFeatureSource featureSource = store.getFeatureSource(store.getTypeNames()[0]);
+        SimpleFeatureCollection featureCollection = featureSource.getFeatures();
+        SimpleFeatureIterator it = featureCollection.features();
+
+        while (it.hasNext()) {
+            SimpleFeature feature = (SimpleFeature) it.next();
+            List<Pair<String, Object>> pairList = new ArrayList<Pair<String,Object>>();
+            for (Property prop : feature.getProperties()) {
+                if (!(prop.getType() instanceof GeometryType)) {
+                    Pair<String, Object> pair = Pair.of(prop.getName().toString(), feature.getAttribute(prop.getName()));
+                    pairList.add(pair);
+                }
+            }
+            manifestData.add(pairList);
+        }
+        
+        featureCollection.close(it);
+
+        return manifestData;
+    }
+    
+    public static String getShapeFileFeatureAsWKT(File shpFile, int featureIndex) throws IOException {
+        String wkt = null;
+        
+        FileDataStore store = FileDataStoreFinder.getDataStore(shpFile);
+
+        SimpleFeatureSource featureSource = store.getFeatureSource(store.getTypeNames()[0]);
+        SimpleFeatureCollection featureCollection = featureSource.getFeatures();
+        SimpleFeatureIterator it = featureCollection.features();
+        
+        int i = 0;
+        while (it.hasNext()) {
+            SimpleFeature feature = (SimpleFeature) it.next();
+            if (i == featureIndex) {
+                wkt = feature.getDefaultGeometry().toString();
+                break;
+            }
+            
+            i++;
+        }
+        
+        System.out.println(wkt);
+        
+        return wkt;
     }
 
     public static File buildZippedShapeFile(String wktString, String filenamePrefix, String name, String description) throws IOException {
