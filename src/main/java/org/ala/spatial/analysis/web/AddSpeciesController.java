@@ -90,7 +90,7 @@ public class AddSpeciesController extends UtilityComposer {
     String multipleSpeciesUploadName = null;
     boolean prevAreaState = true;
     boolean loadedAssemblage =false;
-    Listbox speciesListListbox;
+    SpeciesListListbox speciesListListbox;
     String user;
     java.util.List<String> selectedLists;
     A aMessage;
@@ -102,6 +102,8 @@ public class AddSpeciesController extends UtilityComposer {
         rSearch.setSelected(true);
         chkArea.setChecked(true);
         mSearchSpeciesAuto.setBiocacheOnly(true);
+        vboxImportSL = (Vbox)this.getFellow("splistbox").getFellow("vboxImportSL");
+        speciesListListbox = (SpeciesListListbox)this.getFellow("splistbox").getFellow("speciesListListbox");
         //check to see if a user is logged in
         user = getMapComposer().getCookieValue("ALA-Auth");
         if(user != null && user.length()>0){
@@ -111,6 +113,12 @@ public class AddSpeciesController extends UtilityComposer {
             rMultiple.setDisabled(true);
             rMultiple.setLabel(rMultiple.getLabel() +  " (log in required)");
         }
+        speciesListListbox.addEventListener("onSlCheckBoxChanged", new EventListener(){
+          @Override
+          public void onEvent(Event event) throws Exception {
+              refreshBtnOkDisabled();
+          }
+        });
         
     }
 
@@ -150,30 +158,15 @@ public class AddSpeciesController extends UtilityComposer {
                 //when next is pressed we want to export the list to the species list
                 showExportSpeciesListDialog();
                 loadedAssemblage = true;
-//                AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-//                String lsids = getMultipleLsids();
-//                lsids = lsids.length()>0? lsids:null;
-//                String[] unmatchedNames = getNamesWithoutLsids();
-//                //System.out.println("%^&*(&^%$#^&*()&^%$#^&*():"+unmatchedNames);
-//                query = new BiocacheQuery(lsids,unmatchedNames,null,null, null, false, getGeospatialKosher());
-//                window.setSpeciesParams(query, rank, taxon);
-//                window.loadAreaLayers();
-//                window.setMultipleSpeciesUploadName(multipleSpeciesUploadName);
-//                try {
-//                    window.doModal();
-//                } catch (InterruptedException ex) {
-//                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
-//                } catch (SuspendNotAllowedException ex) {
-//                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
-//                }
+
             } else if (rUploadLSIDs.isSelected()){
                 //we need to populate the "create assemblage" with the values from the species list
-                //refreshAssemblage();
-                //loadedAssemblage=true;
+                
                 AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
                 //extract all the items for selected species lists
-                query = extractQueryFromSelectedLists();
+                query = speciesListListbox.extractQueryFromSelectedLists(getGeospatialKosher());
                 window.setSpeciesParams(query, rank, taxon);
+                window.setMultipleSpeciesUploadName("Species List Items");
                 window.loadAreaLayers();
                 try {
                     window.doModal();
@@ -206,29 +199,29 @@ public class AddSpeciesController extends UtilityComposer {
         onCheck$rgAddSpecies(null);
     }
     
-    private void refreshAssemblage(SpeciesListDTO list){
-        if(rUploadLSIDs.isSelected()){
-            //Comboitem ci = cbSpeciesLists.getSelectedItem();
-            //if(ci != null){
-             //   SpeciesListDTO list = (SpeciesListDTO)ci.getValue();
-                Collection<SpeciesListItemDTO> items = SpeciesListUtil.getListItems(list.getDataResourceUid());
-                //System.out.println(items);
-                if(items != null){
-                    StringBuilder sb = new StringBuilder();
-                    boolean first=true;
-                    for(SpeciesListItemDTO item: items){
-                        if(!first)
-                            sb.append(",");
-                        else
-                            first = false;
-                        sb.append(item.getName());
-                    }
-                    setMultipleSpecies(sb.toString(), list.getListName() + " (" + list.getDataResourceUid() + ")");
-                }
-                refreshBtnOkDisabled();
-            }
-        //}
-    }
+//    private void refreshAssemblage(SpeciesListDTO list){
+//        if(rUploadLSIDs.isSelected()){
+//            //Comboitem ci = cbSpeciesLists.getSelectedItem();
+//            //if(ci != null){
+//             //   SpeciesListDTO list = (SpeciesListDTO)ci.getValue();
+//                Collection<SpeciesListItemDTO> items = SpeciesListUtil.getListItems(list.getDataResourceUid());
+//                //System.out.println(items);
+//                if(items != null){
+//                    StringBuilder sb = new StringBuilder();
+//                    boolean first=true;
+//                    for(SpeciesListItemDTO item: items){
+//                        if(!first)
+//                            sb.append(",");
+//                        else
+//                            first = false;
+//                        sb.append(item.getName());
+//                    }
+//                    setMultipleSpecies(sb.toString(), list.getListName() + " (" + list.getDataResourceUid() + ")");
+//                }
+//                refreshBtnOkDisabled();
+//            }
+//        //}
+//    }
 
     public void onClick$btnCancel(Event event) {
         this.detach();
@@ -340,7 +333,7 @@ public class AddSpeciesController extends UtilityComposer {
             String authCookie = getMapComposer().getCookieValue("ALA-Auth");
             //bAssemblageExport.setDisabled(loadedAssemblage || authCookie == null);
         } else if(rUploadLSIDs.isSelected()){
-            refreshSpeciesLists();
+            //refreshSpeciesLists();
             vboxSearch.setVisible(false);
             vboxMultiple.setVisible(false);
             vboxImportSL.setVisible(true);
@@ -353,212 +346,13 @@ public class AddSpeciesController extends UtilityComposer {
         refreshBtnOkDisabled();
     }
     
-    private class SpeciesListListModel extends AbstractListModel implements ListModelExt{
-        int pageSize=10;
-        int currentOffset=0;
-        List<SpeciesListDTO> currentLists;
-        Integer size =null;
-        String sort = null;
-        String order =null;
-        String user=getMapComposer().getCookieValue("ALA-Auth");
-        @Override
-        public Object getElementAt(int index) {
-          //System.out.println("Index : " + index + " currentOffset: " + currentOffset );
-          if(currentLists == null || index>=(currentOffset + pageSize) || index <currentOffset)
-              loadPageOfLists(index);
-          if(currentLists != null && currentLists.size()> index-currentOffset)  
-              return currentLists.get(index-currentOffset);
-          
-          return null;
-        }
-        /**
-         * Loads the page of lists from 
-         */
-        private void loadPageOfLists(int index){
-            //calculate the page that it would appear on
-            int page = index /pageSize;
-            //if(index%pageSize==0 && index!=0)
-            //    page++;
-            currentOffset = page * pageSize;
-            logger.debug("Current offset: " + currentOffset + " index " + index + " " + sort + " " + order);
-            currentLists = new ArrayList<SpeciesListDTO>(SpeciesListUtil.getPublicSpeciesLists(user, currentOffset, pageSize, sort, order));
-            logger.debug("Finished getting items");
-            
-        }
-  
-        @Override
-        public int getSize() {
-            //The maximum number of items in the species list list
-            if(size == null){
-                logger.debug("Starting to get page size...");
-                size = SpeciesListUtil.getNumberOfPublicSpeciesLists(user);
-                logger.debug("Finished getting page size");
-            }
-            return size;
-            //return SpeciesListUtil.getNumberOfPublicSpeciesLists(user);
-        }
-
-        @Override
-        public void sort(Comparator cmpr, boolean ascending) {
-            if(cmpr instanceof SpeciesListComparator){
-                SpeciesListComparator c = (SpeciesListComparator)cmpr;
-                order = c.getOrder();
-                sort = c.getColumn();
-                //force the reload
-                currentLists=null;
-                fireEvent(ListDataEvent.CONTENTS_CHANGED, -1, -1);
-            }
-        }
-      
-    }
-    
-    private class SpeciesListComparator implements Comparator {
-        boolean ascending;
-        String column;
-  
-        public SpeciesListComparator(String column,boolean ascending) {
-            this.ascending = ascending;
-            this.column =column;
-            
-        }
-        @Override
-        public int compare(Object arg0, Object arg1) {
-            // we are not actually performing the compare within this object because th sort will be perfomed by the species list ws
-            return 0;
-        }
-        public String getColumn(){
-            return column;
-        }
-        public String getOrder(){
-            if(ascending)
-                return "asc";
-            else
-                return "desc";
-        }
-      
-    }
-    
-    /**
-     * Refreshes the content of the table that is display in "import assemblages"
-     */
-    private void refreshSpeciesLists(){
-        //retrieve the collection of species lists to display in the combo box
-        //Collection<SpeciesListDTO> lists= SpeciesListUtil.getPublicSpeciesLists(getMapComposer().getCookieValue("ALA-Auth"),null,null,null,null);
-        //if(lists != null){
-          //supply the custom rendering for the species list in the table. We need an add button and link to list.
-        if(speciesListListbox.getItemRenderer() == null){
-            selectedLists = new java.util.ArrayList<String>();
-            //only initialise it once.
-              speciesListListbox.setItemRenderer(new ListitemRenderer() {
-  
-                @Override
-                public void render(Listitem li, Object data) {
-                    final SpeciesListDTO item = (SpeciesListDTO)data;
-                    li.setValue(item);
-                    //add a button to select the species list for the assemblage
-                    Listcell lc = new Listcell();
-                    Checkbox c = new Checkbox();
-                    c.setChecked(selectedLists.contains(item.getDataResourceUid()));
-                    c.addEventListener("onClick", new EventListener() {
-                        @Override
-                        public void onEvent(Event event) throws Exception {
-                            Checkbox c = (Checkbox)event.getTarget();
-                            if(c.isChecked())
-                                selectedLists.add(item.getDataResourceUid());
-                            else
-                                selectedLists.remove(item.getDataResourceUid());
-                            if(selectedLists.size() <=1)
-                              refreshBtnOkDisabled();
-                        }
-                    });
-//                    Button b = new Button("add");
-//                    b.setSclass("goButton");
-//                    b.addEventListener("onClick", new EventListener() {
-//                        @Override
-//                        public void onEvent(Event event) throws Exception {
-//                            //make the species list go in the create assemblage area...
-//                          refreshAssemblage(item);
-//                        }
-//                    });
-                    c.setParent(lc);
-                    lc.setParent(li);
-                    Listcell name = new Listcell();
-                    A a = new A(item.getListName());
-                    a.setHref(CommonData.speciesListServer + "/speciesListItem/list/" + item.getDataResourceUid());
-                    a.setTarget("_blank");
-                    a.setParent(name);
-                    name.setParent(li);
-                    Listcell date = new Listcell(item.getDateCreated());
-                    date.setParent(li);
-                    String sowner = item.getFullName() != null ? item.getFullName(): item.getFirstName() + " " + item.getSurname();
-                    Listcell owner = new Listcell(sowner);
-                    owner.setParent(li);
-                    Listcell count = new Listcell(item.getItemCount().toString());
-                    count.setParent(li);
-  //                  name.setParent(li);
-  //                  Listcell type = new Listcell(item.getListType());
-  //                  type.setParent(li);
-  //                  Listcell uname = new Listcell(item.getUsername());
-  //                  uname.setParent(li);
-  //                  Listcell fname = new Listcell(item.getFirstName());
-  //                  fname.setParent(li);
-  //                  Listcell sname = new Listcell(item.getSurname());
-  //                  sname.setParent(li);
-  //                  Listcell link = new Listcell();
-  //                  A a = new A("view items...");
-  //                  a.setHref(CommonData.speciesListServer + "/speciesListItem/list/" + item.getDataResourceUid());
-  //                  a.setTarget("_blank");
-  //                  a.setParent(link);
-  //                  link.setParent(li);
-  //                  Listcell druid = new Listcell(item.getDataResourceUid());
-  //                  druid.setParent(li);
-                }
-              });
-              //ListModelList lme = new ListModelList(lists);
-              SpeciesListListModel model = new SpeciesListListModel();
-              speciesListListbox.setModel(model);
-              
-              //set the header sort stuff
-              Listhead head = speciesListListbox.getListhead();
-              Listheader namehead= (Listheader) head.getChildren().get(1);
-              namehead.setSortAscending(new SpeciesListComparator("listName",true));
-              namehead.setSortDescending(new SpeciesListComparator("listName",false));
-              Listheader datehead= (Listheader) head.getChildren().get(2);
-              datehead.setSortAscending(new SpeciesListComparator("dateCreated",true));
-              datehead.setSortDescending(new SpeciesListComparator("dateCreated",false));
-              Listheader ownerhead= (Listheader) head.getChildren().get(3);
-              ownerhead.setSortAscending(new SpeciesListComparator("username",true));
-              ownerhead.setSortDescending(new SpeciesListComparator("username",false));
-              Listheader counthead= (Listheader) head.getChildren().get(4);
-              counthead.setSortAscending(new SpeciesListComparator("count",true));
-              counthead.setSortDescending(new SpeciesListComparator("count",false));
-        }
-            
-        //}
-        //The combobox will be deleted maybe?
-//        cbSpeciesLists.getItems().clear();
-//        if(lists != null){
-//          cbSpeciesLists.setDisabled(false);
-//            for(SpeciesListDTO list : lists){
-//                Comboitem ci = new Comboitem(list.getListName());
-//                ci.setValue(list);
-//                String desc = "Owner: " + list.getFirstName() + " " + list.getSurname()+"\nListType: " + list.getListType();                
-//                ci.setDescription(desc);
-//                ci.setParent(cbSpeciesLists);
-//            }
-//        }
-//        else{
-//            cbSpeciesLists.setDisabled(true);
-//        }
-    }
-
     private void refreshBtnOkDisabled() {
         if (rSearch.isSelected()) {
             btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null || searchSpeciesAuto.getSelectedItem().getValue() == null);
         } else if (rMultiple.isSelected()) {            
             btnOk.setDisabled(getMultipleLsids().length() == 0 && getNamesWithoutLsids() == null);
         } else if(rUploadLSIDs.isSelected()) {
-            btnOk.setDisabled(selectedLists == null || selectedLists.size()==0);
+            btnOk.setDisabled(speciesListListbox.getSelectedLists() == null || speciesListListbox.getSelectedLists().size()==0);
             //btnOk.setDisabled(true);
         } else {
             btnOk.setDisabled(false);
@@ -586,7 +380,7 @@ public class AddSpeciesController extends UtilityComposer {
 
         } else {
             rank = StringUtils.substringBefore(spVal, ",").toLowerCase();
-            System.out.println("mapping rank and species: " + rank + " - " + taxon);
+            logger.debug("mapping rank and species: " + rank + " - " + taxon);
         }
         if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
             rank = "taxon";
@@ -834,7 +628,11 @@ public class AddSpeciesController extends UtilityComposer {
             li.setParent(lMultiple);
         }
     }
-    
+    /**
+     * Retrieves a CSV version scientific names that have been added to the 
+     * list.
+     * @return
+     */
     private String getScientificName(){
         StringBuilder sb = new StringBuilder();
         for (Listitem li : (List<Listitem>) lMultiple.getItems()) {
@@ -942,7 +740,8 @@ public class AddSpeciesController extends UtilityComposer {
       //if a data resource exists check report it        
         logger.debug("Species list that was created : " + drUid);
         if(drUid != null){
-            speciesListListbox.setItemRenderer((ListitemRenderer)null);
+            
+            ((SpeciesListListbox.SpeciesListListModel)speciesListListbox.getModel()).refreshModel();
             //rgAddSpecies.setS
             rUploadLSIDs.setSelected(true);
             onCheck$rgAddSpecies(null);
@@ -980,10 +779,10 @@ public class AddSpeciesController extends UtilityComposer {
             ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
         }
         if (ue == null) {
-            System.out.println("unable to upload file");
+            logger.warn("unable to upload file");
             return;
         } else {
-            System.out.println("fileUploaded()");
+            logger.debug("fileUploaded()");
         }
         try {
             Media m = ue.getMedia();
@@ -993,7 +792,7 @@ public class AddSpeciesController extends UtilityComposer {
             try {
                 importList(readerToString(m.getReaderData()));
                 loaded = true;
-                System.out.println("read type " + m.getContentType() + " with getReaderData");
+                logger.info("read type " + m.getContentType() + " with getReaderData");
             } catch (Exception e) {
                 //e.printStackTrace();
             }
@@ -1001,7 +800,7 @@ public class AddSpeciesController extends UtilityComposer {
                 try {                    
                     importList(new String(m.getByteData()));
                     loaded = true;                    
-                    System.out.println("read type " + m.getContentType() + " with getByteData");
+                    logger.info("read type " + m.getContentType() + " with getByteData");
                 } catch (Exception e) {
                     //e.printStackTrace();
                 }
@@ -1010,7 +809,7 @@ public class AddSpeciesController extends UtilityComposer {
                 try {
                     importList(readerToString(new InputStreamReader(m.getStreamData())));
                     loaded = true;
-                    System.out.println("read type " + m.getContentType() + " with getStreamData");
+                    logger.info("read type " + m.getContentType() + " with getStreamData");
                 } catch (Exception e) {
                     //e.printStackTrace();
                 }
@@ -1019,16 +818,17 @@ public class AddSpeciesController extends UtilityComposer {
                 try {
                     importList(m.getStringData());
                     loaded = true;
-                    System.out.println("read type " + m.getContentType() + " with getStringData");
+                    logger.info("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
                     //last one, report error
                     getMapComposer().showMessage("Unable to load your file. Please try again.");
-                    System.out.println("unable to load user points: ");
-                    e.printStackTrace();
+                    //System.out.println("unable to load user points: ");
+                    //e.printStackTrace();
+                    logger.error("unable to load user points", e);
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error(ex);
         }
     }
 

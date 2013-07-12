@@ -75,28 +75,8 @@
                     </vbox>
                     
                     <radio id ="rUploadLSIDs" label="Use existing species list"/>
-                    <vbox id="vboxImportSL" visible="false">
-                    	
-                    	
-		                <listbox id="speciesListListbox" mold="paging" height="400px" vflex="true" pageSize="10">
-		                    <listhead>
-		                        <listheader width="50px" />		                        
-		                        <listheader label="List Name" sort="auto" />
-		                        <listheader label="Date Created" sort="auto" />
-		                        <listheader label="Owner" sort="auto" />
-		                        <listheader label="Item Count" sort="auto" />
-		                        <!-- <listheader label="List Type"/>
-		                        <listheader label="Username" />
-		                        <listheader label="First Name"/>
-		                        <listheader label="Surname" />
-		                        <listheader width="50px" /> -->
-		                        <listheader label="DataResourceUID"  visible="false"/>
-		                    </listhead>
-		                </listbox>
-                    	
-                    	
-                    	<!-- <combobox id="cbSpeciesLists" autodrop="true" width="330px" /> -->
-                    </vbox>
+                    <include id="splistbox" src="/WEB-INF/zul/SpeciesListListBox.zul" />
+                   
                     
                     <radio id ="rUploadCoordinates" label="Import points" />
                 </vbox>

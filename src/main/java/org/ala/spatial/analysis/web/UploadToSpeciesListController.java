@@ -31,8 +31,11 @@ public class UploadToSpeciesListController extends UtilityComposer{
             String description = tbDesc.getValue();
             dataResourceUid=SpeciesListUtil.createNewList(name, species, description, null, getMapComposer().getCookieValue("ALA-Auth"));
             logger.debug("The data resource uid: " + dataResourceUid);
-            if(this.getParent() instanceof AddSpeciesController)
+            if(this.getParent() instanceof AddSpeciesController) {
                 ((AddSpeciesController)this.getParent()).updateSpeciesListMessage(dataResourceUid);
+            } else if(this.getParent() instanceof AddToolComposer) {
+                ((AddToolComposer)this.getParent()).updateSpeciesListMessage(dataResourceUid);
+            }
             this.detach();
         }
         else{

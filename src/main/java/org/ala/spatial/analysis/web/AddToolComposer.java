@@ -61,6 +61,7 @@ import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
+import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Menuitem;
 import org.zkoss.zul.Menupopup;
 import org.zkoss.zul.Messagebox;
@@ -71,6 +72,8 @@ import org.zkoss.zul.Vbox;
 import org.zkoss.zul.Window;
 
 /**
+ * 
+ * TODO: NC 20130712 - This class really needs to be reviewed when we get a chance. 
  * 
  * @author ajay
  */
@@ -132,7 +135,11 @@ public class AddToolComposer extends UtilityComposer {
     private Div isLoggedIn;
     boolean isBackgroundProcess = true;
     boolean hasEstimated = false;
-
+    
+    //stuff for the dynamic species list inclusion
+    private Vbox vboxImportSL, vboxImportSLBk; //the box layout for the import species list
+    private SpeciesListListbox speciesListListbox,speciesListListboxBk;
+    
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -143,6 +150,29 @@ public class AddToolComposer extends UtilityComposer {
         setupDefaultParams();
         setParams(Executions.getCurrent().getArg());
 
+        //add the species lists stuff
+        if(rSpeciesUploadLSID != null) {
+            vboxImportSL = (Vbox)this.getFellow("splistbox").getFellow("vboxImportSL");
+            speciesListListbox = (SpeciesListListbox)this.getFellow("splistbox").getFellow("speciesListListbox");
+            speciesListListbox.addEventListener("onSlCheckBoxChanged", new EventListener(){
+              @Override
+              public void onEvent(Event event) throws Exception {
+                  btnOk.setDisabled((Integer)event.getData() == 0);
+              }
+            });
+        }
+        
+        if(rSpeciesUploadLSIDBk != null){
+            vboxImportSLBk = (Vbox)this.getFellow("splistboxbk").getFellow("vboxImportSL");
+            speciesListListboxBk = (SpeciesListListbox)this.getFellow("splistboxbk").getFellow("speciesListListbox");
+            speciesListListbox.addEventListener("onSlCheckBoxChanged", new EventListener(){
+              @Override
+              public void onEvent(Event event) throws Exception {
+                  btnOk.setDisabled((Integer)event.getData() == 0);
+              }
+            });
+        }
+        
         updateWindowTitle();
 
         fixFocus();
@@ -386,8 +416,8 @@ public class AddToolComposer extends UtilityComposer {
 
             updateGeospatialKosherCheckboxes();
         } catch (Exception e) {
-            System.out.println("Unable to load species layers:");
-            e.printStackTrace(System.out);
+            logger.error("Unable to load species layers:", e);
+            //e.printStackTrace(System.out);
         }
     }
 
@@ -418,8 +448,7 @@ public class AddToolComposer extends UtilityComposer {
 
             updateGeospatialKosherCheckboxesBk();
         } catch (Exception e) {
-            System.out.println("Unable to load species layers:");
-            e.printStackTrace(System.out);
+            logger.error("Unable to load species layers:", e);            
         }
     }
 
@@ -485,7 +514,7 @@ public class AddToolComposer extends UtilityComposer {
                 for (int i = 0; i < rgArea.getItemCount(); i++) {
                     if (rgArea.getItemAtIndex(i).isVisible() && rgArea.getItemAtIndex(i).getLabel().equals(selectedAreaName)) {
                         rAreaSelected = rgArea.getItemAtIndex(i);
-                        System.out.println("2.resetting indexToSelect = " + i);
+                        logger.debug("2.resetting indexToSelect = " + i);
                         rgArea.setSelectedItem(rAreaSelected);
                         break;
                     }
@@ -514,8 +543,7 @@ public class AddToolComposer extends UtilityComposer {
             Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
 
         } catch (Exception e) {
-            System.out.println("Unable to load active area layers:");
-            e.printStackTrace(System.out);
+            logger.error("Unable to load active area layers:", e);            
         }
     }
 
@@ -576,7 +604,7 @@ public class AddToolComposer extends UtilityComposer {
             if (selectedAreaName != null && !selectedAreaName.equals("")) {
                 for (int i = 0; i < rgArea.getItemCount(); i++) {
                     if (rgArea.getItemAtIndex(i).isVisible() && rgArea.getItemAtIndex(i).getLabel().equals(selectedAreaName)) {
-                        System.out.println("2.resetting indexToSelect = " + i);
+                        logger.debug("2.resetting indexToSelect = " + i);
                         rgArea.setSelectedItem(rgArea.getItemAtIndex(i));
                         break;
                     }
@@ -597,8 +625,7 @@ public class AddToolComposer extends UtilityComposer {
             Clients.evalJavaScript("jq('#" + rgArea.getSelectedItem().getUuid() + "-real').attr('checked', true);");
 
         } catch (Exception e) {
-            System.out.println("Unable to load active area layers:");
-            e.printStackTrace(System.out);
+            logger.error("Unable to load active area layers:", e);            
         }
     }
 
@@ -621,8 +648,7 @@ public class AddToolComposer extends UtilityComposer {
 
             rAreaNone.setSelected(true);
         } catch (Exception e) {
-            System.out.println("Unable to load active area layers:");
-            e.printStackTrace(System.out);
+            logger.error("Unable to load active area layers:", e);            
         }
     }
 
@@ -655,8 +681,7 @@ public class AddToolComposer extends UtilityComposer {
 
             lbListLayers.renderAll();
         } catch (Exception e) {
-            System.out.println("Unable to load species layers:");
-            e.printStackTrace(System.out);
+            logger.error("Unable to load species layers:", e);            
         }
     }
 
@@ -756,6 +781,12 @@ public class AddToolComposer extends UtilityComposer {
         } catch (Exception e) {
         }
         try {
+            if(event != null&&selectedItem != rSpeciesUploadLSID){
+                vboxImportSL.setVisible(false);
+            }
+            if(event != null && vboxImportSLBk != null && selectedItem != rSpeciesUploadLSIDBk){
+                vboxImportSLBk.setVisible(false);
+            }
             // Check to see if we are perform a normal or background upload
             if (rgSpecies != null && selectedItem == rSpeciesSearch) {
                 if (divSpeciesSearch != null) {
@@ -771,14 +802,19 @@ public class AddToolComposer extends UtilityComposer {
                 divSpeciesSearch.setVisible(false);
             }
 
-            if (selectedItem == rSpeciesUploadSpecies || selectedItem == rSpeciesUploadLSID) {
+            if (selectedItem == rSpeciesUploadSpecies) {
                 // btnOk.setVisible(false);
-                // fileUpload.setVisible(true);
+                // fileUpload.setVisible(true);                
                 btnOk.setVisible(true);
                 vboxMultiple.setVisible(false);
+            } else if(selectedItem == rSpeciesUploadLSID) {
+                btnOk.setDisabled(true);
+                vboxImportSL.setVisible(true);
+                vboxMultiple.setVisible(false);
             } else if (rMultiple != null && rMultiple.isSelected()) {
+            
                 vboxMultiple.setVisible(true);
-            } else {
+            }  else {
                 btnOk.setDisabled(false);
                 vboxMultiple.setVisible(false);
             }
@@ -812,6 +848,14 @@ public class AddToolComposer extends UtilityComposer {
         } catch (Exception e) {
         }
         try {
+          
+          if(event != null&&selectedItem != rSpeciesUploadLSID){
+              vboxImportSL.setVisible(false);
+          }
+          if(event != null &&vboxImportSLBk != null && selectedItem != rSpeciesUploadLSIDBk){
+              vboxImportSLBk.setVisible(false);
+          }
+          
             if (rgSpeciesBk != null && selectedItem == rSpeciesSearchBk) {
                 if (divSpeciesSearchBk != null) {
                     divSpeciesSearchBk.setVisible(true);
@@ -826,8 +870,12 @@ public class AddToolComposer extends UtilityComposer {
             if (divSpeciesSearchBk != null) {
                 divSpeciesSearchBk.setVisible(false);
             }
-
-            if (selectedItem == rSpeciesUploadSpeciesBk || selectedItem == rSpeciesUploadLSIDBk) {
+            
+            if(selectedItem == rSpeciesUploadLSIDBk) {
+              btnOk.setDisabled(true);
+              vboxImportSLBk.setVisible(true);
+              vboxMultiple.setVisible(false);
+            } else if (selectedItem == rSpeciesUploadSpeciesBk) {
                 // btnOk.setVisible(false);
                 // fileUpload.setVisible(true);
                 btnOk.setVisible(true);
@@ -960,8 +1008,7 @@ public class AddToolComposer extends UtilityComposer {
                 setMultipleLsidsBk(lsid);
             }
         } catch (Exception e) {
-            System.out.println("Exception when resetting analysis window");
-            e.printStackTrace();
+            logger.error("Exception when resetting analysis window", e);            
         }
     }
 
@@ -1008,11 +1055,9 @@ public class AddToolComposer extends UtilityComposer {
 
             fixFocus();
         } catch (InterruptedException ex) {
-            System.out.println("InterruptedException when resetting analysis window");
-            ex.printStackTrace(System.out);
+            logger.error("InterruptedException when resetting analysis window", ex);            
         } catch (SuspendNotAllowedException ex) {
-            System.out.println("Exception when resetting analysis window");
-            ex.printStackTrace(System.out);
+            logger.error("Exception when resetting analysis window", ex);            
         }
     }
 
@@ -1022,6 +1067,17 @@ public class AddToolComposer extends UtilityComposer {
         }
         boolean successful = false;
         try {
+          
+            //check to see if one of the "create new species list" radio buttons is selecetd
+            if(rMultiple != null && rMultiple.isChecked()){
+                // display the dialog and change the radio button to "use existing"...
+              showExportSpeciesListDialog(lMultiple);
+              return;
+            } else if (rMultipleBk != null && rMultipleBk.isChecked()){
+                showExportSpeciesListDialog(lMultipleBk);
+                return;
+            }
+          
             if (!hasCustomArea && (isAreaCustom() || isAreaHighlightCustom())) {
                 this.doOverlapped();
                 this.setTop("-9999px");
@@ -1051,9 +1107,9 @@ public class AddToolComposer extends UtilityComposer {
             Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep + 1))) : null;
 
             if (!currentDiv.getZclass().contains("last")) {
-                if (currentDiv.getZclass().contains("species") && (rSpeciesUploadLSID.isSelected() || rSpeciesUploadSpecies.isSelected())) {
-                    Boolean test = currentDiv.getZclass().contains("species") && (rSpeciesUploadLSID.isSelected() || rSpeciesUploadSpecies.isSelected());
-                    System.out.println("test=" + test);
+                if (currentDiv.getZclass().contains("species") && (rSpeciesUploadSpecies.isSelected())) {
+                    Boolean test = currentDiv.getZclass().contains("species") && (rSpeciesUploadSpecies.isSelected());
+                    logger.debug("test=" + test);
                     onClick$btnUpload(event);
 
                 } else {
@@ -1234,8 +1290,8 @@ public class AddToolComposer extends UtilityComposer {
                 estimateInMin = String.valueOf((int) Math.ceil(minutes)) + " minutes";
             }
 
-            System.out.println("Got estimate for process: " + estimate);
-            System.out.println("Estimate in minutes: " + estimateInMin);
+            logger.debug("Got estimate for process: " + estimate);
+            logger.debug("Estimate in minutes: " + estimateInMin);
 
             // String message = "Your process is going to take approximately " +
             // estimateInMin + " minutes. ";
@@ -1263,8 +1319,7 @@ public class AddToolComposer extends UtilityComposer {
             // btnOk.setDisabled(false);
 
         } catch (Exception e) {
-            System.out.println("Unable to get estimate for the process");
-            e.printStackTrace(System.out);
+            logger.warn("Unable to get estimate for the process", e);            
         }
     }
 
@@ -1298,8 +1353,7 @@ public class AddToolComposer extends UtilityComposer {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Unable to retrieve selected area");
-            e.printStackTrace(System.out);
+            logger.warn("Unable to retrieve selected area", e);            
         }
 
         return sa;
@@ -1332,8 +1386,7 @@ public class AddToolComposer extends UtilityComposer {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Unable to retrieve selected area");
-            e.printStackTrace(System.out);
+            logger.warn("Unable to retrieve selected area", e);            
         }
 
         return sa;
@@ -1347,7 +1400,8 @@ public class AddToolComposer extends UtilityComposer {
         Query q = null;
 
         String species = rgSpecies.getSelectedItem().getValue();
-        System.out.println("getSelectedSpecies.species: " + species);
+        String id = rgSpecies.getSelectedItem().getId();
+        logger.debug("getSelectedSpecies.species: " + species);
 
         MapLayer ml = getMapComposer().getMapLayer(species);
         if (ml != null) {
@@ -1358,8 +1412,8 @@ public class AddToolComposer extends UtilityComposer {
             }
         } else {
             try {
-                System.out.println("getSelectedSpecies: " + species);
-                System.out.println("tool is: " + (tToolName == null ? "null" : tToolName.getValue()));
+                logger.debug("getSelectedSpecies: " + species);
+                logger.debug("tool is: " + (tToolName == null ? "null" : tToolName.getValue()));
                 if (species.equals("allspecies")) {
                     species = "none";
                     q = new BiocacheQuery(null, null, null, null, false, applycheckboxes ? getGeospatialKosher() : null);
@@ -1381,15 +1435,20 @@ public class AddToolComposer extends UtilityComposer {
                     throw new UnsupportedOperationException("Not yet implemented");
                 } else if (species.equals("multiple")) {
                     String lsids = getMultipleLsids();
-                    System.out.println("getSelectedSpecies.lsids: " + lsids);
+                    logger.debug("getSelectedSpecies.lsids: " + lsids);
                     if (lsids != null && lsids.length() > 0) {
                         q = new BiocacheQuery(lsids, null, null, null, false, applycheckboxes ? getGeospatialKosher() : null);
-                        System.out.println("getSelectedSpecies.query is now set");
+                        logger.debug("getSelectedSpecies.query is now set");
                     }
-                } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
+                } else if(species.equals("uploadLsid")){
+                    //get the query from species list list
+                    SpeciesListListbox lb = id.endsWith("Bk")?speciesListListboxBk:speciesListListbox;
+                    q = lb.extractQueryFromSelectedLists(applycheckboxes ? getGeospatialKosher():null);
+                  
+                } else if (species.equals("search") || species.equals("uploadSpecies") ) {
                     if (searchSpeciesAuto.getSelectedItem() != null) {
                         if (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
-                            System.out.println("error in getSelectedSpecies value=" + searchSpeciesAuto.getSelectedItem().getValue() + " text=" + searchSpeciesAuto.getText());
+                            logger.debug("error in getSelectedSpecies value=" + searchSpeciesAuto.getSelectedItem().getValue() + " text=" + searchSpeciesAuto.getText());
                         } else {
                             species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
                             q = QueryUtil.get(species, getMapComposer(), false, applycheckboxes ? getGeospatialKosher() : null);
@@ -1397,8 +1456,7 @@ public class AddToolComposer extends UtilityComposer {
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Unable to retrieve selected species");
-                e.printStackTrace(System.out);
+                logger.warn("Unable to retrieve selected species", e);                
             }
         }
 
@@ -1413,6 +1471,7 @@ public class AddToolComposer extends UtilityComposer {
         Query q = null;
 
         String species = rgSpeciesBk.getSelectedItem().getValue();
+        String id = rgSpecies.getSelectedItem().getId();
 
         MapLayer ml = getMapComposer().getMapLayer(species);
         if (ml != null) {
@@ -1448,7 +1507,13 @@ public class AddToolComposer extends UtilityComposer {
                     if (lsids != null && lsids.length() > 0) {
                         q = new BiocacheQuery(lsids, null, null, null, false, applycheckboxes ? getGeospatialKosherBk() : null);
                     }
-                } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
+                } else if(species.equals("uploadLsid")){
+                  //get the query from species list list
+                  SpeciesListListbox lb = id.endsWith("Bk")?speciesListListboxBk:speciesListListbox;
+                  q = lb.extractQueryFromSelectedLists(applycheckboxes ? getGeospatialKosher():null);
+                
+              } else if (species.equals("search") || species.equals("uploadSpecies") ) {                
+              
                     if (bgSearchSpeciesAuto == null) {
                         bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
                     }
@@ -1458,8 +1523,7 @@ public class AddToolComposer extends UtilityComposer {
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Unable to retrieve selected species");
-                e.printStackTrace(System.out);
+                logger.warn("Unable to retrieve selected species", e);                
             }
         }
 
@@ -1490,8 +1554,7 @@ public class AddToolComposer extends UtilityComposer {
                 species = rgSpecies.getSelectedItem().getLabel();
             }
         } catch (Exception e) {
-            System.out.println("Unable to retrieve selected species");
-            e.printStackTrace(System.out);
+            logger.warn("Unable to retrieve selected species", e);            
         }
 
         return species;
@@ -1509,8 +1572,7 @@ public class AddToolComposer extends UtilityComposer {
                 layers = layers.substring(0, layers.length() - 1);
             }
         } catch (Exception e) {
-            System.out.println("Unable to retrieve selected layers");
-            e.printStackTrace(System.out);
+            logger.warn("Unable to retrieve selected layers", e);            
         }
 
         return layers;
@@ -1527,8 +1589,7 @@ public class AddToolComposer extends UtilityComposer {
                 this.onClick$bMultiple(null);
             }
         } catch (Exception e) {
-            System.out.println("Error setting lsid:");
-            e.printStackTrace(System.out);
+            logger.warn("Error setting lsid:",e);            
         }
     }
 
@@ -1543,15 +1604,14 @@ public class AddToolComposer extends UtilityComposer {
                 this.onClick$bMultipleBk(null);
             }
         } catch (Exception e) {
-            System.out.println("Error setting lsid:");
-            e.printStackTrace(System.out);
+            logger.warn("Error setting lsid:", e);            
         }
     }
 
     void setLsid(String lsidName) {
         try {
 
-            System.out.println("lsidName: " + lsidName);
+            logger.debug("lsidName: " + lsidName);
 
             String[] s = lsidName.split("\t");
             String species = s[1];
@@ -1586,8 +1646,7 @@ public class AddToolComposer extends UtilityComposer {
             }
 
         } catch (Exception e) {
-            System.out.println("Error setting lsid:");
-            e.printStackTrace(System.out);
+            logger.warn("Error setting lsid:", e);            
         }
     }
 
@@ -1844,7 +1903,7 @@ public class AddToolComposer extends UtilityComposer {
         try {
             if (lbListLayers != null && lbListLayers.getSelectedCount() > 0 && tLayerList != null) {
                 String lyrtext = getLayerListText();
-                System.out.println("Setting Layer text: \n" + lyrtext);
+                logger.debug("Setting Layer text: \n" + lyrtext);
                 tLayerList.setText(lyrtext);
                 if (dLayerSummary != null) {
                     dLayerSummary.setVisible(tLayerList.getText().length() > 0);
@@ -2050,10 +2109,10 @@ public class AddToolComposer extends UtilityComposer {
             ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
         }
         if (ue == null) {
-            System.out.println("unable to upload file");
+            logger.error("unable to upload file");
             return;
         } else {
-            System.out.println("fileUploaded()");
+            logger.debug("fileUploaded()");
         }
         try {
             Media m = ue.getMedia();
@@ -2062,14 +2121,14 @@ public class AddToolComposer extends UtilityComposer {
             try {
                 loadLayerList(m.getReaderData());
                 loaded = true;
-                System.out.println("read type " + m.getContentType() + " with getReaderData");
+                logger.info("read type " + m.getContentType() + " with getReaderData");
             } catch (Exception e) {
             }
             if (!loaded) {
                 try {
                     loadLayerList(new StringReader(new String(m.getByteData())));
                     loaded = true;
-                    System.out.println("read type " + m.getContentType() + " with getByteData");
+                    logger.info("read type " + m.getContentType() + " with getByteData");
                 } catch (Exception e) {
                 }
             }
@@ -2077,7 +2136,7 @@ public class AddToolComposer extends UtilityComposer {
                 try {
                     loadLayerList(new InputStreamReader(m.getStreamData()));
                     loaded = true;
-                    System.out.println("read type " + m.getContentType() + " with getStreamData");
+                    logger.info("read type " + m.getContentType() + " with getStreamData");
                 } catch (Exception e) {
                 }
             }
@@ -2085,16 +2144,15 @@ public class AddToolComposer extends UtilityComposer {
                 try {
                     loadLayerList(new StringReader(m.getStringData()));
                     loaded = true;
-                    System.out.println("read type " + m.getContentType() + " with getStringData");
+                    logger.info("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
                     // last one, report error
                     getMapComposer().showMessage("Unable to load your file.");
-                    System.out.println("unable to load user layer list: ");
-                    e.printStackTrace();
+                    logger.error("unable to load user layer list: ", e);                    
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error(ex);
         }
     }
 
@@ -2557,7 +2615,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onClick$btnUpload(Event event) {
         try {
-            System.out.println("onClick$btnUpload(Event event)");
+            logger.debug("onClick$btnUpload(Event event)");
             UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", this, null);
 
             if (rSpeciesUploadSpecies.isSelected()) {
@@ -2586,7 +2644,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public boolean[] getGeospatialKosher() {
         if (chkGeoKosherTrue == null || chkGeoKosherFalse == null || chkGeoKosherNull == null) {
-            System.out.println("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
+            logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
             return new boolean[] { true, true, true };
         } else {
@@ -2596,7 +2654,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public boolean[] getGeospatialKosherBk() {
         if (chkGeoKosherTrueBk == null || chkGeoKosherFalseBk == null || chkGeoKosherNullBk == null) {
-            System.out.println("Error in AddToolComposer.  Expect checkboxes for geospatial kosher background species.  Tool: "
+            logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher background species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
             return new boolean[] { true, true, true };
         } else {
@@ -2606,7 +2664,7 @@ public class AddToolComposer extends UtilityComposer {
 
     void updateGeospatialKosherCheckboxes() {
         if (chkGeoKosherTrue == null || chkGeoKosherFalse == null || chkGeoKosherNull == null) {
-            System.out.println("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
+            logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
             return;
         }
@@ -2636,7 +2694,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public void setGeospatialKosherCheckboxes(boolean[] geospatialKosher) {
         if (chkGeoKosherTrue == null || chkGeoKosherFalse == null || chkGeoKosherNull == null) {
-            System.out.println("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
+            logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
             return;
         }
@@ -2654,7 +2712,7 @@ public class AddToolComposer extends UtilityComposer {
 
     void updateGeospatialKosherCheckboxesBk() {
         if (chkGeoKosherTrueBk == null || chkGeoKosherFalseBk == null || chkGeoKosherNullBk == null) {
-            System.out.println("Error in AddToolComposer.  Expect checkboxes for geospatial kosher background species.  Tool: "
+            logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher background species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
             return;
         }
@@ -2684,7 +2742,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public void setGeospatialKosherCheckboxesBk(boolean[] geospatialKosher) {
         if (chkGeoKosherTrueBk == null || chkGeoKosherFalseBk == null || chkGeoKosherNullBk == null) {
-            System.out.println("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
+            logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
             return;
         }
@@ -2742,9 +2800,67 @@ public class AddToolComposer extends UtilityComposer {
         }
     }
 
-    public void onClick$bAssemblageExport(Event event) {
+    public void onClick$bAssemblageExport(Event event) {    
+      
         SimpleDateFormat sdf = new SimpleDateFormat("ddmmyyyy_hhmm");
         Filedownload.save(getLsids(), "text/plain", "species_assemblage_" + sdf.format(new Date()) + ".txt");
+    }
+    /**
+     * Shows a "create species list" dialog for the supplied list box 
+     * @param lb
+     */
+    private void showExportSpeciesListDialog(Listbox lb){
+      String values = getScientificName(lb);//tMultiple.getValue().replace("\n", ",").replace("\t",",");
+      logger.debug("Creating species list with " + values);
+      if(values.length()>0){
+          UploadToSpeciesListController dialog = (UploadToSpeciesListController)Executions.createComponents("WEB-INF/zul/UploadToSpeciesList.zul", this, null);
+          dialog.setSpecies(values);
+          try{
+              dialog.doModal();
+              
+          }
+          catch(Exception e){
+              logger.error("Unable to export assemblage",e);
+          }
+      }
+      
+    }
+    /**
+     * Retrieves a CSV version scientific names that have been added to the 
+     * list.
+     * @param lb The listbox to retrieve the items from
+     * @return
+     */
+    private String getScientificName(Listbox lb){
+        StringBuilder sb = new StringBuilder();
+        for (Listitem li : (List<Listitem>) lb.getItems()) {
+            Listcell sciNameCell = (Listcell)li.getChildren().get(1);
+            String name = sciNameCell.getLabel();
+            if (sb.length() > 0) {
+                sb.append(",");
+            }
+            sb.append(name.replaceAll("\\(not found\\)", "").trim());
+        }
+        return sb.toString();
+    }
+    
+    public void updateSpeciesListMessage(String drUid){
+      //if a data resource exists check report it        
+        logger.debug("Species list that was created : " + drUid);
+        if(drUid != null){
+            boolean isBk = rMultipleBk != null && rMultipleBk.isChecked();
+            SpeciesListListbox lb = isBk?speciesListListboxBk:speciesListListbox;
+            Radio r = isBk? rSpeciesUploadLSIDBk:rSpeciesUploadLSID;
+            
+            ((SpeciesListListbox.SpeciesListListModel)lb.getModel()).refreshModel();
+            //rgAddSpecies.setS
+            r.setSelected(true);
+            if(isBk) {
+                onCheck$rgSpeciesBk(null);
+            } else {
+                onCheck$rgSpecies(null);
+            }
+        }        
     }
 
     String getLsids() {
@@ -2767,10 +2883,10 @@ public class AddToolComposer extends UtilityComposer {
             ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
         }
         if (ue == null) {
-            System.out.println("unable to upload file");
+            logger.warn("unable to upload file");
             return;
         } else {
-            System.out.println("fileUploaded()");
+            logger.debug("fileUploaded()");
         }
         try {
             Media m = ue.getMedia();
@@ -2780,7 +2896,7 @@ public class AddToolComposer extends UtilityComposer {
             try {
                 importList(readerToString(m.getReaderData()));
                 loaded = true;
-                System.out.println("read type " + m.getContentType() + " with getReaderData");
+                logger.info("read type " + m.getContentType() + " with getReaderData");
             } catch (Exception e) {
                 // e.printStackTrace();
             }
@@ -2788,7 +2904,7 @@ public class AddToolComposer extends UtilityComposer {
                 try {
                     importList(new String(m.getByteData()));
                     loaded = true;
-                    System.out.println("read type " + m.getContentType() + " with getByteData");
+                    logger.info("read type " + m.getContentType() + " with getByteData");
                 } catch (Exception e) {
                     // e.printStackTrace();
                 }
@@ -2797,7 +2913,7 @@ public class AddToolComposer extends UtilityComposer {
                 try {
                     importList(readerToString(new InputStreamReader(m.getStreamData())));
                     loaded = true;
-                    System.out.println("read type " + m.getContentType() + " with getStreamData");
+                    logger.info("read type " + m.getContentType() + " with getStreamData");
                 } catch (Exception e) {
                     // e.printStackTrace();
                 }
@@ -2806,16 +2922,15 @@ public class AddToolComposer extends UtilityComposer {
                 try {
                     importList(m.getStringData());
                     loaded = true;
-                    System.out.println("read type " + m.getContentType() + " with getStringData");
+                    logger.info("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
                     // last one, report error
                     getMapComposer().showMessage("Unable to load your file. Please try again.");
-                    System.out.println("unable to load user points: ");
-                    e.printStackTrace();
+                    logger.error("unable to load user points: ", e);                    
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error(ex);
         }
     }
 

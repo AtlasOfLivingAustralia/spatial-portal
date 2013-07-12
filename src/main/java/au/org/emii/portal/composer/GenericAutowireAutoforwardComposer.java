@@ -72,7 +72,7 @@ public abstract class GenericAutowireAutoforwardComposer extends Window implemen
         return (PortalSession) Sessions.getCurrent().getWebApp().getAttribute(ApplicationInit.PORTAL_MASTER_SESSION_ATTRIBUTE);
     }
     
-   	public MapComposer getMapComposer() {
+   	public static MapComposer getMapComposer() {
         	return (MapComposer) Executions.getCurrent()
 				.getDesktop()
 					.getPage("MapZul")
