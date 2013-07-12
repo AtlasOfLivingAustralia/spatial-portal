@@ -205,7 +205,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void zoomToExtent(MapLayer selectedLayer) {
-
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
             logger.debug("zooming to extent " + selectedLayer.getId());
             if (selectedLayer.getType() == LayerUtilities.GEOJSON
@@ -967,6 +966,64 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
+     * Adds a object as a layer to the map.
+     *
+     * @param pid
+     */
+    public MapLayer addObjectByPid(String pid){
+
+        JSONObject obj = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + pid));
+        //add feature to the map as a new layer
+        String areaName = obj.getString("name"); //retrieve from service
+        MapLayer mapLayer = getMapComposer().addWMSLayer(areaName, areaName, obj.getString("wmsurl"), 0.6f, null, null, LayerUtilities.WKT, null, null);
+        if (mapLayer == null) {
+            return null;
+        }
+        mapLayer.setName("PID:" + pid);
+        mapLayer.setDisplayName(areaName);
+        mapLayer.setWKT(Util.readUrl(CommonData.layersServer + "/shape/wkt/" + pid));
+        mapLayer.setPolygonLayer(true);
+
+        //if the layer is a point create a radius
+
+        if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
+            String bbox = obj.getString("bbox");
+            String fid = obj.getString("fid");
+            String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
+
+            MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                mapLayer.setMapLayerMetadata(md);
+            }
+            try {
+                double[][] bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
+                ArrayList<Double> dbb = new ArrayList<Double>();
+                dbb.add(bb[0][0]);
+                dbb.add(bb[0][1]);
+                dbb.add(bb[1][0]);
+                dbb.add(bb[1][1]);
+                md.setBbox(dbb);
+            } catch (Exception e) {
+                System.out.println("failed to parse: " + mapLayer.getWKT());
+                e.printStackTrace();
+            }
+            md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
+
+            Facet facet = Util.getFacetForObject(pid, areaName);
+            if (facet != null ) {
+                ArrayList<Facet> facets = new ArrayList<Facet>();
+                facets.add(facet);
+                mapLayer.setData("facets", facets);
+            }
+
+            getMapComposer().updateUserLogMapLayer("gaz", areaName + "|" + CommonData.geoServer + obj.getString("wmsurl"));
+        }
+
+        return mapLayer;
+    }
+
+    /**
      * Add a WMS layer identified by the given parameters to the menu system and
      * activate it
      *
@@ -1394,6 +1451,36 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
+     * Maps environmental and contextual layers from a "&layers" param.
+     * Uses the short name of the layer. e.g. "aspect" or ""
+     */
+    public void mapObjectFromParams(){
+        Map<String, String> userParams = getQueryParameterMap(Executions.getCurrent().getDesktop().getQueryString());
+        if(userParams != null){
+            String pidsAsString = userParams.get("pid");
+            if(StringUtils.trimToNull(pidsAsString) == null) return;
+            String[] pids =  pidsAsString.trim().split(",");
+            List<MapLayer> mapLayers = getMapComposer().getPortalSession().getActiveLayers();
+            Map<String,MapLayer> names = new HashMap<String,MapLayer>();
+            for (MapLayer ml: mapLayers){
+                names.put(ml.getName(), ml);
+            }
+            for (String pid : pids) {
+                if(names.get("PID:" + pid) == null){
+                    MapLayer mapLayer = getMapComposer().addObjectByPid(pid);
+                    if(pids.length ==1){
+                        //zoom to this region
+                        getMapComposer().zoomToExtent(mapLayer);
+                    }
+                } else if(pids.length == 1) {
+                    MapLayer mapLayer = names.get("PID:" + pid);
+                    getMapComposer().zoomToExtent(mapLayer);
+                }
+            }
+        }
+    }
+
+    /**
      * Parsing of "q" and  "fq" params
      * 
      * @return
@@ -1586,6 +1673,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         //load any deep linked layers
         mapLayerFromParams();
+
+        //load any deep linked objects
+        mapObjectFromParams();
 
         return null;
     }
