@@ -16,30 +16,30 @@ package org.ala.layers.web;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONObject;
-import net.sf.json.util.JSONUtils;
-
 import org.ala.layers.dao.ObjectDAO;
+import org.ala.layers.intersect.IntersectConfig;
 import org.ala.layers.util.SpatialConversionUtils;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -135,8 +135,7 @@ public class ShapesService {
     private String cleanObjectId(String id) {
         return id.replaceAll("[^a-zA-Z0-9]:", "");
     }
-    
-    
+
     private Map<String, Object> processGeoJSONRequest(String json, Integer pid) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         Map parsedJSON;
@@ -144,8 +143,9 @@ public class ShapesService {
             ObjectMapper mapper = new ObjectMapper();
             parsedJSON = mapper.readValue(json, Map.class);
 
-            if (!(parsedJSON.containsKey("geojson") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id"))) {
-                retMap.put("error", "JSON body must be an object with key value pairs for \"geojson\", \"name\", \"description\" and \"user_id\"");
+            if (!(parsedJSON.containsKey("geojson") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id") && parsedJSON
+                    .containsKey("app_key"))) {
+                retMap.put("error", "JSON body must be an object with key value pairs for \"geojson\", \"name\", \"description\", \"user_id\" and \"app_key\"");
                 return retMap;
             }
 
@@ -154,6 +154,12 @@ public class ShapesService {
             String name = (String) parsedJSON.get("name");
             String description = (String) parsedJSON.get("description");
             String userid = (String) parsedJSON.get("user_id");
+            String apiKey = (String) parsedJSON.get("app_key");
+
+            if (!checkAPIKey(apiKey, userid)) {
+                retMap.put("error", "Invalid API key");
+                return retMap;
+            }
 
             GeometryJSON gJson = new GeometryJSON();
             Geometry geometry = gJson.read(new StringReader(geojsonStr));
@@ -182,7 +188,7 @@ public class ShapesService {
             logger.error("Error uploading geojson", ex);
             retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
         }
-        return retMap;        
+        return retMap;
     }
 
     // Create from geoJSON
@@ -191,22 +197,23 @@ public class ShapesService {
     public Map<String, Object> uploadGeoJSON(@RequestBody String json) throws Exception {
         return processGeoJSONRequest(json, null);
     }
-    
+
     // Create from geoJSON
     @RequestMapping(value = "/shape/upload/geojson/{pid}", method = RequestMethod.POST)
     @ResponseBody
     public Map<String, Object> updateWithGeoJSON(@RequestBody String json, @PathVariable("pid") int pid) throws Exception {
         return processGeoJSONRequest(json, pid);
     }
-    
+
     private Map<String, Object> processWKTRequest(String json, Integer pid) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         try {
             ObjectMapper mapper = new ObjectMapper();
             Map parsedJSON = mapper.readValue(json, Map.class);
 
-            if (!(parsedJSON.containsKey("wkt") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id"))) {
-                retMap.put("error", "JSON body must be an object with key value pairs for \"wkt\", \"name\", \"description\" and \"user_id\"");
+            if (!(parsedJSON.containsKey("geojson") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id") && parsedJSON
+                    .containsKey("app_key"))) {
+                retMap.put("error", "JSON body must be an object with key value pairs for \"geojson\", \"name\", \"description\", \"user_id\" and \"app_key\"");
                 return retMap;
             }
 
@@ -214,6 +221,13 @@ public class ShapesService {
             String name = (String) parsedJSON.get("name");
             String description = (String) parsedJSON.get("description");
             String userid = (String) parsedJSON.get("user_id");
+
+            String apiKey = (String) parsedJSON.get("app_key");
+
+            if (!checkAPIKey(apiKey, userid)) {
+                retMap.put("error", "Invalid API key");
+                return retMap;
+            }
 
             if (pid != null) {
                 objectDao.updateUserUploadedObject(pid, wkt, name, description, userid);
@@ -245,7 +259,7 @@ public class ShapesService {
     public Map<String, Object> uploadWKT(@RequestBody String json) throws Exception {
         return processWKTRequest(json, null);
     }
-    
+
     // Create from WKT
     @RequestMapping(value = "/shape/upload/wkt/{pid}", method = RequestMethod.POST)
     @ResponseBody
@@ -256,8 +270,9 @@ public class ShapesService {
     // UploadShapeFile
     @RequestMapping(value = "/shape/upload/shp", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> uploadShapeFile(@RequestBody String json, HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        Map<String, Object> retMap = new HashMap<String, Object>();
+    public Map<Object, Object> uploadShapeFile(@RequestBody String json, HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        // Use linked hash map to maintain key ordering
+        Map<Object, Object> retMap = new LinkedHashMap<Object, Object>();
 
         // Create a factory for disk-based file items
         DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -274,7 +289,7 @@ public class ShapesService {
         List<FileItem> items = upload.parseRequest(req);
 
         if (items.size() != 1) {
-
+            
         } else {
             FileItem fileItem = items.get(0);
             File tmpZipFile = File.createTempFile("shpUpload", ".zip");
@@ -282,7 +297,57 @@ public class ShapesService {
 
             File shpFile = SpatialConversionUtils.extractZippedShapeFile(tmpZipFile);
 
-            SpatialConversionUtils.getShapeFileManifest(shpFile);
+            List<List<Pair<String, Object>>> manifestData = SpatialConversionUtils.getShapeFileManifest(shpFile);
+            
+            int featureIndex = 0;
+            for (List<Pair<String, Object>> featureData: manifestData) {
+                // Use linked hash map to maintain key ordering
+                Map<String, Object> featureDataMap = new LinkedHashMap<String, Object>();
+                
+                for (Pair<String, Object> fieldData: featureData) {
+                    featureDataMap.put(fieldData.getLeft(), fieldData.getRight());
+                }
+                
+                retMap.put(featureIndex, featureDataMap);
+                
+                featureIndex++;
+            }
+
+        }
+
+        return retMap;
+    }
+
+    private Map<String, Object> processShapeFileFeatureRequest(String json, Integer pid, String shapeFileId, int featureIndex) {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+        Map parsedJSON;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            parsedJSON = mapper.readValue(json, Map.class);
+
+            if (!(parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id") && parsedJSON.containsKey("app_key"))) {
+                retMap.put("error", "JSON body must be an object with key value pairs for \"name\", \"description\", \"user_id\" and \"app_key\"");
+                return retMap;
+            }
+
+            String name = (String) parsedJSON.get("name");
+            String description = (String) parsedJSON.get("description");
+            String userid = (String) parsedJSON.get("user_id");
+            String apiKey = (String) parsedJSON.get("app_key");
+
+            if (!checkAPIKey(apiKey, userid)) {
+                retMap.put("error", "Invalid API key");
+                return retMap;
+            }
+
+            File shpFileDir = new File(System.getProperty("java.io.tmpdir"), shapeFileId);
+
+            String wkt = SpatialConversionUtils.getShapeFileFeatureAsWKT(shpFileDir, featureIndex);
+
+            String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, userid);
+            retMap.put("id", Integer.parseInt(generatedPid));
+
+        } catch (Exception ex) {
 
         }
 
@@ -290,12 +355,102 @@ public class ShapesService {
     }
 
     // UploadShapeFile
-    @RequestMapping(value = "/shape/upload/shp", method = RequestMethod.POST)
+    @RequestMapping(value = "/shape/upload/shp/{shapeId}/{featureIndex}", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> saveFeatureFromShapeFile(@RequestBody String json) throws Exception {
+    public Map<String, Object> saveFeatureFromShapeFile(@RequestBody String json, @PathVariable("shapeId") String shapeId, @PathVariable("featureIndex") int featureIndex) throws Exception {
+        return processShapeFileFeatureRequest(json, null, shapeId, featureIndex);
+    }
 
-        return null;
+    // UploadShapeFile
+    @RequestMapping(value = "/shape/upload/shp/{objectPid}/{shapeId}/{featureIndex}", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> updateFromShapeFileFeature(@RequestBody String json, @PathVariable("objectPid") int objectPid, @PathVariable("shapeId") String shapeId,
+            @PathVariable("featureIndex") int featureIndex) throws Exception {
+        return processShapeFileFeatureRequest(json, objectPid, shapeId, featureIndex);
     }
     
+    // UploadShapeFile
+    @RequestMapping(value = "/shape/upload/pointradius/{latitude}/{longitude}/{radius}", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> createPointRadius(@RequestBody String json, @PathVariable("latitude") double latitude, @PathVariable("longitude") double longitude, @PathVariable("radius") double radius) throws Exception {
+        return processPointRadiusRequest(json, null, latitude, longitude, radius);
+    }
     
+    private Map<String, Object> processPointRadiusRequest(String json, Integer pid, double latitude, double longitude, double radiusKm) {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+        Map parsedJSON;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            parsedJSON = mapper.readValue(json, Map.class);
+
+            if (!(parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id") && parsedJSON.containsKey("app_key"))) {
+                retMap.put("error", "JSON body must be an object with key value pairs for \"name\", \"description\", \"user_id\" and \"app_key\"");
+                return retMap;
+            }
+
+            String name = (String) parsedJSON.get("name");
+            String description = (String) parsedJSON.get("description");
+            String userid = (String) parsedJSON.get("user_id");
+            String apiKey = (String) parsedJSON.get("app_key");
+
+            if (!checkAPIKey(apiKey, userid)) {
+                retMap.put("error", "Invalid API key");
+                return retMap;
+            }
+            
+            if (pid == null) {
+                String wkt = SpatialConversionUtils.createCircleJs(longitude, latitude, radiusKm * 1000);
+                String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, userid);
+                retMap.put("id", Integer.parseInt(generatedPid));
+            } else {
+                return null;
+            }
+
+
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return retMap;
+    }
+
+    private boolean checkAPIKey(String apiKey, String userId) {
+        try {
+            HttpClient httpClient = new HttpClient();
+            GetMethod get = new GetMethod(MessageFormat.format(IntersectConfig.getApiKeyCheckUrlTemplate(), apiKey));
+
+            int returnCode = httpClient.executeMethod(get);
+            if (returnCode != 200) {
+                throw new RuntimeException("Error occurred checking api key");
+            }
+
+            String responseText = get.getResponseBodyAsString();
+
+            ObjectMapper mapper = new ObjectMapper();
+            Map parsedJSON = mapper.readValue(responseText, Map.class);
+
+            boolean valid = (Boolean) parsedJSON.get("valid");
+
+            if (valid) {
+                String keyUserId = (String) parsedJSON.get("userId");
+                String app = (String) parsedJSON.get("app");
+
+                if (!keyUserId.equals(userId)) {
+                    return false;
+                }
+
+                if (!app.equals(IntersectConfig.getSpatialPortalAppName())) {
+                    return false;
+                }
+
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException("Error checking API key");
+        }
+    }
+
 }
