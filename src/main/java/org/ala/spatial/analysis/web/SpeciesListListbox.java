@@ -11,6 +11,7 @@ import org.ala.spatial.data.SpeciesListItemDTO;
 import org.ala.spatial.data.SpeciesListUtil;
 import org.ala.spatial.util.CommonData;
 import org.apache.log4j.Logger;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -27,6 +28,7 @@ import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.event.ListDataEvent;
 
 import au.org.emii.portal.composer.GenericAutowireAutoforwardComposer;
+import au.org.emii.portal.composer.MapComposer;
 /**
  * 
  * A reusable species list listbox.  To be used in all sections that need to reference
@@ -187,6 +189,13 @@ public class SpeciesListListbox extends Listbox {
         return retList;
     }
     
+    public static MapComposer getMapComposer() {
+      return (MapComposer) Executions.getCurrent()
+    .getDesktop()
+      .getPage("MapZul")
+        .getFellow("mapPortalPage");
+}
+    
       /**
        * 
        * The List Model to be used by the species list listbox. This supports the paging of lists via the use of 
@@ -200,7 +209,7 @@ public class SpeciesListListbox extends Listbox {
         Integer size =null;
         String sort = null;
         String order =null;
-        String user=GenericAutowireAutoforwardComposer.getMapComposer().getCookieValue("ALA-Auth");
+        String user=getMapComposer().getCookieValue("ALA-Auth");
         
         public void refreshModel(){
             //remove the cached version of the current lists
