@@ -67,6 +67,8 @@ public class IntersectConfig {
     static final String ANALYSIS_RESOLUTIONS = "ANALYSIS_RESOLUTIONS";
     static final String OCCURRENCE_SPECIES_RECORDS_FILENAME = "OCCURRENCE_SPECIES_RECORDS_FILENAME";
     static final String UPLOADED_SHAPES_FIELD_ID = "UPLOADED_SHAPES_FIELD_ID";
+    static final String API_KEY_CHECK_URL_TEMPLATE = "API_CHECK_CHECK_URL_TEMPLATE";
+    static final String SPATIAL_PORTAL_APP_NAME = "SPATIAL_PORTAL_APP_NAME";
     static final String LAYER_PROPERTIES = "layer.properties";
     static ObjectMapper mapper = new ObjectMapper();
     private FieldDAO fieldDao;
@@ -92,6 +94,8 @@ public class IntersectConfig {
     static List<Double> analysisResolutions;
     static String occurrenceSpeciesRecordsFilename;
     static String uploadedShapesFieldId;
+    static String apiKeyCheckUrlTemplate;
+    static String spatialPortalAppName;
     
     static {
         Properties properties = new Properties();
@@ -124,6 +128,8 @@ public class IntersectConfig {
         analysisResolutions = getDoublesFrom(getProperty(ANALYSIS_RESOLUTIONS, properties, "0.5"));
         occurrenceSpeciesRecordsFilename = getProperty(OCCURRENCE_SPECIES_RECORDS_FILENAME, properties, null);
         uploadedShapesFieldId = getProperty(UPLOADED_SHAPES_FIELD_ID, properties, null);
+        apiKeyCheckUrlTemplate = getProperty(API_KEY_CHECK_URL_TEMPLATE, properties, null);
+        spatialPortalAppName = getProperty(SPATIAL_PORTAL_APP_NAME, properties, null);
     }
 
     public IntersectConfig(FieldDAO fieldDao, LayerDAO layerDao) {
@@ -540,6 +546,14 @@ public class IntersectConfig {
     static public String getUploadedShapesFieldId() {
         return uploadedShapesFieldId;
     }
+    
+    static public String getApiKeyCheckUrlTemplate() {
+        return apiKeyCheckUrlTemplate;
+    }
+    
+    static public String getSpatialPortalAppName() {
+        return spatialPortalAppName;
+    }    
 
     public Map<String, IntersectionFile> getIntersectionFiles() {
         return intersectionFiles;

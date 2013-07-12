@@ -113,7 +113,6 @@ public class SpatialConversionUtils {
     public static File extractZippedShapeFile(File zippedShpFile) throws IOException {
 
         File tempDir = Files.createTempDir();
-        System.out.println(tempDir.getAbsolutePath());
 
         // Unpack the zipped shape file into the temp directory
         ZipFile zf = new ZipFile(zippedShpFile);
@@ -128,7 +127,6 @@ public class SpatialConversionUtils {
         
         while (entries.hasMoreElements()) {
             ZipEntry entry = entries.nextElement();
-            System.out.println(entry.getName());
             InputStream inStream = zf.getInputStream(entry);
             File f = new File(tempDir, entry.getName());
             FileOutputStream outStream = new FileOutputStream(f);
@@ -187,8 +185,24 @@ public class SpatialConversionUtils {
         return manifestData;
     }
     
-    public static String getShapeFileFeatureAsWKT(File shpFile, int featureIndex) throws IOException {
+    public static String getShapeFileFeatureAsWKT(File shpFileDir, int featureIndex) throws IOException {
         String wkt = null;
+        
+        if (!shpFileDir.exists() && !shpFileDir.isDirectory()) { 
+            throw new IllegalArgumentException("Supplied directory does not exist or is not a directory");
+        }
+        
+        File shpFile = null;
+        for (File f : shpFileDir.listFiles()) {
+            if (f.getName().endsWith(".shp")) {
+                shpFile = f;
+                break;
+            }
+        }
+        
+        if (shpFile == null) {
+            throw new IllegalArgumentException("No .shp file present in directory");
+        }
         
         FileDataStore store = FileDataStoreFinder.getDataStore(shpFile);
 
@@ -207,7 +221,7 @@ public class SpatialConversionUtils {
             i++;
         }
         
-        System.out.println(wkt);
+        featureCollection.close(it);
         
         return wkt;
     }
@@ -238,7 +252,6 @@ public class SpatialConversionUtils {
 
         zipOS.close();
 
-        System.out.println(zipFile.getAbsolutePath());
         return zipFile;
     }
 
@@ -333,7 +346,7 @@ public class SpatialConversionUtils {
 
             return shpfile;
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            logger.error("Error saving shape file", e);
             return null;
         }
     }
@@ -361,5 +374,48 @@ public class SpatialConversionUtils {
         final SimpleFeatureType ActiveArea = builder.buildFeatureType();
 
         return ActiveArea;
+    }
+    
+    static public String createCircleJs(double longitude, double latitude, double radius) {
+        boolean belowMinus180 = false;
+        double[][] points = new double[360][];
+        for (int i = 0; i < 360; i++) {
+            points[i] = computeOffset(latitude, 0, radius, i);
+            if (points[i][0] + longitude < -180) {
+                belowMinus180 = true;
+            }
+        }
+
+        //longitude translation
+        double dist = ((belowMinus180) ? 360 : 0) + longitude;
+
+        StringBuilder s = new StringBuilder();
+        s.append("POLYGON((");
+        for (int i = 0; i < 360; i++) {
+            s.append(points[i][0] + dist).append(" ").append(points[i][1]).append(",");
+        }
+        // append the first point to close the circle
+        s.append(points[0][0] + dist).append(" ").append(points[0][1]);
+        s.append("))");
+
+        return s.toString();
+    }
+
+    private static double[] computeOffset(double lat, double lng, double radius, int angle) {
+        double b = radius / 6378137.0;
+        double c = angle * (Math.PI / 180.0);
+        double e = lat * (Math.PI / 180.0);
+        double d = Math.cos(b);
+        b = Math.sin(b);
+        double f = Math.sin(e);
+        e = Math.cos(e);
+        double g = d * f + b * e * Math.cos(c);
+
+        double x = (lng * (Math.PI / 180.0) + Math.atan2(b * e * Math.sin(c), d - f * g)) / (Math.PI / 180.0);
+        double y = Math.asin(g) / (Math.PI / 180.0);
+
+        double[] pt = {x, y};
+
+        return pt;
     }
 }
