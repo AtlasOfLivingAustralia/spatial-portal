@@ -12,16 +12,7 @@
 
         <script type="text/javascript" src="http://maps.google.com/maps/api/js?libraries=geometry&sensor=false"></script>
         <script type="text/javascript" src="map.js.dsp"></script>
-
-
         <script type="text/javascript">
-            //var date = new Date();
-            //var currTime = date.getTime();
-            //var head= document.getElementsByTagName('head')[0];
-            //var script= document.createElement('script');
-            //script.type= 'text/javascript';
-            //script.src= 'scripts/map2.js?tz='+currTime;
-            //head.appendChild(script);
 
             function detectIE6() {
                 var browser=navigator.appName;
@@ -34,16 +25,6 @@
                 }
             }
             detectIE6();
-            
-            function doSomething(ele) {
-                var ele = $("div.lvicons span a");
-                if ($(ele).text() == "x") {
-                    $(ele).text("^");
-                } else {
-                    $(ele).text(escape("x"));
-                }
-                $("#lvalues").toggleClass("layervaluesDie");
-            }
         </script>
 
     </head>
@@ -65,12 +46,12 @@
         </div>        
         <div id="layervalues">
             <div id="lheader">
-                <div class="lvicons">
-                    <span><a href="javascript:doSomething();" class="shown">x</a></span>
-                </div>
-                Layer values:
+                Hover over layers to get values
             </div>                
-            <div id="lvalues" class="layervaluesMin"></div>
+            <div id="lvalues" class="layervaluesMin">
+
+
+            </div>
         </div>
         <div id="mapinfo">
             <div id="mapscale"></div>

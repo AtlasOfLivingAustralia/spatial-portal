@@ -1411,7 +1411,7 @@ function envLayerHover(e,displayFull) {
         }
 
         var data = getLayerValue(names, pt.lat, pt.lon);
-    
+
         if(data != null && data.length > 0) {
             for(i=0;i<data.length;i++) {
                 if (displayFull) {

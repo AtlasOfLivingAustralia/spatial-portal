@@ -203,7 +203,6 @@ hr {
 }
 .ellipsis, #layervalues .lvalue div {
     white-space: nowrap;
-    overflow: hidden;
     text-overflow: ellipsis;
     -o-text-overflow: ellipsis;
 }
@@ -214,10 +213,11 @@ hr {
     clear:both;
 }
 #layervalues .lvalue .lval {
-    position: relative; 
-    float: right;
+    clear:both;
+    /*position: relative;*/
+    /*float: right;
     width: 50px;
-    text-align: right;
+    text-align: right;*/
 }
 #gmaplyrswtch {
     top: 20px;
