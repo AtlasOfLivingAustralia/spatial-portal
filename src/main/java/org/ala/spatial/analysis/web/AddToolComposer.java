@@ -40,6 +40,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.util.media.Media;
+import org.zkoss.zk.ui.Components;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.CheckEvent;
@@ -1068,16 +1069,6 @@ public class AddToolComposer extends UtilityComposer {
         boolean successful = false;
         try {
           
-            //check to see if one of the "create new species list" radio buttons is selecetd
-            if(rMultiple != null && rMultiple.isChecked()){
-                // display the dialog and change the radio button to "use existing"...
-              showExportSpeciesListDialog(lMultiple);
-              return;
-            } else if (rMultipleBk != null && rMultipleBk.isChecked()){
-                showExportSpeciesListDialog(lMultipleBk);
-                return;
-            }
-          
             if (!hasCustomArea && (isAreaCustom() || isAreaHighlightCustom())) {
                 this.doOverlapped();
                 this.setTop("-9999px");
@@ -1105,6 +1096,17 @@ public class AddToolComposer extends UtilityComposer {
             Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
             Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
             Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep + 1))) : null;
+            
+          //check to see if one of the "create new species list" radio buttons is seleceted
+          //ONLY perform these checks if the "lMultiple" or lMultipleBk" is on the current page
+            if(Components.isAncestor(currentDiv, lMultiple)&& rMultiple.isChecked()){
+                // display the dialog and change the radio button to "use existing"...
+              showExportSpeciesListDialog(lMultiple);
+              return;
+            } else if (Components.isAncestor(currentDiv, lMultipleBk)&& rMultipleBk.isChecked()){
+                showExportSpeciesListDialog(lMultipleBk);
+                return;
+            }
 
             if (!currentDiv.getZclass().contains("last")) {
                 if (currentDiv.getZclass().contains("species") && (rSpeciesUploadSpecies.isSelected())) {
@@ -1702,9 +1704,9 @@ public class AddToolComposer extends UtilityComposer {
         if (fileUpload != null) {
             fileUpload.setVisible(false);
         }
-
+        Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
         if (lbListLayers != null) {
-            Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
+            
             if (currentDiv.getZclass().contains("minlayers1")) {
                 btnOk.setDisabled(lbListLayers.getSelectedCount() < 1);
             } else if (currentDiv.getZclass().contains("minlayers2")) {
@@ -1723,15 +1725,15 @@ public class AddToolComposer extends UtilityComposer {
             }
             updateLayerSelectionCount();
         }
-
-        if (rgSpecies != null) {
+				//NC 2013-07-15: Only want to perform the rgSpeices onCheck action if it is on the current page.
+        if (rgSpecies != null && Components.isAncestor(currentDiv, rgSpecies)) {
             onCheck$rgSpecies(null);
         }
-        if (rgSpeciesBk != null) {
+        //NC 2013-07-15: Only want to perform the rgSpeicesBk onCheck action if it is on the current page.
+        if (rgSpeciesBk != null && Components.isAncestor(currentDiv, rgSpeciesBk)) {
             onCheck$rgSpeciesBk(null);
         }
-
-        Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
+        
         if (currentDiv.getZclass().contains("layers2auto")) {
             cbLayer2 = (EnvLayersCombobox) getFellowIfAny("cbLayer2");
             cbLayer1 = (EnvLayersCombobox) getFellowIfAny("cbLayer1");
