@@ -273,18 +273,28 @@ public class ShapesService {
     // UploadShapeFile
     @RequestMapping(value = "/shape/upload/shp", method = RequestMethod.POST)
     @ResponseBody
-    public Map<Object, Object> uploadShapeFile(HttpServletRequest req, HttpServletResponse resp, @RequestParam(value = "user_id", required = true) String userId,
-            @RequestParam(value = "api_key", required = true) String apiKey, @RequestParam(value = "shp_file_url", required = false) String shpFileUrl) throws Exception {
+    public Map<Object, Object> uploadShapeFile(HttpServletRequest req, HttpServletResponse resp, @RequestParam(value = "user_id", required = false) String userId,
+            @RequestParam(value = "api_key", required = false) String apiKey, @RequestParam(value = "shp_file_url", required = false) String shpFileUrl) throws Exception {
         // Use linked hash map to maintain key ordering
         Map<Object, Object> retMap = new LinkedHashMap<Object, Object>();
 
         File tmpZipFile = File.createTempFile("shpUpload", ".zip");
 
         if (!ServletFileUpload.isMultipartContent(req)) {
-            if (shpFileUrl == null) {
-                retMap.put("error", "shpFileUrl not supplied");
+            String jsonRequestBody = IOUtils.toString(req.getReader());
+            
+            ObjectMapper mapper = new ObjectMapper();
+            Map parsedJSON = mapper.readValue(jsonRequestBody, Map.class);
+
+            if (!(parsedJSON.containsKey("shp_file_url") && parsedJSON.containsKey("user_id") && parsedJSON.containsKey("api_key"))) {
+                retMap.put("error", "JSON body must be an object with key value pairs for \"shp_file_url\", \"user_id\" and \"api_key\"");
+                return retMap;
             }
 
+            userId = (String) parsedJSON.get("user_id");
+            apiKey = (String) parsedJSON.get("api_key");
+            shpFileUrl = (String) parsedJSON.get("shp_file_url");
+            
             if (!checkAPIKey(apiKey, userId)) {
                 retMap.put("error", "Invalid API key");
                 return retMap;
@@ -294,6 +304,11 @@ public class ShapesService {
             IOUtils.copy(new URL(shpFileUrl).openStream(), new FileOutputStream(tmpZipFile));
             retMap.putAll(handleZippedShapeFile(tmpZipFile));
         } else {
+            if (!checkAPIKey(apiKey, userId)) {
+                retMap.put("error", "Invalid API key");
+                return retMap;
+            }
+            
             // Create a factory for disk-based file items. File size limit is
             // 50MB
             // Configure a repository (to ensure a secure temp location is used)
@@ -319,13 +334,17 @@ public class ShapesService {
 
         return retMap;
     }
-
+    
     private Map<Object, Object> handleZippedShapeFile(File zippedShp) throws IOException {
         // Use linked hash map to maintain key ordering
         Map<Object, Object> retMap = new LinkedHashMap<Object, Object>();
 
-        File shpFile = SpatialConversionUtils.extractZippedShapeFile(zippedShp);
+        Pair<String,File> idFilePair = SpatialConversionUtils.extractZippedShapeFile(zippedShp);
+        String uploadedShpId = idFilePair.getLeft();
+        File shpFile = idFilePair.getRight();
 
+        retMap.put("shp_id", uploadedShpId);
+        
         List<List<Pair<String, Object>>> manifestData = SpatialConversionUtils.getShapeFileManifest(shpFile);
 
         int featureIndex = 0;
@@ -341,7 +360,7 @@ public class ShapesService {
 
             featureIndex++;
         }
-
+        
         return retMap;
     }
 
@@ -378,7 +397,7 @@ public class ShapesService {
 
         }
 
-        return null;
+        return retMap;
     }
 
     // UploadShapeFile
