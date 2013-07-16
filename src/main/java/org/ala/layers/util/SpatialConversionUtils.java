@@ -110,7 +110,7 @@ public class SpatialConversionUtils {
         //extractZippedShapeFile(new File("C:\\Users\\ChrisF\\Downloads\\3742602.zip"));
     }
 
-    public static File extractZippedShapeFile(File zippedShpFile) throws IOException {
+    public static Pair<String, File> extractZippedShapeFile(File zippedShpFile) throws IOException {
 
         File tempDir = Files.createTempDir();
 
@@ -156,7 +156,7 @@ public class SpatialConversionUtils {
 
         zf.close();
 
-        return shpFile;
+        return Pair.of(shpFile.getParentFile().getName(), shpFile);
     }
 
     public static List<List<Pair<String, Object>>> getShapeFileManifest(File shpFile) throws IOException {
