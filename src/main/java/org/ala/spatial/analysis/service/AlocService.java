@@ -444,10 +444,9 @@ public class AlocService {
         /*
          * export metadata html
          */
-        String urlpth = AlaspatialProperties.getBaseOutputURL() + "aloc/<insert job number here>/classification_means.csv";
         exportMetadata(filename.replace("aloc.png", "classification") + ".html", numberOfGroups, layers, invariantLayers,
                 (job != null) ? job.getName() : "<insert job number here>",
-                urlpth,
+                "classification_means.csv",
                 "", //(job != null) ? job.area : "",
                 width, height, extents[2], extents[3], extents[4], extents[5],
                 iterationCount[0]);
