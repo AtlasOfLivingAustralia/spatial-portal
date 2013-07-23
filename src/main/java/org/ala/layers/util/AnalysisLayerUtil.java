@@ -70,9 +70,7 @@ public class AnalysisLayerUtil {
                 + "args[0] = 'all', prepare all layers for analysis\n\n"
                 + "prepare all shape or grid files for analysis.\n"
                 + "args[0] = 'all', operate on all layers\n"
-                + "args[1] = 'shapes' or 'grids' to operate on only grids or shapes\n\n"
-                + "operate on one grid file by fieldId\n"
-                + "args[0] = fieldId\n");
+                + "args[1] = 'shapes' or 'grids' to operate on only grids or shapes\n\n");
 
         if(args == null || args.length == 0) {
             args = new String[]{"all","grids"};
@@ -475,7 +473,7 @@ public class AnalysisLayerUtil {
                     if(count > 1) {
                         fw.write("\n");
                     }
-                    fw.write(count + "=" + o.getName());
+                    fw.write(count + "=" + o.getId());
                     count ++;
                 }
                 featureStore.addFeatures(collection);
