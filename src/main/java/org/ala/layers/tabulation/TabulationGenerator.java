@@ -195,14 +195,14 @@ public class TabulationGenerator {
                 File f1 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path1 + ".shp");
                 File f2 = new File(Client.getLayerIntersectDao().getConfig().getLayerFilesPath() + path2 + ".shp");
 
-                // domain test
+                //domain test
                 if (isSameDomain(parseDomain(rs1.getString("domain1")), parseDomain(rs1.getString("domain2")))) {
-                    //if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
-                        System.err.println("will to tabulation on: " + rs1.getString("fid1") + ", " + rs1.getString("fid2"));
+                    if (f1.exists() && f2.exists() && f1.length() < 50 * 1024 * 1024 && f2.length() < 50 * 1024 * 1024) {
+                        System.out.println("will do tabulation on: " + rs1.getString("fid1") + ", " + rs1.getString("fid2"));
                         data.add(rs1.getString("fid1") + "," + rs1.getString("fid2"));
-                    //} else {
-                        // for gridToGrid
-                    //}
+                    } else {
+                        //for gridToGrid
+                    }
                 }
             }
 
