@@ -441,8 +441,8 @@ public class ObjectDAOImpl implements ObjectDAO {
     @Override
     public Objects getObjectByIdAndLocation(String fid, Double lng, Double lat) {
         logger.info("Getting object info for fid = " + fid + " at loc: (" + lng + ", " + lat + ") ");
-        String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from objects o, fields f where o.fid = ? and ST_Within(ST_SETSRID(ST_Point(?,?),4326), o.the_geom) and o.fid = f.id";
-        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] { fid, lng, lat });
+        String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from search_objects_by_location(?, ?, ?) o, fields f WHERE o.fid = f.id";
+        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] { fid, lat, lng });
         updateObjectWms(l);
         if (l == null || l.isEmpty()) {
             // get grid classes intersection
@@ -661,6 +661,10 @@ public class ObjectDAOImpl implements ObjectDAO {
     @Transactional
     public void updateUserUploadedObject(int pid, String wkt, String name, String description, String userid) {
 
+        if (!shapePidIsForUploadedShape(pid)) {
+            throw new IllegalArgumentException("Supplied pid does not match an uploaded shape.");
+        }
+        
         try {
             double area_km = SpatialUtil.calculateArea(wkt) / 1000.0 / 1000.0;
 
@@ -674,14 +678,26 @@ public class ObjectDAOImpl implements ObjectDAO {
         } catch (DataAccessException ex) {
             throw new IllegalArgumentException("Error writing to database. Check validity of wkt.", ex);
         }
-
     }
-
+    
+    
+    
     private void updateObjectNames() {
         String sql = "INSERT INTO obj_names (name)" + "  SELECT lower(objects.name) FROM fields, objects" + "  LEFT OUTER JOIN obj_names ON lower(objects.name)=obj_names.name"
                 + "  WHERE obj_names.name IS NULL" + "  AND fields.namesearch = true" + " AND fields.id = objects.fid" + " GROUP BY lower(objects.name);"
                 + "  UPDATE objects SET name_id=obj_names.id FROM obj_names WHERE name_id IS NULL AND lower(objects.name)=obj_names.name;";
         jdbcTemplate.update(sql);
+    }
+    
+    private boolean shapePidIsForUploadedShape(int pid) {
+        String sql = "SELECT * from uploaded_objects_metadata WHERE pid = ?";
+        List<Map<String, Object>> queryResult = jdbcTemplate.queryForList(sql, pid);
+        if (queryResult == null || queryResult.isEmpty()) {
+            return false;
+        } else {
+            return true;
+        }
+        
     }
 
 }
