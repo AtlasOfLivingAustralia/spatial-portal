@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -441,8 +442,8 @@ public class ObjectDAOImpl implements ObjectDAO {
     @Override
     public Objects getObjectByIdAndLocation(String fid, Double lng, Double lat) {
         logger.info("Getting object info for fid = " + fid + " at loc: (" + lng + ", " + lat + ") ");
-        String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from search_objects_by_location(?, ?, ?) o, fields f WHERE o.fid = f.id";
-        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] { fid, lat, lng });
+        String sql = MessageFormat.format("select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from search_objects_by_geometry_intersect(?, ST_GeomFromText('POINT({0} {1})', 4326) o, fields f WHERE o.fid = f.id", lng, lat);
+        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] { fid });
         updateObjectWms(l);
         if (l == null || l.isEmpty()) {
             // get grid classes intersection
