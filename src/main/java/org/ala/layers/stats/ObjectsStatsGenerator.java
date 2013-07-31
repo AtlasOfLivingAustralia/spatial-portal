@@ -30,7 +30,7 @@ import org.ala.layers.util.SpatialUtil;
 public class ObjectsStatsGenerator {
 
     static int CONCURRENT_THREADS = 10;
-    static String db_url = "jdbc:postgresql://localhost:5432/layersdb";
+    static String db_url = "jdbc:postgresql://ala-maps-db.vic.csiro.au:5432/layersdb";
     static String db_usr = "postgres";
     static String db_pwd = "postgres";
 
