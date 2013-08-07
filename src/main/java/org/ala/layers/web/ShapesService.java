@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.ala.layers.dao.ObjectDAO;
 import org.ala.layers.intersect.IntersectConfig;
+import org.ala.layers.util.JSONRequestBodyParser;
 import org.ala.layers.util.SpatialConversionUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -43,8 +44,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.geotools.geojson.geom.GeometryJSON;
 import org.springframework.dao.DataAccessException;
@@ -57,6 +56,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * 
@@ -141,55 +142,59 @@ public class ShapesService {
 
     private Map<String, Object> processGeoJSONRequest(String json, Integer pid) {
         Map<String, Object> retMap = new HashMap<String, Object>();
-        Map parsedJSON;
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            parsedJSON = mapper.readValue(json, Map.class);
 
-            if (!(parsedJSON.containsKey("geojson") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id") && parsedJSON
-                    .containsKey("api_key"))) {
-                retMap.put("error", "JSON body must be an object with key value pairs for \"geojson\", \"name\", \"description\", \"user_id\" and \"api_key\"");
+        JSONRequestBodyParser reqBodyParser = new JSONRequestBodyParser();
+        reqBodyParser.addParameter("geojson", Map.class, false);
+        reqBodyParser.addParameter("name", String.class, false);
+        reqBodyParser.addParameter("description", String.class, false);
+        reqBodyParser.addParameter("user_id", String.class, false);
+        reqBodyParser.addParameter("api_key", String.class, false);
+
+        if (reqBodyParser.parseJSON(json)) {
+
+            String wkt = null;
+            Map<String, Object> geojsonAsMap = (Map<String, Object>) reqBodyParser.getParsedValue("geojson");
+            try {
+                String geojsonString = new ObjectMapper().writeValueAsString(geojsonAsMap);
+                GeometryJSON gJson = new GeometryJSON();
+                Geometry geometry = gJson.read(new StringReader(geojsonString));
+
+                if (!geometry.isValid()) {
+                    retMap.put("error", "Invalid geometry");
+                }
+
+                wkt = geometry.toText();
+            } catch (Exception ex) {
+                logger.error("Malformed GeoJSON geometry. Note that only GeoJSON geometries can be supplied here. Features and FeatureCollections cannot.", ex);
+                retMap.put("error", "Malformed GeoJSON geometry. Note that only GeoJSON geometries can be supplied here. Features and FeatureCollections cannot.");
                 return retMap;
             }
 
-            Object geojsonObj = parsedJSON.get("geojson");
-            String geojsonStr = mapper.writeValueAsString(geojsonObj);
-            String name = (String) parsedJSON.get("name");
-            String description = (String) parsedJSON.get("description");
-            String userid = (String) parsedJSON.get("user_id");
-            String apiKey = (String) parsedJSON.get("api_key");
+            String name = (String) reqBodyParser.getParsedValue("name");
+            String description = (String) reqBodyParser.getParsedValue("description");
+            String user_id = (String) reqBodyParser.getParsedValue("user_id");
+            String api_key = (String) reqBodyParser.getParsedValue("api_key");
 
-            if (!checkAPIKey(apiKey, userid)) {
+            if (!checkAPIKey(api_key, user_id)) {
                 retMap.put("error", "Invalid API key");
                 return retMap;
             }
 
-            GeometryJSON gJson = new GeometryJSON();
-            Geometry geometry = gJson.read(new StringReader(geojsonStr));
-            String wkt = geometry.toText();
+            try {
+                if (pid != null) {
+                    objectDao.updateUserUploadedObject(pid, wkt, name, description, user_id);
+                    retMap.put("updated", true);
+                } else {
+                    String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, user_id);
+                    retMap.put("id", Integer.parseInt(generatedPid));
+                }
 
-            if (pid != null) {
-                objectDao.updateUserUploadedObject(pid, wkt, name, description, userid);
-                retMap.put("updated", true);
-            } else {
-                String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, userid);
-                retMap.put("id", Integer.parseInt(generatedPid));
+            } catch (Exception ex) {
+                logger.error("Error uploading geojson", ex);
+                retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
             }
-
-        } catch (JsonParseException ex) {
-            logger.error("Malformed request. Expecting a JSON object.", ex);
-            retMap.put("error", "Malformed request. Expecting a JSON object.");
-            return retMap;
-        } catch (JsonMappingException ex) {
-            logger.error("Malformed request. Expecting a JSON object.", ex);
-            retMap.put("error", "Malformed request. Expecting a JSON object.");
-            return retMap;
-        } catch (IOException ex) {
-            logger.error("Malformed GeoJSON geometry. Note that only GeoJSON geometries can be supplied here. Features and FeatureCollections cannot.", ex);
-            retMap.put("error", "Malformed GeoJSON geometry. Note that only GeoJSON geometries can be supplied here. Features and FeatureCollections cannot.");
-        } catch (Exception ex) {
-            logger.error("Error uploading geojson", ex);
-            retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
+        } else {
+            retMap.put("error", StringUtils.join(reqBodyParser.getErrorMessages(), ","));
         }
         return retMap;
     }
@@ -210,48 +215,49 @@ public class ShapesService {
 
     private Map<String, Object> processWKTRequest(String json, Integer pid) {
         Map<String, Object> retMap = new HashMap<String, Object>();
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            Map parsedJSON = mapper.readValue(json, Map.class);
 
-            if (!(parsedJSON.containsKey("geojson") && parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id") && parsedJSON
-                    .containsKey("api_key"))) {
-                retMap.put("error", "JSON body must be an object with key value pairs for \"geojson\", \"name\", \"description\", \"user_id\" and \"api_key\"");
-                return retMap;
-            }
+        JSONRequestBodyParser reqBodyParser = new JSONRequestBodyParser();
+        reqBodyParser.addParameter("wkt", String.class, false);
+        reqBodyParser.addParameter("name", String.class, false);
+        reqBodyParser.addParameter("description", String.class, false);
+        reqBodyParser.addParameter("user_id", String.class, false);
+        reqBodyParser.addParameter("api_key", String.class, false);
 
-            String wkt = (String) parsedJSON.get("wkt");
-            String name = (String) parsedJSON.get("name");
-            String description = (String) parsedJSON.get("description");
-            String userid = (String) parsedJSON.get("user_id");
+        if (reqBodyParser.parseJSON(json)) {
 
-            String apiKey = (String) parsedJSON.get("api_key");
+            String wkt = (String) reqBodyParser.getParsedValue("wkt");
+            String name = (String) reqBodyParser.getParsedValue("name");
+            String description = (String) reqBodyParser.getParsedValue("description");
+            String user_id = (String) reqBodyParser.getParsedValue("user_id");
+            String api_key = (String) reqBodyParser.getParsedValue("api_key");
 
-            if (!checkAPIKey(apiKey, userid)) {
+            if (!checkAPIKey(api_key, user_id)) {
                 retMap.put("error", "Invalid API key");
                 return retMap;
             }
 
-            if (pid != null) {
-                objectDao.updateUserUploadedObject(pid, wkt, name, description, userid);
-                retMap.put("updated", true);
-            } else {
-                String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, userid);
-                retMap.put("id", Integer.parseInt(generatedPid));
+            if (!isWKTValid(wkt)) {
+                retMap.put("error", "Invalid WKT");
             }
 
-        } catch (DataAccessException ex) {
-            logger.error("Malformed WKT.", ex);
-            retMap.put("error", "Malformed WKT.");
-        } catch (JsonParseException ex) {
-            logger.error("Malformed request. Expecting a JSON object.", ex);
-            retMap.put("error", "Malformed request. Expecting a JSON object.");
-        } catch (JsonMappingException ex) {
-            logger.error("Malformed request. Expecting a JSON object.", ex);
-            retMap.put("error", "Malformed request. Expecting a JSON object.");
-        } catch (Exception ex) {
-            logger.error("Error uploading WKT", ex);
-            retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
+            try {
+                if (pid != null) {
+                    objectDao.updateUserUploadedObject(pid, wkt, name, description, user_id);
+                    retMap.put("updated", true);
+                } else {
+                    String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, user_id);
+                    retMap.put("id", Integer.parseInt(generatedPid));
+                }
+
+            } catch (DataAccessException ex) {
+                logger.error("Malformed WKT.", ex);
+                retMap.put("error", "Malformed WKT.");
+            } catch (Exception ex) {
+                logger.error("Error uploading WKT", ex);
+                retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
+            }
+        } else {
+            retMap.put("error", StringUtils.join(reqBodyParser.getErrorMessages(), ","));
         }
         return retMap;
     }
@@ -282,33 +288,36 @@ public class ShapesService {
 
         if (!ServletFileUpload.isMultipartContent(req)) {
             String jsonRequestBody = IOUtils.toString(req.getReader());
-            
-            ObjectMapper mapper = new ObjectMapper();
-            Map parsedJSON = mapper.readValue(jsonRequestBody, Map.class);
 
-            if (!(parsedJSON.containsKey("shp_file_url") && parsedJSON.containsKey("user_id") && parsedJSON.containsKey("api_key"))) {
-                retMap.put("error", "JSON body must be an object with key value pairs for \"shp_file_url\", \"user_id\" and \"api_key\"");
-                return retMap;
+            JSONRequestBodyParser reqBodyParser = new JSONRequestBodyParser();
+            reqBodyParser.addParameter("user_id", String.class, false);
+            reqBodyParser.addParameter("shp_file_url", String.class, false);
+            reqBodyParser.addParameter("api_key", String.class, false);
+
+            if (reqBodyParser.parseJSON(jsonRequestBody)) {
+
+                shpFileUrl = (String) reqBodyParser.getParsedValue("shp_file_url");
+                userId = (String) reqBodyParser.getParsedValue("user_id");
+                apiKey = (String) reqBodyParser.getParsedValue("api_key");
+
+                if (!checkAPIKey(apiKey, userId)) {
+                    retMap.put("error", "Invalid API key");
+                    return retMap;
+                }
+
+                // Use shape file url from json body
+                IOUtils.copy(new URL(shpFileUrl).openStream(), new FileOutputStream(tmpZipFile));
+                retMap.putAll(handleZippedShapeFile(tmpZipFile));
+            } else {
+                retMap.put("error", StringUtils.join(reqBodyParser.getErrorMessages(), ","));
             }
 
-            userId = (String) parsedJSON.get("user_id");
-            apiKey = (String) parsedJSON.get("api_key");
-            shpFileUrl = (String) parsedJSON.get("shp_file_url");
-            
-            if (!checkAPIKey(apiKey, userId)) {
-                retMap.put("error", "Invalid API key");
-                return retMap;
-            }
-
-            // Use shape file url from json body
-            IOUtils.copy(new URL(shpFileUrl).openStream(), new FileOutputStream(tmpZipFile));
-            retMap.putAll(handleZippedShapeFile(tmpZipFile));
         } else {
             if (!checkAPIKey(apiKey, userId)) {
                 retMap.put("error", "Invalid API key");
                 return retMap;
             }
-            
+
             // Create a factory for disk-based file items. File size limit is
             // 50MB
             // Configure a repository (to ensure a secure temp location is used)
@@ -334,17 +343,17 @@ public class ShapesService {
 
         return retMap;
     }
-    
+
     private Map<Object, Object> handleZippedShapeFile(File zippedShp) throws IOException {
         // Use linked hash map to maintain key ordering
         Map<Object, Object> retMap = new LinkedHashMap<Object, Object>();
 
-        Pair<String,File> idFilePair = SpatialConversionUtils.extractZippedShapeFile(zippedShp);
+        Pair<String, File> idFilePair = SpatialConversionUtils.extractZippedShapeFile(zippedShp);
         String uploadedShpId = idFilePair.getLeft();
         File shpFile = idFilePair.getRight();
 
         retMap.put("shp_id", uploadedShpId);
-        
+
         List<List<Pair<String, Object>>> manifestData = SpatialConversionUtils.getShapeFileManifest(shpFile);
 
         int featureIndex = 0;
@@ -360,41 +369,48 @@ public class ShapesService {
 
             featureIndex++;
         }
-        
+
         return retMap;
     }
 
     private Map<String, Object> processShapeFileFeatureRequest(String json, Integer pid, String shapeFileId, int featureIndex) {
         Map<String, Object> retMap = new HashMap<String, Object>();
-        Map parsedJSON;
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            parsedJSON = mapper.readValue(json, Map.class);
 
-            if (!(parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id") && parsedJSON.containsKey("api_key"))) {
-                retMap.put("error", "JSON body must be an object with key value pairs for \"name\", \"description\", \"user_id\" and \"api_key\"");
-                return retMap;
-            }
+        JSONRequestBodyParser reqBodyParser = new JSONRequestBodyParser();
+        reqBodyParser.addParameter("name", String.class, false);
+        reqBodyParser.addParameter("description", String.class, false);
+        reqBodyParser.addParameter("user_id", String.class, false);
+        reqBodyParser.addParameter("api_key", String.class, false);
 
-            String name = (String) parsedJSON.get("name");
-            String description = (String) parsedJSON.get("description");
-            String userid = (String) parsedJSON.get("user_id");
-            String apiKey = (String) parsedJSON.get("api_key");
+        if (reqBodyParser.parseJSON(json)) {
 
-            if (!checkAPIKey(apiKey, userid)) {
+            String name = (String) reqBodyParser.getParsedValue("name");
+            String description = (String) reqBodyParser.getParsedValue("description");
+            String user_id = (String) reqBodyParser.getParsedValue("user_id");
+            String api_key = (String) reqBodyParser.getParsedValue("api_key");
+
+            if (!checkAPIKey(api_key, user_id)) {
                 retMap.put("error", "Invalid API key");
                 return retMap;
             }
 
-            File shpFileDir = new File(System.getProperty("java.io.tmpdir"), shapeFileId);
+            try {
+                File shpFileDir = new File(System.getProperty("java.io.tmpdir"), shapeFileId);
 
-            String wkt = SpatialConversionUtils.getShapeFileFeatureAsWKT(shpFileDir, featureIndex);
+                String wkt = SpatialConversionUtils.getShapeFileFeatureAsWKT(shpFileDir, featureIndex);
 
-            String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, userid);
-            retMap.put("id", Integer.parseInt(generatedPid));
+                if (!isWKTValid(wkt)) {
+                    retMap.put("error", "Invalid geometry");
+                }
 
-        } catch (Exception ex) {
+                String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, user_id);
+                retMap.put("id", Integer.parseInt(generatedPid));
 
+            } catch (Exception ex) {
+                retMap.put("error", ex.getMessage());
+            }
+        } else {
+            retMap.put("error", StringUtils.join(reqBodyParser.getErrorMessages(), ","));
         }
 
         return retMap;
@@ -425,38 +441,40 @@ public class ShapesService {
 
     private Map<String, Object> processPointRadiusRequest(String json, Integer pid, double latitude, double longitude, double radiusKm) {
         Map<String, Object> retMap = new HashMap<String, Object>();
-        Map parsedJSON;
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            parsedJSON = mapper.readValue(json, Map.class);
 
-            if (!(parsedJSON.containsKey("name") && parsedJSON.containsKey("description") && parsedJSON.containsKey("user_id") && parsedJSON.containsKey("api_key"))) {
-                retMap.put("error", "JSON body must be an object with key value pairs for \"name\", \"description\", \"user_id\" and \"api_key\"");
-                return retMap;
-            }
+        JSONRequestBodyParser reqBodyParser = new JSONRequestBodyParser();
+        reqBodyParser.addParameter("name", String.class, false);
+        reqBodyParser.addParameter("description", String.class, false);
+        reqBodyParser.addParameter("user_id", String.class, false);
+        reqBodyParser.addParameter("api_key", String.class, false);
 
-            String name = (String) parsedJSON.get("name");
-            String description = (String) parsedJSON.get("description");
-            String userid = (String) parsedJSON.get("user_id");
-            String apiKey = (String) parsedJSON.get("api_key");
+        if (reqBodyParser.parseJSON(json)) {
 
-            if (!checkAPIKey(apiKey, userid)) {
+            String name = (String) reqBodyParser.getParsedValue("name");
+            String description = (String) reqBodyParser.getParsedValue("description");
+            String user_id = (String) reqBodyParser.getParsedValue("user_id");
+            String api_key = (String) reqBodyParser.getParsedValue("api_key");
+
+            if (!checkAPIKey(api_key, user_id)) {
                 retMap.put("error", "Invalid API key");
                 return retMap;
             }
 
-            if (pid == null) {
-                String wkt = SpatialConversionUtils.createCircleJs(longitude, latitude, radiusKm * 1000);
-                String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, userid);
-                retMap.put("id", Integer.parseInt(generatedPid));
-            } else {
-                return null;
+            try {
+                if (pid == null) {
+                    String wkt = SpatialConversionUtils.createCircleJs(longitude, latitude, radiusKm * 1000);
+                    String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, user_id);
+                    retMap.put("id", Integer.parseInt(generatedPid));
+                } else {
+                    return null;
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } else {
+            retMap.put("error", StringUtils.join(reqBodyParser.getErrorMessages(), ","));
         }
-
         return retMap;
     }
 
@@ -495,6 +513,154 @@ public class ShapesService {
             }
         } catch (Exception ex) {
             throw new RuntimeException("Error checking API key");
+        }
+    }
+
+    @RequestMapping(value = "/shape/upload/{pid}", method = RequestMethod.DELETE)
+    @ResponseBody
+    public Map<String, Object> deleteShape(@PathVariable("pid") int pid) {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+        try {
+            boolean success = objectDao.deleteUserUploadedObject(pid);
+            retMap.put("success", success);
+        } catch (Exception ex) {
+            logger.error("Error deleting shape " + pid, ex);
+            retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
+        }
+        return retMap;
+    }
+
+    @RequestMapping(value = "/poi", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> createPointOfInterest(@RequestBody String json) {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+
+        JSONRequestBodyParser reqBodyParser = new JSONRequestBodyParser();
+        reqBodyParser.addParameter("object_id", String.class, true);
+        reqBodyParser.addParameter("name", String.class, false);
+        reqBodyParser.addParameter("type", String.class, false);
+        reqBodyParser.addParameter("latitude", Double.class, false);
+        reqBodyParser.addParameter("longitude", Double.class, false);
+        reqBodyParser.addParameter("bearing", Double.class, true);
+        reqBodyParser.addParameter("user_id", String.class, true);
+        reqBodyParser.addParameter("description", String.class, true);
+        reqBodyParser.addParameter("focal_length", Double.class, true);
+        reqBodyParser.addParameter("api_key", String.class, false);
+
+        if (reqBodyParser.parseJSON(json)) {
+
+            String object_id = (String) reqBodyParser.getParsedValue("object_id");
+            String name = (String) reqBodyParser.getParsedValue("name");
+            String type = (String) reqBodyParser.getParsedValue("type");
+            Double latitude = (Double) reqBodyParser.getParsedValue("latitude");
+            Double longitude = (Double) reqBodyParser.getParsedValue("longitude");
+            Double bearing = (Double) reqBodyParser.getParsedValue("bearing");
+            String user_id = (String) reqBodyParser.getParsedValue("user_id");
+            String description = (String) reqBodyParser.getParsedValue("description");
+            Double focal_length = (Double) reqBodyParser.getParsedValue("focal_length");
+            String api_key = (String) reqBodyParser.getParsedValue("api_key");
+
+            if (!checkAPIKey(api_key, user_id)) {
+                retMap.put("error", "Invalid API key");
+                return retMap;
+            }
+            try {
+                int id = objectDao.createPointOfInterest(object_id, name, type, latitude, longitude, bearing, user_id, description, focal_length);
+                retMap.put("id", id);
+            } catch (Exception ex) {
+                logger.error("Error creating point of interest", ex);
+                retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
+            }
+        } else {
+            retMap.put("error", StringUtils.join(reqBodyParser.getErrorMessages(), ","));
+        }
+
+        return retMap;
+    }
+
+    @RequestMapping(value = "/poi/{id}", method = RequestMethod.DELETE)
+    @ResponseBody
+    public Map<String, Object> deletePointOfInterest(@PathVariable("id") int id) {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+        try {
+            boolean success = objectDao.deletePointOfInterest(id);
+            retMap.put("success", success);
+        } catch (Exception ex) {
+            logger.error("Error uploading point of interest " + id, ex);
+            retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
+        }
+        return retMap;
+    }
+
+    @RequestMapping(value = "/poi/{id}", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> updatePointOfInterest(@RequestBody String json, @PathVariable("id") int id) {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+
+        JSONRequestBodyParser reqBodyParser = new JSONRequestBodyParser();
+        reqBodyParser.addParameter("object_id", String.class, true);
+        reqBodyParser.addParameter("name", String.class, false);
+        reqBodyParser.addParameter("type", String.class, false);
+        reqBodyParser.addParameter("latitude", Double.class, false);
+        reqBodyParser.addParameter("longitude", Double.class, false);
+        reqBodyParser.addParameter("bearing", Double.class, true);
+        reqBodyParser.addParameter("user_id", String.class, true);
+        reqBodyParser.addParameter("description", String.class, true);
+        reqBodyParser.addParameter("focal_length", Double.class, true);
+        reqBodyParser.addParameter("api_key", String.class, false);
+
+        if (reqBodyParser.parseJSON(json)) {
+
+            String object_id = (String) reqBodyParser.getParsedValue("object_id");
+            String name = (String) reqBodyParser.getParsedValue("name");
+            String type = (String) reqBodyParser.getParsedValue("type");
+            Double latitude = (Double) reqBodyParser.getParsedValue("latitude");
+            Double longitude = (Double) reqBodyParser.getParsedValue("longitude");
+            Double bearing = (Double) reqBodyParser.getParsedValue("bearing");
+            String user_id = (String) reqBodyParser.getParsedValue("user_id");
+            String description = (String) reqBodyParser.getParsedValue("description");
+            Double focal_length = (Double) reqBodyParser.getParsedValue("focal_length");
+            String api_key = (String) reqBodyParser.getParsedValue("api_key");
+
+            if (!checkAPIKey(api_key, user_id)) {
+                retMap.put("error", "Invalid API key");
+                return retMap;
+            }
+            try {
+                boolean updateSuccessful = objectDao.updatePointOfInterest(id, object_id, name, type, latitude, longitude, bearing, user_id, description, focal_length);
+                retMap.put("updated", updateSuccessful);
+            } catch (Exception ex) {
+                logger.error("Error updating point of interest " + id, ex);
+                retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
+            }
+        } else {
+            retMap.put("error", StringUtils.join(reqBodyParser.getErrorMessages(), ","));
+        }
+
+        return retMap;
+    }
+
+    @RequestMapping(value = "/poi/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> getPointOfInterestDetails(@PathVariable("id") int id) {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+        try {
+            return objectDao.getPointOfInterestDetails(id);
+        } catch (IllegalArgumentException ex) {
+            retMap.put("error", "Invalid point of interest id " + id);
+        } catch (Exception ex) {
+            retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
+        }
+        return retMap;
+    }
+
+    private boolean isWKTValid(String wkt) {
+        WKTReader wktReader = new WKTReader();
+        try {
+            Geometry geom = wktReader.read(wkt);
+            return geom.isValid();
+        } catch (ParseException ex) {
+            return false;
         }
     }
 
