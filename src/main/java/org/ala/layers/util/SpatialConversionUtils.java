@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.referencing.crs.AbstractCRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.feature.Property;
@@ -46,6 +48,7 @@ import com.google.common.io.Files;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 /**
@@ -104,10 +107,35 @@ public class SpatialConversionUtils {
     // return null;
     // }
 
+    public static boolean isWKTValid(String wkt) {
+        WKTReader wktReader = new WKTReader();
+        try {
+            Geometry geom = wktReader.read(wkt);
+            return geom.isValid();
+        } catch (ParseException ex) {
+            return false;
+        }
+    }
+
+    public static String geoJsonToWkt(String geoJson) throws IOException {
+        GeometryJSON gJson = new GeometryJSON();
+        Geometry geometry = gJson.read(new StringReader(geoJson));
+
+        if (!geometry.isValid()) {
+            return null;
+        }
+
+        String wkt = geometry.toText();
+        return wkt;
+    }
+
     public static void main(String[] args) throws Exception {
-        //getShapeFileFeatureAsWKT(new File("C:\\Users\\ChrisF\\spatial\\IBRA 7\\IBRA7_subregions\\IBRA7_subregions.shp"), 0);
+        // getShapeFileFeatureAsWKT(new
+        // File("C:\\Users\\ChrisF\\spatial\\IBRA 7\\IBRA7_subregions\\IBRA7_subregions.shp"),
+        // 0);
         extractZippedShapeFile(new File("C:\\Users\\ChrisF\\spatial\\IBRA 7\\IBRA7_subregions.zip"));
-        //extractZippedShapeFile(new File("C:\\Users\\ChrisF\\Downloads\\3742602.zip"));
+        // extractZippedShapeFile(new
+        // File("C:\\Users\\ChrisF\\Downloads\\3742602.zip"));
     }
 
     public static Pair<String, File> extractZippedShapeFile(File zippedShpFile) throws IOException {
@@ -122,9 +150,9 @@ public class SpatialConversionUtils {
         boolean dbfPresent = false;
 
         Enumeration<? extends ZipEntry> entries = zf.entries();
-        
+
         File shpFile = null;
-        
+
         while (entries.hasMoreElements()) {
             ZipEntry entry = entries.nextElement();
             InputStream inStream = zf.getInputStream(entry);
@@ -145,12 +173,12 @@ public class SpatialConversionUtils {
         if (!shpPresent || !shxPresent || !dbfPresent) {
             throw new IllegalArgumentException("Invalid archive. Must contain .shp, .shx and .dbf at a minimum.");
         }
-        
+
         ShapefileDataStore store = (ShapefileDataStore) FileDataStoreFinder.getDataStore(shpFile);
         SimpleFeatureType schema = store.getSchema();
-        
+
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
-        if (!((AbstractCRS)crs).equals(DefaultGeographicCRS.WGS84, false)) {
+        if (!((AbstractCRS) crs).equals(DefaultGeographicCRS.WGS84, false)) {
             throw new IllegalArgumentException("Invalid shape file. Uploaded shapefiles required to be in CRS WGS84. ");
         }
 
@@ -161,7 +189,7 @@ public class SpatialConversionUtils {
 
     public static List<List<Pair<String, Object>>> getShapeFileManifest(File shpFile) throws IOException {
         List<List<Pair<String, Object>>> manifestData = new ArrayList<List<Pair<String, Object>>>();
-        
+
         FileDataStore store = FileDataStoreFinder.getDataStore(shpFile);
 
         SimpleFeatureSource featureSource = store.getFeatureSource(store.getTypeNames()[0]);
@@ -170,7 +198,7 @@ public class SpatialConversionUtils {
 
         while (it.hasNext()) {
             SimpleFeature feature = (SimpleFeature) it.next();
-            List<Pair<String, Object>> pairList = new ArrayList<Pair<String,Object>>();
+            List<Pair<String, Object>> pairList = new ArrayList<Pair<String, Object>>();
             for (Property prop : feature.getProperties()) {
                 if (!(prop.getType() instanceof GeometryType)) {
                     Pair<String, Object> pair = Pair.of(prop.getName().toString(), feature.getAttribute(prop.getName()));
@@ -179,19 +207,19 @@ public class SpatialConversionUtils {
             }
             manifestData.add(pairList);
         }
-        
+
         featureCollection.close(it);
 
         return manifestData;
     }
-    
+
     public static String getShapeFileFeatureAsWKT(File shpFileDir, int featureIndex) throws IOException {
         String wkt = null;
-        
-        if (!shpFileDir.exists() && !shpFileDir.isDirectory()) { 
+
+        if (!shpFileDir.exists() || !shpFileDir.isDirectory()) {
             throw new IllegalArgumentException("Supplied directory does not exist or is not a directory");
         }
-        
+
         File shpFile = null;
         for (File f : shpFileDir.listFiles()) {
             if (f.getName().endsWith(".shp")) {
@@ -199,17 +227,17 @@ public class SpatialConversionUtils {
                 break;
             }
         }
-        
+
         if (shpFile == null) {
             throw new IllegalArgumentException("No .shp file present in directory");
         }
-        
+
         FileDataStore store = FileDataStoreFinder.getDataStore(shpFile);
 
         SimpleFeatureSource featureSource = store.getFeatureSource(store.getTypeNames()[0]);
         SimpleFeatureCollection featureCollection = featureSource.getFeatures();
         SimpleFeatureIterator it = featureCollection.features();
-        
+
         int i = 0;
         while (it.hasNext()) {
             SimpleFeature feature = (SimpleFeature) it.next();
@@ -217,12 +245,12 @@ public class SpatialConversionUtils {
                 wkt = feature.getDefaultGeometry().toString();
                 break;
             }
-            
+
             i++;
         }
-        
+
         featureCollection.close(it);
-        
+
         return wkt;
     }
 
@@ -375,7 +403,7 @@ public class SpatialConversionUtils {
 
         return ActiveArea;
     }
-    
+
     static public String createCircleJs(double longitude, double latitude, double radius) {
         boolean belowMinus180 = false;
         double[][] points = new double[360][];
@@ -386,7 +414,7 @@ public class SpatialConversionUtils {
             }
         }
 
-        //longitude translation
+        // longitude translation
         double dist = ((belowMinus180) ? 360 : 0) + longitude;
 
         StringBuilder s = new StringBuilder();
@@ -414,7 +442,7 @@ public class SpatialConversionUtils {
         double x = (lng * (Math.PI / 180.0) + Math.atan2(b * e * Math.sin(c), d - f * g)) / (Math.PI / 180.0);
         double y = Math.asin(g) / (Math.PI / 180.0);
 
-        double[] pt = {x, y};
+        double[] pt = { x, y };
 
         return pt;
     }
