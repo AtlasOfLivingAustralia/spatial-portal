@@ -272,7 +272,7 @@ public class IntersectService {
     // WKT geometry intersect
     @RequestMapping(value = "/intersect/poi/wkt", method = RequestMethod.GET)
     @ResponseBody
-    public List<Map<String, Object>> wktPoiIntersectGet(@PathVariable("wkt") String wkt) throws Exception {
+    public List<Map<String, Object>> wktPoiIntersectGet(@RequestParam(value = "wkt", required = true, defaultValue = "") String wkt) throws Exception {
         return objectDao.pointsOfInterestGeometryIntersect(wkt);
     }    
 
@@ -287,7 +287,7 @@ public class IntersectService {
     // geojson geometry intersect
     @RequestMapping(value = "/intersect/poi/geojson", method = RequestMethod.GET)
     @ResponseBody
-    public List<Map<String, Object>> geojsonPoiIntersectGet(@PathVariable("geojson") String geojson) throws Exception {
+    public List<Map<String, Object>> geojsonPoiIntersectGet(@RequestParam(value = "geojson", required = true, defaultValue = "") String geojson) throws Exception {
         String wkt = SpatialConversionUtils.geoJsonToWkt(geojson);
         return objectDao.pointsOfInterestGeometryIntersect(wkt);
     }
