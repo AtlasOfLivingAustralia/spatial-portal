@@ -12,11 +12,16 @@ import com.vividsolutions.jts.io.WKTWriter;
 import geo.google.GeoAddressStandardizer;
 import geo.google.datamodel.GeoAddress;
 import geo.google.datamodel.GeoCoordinate;
+
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
 import javax.measure.converter.UnitConverter;
 import javax.measure.unit.Unit;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.Util;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.geotools.factory.Hints;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.GeodeticCalculator;
@@ -94,43 +99,47 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
         }
     }
 
+    public String findAddressLine(String text) throws Exception {
+        String url = "http://maps.google.com/maps/api/geocode/json?components=locality&sensor=false&address=" + URLEncoder.encode(text, "UTF-8");
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = mapper.readTree(new URL(url));
+        return node.get("results").get(0).get("formatted_address").getTextValue();
+    }
+
+    public double[] findAddressLatLng(String text) throws Exception {
+        String url = "http://maps.google.com/maps/api/geocode/json?components=locality&sensor=false&address=" + URLEncoder.encode(text, "UTF-8");
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = mapper.readTree(new URL(url));
+        JsonNode latLngNode =  node.get("results").get(0).get("geometry").get("location");
+        return new double[]{
+                latLngNode.get("lat").getDoubleValue(),
+                latLngNode.get("lng").getDoubleValue()
+        };
+    }
+
     public void onClick$btnFindAddress(Event event) {
         try {
-            GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
-
-            List<GeoAddress> addresses = st.standardizeToGeoAddresses(addressBox.getText() + ", Australia");
-
-            addressLabel.setValue(addresses.get(0).getAddressLine());
+            String address = findAddressLine(addressBox.getText());
+            addressLabel.setValue(address);
             dRadius.setDisabled(false);
             btnOk.setDisabled(false);
-        } catch (geo.google.GeoException ge) {
+        } catch (Exception ge) {
             ge.printStackTrace();
         }
     }
 
     private String radiusFromAddress(String address) {
         try {
-
-            GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
-
-            List<GeoAddress> addresses = st.standardizeToGeoAddresses(address + ", Australia");
-
-            GeoCoordinate gco = addresses.get(0).getCoordinate();
-
+            double[] latlng = findAddressLatLng(address);
             double radius = dRadius.getValue() * 1000.0;
-            longitude = gco.getLongitude();
-            latitude = gco.getLatitude();
-            //return createCircle(gco.getLongitude(), gco.getLatitude(), radius);
-            return Util.createCircleJs(gco.getLongitude(), gco.getLatitude(), radius);
-
-        } catch (geo.google.GeoException ge) {
+            return Util.createCircleJs(latlng[1], latlng[0], radius);
+        } catch (Exception ge) {
             return "none";
         }
     }
 
     private String createCircle(double x, double y, final double RADIUS) {
         return createCircle(x, y, RADIUS, 50);
-
     }
 
     private String createCircle(double x, double y, final double RADIUS, int sides) {
