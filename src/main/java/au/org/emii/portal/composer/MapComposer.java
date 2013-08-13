@@ -1770,6 +1770,42 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         return mapLayer;
     }
+    
+    public MapLayer addPointsOfInterestLayer(String wkt, String label, String displayName) {
+        MapLayer mapLayer = null;
+
+        if (safeToPerformMapAction()) {
+            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), label) == null) {
+                mapLayer = remoteMap.createWKTLayer(wkt, label);
+                mapLayer.setDisplayName(displayName);
+                mapLayer.setData("pointsOfInterestWS", CommonData.layersServer + "/intersect/poi/wkt");
+                if (mapLayer == null) {
+                    // fail
+                    showMessage("No mappable features available");
+                    logger.info("adding WKT layer failed ");
+                } else {
+                    mapLayer.setDisplayable(true);
+                    mapLayer.setOpacity((float) 0.4);
+                    mapLayer.setQueryable(true);
+                    mapLayer.setDynamicStyle(true);
+
+                    activateLayer(mapLayer, true, true);
+
+                    // we must tell any future tree menus that the map layer is already
+                    // displayed as we didn't use changeSelection()
+                    mapLayer.setListedInActiveLayers(true);
+                }
+            } else {
+                // fail
+                showMessage("WKT layer already exists");
+                logger.info(
+                        "refusing to add a new layer with name " + label
+                        + " because it already exists in the menu");
+            }
+        }
+
+        return mapLayer;
+    }
 
     public MapLayer addWKTLayer(String wkt, String label, String displayName) {
         MapLayer mapLayer = null;
@@ -2102,6 +2138,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         westMinimised.setVisible(maximise);
         menus.setSplittable(!maximise);
     }
+    
+    public MapLayer mapPointsOfInterest(String wkt, String label, String displayName) {
+        MapLayer ml = addPointsOfInterestLayer(wkt, label, displayName);
+        return ml;
+    } 
     
     /**
      * gets a species map that doesn't have colourby set 

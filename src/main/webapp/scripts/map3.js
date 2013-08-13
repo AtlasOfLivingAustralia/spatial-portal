@@ -396,6 +396,70 @@ function iterateSpeciesInfoQuery(curr) {
     });
 }
 
+function iteratePointsOfInterest(curr) {
+    var pos = curr;
+    if (pos < 0) {
+    	pos = 0;
+    }
+    
+    if (pos >= points_of_interest_total) {
+    	pos = points_of_interest_total - 1;
+    }
+    
+    var nextBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
+    try {
+        if (curr+1 < points_of_interest_total) {
+            nextBtn = "<a style='float: right' href='javascript:iteratePointsOfInterest("+(curr+1)+");'><img src='img/arrow_right.png' /></a>"; // next &rArr;
+        }
+    } catch (err) {}
+    var prevBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
+    try {
+        if (curr > 0) {
+            prevBtn = "<a href='javascript:iteratePointsOfInterest("+(curr-1)+");'><img src='img/arrow_left.png' /></a>"; // &lArr; previous
+        }
+    } catch (err) {}
+
+    setTimeout(function() {
+    	displayPointOfInterest(pos, points_of_interest[pos], prevBtn, nextBtn, curr, points_of_interest_total);
+    });
+}
+
+function displayPointOfInterest(pos, data, prevBtn, nextBtn, curr, total) {
+    var poiInfo = data;
+    
+    var poiId = poiInfo.id;
+    var objectId = poiInfo.object_id;
+    var name = poiInfo.name;
+    var type = poiInfo.type;
+    var latitude = poiInfo.latitude;
+    var longitude = poiInfo.longitude;
+    var bearing = poiInfo.bearing;
+    var userId = poiInfo.user_id;
+    var focalLength = poiInfo.focal_length_millimetres;
+
+    var heading = "<h2>Point of interest (" + (curr+1) + " of " + total + ")</h2>";
+    if (total==1) {
+        heading = "<h2>Point of interest</h2>";
+    }
+
+    var infohtml = "<div id='sppopup2'> " +
+    heading +
+    " ID: " + poiId + " <br />" +
+    " Object ID: " + objectId + " <br />" +
+    " Name: " + name + " <br />" +
+    " Type: " + type + " <br />" +
+    " Latitude: " + latitude + " <br />" +
+    " Longitude: " + longitude + " <br />" +
+    " Bearing: " + bearing + " <br />" +
+    " User ID: " + userId + " <br />" +
+    " Focal Length: " + focalLength + " <br />" +
+    "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+
+    if (document.getElementById("sppopup") != null) {
+        document.getElementById("sppopup").innerHTML = infohtml;
+    }
+}
+
 var defaultSelectFeatureStyle = null;
 function addFeatureSelectionTool() {
     removeAreaSelection();
@@ -446,8 +510,14 @@ function removePointSearch() {
 }
 
 var query_count_total;
+var points_of_interest_total;
+var points_of_interest;
 function pointSpeciesSearch(e) {
+	
     var lonlat = map.getLonLatFromViewPortPx(e.xy);
+    var untransformedLon = lonlat.lon
+    var untransformedLat = lonlat.lat
+    
     lonlat.transform(map.projection, map.displayProjection);
 
     var webportal_url = parent.jq('$webportal_url')[0].innerHTML;
@@ -456,10 +526,12 @@ function pointSpeciesSearch(e) {
     //parent.setSpeciesSearchPoint(lonlat);
 
     query_count_total = 0;
+    points_of_interest_total = 0
     query_ = new Array();
     query_layer = new Array();
     query_size = new Array();
     query_url = new Array();
+    points_of_interest = new Array();
     var pos = 0;
 
     for (var key in mapLayers) {
@@ -468,47 +540,62 @@ function pointSpeciesSearch(e) {
 
                 if(map.getLayer(mapLayers[key].id)) {
                     var layer = mapLayers[key];
-                    if(layer == null || layer.url == null) {
+                    if(layer == null) {
                         continue;
                     }
-                    var query = null;
-                    var userquery = null;
-                    var p0 = layer.url.indexOf("CQL_FILTER=");
-                    var p1 = layer.url.indexOf("&", p0);
-                    if(p1 < 0) p1 = layer.url.indexOf(";", p0);
-                    if(p1 < 0) p1 = layer.url.length;
-                    if(p0 >= 0 && p1 >= 0 && layer.params != null) {
-                        if(layer.url.contains(webportal_url)) {
-                            userquery = layer.url.substring(p0 + 11,p1);
-                        } else {
-                            query = layer.url.substring(p0 + 11,p1);
-                        }
-                    }
-
-                    var size = 10;
-                    if(layer.params != null && layer.params.ENV != null) {
-                        var p2 = layer.params.ENV.indexOf("size:");
-                        p3 = layer.params.ENV.indexOf(";", p2);
-                        if(p3 < 0) p3 = layer.params.ENV.length;
-
-                        if(p2 >= 0 && p3 >= 0) {
-                            size = layer.params.ENV.substring(p2 + 5,p3)
-                        }
-                    }
-                    //console.log("map layer: " + layer);
-                    var data = null;
-                    if(query != null) data = getOccurrence(layer, query, lonlat.lat, lonlat.lon, 0, pos, size);
-                    if(userquery != null) data = getOccurrenceUploaded(layer, userquery, lonlat.lat, lonlat.lon, 0, pos, size);
-                    if(data != null) {
-                        query_count_total += query_size[pos];
-                        pos += 1;
+                    
+                    if (layer.pointsOfInterestWS != null) {
+                    	var pointsOfInterestData = getPointsOfInterest(layer, lonlat.lat, lonlat.lon, 6)
+                    	if (pointsOfInterestData.length == 0) {
+                    		continue;
+                    	} else {
+                    		points_of_interest_total += pointsOfInterestData.length
+                    		points_of_interest = points_of_interest.concat(pointsOfInterestData)
+                    	}
+                    } else {
+                    	if (layer.url == null) {
+                    		continue;
+                    	}
+                    	
+	                    var query = null;
+	                    var userquery = null;
+	                    var p0 = layer.url.indexOf("CQL_FILTER=");
+	                    var p1 = layer.url.indexOf("&", p0);
+	                    if(p1 < 0) p1 = layer.url.indexOf(";", p0);
+	                    if(p1 < 0) p1 = layer.url.length;
+	                    if(p0 >= 0 && p1 >= 0 && layer.params != null) {
+	                        if(layer.url.contains(webportal_url)) {
+	                            userquery = layer.url.substring(p0 + 11,p1);
+	                        } else {
+	                            query = layer.url.substring(p0 + 11,p1);
+	                        }
+	                    }
+	
+	                    var size = 10;
+	                    if(layer.params != null && layer.params.ENV != null) {
+	                        var p2 = layer.params.ENV.indexOf("size:");
+	                        p3 = layer.params.ENV.indexOf(";", p2);
+	                        if(p3 < 0) p3 = layer.params.ENV.length;
+	
+	                        if(p2 >= 0 && p3 >= 0) {
+	                            size = layer.params.ENV.substring(p2 + 5,p3)
+	                        }
+	                    }
+	                    //console.log("map layer: " + layer);
+	                    var data = null;
+	                    if(query != null) data = getOccurrence(layer, query, lonlat.lat, lonlat.lon, 0, pos, size);
+	                    if(userquery != null) data = getOccurrenceUploaded(layer, userquery, lonlat.lat, lonlat.lon, 0, pos, size);
+	                    if(data != null) {
+	                        query_count_total += query_size[pos];
+	                        pos += 1;
+	                    }
                     }
                 }
             }
         }
     }
 
-    if (query_count_total == 0) {
+    if (query_count_total == 0 && points_of_interest_total == 0) {
         return null;
     }
 
@@ -516,8 +603,15 @@ function pointSpeciesSearch(e) {
         new OpenLayers.Projection("EPSG:4326"),
         map.getProjectionObject());
 
-    setupPopup(query_count_total, lonlat);
-    iterateSpeciesInfoQuery(0)
+    setupPopup(query_count_total, points_of_interest_total, lonlat);
+    
+    if (points_of_interest_total == 0 && query_count_total > 0) {
+    	iterateSpeciesInfoQuery(0)
+    }
+    
+    if (query_count_total == 0 && points_of_interest_total  > 0) {
+    	iteratePointsOfInterest(0)
+    }
 
     var feature = popup;
     feature.popup = popup;
@@ -749,15 +843,43 @@ function setVectorLayersSelectable() {
 var currFeature;
 var currFeatureCount; 
 
-function setupPopup(count, centerlonlat) {
-    var waitmsg = count + " occurrences found in this location <br /> Retrieving data... ";
-    if (count == 1) {
-        waitmsg = count + " occurrence found in this location <br /> Retrieving data... ";
-    }
+function setupPopup(occurrenceCount, pointOfInterestCount, centerlonlat) {
+	var msg = "<br /><br />";
+	
+	if (occurrenceCount > 0 && pointOfInterestCount == 0) {
+	    if (occurrenceCount == 1) {
+	        msg += occurrenceCount + " occurrence found in this location <br /> Retrieving data... ";
+	    } else {
+	    	msg += occurrenceCount + " occurrences found in this location <br /> Retrieving data... ";	    	
+	    }		
+	} else if (pointOfInterestCount > 0 && occurrenceCount == 0) {
+	    if (pointOfInterestCount == 1) {
+	        msg += pointOfInterestCount + " occurrence found in this location <br /> Retrieving data... ";
+	    } else {
+	    	msg += pointOfInterestCount + " points of interest found in this location <br /> Retrieving data... ";	
+	    }
+	} else {
+	    if (occurrenceCount == 1) {
+	        msg += occurrenceCount + " occurrence found in this location ";
+	    } else {
+	    	msg += occurrenceCount + " occurrences found in this location ";	
+	    }
+	    
+	    msg += "<a href='javascript:iterateSpeciesInfoQuery(0);'><img src='img/arrow_right.png' /></a>";
+	    msg += "<br />";
+	    
+	    msg += pointOfInterestCount + " points of interest found in this location ";
+	    if (pointOfInterestCount == 1) {
+	        msg += pointOfInterestCount + " points of interest found in this location ";
+	    }
+	    
+	    msg += "<a href='javascript:iteratePointsOfInterest(0);'><img src='img/arrow_right.png' /></a>";
+	}
+    
     popup = new OpenLayers.Popup.FramedCloud("featurePopup",
         centerlonlat,
         new OpenLayers.Size(100,170),
-        "<div id='sppopup'>" + waitmsg + "</div>" //  style='width: 350px; height: 250px;'
+        "<div id='sppopup'>" + msg + "</div>" //  style='width: 350px; height: 250px;'
         ,
         null, true, onPopupClose);
         popup.autoSize = true;
@@ -1757,6 +1879,43 @@ function getLayerValue(layer, lat, lon) {
         async: false
     });
     return ret; 
+}
+
+function getPointsOfInterest(layer, lat, lon, dotradius) {    
+    dotradius = dotradius*1 + 3
+    var px = map.getViewPortPxFromLonLat(new OpenLayers.LonLat(lon,lat).transform(
+        new OpenLayers.Projection("EPSG:4326"),map.getProjectionObject()));
+    var lonlat = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(px.x + dotradius, px.y + dotradius)).transform(
+        map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
+    var lonSize = Math.abs(lon - lonlat.lon);
+    var latSize = Math.abs(lat - lonlat.lat);
+    
+    var minLon = lon-lonSize;
+    var maxLon = lon+lonSize;
+    var minLat = lat-latSize;
+    var maxLat = lat+latSize;
+    
+    var bbox = "POLYGON((" + minLon + "%20" + minLat + "," +  minLon + "%20" + maxLat + "," + maxLon + "%20" + maxLat + "," + maxLon + "%20" + minLat + "," + minLon + "%20" + minLat + "))"; 
+    
+    var url = layer.pointsOfInterestWS + "?wkt=" + bbox
+    
+    var ret = null;
+
+    $.ajax({
+    	type: "GET",
+        url: proxy_script + URLEncode(url),
+        dataType: "json",
+        success: function(data){
+            ret = data; 
+        },
+        async: false
+    });
+    
+    if (ret != null) {
+    	return ret;
+    } else {
+    	return null;
+    }
 }
 
 function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {    

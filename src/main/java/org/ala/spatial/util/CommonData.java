@@ -48,6 +48,7 @@ public class CommonData {
     static final String ANALYSIS_LAYER_SETS = "analysis_layer_sets";
     static final String MAX_AREA_FOR_ENDEMIC="max_area_endemic";
     static final String EXTRA_DOWNLOAD_FIELDS="occurrence_extra_download";
+    static final String DISPLAY_POINTS_OF_INTEREST="display_points_of_interest";
     //(2) for EnvironmentalList
     static JSONObject distances;
     static HashMap<String, HashMap<String, Double>> distances_map;
@@ -105,6 +106,7 @@ public class CommonData {
     static public Set<String> biocacheLayerList;
     static public int maxEndemicArea;
     static public String extraDownloadFields="coordinateUncertaintyInMeters";
+    static public boolean displayPointsOfInterest;
 
     /*
      * initialize common data from geoserver and satserver
@@ -136,8 +138,15 @@ public class CommonData {
         print_output_path = settings.get("print_output_path");
         print_output_url = settings.get("print_output_url");
         facetNameExceptions = parseFacetNameExceptions(settings.get("facet_name_exceptions"));
-        if(settings.containsKey(EXTRA_DOWNLOAD_FIELDS))
+        if(settings.containsKey(EXTRA_DOWNLOAD_FIELDS)) {
             extraDownloadFields = settings.get(EXTRA_DOWNLOAD_FIELDS);
+        }
+        
+        if (settings.containsKey(DISPLAY_POINTS_OF_INTEREST)) {
+            displayPointsOfInterest = Boolean.parseBoolean(settings.get(DISPLAY_POINTS_OF_INTEREST));
+        } else {
+            displayPointsOfInterest = false;
+        }
 
         setupAnalysisLayerSets();
 

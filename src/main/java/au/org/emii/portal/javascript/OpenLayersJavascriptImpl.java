@@ -18,18 +18,16 @@ import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.util.Clients;
 
 /**
- * Support for generating javascript for use with an openlayers map held within an
- * iframe.
- *
- * Assumptions:
- * 1) 	Map iframe is referenced via window.mapFrame
- * 2) 	Map INSTANCE is referenced via window.mapFrame.map
- * 3)	OpenLayers API is referenced via window.mapFrame.OpenLayers
- * 4) 	All non-base layers to be displayed on the map exist in an associative array referenced
- * 		via window.mapFrame.mapLayers
- *
+ * Support for generating javascript for use with an openlayers map held within
+ * an iframe.
+ * 
+ * Assumptions: 1) Map iframe is referenced via window.mapFrame 2) Map INSTANCE
+ * is referenced via window.mapFrame.map 3) OpenLayers API is referenced via
+ * window.mapFrame.OpenLayers 4) All non-base layers to be displayed on the map
+ * exist in an associative array referenced via window.mapFrame.mapLayers
+ * 
  * @author geoff
- *
+ * 
  */
 public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
@@ -39,9 +37,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public String wrapWithSafeToProceed(String script) {
-        return safeToProceedOpen
-                + script
-                + safeToProceedClose;
+        return safeToProceedOpen + script + safeToProceedClose;
     }
 
     /*
@@ -59,16 +55,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public void initialiseMapNow() {
-        execute(
-                initialiseMap());
+        execute(initialiseMap());
     }
 
     @Override
     public void initialiseTransectDrawing(MapLayer mapLayer) {
-        String script = "window.mapFrame.addLineDrawingLayer('"
-                + mapLayer.getNameJS() + "','"
-                + mapLayer.getLayer() + "','"
-                + mapLayer.getUriJS() + "')";
+        String script = "window.mapFrame.addLineDrawingLayer('" + mapLayer.getNameJS() + "','" + mapLayer.getLayer() + "','" + mapLayer.getUriJS() + "')";
         execute(script); // Safe to proceed - map loaded way beforehand
 
     }
@@ -161,9 +153,8 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     public String zoomGeoJsonExtent(MapLayer ml) {
         String script = "";
         if (ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getBboxString() != null) {
-            //cluster
-            script = "window.mapFrame.map.zoomToExtent(new OpenLayers.Bounds.fromString('"
-                    + ml.getMapLayerMetadata().getBboxString()
+            // cluster
+            script = "window.mapFrame.map.zoomToExtent(new OpenLayers.Bounds.fromString('" + ml.getMapLayerMetadata().getBboxString()
                     + "').transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()))";
         } else {
             script = "window.mapFrame.zoomBoundsGeoJSON('" + ml.getName().replaceAll("'", "\\'") + "')";
@@ -179,10 +170,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         /* if map boundingbox is defined use it to zoom */
         if (ml.getMapLayerMetadata() != null) {
             if (ml.getMapLayerMetadata().getBboxString() != null) {
-                script = "map.zoomToExtent(new OpenLayers.Bounds("
-                        + ml.getMapLayerMetadata().getBboxString() + ")"
-                        + ".transform("
-                        + "  new OpenLayers.Projection('EPSG:4326'),"
+                script = "map.zoomToExtent(new OpenLayers.Bounds(" + ml.getMapLayerMetadata().getBboxString() + ")" + ".transform(" + "  new OpenLayers.Projection('EPSG:4326'),"
                         + "  map.getProjectionObject()));";
             } else {
 
@@ -198,43 +186,22 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     public String defineAnimatedLayer(MapLayer mapLayer) {
         List<Double> bbox = mapLayer.getMapLayerMetadata().getBbox();
 
-        String script =
-                "	mapLayers['" + mapLayer.getUniqueIdJS() + "'] = new OpenLayers.Layer.Image("
-                + "		'" + mapLayer.getNameJS() + "', "
-                + "		'" + layerUtilities.getAnimationUriJS(mapLayer) + "', "
-                + " 		new OpenLayers.Bounds("
-                + bbox.get(0) + ","
-                + bbox.get(1) + ","
-                + bbox.get(2) + ","
-                + bbox.get(3)
-                + "		), "
-                + " 		new OpenLayers.Size("
-                + settingsSupplementary.getValue("animation_width") + ","
-                + settingsSupplementary.getValue("animation_height") + "), "
-                + "		{"
-                + "			format: 'image/gif', "
-                + "			opacity:" + mapLayer.getOpacity() + ", "
-                + "			isBaseLayer : false, "
-                + "			maxResolution: map.baseLayer.maxResolution, "
-                + "           minResolution: map.baseLayer.minResolution, "
+        String script = "	mapLayers['" + mapLayer.getUniqueIdJS() + "'] = new OpenLayers.Layer.Image(" + "		'" + mapLayer.getNameJS() + "', " + "		'" + layerUtilities.getAnimationUriJS(mapLayer)
+                + "', " + " 		new OpenLayers.Bounds(" + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + "		), " + " 		new OpenLayers.Size("
+                + settingsSupplementary.getValue("animation_width") + "," + settingsSupplementary.getValue("animation_height") + "), " + "		{" + "			format: 'image/gif', " + "			opacity:"
+                + mapLayer.getOpacity() + ", " + "			isBaseLayer : false, " + "			maxResolution: map.baseLayer.maxResolution, " + "           minResolution: map.baseLayer.minResolution, "
                 + "			resolutions: map.baseLayer.resolutions "
                 + "		} "
                 + "	); "
                 + // decorate with extra fields =D by assignment
-                "mapLayers['" + mapLayer.getUniqueIdJS() + "']"
-                + ".timeSeriesPlotUri='" + layerUtilities.getAnimationTimeSeriesPlotUriJS(mapLayer) + "'; "
-                + "mapLayers['" + mapLayer.getUniqueIdJS() + "']"
-                + ".queryable=true; "
-                + "mapLayers['" + mapLayer.getUniqueIdJS() + "']"
-                + ".animatedNcwmsLayer=true; "
-                + "mapLayers['" + mapLayer.getUniqueIdJS() + "']"
-                + ".featureInfoResponseType=" + mapLayer.getType() + "; "
-                + "mapLayers['" + mapLayer.getUniqueIdJS() + "']"
-                + ".baseUri='" + layerUtilities.getAnimationFeatureInfoUriJS(mapLayer) + "'; "
-                + decorateWithMetadata("mapLayers", mapLayer)
-                + // register for loading images...
+                "mapLayers['" + mapLayer.getUniqueIdJS() + "']" + ".timeSeriesPlotUri='" + layerUtilities.getAnimationTimeSeriesPlotUriJS(mapLayer) + "'; " + "mapLayers['" + mapLayer.getUniqueIdJS()
+                + "']" + ".queryable=true; " + "mapLayers['" + mapLayer.getUniqueIdJS() + "']" + ".animatedNcwmsLayer=true; " + "mapLayers['" + mapLayer.getUniqueIdJS() + "']"
+                + ".featureInfoResponseType=" + mapLayer.getType() + "; " + "mapLayers['" + mapLayer.getUniqueIdJS() + "']" + ".baseUri='" + layerUtilities.getAnimationFeatureInfoUriJS(mapLayer)
+                + "'; " + decorateWithMetadata("mapLayers", mapLayer) + // register
+                                                                        // for
+                                                                        // loading
+                                                                        // images...
                 "registerLayer(mapLayers['" + mapLayer.getUniqueIdJS() + "']);";
-
 
         return wrapWithSafeToProceed(script);
 
@@ -244,72 +211,46 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     public String defineImageMapLayer(MapLayer mapLayer) {
         List<Double> bbox = mapLayer.getMapLayerMetadata().getBbox();
 
-        String script =
-                "	mapLayers['" + mapLayer.getUniqueIdJS() + "'] = new OpenLayers.Layer.Image("
-                + "		'" + mapLayer.getNameJS() + "', "
-                + "		'" + mapLayer.getUriJS() + "', "
+        String script = "	mapLayers['" + mapLayer.getUniqueIdJS() + "'] = new OpenLayers.Layer.Image(" + "		'" + mapLayer.getNameJS() + "', " + "		'" + mapLayer.getUriJS() + "', "
                 + " 		new OpenLayers.Bounds(";
 
         if (mapLayer.getSubType() == LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
-            script += "112" + ","
-                    + "-44" + ","
-                    + "154" + ","
-                    + "-9";
+            script += "112" + "," + "-44" + "," + "154" + "," + "-9";
         } else {
-            script += bbox.get(0) + ","
-                    + bbox.get(1) + ","
-                    + bbox.get(2) + ","
-                    + bbox.get(3);
+            script += bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3);
         }
 
         script += "		).transform(map.displayProjection, map.projection), "
-                //+ "             map.baseLayer.getExtent(),       "
-                + " 		new OpenLayers.Size("
-                + settingsSupplementary.getValue("animation_width") + ","
-                + settingsSupplementary.getValue("animation_height") + "), "
-                + "		{"
-                + "			format: 'image/png', "
-                + "			opacity:" + mapLayer.getOpacity() + ", "
-                + "			isBaseLayer : false, "
-                + "			maxResolution: map.baseLayer.maxResolution, "
-                + "           minResolution: map.baseLayer.minResolution, "
-                + "           projection: new OpenLayers.Projection('EPSG:900913'), "
-                + "			resolutions: map.baseLayer.resolutions "
-                + "		} "
-                + "	); "
-                + // register for loading images...
+                // + "             map.baseLayer.getExtent(),       "
+                + " 		new OpenLayers.Size(" + settingsSupplementary.getValue("animation_width") + "," + settingsSupplementary.getValue("animation_height") + "), " + "		{" + "			format: 'image/png', "
+                + "			opacity:" + mapLayer.getOpacity() + ", " + "			isBaseLayer : false, " + "			maxResolution: map.baseLayer.maxResolution, "
+                + "           minResolution: map.baseLayer.minResolution, " + "           projection: new OpenLayers.Projection('EPSG:900913'), " + "			resolutions: map.baseLayer.resolutions "
+                + "		} " + "	); " + // register for loading images...
                 "registerLayer(mapLayers['" + mapLayer.getUniqueIdJS() + "']);";
-
-
 
         return wrapWithSafeToProceed(script);
 
     }
 
     /**
-     * Animate the layer - display a big ass animated
-     * GIF
+     * Animate the layer - display a big ass animated GIF
+     * 
      * @param mapLayer
      * @return
      */
     @Override
     public String animate(MapLayer mapLayer) {
 
-        String script =
-                "if (mapLayers['" + mapLayer.getUniqueIdJS() + "'] == null) { "
-                + defineAnimatedLayer(mapLayer)
-                + "	map.addLayer(mapLayers['" + mapLayer.getUniqueIdJS() + "']); "
-                + "} ";
+        String script = "if (mapLayers['" + mapLayer.getUniqueIdJS() + "'] == null) { " + defineAnimatedLayer(mapLayer) + "	map.addLayer(mapLayers['" + mapLayer.getUniqueIdJS() + "']); " + "} ";
 
-
-        // 'http://obsidian:8080/ncWMS/wms?LAYERS=67%2Ftemp&ELEVATION=-5&TIME=2006-09-01T12:00:00.000Z/2006-09-19T12:00:00.000Z&TRANSPARENT=true&STYLES=BOXFILL%2Frainbow&CRS=EPSG%3A4326&COLORSCALERANGE=9.405405%2C29.66159&NUMCOLORBANDS=254&LOGSCALE=false&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&EXCEPTIONS=XML&FORMAT=image/gif&BBOX=-180,-90,180,90&WIDTH=512&HEIGHT=400', // URL to the image
+        // 'http://obsidian:8080/ncWMS/wms?LAYERS=67%2Ftemp&ELEVATION=-5&TIME=2006-09-01T12:00:00.000Z/2006-09-19T12:00:00.000Z&TRANSPARENT=true&STYLES=BOXFILL%2Frainbow&CRS=EPSG%3A4326&COLORSCALERANGE=9.405405%2C29.66159&NUMCOLORBANDS=254&LOGSCALE=false&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&EXCEPTIONS=XML&FORMAT=image/gif&BBOX=-180,-90,180,90&WIDTH=512&HEIGHT=400',
+        // // URL to the image
         mapLayer.setDisplayed(true);
         return wrapWithSafeToProceed(script);
     }
 
     @Override
     public void removeLayer(MapLayer ml) {
-
 
         String script = "window.mapFrame.removeItFromTheList('" + ml.getName() + "')";
         execute(script);
@@ -322,9 +263,10 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     /**
-     * Generate the code to remove a layer from the map and the
-     * array of layers - don't forget to scope your iFrameReferences
-     * first - see removeLayerNow()
+     * Generate the code to remove a layer from the map and the array of layers
+     * - don't forget to scope your iFrameReferences first - see
+     * removeLayerNow()
+     * 
      * @param id
      * @return
      */
@@ -333,23 +275,19 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         /*
          * Safe to assume always dealing with the mapLayers associative array
          * here because the user doesn't have control over the base layers (?)
-         *
-         * It is possible that a user has already removed a layer by
-         * unchecking the display layer checkbox - in this case we must
-         * do nothing here or the user will get a script error because the
-         * layer has already been removed from openlayers
+         * 
+         * It is possible that a user has already removed a layer by unchecking
+         * the display layer checkbox - in this case we must do nothing here or
+         * the user will get a script error because the layer has already been
+         * removed from openlayers
          */
         StringBuffer script = new StringBuffer();
 
         // if we aren't displaying the layer atm, we don't need to remove it...
         // the isDisplayed() flag can
         if (layer.isDisplayed()) {
-            script.append(
-                    "if (mapLayers['" + layer.getUniqueIdJS() + "'] != null) { "
-                    + "	window.mapFrame.removeFromSelectControl('" + layer.getNameJS() + "'); "
-                    + "	map.removeLayer(mapLayers['" + layer.getUniqueIdJS() + "']); "
-                    + "	mapLayers['" + layer.getUniqueIdJS() + "'] = null; "
-                    + "} ");
+            script.append("if (mapLayers['" + layer.getUniqueIdJS() + "'] != null) { " + "	window.mapFrame.removeFromSelectControl('" + layer.getNameJS() + "'); " + "	map.removeLayer(mapLayers['"
+                    + layer.getUniqueIdJS() + "']); " + "	mapLayers['" + layer.getUniqueIdJS() + "'] = null; " + "} ");
             layer.setDisplayed(false);
         }
         if (recursive) {
@@ -362,30 +300,26 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     /**
-     * As removeLayer but execute immediately without returning
-     * any code
+     * As removeLayer but execute immediately without returning any code
+     * 
      * @param id
      */
     @Override
     public void removeMapLayerNow(MapLayer mapLayer) {
-        execute(
-                iFrameReferences
-                + removeMapLayer(mapLayer)
-                + getAdditionalScript());
+        execute(iFrameReferences + removeMapLayer(mapLayer) + getAdditionalScript());
     }
 
     /**
-     * Ask OpenLayers to re-order the layers displayed in the associative
-     * array in the order of the passed in ArrayList of Layer.  Usually
-     * you will want to call this method after reordering the ArrayList
-     * (e.g., via drag-n-drop) to update the map display.
-     *
-     * Higher values for the layer index will display above those with
-     * lower values, whereas the items in the activeLayers list are the
-     * oposite with low indexed values assumed to be 'above' those with
-     * higher values.  This is to allow the active layers list box to
-     * be displayed logically.
-     *
+     * Ask OpenLayers to re-order the layers displayed in the associative array
+     * in the order of the passed in ArrayList of Layer. Usually you will want
+     * to call this method after reordering the ArrayList (e.g., via
+     * drag-n-drop) to update the map display.
+     * 
+     * Higher values for the layer index will display above those with lower
+     * values, whereas the items in the activeLayers list are the oposite with
+     * low indexed values assumed to be 'above' those with higher values. This
+     * is to allow the active layers list box to be displayed logically.
+     * 
      * @return
      */
     @Override
@@ -395,10 +329,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         StringBuffer script = new StringBuffer();
         for (int i = activeLayers.size() - 1; i > -1; i--) {
             if (activeLayers.get(i).isDisplayed()) {
-                script.append(
-                        "map.setLayerIndex(mapLayers['"
-                        + activeLayers.get(i).getUniqueIdJS()
-                        + "'], " + order + "); ");
+                script.append("map.setLayerIndex(mapLayers['" + activeLayers.get(i).getUniqueIdJS() + "'], " + order + "); ");
                 order++;
             }
         }
@@ -407,53 +338,32 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public void updateMapLayerIndexesNow(List<MapLayer> activeLayers) {
-        execute(
-                iFrameReferences
-                + updateMapLayerIndexes(activeLayers));
+        execute(iFrameReferences + updateMapLayerIndexes(activeLayers));
     }
 
     @Override
     public void zoomToBoundingBoxNow(BoundingBox boundingBox) {
-        execute(
-                iFrameReferences
-                + zoomToBoundingBox(boundingBox));
+        execute(iFrameReferences + zoomToBoundingBox(boundingBox));
     }
 
     @Override
     public String zoomToBoundingBox(BoundingBox boundingBox) {
-        String script =
-                "var mapObj = window.frames.mapFrame.map;"
-                + "map.zoomToExtent("
-                + "	(new OpenLayers.Bounds("
-                + Math.max(-180, boundingBox.getMinLongitude()) + ", "
-                + Math.max(-85, boundingBox.getMinLatitude()) + ", "
-                + Math.min(180, boundingBox.getMaxLongitude()) + ", "
-                + Math.min(85, boundingBox.getMaxLatitude())
-                + ")).transform(mapObj.displayProjection, mapObj.projection) "
-                + "); ";
+        String script = "var mapObj = window.frames.mapFrame.map;" + "map.zoomToExtent(" + "	(new OpenLayers.Bounds(" + Math.max(-180, boundingBox.getMinLongitude()) + ", "
+                + Math.max(-85, boundingBox.getMinLatitude()) + ", " + Math.min(180, boundingBox.getMaxLongitude()) + ", " + Math.min(85, boundingBox.getMaxLatitude())
+                + ")).transform(mapObj.displayProjection, mapObj.projection) " + "); ";
         return wrapWithSafeToProceed(script);
     }
 
     @Override
     public void zoomToBoundingBoxNow(BoundingBox boundingBox, boolean closest) {
-        execute(
-                iFrameReferences
-                + zoomToBoundingBox(boundingBox, closest));
+        execute(iFrameReferences + zoomToBoundingBox(boundingBox, closest));
     }
 
     @Override
     public String zoomToBoundingBox(BoundingBox boundingBox, boolean closest) {
-        String script =
-                "var mapObj = window.frames.mapFrame.map;"
-                + "map.zoomToExtent("
-                + "	(new OpenLayers.Bounds("
-                + Math.max(-180, boundingBox.getMinLongitude()) + ", "
-                + Math.max(-85, boundingBox.getMinLatitude()) + ", "
-                + Math.min(180, boundingBox.getMaxLongitude()) + ", "
-                + Math.min(85, boundingBox.getMaxLatitude())
-                + ")).transform(mapObj.displayProjection, mapObj.projection) "
-                + ", " + closest
-                + "); ";
+        String script = "var mapObj = window.frames.mapFrame.map;" + "map.zoomToExtent(" + "	(new OpenLayers.Bounds(" + Math.max(-180, boundingBox.getMinLongitude()) + ", "
+                + Math.max(-85, boundingBox.getMinLatitude()) + ", " + Math.min(180, boundingBox.getMaxLongitude()) + ", " + Math.min(85, boundingBox.getMaxLatitude())
+                + ")).transform(mapObj.displayProjection, mapObj.projection) " + ", " + closest + "); ";
         return wrapWithSafeToProceed(script);
     }
 
@@ -463,9 +373,10 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     /**
-     * Activate a map layer described by the passed in Layer instance.  If the id already
-     * exists in the associative array of layers, nothing will happen when you execute
-     * the script
+     * Activate a map layer described by the passed in Layer instance. If the id
+     * already exists in the associative array of layers, nothing will happen
+     * when you execute the script
+     * 
      * @param mapLayer
      * @return
      */
@@ -479,51 +390,47 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             associativeArray = "mapLayers";
         }
 
-        StringBuffer script = new StringBuffer(
-                "if (" + associativeArray + "['" + mapLayer.getUniqueIdJS() + "'] == null) { ");
-
+        StringBuffer script = new StringBuffer("if (" + associativeArray + "['" + mapLayer.getUniqueIdJS() + "'] == null) { ");
 
         switch (mapLayer.getType()) {
-            case LayerUtilitiesImpl.WMS_1_0_0:
-            case LayerUtilitiesImpl.WMS_1_1_0:
-            case LayerUtilitiesImpl.WMS_1_1_1:
-            case LayerUtilitiesImpl.WMS_1_3_0:
-            case LayerUtilitiesImpl.NCWMS:
-            case LayerUtilitiesImpl.THREDDS:
-                if (mapLayer.isCurrentlyAnimated()) {
-                    script.append(defineAnimatedLayer(mapLayer));
-                    okToAddLayer = true;
-                } else {
-                    script.append(defineWMSMapLayer(mapLayer));
-                    okToAddLayer = true;
-                }
-                break;
-            case LayerUtilitiesImpl.GEORSS:
-                script.append(defineGeoRSSMapLayer(mapLayer));
+        case LayerUtilitiesImpl.WMS_1_0_0:
+        case LayerUtilitiesImpl.WMS_1_1_0:
+        case LayerUtilitiesImpl.WMS_1_1_1:
+        case LayerUtilitiesImpl.WMS_1_3_0:
+        case LayerUtilitiesImpl.NCWMS:
+        case LayerUtilitiesImpl.THREDDS:
+            if (mapLayer.isCurrentlyAnimated()) {
+                script.append(defineAnimatedLayer(mapLayer));
                 okToAddLayer = true;
-                break;
-            case LayerUtilitiesImpl.KML:
-                script.append(defineKMLMapLayer(mapLayer));
+            } else {
+                script.append(defineWMSMapLayer(mapLayer));
                 okToAddLayer = true;
-                break;
-            case LayerUtilitiesImpl.GEOJSON:
-                script.append(defineGeoJSONMapLayer(mapLayer));
-                okToAddLayer = true;
-                break;
-            case LayerUtilitiesImpl.WKT:
-                script.append(defineWKTMapLayer(mapLayer));
-                okToAddLayer = true;
-                break;
-            case LayerUtilitiesImpl.IMAGELAYER:
-                script.append(defineImageMapLayer(mapLayer));
-                okToAddLayer = true;
+            }
+            break;
+        case LayerUtilitiesImpl.GEORSS:
+            script.append(defineGeoRSSMapLayer(mapLayer));
+            okToAddLayer = true;
+            break;
+        case LayerUtilitiesImpl.KML:
+            script.append(defineKMLMapLayer(mapLayer));
+            okToAddLayer = true;
+            break;
+        case LayerUtilitiesImpl.GEOJSON:
+            script.append(defineGeoJSONMapLayer(mapLayer));
+            okToAddLayer = true;
+            break;
+        case LayerUtilitiesImpl.WKT:
+            script.append(defineWKTMapLayer(mapLayer));
+            okToAddLayer = true;
+            break;
+        case LayerUtilitiesImpl.IMAGELAYER:
+            script.append(defineImageMapLayer(mapLayer));
+            okToAddLayer = true;
 
-                break;
-            default:
-                okToAddLayer = false;
-                logger.error(
-                        "unsupported type " + mapLayer.getType() + " reached in activateMapLayer "
-                        + "for layer: " + mapLayer.getUniqueIdJS() + " at " + mapLayer.getUriJS());
+            break;
+        default:
+            okToAddLayer = false;
+            logger.error("unsupported type " + mapLayer.getType() + " reached in activateMapLayer " + "for layer: " + mapLayer.getUniqueIdJS() + " at " + mapLayer.getUriJS());
 
         }
 
@@ -532,26 +439,22 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
         // only attempt to add a layer to the map if the type is supported
         if (okToAddLayer) {
-            script.append(
-                    "	if(" + associativeArray + "['" + mapLayer.getUniqueIdJS() + "'] != undefined) map.addLayer(" + associativeArray + "['" + mapLayer.getUniqueIdJS() + "']); ");
+            script.append("	if(" + associativeArray + "['" + mapLayer.getUniqueIdJS() + "'] != undefined) map.addLayer(" + associativeArray + "['" + mapLayer.getUniqueIdJS() + "']); ");
 
-            /* for base layers, we must also call setBaseLayer() now the map knows about
-             * the layer
+            /*
+             * for base layers, we must also call setBaseLayer() now the map
+             * knows about the layer
              */
             if (mapLayer.isBaseLayer()) {
-                // remove previous baselayer (if any) to prevent supurious requests
-                script.append(
-                        "if (currentBaseLayer != null) { "
-                        + "	map.removeLayer( " + associativeArray + "[currentBaseLayer]); "
-                        + associativeArray + "[currentBaseLayer] = null; "
-                        + "} "
-                        + "currentBaseLayer='" + mapLayer.getUniqueIdJS() + "'; "
-                        + "map.setBaseLayer(" + associativeArray + "[currentBaseLayer]); ");
+                // remove previous baselayer (if any) to prevent supurious
+                // requests
+                script.append("if (currentBaseLayer != null) { " + "	map.removeLayer( " + associativeArray + "[currentBaseLayer]); " + associativeArray + "[currentBaseLayer] = null; " + "} "
+                        + "currentBaseLayer='" + mapLayer.getUniqueIdJS() + "'; " + "map.setBaseLayer(" + associativeArray + "[currentBaseLayer]); ");
             }
 
-            //add all the vector layers to be the selectable list
+            // add all the vector layers to be the selectable list
 
-            //script.append("window.mapFrame.setVectorLayersSelectable();");
+            // script.append("window.mapFrame.setVectorLayersSelectable();");
             mapLayer.setDisplayed(true);
         }
 
@@ -568,12 +471,14 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public String defineKMLMapLayer(MapLayer layer) {
-        /* can't have a GeoRSS baselayer so we don't need to decide where to store
-         * the layer definition
+        /*
+         * can't have a GeoRSS baselayer so we don't need to decide where to
+         * store the layer definition
          */
-        String script =
-                "	mapLayers['" + layer.getUniqueIdJS() + "'] = window.mapFrame.loadKmlFile('" + layer.getNameJS() + "','" + layer.getUriJS() + "');"
-                + // register for loading images...
+        String script = "	mapLayers['" + layer.getUniqueIdJS() + "'] = window.mapFrame.loadKmlFile('" + layer.getNameJS() + "','" + layer.getUriJS() + "');" + // register
+                                                                                                                                                               // for
+                                                                                                                                                               // loading
+                                                                                                                                                               // images...
                 "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
 
         return wrapWithSafeToProceed(script);
@@ -581,40 +486,47 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public void redrawFeatures(MapLayer selectedLayer) {
-        String script = "window.mapFrame.redrawFeatures('" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + "," + selectedLayer.getSizeUncertain() + ")";
+        String script = "window.mapFrame.redrawFeatures('" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal()
+                + "," + selectedLayer.getSizeUncertain() + ")";
         execute(script);
     }
 
     @Override
     public void redrawWKTFeatures(MapLayer selectedLayer) {
-        String script = "window.mapFrame.redrawWKTFeatures('" + selectedLayer.getWKT() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + ")";
+        String script = "window.mapFrame.redrawWKTFeatures('" + selectedLayer.getWKT() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity()
+                + ")";
         execute(script);
     }
 
     @Override
     public String defineWKTMapLayer(MapLayer layer) {
-        String script = ""
-                + "var vector_layer = window.mapFrame.addWKTFeatureToMap('" + layer.getWKT() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "', " + layer.getOpacity() + ");"
-                + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
-                + "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
+        String script = "" + "var vector_layer = window.mapFrame.addWKTFeatureToMap('" + layer.getWKT() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "', " + layer.getOpacity() + ");"
+                + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;";
+
+        if (layer.getData("pointsOfInterestWS") != null) {
+            script += "mapLayers['" + layer.getUniqueIdJS() + "']" + ".pointsOfInterestWS = '" + layer.getData("pointsOfInterestWS") + "';";
+        }
+
+        script += "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
 
         return wrapWithSafeToProceed(script);
     }
 
     @Override
     public String defineGeoJSONMapLayer(MapLayer layer) {
-        /* can't have a GeoJSON baselayer so we don't need to decide where to store
-         * the layer definition
+        /*
+         * can't have a GeoJSON baselayer so we don't need to decide where to
+         * store the layer definition
          */
 
         String script;
         if (layer.getGeoJSON() != null && layer.getGeoJSON().length() > 0) {
-            script = ""
-                    + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + "," + layer.getSizeUncertain() + ");"
-                    + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
-                    + "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
+            script = "" + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", "
+                    + layer.getOpacity() + "," + layer.getSizeUncertain() + ");" + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;" + "registerLayer(mapLayers['" + layer.getUniqueIdJS()
+                    + "']);";
         } else {
-            script = "window.mapFrame.addJsonUrlToMap('" + layer.getUri() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + "," + layer.getSizeUncertain() + ");";
+            script = "window.mapFrame.addJsonUrlToMap('" + layer.getUri() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + ","
+                    + layer.getSizeUncertain() + ");";
         }
 
         System.out.println("defineGeoJSONMapLayer: " + script);
@@ -624,30 +536,24 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public String defineGeoRSSMapLayer(MapLayer layer) {
-        /* can't have a GeoRSS baselayer so we don't need to decide where to store
-         * the layer definition
+        /*
+         * can't have a GeoRSS baselayer so we don't need to decide where to
+         * store the layer definition
          */
-        String script =
-                "	mapLayers['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.GeoRSS("
-                + "		'" + layer.getNameJS() + "', "
-                + "		'" + layer.getUriJS() + "', "
-                + "		{"
-                + "			transparent: true "
-                + "		}, "
-                + "		{"
-                + "			opacity:" + layer.getOpacity()
-                + "		}  "
-                + "	); "
-                + // register for loading images...
+        String script = "	mapLayers['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.GeoRSS(" + "		'" + layer.getNameJS() + "', " + "		'" + layer.getUriJS() + "', " + "		{"
+                + "			transparent: true " + "		}, " + "		{" + "			opacity:" + layer.getOpacity() + "		}  " + "	); " + // register
+                                                                                                                      // for
+                                                                                                                      // loading
+                                                                                                                      // images...
                 "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
 
         return wrapWithSafeToProceed(script);
     }
 
     /**
-     * Requesting a WMS 1.3.0 layer means you have to request a
-     * CRS as well or the map server (ncwms) won't return a map
-     * - force epsg:4326 for now
+     * Requesting a WMS 1.3.0 layer means you have to request a CRS as well or
+     * the map server (ncwms) won't return a map - force epsg:4326 for now
+     * 
      * @param layer
      * @return
      */
@@ -656,12 +562,9 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         String versionJS = "";
         if (version != null) {
             if (version.equals("1.3.0")) {
-                versionJS =
-                        "version: '1.3.0', "
-                        + "crs: 'epsg:4326' ";
+                versionJS = "version: '1.3.0', " + "crs: 'epsg:4326' ";
             } else {
-                versionJS =
-                        "version: '" + version + "' ";
+                versionJS = "version: '" + version + "' ";
             }
         }
         return versionJS;
@@ -670,9 +573,10 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     /**
      * create an instance of OpenLayers.Layer.WMS.
-     *
+     * 
      * Base layers will be rendered differently and stored in the baseLayers
      * associative array instead of the mapLayers associative array
+     * 
      * @param layer
      * @return
      */
@@ -695,7 +599,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             params += "env: '" + layer.getEnvParams().replace("'", "\\'") + "', ";
         }
 
-        //extend to add ogc filter
+        // extend to add ogc filter
         if (layer.getMapLayerMetadata() != null && layer.getMapLayerMetadata().getBbox() == null) {
             List<Double> bbox = layerUtilities.getBBoxIndex(layer.getUri());
             if (bbox == null) {
@@ -711,41 +615,50 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             }
         }
 
-        String script =
-                "	" + associativeArray + "['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.WMS("
-                + "		'" + layer.getNameJS() + "', "
-                + "		'" + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&", "wms\\/reflect?") + "', "
-                + "		{"
-                + ((layer.getSelectedStyleNameJS().equals("Default")) ? "" : "			styles: '" + layer.getSelectedStyleNameJS() + "', ")
-                + "			layers: '" + layer.getLayerJS() + "', "
-                + "			format: '" + layer.getImageFormat() + "', "
-                + "         srs: 'epsg:900913', "
-                + "			transparent: " + (!layer.isBaseLayer()) + ", "
-                + "			" + params
-                + wmsVersionDeclaration(layer) + //","
-                "		}, "
-                + "		{ "
-                //      + "             " + "maxExtent: (new OpenLayers.Bounds(" + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")).transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()),"
-                + "			isBaseLayer: " + layer.isBaseLayer() + ", "
-                + "			opacity: " + layer.getOpacity() + ", "
-                + "			queryable: " + layer.isQueryable() + ", "
-                //                + "			buffer: " + settingsSupplementary.getValue("openlayers_tile_buffer") + ", "
-                + "			gutter: " + gutter + ", "
-                + "			wrapDateLine: true" //+ (layer.getName().contains("WorldClim") || layer.getName().contains("_cars")) //set cars layers wrap=true FIXME: this is hack - should actually check the extents
-                + "		}  "
-                + "	); "
-                + // decorate with getFeatureInfoBuffer field - do not set buffer
-                // it's used to set a margin of cached tiles around the viewport!!
-                associativeArray + "['" + layer.getUniqueIdJS() + "']"
-                + ".getFeatureInfoBuffer =" + settingsSupplementary.getValue("get_feature_info_buffer") + "; ";
-        //add ws and bs urls for species layers
+        String script = "	" + associativeArray + "['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.WMS(" + "		'" + layer.getNameJS() + "', " + "		'"
+                + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&", "wms\\/reflect?") + "', " + "		{"
+                + ((layer.getSelectedStyleNameJS().equals("Default")) ? "" : "			styles: '" + layer.getSelectedStyleNameJS() + "', ") + "			layers: '" + layer.getLayerJS() + "', " + "			format: '"
+                + layer.getImageFormat() + "', " + "         srs: 'epsg:900913', " + "			transparent: " + (!layer.isBaseLayer()) + ", " + "			" + params + wmsVersionDeclaration(layer) + // ","
+                "		}, " + "		{ "
+                // + "             " + "maxExtent: (new OpenLayers.Bounds(" +
+                // bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," +
+                // bbox.get(3) +
+                // ")).transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()),"
+                + "			isBaseLayer: " + layer.isBaseLayer() + ", " + "			opacity: " + layer.getOpacity() + ", " + "			queryable: " + layer.isQueryable() + ", "
+                // + "			buffer: " +
+                // settingsSupplementary.getValue("openlayers_tile_buffer") +
+                // ", "
+                + "			gutter: " + gutter + ", " + "			wrapDateLine: true" // +
+                                                                          // (layer.getName().contains("WorldClim")
+                                                                          // ||
+                                                                          // layer.getName().contains("_cars"))
+                                                                          // //set
+                                                                          // cars
+                                                                          // layers
+                                                                          // wrap=true
+                                                                          // FIXME:
+                                                                          // this
+                                                                          // is
+                                                                          // hack
+                                                                          // -
+                                                                          // should
+                                                                          // actually
+                                                                          // check
+                                                                          // the
+                                                                          // extents
+                + "		}  " + "	); " + // decorate with getFeatureInfoBuffer field
+                                     // - do not set buffer
+                                     // it's used to set a margin of cached
+                                     // tiles around the viewport!!
+                associativeArray + "['" + layer.getUniqueIdJS() + "']" + ".getFeatureInfoBuffer =" + settingsSupplementary.getValue("get_feature_info_buffer") + "; ";
+        // add ws and bs urls for species layers
         if (layer.getData("query") != null) {
             Query q = (Query) layer.getData("query");
             if (q instanceof BiocacheQuery) {
                 BiocacheQuery bq = (BiocacheQuery) q;
                 try {
-                    script += associativeArray + "['" + layer.getUniqueIdJS() + "']" + ".ws ='" + StringEscapeUtils.escapeJavaScript(bq.getWS()) + "'; "
-                            + associativeArray + "['" + layer.getUniqueIdJS() + "']" + ".bs ='" + StringEscapeUtils.escapeJavaScript(bq.getBS()) + "'; ";
+                    script += associativeArray + "['" + layer.getUniqueIdJS() + "']" + ".ws ='" + StringEscapeUtils.escapeJavaScript(bq.getWS()) + "'; " + associativeArray + "['"
+                            + layer.getUniqueIdJS() + "']" + ".bs ='" + StringEscapeUtils.escapeJavaScript(bq.getBS()) + "'; ";
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -755,37 +668,29 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             }
         }
 
-
         if (!layer.isBaseLayer()) {
-            script += " " + associativeArray + "['" + layer.getUniqueIdJS() + "']"
-                    + ".featureInfoResponseType=" + layer.getType() + "; ";
+            script += " " + associativeArray + "['" + layer.getUniqueIdJS() + "']" + ".featureInfoResponseType=" + layer.getType() + "; ";
 
         }
         // register for loading images...
-        script +=
-                "registerLayer(" + associativeArray + "['" + layer.getUniqueIdJS() + "']);";
+        script += "registerLayer(" + associativeArray + "['" + layer.getUniqueIdJS() + "']);";
 
         // ncwms/thredds - decorate with units parameter
         script += decorateWithMetadata(associativeArray, layer);
-
 
         return wrapWithSafeToProceed(script);
     }
 
     /**
-     * Return a String to decorate a layer declaration with
-     * metadata fields if the layer supports it.  If the layer
-     * doesn't support metadata, return an empty string rather
-     * than null
+     * Return a String to decorate a layer declaration with metadata fields if
+     * the layer supports it. If the layer doesn't support metadata, return an
+     * empty string rather than null
      */
     private String decorateWithMetadata(String associativeArray, MapLayer layer) {
         // ncwms/thredds - decorate with units parameter
         String script;
         if (layerUtilities.supportsMetadata(layer.getType())) {
-            script =
-                    " " + associativeArray + "['" + layer.getUniqueIdJS() + "']"
-                    + ".ncWMSMetaData = new Object(); "
-                    + " " + associativeArray + "['" + layer.getUniqueIdJS() + "']"
+            script = " " + associativeArray + "['" + layer.getUniqueIdJS() + "']" + ".ncWMSMetaData = new Object(); " + " " + associativeArray + "['" + layer.getUniqueIdJS() + "']"
                     + ".ncWMSMetaData.unit='" + layer.getMapLayerMetadata().getUnitsJS() + "'; ";
         } else {
             script = "";
@@ -795,19 +700,19 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     /**
      * As activeateMapLayer but executes immediately
+     * 
      * @param layer
      */
     @Override
     public void activateMapLayerNow(MapLayer layer) {
-        execute(
-                iFrameReferences
-                + getAdditionalScript()
-                + activateMapLayer(layer));
+        execute(iFrameReferences + getAdditionalScript() + activateMapLayer(layer));
     }
 
     /**
-     * Activate all layers in the passed in list.  As each layer will be sequentially
-     * added to openlayers' layer array, we need to iterate the list in reverse order
+     * Activate all layers in the passed in list. As each layer will be
+     * sequentially added to openlayers' layer array, we need to iterate the
+     * list in reverse order
+     * 
      * @return
      */
     @Override
@@ -827,18 +732,18 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     /**
      * As activateateMapLayers but with immediate execution
+     * 
      * @param layers
      */
     @Override
     public void activateMapLayersNow(List<MapLayer> layers) {
-        execute(
-                iFrameReferences
-                + activateMapLayers(layers));
+        execute(iFrameReferences + activateMapLayers(layers));
     }
 
     /**
      * Set the opacity for the layer at the position key in the associative
      * array of layers
+     * 
      * @param key
      * @param percentage
      * @return
@@ -846,53 +751,50 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     @Override
     public String setMapLayerOpacity(MapLayer mapLayer, float percentage) {
 
-        /* safe to force the associative array to be mapLayers here because
-         * the user can't control the base layer (?)
+        /*
+         * safe to force the associative array to be mapLayers here because the
+         * user can't control the base layer (?)
          */
-        String script =
-                "mapLayers['" + mapLayer.getUniqueIdJS() + "'].setOpacity(" + percentage + "); mapLayers['" + mapLayer.getUniqueIdJS() + "'].redraw(); ";
+        String script = "mapLayers['" + mapLayer.getUniqueIdJS() + "'].setOpacity(" + percentage + "); mapLayers['" + mapLayer.getUniqueIdJS() + "'].redraw(); ";
 
         return wrapWithSafeToProceed(script);
     }
 
     @Override
     public void setMapLayerOpacityNow(MapLayer mapLayer, float percentage) {
-        execute(
-                iFrameReferences
-                + setMapLayerOpacity(mapLayer, percentage));
+        execute(iFrameReferences + setMapLayerOpacity(mapLayer, percentage));
     }
 
     /**
-     * Convenience method to reload a map layer by removing it
-     * and then adding it
+     * Convenience method to reload a map layer by removing it and then adding
+     * it
+     * 
      * @param mapLayer
      * @return
      */
     @Override
     public String reloadMapLayer(MapLayer mapLayer) {
         if (mapLayer.getGeoJSON() == null && mapLayer.getType() == LayerUtilitiesImpl.GEOJSON) {
-            return removeMapLayer(mapLayer)
-                    + activateMapLayer(mapLayer, false, true);
+            return removeMapLayer(mapLayer) + activateMapLayer(mapLayer, false, true);
         } else {
-            return removeMapLayer(mapLayer)
-                    + activateMapLayer(mapLayer);
+            return removeMapLayer(mapLayer) + activateMapLayer(mapLayer);
         }
 
     }
 
     /**
      * Immediate execution of reloadMapLayer
+     * 
      * @param mapLayer
      */
     @Override
     public void reloadMapLayerNow(MapLayer mapLayer) {
-        execute(
-                iFrameReferences
-                + reloadMapLayer(mapLayer));
+        execute(iFrameReferences + reloadMapLayer(mapLayer));
     }
 
     /**
      * Convenience wrapper around ZKs JavaScript execution system
+     * 
      * @param script
      */
     @Override
@@ -910,25 +812,25 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     public boolean mapLoaded() {
         PortalSession portalSession = (PortalSession) Sessions.getCurrent().getAttribute("portalSession");
 
-        return ((portalSession != null)
-                && portalSession.isMapLoaded());
+        return ((portalSession != null) && portalSession.isMapLoaded());
     }
 
     /**
      * Create a popup window
+     * 
      * @param uri
      * @param title
      * @return
      */
     @Override
     public String popupWindow(String uri, String title) {
-        String script =
-                "window.open(\"" + uri + "\",\"" + title + "\");";
+        String script = "window.open(\"" + uri + "\",\"" + title + "\");";
         return script;
     }
 
     /**
      * Create a popup window immediately
+     * 
      * @param uri
      * @param title
      * @return
@@ -955,6 +857,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     public void setSettingsSupplementary(SettingsSupplementary settingsSupplementary) {
         this.settingsSupplementary = settingsSupplementary;
     }
+
     private String additionalScript = "";
 
     @Override
@@ -970,7 +873,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     @Override
     public String getAdditionalScript() {
         String aS = additionalScript;
-        additionalScript = "";  //reset after use
+        additionalScript = ""; // reset after use
         return aS;
     }
 
