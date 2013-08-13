@@ -9,9 +9,6 @@ import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.WKTWriter;
-import geo.google.GeoAddressStandardizer;
-import geo.google.datamodel.GeoAddress;
-import geo.google.datamodel.GeoCoordinate;
 
 import java.net.URL;
 import java.net.URLEncoder;
