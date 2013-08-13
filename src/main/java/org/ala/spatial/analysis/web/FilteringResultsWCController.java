@@ -43,7 +43,7 @@ import org.zkoss.zul.Window;
  * This class supports the Area Report in the spatial portal.
  *
  * DM 20/02/2013 - rewrite of this to allow for update of fields in the UI once a query has finished.
- * Previously these updates only happened was all queries had returned.
+ * Previously these updates only happened when all queries had returned.
  *
  * @author adam
  * @author Dave Martin

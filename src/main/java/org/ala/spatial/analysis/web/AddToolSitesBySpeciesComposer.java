@@ -142,7 +142,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
 
             if (boundingboxcellcount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells")) {
                 //getMapComposer().showMessage("Too many potential output grid cells.  Reduce by at least " + String.format("%.2f",100* (1-boundingboxcellcount / (double)settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells"))) + "% by decreasing area or increasing resolution.", this);
-                getMapComposer().showMessage("Too many potential output grid cells.  Decrease area or increase resolution.", this);
+                getMapComposer().showMessage("Too many output grid cells: Decrease area or increase grid size.", this);
                 return -1;
             }
 

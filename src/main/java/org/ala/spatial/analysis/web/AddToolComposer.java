@@ -152,7 +152,7 @@ public class AddToolComposer extends UtilityComposer {
         setParams(Executions.getCurrent().getArg());
 
         //add the species lists stuff
-        if(rSpeciesUploadLSID != null) {
+        if(rSpeciesUploadLSID != null && this.hasFellow("splistbox")) {
             vboxImportSL = (Vbox)this.getFellow("splistbox").getFellow("vboxImportSL");
             speciesListListbox = (SpeciesListListbox)this.getFellow("splistbox").getFellow("speciesListListbox");
             speciesListListbox.addEventListener("onSlCheckBoxChanged", new EventListener(){
@@ -162,8 +162,8 @@ public class AddToolComposer extends UtilityComposer {
               }
             });
         }
-        
-        if(rSpeciesUploadLSIDBk != null){
+
+        if(rSpeciesUploadLSIDBk != null && this.hasFellow("splistboxbk")){
             vboxImportSLBk = (Vbox)this.getFellow("splistboxbk").getFellow("vboxImportSL");
             speciesListListboxBk = (SpeciesListListbox)this.getFellow("splistboxbk").getFellow("speciesListListbox");
             speciesListListbox.addEventListener("onSlCheckBoxChanged", new EventListener(){
