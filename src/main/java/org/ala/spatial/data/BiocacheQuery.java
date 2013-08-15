@@ -33,7 +33,8 @@ import org.ala.spatial.util.CommonData;
 import org.apache.commons.lang.StringUtils;
 
 /**
- *
+ * TODO NC 2013-08-15 - Remove all the references to the "include null" gesopatially kosher. I have removed from the UI but I didn't want to 
+ * break the build before the next release
  * @author Adam
  */
 public class BiocacheQuery implements Query, Serializable {

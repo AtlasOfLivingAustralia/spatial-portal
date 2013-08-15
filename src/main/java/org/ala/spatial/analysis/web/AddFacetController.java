@@ -74,7 +74,7 @@ public class AddFacetController extends UtilityComposer {
     MapComposer mc = getMapComposer();
     Radio rAreaWorld, rAreaCustom, rAreaSelected, rAreaAustralia;
     MapLayer prevTopArea = null;
-    Checkbox chkGeoKosherTrue, chkGeoKosherFalse, chkGeoKosherNull;
+    Checkbox chkGeoKosherTrue, chkGeoKosherFalse;
     LegendObject lo = null;
 
     @Override
@@ -1444,31 +1444,29 @@ public class AddFacetController extends UtilityComposer {
             ex.printStackTrace(System.out);
         }
     }
-
+    /**
+     * TODO NC 2013-08-15: Remove the need for "false" as the third item in the array.
+     * @return
+     */
     public boolean[] getGeospatialKosher() {
-        return new boolean[]{chkGeoKosherTrue.isChecked(), chkGeoKosherFalse.isChecked(), chkGeoKosherNull.isChecked()};
+        return new boolean[]{chkGeoKosherTrue.isChecked(), chkGeoKosherFalse.isChecked(), false};
     }
 
     public void onCheck$chkGeoKosherTrue(Event event) {
         event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherFalse.isChecked() && !chkGeoKosherNull.isChecked()) {
+        if (!((CheckEvent)event).isChecked() && !chkGeoKosherFalse.isChecked() ) {
             chkGeoKosherFalse.setChecked(true);
         }
     }
 
     public void onCheck$chkGeoKosherFalse(Event event) {
         event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherNull.isChecked()) {
+        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked()) {
             chkGeoKosherTrue.setChecked(true);
         }
     }
 
-    public void onCheck$chkGeoKosherNull(Event event) {
-        event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherFalse.isChecked()) {
-            chkGeoKosherTrue.setChecked(true);
-        }
-    }
+    
 
     private String displayToActualLabel(String v) {
         String actual = null;

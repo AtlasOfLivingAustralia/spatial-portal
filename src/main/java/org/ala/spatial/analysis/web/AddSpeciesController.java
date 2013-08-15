@@ -83,7 +83,7 @@ public class AddSpeciesController extends UtilityComposer {
     Textbox tMultiple;
     Listbox lMultiple;
     Event event;
-    Checkbox chkGeoKosherTrue, chkGeoKosherFalse, chkGeoKosherNull;
+    Checkbox chkGeoKosherTrue, chkGeoKosherFalse;
     Query query;
     String rank;
     String taxon;
@@ -695,31 +695,28 @@ public class AddSpeciesController extends UtilityComposer {
         this.onClick$bMultiple(event);
         multipleSpeciesUploadName = layername;
     }
-
+    /**
+     * TODO NC 2013-08-15: Remove the need for "false" as the third item in the array.
+     * @return
+     */
     public boolean[] getGeospatialKosher() {
-        return new boolean[]{chkGeoKosherTrue.isChecked(), chkGeoKosherFalse.isChecked(), chkGeoKosherNull.isChecked()};
+        return new boolean[]{chkGeoKosherTrue.isChecked(), chkGeoKosherFalse.isChecked(), false};
     }
 
     public void onCheck$chkGeoKosherTrue(Event event) {
         event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherFalse.isChecked() && !chkGeoKosherNull.isChecked()) {
+        if (!((CheckEvent)event).isChecked() && !chkGeoKosherFalse.isChecked()) {
             chkGeoKosherFalse.setChecked(true);
         }
     }
 
     public void onCheck$chkGeoKosherFalse(Event event) {
         event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherNull.isChecked()) {
+        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked()) {
             chkGeoKosherTrue.setChecked(true);
         }
     }
-
-    public void onCheck$chkGeoKosherNull(Event event) {
-        event = ((ForwardEvent)event).getOrigin();
-        if (!((CheckEvent)event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherFalse.isChecked()) {
-            chkGeoKosherTrue.setChecked(true);
-        }
-    }
+   
     private void showExportSpeciesListDialog(){
       String values = getScientificName();//tMultiple.getValue().replace("\n", ",").replace("\t",",");
       logger.debug("Creating species list with " + values);

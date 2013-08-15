@@ -126,8 +126,8 @@ public class AddToolComposer extends UtilityComposer {
     boolean includeAnalysisLayersForUploadQuery = false;
     boolean includeAnalysisLayersForAnyQuery = false;
     boolean mpLayersIncludeAnalysisLayers = false;
-    Checkbox chkGeoKosherTrue, chkGeoKosherFalse, chkGeoKosherNull, chkEndemicSpecies;
-    Checkbox chkGeoKosherTrueBk, chkGeoKosherFalseBk, chkGeoKosherNullBk;
+    Checkbox chkGeoKosherTrue, chkGeoKosherFalse,  chkEndemicSpecies;
+    Checkbox chkGeoKosherTrueBk, chkGeoKosherFalseBk;
     boolean[] defaultGeospatialKosher = { true, true, false };
 
     private Label lEstimateMessage;
@@ -229,9 +229,7 @@ public class AddToolComposer extends UtilityComposer {
         if (chkGeoKosherFalse != null) {
             defaultGeospatialKosher[1] = chkGeoKosherFalse.isChecked();
         }
-        if (chkGeoKosherNull != null) {
-            defaultGeospatialKosher[2] = chkGeoKosherNull.isChecked();
-        }
+        
     }
 
     void addToMpLayers(MapLayer ml, boolean analysis) {
@@ -702,10 +700,7 @@ public class AddToolComposer extends UtilityComposer {
             hasCustomArea = false;
         }
 
-        // case for enabling chkGeoKosherNull
-        if (chkGeoKosherNull != null && chkGeoKosherNull.isVisible()) {
-            chkGeoKosherNull.setDisabled(rAreaSelected != rAreaWorld);
-        }
+        
         // case for enabling the endemic checkbox
         // System.out.println("RADIO SELECTED = " + rAreaSelected.getValue());
 
@@ -754,10 +749,13 @@ public class AddToolComposer extends UtilityComposer {
         chkEndemicSpecies.setDisabled(!showEndemic);
         chkEndemicSpecies.setChecked(false);
 
-        if (showEndemic)
-            lendemicNote.setValue("Please note this may take several minutes depending on the area selected.");
-        else
-            lendemicNote.setValue("The selected area is too large to be considered for endemic species.");
+        if(lendemicNote != null){
+            if (showEndemic){
+                lendemicNote.setValue("Please note this may take several minutes depending on the area selected.");
+            } else{
+                lendemicNote.setValue("The selected area is too large to be considered for endemic species.");
+            }
+        }
     }
 
     public void onCheck$rgAreaHighlight(Event event) {
@@ -2643,29 +2641,35 @@ public class AddToolComposer extends UtilityComposer {
     public boolean getIsEndemic() {
         return chkEndemicSpecies != null && chkEndemicSpecies.isChecked();
     }
-
+    /**
+     * TODO NC 2013-08-15: Remove the need for "false" as the third item in the array.
+     * @return
+     */
     public boolean[] getGeospatialKosher() {
-        if (chkGeoKosherTrue == null || chkGeoKosherFalse == null || chkGeoKosherNull == null) {
+        if (chkGeoKosherTrue == null || chkGeoKosherFalse == null) {
             logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
-            return new boolean[] { true, true, true };
+            return new boolean[] { true, true, false };
         } else {
-            return new boolean[] { chkGeoKosherTrue.isChecked(), chkGeoKosherFalse.isChecked(), chkGeoKosherNull.isChecked() };
+            return new boolean[] { chkGeoKosherTrue.isChecked(), chkGeoKosherFalse.isChecked(), false };
         }
     }
-
+    /**
+     * TODO NC 2013-08-15: Remove the need for "false" as the third item in the array.
+     * @return
+     */
     public boolean[] getGeospatialKosherBk() {
-        if (chkGeoKosherTrueBk == null || chkGeoKosherFalseBk == null || chkGeoKosherNullBk == null) {
+        if (chkGeoKosherTrueBk == null || chkGeoKosherFalseBk == null) {
             logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher background species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
-            return new boolean[] { true, true, true };
+            return new boolean[] { true, true, false };
         } else {
-            return new boolean[] { chkGeoKosherTrueBk.isChecked(), chkGeoKosherFalseBk.isChecked(), chkGeoKosherNullBk.isChecked() };
+            return new boolean[] { chkGeoKosherTrueBk.isChecked(), chkGeoKosherFalseBk.isChecked(),false };
         }
     }
 
     void updateGeospatialKosherCheckboxes() {
-        if (chkGeoKosherTrue == null || chkGeoKosherFalse == null || chkGeoKosherNull == null) {
+        if (chkGeoKosherTrue == null || chkGeoKosherFalse == null) {
             logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
             return;
@@ -2677,25 +2681,23 @@ public class AddToolComposer extends UtilityComposer {
         if (q instanceof BiocacheQuery && (gk = ((BiocacheQuery) q).getGeospatialKosher()) != null) {
             chkGeoKosherTrue.setDisabled(false);
             chkGeoKosherFalse.setDisabled(false);
-            chkGeoKosherNull.setDisabled(false);
+            
             if (chkGeoKosherTrue.isVisible()) {
                 chkGeoKosherTrue.setChecked(gk[0]);
             }
             if (chkGeoKosherFalse.isVisible()) {
                 chkGeoKosherFalse.setChecked(gk[1]);
             }
-            if (chkGeoKosherNull.isVisible()) {
-                chkGeoKosherNull.setChecked(gk[2]);
-            }
+            
         } else {
             chkGeoKosherTrue.setDisabled(true);
             chkGeoKosherFalse.setDisabled(true);
-            chkGeoKosherNull.setDisabled(true);
+            
         }
     }
 
     public void setGeospatialKosherCheckboxes(boolean[] geospatialKosher) {
-        if (chkGeoKosherTrue == null || chkGeoKosherFalse == null || chkGeoKosherNull == null) {
+        if (chkGeoKosherTrue == null || chkGeoKosherFalse == null) {
             logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
             return;
@@ -2704,16 +2706,16 @@ public class AddToolComposer extends UtilityComposer {
         if (geospatialKosher != null) {
             chkGeoKosherTrue.setChecked(geospatialKosher[0]);
             chkGeoKosherFalse.setChecked(geospatialKosher[1]);
-            chkGeoKosherNull.setChecked(geospatialKosher[2]);
+            
         } else {
             chkGeoKosherTrue.setChecked(true);
             chkGeoKosherFalse.setChecked(true);
-            chkGeoKosherNull.setChecked(true);
+            
         }
     }
 
     void updateGeospatialKosherCheckboxesBk() {
-        if (chkGeoKosherTrueBk == null || chkGeoKosherFalseBk == null || chkGeoKosherNullBk == null) {
+        if (chkGeoKosherTrueBk == null || chkGeoKosherFalseBk == null) {
             logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher background species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
             return;
@@ -2725,25 +2727,22 @@ public class AddToolComposer extends UtilityComposer {
         if (q instanceof BiocacheQuery && (gk = ((BiocacheQuery) q).getGeospatialKosher()) != null) {
             chkGeoKosherTrueBk.setDisabled(false);
             chkGeoKosherFalseBk.setDisabled(false);
-            chkGeoKosherNullBk.setDisabled(false);
+            
             if (chkGeoKosherTrueBk.isVisible()) {
                 chkGeoKosherTrueBk.setChecked(gk[0]);
             }
             if (chkGeoKosherFalseBk.isVisible()) {
                 chkGeoKosherFalseBk.setChecked(gk[1]);
             }
-            if (chkGeoKosherNullBk.isVisible()) {
-                chkGeoKosherNullBk.setChecked(gk[2]);
-            }
+            
         } else {
             chkGeoKosherTrueBk.setDisabled(true);
-            chkGeoKosherFalseBk.setDisabled(true);
-            chkGeoKosherNullBk.setDisabled(true);
+            chkGeoKosherFalseBk.setDisabled(true);            
         }
     }
 
     public void setGeospatialKosherCheckboxesBk(boolean[] geospatialKosher) {
-        if (chkGeoKosherTrueBk == null || chkGeoKosherFalseBk == null || chkGeoKosherNullBk == null) {
+        if (chkGeoKosherTrueBk == null || chkGeoKosherFalseBk == null) {
             logger.warn("Error in AddToolComposer.  Expect checkboxes for geospatial kosher species.  Tool: "
                     + ((tToolName == null) ? "'also missing tToolName textbox'" : tToolName.getValue()));
             return;
@@ -2751,53 +2750,46 @@ public class AddToolComposer extends UtilityComposer {
 
         if (geospatialKosher != null) {
             chkGeoKosherTrueBk.setChecked(geospatialKosher[0]);
-            chkGeoKosherFalseBk.setChecked(geospatialKosher[1]);
-            chkGeoKosherNullBk.setChecked(geospatialKosher[2]);
+            chkGeoKosherFalseBk.setChecked(geospatialKosher[1]);            
         } else {
             chkGeoKosherTrueBk.setChecked(true);
-            chkGeoKosherFalseBk.setChecked(true);
-            chkGeoKosherNullBk.setChecked(true);
+            chkGeoKosherFalseBk.setChecked(true);            
         }
     }
 
     public void onCheck$chkGeoKosherTrue(Event event) {
         event = ((ForwardEvent) event).getOrigin();
-        if (!((CheckEvent) event).isChecked() && !chkGeoKosherFalse.isChecked() && !chkGeoKosherNull.isChecked()) {
+        if (!((CheckEvent) event).isChecked() && !chkGeoKosherFalse.isChecked()) {
             chkGeoKosherFalse.setChecked(true);
         }
     }
 
     public void onCheck$chkGeoKosherFalse(Event event) {
         event = ((ForwardEvent) event).getOrigin();
-        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherNull.isChecked()) {
+        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrue.isChecked()) {
             chkGeoKosherTrue.setChecked(true);
         }
     }
 
-    public void onCheck$chkGeoKosherNull(Event event) {
-        event = ((ForwardEvent) event).getOrigin();
-        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrue.isChecked() && !chkGeoKosherFalse.isChecked()) {
-            chkGeoKosherTrue.setChecked(true);
-        }
-    }
+    
 
     public void onCheck$chkGeoKosherTrueBk(Event event) {
         event = ((ForwardEvent) event).getOrigin();
-        if (!((CheckEvent) event).isChecked() && !chkGeoKosherFalseBk.isChecked() && !chkGeoKosherNullBk.isChecked()) {
+        if (!((CheckEvent) event).isChecked() && !chkGeoKosherFalseBk.isChecked()) {
             chkGeoKosherFalseBk.setChecked(true);
         }
     }
 
     public void onCheck$chkGeoKosherFalseBk(Event event) {
         event = ((ForwardEvent) event).getOrigin();
-        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrueBk.isChecked() && !chkGeoKosherNullBk.isChecked()) {
+        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrueBk.isChecked()) {
             chkGeoKosherTrueBk.setChecked(true);
         }
     }
 
     public void onCheck$chkGeoKosherNullBk(Event event) {
         event = ((ForwardEvent) event).getOrigin();
-        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrueBk.isChecked() && !chkGeoKosherFalseBk.isChecked()) {
+        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrueBk.isChecked()) {
             chkGeoKosherTrueBk.setChecked(true);
         }
     }

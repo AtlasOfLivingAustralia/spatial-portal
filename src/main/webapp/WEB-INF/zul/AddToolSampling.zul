@@ -72,7 +72,7 @@
                 <vbox>
                     <checkbox id="chkGeoKosherTrue" checked="true" label="Include spatially-valid records" />
                     <checkbox id="chkGeoKosherFalse" checked="false" label="Include spatially-suspect records" />
-                    <checkbox id="chkGeoKosherNull" checked="false" label="Include records without coordinates" />
+                    
                 </vbox>
                 <separator />
                 <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">

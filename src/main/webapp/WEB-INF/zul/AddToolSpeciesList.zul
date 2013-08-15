@@ -24,7 +24,7 @@
                     <separator height="20px" />
                     <checkbox id="chkGeoKosherTrue" checked="true" label="Include spatially-valid records" />
                     <checkbox id="chkGeoKosherFalse" checked="false" label="Include spatially-suspect records" />
-                    <checkbox id="chkGeoKosherNull" checked="false" label="Include records without coordinates" />
+                    
                     <checkbox id="chkEndemicSpecies" checked="false" label="Include endemic species only" />
                 </vbox>
                 <separator />
