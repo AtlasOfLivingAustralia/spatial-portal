@@ -158,8 +158,10 @@ public class DistributionsWCController extends UtilityComposer {
                         if (!cells[0].equals("SPCODE")) {
                             Button b = new Button("map");
                             b.setSclass("goButton");
-                            if ((cells[14] != null && cells[14].length() > 0)
-                                    || (CommonData.getSpeciesChecklistWMSFromSpcode(cells[0]) != null && getMapComposer().getMapLayerWMS(CommonData.getSpeciesChecklistWMSFromSpcode(cells[0])[1]) != null)
+                            //NC 2013-08-15: The commented out section of code below is causing http://code.google.com/p/ala/issues/detail?id=237
+                            // But I am not sure if this is going to cause an regression issues.
+                            if (/*(cells[14] != null && cells[14].length() > 0)
+                                    ||*/ (CommonData.getSpeciesChecklistWMSFromSpcode(cells[0]) != null && getMapComposer().getMapLayerWMS(CommonData.getSpeciesChecklistWMSFromSpcode(cells[0])[1]) != null)
                                     || (CommonData.getSpeciesDistributionWMSFromSpcode(cells[0]) != null && getMapComposer()
                                             .getMapLayerWMS(CommonData.getSpeciesDistributionWMSFromSpcode(cells[0])[1]) != null)) {
                                 b.setDisabled(true);
