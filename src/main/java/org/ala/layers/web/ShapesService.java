@@ -176,7 +176,7 @@ public class ShapesService {
             String api_key = (String) reqBodyParser.getParsedValue("api_key");
 
             if (!checkAPIKey(api_key, user_id)) {
-                retMap.put("error", "Invalid API key");
+                retMap.put("error", "Invalid user ID or API key");
                 return retMap;
             }
 
@@ -232,7 +232,7 @@ public class ShapesService {
             String api_key = (String) reqBodyParser.getParsedValue("api_key");
 
             if (!checkAPIKey(api_key, user_id)) {
-                retMap.put("error", "Invalid API key");
+                retMap.put("error", "Invalid user ID or API key");
                 return retMap;
             }
 
@@ -280,7 +280,7 @@ public class ShapesService {
     @RequestMapping(value = "/shape/upload/shp", method = RequestMethod.POST)
     @ResponseBody
     public Map<Object, Object> uploadShapeFile(HttpServletRequest req, HttpServletResponse resp, @RequestParam(value = "user_id", required = false) String userId,
-            @RequestParam(value = "api_key", required = false) String apiKey, @RequestParam(value = "shp_file_url", required = false) String shpFileUrl) throws Exception {
+            @RequestParam(value = "api_key", required = false) String apiKey) throws Exception {
         // Use linked hash map to maintain key ordering
         Map<Object, Object> retMap = new LinkedHashMap<Object, Object>();
 
@@ -296,12 +296,12 @@ public class ShapesService {
 
             if (reqBodyParser.parseJSON(jsonRequestBody)) {
 
-                shpFileUrl = (String) reqBodyParser.getParsedValue("shp_file_url");
+                String shpFileUrl = (String) reqBodyParser.getParsedValue("shp_file_url");
                 userId = (String) reqBodyParser.getParsedValue("user_id");
                 apiKey = (String) reqBodyParser.getParsedValue("api_key");
 
                 if (!checkAPIKey(apiKey, userId)) {
-                    retMap.put("error", "Invalid API key");
+                    retMap.put("error", "Invalid user ID or API key");
                     return retMap;
                 }
 
@@ -314,7 +314,7 @@ public class ShapesService {
 
         } else {
             if (!checkAPIKey(apiKey, userId)) {
-                retMap.put("error", "Invalid API key");
+                retMap.put("error", "Invalid user ID or API key");
                 return retMap;
             }
 
@@ -390,7 +390,7 @@ public class ShapesService {
             String api_key = (String) reqBodyParser.getParsedValue("api_key");
 
             if (!checkAPIKey(api_key, user_id)) {
-                retMap.put("error", "Invalid API key");
+                retMap.put("error", "Invalid user ID or API key");
                 return retMap;
             }
 
@@ -403,8 +403,13 @@ public class ShapesService {
                     retMap.put("error", "Invalid geometry");
                 }
 
-                String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, user_id);
-                retMap.put("id", Integer.parseInt(generatedPid));
+                if (pid != null) {
+                    objectDao.updateUserUploadedObject(pid, wkt, name, description, user_id);
+                    retMap.put("updated", true);
+                } else {
+                    String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, user_id);
+                    retMap.put("id", Integer.parseInt(generatedPid));
+                }
 
             } catch (Exception ex) {
                 retMap.put("error", ex.getMessage());
@@ -431,12 +436,18 @@ public class ShapesService {
         return processShapeFileFeatureRequest(json, objectPid, shapeId, featureIndex);
     }
 
-    // UploadShapeFile
     @RequestMapping(value = "/shape/upload/pointradius/{latitude}/{longitude}/{radius}", method = RequestMethod.POST)
     @ResponseBody
     public Map<String, Object> createPointRadius(@RequestBody String json, @PathVariable("latitude") double latitude, @PathVariable("longitude") double longitude, @PathVariable("radius") double radius)
             throws Exception {
         return processPointRadiusRequest(json, null, latitude, longitude, radius);
+    }
+    
+    @RequestMapping(value = "/shape/upload/pointradius/{objectPid}/{latitude}/{longitude}/{radius}", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> updateWithPointRadius(@RequestBody String json, @PathVariable("latitude") double latitude, @PathVariable("longitude") double longitude, @PathVariable("radius") double radius, @PathVariable("objectPid") int objectPid)
+            throws Exception {
+        return processPointRadiusRequest(json, objectPid, latitude, longitude, radius);
     }
 
     private Map<String, Object> processPointRadiusRequest(String json, Integer pid, double latitude, double longitude, double radiusKm) {
@@ -456,17 +467,18 @@ public class ShapesService {
             String api_key = (String) reqBodyParser.getParsedValue("api_key");
 
             if (!checkAPIKey(api_key, user_id)) {
-                retMap.put("error", "Invalid API key");
+                retMap.put("error", "Invalid user ID or API key");
                 return retMap;
             }
 
             try {
+                String wkt = SpatialConversionUtils.createCircleJs(longitude, latitude, radiusKm * 1000);
                 if (pid == null) {
-                    String wkt = SpatialConversionUtils.createCircleJs(longitude, latitude, radiusKm * 1000);
                     String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, user_id);
                     retMap.put("id", Integer.parseInt(generatedPid));
                 } else {
-                    return null;
+                    objectDao.updateUserUploadedObject(pid, wkt, name, description, user_id);
+                    retMap.put("updated", true);
                 }
 
             } catch (Exception ex) {
@@ -542,7 +554,7 @@ public class ShapesService {
         reqBodyParser.addParameter("latitude", Double.class, false);
         reqBodyParser.addParameter("longitude", Double.class, false);
         reqBodyParser.addParameter("bearing", Double.class, true);
-        reqBodyParser.addParameter("user_id", String.class, true);
+        reqBodyParser.addParameter("user_id", String.class, false);
         reqBodyParser.addParameter("description", String.class, true);
         reqBodyParser.addParameter("focal_length", Double.class, true);
         reqBodyParser.addParameter("api_key", String.class, false);
@@ -561,7 +573,7 @@ public class ShapesService {
             String api_key = (String) reqBodyParser.getParsedValue("api_key");
 
             if (!checkAPIKey(api_key, user_id)) {
-                retMap.put("error", "Invalid API key");
+                retMap.put("error", "Invalid user ID or API key");
                 return retMap;
             }
             try {
@@ -580,11 +592,17 @@ public class ShapesService {
 
     @RequestMapping(value = "/poi/{id}", method = RequestMethod.DELETE)
     @ResponseBody
-    public Map<String, Object> deletePointOfInterest(@PathVariable("id") int id) {
+    public Map<String, Object> deletePointOfInterest(@PathVariable("id") int id, @RequestParam(value = "user_id", required = true, defaultValue = "") String userId,
+            @RequestParam(value = "api_key", required = true, defaultValue = "") String apiKey) {
         Map<String, Object> retMap = new HashMap<String, Object>();
+        if (!checkAPIKey(apiKey, userId)) {
+            retMap.put("error", "Invalid user ID or API key");
+            return retMap;
+        }
+
         try {
             boolean success = objectDao.deletePointOfInterest(id);
-            retMap.put("success", success);
+            retMap.put("deleted", success);
         } catch (Exception ex) {
             logger.error("Error uploading point of interest " + id, ex);
             retMap.put("error", "Unexpected error. Please notify support@ala.org.au.");
@@ -623,7 +641,7 @@ public class ShapesService {
             String api_key = (String) reqBodyParser.getParsedValue("api_key");
 
             if (!checkAPIKey(api_key, user_id)) {
-                retMap.put("error", "Invalid API key");
+                retMap.put("error", "Invalid user ID or API key");
                 return retMap;
             }
             try {
