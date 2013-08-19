@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-    <window id="contextuallayerswindow" style="text-align: left" use="au.org.emii.portal.composer.ContextualLayerListComposer" apply="au.org.emii.portal.composer.ContextualLayerListComposer">
+    <vbox id="contextuallayerswindow" style="text-align: left" use="au.org.emii.portal.composer.ContextualLayerListComposer" apply="au.org.emii.portal.composer.ContextualLayerListComposer">
         <vbox>
             <label value="Browse layers via categories" style="font-weight: bold;" />
         </vbox>
@@ -68,5 +68,5 @@
             </treechildren>
         </tree>
         -->
-    </window>
+    </vbox>
 </zk>

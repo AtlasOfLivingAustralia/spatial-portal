@@ -145,10 +145,21 @@ public class ShapefileUtils {
 
             WKTReader wkt = new WKTReader();
             Geometry geom = wkt.read(wktString);
-            featureBuilder.add(geom);
-
-            SimpleFeature feature = featureBuilder.buildFeature(null);
-            collection.add(feature);
+            
+            if (geom instanceof GeometryCollection) {
+                GeometryCollection gc = (GeometryCollection) geom;
+                for (int i=0; i < gc.getNumGeometries(); i++) {
+                    featureBuilder.add(gc.getGeometryN(i));
+                    
+                    SimpleFeature feature = featureBuilder.buildFeature(null);
+                    collection.add(feature);
+                }
+            } else {
+                featureBuilder.add(geom); 
+                
+                SimpleFeature feature = featureBuilder.buildFeature(null);
+                collection.add(feature);
+            }
 
             ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
 

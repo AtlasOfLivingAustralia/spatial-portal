@@ -224,7 +224,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
     void initALC() {
         if (contextualLayerSelection == null) {
             try {
-                contextualLayerSelection = (ContextualLayerSelection) getMapComposer().getFellow("contextuallayerselectionwindow");
+                contextualLayerSelection = (ContextualLayerSelection) this.getFellow("contextuallayerselectionwindow", true); //getMapComposer().getFellow("contextuallayerselectionwindow", true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
