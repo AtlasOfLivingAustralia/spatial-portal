@@ -18,13 +18,17 @@ BEGIN
 	-- can be complicated combinations of different polygons from a shape that have large bounding boxes. 
 	IF EXISTS (SELECT * FROM pg_tables WHERE tablename = table_number) THEN
 	  SELECT f.sid INTO id_column_name FROM fields f WHERE f.id = fid;
-
-	  FOR object_id in EXECUTE 'SELECT ' || quote_ident(id_column_name) || ' FROM ' || quote_ident(table_number) || ' WHERE ST_Intersects(the_geom, ST_SetSRID(ST_Point(' || longitude || ', ' || latitude || '),4326))' LOOP
-                RAISE NOTICE '%',object_id;
-		RETURN QUERY EXECUTE 'SELECT * FROM objects o WHERE o.fid=' || quote_literal(fid) || ' AND o.id=' || quote_literal(object_id); 
-	  END LOOP;
+	  IF id_column_name in (SELECT attname FROM pg_attribute WHERE attrelid = (SELECT oid FROM pg_class WHERE relname = quote_ident(table_number))) THEN
+		  FOR object_id in EXECUTE 'SELECT ' || quote_ident(id_column_name) || ' FROM ' || quote_ident(table_number) || ' WHERE ST_Intersects(the_geom, ST_SetSRID(ST_Point(' || longitude || ', ' || latitude || '),4326))' LOOP
+	                RAISE NOTICE '%',object_id;
+			RETURN QUERY EXECUTE 'SELECT * FROM objects o WHERE o.fid=' || quote_literal(fid) || ' AND o.id=' || quote_literal(object_id); 
+		  END LOOP;
+	  ELSE
+	  	  -- Otherwise just brute force search all of the objects
+	      RETURN QUERY EXECUTE 'SELECT * FROM objects o WHERE o.fid=' || quote_literal(fid) || ' AND ST_Intersects(the_geom, ST_SetSRID(ST_Point(' || longitude || ', ' || latitude || '),4326))';	  
+	  END IF;
 	ELSE
-	  -- Otherwise just brute force search all of the 
+	  -- Otherwise just brute force search all of the objects
 	  RETURN QUERY EXECUTE 'SELECT * FROM objects o WHERE o.fid=' || quote_literal(fid) || ' AND ST_Intersects(the_geom, ST_SetSRID(ST_Point(' || longitude || ', ' || latitude || '),4326))';
 	END IF;
 	RETURN;

@@ -46,6 +46,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.io.Files;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
@@ -61,51 +62,6 @@ public class SpatialConversionUtils {
 
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(SpatialConversionUtils.class);
-
-    // // This code was adapted from the webportal class
-    // // org.ala.spatial.util.ShapefileUtils, method loadShapeFile
-    // public static String shapefileToWKT(File shpfile) {
-    // try {
-    //
-    // FileDataStore store = FileDataStoreFinder.getDataStore(shpfile);
-    //
-    // System.out.println("Loading shapefile. Reading content:");
-    // System.out.println(store.getTypeNames()[0]);
-    //
-    // SimpleFeatureSource featureSource =
-    // store.getFeatureSource(store.getTypeNames()[0]);
-    //
-    // SimpleFeatureCollection featureCollection = featureSource.getFeatures();
-    // SimpleFeatureIterator it = featureCollection.features();
-    //
-    // List<String> wktStrings = new ArrayList<String>();
-    //
-    // while (it.hasNext()) {
-    // SimpleFeature feature = (SimpleFeature) it.next();
-    // Geometry geom = (Geometry) feature.getDefaultGeometry();
-    // List<Object> attributes = feature.getAttributes();
-    // WKTWriter wkt = new WKTWriter();
-    //
-    // String wktString = wkt.write(geom);
-    //
-    // wktStrings.add(wktString);
-    // }
-    //
-    // featureCollection.close(it);
-    //
-    // if (wktStrings.size() > 1) {
-    // return "GEOMETRYCOLLECTION(" + StringUtils.join(wktStrings, ",") + ")";
-    // } else {
-    // return wktStrings.get(0);
-    // }
-    //
-    // } catch (Exception e) {
-    // System.out.println("Unable to load shapefile: ");
-    // e.printStackTrace(System.out);
-    // }
-    //
-    // return null;
-    // }
 
     public static boolean isWKTValid(String wkt) {
         WKTReader wktReader = new WKTReader();
@@ -127,15 +83,6 @@ public class SpatialConversionUtils {
 
         String wkt = geometry.toText();
         return wkt;
-    }
-
-    public static void main(String[] args) throws Exception {
-        // getShapeFileFeatureAsWKT(new
-        // File("C:\\Users\\ChrisF\\spatial\\IBRA 7\\IBRA7_subregions\\IBRA7_subregions.shp"),
-        // 0);
-        extractZippedShapeFile(new File("C:\\Users\\ChrisF\\spatial\\IBRA 7\\IBRA7_subregions.zip"));
-        // extractZippedShapeFile(new
-        // File("C:\\Users\\ChrisF\\Downloads\\3742602.zip"));
     }
 
     public static Pair<String, File> extractZippedShapeFile(File zippedShpFile) throws IOException {
@@ -326,18 +273,37 @@ public class SpatialConversionUtils {
 
             WKTReader wkt = new WKTReader();
             Geometry geom = wkt.read(wktString);
-            featureBuilder.add(geom);
+            
+            if (geom instanceof GeometryCollection) {
+                GeometryCollection gc = (GeometryCollection) geom;
+                for (int i=0; i < gc.getNumGeometries(); i++) {
+                    featureBuilder.add(gc.getGeometryN(i));
+                    
+                    if (name != null) {
+                        featureBuilder.set("name", name + " " + (i + 1));
+                    }
 
-            if (name != null) {
-                featureBuilder.set("name", name);
+                    if (description != null) {
+                        featureBuilder.set("desc", description);
+                    }
+                    
+                    SimpleFeature feature = featureBuilder.buildFeature(null);
+                    collection.add(feature);
+                }
+            } else {
+                featureBuilder.add(geom); 
+                
+                if (name != null) {
+                    featureBuilder.set("name", name);
+                }
+
+                if (description != null) {
+                    featureBuilder.set("desc", description);
+                }
+                
+                SimpleFeature feature = featureBuilder.buildFeature(null);
+                collection.add(feature);
             }
-
-            if (description != null) {
-                featureBuilder.set("desc", description);
-            }
-
-            SimpleFeature feature = featureBuilder.buildFeature(null);
-            collection.add(feature);
 
             ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
 
