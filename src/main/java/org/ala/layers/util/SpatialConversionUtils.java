@@ -65,7 +65,7 @@ public class SpatialConversionUtils {
 
     public static List<String> getGeometryCollectionParts(String wkt) {
         if (wkt.matches("GEOMETRYCOLLECTION\\(.+\\)")) {
-            String parts = wkt.substring(19, wkt.length() - 2);
+            String parts = wkt.substring(19, wkt.length() - 1);
 
             int bracketLevel = 0;
             List<Integer> commaPositions = new ArrayList<Integer>();
@@ -91,10 +91,10 @@ public class SpatialConversionUtils {
                 for (int i = 0; i < commaPositions.size(); i++) {
                     int commaPosition = commaPositions.get(i);
                     if (i == 0) {
-                        partsList.add(parts.substring(0, commaPosition - 1));
+                        partsList.add(parts.substring(0, commaPosition));
                         lastUsedCommaPosition = commaPosition;
                     } else {
-                        partsList.add(parts.substring(lastUsedCommaPosition + 1, commaPosition - 1));
+                        partsList.add(parts.substring(lastUsedCommaPosition + 1, commaPosition));
                         lastUsedCommaPosition = commaPosition;
                     }
 
