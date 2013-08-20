@@ -56,7 +56,7 @@
                 <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
                     <radio id="rAreaCurrent" label="Current extent" value="current" />
                     <radio id="rAreaAustralia" label="Australia" value="australia" />
-                    <radio id="rAreaWorld" label="World" value="world" />
+                    <!--<radio id="rAreaWorld" label="World" value="world" />-->
                     <radio id="rAreaCustom" label="Define new area" value="custom" />
                 </radiogroup>
             </div>
@@ -139,7 +139,7 @@
                     <radio id="rAreaCurrentHighlight" label="Current extent" value="current"/>
                     <radio id="rAreaAustraliaHighlight" label="Australia" value="australia" />
                     <radio id="rAreaWorldHighlight" label="World" value="world" />
-                    <radio id="rAreaCustomHighlight" label="Define new area" value="custom" />
+                    <!--<radio id="rAreaCustomHighlight" label="Define new area" value="custom" />-->
                 </radiogroup>
             </div>
 
