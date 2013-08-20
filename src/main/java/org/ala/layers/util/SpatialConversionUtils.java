@@ -63,6 +63,53 @@ public class SpatialConversionUtils {
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(SpatialConversionUtils.class);
 
+    public static List<String> getGeometryCollectionParts(String wkt) {
+        if (wkt.matches("GEOMETRYCOLLECTION\\(.+\\)")) {
+            String parts = wkt.substring(19, wkt.length() - 2);
+
+            int bracketLevel = 0;
+            List<Integer> commaPositions = new ArrayList<Integer>();
+
+            for (int i = 0; i < parts.length(); i++) {
+                char c = parts.charAt(i);
+
+                if (c == '(') {
+                    bracketLevel++;
+                } else if (c == ')') {
+                    bracketLevel--;
+                } else if (c == ',' && bracketLevel == 0) {
+                    commaPositions.add(i);
+                }
+            }
+
+            List<String> partsList = new ArrayList<String>();
+
+            if (commaPositions.size() == 0) {
+                partsList.add(parts);
+            } else {
+                int lastUsedCommaPosition = 0;
+                for (int i = 0; i < commaPositions.size(); i++) {
+                    int commaPosition = commaPositions.get(i);
+                    if (i == 0) {
+                        partsList.add(parts.substring(0, commaPosition - 1));
+                        lastUsedCommaPosition = commaPosition;
+                    } else {
+                        partsList.add(parts.substring(lastUsedCommaPosition + 1, commaPosition - 1));
+                        lastUsedCommaPosition = commaPosition;
+                    }
+
+                    if (i == commaPositions.size() - 1) {
+                        partsList.add(parts.substring(commaPosition + 1));
+                        lastUsedCommaPosition = commaPosition;
+                    }
+                }
+            }
+            return partsList;
+        } else {
+            throw new IllegalArgumentException("Invalid input. Expecting a valid GEOMETRYCOLLECTION wkt string.");
+        }
+    }
+
     public static boolean isWKTValid(String wkt) {
         WKTReader wktReader = new WKTReader();
         try {
@@ -273,12 +320,12 @@ public class SpatialConversionUtils {
 
             WKTReader wkt = new WKTReader();
             Geometry geom = wkt.read(wktString);
-            
+
             if (geom instanceof GeometryCollection) {
                 GeometryCollection gc = (GeometryCollection) geom;
-                for (int i=0; i < gc.getNumGeometries(); i++) {
+                for (int i = 0; i < gc.getNumGeometries(); i++) {
                     featureBuilder.add(gc.getGeometryN(i));
-                    
+
                     if (name != null) {
                         featureBuilder.set("name", name + " " + (i + 1));
                     }
@@ -286,13 +333,13 @@ public class SpatialConversionUtils {
                     if (description != null) {
                         featureBuilder.set("desc", description);
                     }
-                    
+
                     SimpleFeature feature = featureBuilder.buildFeature(null);
                     collection.add(feature);
                 }
             } else {
-                featureBuilder.add(geom); 
-                
+                featureBuilder.add(geom);
+
                 if (name != null) {
                     featureBuilder.set("name", name);
                 }
@@ -300,7 +347,7 @@ public class SpatialConversionUtils {
                 if (description != null) {
                     featureBuilder.set("desc", description);
                 }
-                
+
                 SimpleFeature feature = featureBuilder.buildFeature(null);
                 collection.add(feature);
             }
