@@ -18,14 +18,18 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.ala.layers.dao.ObjectDAO;
+import org.ala.layers.dto.Distribution;
 import org.ala.layers.dto.Objects;
 import org.ala.layers.util.LayerFilter;
+import org.ala.layers.util.SpatialConversionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -138,6 +142,16 @@ public class ObjectsService {
         } else if (wkt.startsWith("OBJECT(")) {
             String pid = wkt.substring("OBJECT(".length(), wkt.length() - 1);
             return objectDao.getObjectsByIdAndIntersection(id, limit, pid);
+        } else if (wkt.startsWith("GEOMETRYCOLLECTION")) {
+            List<String> collectionParts = SpatialConversionUtils.getGeometryCollectionParts(wkt);
+
+            Set<Objects> objectsSet = new HashSet<Objects>();
+
+            for (String part : collectionParts) {
+                objectsSet.addAll(objectDao.getObjectsByIdAndArea(id, limit, part));
+            }
+            
+            return new ArrayList<Objects>(objectsSet);
         } else {
             return objectDao.getObjectsByIdAndArea(id, limit, wkt);
         }

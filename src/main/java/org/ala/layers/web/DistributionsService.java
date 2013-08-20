@@ -16,9 +16,12 @@ package org.ala.layers.web;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +31,7 @@ import org.ala.layers.dao.ObjectDAO;
 import org.ala.layers.dto.*;
 import org.ala.layers.util.AttributionCache;
 import org.ala.layers.util.MapCache;
+import org.ala.layers.util.SpatialConversionUtils;
 import org.ala.layers.util.UserProperties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -83,8 +87,7 @@ public class DistributionsService {
             @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
             @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
             @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids,
-            @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids,
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids,
             HttpServletResponse response) {
 
         if (StringUtils.isEmpty(wkt) && fid != null && objectName != null) {
@@ -102,11 +105,24 @@ public class DistributionsService {
                 return null;
             }
         }
-        return distributionDao.queryDistributions(wkt, min_depth, max_depth, pelagic, coastal, estuarine, desmersal,
-                groupName, geom_idx, lsids, families, familyLsids, genera, generaLsids,
-                Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
+
+        if (wkt.startsWith("GEOMETRYCOLLECTION")) {
+            List<String> collectionParts = SpatialConversionUtils.getGeometryCollectionParts(wkt);
+
+            Set<Distribution> distributionsSet = new HashSet<Distribution>();
+
+            for (String part : collectionParts) {
+                distributionsSet.addAll(distributionDao.queryDistributions(part, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids,
+                        genera, generaLsids, Distribution.EXPERT_DISTRIBUTION, dataResourceUids));
+            }
+            
+            return new ArrayList<Distribution>(distributionsSet);
+        } else {
+            return distributionDao.queryDistributions(wkt, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids, genera, generaLsids,
+                    Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
+        }
     }
-    
+
     /*
      * list distribution table records, GET
      */
@@ -120,8 +136,7 @@ public class DistributionsService {
             @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
             @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
             @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids,
-            @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids,
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids,
             HttpServletResponse response) {
 
         if (StringUtils.isEmpty(wkt) && fid != null && objectName != null) {
@@ -139,10 +154,9 @@ public class DistributionsService {
                 return null;
             }
         }
-        return distributionDao.queryDistributionsFamilyCounts(wkt, min_depth, max_depth, pelagic, coastal, estuarine,
-                desmersal, groupName, geom_idx, lsids, families, familyLsids, genera, generaLsids,
-                Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
-    }    
+        return distributionDao.queryDistributionsFamilyCounts(wkt, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids, genera,
+                generaLsids, Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
+    }
 
     @RequestMapping(value = WS_DISTRIBUTIONS_RADIUS, method = { RequestMethod.GET, RequestMethod.POST })
     public @ResponseBody
@@ -154,11 +168,8 @@ public class DistributionsService {
             @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
             @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
             @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids,
-            @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids
-    ) {
-        return distributionDao.queryDistributionsByRadius(longitude, latitude, radius, min_depth, max_depth, pelagic,
-                coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids,
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids) {
+        return distributionDao.queryDistributionsByRadius(longitude, latitude, radius, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids,
                 genera, generaLsids, Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
     }
 
@@ -172,12 +183,11 @@ public class DistributionsService {
             @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
             @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
             @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids,
-            @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids) {
-        return distributionDao.queryDistributionsByRadiusFamilyCounts(longitude, latitude, radius, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids,
-                genera, generaLsids, Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
-    }    
-    
+            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids) {
+        return distributionDao.queryDistributionsByRadiusFamilyCounts(longitude, latitude, radius, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families,
+                familyLsids, genera, generaLsids, Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
+    }
+
     /*
      * get distribution by id
      */
@@ -206,14 +216,15 @@ public class DistributionsService {
      * get distribution by id
      */
     @RequestMapping(value = WS_DISTRIBUTION_OVERVIEWMAP, method = RequestMethod.GET)
-    public @ResponseBody MapDTO getDistributionOverviewMap(@PathVariable String lsid, @RequestParam(value = "height", required = false, defaultValue = "504") Integer height,
+    public @ResponseBody
+    MapDTO getDistributionOverviewMap(@PathVariable String lsid, @RequestParam(value = "height", required = false, defaultValue = "504") Integer height,
             @RequestParam(value = "width", required = false, defaultValue = "512") Integer width, HttpServletResponse response) throws Exception {
         Distribution distribution = distributionDao.findDistributionByLSIDOrName(lsid);
         if (distribution != null) {
             MapDTO m = new MapDTO();
             m.setDataResourceUID(distribution.getData_resource_uid());
             m.setUrl(userProperties.getProperty("layers_service_url") + "/distribution/map/png/" + distribution.getGeom_idx());
-            //set the attribution info
+            // set the attribution info
             AttributionDTO dto = AttributionCache.getCache().getAttributionFor(distribution.getData_resource_uid());
             m.setAvailable(true);
             m.setDataResourceName(dto.getName());
@@ -239,18 +250,17 @@ public class DistributionsService {
     @RequestMapping(value = WS_DISTRIBUTION_OVERVIEWMAP_SEED, method = RequestMethod.GET)
     public void getDistributionOverviewMapSeed() throws Exception {
 
-        Thread t = new Thread(){
+        Thread t = new Thread() {
             @Override
             public void run() {
                 try {
-                    List<Distribution> distributions = distributionDao.queryDistributions(null, -1, -1, null, null, null, null,
-                            null, null, null, null, null, null, null,
+                    List<Distribution> distributions = distributionDao.queryDistributions(null, -1, -1, null, null, null, null, null, null, null, null, null, null, null,
                             Distribution.EXPERT_DISTRIBUTION, null);
 
-                    for(Distribution d: distributions){
-                      MapCache.getMapCache().cacheMap(d.getGeom_idx().toString());
+                    for (Distribution d : distributions) {
+                        MapCache.getMapCache().cacheMap(d.getGeom_idx().toString());
                     }
-                } catch(Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -267,8 +277,8 @@ public class DistributionsService {
         OutputStream out = response.getOutputStream();
         byte[] buff = new byte[1024];
         int read = 0;
-        while((read=input.read(buff))>0){
-            out.write(buff, 0,read);
+        while ((read = input.read(buff)) > 0) {
+            out.write(buff, 0, read);
         }
         out.flush();
         out.close();

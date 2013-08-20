@@ -1,6 +1,7 @@
 package org.ala.layers;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -9,6 +10,7 @@ import java.util.regex.Pattern;
 import org.ala.layers.dto.Objects;
 import org.ala.layers.util.SpatialConversionUtils;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.MultipartPostMethod;
@@ -398,7 +400,6 @@ public class GeometryServiceTest {
     }
 
     @Test
-    @Ignore
     public void testFileUploadMultipart() throws Exception {
         // String json =
         // "{\"user_id\": \"1551\", \"api_key\": \"b3f3c932-ba88-4ad5-b429-f947475024af\"}";
@@ -645,12 +646,11 @@ public class GeometryServiceTest {
     }
 
     @Test
-    @Ignore
     public void testWktPointOfInterestIntersect() throws Exception {
         String wkt = "POLYGON((149.09561600948 -35.340029589556,149.1811033752 -35.340029589556,149.1811033752 -35.271806227303,149.09561600948 -35.271806227303,149.09561600948 -35.340029589556))";
 
         HttpClient httpClient = new HttpClient();
-        PostMethod post = new PostMethod("http://localhost:8080/layers-service/intersect/poi/wkt");
+        PostMethod post = new PostMethod("http://spatial-dev.ala.org.au/ws/intersect/poi/wkt");
 
         post.setRequestHeader("Content-Type", "application/wkt");
         post.setRequestBody(wkt);
@@ -681,10 +681,9 @@ public class GeometryServiceTest {
     }    
 
     @Test
-    @Ignore
     public void testPointOfInterestObjectIntersect() throws Exception {
         HttpClient httpClient = new HttpClient();
-        GetMethod get = new GetMethod("http://localhost:8080/layers-service/intersect/poi/object/3742602");
+        GetMethod get = new GetMethod("http://spatial-dev.ala.org.au/layers-service/intersect/poi/object/3742602");
 
         int returnCode = httpClient.executeMethod(get);
         Assert.assertEquals(200, returnCode);
@@ -813,5 +812,7 @@ public class GeometryServiceTest {
 //    public static void main(String[] args) {
 //        System.out.println(formatSld(gridPolygonSld, "auscover_land_cover_type", "0", "1", "2", "3"));
 //    }
+    
+
 
 }
