@@ -24,6 +24,7 @@ import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -1168,11 +1169,11 @@ public class FilteringResultsWCController extends UtilityComposer {
             HttpClient client = new HttpClient();
             PostMethod post = new PostMethod(url);
             if (wkt != null) {
-                // post.addParameter("wkt", wkt);
-                post.setRequestBody(wkt);
+                NameValuePair nvp = new NameValuePair("wkt", wkt);
+                post.setRequestBody(new NameValuePair[] { nvp });
             }
             post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            post.setRequestHeader("Content-Type", "application/wkt");
+            //post.setRequestHeader("Content-Type", "application/wkt");
             int result = client.executeMethod(post);
             if (result == 200) {
                 String txt = post.getResponseBodyAsString();
