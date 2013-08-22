@@ -25,7 +25,7 @@
                     <radio label="Draw bounding box" id="ciBoundingBox" focus="true" checked="true" />
                     <radio label="Draw polygon" id="ciPolygon" />
                     <radio label="Draw point and radius" id="ciPointAndRadius" />
-                    <radio label="Select area from polygonal layer" id="ciMapPolygon" />
+                    <radio label="Select area from polygonal layer" id="ciMapPolygon" if="${arg.parentname != 'AddTool'}" />
 
                     <separator />
                     <label value="Searching" sclass="wSubLabel" />

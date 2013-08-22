@@ -139,7 +139,7 @@
                     <radio id="rAreaCurrentHighlight" label="Current extent" value="current"/>
                     <radio id="rAreaAustraliaHighlight" label="Australia" value="australia" />
                     <radio id="rAreaWorldHighlight" label="World" value="world" />
-                    <!--<radio id="rAreaCustomHighlight" label="Define new area" value="custom" />-->
+                    <radio id="rAreaCustomHighlight" label="Define new area" value="custom" />
                 </radiogroup>
             </div>
 

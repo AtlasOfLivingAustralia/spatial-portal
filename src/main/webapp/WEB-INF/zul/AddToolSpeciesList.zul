@@ -32,7 +32,7 @@
                     <radio id="rAreaCurrent" label="Current extent" value="current" />
                     <radio id="rAreaAustralia" label="Australia" value="australia" />
                     <radio id="rAreaWorld" label="World" value="world" />
-                    <!--<radio id="rAreaCustom" label="Define new area" value="custom" />-->
+                    <radio id="rAreaCustom" label="Define new area" value="custom" />
                 </radiogroup>
             </div>            
         </vbox>

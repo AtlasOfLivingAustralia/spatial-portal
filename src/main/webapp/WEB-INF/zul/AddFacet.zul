@@ -49,7 +49,7 @@
                         <radio id="rAreaCurrent" label="Current extent" value="current"/>
                         <radio id="rAreaAustralia" label="Australia" value="australia"/>
                         <radio id="rAreaWorld" label="World" value="world" checked="true"/>
-                        <!--<radio id="rAreaCustom" label="Define new area" value="custom"/>-->
+                        <radio id="rAreaCustom" label="Define new area" value="custom"/>
                     </radiogroup>
                 </div>
                 <div id="atstep2" visible="false" zclass="last optional" sclass="atstep"  width="560px" height="600px" style="padding:5px;">
