@@ -262,30 +262,16 @@ public class IntersectService {
         return objectDao.getPointsOfInterestWithinRadius(lat, lng, radiusKm);
     }
 
-    // WKT geometry intersect
-    @RequestMapping(value = "/intersect/poi/wkt", method = RequestMethod.POST)
-    @ResponseBody
-    public List<Map<String, Object>> wktPoiIntersectPost(@RequestBody String wkt) throws Exception {
-        return objectDao.pointsOfInterestGeometryIntersect(wkt);
-    }
     
     // WKT geometry intersect
-    @RequestMapping(value = "/intersect/poi/wkt", method = RequestMethod.GET)
+    @RequestMapping(value = "/intersect/poi/wkt", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
     public List<Map<String, Object>> wktPoiIntersectGet(@RequestParam(value = "wkt", required = true, defaultValue = "") String wkt) throws Exception {
         return objectDao.pointsOfInterestGeometryIntersect(wkt);
     }    
-
-    // geojson geometry intersect
-    @RequestMapping(value = "/intersect/poi/geojson", method = RequestMethod.POST)
-    @ResponseBody
-    public List<Map<String, Object>> geojsonPoiIntersectPost(@RequestBody String geojson) throws Exception {
-        String wkt = SpatialConversionUtils.geoJsonToWkt(geojson);
-        return objectDao.pointsOfInterestGeometryIntersect(wkt);
-    }
     
     // geojson geometry intersect
-    @RequestMapping(value = "/intersect/poi/geojson", method = RequestMethod.GET)
+    @RequestMapping(value = "/intersect/poi/geojson", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
     public List<Map<String, Object>> geojsonPoiIntersectGet(@RequestParam(value = "geojson", required = true, defaultValue = "") String geojson) throws Exception {
         String wkt = SpatialConversionUtils.geoJsonToWkt(geojson);

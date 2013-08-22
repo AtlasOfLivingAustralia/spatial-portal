@@ -57,25 +57,136 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                         <li><strong>Get the nearest objects to a coordinate</strong> /ws/objects/{id}/{lat}/{lng}?limit=40 e.g. <a href="/ws/objects/cl915/-22.465864536394/124.419921875?limit=10">/ws/objects/cl915/-22.465864536394/124.419921875?limit=10</a></li>
              		    <li><strong>Upload geometry as WKT:</strong> POST request to /ws/shape/upload/wkt. POST data must be a json object containing the following fields:
 							<ul>
-						    <li><strong>wkt:</strong> a WKT string describing the geometry</li>
-						    <li><strong>name:</strong> the name of the geometry (string)</li>
-						    <li><strong>description:</strong> description of the geometry (string)</li>
-						    <li><strong>user_id:</strong> id of the user who uploaded the geometry</li>
+							    <li><strong>wkt:</strong> a WKT string describing the geometry</li>
+							    <li><strong>name:</strong> the name of the geometry (string)</li>
+							    <li><strong>description:</strong> description of the geometry (string)</li>
+							    <li><strong>user_id:</strong> user id associated with api key (see below) (number)</li>
+							    <li><strong>api_key:</strong> spatial portal api key - see <a href="http://auth.ala.org.au/apikey/">http://auth.ala.org.au/apikey/</a></li>
 						    </ul>
 						    <strong>Example:</strong> {"wkt": "POLYGON((125.5185546875 -21.446934836644,128.2431640625 -21.446934836644,128.2431640625 -19.138942324356,125.5185546875 -19.138942324356,125.5185546875 -21.446934836644))", "name": "test", "description": "test description", "userid": "user1"}
 						    <strong>Return value:</strong> a JSON object containing the pid for the newly uploaded geometry e.g. {"pid":3742602}
 						</li>
 						<li><strong>Upload geometry as geojson:</strong> POST request to /ws/shape/upload/geojson. POST data must be a json object containing the following fields:
 							<ul>
-						    <li><strong>geojson:</strong> a geojson string describing the geometry</li>
-						    <li><strong>name:</strong> the name of the geometry (string)</li>
-						    <li><strong>description:</strong> description of the geometry (string)</li>
-						    <li><strong>user_id:</strong> id of the user who uploaded the geometry</li>
+						    	<li><strong>geojson:</strong> a geojson string describing the geometry</li>
+						    	<li><strong>name:</strong> the name of the geometry (string)</li>
+						    	<li><strong>description:</strong> description of the geometry (string)</li>
+ 							    <li><strong>user_id:</strong> user id associated with api key (see below) (string)</li>
+							    <li><strong>api_key:</strong> spatial portal api key (string) - see <a href="http://auth.ala.org.au/apikey/">http://auth.ala.org.au/apikey/</a></li>
 						    </ul>
 						    <strong>Example:</strong> {"geojson": "{\"type\":\"Polygon\",\"coordinates\":[[[125.5185546875,-21.446934836644001],[128.2431640625,-21.446934836644001],[128.2431640625,-19.138942324356002],[125.5185546875,-19.138942324356002],[125.5185546875,-21.446934836644001]]]}", "name": "test", "description": "test", "userid": "user1"}
 						    <strong>Return value:</strong> a JSON object containing the ID for the newly uploaded geometry e.g. {"id":3742602}
 						</li>
+						<li><strong>Upload geometry as point and radius</strong> POST request to /ws/shape/upload/{latitude}/{longitude}/{radius}. POST data must be a json object containing the following fields:
+							<ul>
+						    	<li><strong>name:</strong> the name of the geometry (string)</li>
+						    	<li><strong>description:</strong> description of the geometry (string)</li>
+ 							    <li><strong>user_id:</strong> user id associated with api key (see below) (string)</li>
+							    <li><strong>api_key:</strong> spatial portal api key (string)- see <a href="http://auth.ala.org.au/apikey/">http://auth.ala.org.au/apikey/</a></li>
+						    </ul>
+						    <strong>Return value:</strong> a JSON object containing the ID for the newly uploaded geometry e.g. {"id":3742602}
+						</li>
+						<li>
+							<strong>Upload geometry from shape file feature.</strong>This is a two step process:
+							<ol>
+								<li><strong>Upload zipped shape file:</strong> A shape file must first be uploaded in a zip archive before its features can be used to create objects. A shape file can be uploaded by one of two methods:
+									<ul>
+										<li><strong>Multipart POST:</strong> Multipart POST to /ws/shape/upload/shp?user_id={user_id}&api_key={api_key}, with the zipped shape file in the multipart form data.</li>
+										<li><strong>Regular POST:</strong> Regular POST to /ws/shape/upload/shp with. The POST data must be a json object containing the following fields:	
+										<ul>
+									    	<li><strong>shp_file_url:</strong> description of the geometry (string)</li>
+			 							    <li><strong>user_id:</strong> user id associated with api key (see below) (String)</li>
+										    <li><strong>api_key:</strong> spatial portal api key (string) - see <a href="http://auth.ala.org.au/apikey/">http://auth.ala.org.au/apikey/</a></li>
+									    </ul>							
+									</ul>
+									<strong>Return value:</strong> Both methods return a json object with a field "shp_id" whose value is an id for the uploaded shape. In addition, the object contains numbered fields for each feature whose values are
+									the attribute values for each feature. E.g. {"shp_id":"1376461253025-0","0":{"id":15,"name":"Snow and ice"}} 
+								</li>
+							    <li>
+							    <strong>Create object from shape file feature:</strong> Once a shape file has been uploaded, its features can be used to create objects. Send a POST request to: /shape/upload/shp/{shapeId}/{featureIndex}, where {shapeId} is the id of the uploaded shape file, and {featureIndex}
+							     is the numeric index of the desired feature, both returned in the response of the shape file upload method (see above). POST data must be a JSON object containing the following fields:
+	     							<ul>
+								    	<li><strong>name:</strong> the name of the geometry (string)</li>
+								    	<li><strong>description:</strong> description of the geometry (string)</li>
+		 							    <li><strong>user_id:</strong> user id associated with api key (see below) (string)</li>
+									    <li><strong>api_key:</strong> spatial portal api key (string)- see <a href="http://auth.ala.org.au/apikey/">http://auth.ala.org.au/apikey/</a></li>
+							    	</ul>
+							    	<strong>Return value:</strong> a JSON object containing the ID for the newly created object e.g. {"id":3742602}
+								</li>
+							</ol>
+						</li>	
+						<li>
+							<strong>Update geometry from shape file feature.</strong> POST request to: /shape/upload/shp/{objectPid}/{shapeId}/{featureIndex}, where {objectPid} is the id of the object to update, {shapeId} is the
+							 id of the uploaded shape file and {featureIndex} is the numeric index of the desired feature, as returned in the response of the shape file upload method (see above). POST data must be a JSON object containing the following fields:
+   							<ul>
+						    	<li><strong>name:</strong> the name of the geometry (string)</li>
+						    	<li><strong>description:</strong> description of the geometry (string)</li>
+ 							    <li><strong>user_id:</strong> user id associated with api key (see below) (string)</li>
+							    <li><strong>api_key:</strong> spatial portal api key (string)- see <a href="http://auth.ala.org.au/apikey/">http://auth.ala.org.au/apikey/</a></li>
+					    	</ul>
+					    	<strong>Return value:</strong> a JSON object containing a boolean field "updated" which indicates whether or not the object was successfully updated e.g. {"updated":true}
+						</li>					
                     </ul></li>
+
+				<li>Points Of Interest<ul>
+             		    <li><strong>Create point of interest</strong> POST request to /ws/poi. POST data must be a json object containing the following fields:
+							<ul>
+							    <li><strong>name:</strong> name of the point of interest (string)</li>
+							    <li><strong>type:</strong> the type of point of interest e.g. "photo point"</li>
+							    <li><strong>description:</strong> description of the point of interest (string) - optional</li>
+							    <li><strong>latitude:</strong> latitude (number)</li>
+							    <li><strong>longitude:</strong> longitude (number)</li>
+							    <li><strong>user_id:</strong> user id associated with api key (see below) (number)</li>
+							    <li><strong>api_key:</strong> spatial portal api key - see <a href="http://auth.ala.org.au/apikey/">http://auth.ala.org.au/apikey/</a></li>
+							    <li><strong>object_id:</strong> id of the object associated with this point of interest (string) - optional</li>
+							    <li><strong>bearing:</strong> compass bearing in degrees (number) - optional</li>
+							    <li><strong>focal_length:</strong> focal length in millimetres (number) - optional</li>
+							    
+						    </ul>
+						    <strong>Return value:</strong> a JSON object containing the id for the newly created point of interest e.g. {"id":1234}
+						</li>
+						<li><strong>Update point of interest</strong> POST request to /ws/poi/{id}, where {id} is the point of interest id.
+						 POST data must be a json object containing the following fields:             		    		
+							<ul>
+							    <li><strong>name:</strong> name of the point of interest (string)</li>
+							    <li><strong>type:</strong> the type of point of interest e.g. "photo point"</li>
+							    <li><strong>description:</strong> description of the point of interest (string) - optional</li>
+							    <li><strong>latitude:</strong> latitude (number)</li>
+							    <li><strong>longitude:</strong> longitude (number)</li>
+							    <li><strong>user_id:</strong> user id associated with api key (see below) (number)</li>
+							    <li><strong>api_key:</strong> spatial portal api key - see <a href="http://auth.ala.org.au/apikey/">http://auth.ala.org.au/apikey/</a></li>
+							    <li><strong>object_id:</strong> id of the object associated with this point of interest (string) - optional</li>
+							    <li><strong>bearing:</strong> compass bearing in degrees (number) - optional</li>
+							    <li><strong>focal_length:</strong> focal length in millimetres (number) - optional</li>
+						    </ul>
+						    Not supplying values for optional fields will have the effect of nulling any previously set values for such fields.
+						    <strong>Return value:</strong> a JSON object containing a boolean field "updated" which indicates whether or not the point of interest was successfully updated e.g. {"updated":true}
+						</li>
+						<li><strong>Get point of interest details</strong> GET request to /ws/poi/{id}, where {id} is the point of interest id.
+						<strong>Return value:</strong> a JSON object containing the following fields:
+							<ul>
+								<li><strong>name:</strong> id of the point of interest (string)</li>
+							    <li><strong>name:</strong> id of the point of interest (string)</li>
+							    <li><strong>type:</strong> the type of point of interest e.g. "photo point"</li>
+							    <li><strong>description:</strong> description of the point of interest (string)</li>
+							    <li><strong>latitude:</strong> latitude (number)</li>
+							    <li><strong>longitude:</strong> longitude (number)</li>
+							    <li><strong>user_id:</strong> user id of the user who created the point of interest</li>
+							    <li><strong>object_id:</strong> id of the object associated with this point of interest (string)</li>
+							    <li><strong>bearing:</strong> compass bearing in degrees (number)</li>
+							    <li><strong>focal_length_millimetres:</strong> focal length in millimetres (number)</li>
+						    </ul>
+					    </li>
+						<li><strong>Delete point of interest</strong> DELETE request to /ws/poi/{id}?user_id={user id}&api_key={api key}, where {id} is the point of interest id, and the user id and api key are
+						supplied as url arguments.
+							<strong>Return value:</strong> a JSON object containing a boolean field "deleted" which indicates whether or not the point of interest was successfully deleted e.g. {"deleted":true}
+					    </li>
+					    
+					    <li><strong>Retrieve details of all points of interest within a specified radius of a point:</strong> GET request to /intersect/poi/pointradius/{latitude}/{longitude}/{radius} - radius is in kilometres e.g. <a href="/ws/intersect/poi/pointradius/-35.30821/149.12444/5">/ws/intersect/poi/pointradius/-35.30821/149.12444/5</a></li>
+                        <li><strong>Retrieve details of all points of interest that intersect with a geometry specified using wkt:</strong> GET or POST request to /intersect/poi/wkt with request parameter "wkt" containing the wkt geometry to intersect e.g. <a href="/intersect/poi/wkt?wkt=POLYGON((149.09641919556 -35.320882015603,149.15598569337 -35.320882015603,149.15598569337 -35.271424614118,149.09641919556 -35.271424614118,149.09641919556 -35.320882015603))">/intersect/poi/wkt?wkt=POLYGON((149.09641919556 -35.320882015603,149.15598569337 -35.320882015603,149.15598569337 -35.271424614118,149.09641919556 -35.271424614118,149.09641919556 -35.320882015603))</a></li>
+                        <li><strong>Retrieve details of all points of interest that intersect with a geometry specified using geojson:</strong> GET or POST request to /intersect/poi/geojson with request parameter "geojson" containing the geojson geometry to intersect e.g. {"type":"Polygon","coordinates":[[[125.5185546875,-21.446934836644001],[128.2431640625,-21.446934836644001],[128.2431640625,-19.138942324356002],[125.5185546875,-19.138942324356002],[125.5185546875,-21.446934836644001]]]}</li>
+                        <li><strong>Retrieve details of all points of interest that intersect an object:</strong> GET request to /intersect/poi/object/{id} - where "id" is the object id e.g. <a href="http://spatial-dev.ala.org.au/ws/intersect/poi/object/3742602">http://spatial-dev.ala.org.au/ws/intersect/poi/object/3742602</a></li>					    
+				</ul></li>
 
                 <li>Search<ul>
                         <li><strong>Search for gazetteer localities:</strong> /search?q={free text} e.g. <a href="/ws/search?q=canberra">/ws/search?q=canberra</a></li>
