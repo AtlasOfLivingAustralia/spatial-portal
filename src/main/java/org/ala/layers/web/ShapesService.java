@@ -47,6 +47,7 @@ import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.geotools.geojson.geom.GeometryJSON;
 import org.springframework.dao.DataAccessException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -183,9 +184,11 @@ public class ShapesService {
             try {
                 if (pid != null) {
                     objectDao.updateUserUploadedObject(pid, wkt, name, description, user_id);
+                    objectDao.updateObjectNames();
                     retMap.put("updated", true);
                 } else {
                     String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, user_id);
+                    objectDao.updateObjectNames();
                     retMap.put("id", Integer.parseInt(generatedPid));
                 }
 
@@ -212,7 +215,7 @@ public class ShapesService {
     public Map<String, Object> updateWithGeoJSON(@RequestBody String json, @PathVariable("pid") int pid) throws Exception {
         return processGeoJSONRequest(json, pid);
     }
-
+    
     private Map<String, Object> processWKTRequest(String json, Integer pid) {
         Map<String, Object> retMap = new HashMap<String, Object>();
 
@@ -243,9 +246,11 @@ public class ShapesService {
             try {
                 if (pid != null) {
                     objectDao.updateUserUploadedObject(pid, wkt, name, description, user_id);
+                    objectDao.updateObjectNames();
                     retMap.put("updated", true);
                 } else {
                     String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, user_id);
+                    objectDao.updateObjectNames();
                     retMap.put("id", Integer.parseInt(generatedPid));
                 }
 
