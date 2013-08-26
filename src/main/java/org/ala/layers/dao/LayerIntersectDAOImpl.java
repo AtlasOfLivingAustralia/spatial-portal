@@ -41,6 +41,8 @@ import org.ala.layers.intersect.IntersectConfig;
 import org.ala.layers.intersect.SamplingThread;
 import org.ala.layers.intersect.SimpleShapeFile;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 /**
@@ -57,8 +59,10 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
     private FieldDAO fieldDao;
     @Resource(name = "layerDao")
     private LayerDAO layerDao;
-    @Resource(name = "objectDao")
-    private ObjectDAO objectDao;
+
+    @Autowired
+    private ApplicationContext appcontext;
+    
     IntersectConfig intersectConfig;
     LinkedBlockingQueue<GridCacheReader> gridReaders = null;
     int gridGroupCount = 0;
@@ -157,6 +161,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
             if (layer != null) {
                 if (layer.isShape() && (f != null && f.getClasses() == null)) {
+                    ObjectDAO objectDao = (ObjectDAO) appcontext.getBean("objectDao");
                     Objects o = objectDao.getObjectByIdAndLocation("cl" + layer.getId(), longitude, latitude);
                     if (o != null) {
                         Map m = new HashMap();
@@ -287,6 +292,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                             sb.append(s);
                         }
                     } else {
+                        ObjectDAO objectDao = (ObjectDAO) appcontext.getBean("objectDao");
                         Objects o = objectDao.getObjectByIdAndLocation(f.getFieldId(), longitude, latitude);
                         if (o != null) {
                             sb.append(o.getName());

@@ -55,6 +55,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -631,8 +632,9 @@ public class ObjectDAOImpl implements ObjectDAO {
         return objects;
     }
 
-    @Override
+    
     @Transactional
+    @Override
     public String createUserUploadedObject(String wkt, String name, String description, String userid) {
 
         double area_km = SpatialUtil.calculateArea(wkt) / 1000.0 / 1000.0;
@@ -646,12 +648,10 @@ public class ObjectDAOImpl implements ObjectDAO {
             String sql2 = "INSERT INTO uploaded_objects_metadata (pid, id, user_id, time_last_updated) values (currval('objects_id_seq'::regclass), currval('uploaded_objects_metadata_id_seq'::regclass), ?, now())";
             jdbcTemplate.update(sql2, userid);
 
-            updateObjectNames();
-
             // get pid and id of new object
             String sql3 = "SELECT MAX(pid) from uploaded_objects_metadata";
             int pid = jdbcTemplate.queryForInt(sql3);
-
+            
             return Integer.toString(pid);
         } catch (DataAccessException ex) {
             throw new IllegalArgumentException("Error writing to database. Check validity of wkt.", ex);
@@ -694,7 +694,8 @@ public class ObjectDAOImpl implements ObjectDAO {
         return (rowsAffected > 0);
     }
 
-    private void updateObjectNames() {
+    @Async
+    public void updateObjectNames() {
         String sql = "INSERT INTO obj_names (name)" + "  SELECT lower(objects.name) FROM fields, objects" + "  LEFT OUTER JOIN obj_names ON lower(objects.name)=obj_names.name"
                 + "  WHERE obj_names.name IS NULL" + "  AND fields.namesearch = true" + " AND fields.id = objects.fid" + " GROUP BY lower(objects.name);"
                 + "  UPDATE objects SET name_id=obj_names.id FROM obj_names WHERE name_id IS NULL AND lower(objects.name)=obj_names.name;";

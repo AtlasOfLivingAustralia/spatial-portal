@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.ala.layers.dto.Objects;
 import org.ala.layers.util.LayerFilter;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * DAO for the Object object
@@ -76,4 +77,7 @@ public interface ObjectDAO {
     public List<Map<String, Object>> pointsOfInterestGeometryIntersect(String wkt);
 
     public List<Map<String, Object>> pointsOfInterestObjectIntersect(String objectPid);
+    
+    @Async
+    public void updateObjectNames();
 }
