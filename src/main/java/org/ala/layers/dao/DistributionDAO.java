@@ -94,9 +94,18 @@ public interface DistributionDAO {
      *            values are maps containing the point's decimal latitude (with
      *            key "decimalLatitude") and decimal longitude (with key
      *            "decimalLongitude").
+     *
      * @return A map containing the distance outside the expert distribution for
      *         each point which falls outside the area defined by the
      *         distribution. Keys are point ids, values are the distances
      */
     public Map<String, Double> identifyOutlierPointsForDistribution(String lsid, Map<String, Map<String, Double>> points);
+    
+  
+    /**
+     * Returns the number of vertices that make up the distribution for the supplied lsid
+     * @param lsid
+     * @return
+     */
+    public int getNumberOfVertices(String lsid);
 }

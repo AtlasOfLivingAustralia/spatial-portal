@@ -132,7 +132,7 @@ public class DistributionDAOImpl implements DistributionDAO {
     
     @Override
     public Distribution getDistributionBySpcode(long spcode, String type) {
-        String sql = SELECT_CLAUSE + ", ST_AsText(the_geom) AS geometry FROM " + viewName + " WHERE spcode= ? AND type= ?";
+        String sql = SELECT_CLAUSE + ", ST_AsText(the_geom) AS geometry, ST_AsText(bounding_box) as bounding_box FROM " + viewName + " WHERE spcode= ? AND type= ?";
         List<Distribution> d = updateWMSUrl(jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Distribution.class), (double) spcode, type));
         if (d.size() > 0) {
             return d.get(0);
@@ -218,7 +218,7 @@ public class DistributionDAOImpl implements DistributionDAO {
     
     @Override
     public List<Distribution> getDistributionByLSID(String[] lsids) {
-        String sql = SELECT_CLAUSE + ", ST_AsText(the_geom) AS geometry FROM " + viewName + " WHERE lsid IN (:lsids)";
+        String sql = SELECT_CLAUSE + ", ST_AsText(the_geom) AS geometry, ST_AsText(bounding_box) as bounding_box FROM " + viewName + "  WHERE lsid IN (:lsids)";
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("lsids", Arrays.asList(lsids));
         params.put("type", Distribution.EXPERT_DISTRIBUTION);
@@ -384,17 +384,24 @@ public class DistributionDAOImpl implements DistributionDAO {
         }
         return distributions;
     }
+    
+    @Override    
+    public int getNumberOfVertices(String lsid){
+        return jdbcTemplate.queryForInt("SELECT npoints(ds.the_geom) from distributionshapes ds join distributiondata dd on dd.geom_idx = ds.id where dd.lsid=? " , lsid);        
+    }
 
     @Override
     @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
     public Map<String, Double> identifyOutlierPointsForDistribution(String lsid, Map<String, Map<String, Double>> points) {
         Map<String, Double> outlierDistances = new HashMap<String, Double>();
-
+        String firstId = points.keySet().iterator().next(); 
+        logger.debug("Starting to identifyOutlierPointsForDistribution " + lsid + " " + firstId);
         // get the id of the shape in the distributionshapes table associated
         // with the lsid
         try {
-            int expertDistributionShapeId = jdbcTemplate.queryForInt("SELECT geom_idx from distributiondata WHERE lsid = ?", lsid);
-
+            final int expertDistributionShapeId = jdbcTemplate.queryForInt("SELECT geom_idx from distributiondata WHERE lsid = ?", lsid);
+            logger.debug("Finished getting the geomid for " + firstId);
+            
             // if no points were supplied (empty map) then just return an empty
             // result map
             if (points.isEmpty()) {
@@ -403,6 +410,9 @@ public class DistributionDAOImpl implements DistributionDAO {
 
             // Create temporary table for the point information
             jdbcTemplate.update("CREATE TEMPORARY TABLE temp_exp_dist_outliers (id text PRIMARY KEY, point geography) ON COMMIT DROP");
+            
+            
+            logger.debug("Finished creating the temporary table  for " + firstId);
 
             // Insert all the points into the temporary table, along with the
             // uuids
@@ -419,6 +429,7 @@ public class DistributionDAOImpl implements DistributionDAO {
                     }
                 }
             }
+            logger.debug("Finished inserting the points into the temp table for " + firstId + " " + jdbcTemplate.queryForInt("select count(*) from temp_exp_dist_outliers",(java.util.Map<String, String>)null));
 
             // return the distance of all points that are located outside the
             // expert distribution, and also are inside the bounding box for the
@@ -427,7 +438,9 @@ public class DistributionDAOImpl implements DistributionDAO {
             List<Map<String, Object>> outlierDistancesQueryResult = jdbcTemplate
                     .queryForList(
                             "SELECT id, ST_DISTANCE(point, (SELECT Geography(the_geom) from distributionshapes where id = ?)) as distance from temp_exp_dist_outliers where (SELECT bounding_box FROM distributiondata where geom_idx = ?) IS NULL OR ST_Intersects(point, Geography((SELECT bounding_box FROM distributiondata where geom_idx = ?)))",
-                            expertDistributionShapeId, expertDistributionShapeId, expertDistributionShapeId);
+                             expertDistributionShapeId, expertDistributionShapeId, expertDistributionShapeId);
+            
+            logger.debug("Finished running query to obtain outliers for " + firstId);
 
             for (Map<String, Object> queryResultRow : outlierDistancesQueryResult) {
                 String uuid = (String) queryResultRow.get("id");
@@ -438,6 +451,7 @@ public class DistributionDAOImpl implements DistributionDAO {
                     outlierDistances.put(uuid, distance);
                 }
             }
+            logger.debug("Finished populating the map for " + firstId);
         } catch (EmptyResultDataAccessException ex) {
             throw new IllegalArgumentException("No expert distribution associated with lsid " + lsid, ex);
         }

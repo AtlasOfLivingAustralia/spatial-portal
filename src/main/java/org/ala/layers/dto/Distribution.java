@@ -62,6 +62,7 @@ public class Distribution {
     String caab_family_number;
     String data_resource_uid;
     String image_quality;
+    String bounding_box;
 
     public String getData_resource_uid() {
         return data_resource_uid;
@@ -335,6 +336,15 @@ public class Distribution {
 
     public void setGroup_name(String group_name) {
         this.group_name = group_name;
+    }
+    
+
+    public String getBounding_box() {
+        return bounding_box;
+    }
+
+    public void setBounding_box(String bounding_box) {
+        this.bounding_box = bounding_box;
     }
 
     @Override
