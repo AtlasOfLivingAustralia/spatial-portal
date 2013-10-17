@@ -11,6 +11,12 @@
     <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
     <url>http://www.ala.org.au</url>
     <dependencies>
+    <!-- Sun's DI API -->
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
+    </dependency>
         <!-- alaspatial styles -->        
         <!--dependency>
             <groupId>org.ala.spatial</groupId>
