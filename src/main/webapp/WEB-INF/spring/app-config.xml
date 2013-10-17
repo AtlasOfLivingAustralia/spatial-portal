@@ -10,10 +10,16 @@
 	<context:component-scan base-package="org.ala.spatial" />
 
 	<!-- Application Message Bundle -->
-	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+	<!-- <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
 		<property name="basename" value="/WEB-INF/messages/messages" />
 		<property name="cacheSeconds" value="0" />
-	</bean>
+	</bean> -->
+	
+	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basenames" value="/WEB-INF/messages,http://biocache.ala.org.au/ws/facets/i18n"/>
+        <property name="cacheSeconds" value="300"/><!-- loads changes without restarting container -->
+        <property name="useCodeAsDefaultMessage" value="true"/>
+    </bean>
 
 	<!-- Configures Spring MVC -->
 	<import resource="mvc-config.xml" />

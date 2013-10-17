@@ -29,10 +29,12 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import javax.inject.Inject;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.ala.spatial.data.Facet;
+import org.ala.spatial.data.FacetCache;
 import org.ala.spatial.data.Legend;
 import org.ala.spatial.data.QueryField;
 import org.ala.spatial.util.CommonData;
@@ -50,6 +52,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class WMSService {
     final static int HIGHLIGHT_RADIUS = 3;
+    @Inject
+    private FacetCache facetCache;
 
     /*
     http://spatial.ala.org.au/geoserver/wms/reflect?styles=&format=image/png&
@@ -431,6 +435,9 @@ public class WMSService {
     public String reloadConfig() {
         //signal for reload
         ConfigurationLoaderStage1.loaders.get(0).interrupt();
+        
+        //reload the facet cache
+        facetCache.reloadCache();
 
         //return summary
         StringBuilder html = new StringBuilder();

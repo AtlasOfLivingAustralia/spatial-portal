@@ -449,6 +449,7 @@ class SpeciesListEvent implements EventListener {
     int steps_to_skip;
     boolean[] geospatialKosher;
     boolean chooseEndemic =false;
+    String extraParams;
 
     public SpeciesListEvent(MapComposer mc, String polygonLayerName) {
         this.mc = mc;
@@ -460,11 +461,15 @@ class SpeciesListEvent implements EventListener {
         this(mc, polygonLayerName, steps_to_skip, geospatialKosher,false);
     }
     public SpeciesListEvent(MapComposer mc, String polygonLayerName, int steps_to_skip, boolean[] geospatialKosher, boolean chooseEndemic ) {
+        this(mc, polygonLayerName, steps_to_skip, geospatialKosher, chooseEndemic, null);
+    }
+    public SpeciesListEvent(MapComposer mc, String polygonLayerName, int steps_to_skip, boolean[] geospatialKosher, boolean chooseEndemic, String extraParams ) {
         this.mc = mc;
         this.polygonLayerName = polygonLayerName;
         this.steps_to_skip = steps_to_skip;
         this.geospatialKosher = geospatialKosher;
         this.chooseEndemic = chooseEndemic;
+        this.extraParams = extraParams;
     }
 
     @Override
@@ -475,9 +480,13 @@ class SpeciesListEvent implements EventListener {
         } else {
             params.put("polygonLayerName", "none");
         }
+        if(extraParams != null){
+            params.put("extraParams", extraParams);
+        }
         AddToolSpeciesListComposer window = (AddToolSpeciesListComposer) mc.openModal("WEB-INF/zul/AddToolSpeciesList.zul", params, "addtoolwindow");
         window.setGeospatialKosherCheckboxes(geospatialKosher);
         window.setChooseEndemic(chooseEndemic);
+        
 
         int skip = steps_to_skip;
         while (skip > 0) {

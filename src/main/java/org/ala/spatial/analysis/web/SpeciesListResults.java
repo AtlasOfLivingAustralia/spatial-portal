@@ -43,14 +43,16 @@ public class SpeciesListResults extends UtilityComposer {
     SelectedArea selectedArea;
     boolean[] geospatialKosher;
     boolean chooseEndemic;
+    //Support for extra filters to be applied - allows facets to be listed
+    String extraParams;
 
     @Override
     public void afterCompose() {
-        super.afterCompose();
-
+        super.afterCompose();        
         selectedArea = (SelectedArea) Executions.getCurrent().getArg().get("selectedarea");
         geospatialKosher = (boolean[]) Executions.getCurrent().getArg().get("geospatialKosher");
         chooseEndemic = (Boolean) Executions.getCurrent().getArg().get("chooseEndemic");
+        extraParams = (String) Executions.getCurrent().getArg().get("extraParams");
 
         populateList();
     }
@@ -62,7 +64,7 @@ public class SpeciesListResults extends UtilityComposer {
         }
 
         try {
-            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, geospatialKosher);
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, extraParams, false, geospatialKosher);
 
             if (sq.getSpeciesCount() <= 0) {
                 getMapComposer().showMessage("No species records in the active area.");

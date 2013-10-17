@@ -16,7 +16,7 @@
         <a sclass="fancybox-close" onClick="popup_results.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp()" style="display: inline" />
         <vbox style="padding-left:10px">
-        <n:table border="0" >
+        <n:table border="0"  style="display:none">
             <n:tr height="25px" >
                 <n:td width="225px">
                     <label value="Area (sq km)" />
@@ -153,7 +153,15 @@
                     <button label="Map all" id="mapPointsOfInterest" visible="false" sclass="goButton"/>
                 </n:td>
             </n:tr>
-        </n:table>
+        </n:table>        
+        <grid id="facetsValues" width="520px" height="400px">
+            <columns visible="false"><!-- make it invisible -->
+                <column width="150px"/><!-- specify width here -->
+                <column width="75px"/>
+                <column width="150px"/>
+                <column width="125px"/>
+            </columns>
+        </grid>
         <separator />
 
         <div sclass="wButtons">

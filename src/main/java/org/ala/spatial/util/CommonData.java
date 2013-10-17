@@ -49,6 +49,8 @@ public class CommonData {
     static final String MAX_AREA_FOR_ENDEMIC="max_area_endemic";
     static final String EXTRA_DOWNLOAD_FIELDS="occurrence_extra_download";
     static final String DISPLAY_POINTS_OF_INTEREST="display_points_of_interest";
+    static final String CUSTOM_FACETS="custom_facets";
+    static final String AREA_REPORT_FACETS="area_report_facets";
     //(2) for EnvironmentalList
     static JSONObject distances;
     static HashMap<String, HashMap<String, Double>> distances_map;
@@ -107,11 +109,13 @@ public class CommonData {
     static public int maxEndemicArea;
     static public String extraDownloadFields="coordinateUncertaintyInMeters";
     static public boolean displayPointsOfInterest;
+    static public String[] customFacets;
+    static public String[] areaReportFacets;
 
     /*
      * initialize common data from geoserver and satserver
      */
-    static public void init(Map<String, String> settings) {
+    static public void init(Map<String, String> settings) {        
         CommonData.settings = settings;
 
         //Common
@@ -138,6 +142,8 @@ public class CommonData {
         print_output_path = settings.get("print_output_path");
         print_output_url = settings.get("print_output_url");
         facetNameExceptions = parseFacetNameExceptions(settings.get("facet_name_exceptions"));
+        customFacets = settings.containsKey(CUSTOM_FACETS)?settings.get(CUSTOM_FACETS).split(","):new String[]{};
+        areaReportFacets = settings.containsKey(AREA_REPORT_FACETS)?settings.get(AREA_REPORT_FACETS).split(","):new String[]{};
         if(settings.containsKey(EXTRA_DOWNLOAD_FIELDS)) {
             extraDownloadFields = settings.get(EXTRA_DOWNLOAD_FIELDS);
         }

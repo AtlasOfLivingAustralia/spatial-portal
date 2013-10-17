@@ -6,6 +6,10 @@ package org.ala.spatial.data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeSet;
 
 /**
@@ -13,7 +17,8 @@ import java.util.TreeSet;
  * @author Adam
  */
 public class QueryField implements Serializable {
-
+    /** The sub group that the query field belongs to.  Allows items to be group under common headings */
+    GroupType group= GroupType.CUSTOM;
     String name;
     String displayName;
     boolean store;
@@ -22,6 +27,40 @@ public class QueryField implements Serializable {
     public enum FieldType {
 
         LONG, INT, STRING, FLOAT, DOUBLE, AUTO
+    }
+    
+    public enum GroupType{
+        TAXONOMIC("Taxonomic", 1),
+        GEOSPATIAL("Geospatial", 2),
+        TEMPORAL("Temporal", 3),
+        RECORD_DETAILS("Record Details", 4),
+        ATTRIBUTION("Attribution", 5),
+        RECORD_ASSERTIONS("Record Assertions", 6),
+        CUSTOM("Custom", 0);
+        private static final Map<String, GroupType> nameLookup = new HashMap<String, GroupType>();
+        static {
+            for (GroupType mt : EnumSet.allOf(GroupType.class)) {
+                    nameLookup.put(mt.name, mt);
+                }
+            }
+        
+        private String name;
+        private Integer order;
+        GroupType(String name, Integer order){
+            this.name = name;
+            this.order = order;
+        }
+        public Integer getOrder(){
+            return order;
+        }
+        public String getName(){
+            return name;
+        }
+       
+        public static GroupType getGroupType(String group){
+            return nameLookup.get(group);
+        }
+        
     }
     FieldType fieldType = FieldType.AUTO;
     long[] longData = null;
@@ -45,17 +84,25 @@ public class QueryField implements Serializable {
         store = false;
         this.fieldType = fieldType;
     }
-
     public QueryField(String name, String displayName, FieldType fieldType) {
         this.name = name;
-        this.displayName = displayName;
+        this.displayName = displayName;        
         store = false;
         this.fieldType = fieldType;
     }
 
-    public QueryField(String name, String displayName, FieldType fieldType, boolean store) {
+    public QueryField(String name, String displayName, GroupType group, FieldType fieldType) {
         this.name = name;
         this.displayName = displayName;
+        this.group = group;
+        store = false;
+        this.fieldType = fieldType;
+    }
+
+    public QueryField(String name, String displayName, GroupType group, FieldType fieldType, boolean store) {
+        this.name = name;
+        this.displayName = displayName;
+        this.group = group;
         this.store = store;
         this.fieldType = fieldType;
     }
@@ -252,6 +299,37 @@ public class QueryField implements Serializable {
 
         fieldType = determinedType;
     }
+    
+    
+        
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("QueryField [group=");
+        builder.append(group);
+        builder.append(", name=");
+        builder.append(name);
+        builder.append(", displayName=");
+        builder.append(displayName);
+        builder.append(", store=");
+        builder.append(store);
+        builder.append(", fieldType=");
+        builder.append(fieldType);
+        builder.append(", legend=");
+        builder.append(legend);
+        builder.append("]");
+        return builder.toString();
+    }
+
+    /**
+     * @return the group
+     */
+    public GroupType getGroup() {
+        return group;
+    }
 
     public FieldType getFieldType() {
         return fieldType;
@@ -344,5 +422,23 @@ public class QueryField implements Serializable {
         } else {
             return LegendObject.DEFAULT_COLOUR;
         }
+    }
+    /**
+     * 
+     * Orders the Query field based on the group and then supplied order.
+     * 
+     * @author Natasha Carter (natasha.carter@csiro.au)
+     *
+     */
+    public static class QueryFieldComparator implements Comparator<QueryField>{
+
+        @Override
+        public int compare(QueryField qf1, QueryField qf2) {            
+            if(qf1.group == null || qf2.group == null){
+                return 0;
+            }
+            return qf1.group.getOrder().compareTo(qf2.group.getOrder());
+        }
+        
     }
 }

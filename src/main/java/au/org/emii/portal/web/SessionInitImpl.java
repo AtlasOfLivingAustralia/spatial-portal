@@ -17,11 +17,14 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.zkoss.util.resource.Labels;
 import org.zkoss.zk.ui.Desktop;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.util.DesktopInit;
 import org.zkoss.zk.ui.util.SessionInit;
+
+import zk.extra.BiocacheLabelLocator;
 
 public class SessionInitImpl implements SessionInit, DesktopInit {
 
@@ -71,6 +74,7 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
 
     @Override
     public void init(Session session, Object request) throws Exception {
+        Labels.register(new BiocacheLabelLocator());
         logger.debug("* SESSION INIT:");
 
         // obtain stage1 loader - check for errors
@@ -127,6 +131,8 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
 
     @Override
     public void init(Desktop desktop, Object request) throws Exception {
+        //NC 20131015 - register the BiocacheLabelLocator as a source for URL style i18n labels
+        Labels.register(new BiocacheLabelLocator());
         logger.debug("* INIT Desktop");
         Session session = desktop.getSession();
         

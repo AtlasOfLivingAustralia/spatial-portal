@@ -47,6 +47,9 @@ public class QueryUtil {
     }
 
     public static Query queryFromSelectedArea(Query baseQuery, SelectedArea sa, boolean forMapping, boolean[] geospatialKosher) {
+        return queryFromSelectedArea(baseQuery, sa, null, forMapping, geospatialKosher);
+    }
+    public static Query queryFromSelectedArea(Query baseQuery, SelectedArea sa, String extraParams, boolean forMapping, boolean[] geospatialKosher) {
         if (sa == null) {
             return baseQuery.newWkt(null, forMapping);
         }
@@ -55,7 +58,7 @@ public class QueryUtil {
             if (sa.getMapLayer().getData("facets") != null) {
                 ArrayList<Facet> facets = (ArrayList<Facet>) sa.getMapLayer().getData("facets");
                 if (baseQuery == null) {
-                    q = new BiocacheQuery(null, null, null, facets, forMapping, geospatialKosher);
+                    q = new BiocacheQuery(null, null, extraParams, facets, forMapping, geospatialKosher);
                 } else {
                     q = baseQuery.newFacets(facets, forMapping);
                 }
@@ -63,7 +66,7 @@ public class QueryUtil {
         }
         if (q == null) {
             if (baseQuery == null) {
-                q = new BiocacheQuery(null, sa.getWkt(), null, null, false, geospatialKosher);
+                q = new BiocacheQuery(null, sa.getWkt(), extraParams, null, false, geospatialKosher);
             } else {
                 q = baseQuery.newWkt(sa.getWkt(), forMapping);
             }

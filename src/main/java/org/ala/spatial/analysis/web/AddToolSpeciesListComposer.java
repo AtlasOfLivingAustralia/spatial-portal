@@ -18,6 +18,7 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
     int generation_count = 1;
     String layerLabel = "";
     String legendPath = "";
+    String extraParams;
 
     @Override
     public void afterCompose() {
@@ -28,6 +29,7 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
 
         this.loadAreaLayers();
         this.updateWindowTitle();
+        extraParams = (String) Executions.getCurrent().getArg().get("extraParams");
     }
 
     @Override
@@ -53,6 +55,10 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
         hm.put("selectedarea", sa);
         hm.put("geospatialKosher", getGeospatialKosher());
         hm.put("chooseEndemic", Boolean.valueOf(chkEndemicSpecies.isChecked()));
+        
+        if(extraParams != null){
+            hm.put("extraParams",extraParams);
+        }        
         SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", getMapComposer(), hm);
         try {
             window.doModal();
