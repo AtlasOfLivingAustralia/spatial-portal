@@ -16,150 +16,18 @@
         <a sclass="fancybox-close" onClick="popup_results.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp()" style="display: inline" />
         <vbox style="padding-left:10px">
-        <n:table border="0"  style="display:none">
-            <n:tr height="25px" >
-                <n:td width="225px">
-                    <label value="Area (sq km)" />
-                </n:td>
-                <n:td width="70px">
-                    <label id="lblArea" />
-                </n:td>
-                <n:td>
-                    <n:a class="underline" n:onClick="loadHelp('note-area-sq-km')">Info</n:a>
-                </n:td>
-            </n:tr>
-            <n:tr height="18px" >
-                <n:td>
-                    <label value="Number of species" /><label id="lblWorldNoteSpecies" value="*" />
-                </n:td>
-                <n:td>
-                    <label id="results_label2_species" style="cursor:pointer;" />
-                </n:td>
-            </n:tr>
-            <n:tr height="18px" >
-                <n:td>
-                    <label value="Number of species - spatially valid only" />
-                </n:td>
-                <n:td>
-                    <label id="results_label2_species_kosher" style="cursor:pointer;" />
-                </n:td>
-            </n:tr>
-            <n:tr height="18px" if="${arg.includeEndemic}">
-                <n:td>
-                    <label value="Number of endemic species" />
-                </n:td>
-                <n:td>
-                    <label id="results_label2_endemic_species" style="cursor:pointer;" />
-                </n:td>
-            </n:tr>
-            <n:tr height="18px" if="${arg.includeEndemic}" >
-                <n:td>
-                    <label value="Number of endemic species - spatially valid only" />
-                </n:td>
-                <n:td>
-                    <label id="results_label2_endemic_species_kosher" style="cursor:pointer;" />
-                </n:td>
-            </n:tr>
-            <n:tr height="18px" >
-                <n:td>                    
-                    <label value="Occurrences" /><label id="lblWorldNoteOccurrences" value="*" />
-                </n:td>
-                <n:td>
-                    <label id="results_label2_occurrences" style="cursor:pointer;" />
-                </n:td>
-                <n:td>
-                    <button label="Map all" id="mapspecies" visible="false" sclass="goButton"/>
-                </n:td>
-                <n:td>
-                    <button label="Sample" id="sample" visible="false" sclass="goButton"/>
-                </n:td>
-                <n:td>
-                    <a label="View records" id="viewrecords" visible="false" target="_blank"/>
-                </n:td>
-            </n:tr>
-            <n:tr height="18px" >
-                <n:td>
-                    <label value="Occurrences - spatially valid only" />
-                </n:td>
-                <n:td>
-                    <label id="results_label2_occurrences_kosher" style="cursor:pointer;" />
-                </n:td>
-                <n:td>
-                    <button label="Map all" id="mapspecieskosher" visible="false" sclass="goButton"/>
-                </n:td>
-                <n:td>
-                    <button label="Sample" id="samplekosher" visible="false" sclass="goButton"/>
-                </n:td>
-                <n:td>
-                    <a label="View records" id="viewrecordskosher" visible="false" target="_blank"/>
-                </n:td>
-            </n:tr>
+        
             <div id="divWorldNote" visible="false">
                 <label value="* World area includes records without coordinates" />
             </div>
-            <n:tr height="18px" >
-                <n:td>
-                 Expert distributions
-                </n:td>
-                <n:td>
-                    <label id="sdLabel" style="cursor:pointer;" />
-                </n:td>
-            </n:tr>
-            <n:tr height="18px" >
-                <n:td>
-                    <label value="Checklist areas" />
-                </n:td>
-                <n:td>
-                    <label id="aclLabel" style="cursor:pointer;" />
-                </n:td>
-            </n:tr>
-            <n:tr height="18px" >
-                <n:td>
-                    <label value="Checklist species" />
-                </n:td>
-                <n:td>
-                    <label id="clLabel" style="cursor:pointer;" />
-                </n:td>
-            </n:tr>
-            <n:tr height="18px" id="biostorrow" >
-                <n:td width="225px">
-                   <html><![CDATA[ <u><div style="cursor:pointer;" class="z-label"
-                        onclick="zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', 'http://www.biostor.org\nBiostor documents'));"
-                    >Biostor documents</div></u> ]]></html>
-                </n:td>
-                <n:td width="80px">
-                    <label id="lblBiostor" style="cursor:pointer;" />
-                </n:td>
-            </n:tr>
-            <n:tr height="18px" >
-                <n:td>
-                    <label value="Gazetteer points" />
-                </n:td>
-                <n:td>
-                    <label id="gazLabel" style="cursor:pointer;" />
-                </n:td>
-                <n:td>
-                    <button label="Map all" id="mapGazPoints" visible="false" sclass="goButton"/>
-                </n:td>
-            </n:tr>
-            <n:tr height="18px" if="${arg.displayPointsOfInterest}">
-                <n:td>
-                    <label value="Points of interest" />
-                </n:td>
-                <n:td>
-                    <label id="poiLabel" style="cursor:pointer;" />
-                </n:td>
-                <n:td>
-                    <button label="Map all" id="mapPointsOfInterest" visible="false" sclass="goButton"/>
-                </n:td>
-            </n:tr>
-        </n:table>        
+                   
         <grid id="facetsValues" width="520px" height="400px">
+        <!-- set up the columns widths -->
             <columns visible="false"><!-- make it invisible -->
-                <column width="150px"/><!-- specify width here -->
-                <column width="75px"/>
                 <column width="150px"/>
-                <column width="125px"/>
+                <column width="100px"/>
+                <column width="150px"/>
+                <column width="100px"/>
             </columns>
         </grid>
         <separator />
