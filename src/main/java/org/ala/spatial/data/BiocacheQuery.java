@@ -31,14 +31,19 @@ import org.ala.spatial.sampling.SimpleRegion;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Autowire;
 
 /**
  * TODO NC 2013-08-15 - Remove all the references to the "include null" gesopatially kosher. I have removed from the UI but I didn't want to 
  * break the build before the next release
  * @author Adam
  */
+//@Configurable(autowire = Autowire.BY_TYPE)
 public class BiocacheQuery implements Query, Serializable {
-
+//    @Autowired
+//    FacetCache facetCache;
     static final String SAMPLING_SERVICE_CSV_GZIP = "/webportal/occurrences.gz?";
     static final String SAMPLING_SERVICE = "/webportal/occurrences?";
     static final String SPECIES_LIST_SERVICE = "/webportal/species?";
@@ -1048,7 +1053,7 @@ public class BiocacheQuery implements Query, Serializable {
                 String facetDisplayName = jsonObject.getString("displayName");
 
                 System.out.println("Adding custom index : " + arrayElement);
-                customFacets.add(new QueryField(facetName, facetDisplayName, QueryField.FieldType.STRING));
+                customFacets.add(new QueryField(facetName, facetDisplayName, QueryField.GroupType.CUSTOM, QueryField.FieldType.STRING));
             }
         } catch (Exception e){
             //System.err.println("Unable to load custom facets for : " + dr);
@@ -1059,73 +1064,14 @@ public class BiocacheQuery implements Query, Serializable {
 
     @Override
     public ArrayList<QueryField> getFacetFieldList() {
-      //TODO NC20130516: This facet lists should be obtained from the biocache-service
         if (facetFieldList == null) {
             ArrayList<QueryField> fields = new ArrayList<QueryField>();
             if(supportsDynamicFacets){
                 fields.addAll(retrieveCustomFacets());
             }
-            // Taxonomic
-            fields.add(new QueryField("taxon_name", "Scientific name", QueryField.FieldType.STRING));
-            fields.add(new QueryField("raw_taxon_name", "Scientific name (unprocessed)", QueryField.FieldType.STRING));
-            fields.add(new QueryField("subspecies_name", "Subspecies", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("species", "Species", QueryField.FieldType.STRING));
-            fields.add(new QueryField("genus", "Genus", QueryField.FieldType.STRING));
-            fields.add(new QueryField("family", "Family", QueryField.FieldType.STRING));
-            fields.add(new QueryField("order", "Order", QueryField.FieldType.STRING));
-            fields.add(new QueryField("class", "Class", QueryField.FieldType.STRING));
-            fields.add(new QueryField("phylum", "Phylum", QueryField.FieldType.STRING));
-            fields.add(new QueryField("kingdom", "Kingdom", QueryField.FieldType.STRING));
-            fields.add(new QueryField("species_group", "Lifeform", QueryField.FieldType.STRING));
-            fields.add(new QueryField("rank", "Identified to rank", QueryField.FieldType.STRING));
-            fields.add(new QueryField("interaction", "Species interaction", QueryField.FieldType.INT));
-            // Geospatial
-            fields.add(new QueryField("coordinate_uncertainty", "Spatial uncertainty (metres)", QueryField.FieldType.INT));
-            fields.add(new QueryField("sensitive", "Sensitive", QueryField.FieldType.STRING));
-            fields.add(new QueryField("state_conservation", "State conservation status", QueryField.FieldType.STRING));
-            fields.add(new QueryField("raw_state_conservation", "State conservation (unprocessed)", QueryField.FieldType.STRING));
-            fields.add(new QueryField("places", "LGA boundaries", QueryField.FieldType.STRING));
-            fields.add(new QueryField("state", "Australian States and Territories", QueryField.FieldType.STRING));
-            fields.add(new QueryField("country", "Country boundaries", QueryField.FieldType.STRING));
-            fields.add(new QueryField("ibra", "IBRA regions", QueryField.FieldType.STRING));
-            fields.add(new QueryField("imcra", "IMCRA regions", QueryField.FieldType.STRING));
-            fields.add(new QueryField("cl1918", "Dynamic land cover", QueryField.FieldType.STRING));
-            fields.add(new QueryField("cl617", "Vegetation types - native", QueryField.FieldType.STRING));
-            fields.add(new QueryField("cl620", "Vegetation types - present", QueryField.FieldType.STRING));
-            fields.add(new QueryField("geospatial_kosher", "Spatial Validity", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("geospatial_kosher", "Location Quality", QueryField.FieldType.STRING));
-            // Temporal
-            fields.add(new QueryField("month", "Month", QueryField.FieldType.STRING));
-            fields.add(new QueryField("occurrence_year", "Period (by equal counts)", QueryField.FieldType.INT));
-            fields.add(new QueryField("year", "Year (by highest counts)", QueryField.FieldType.STRING));
-            fields.add(new QueryField("occurrence_year_decade", "Decade", QueryField.FieldType.STRING));
-            // Record details
-            fields.add(new QueryField("basis_of_record", "Record type", QueryField.FieldType.STRING));
-            fields.add(new QueryField("type_status", "Specimen type", QueryField.FieldType.STRING));
-            fields.add(new QueryField("multimedia", "Multimedia", QueryField.FieldType.STRING));
-            fields.add(new QueryField("collector", "Collector", QueryField.FieldType.STRING));
-            // Attribution
-            fields.add(new QueryField("data_resource", "Dataset", QueryField.FieldType.STRING));
-            fields.add(new QueryField("data_provider", "Data provider", QueryField.FieldType.STRING));
-            fields.add(new QueryField("collection_name", "Collection", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("collection_uid", "Collection", QueryField.FieldType.STRING));
-            fields.add(new QueryField("institution_name", "Institution", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("institution_code_name", "Institution", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("institution_uid", "Institution", QueryField.FieldType.STRING));
-            // Record Assertions
-            fields.add(new QueryField("assertions", "Record Issues", QueryField.FieldType.STRING));
-            fields.add(new QueryField("outlier_layer", "Outlier for layer", QueryField.FieldType.STRING));
-            fields.add(new QueryField("outlier_layer_count", "Outlier layer count", QueryField.FieldType.STRING));
-            fields.add(new QueryField("taxonomic_issue", "Taxon identification issue", QueryField.FieldType.STRING));
-            fields.add(new QueryField("establishment_means", "Cultivation status", QueryField.FieldType.STRING));            
-            fields.add(new QueryField("duplicate_status", "Duplicate status", QueryField.FieldType.STRING));            
+            //NC: Load all the facets fields from the cache which is populated from the biocache=service
+            fields.addAll(FacetCacheImpl.getFacetQueryFieldList());
 
-            //fields.add(new QueryField("biogeographic_region", "Biogeographic Region", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("species_guid", "Species", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("interaction", "Species Interaction", QueryField.FieldType.INT));
-
-            //fields.add(new QueryField("cl678", "Land use", QueryField.FieldType.STRING));
-            //fields.add(new QueryField("cl619", "Vegetation - condition", QueryField.FieldType.STRING));
             for (int i = 0; i < fields.size(); i++) {
                 fields.get(i).setStored(true);
             }
@@ -1214,7 +1160,7 @@ public class BiocacheQuery implements Query, Serializable {
                 lo = new BiocacheLegendObject(colourmode, s);
 
                 //test for exceptions
-                if (!colourmode.contains(",") && (colourmode.equals("occurrence_year") || colourmode.equals("coordinate_uncertainty"))) {
+                if (!colourmode.contains(",") && (colourmode.equals("uncertainty") || colourmode.equals("decade") || colourmode.equals("occurrence_year") || colourmode.equals("coordinate_uncertainty"))) {
                     lo = ((BiocacheLegendObject) lo).getAsIntegerLegend();
 
                     //apply cutpoints to colourMode string

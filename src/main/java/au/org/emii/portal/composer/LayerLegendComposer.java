@@ -8,6 +8,7 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryField;
 import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.LegendMaker;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -313,80 +315,38 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         //Query q = (Query) m.getData("query");
 //        Object [] o = (Object []) RecordsLookup.getData(q.getQ());
 //        ArrayList<QueryField> fields = (ArrayList<QueryField>) o[1];
+        
+        
         if (q != null) {
-            ArrayList<QueryField> fields = q.getFacetFieldList();
-//            Comboitem seperator = new Comboitem("seperator");
-//            seperator.setLabel("------------------Taxonomic------------------");
-//            seperator.setParent(cbColour);
-//            seperator.setDisabled(true);
+            
+            ArrayList<QueryField> fields = query.getFacetFieldList();
+            Collections.sort(fields, new QueryField.QueryFieldComparator());
+            Comboitem seperator = new Comboitem("seperator");
+            String lastGroup = null;
+      
 
-            if (!fields.get(0).equals("taxon_name")) {
-                Comboitem seperator1 = new Comboitem("seperator");
-                seperator1.setLabel("------------------Custom fields------------------");
-                seperator1.setParent(cbColour);
-                seperator1.setDisabled(true);
-            }
-
-
-            for (int i = 0; i < fields.size(); i++) {
-                //TODO: make changes to support biocache year and month
+            for(QueryField field : fields){
                 if(q != null
-                        && fields.get(i).getFieldType() == QueryField.FieldType.STRING
+                        && field.getFieldType() == QueryField.FieldType.STRING
                         && (q instanceof UploadQuery 
-                            || !(fields.get(i).getName().equalsIgnoreCase("occurrence_year")
-                            || fields.get(i).getName().equalsIgnoreCase("coordinate_uncertainty")
-                            || fields.get(i).getName().equalsIgnoreCase("month")))) {
-                    System.out.println("adding to combobox: '" + fields.get(i).getName() + "'");
-                    /*Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
-                    ci.setValue(fields.get(i).getName());
+                            || !(field.getName().equalsIgnoreCase("occurrence_year")
+                            || field.getName().equalsIgnoreCase("coordinate_uncertainty")
+                            || field.getName().equalsIgnoreCase("month")))) {
+                    String newGroup = field.getGroup().getName();
+                    if(!newGroup.equals(lastGroup)){
+                        Comboitem sep = new Comboitem("seperator");
+                        sep.setLabel("---------------" + StringUtils.center(newGroup, 19) + "---------------");
+                        sep.setParent(cbColour);
+                        sep.setDisabled(true);
+                        lastGroup = newGroup;
+                    }
+                    Comboitem ci = new Comboitem(field.getDisplayName());
+                    ci.setValue(field.getName());
                     ci.setParent(cbColour);
-                    * 
-                    */
-
-
-                    Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
-                    ci.setValue(fields.get(i).getName());
-                    ci.setParent(cbColour);
-
-                    if (ci.getValue().equals("taxon_name")) {
-                        Comboitem seperator1 = new Comboitem("seperator");
-                        seperator1.setLabel("------------------Taxonomic------------------");
-                        seperator1.setParent(cbColour);
-                        seperator1.setDisabled(true);
-                    }
-
-                    if (ci.getValue().equals("interaction")) {
-                        Comboitem seperator1 = new Comboitem("seperator");
-                        seperator1.setLabel("------------------Geospatial------------------");
-                        seperator1.setParent(cbColour);
-                        seperator1.setDisabled(true);
-                    }
-                    if (ci.getValue().equals("geospatial_kosher")) {
-                        Comboitem seperator2 = new Comboitem("seperator");
-                        seperator2.setLabel("------------------Temporal------------------");
-                        seperator2.setParent(cbColour);
-                        seperator2.setDisabled(true);
-                    }
-                    if (ci.getValue().equals("occurrence_year_decade")) {
-                        Comboitem seperator3 = new Comboitem("seperator");
-                        seperator3.setLabel("------------------Record details------------------");
-                        seperator3.setParent(cbColour);
-                        seperator3.setDisabled(true);
-                    }
-                    if (ci.getValue().equals("collector")) {
-                        Comboitem seperator4 = new Comboitem("seperator");
-                        seperator4.setLabel("------------------Attribution------------------");
-                        seperator4.setParent(cbColour);
-                        seperator4.setDisabled(true);
-                    }
-                    if (ci.getValue().equals("institution_name")) {
-                        Comboitem seperator5 = new Comboitem("seperator");
-                        seperator5.setLabel("------------------Record assertions------------------");
-                        seperator5.setParent(cbColour);
-                        seperator5.setDisabled(true);
-                    }
                 }
             }
-        }
+            
+
+        }        
     }
 }

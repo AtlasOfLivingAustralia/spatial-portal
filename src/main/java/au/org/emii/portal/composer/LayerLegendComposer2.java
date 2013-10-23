@@ -11,6 +11,7 @@ import au.org.emii.portal.util.LayerUtilities;
 import java.awt.Color;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -609,61 +611,28 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         }
 
         Query q = (Query) m.getData("query");
-
         if (q != null) {
             ArrayList<QueryField> fields = q.getFacetFieldList();
+            Collections.sort(fields, new QueryField.QueryFieldComparator());
+            Comboitem seperator = new Comboitem("seperator");
+            String lastGroup = null;
+      
 
-            if (!fields.get(0).getName().equals("taxon_name")) {
-                Comboitem seperator1 = new Comboitem("seperator");
-                seperator1.setLabel("------------------Custom fields------------------");
-                seperator1.setParent(cbColour);
-                seperator1.setDisabled(true);
-            }
-
-            for (int i = 0; i < fields.size(); i++) {
-
-                if (fields.get(i).getName().equals("taxon_name")) {
-                    Comboitem seperator1 = new Comboitem("seperator");
-                    seperator1.setLabel("------------------Taxonomic------------------");
-                    seperator1.setParent(cbColour);
-                    seperator1.setDisabled(true);
+            for(QueryField field : fields){
+                String newGroup = field.getGroup().getName();
+                if(!newGroup.equals(lastGroup)){
+                    Comboitem sep = new Comboitem("seperator");
+                    sep.setLabel("---------------" + StringUtils.center(newGroup, 19) + "---------------");
+                    sep.setParent(cbColour);
+                    sep.setDisabled(true);
+                    lastGroup = newGroup;
                 }
-
-                Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
-                ci.setValue(fields.get(i).getName());
+                Comboitem ci = new Comboitem(field.getDisplayName());
+                ci.setValue(field.getName());
                 ci.setParent(cbColour);
-
-                if (ci.getValue().equals("interaction")) {
-                    Comboitem seperator1 = new Comboitem("seperator");
-                    seperator1.setLabel("------------------Geospatial------------------");
-                    seperator1.setParent(cbColour);
-                    seperator1.setDisabled(true);
-                }
-                if (ci.getValue().equals("geospatial_kosher")) {
-                    Comboitem seperator2 = new Comboitem("seperator");
-                    seperator2.setLabel("------------------Temporal------------------");
-                    seperator2.setParent(cbColour);
-                    seperator2.setDisabled(true);
-                }
-                if (ci.getValue().equals("occurrence_year_decade")) {
-                    Comboitem seperator3 = new Comboitem("seperator");
-                    seperator3.setLabel("------------------Record details------------------");
-                    seperator3.setParent(cbColour);
-                    seperator3.setDisabled(true);
-                }
-                if (ci.getValue().equals("collector")) {
-                    Comboitem seperator4 = new Comboitem("seperator");
-                    seperator4.setLabel("------------------Attribution------------------");
-                    seperator4.setParent(cbColour);
-                    seperator4.setDisabled(true);
-                }
-                if (ci.getValue().equals("institution_name")) {
-                    Comboitem seperator5 = new Comboitem("seperator");
-                    seperator5.setLabel("------------------Record assertions------------------");
-                    seperator5.setParent(cbColour);
-                    seperator5.setDisabled(true);
-                }
             }
+            
+
         }
     }
 

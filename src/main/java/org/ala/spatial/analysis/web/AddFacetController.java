@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import org.ala.spatial.data.*;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.SelectedArea;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.CheckEvent;
@@ -1029,47 +1030,26 @@ public class AddFacetController extends UtilityComposer {
                 query = QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher());
                 if (query != null) {
                     ArrayList<QueryField> fields = query.getFacetFieldList();
+                    Collections.sort(fields, new QueryField.QueryFieldComparator());
                     Comboitem seperator = new Comboitem("seperator");
-                    seperator.setLabel("------------------    Taxonomic     ------------------");
-                    seperator.setParent(cbColour);
-                    seperator.setDisabled(true);
+                    String lastGroup = null;
+              
 
-                    for (int i = 0; i < fields.size(); i++) {
-                        Comboitem ci = new Comboitem(fields.get(i).getDisplayName());
-                        ci.setValue(fields.get(i).getName());
+                    for(QueryField field : fields){
+                        String newGroup = field.getGroup().getName();
+                        if(!newGroup.equals(lastGroup)){
+                            Comboitem sep = new Comboitem("seperator");
+                            sep.setLabel("---------------" + StringUtils.center(newGroup, 19) + "---------------");
+                            sep.setParent(cbColour);
+                            sep.setDisabled(true);
+                            lastGroup = newGroup;
+                        }
+                        Comboitem ci = new Comboitem(field.getDisplayName());
+                        ci.setValue(field.getName());
                         ci.setParent(cbColour);
-
-                        if (ci.getValue().equals("interaction")) {
-                            Comboitem seperator1 = new Comboitem("seperator");
-                            seperator1.setLabel("------------------    Geospatial     ------------------");
-                            seperator1.setParent(cbColour);
-                            seperator1.setDisabled(true);
-                        }
-                        if (ci.getValue().equals("geospatial_kosher")) {
-                            Comboitem seperator2 = new Comboitem("seperator");
-                            seperator2.setLabel("------------------     Temporal     ------------------");
-                            seperator2.setParent(cbColour);
-                            seperator2.setDisabled(true);
-                        }
-                        if (ci.getValue().equals("occurrence_year_decade")) {
-                            Comboitem seperator3 = new Comboitem("seperator");
-                            seperator3.setLabel("------------------  Record details  ------------------");
-                            seperator3.setParent(cbColour);
-                            seperator3.setDisabled(true);
-                        }
-                        if (ci.getValue().equals("collector")) {
-                            Comboitem seperator4 = new Comboitem("seperator");
-                            seperator4.setLabel("------------------    Attribution    ------------------");
-                            seperator4.setParent(cbColour);
-                            seperator4.setDisabled(true);
-                        }
-                        if (ci.getValue().equals("institution_name")) {
-                            Comboitem seperator5 = new Comboitem("seperator");
-                            seperator5.setLabel("------------------ Record assertions ------------------");
-                            seperator5.setParent(cbColour);
-                            seperator5.setDisabled(true);
-                        }
                     }
+                    
+
                 }
                 btnBack.setDisabled(false);
                 btnOk.setDisabled(true);
