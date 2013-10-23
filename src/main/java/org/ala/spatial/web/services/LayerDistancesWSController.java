@@ -23,6 +23,10 @@ import org.ala.layers.client.Client;
 import org.ala.layers.dto.Field;
 import org.ala.layers.dto.Layer;
 import org.ala.spatial.analysis.index.LayerDistanceIndex;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -44,15 +48,19 @@ public class LayerDistancesWSController {
     }
 
     @RequestMapping(value = "/layers/analysis/inter_layer_association_rawnames.csv", method = RequestMethod.GET)
-    public @ResponseBody
-    String CSVrawnames(HttpServletRequest req) {
-        return makeCSV("name");
+    public ResponseEntity<String> CSVrawnames(HttpServletRequest req) {
+        String csv =  makeCSV("name");
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.parseMediaType("text/csv"));
+        return new ResponseEntity<String>(csv, responseHeaders, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/layers/analysis/inter_layer_association.csv", method = RequestMethod.GET)
-    public @ResponseBody
-    String CSV(HttpServletRequest req) {
-        return makeCSV("displayname");
+    public ResponseEntity<String> CSV(HttpServletRequest req) {
+        String csv = makeCSV("displayname");
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.parseMediaType("text/csv"));
+        return new ResponseEntity<String>(csv, responseHeaders, HttpStatus.CREATED);        
     }
 
     private String makeCSV(String type) {
