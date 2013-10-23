@@ -608,10 +608,12 @@ public class FilteringResultsWCController extends UtilityComposer {
         Map<String, Integer> countsData = new HashMap<String, Integer>();
         Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
         int endemic_count = sq.getEndemicSpeciesCount();
-        countsData.put("endemicSpeciesCount", sq.getEndemicSpeciesCount());
-        model.setCount(String.format("%,d",sq.getEndemicSpeciesCount()));
-        model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
-        model.setListType(ListType.SPECIES);
+        countsData.put("endemicSpeciesCount", endemic_count);
+        model.setCount(String.format("%,d",endemic_count));
+        if(endemic_count > 0){
+            model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
+            model.setListType(ListType.SPECIES);
+        }
         model.setEndemic(true);
         return countsData;
     }
@@ -621,12 +623,15 @@ public class FilteringResultsWCController extends UtilityComposer {
         Query sq2 = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[] { true, false, false });
         // based the endemic count on the geospatially kosher - endemic is
         // everything if the world is selected
-        countsData.put("endemicSpeciesCountKosher", sq2.getEndemicSpeciesCount());
-        model.setCount(String.format("%,d",sq2.getEndemicSpeciesCount()));
-        model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
-        model.setListType(ListType.SPECIES);
-        model.setEndemic(true);
-        model.setGeospatialKosher(true);
+        int count = sq2.getEndemicSpeciesCount();
+        countsData.put("endemicSpeciesCountKosher", count);
+        model.setCount(String.format("%,d",count));
+        if(count>0){
+            model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
+            model.setListType(ListType.SPECIES);
+            model.setEndemic(true);
+            model.setGeospatialKosher(true);
+        }
         return countsData;
     }
 
@@ -679,16 +684,18 @@ public class FilteringResultsWCController extends UtilityComposer {
                 String title = SpeciesListUtil.getSpeciesListMap().get(dataResourceUid);
                 if(title!=null){
                     dto.setTitle(title);
-                }
+                }                
                 dto.addUrlDetails("Full List", CommonData.speciesListServer + "/speciesListItem/list/"+dataResourceUid);
             }
             //url
             //dto.setUrl(CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
-            dto.addUrlDetails(VIEW_RECORDS, CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
-            //areaReportListModel.add(fmap);
-            dto.setExtraParams(query);
-            dto.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
-            dto.setListType(ListType.SPECIES);
+            if(count>0){
+                dto.addUrlDetails(VIEW_RECORDS, CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+                //areaReportListModel.add(fmap);
+                dto.setExtraParams(query);
+                dto.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
+                dto.setListType(ListType.SPECIES);
+            }
             countsData.put(f, dto);
         }
         logger.debug("Facet Counts ::: "+ countsData);
@@ -740,7 +747,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             model.setCount(String.format("%,d",results_count_occurrences));
             //add the info about the buttons to include
             //model.put("button", "MS");
-            if(results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")){
+            if(results_count_occurrences>0 &&results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")){
                 model.setExtraInfo(new ExtraInfoEnum[] {ExtraInfoEnum.MAP_ALL, ExtraInfoEnum.SAMPLE});
             }
             model.setGeospatialKosher(false);            
@@ -768,7 +775,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             }
             model.setExtraInfo(new ExtraInfoEnum[] {ExtraInfoEnum.MAP_ALL, ExtraInfoEnum.SAMPLE});
             model.setGeospatialKosher(true);
-            if(results_count_occurrences_kosher <= settingsSupplementary.getValueAsInt("max_record_count_map")){
+            if(results_count_occurrences_kosher>0 &&results_count_occurrences_kosher <= settingsSupplementary.getValueAsInt("max_record_count_map")){
                 countsData.put("occurrencesCountKosher", results_count_occurrences_kosher);
             }
             model.setCount(String.format("%,d",results_count_occurrences_kosher));
@@ -1082,10 +1089,12 @@ public class FilteringResultsWCController extends UtilityComposer {
 
                     countData.put("biostor", String.valueOf(list.size()));
                     model.setCount(Integer.toString(list.size()));
-                    model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
-                    model.setListType(ListType.BIOSTOR);
-                    //model.setUrl("http://biostor.org/");
-                    model.addUrlDetails("Biostor info", "http://biostor.org/");
+                    if(list.size()>0){
+                        model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
+                        model.setListType(ListType.BIOSTOR);                    
+                        //model.setUrl("http://biostor.org/");
+                        model.addUrlDetails("Biostor info", "http://biostor.org/");
+                    }
                 }
             } else {
                 // lblBiostor.setValue("BioStor currently down");
