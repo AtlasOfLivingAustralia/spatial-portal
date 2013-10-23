@@ -1,4 +1,7 @@
 package org.ala.spatial.data;
+
+import java.util.Map;
+
 /**
  * A DTO for the information that is necessary to display an item of the Area 
  * Report.
@@ -17,6 +20,8 @@ public class AreaReportItemDTO {
     private String url;
     /** The title to display for the URL link */
     private String urlTitle;
+    /** A map of URL titles to urls */
+    private Map<String,String> urlDetails;
     /** Whether or not the item should only consider geospatially kosher records */
     private boolean geospatialKosher = false;
     /** whether or not the area report item represents an endemic option */
@@ -75,18 +80,18 @@ public class AreaReportItemDTO {
     public void setExtraInfo(ExtraInfoEnum[] extraInfo) {
         this.extraInfo = extraInfo;
     }
-    /**
-     * @return the url
-     */
-    public String getUrl() {
-        return url;
-    }
-    /**
-     * @param url the url to set
-     */
-    public void setUrl(String url) {
-        this.url = url;
-    }
+//    /**
+//     * @return the url
+//     */
+//    public String getUrl() {
+//        return url;
+//    }
+//    /**
+//     * @param url the url to set
+//     */
+//    public void setUrl(String url) {
+//        this.url = url;
+//    }
     /**
      * @return the geospatialKosher
      */
@@ -111,18 +116,18 @@ public class AreaReportItemDTO {
     public void setListType(ListType listType) {
         this.listType = listType;
     }
-    /**
-     * @return the urlTitle
-     */
-    public String getUrlTitle() {
-        return urlTitle;
-    }
-    /**
-     * @param urlTitle the urlTitle to set
-     */
-    public void setUrlTitle(String urlTitle) {
-        this.urlTitle = urlTitle;
-    }
+//    /**
+//     * @return the urlTitle
+//     */
+//    public String getUrlTitle() {
+//        return urlTitle;
+//    }
+//    /**
+//     * @param urlTitle the urlTitle to set
+//     */
+//    public void setUrlTitle(String urlTitle) {
+//        this.urlTitle = urlTitle;
+//    }
     /**
      * @return the endemic
      */
@@ -150,5 +155,22 @@ public class AreaReportItemDTO {
     public boolean isLoading(){
         return count.equals("Loading...");
     }
-    
+    /**
+     * @return the urlDetails
+     */
+    public Map<String, String> getUrlDetails() {
+        return urlDetails;
+    }
+    /**
+     * @param urlDetails the urlDetails to set
+     */
+    public void setUrlDetails(Map<String, String> urlDetails) {
+        this.urlDetails = urlDetails;
+    }
+    public void addUrlDetails(String title, String url){
+        if(urlDetails == null){
+            urlDetails = new java.util.LinkedHashMap<String,String>();
+        }
+        urlDetails.put(title, url);
+    }
 }
