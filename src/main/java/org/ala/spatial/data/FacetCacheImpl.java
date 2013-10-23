@@ -67,15 +67,18 @@ public class FacetCacheImpl implements FacetCache{
            String[][] facetValues = new String[facets.size()][2];
            int i=0;
            for(Map<String,String> facet : facets){
-               String field = facet.get("field");               
-               String i18n = messageSource.getMessage("facet."+field, null, field, Locale.getDefault());
-               facetValues[i][0] = field;
-               facetValues[i][1] = i18n;
-               QueryField.FieldType ftype = dataTypes.containsKey(field)? dataTypes.get(field):QueryField.FieldType.STRING;
-               //new QueryField("taxon_name", "Scientific name", QueryField.GroupType.TAXONOMIC, QueryField.FieldType.STRING)
-               QueryField qf = new QueryField(field, i18n, QueryField.GroupType.getGroupType(title), ftype);
-               tmpList.add(qf);
-               i++;
+               String field = facet.get("field");
+               //Only add if it is not included in the ignore list
+               if(!CommonData.ignoredFacets.contains(field)){
+                   String i18n = messageSource.getMessage("facet."+field, null, field, Locale.getDefault());
+                   facetValues[i][0] = field;
+                   facetValues[i][1] = i18n;
+                   QueryField.FieldType ftype = dataTypes.containsKey(field)? dataTypes.get(field):QueryField.FieldType.STRING;
+                   //new QueryField("taxon_name", "Scientific name", QueryField.GroupType.TAXONOMIC, QueryField.FieldType.STRING)
+                   QueryField qf = new QueryField(field, i18n, QueryField.GroupType.getGroupType(title), ftype);
+                   tmpList.add(qf);
+                   i++;
+               }
            }
            tmpMap.put(title, facetValues);
        }

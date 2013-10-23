@@ -2,6 +2,7 @@ package org.ala.spatial.data;
 
 
 import java.util.Collection;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -18,6 +19,8 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.log4j.Logger;
 import org.apache.commons.httpclient.Cookie;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.zkoss.zk.ui.Executions;
 
 /**
@@ -27,12 +30,36 @@ import org.zkoss.zk.ui.Executions;
  * @author "Natasha Carter <Natasha.Carter@csiro.au>"
  *
  */
+@Component("listUtil")
 public class SpeciesListUtil {
   
     private static Collection<SpeciesListDTO> publicSpeciesLists = null;
     private final static Logger logger = Logger.getLogger(SpeciesListUtil.class);
+    private static Map<String,String> speciesListMap = new java.util.HashMap<String,String>();
     
-    
+    /**
+     * We are caching the values that will change often. Used to display i18n values in area report etc..
+     */
+    @Scheduled(fixedDelay = 43200000)// schedule to run every 12 hours
+    public void reloadCache(){
+        //get the number of lists
+        int num = getNumberOfPublicSpeciesLists(null);
+        int total = 0;
+        int max=50;
+        Map<String,String> tmpMap = new java.util.HashMap<String,String>();
+        while(total<num){
+            Collection<SpeciesListDTO> batch = getPublicSpeciesLists(null, total, max, null, null);
+            for(SpeciesListDTO item:batch){
+                tmpMap.put(item.getDataResourceUid(), item.getListName());
+                total++;
+            }
+            logger.debug("Cached lists: " + tmpMap);            
+        }
+        speciesListMap=tmpMap;
+    }
+    public static Map<String,String> getSpeciesListMap(){
+        return speciesListMap;
+    }
     public static int getNumberOfPublicSpeciesLists(String user){
         //TO DO retrive from lists.ala.org.au
         JSONObject jobject = getLists(user, 0,0,null,null);

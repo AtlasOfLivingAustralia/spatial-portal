@@ -24,6 +24,7 @@ import static org.ala.spatial.data.AreaReportItemDTO.ExtraInfoEnum;
 import org.ala.spatial.data.AreaReportItemDTO.ListType;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
+import org.ala.spatial.data.SpeciesListUtil;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.SelectedArea;
 import org.ala.spatial.util.Util;
@@ -46,6 +47,7 @@ import org.zkoss.zul.Label;
 import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Row;
 import org.zkoss.zul.RowRenderer;
+import org.zkoss.zul.Vlayout;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Div;
@@ -66,6 +68,7 @@ import org.zkoss.zul.Window;
  */
 public class FilteringResultsWCController extends UtilityComposer {
 
+    private static final String VIEW_RECORDS="View Records";
     public static final int MAX_GAZ_POINT = 5000;
     private static Logger logger = Logger.getLogger(FilteringResultsWCController.class);
     RemoteLogger remoteLogger;
@@ -300,29 +303,33 @@ public class FilteringResultsWCController extends UtilityComposer {
                     } else {
                         row.appendChild(new Label(""));
                     }
-                    if(StringUtils.isNotEmpty(dto.getUrl())){
-                        String urlTitle = StringUtils.isNotEmpty(dto.getUrlTitle())?dto.getUrlTitle(): "View Records";
-                        org.zkoss.zul.A viewRecords = new org.zkoss.zul.A(urlTitle);
-                        String url = dto.getUrl();
-                        
-                        if(url.startsWith("http")){
-                            viewRecords.setHref(url);
-                            viewRecords.setTarget("_blank");
-                        } else {
-                            final String helpUrl = CommonData.settings.get("help_url") +"/spatial-portal-help/" + url;
-                            viewRecords.addEventListener("onClick", new EventListener(){
-
-                                @Override
-                                public void onEvent(Event event)
-                                        throws Exception {
-                                    //zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', help_base_url + "/" + page));
-                                    Events.echoEvent("openUrl", getMapComposer(), helpUrl);
+                    if(dto.getUrlDetails() != null){
+                        Vlayout vlayout = new Vlayout();
+                        for(Map.Entry<String,String> entry:dto.getUrlDetails().entrySet()){
+                            String urlTitle = entry.getKey();
+                            org.zkoss.zul.A viewRecords = new org.zkoss.zul.A(urlTitle);
+                            String url = entry.getValue();
+                            
+                            if(url.startsWith("http")){
+                                viewRecords.setHref(url);
+                                viewRecords.setTarget("_blank");
+                            } else {
+                                final String helpUrl = CommonData.settings.get("help_url") +"/spatial-portal-help/" + url;
+                                viewRecords.addEventListener("onClick", new EventListener(){
+    
+                                    @Override
+                                    public void onEvent(Event event)
+                                            throws Exception {
+                                        //zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', help_base_url + "/" + page));
+                                        Events.echoEvent("openUrl", getMapComposer(), helpUrl);
+                                        
+                                    }
                                     
-                                }
-                                
-                            });
+                                });
+                            }                        
+                            vlayout.appendChild(viewRecords);
                         }
-                        row.appendChild(viewRecords);
+                        row.appendChild(vlayout);
                     } else{
                         row.appendChild(new Label(""));
                     }
@@ -655,17 +662,31 @@ public class FilteringResultsWCController extends UtilityComposer {
         for(String f : CommonData.areaReportFacets){
             //Map<String, Object> fmap = new HashMap<String,Object>();
             AreaReportItemDTO dto = new AreaReportItemDTO();
-            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea,f+":*", false, null);
+            int colonIdx= f.indexOf(":");
+            String query = colonIdx>0?f:f + ":*";
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea,query, false, null);
             int count = sq.getSpeciesCount();
             String label = Labels.getLabel("facet."+f, f);
             //title
             dto.setTitle(label);
             //count
             dto.setCount(String.format("%,d",count));
+            //add the appropriate urls
+            //check to see if it is a species list
+            if(f.startsWith("species_list") && colonIdx>0){
+                //extract everything to the right of the colon and construct the url
+                String dataResourceUid = f.substring(colonIdx+1);
+                String title = SpeciesListUtil.getSpeciesListMap().get(dataResourceUid);
+                if(title!=null){
+                    dto.setTitle(title);
+                }
+                dto.addUrlDetails("Full List", CommonData.speciesListServer + "/speciesListItem/list/"+dataResourceUid);
+            }
             //url
-            dto.setUrl(CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+            //dto.setUrl(CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+            dto.addUrlDetails(VIEW_RECORDS, CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
             //areaReportListModel.add(fmap);
-            dto.setExtraParams(f+":*");
+            dto.setExtraParams(query);
             dto.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
             dto.setListType(ListType.SPECIES);
             countsData.put(f, dto);
@@ -712,7 +733,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                 
                 return countsData;
             } else {
-                model.setUrl(CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+                model.addUrlDetails(VIEW_RECORDS,CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
             }
 
             countsData.put("occurrencesCount", results_count_occurrences);//delete me
@@ -743,7 +764,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                 return countsData;
             } else {
                 countsData.put("viewRecordsKosherUrl", CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
-                model.setUrl(CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+                model.addUrlDetails(VIEW_RECORDS,CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
             }
             model.setExtraInfo(new ExtraInfoEnum[] {ExtraInfoEnum.MAP_ALL, ExtraInfoEnum.SAMPLE});
             model.setGeospatialKosher(true);
@@ -1063,8 +1084,8 @@ public class FilteringResultsWCController extends UtilityComposer {
                     model.setCount(Integer.toString(list.size()));
                     model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
                     model.setListType(ListType.BIOSTOR);
-                    model.setUrl("http://biostor.org/");
-                    model.setUrlTitle("Biostor info");
+                    //model.setUrl("http://biostor.org/");
+                    model.addUrlDetails("Biostor info", "http://biostor.org/");
                 }
             } else {
                 // lblBiostor.setValue("BioStor currently down");
@@ -1485,8 +1506,8 @@ public class FilteringResultsWCController extends UtilityComposer {
             areaCalc.put("area", areaSqKm);
             model.setCount(areaSqKm);
             speciesDistributionText = null;
-            model.setUrl("note-area-sq-km");
-            model.setUrlTitle("Info");
+            //model.setUrl("note-area-sq-km");
+            model.addUrlDetails("Info","note-area-sq-km");
             return areaCalc;
         }
 
@@ -1499,8 +1520,8 @@ public class FilteringResultsWCController extends UtilityComposer {
             // data.put("area",String.format("%,f", (totalarea / 1000 / 1000)));
             areaCalc.put("area", df.format(totalarea / 1000 / 1000));
             model.setCount(df.format(totalarea / 1000 / 1000));
-            model.setUrl("note-area-sq-km");
-            model.setUrlTitle("Info");
+            //model.setUrl("note-area-sq-km");
+            model.addUrlDetails("Info","note-area-sq-km");
 
         } catch (Exception e) {
             System.out.println("Error in calculateArea");
