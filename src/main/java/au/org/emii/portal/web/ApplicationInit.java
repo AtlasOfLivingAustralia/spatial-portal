@@ -15,6 +15,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.zkoss.util.resource.Labels;
+
+
+import zk.extra.BiocacheLabelLocator;
 
 /**
  * Housekeeping class for setting up objects in application scope.
@@ -22,8 +26,9 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * Currently loads and processes the xml configuration file
  * @author geoff
  *
+ * also initialises the webapp from ZK point of view
  */
-public class ApplicationInit extends ContextLoaderListener {
+public class ApplicationInit extends ContextLoaderListener{
 
     public static final String CONFIGURATION_LOADER_ATTRIBUTE = "configurationLoader";
     public static final String CONFIGURATION_LOADER_THREAD_ATTRIBUTE = "configurationLoaderThread";
@@ -102,11 +107,16 @@ public class ApplicationInit extends ContextLoaderListener {
             // start the tread running and return control immediately
             configurationLoaderThread.start();
         }
+
+        //NC 2013-11-26: initialise the ZK Labels to include biocache WS i18n version. 
+        logger.debug("REGISTERING Biocache Labeller...");
+        Labels.register(new BiocacheLabelLocator());
         logger.debug("* APPLICATION INIT: complete");
 
 
 
     }
+    
 
     /**
      * FIXME - MOVE TO DEDICATED SHUTDOWN CLASS!!

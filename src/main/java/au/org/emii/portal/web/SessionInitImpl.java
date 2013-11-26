@@ -74,7 +74,6 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
 
     @Override
     public void init(Session session, Object request) throws Exception {
-        Labels.register(new BiocacheLabelLocator());
         logger.debug("* SESSION INIT:");
 
         // obtain stage1 loader - check for errors
@@ -130,9 +129,7 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
     }
 
     @Override
-    public void init(Desktop desktop, Object request) throws Exception {
-        //NC 20131015 - register the BiocacheLabelLocator as a source for URL style i18n labels
-        Labels.register(new BiocacheLabelLocator());
+    public void init(Desktop desktop, Object request) throws Exception {        
         logger.debug("* INIT Desktop");
         Session session = desktop.getSession();
         

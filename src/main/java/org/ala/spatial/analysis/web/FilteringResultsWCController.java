@@ -600,8 +600,9 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void renderAreaFacetCounts(Map<String,Object> facetCounts, Boolean complete) {
         logger.debug("13. Rendering custom facets...");
         if(complete){
-            areaReportListModel.addAll(facetCounts.values());
             areaReportListModel.setModelChanged();
+            areaReportListModel.addAll(facetCounts.values());
+            //areaReportListModel.setModelChanged();
         }
     }
 
