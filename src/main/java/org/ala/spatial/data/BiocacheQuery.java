@@ -105,6 +105,7 @@ public class BiocacheQuery implements Query, Serializable {
     //static String[][] facetNameExceptions = {{"cl22", "state"}, {"cl959", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
     HashMap<String, LegendObject> legends = new HashMap<String, LegendObject>();
     HashSet<String> flaggedRecords = new HashSet<String>();
+    private Logger logger = Logger.getLogger(BiocacheQuery.class.getName());
 
     static String translateFieldForSolr(String facetName) {
         if (facetName == null) {
@@ -411,6 +412,59 @@ public class BiocacheQuery implements Query, Serializable {
 
         return sample;
     }
+    /**
+     * Returns the "autocomplete" values for the query based on the supplied facet field. Extensible so that we can add autocomplete
+     * based on queries in other areas.
+     * 
+     * NC 20131126 - added to support an autocomplete of raw taxon name for a fix associated with Fungi  
+     * @param facet The facet to autocomplete on
+     * @param value The prefix for the autocomplete
+     * @param limit The maximum number of values to return
+     * @return
+     */
+    public String getAutoComplete(String facet, String value, int limit){
+        HttpClient client = new HttpClient();
+        StringBuilder slist = new StringBuilder();
+        if(value.length()>=3 && StringUtils.isNotBlank(facet)){
+            
+            try{
+                String url = biocacheServer
+                        + QUERY_TITLE_URL + "q=" + getQ() + getQc() + "&facets="+facet
+                        + "&fprefix="+URLEncoder.encode(value, "UTF-8") + "&pageSize=0&flimit=" + limit;
+                GetMethod get = new GetMethod(url);
+                get.addRequestHeader("Content-type", "text/plain");
+                int result = client.executeMethod(get);
+                if(result == 200){
+                    //success
+                    String rawJSON = get.getResponseBodyAsString();
+                    //parse
+                    JSONObject jo = JSONObject.fromObject(rawJSON);
+
+                    JSONArray ja = jo.getJSONArray("facetResults");
+                    for(int i=0;i<ja.size();i++){
+                        JSONObject o = ja.getJSONObject(i);
+                        if(o.getString("fieldName").equals(facet)){
+                            //process the values in the list
+                            JSONArray values = o.getJSONArray("fieldResult");
+                            for(int j=0;j<values.size();j++){
+                                JSONObject vo = values.getJSONObject(j);
+                                if(slist.length() > 0) {
+                                    slist.append("\n");
+                                } 
+                                slist.append(vo.getString("label")).append("//found ").append(Integer.toString(vo.getInt("count")));
+                            }
+                        }
+                    }
+                } else {
+                    logger.log(Level.WARNING, "There was an issue performing the autocomplete from the biocache: " + result);
+                }
+                
+            } catch(Exception e){
+                logger.log(Level.SEVERE, e.getMessage());
+            }
+        }
+        return slist.toString();
+    }
 
     /**
      * Get species list for this query.
@@ -429,7 +483,7 @@ public class BiocacheQuery implements Query, Serializable {
                 + DEFAULT_ROWS_LARGEST
                 + "&q=" + getQ()
                 + getQc();
-        System.out.println(url);
+        logger.info(url);
         GetMethod get = new GetMethod(url);
 
         try {
