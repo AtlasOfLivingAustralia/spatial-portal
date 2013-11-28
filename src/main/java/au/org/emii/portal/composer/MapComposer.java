@@ -56,6 +56,7 @@ import org.ala.spatial.analysis.web.ContextualMenu;
 import org.ala.spatial.analysis.web.DistributionsWCController;
 import org.ala.spatial.analysis.web.FilteringResultsWCController;
 import org.ala.spatial.analysis.web.HasMapLayer;
+import org.ala.spatial.analysis.web.SpeciesAutoCompleteComponent;
 import org.ala.spatial.analysis.web.UploadSpeciesController;
 import org.ala.spatial.data.*;
 import org.ala.spatial.sampling.Sampling;
@@ -321,41 +322,61 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     portalSession.getActiveLayers()));
         }
     }
-
-    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac, SelectedArea sa, boolean[] geospatialKosher) {
-        // check if the species name is not valid
-        // this might happen as we are automatically mapping
-        // species without the user pressing a button
-        if (sac.getSelectedItem() == null
-                || sac.getSelectedItem().getAnnotatedProperties() == null
-                || sac.getSelectedItem().getAnnotatedProperties().size() == 0) {
+    /**
+     * Maps a species based on the selected item in the supplied species auto complete component.
+     * @param sacc
+     * @param sa
+     * @param geospatialKosher
+     */
+    public void mapSpeciesFromAutocompleteComponent(SpeciesAutoCompleteComponent sacc, SelectedArea sa, boolean[] geospatialKosher){
+        if(!sacc.hasValidAnnotatedItemSelected()){
             return;
         }
-
-        String taxon = sac.getValue();
-        String rank = "";
-
-        String spVal = sac.getSelectedItem().getDescription();
-        if (spVal.trim().contains(": ")) {
-            taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
-            rank = spVal.trim().substring(0, spVal.trim().indexOf(":"));
-        } else {
-            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
-            System.out.println("mapping rank and species: " + rank + " - " + taxon);
+        String[] details = sacc.getSelectedTaxonDetails();
+        if(details != null){
+            String taxon = details[0];
+            String rank = details[1];
+            Query query = sacc.getQuery(this, false, geospatialKosher);
+            Query q = QueryUtil.queryFromSelectedArea(query, sa, false, geospatialKosher);
+            String wkt = sa == null?null : sa.getWkt();
+            mapSpecies(q, taxon, rank, 0, LayerUtilities.SPECIES, wkt, -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, nextColour());
+            logger.debug(">>>>> " + taxon + ", " + rank + " <<<<<");
         }
-        if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
-            rank = "taxon";
-        }
-
-        String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
-
-        Query query = QueryUtil.get(lsid, this, false, geospatialKosher);
-        Query q = QueryUtil.queryFromSelectedArea(query, sa, false, geospatialKosher);
-
-        mapSpecies(q, taxon, rank, 0, LayerUtilities.SPECIES, sa.getWkt(), -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, nextColour());
-
-        System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
     }
+//    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac, SelectedArea sa, boolean[] geospatialKosher) {
+//        // check if the species name is not valid
+//        // this might happen as we are automatically mapping
+//        // species without the user pressing a button
+//        if (sac.getSelectedItem() == null
+//                || sac.getSelectedItem().getAnnotatedProperties() == null
+//                || sac.getSelectedItem().getAnnotatedProperties().size() == 0) {
+//            return;
+//        }
+//
+//        String taxon = sac.getValue();
+//        String rank = "";
+//
+//        String spVal = sac.getSelectedItem().getDescription();
+//        if (spVal.trim().contains(": ")) {
+//            taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
+//            rank = spVal.trim().substring(0, spVal.trim().indexOf(":"));
+//        } else {
+//            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
+//            System.out.println("mapping rank and species: " + rank + " - " + taxon);
+//        }
+//        if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
+//            rank = "taxon";
+//        }
+//
+//        String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
+//
+//        Query query = QueryUtil.get(lsid, this, false, geospatialKosher);
+//        Query q = QueryUtil.queryFromSelectedArea(query, sa, false, geospatialKosher);
+//
+//        mapSpecies(q, taxon, rank, 0, LayerUtilities.SPECIES, sa.getWkt(), -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, nextColour());
+//
+//        logger.debug(">>>>> " + taxon + ", " + rank + " <<<<<");
+//    }
 
     /**
      * Reorder the active layers list based on a d'n'd event

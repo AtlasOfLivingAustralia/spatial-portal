@@ -15,6 +15,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.ala.spatial.data.BiocacheQuery;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.HttpClient;
@@ -33,6 +35,9 @@ public class SpeciesAutoComplete extends Combobox {
     private boolean bSearchCommon = false;
     private SettingsSupplementary settingsSupplementary = null;
     boolean biocacheOnly = false;
+    private BiocacheQuery biocacheQuery;
+    /** The biocache field to used in the autocomplete.  Defaults to the raw_taxon_name if none is provided. */
+    private String facetField="raw_taxon_name";
 
     public boolean isSearchCommon() {
         return bSearchCommon;
@@ -45,7 +50,14 @@ public class SpeciesAutoComplete extends Combobox {
     public SpeciesAutoComplete() {
         refresh(""); //init the child comboitems
     }
-
+    /**
+     * Creates an autocomplete based on a query - autocomplete will be populated from a facet generated from the query
+     * @param query
+     */
+    public SpeciesAutoComplete(BiocacheQuery query){
+        this.biocacheQuery = query;
+    }
+    
     public SpeciesAutoComplete(String value) {
         super(value); //it invokes setValue(), which inits the child comboitems
     }
@@ -104,7 +116,11 @@ public class SpeciesAutoComplete extends Combobox {
                 StringBuilder sb = new StringBuilder();
 
                 //sb.append(searchService(val));
-                sb.append(autoService(val));
+                if(biocacheQuery != null){
+                    sb.append(biocacheQuery.getAutoComplete("raw_taxon_name", val, 50));
+                } else{
+                    sb.append(autoService(val));
+                }
                 if (!biocacheOnly) {
                     sb.append(loadUserPoints(val));
                 }
@@ -163,7 +179,12 @@ public class SpeciesAutoComplete extends Combobox {
                         if(myci.getAnnotations() != null) {
                             myci.getAnnotations().clear();
                         }
-                        myci.addAnnotation(spVal[1], "LSID", null);
+                        if(org.apache.commons.lang.StringUtils.isNotBlank(spVal[1])){
+                            myci.addAnnotation(spVal[1], "LSID", null);
+                        } else{
+                            //add the scientific name as the annotation
+                            myci.addAnnotation(spVal[0], "value",null);
+                        }
 
                         myci.setValue(taxon);
                     }
@@ -406,4 +427,33 @@ public class SpeciesAutoComplete extends Combobox {
     void setBiocacheOnly(boolean biocacheOnly) {
         this.biocacheOnly = biocacheOnly;
     }
+
+    /**
+     * @return the biocacheQuery
+     */
+    public BiocacheQuery getBiocacheQuery() {
+        return biocacheQuery;
+    }
+
+    /**
+     * @param biocacheQuery the biocacheQuery to set
+     */
+    public void setBiocacheQuery(BiocacheQuery biocacheQuery) {
+        this.biocacheQuery = biocacheQuery;
+    }
+
+    /**
+     * @return the facetField
+     */
+    public String getFacetField() {
+        return facetField;
+    }
+
+    /**
+     * @param facetField the facetField to set
+     */
+    public void setFacetField(String facetField) {
+        this.facetField = facetField;
+    }
+    
 }

@@ -176,7 +176,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 break;
             case 2:
                 if (rSpeciesSearch.isChecked()) {
-                    searchSpeciesAuto.setFocus(true);
+                    searchSpeciesACComp.getAutoComplete().setFocus(true);
                 } else {
                     rgSpecies.setFocus(true);
                 }

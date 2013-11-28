@@ -86,11 +86,12 @@
                                 <separator />
                                 <hbox>
                                     <separator orient="vertical" />
-                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete"
+                                    <div id="searchSpeciesACComp" use="org.ala.spatial.analysis.web.SpeciesAutoCompleteComponent"/>
+                                    <!--<combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete"
                                     autodrop="true"  width="320px"  
                                     onOK="if(searchSpeciesAuto.getSelectedIndex()>=0)addtoolwindow.onClick$btnOk(null)">
                                         <comboitem label=""/>
-                                    </combobox>
+                                    </combobox> -->
                                 </hbox>
                                 <separator/>
                                 <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
@@ -112,7 +113,8 @@
                         <hbox>
                             <label value="Add from search" />
                             <separator orient="vertical" />
-                            <combobox id="mSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="330px" />
+                            <div id="mSearchSpeciesACComp" use="org.ala.spatial.analysis.web.SpeciesAutoCompleteComponent"/>
+                            <!-- <combobox id="mSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="330px" /> -->
                         </hbox>
                         <separator />
                         <separator />
@@ -197,11 +199,12 @@
                                 <separator />
                                 <hbox>
                                     <separator orient="vertical" />
-                                    <combobox id="bgSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" 
+                                    <div id="bgSearchSpeciesACComp" use="org.ala.spatial.analysis.web.SpeciesAutoCompleteComponent"/>
+                                    <!-- <combobox id="bgSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" 
                                     autodrop="true"  width="320px"  
                                     onOK="if(bgSearchSpeciesAuto.getSelectedIndex()>=0)addtoolwindow.onClick$btnOk(null)">
-                                        <comboitem label=""/>
-                                    </combobox>
+                                        <comboitem label=""/> 
+                                    </combobox>-->
                                 </hbox>
                                 <separator/>
                                 <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
@@ -221,11 +224,12 @@
                         <hbox>
                             <label value="Add from search" />
                             <separator orient="vertical" />
-                            <combobox id="mSearchSpeciesAutoBk" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="330px" />
+                            <div id="mSearchSpeciesACCompBk" use="org.ala.spatial.analysis.web.SpeciesAutoCompleteComponent"/>
+                            <!-- <combobox id="mSearchSpeciesAutoBk" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="330px" /> -->
                         </hbox>
                         <separator />
                         <separator />
-                        <listbox id="lMultiplBke" width="500px" height="200px" >
+                        <listbox id="lMultipleBk" width="500px" height="200px" >
                             <listhead>
                                 <listheader label="" width="20px" />
                                 <listheader label="scientific name" id="lhSciNameBk" width="220px"/>

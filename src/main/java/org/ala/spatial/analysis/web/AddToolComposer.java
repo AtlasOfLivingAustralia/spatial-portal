@@ -93,7 +93,8 @@ public class AddToolComposer extends UtilityComposer {
     Radio rAreaWorld, rAreaCustom, rAreaWorldHighlight, rAreaSelected;
     Button btnCancel, btnOk, btnBack, btnHelp;
     Textbox tToolName;
-    SpeciesAutoComplete searchSpeciesAuto, bgSearchSpeciesAuto;
+    SpeciesAutoCompleteComponent searchSpeciesACComp, bgSearchSpeciesACComp;
+    //SpeciesAutoComplete searchSpeciesAuto, bgSearchSpeciesAuto;
     EnvironmentalList lbListLayers;
     Div divSpeciesSearch, divSpeciesSearchBk;
     EnvLayersCombobox cbLayer1;
@@ -116,7 +117,8 @@ public class AddToolComposer extends UtilityComposer {
     Menupopup mpLayer2, mpLayer1;
     Doublebox dResolution;
     Vbox vboxMultiple, vboxMultipleBk;
-    SpeciesAutoComplete mSearchSpeciesAuto, mSearchSpeciesAutoBk;
+    SpeciesAutoCompleteComponent mSearchSpeciesACComp, mSearchSpeciesACCompBk;
+    //SpeciesAutoComplete mSearchSpeciesAuto, mSearchSpeciesAutoBk;
     Textbox tMultiple, tMultipleBk;
     Listbox lMultiple, lMultipleBk;
     boolean includeAnalysisLayers = true;
@@ -190,11 +192,11 @@ public class AddToolComposer extends UtilityComposer {
             }
         }
 
-        if (mSearchSpeciesAuto != null) {
-            mSearchSpeciesAuto.setBiocacheOnly(true);
+        if (mSearchSpeciesACComp != null) {
+            mSearchSpeciesACComp.getAutoComplete().setBiocacheOnly(true);
         }
-        if (mSearchSpeciesAutoBk != null) {
-            mSearchSpeciesAutoBk.setBiocacheOnly(true);
+        if (mSearchSpeciesACCompBk != null) {
+            mSearchSpeciesACCompBk.getAutoComplete().setBiocacheOnly(true);
         }
 
         // init includeLayers
@@ -906,9 +908,13 @@ public class AddToolComposer extends UtilityComposer {
         }
     }
 
-    public void onSelect$searchSpeciesAuto(Event event) {
+    public void onValueSelected$searchSpeciesACComp(Event event){
         toggles();
     }
+//DELETE    
+//    public void onSelect$searchSpeciesAuto(Event event) {
+//        toggles();
+//    }
 
     public void onClick$btnHelp(Event event) {
         String helpurl = "";
@@ -1446,12 +1452,13 @@ public class AddToolComposer extends UtilityComposer {
                     q = lb.extractQueryFromSelectedLists(applycheckboxes ? getGeospatialKosher():null);
                   
                 } else if (species.equals("search") || species.equals("uploadSpecies") ) {
-                    if (searchSpeciesAuto.getSelectedItem() != null) {
-                        if (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
-                            logger.debug("error in getSelectedSpecies value=" + searchSpeciesAuto.getSelectedItem().getValue() + " text=" + searchSpeciesAuto.getText());
+                    if (searchSpeciesACComp.hasValidItemSelected()) {
+                        //if (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
+                        if(!searchSpeciesACComp.hasValidAnnotatedItemSelected()){
+                            logger.debug("error in getSelectedSpecies value=" + searchSpeciesACComp.getAutoComplete().getSelectedItem().getValue() + " text=" + searchSpeciesACComp.getAutoComplete().getText());
                         } else {
-                            species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                            q = QueryUtil.get(species, getMapComposer(), false, applycheckboxes ? getGeospatialKosher() : null);
+                            species = (String) (searchSpeciesACComp.getAutoComplete().getSelectedItem().getAnnotatedProperties().get(0));
+                            q = searchSpeciesACComp.getQuery(getMapComposer(),false,applycheckboxes ? getGeospatialKosher() : null);//QueryUtil.get(species, getMapComposer(), false, applycheckboxes ? getGeospatialKosher() : null);
                         }
                     }
                 }
@@ -1514,12 +1521,12 @@ public class AddToolComposer extends UtilityComposer {
                 
               } else if (species.equals("search") || species.equals("uploadSpecies") ) {                
               
-                    if (bgSearchSpeciesAuto == null) {
-                        bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
+                    if (bgSearchSpeciesACComp == null) {
+                        bgSearchSpeciesACComp = (SpeciesAutoCompleteComponent) getFellowIfAny("bgSearchSpeciesACComp");
                     }
-                    if (bgSearchSpeciesAuto.getSelectedItem() != null) {
-                        species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                        q = QueryUtil.get(species, getMapComposer(), false, applycheckboxes ? getGeospatialKosherBk() : null);
+                    if (bgSearchSpeciesACComp.hasValidItemSelected()) {
+                        //species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+                        q = bgSearchSpeciesACComp.getQuery(getMapComposer(),false, applycheckboxes ? getGeospatialKosherBk() : null);//QueryUtil.get(species, getMapComposer(), false, applycheckboxes ? getGeospatialKosherBk() : null);
                     }
                 }
             } catch (Exception e) {
@@ -1547,8 +1554,8 @@ public class AddToolComposer extends UtilityComposer {
 
                 species = "All mapped species";
             } else if (species.equals("search")) {
-                if (searchSpeciesAuto.getSelectedItem() != null) {
-                    species = (String) (searchSpeciesAuto.getText());
+                if (searchSpeciesACComp.hasValidItemSelected()) {
+                    species = (String) (searchSpeciesACComp.getAutoComplete().getText());
                 }
             } else {
                 species = rgSpecies.getSelectedItem().getLabel();
@@ -1620,24 +1627,24 @@ public class AddToolComposer extends UtilityComposer {
             /* set species from layer selector */
             if (species != null) {
                 String tmpSpecies = species;
-                searchSpeciesAuto.setValue(tmpSpecies);
-                searchSpeciesAuto.refresh(tmpSpecies);
+                searchSpeciesACComp.getAutoComplete().setValue(tmpSpecies);
+                searchSpeciesACComp.getAutoComplete().refresh(tmpSpecies);
 
-                if (searchSpeciesAuto.getSelectedItem() == null) {
-                    List list = searchSpeciesAuto.getItems();
+                if (!searchSpeciesACComp.hasValidItemSelected()) {
+                    List list = searchSpeciesACComp.getAutoComplete().getItems();
                     for (int i = 0; i < list.size(); i++) {
                         Comboitem ci = (Comboitem) list.get(i);
                         // compare name
-                        if (ci.getLabel().equalsIgnoreCase(searchSpeciesAuto.getValue())) {
+                        if (ci.getLabel().equalsIgnoreCase(searchSpeciesACComp.getAutoComplete().getValue())) {
                             // compare lsid
                             if (ci.getAnnotatedProperties() != null && ((String) ci.getAnnotatedProperties().get(0)).equals(lsid)) {
-                                searchSpeciesAuto.setSelectedItem(ci);
+                                searchSpeciesACComp.getAutoComplete().setSelectedItem(ci);
                                 break;
                             }
                         }
                     }
                 }
-                btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
+                btnOk.setDisabled(!searchSpeciesACComp.hasValidItemSelected());
 
                 rgSpecies.setSelectedItem(rSpeciesSearch);
                 Clients.evalJavaScript("jq('#" + rSpeciesSearch.getUuid() + "-real').attr('checked', true);");
@@ -1660,29 +1667,29 @@ public class AddToolComposer extends UtilityComposer {
 
         /* set species from layer selector */
         if (species != null) {
-            if (bgSearchSpeciesAuto == null) {
-                bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
+            if (bgSearchSpeciesACComp == null) {
+                bgSearchSpeciesACComp = (SpeciesAutoCompleteComponent) getFellowIfAny("bgSearchSpeciesACComp");
             }
 
             String tmpSpecies = species;
-            bgSearchSpeciesAuto.setValue(tmpSpecies);
-            bgSearchSpeciesAuto.refresh(tmpSpecies);
+            bgSearchSpeciesACComp.getAutoComplete().setValue(tmpSpecies);
+            bgSearchSpeciesACComp.getAutoComplete().refresh(tmpSpecies);
 
-            if (bgSearchSpeciesAuto.getSelectedItem() == null) {
-                List list = bgSearchSpeciesAuto.getItems();
+            if (!bgSearchSpeciesACComp.hasValidItemSelected()) {
+                List list = bgSearchSpeciesACComp.getAutoComplete().getItems();
                 for (int i = 0; i < list.size(); i++) {
                     Comboitem ci = (Comboitem) list.get(i);
                     // compare name
-                    if (ci.getLabel().equalsIgnoreCase(bgSearchSpeciesAuto.getValue())) {
+                    if (ci.getLabel().equalsIgnoreCase(bgSearchSpeciesACComp.getAutoComplete().getValue())) {
                         // compare lsid
                         if (ci.getAnnotatedProperties() != null && ((String) ci.getAnnotatedProperties().get(0)).equals(lsid)) {
-                            bgSearchSpeciesAuto.setSelectedItem(ci);
+                            bgSearchSpeciesACComp.getAutoComplete().setSelectedItem(ci);
                             break;
                         }
                     }
                 }
             }
-            btnOk.setDisabled(bgSearchSpeciesAuto.getSelectedItem() == null);
+            btnOk.setDisabled(!bgSearchSpeciesACComp.hasValidItemSelected());
             rgSpeciesBk.setSelectedItem(rSpeciesSearchBk);
             Clients.evalJavaScript("jq('#" + rSpeciesSearchBk.getUuid() + "-real').attr('checked', true);");
 
@@ -1745,9 +1752,10 @@ public class AddToolComposer extends UtilityComposer {
         if (currentDiv.getZclass().contains("species")) {
             // if (divSpeciesSearch != null && divSpeciesSearch.isVisible()){
             if (divSpeciesSearch.isVisible()) {
-                btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() != null
-                        && (searchSpeciesAuto.getSelectedItem().getValue() == null || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null || searchSpeciesAuto.getSelectedItem()
-                                .getAnnotatedProperties().size() == 0));
+                btnOk.setDisabled(!searchSpeciesACComp.hasValidAnnotatedItemSelected());
+//                btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() != null
+//                        && (searchSpeciesAuto.getSelectedItem().getValue() == null || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null || searchSpeciesAuto.getSelectedItem()
+//                                .getAnnotatedProperties().size() == 0));
             } else if (vboxMultiple.isVisible()) {
                 btnOk.setDisabled(getMultipleLsids().length() == 0);
             }
@@ -2171,75 +2179,87 @@ public class AddToolComposer extends UtilityComposer {
         updateLayerSelectionCount();
     }
 
-    public void onSelect$mSearchSpeciesAuto(Event event) {
+    public void onValueSelected$mSearchSpeciesACComp(Event event) {
         Events.echoEvent("mChooseSelected", this, null);
     }
 
     public void mChooseSelected(Event event) {
-        Comboitem ci = mSearchSpeciesAuto.getSelectedItem();
+        Comboitem ci = mSearchSpeciesACComp.getAutoComplete().getSelectedItem();
         if (ci != null && ci.getAnnotatedProperties() != null && ((String) ci.getAnnotatedProperties().get(0)) != null) {
-            String lsid = ((String) ci.getAnnotatedProperties().get(0));
-
-            try {
-                Map<String, String> searchResult = BiocacheQuery.getClassification(lsid);
-
-                String sciname = searchResult.get("scientificName");
-                String family = searchResult.get("family");
-                String kingdom = searchResult.get("kingdom");
-                if (sciname == null) {
-                    sciname = "";
+            String annotatedValue = ((String) ci.getAnnotatedProperties().get(0));
+            if(mSearchSpeciesACComp.shouldUseRawName()){
+                addTolMultiple(null, annotatedValue, null, null, true);
+            } else {
+                String lsid = annotatedValue;
+    
+                try {
+                    Map<String, String> searchResult = BiocacheQuery.getClassification(lsid);
+    
+                    String sciname = searchResult.get("scientificName");
+                    String family = searchResult.get("family");
+                    String kingdom = searchResult.get("kingdom");
+                    if (sciname == null) {
+                        sciname = "";
+                    }
+                    if (family == null) {
+                        family = "";
+                    }
+                    if (kingdom == null) {
+                        kingdom = "";
+                    }
+    
+                    if (sciname != null && sciname.length() > 0) {
+                        addTolMultiple(lsid, sciname, family, kingdom, true);
+    
+                        mSearchSpeciesACComp.getAutoComplete().setText("");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                if (family == null) {
-                    family = "";
-                }
-                if (kingdom == null) {
-                    kingdom = "";
-                }
-
-                if (sciname != null && sciname.length() > 0) {
-                    addTolMultiple(lsid, sciname, family, kingdom, true);
-
-                    mSearchSpeciesAuto.setText("");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
         toggles();
     }
 
-    public void onSelect$mSearchSpeciesAutoBk(Event event) {
+    public void onValueSelected$mSearchSpeciesACCompBk(Event event) {
         Events.echoEvent("mChooseSelectedBk", this, null);
     }
 
     public void mChooseSelectedBk(Event event) {
-        Comboitem ci = mSearchSpeciesAutoBk.getSelectedItem();
+        Comboitem ci = mSearchSpeciesACCompBk.getAutoComplete().getSelectedItem();
         if (ci != null && ci.getAnnotatedProperties() != null && ((String) ci.getAnnotatedProperties().get(0)) != null) {
-            String lsid = ((String) ci.getAnnotatedProperties().get(0));
-
-            try {
-                Map<String, String> searchResult = BiocacheQuery.getClassification(lsid);
-
-                String sciname = searchResult.get("scientificName");
-                String family = searchResult.get("family");
-                String kingdom = searchResult.get("kingdom");
-                if (sciname == null) {
-                    sciname = "";
+            
+            String annotatedValue = ((String) ci.getAnnotatedProperties().get(0));
+            if(mSearchSpeciesACCompBk.shouldUseRawName()){
+                addTolMultipleBk(null, annotatedValue, null, null, true);
+            } else {
+            
+                String lsid = annotatedValue;
+    
+                try {
+                    Map<String, String> searchResult = BiocacheQuery.getClassification(lsid);
+    
+                    String sciname = searchResult.get("scientificName");
+                    String family = searchResult.get("family");
+                    String kingdom = searchResult.get("kingdom");
+                    if (sciname == null) {
+                        sciname = "";
+                    }
+                    if (family == null) {
+                        family = "";
+                    }
+                    if (kingdom == null) {
+                        kingdom = "";
+                    }
+    
+                    if (sciname != null && sciname.length() > 0) {
+                        addTolMultipleBk(lsid, sciname, family, kingdom, true);
+    
+                        mSearchSpeciesACCompBk.getAutoComplete().setText("");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                if (family == null) {
-                    family = "";
-                }
-                if (kingdom == null) {
-                    kingdom = "";
-                }
-
-                if (sciname != null && sciname.length() > 0) {
-                    addTolMultipleBk(lsid, sciname, family, kingdom, true);
-
-                    mSearchSpeciesAutoBk.setText("");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
         toggles();
@@ -2452,9 +2472,9 @@ public class AddToolComposer extends UtilityComposer {
                     Listitem li = (Listitem) event.getTarget().getParent();
                     Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
                     String sciname = scinameCell.getLabel().replace("(not found)", "").trim();
-                    mSearchSpeciesAuto.refresh(sciname);
-                    mSearchSpeciesAuto.open();
-                    mSearchSpeciesAuto.setText(sciname + " ");
+                    mSearchSpeciesACComp.getAutoComplete().refresh(sciname);
+                    mSearchSpeciesACComp.getAutoComplete().open();
+                    mSearchSpeciesACComp.getAutoComplete().setText(sciname + " ");
                     li.detach();
                     toggles();
                 }
@@ -2537,9 +2557,9 @@ public class AddToolComposer extends UtilityComposer {
                     Listitem li = (Listitem) event.getTarget().getParent();
                     Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
                     String sciname = scinameCell.getLabel().replace("(not found)", "").trim();
-                    mSearchSpeciesAutoBk.refresh(sciname);
-                    mSearchSpeciesAutoBk.open();
-                    mSearchSpeciesAutoBk.setText(sciname + " ");
+                    mSearchSpeciesACCompBk.getAutoComplete().refresh(sciname);
+                    mSearchSpeciesACCompBk.getAutoComplete().open();
+                    mSearchSpeciesACCompBk.getAutoComplete().setText(sciname + " ");
                     li.detach();
                     toggles();
                 }

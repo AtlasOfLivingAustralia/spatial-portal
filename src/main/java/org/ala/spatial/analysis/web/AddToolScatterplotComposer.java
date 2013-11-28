@@ -90,10 +90,8 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         boolean enabled = true;
 
         Query backgroundLsid = getSelectedSpeciesBk();
-        if (bgSearchSpeciesAuto.getSelectedItem() != null
-                && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties() != null
-                && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() > 0) {
-            backgroundLsid = QueryUtil.get((String) bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), false, getGeospatialKosher());
+        if (bgSearchSpeciesACComp.hasValidAnnotatedItemSelected()) {
+            backgroundLsid = bgSearchSpeciesACComp.getQuery(getMapComposer(), false, getGeospatialKosher());//QueryUtil.get((String) bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), false, getGeospatialKosher());
         }
 
         SelectedArea filterSa = getSelectedArea();
@@ -159,7 +157,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
                 break;
             case 2:
                 if (rSpeciesSearch.isChecked()) {
-                    searchSpeciesAuto.setFocus(true);
+                    searchSpeciesACComp.getAutoComplete().setFocus(true);
                 } else {
                     rgSpecies.setFocus(true);
                 }
@@ -172,7 +170,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
                 break;
             case 5:
                 if (rSpeciesSearchBk.isChecked()) {
-                    bgSearchSpeciesAuto.setFocus(true);
+                    bgSearchSpeciesACComp.getAutoComplete().setFocus(true);
                 } else {
                     rgSpeciesBk.setFocus(true);
                 }

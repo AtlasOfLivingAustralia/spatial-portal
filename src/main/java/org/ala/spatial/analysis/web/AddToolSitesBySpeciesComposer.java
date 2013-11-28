@@ -79,8 +79,8 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
             return false;
         }
 
-        if (searchSpeciesAuto.getSelectedItem() != null) {
-            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea(), getGeospatialKosher());
+        if (searchSpeciesACComp.hasValidItemSelected()) {
+            getMapComposer().mapSpeciesFromAutocompleteComponent(searchSpeciesACComp, getSelectedArea(), getGeospatialKosher());
         } else if (query != null && rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue().equals("multiple")) {
             getMapComposer().mapSpecies(query, "Species assemblage", "species", 0, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
         }
@@ -562,7 +562,7 @@ public class AddToolSitesBySpeciesComposer extends AddToolComposer {
                 break;
             case 2:
                 if (rSpeciesSearch.isChecked()) {
-                    searchSpeciesAuto.setFocus(true);
+                    searchSpeciesACComp.getAutoComplete().setFocus(true);
                 } else {
                     rgSpecies.setFocus(true);
                 }

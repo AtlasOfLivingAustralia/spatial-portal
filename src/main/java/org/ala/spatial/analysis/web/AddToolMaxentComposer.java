@@ -90,8 +90,8 @@ public class AddToolMaxentComposer extends AddToolComposer {
             getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
             return false;
         }
-        if (searchSpeciesAuto.getSelectedItem() != null) {
-            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea(), getGeospatialKosher());
+        if (searchSpeciesACComp.getAutoComplete().getSelectedItem() != null) {
+            getMapComposer().mapSpeciesFromAutocompleteComponent(searchSpeciesACComp, getSelectedArea(), getGeospatialKosher());
         } else if (query != null && rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue().equals("multiple")) {
             getMapComposer().mapSpecies(query, "Species assemblage", "species", 0, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, MapComposer.nextColour());
         }
@@ -205,8 +205,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
             //String area = getSelectedArea();
             //String taxonlsid = taxon;
-            if (searchSpeciesAuto.getSelectedItem() == null
-                    || searchSpeciesAuto.getSelectedItem().getValue() == null) {
+            if (!searchSpeciesACComp.hasValidItemSelected()) {
                 //MapLayer ml = getMapComposer().getMapLayerSpeciesLSID(taxon);
                 // taxonlsid = ml.getMapLayerMetadata().getSpeciesDisplayLsid();
             }
@@ -542,7 +541,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
                 break;
             case 2:
                 if (rSpeciesSearch.isChecked()) {
-                    searchSpeciesAuto.setFocus(true);
+                    searchSpeciesACComp.getAutoComplete().setFocus(true);
                 } else {
                     rgSpecies.setFocus(true);
                 }

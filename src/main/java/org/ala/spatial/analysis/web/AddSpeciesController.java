@@ -66,7 +66,8 @@ import org.zkoss.zul.event.ListDataListener;
 public class AddSpeciesController extends UtilityComposer {
 
     SettingsSupplementary settingsSupplementary;
-    SpeciesAutoComplete searchSpeciesAuto;
+    SpeciesAutoCompleteComponent searchSpeciesACComponent;
+    //SpeciesAutoComplete searchSpeciesAuto;
     Button btnOk, bMultiple,bAssemblageExport;
     Radio rSearch;
     Radio rMultiple;
@@ -76,9 +77,11 @@ public class AddSpeciesController extends UtilityComposer {
     Radiogroup rgAddSpecies;
     Vbox vboxSearch;
     Checkbox chkArea;
+    //Checkbox chkUseRawName;
     Vbox vboxMultiple;
     Vbox vboxImportSL; //the box layout for the import species list
-    SpeciesAutoComplete mSearchSpeciesAuto;
+    //SpeciesAutoComplete mSearchSpeciesAuto;
+    SpeciesAutoCompleteComponent mSearchSpeciesACComponent;
     //Combobox cbSpeciesLists;
     Textbox tMultiple;
     Listbox lMultiple;
@@ -96,12 +99,14 @@ public class AddSpeciesController extends UtilityComposer {
     A aMessage;
     Label lblMessage;
 
+    
     @Override
     public void afterCompose() {
         super.afterCompose();
         rSearch.setSelected(true);
         chkArea.setChecked(true);
-        mSearchSpeciesAuto.setBiocacheOnly(true);
+        mSearchSpeciesACComponent.getAutoComplete().setBiocacheOnly(true);        
+        
         vboxImportSL = (Vbox)this.getFellow("splistbox").getFellow("vboxImportSL");
         speciesListListbox = (SpeciesListListbox)this.getFellow("splistbox").getFellow("speciesListListbox");
         //check to see if a user is logged in
@@ -120,6 +125,10 @@ public class AddSpeciesController extends UtilityComposer {
           }
         });
         
+    }
+    
+    public void onValueSelected$searchSpeciesACComponent(Event event){
+        onChange$searchSpeciesAuto(event);
     }
 
     public void onClick$btnOk(Event event) {
@@ -180,7 +189,7 @@ public class AddSpeciesController extends UtilityComposer {
             }
         } else {
             if (rSearch.isSelected()) {
-                getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, null, getGeospatialKosher());
+                getMapComposer().mapSpeciesFromAutocompleteComponent(searchSpeciesACComponent, null, getGeospatialKosher());
             } else if (rUploadLSIDs.isSelected()){
                   //we need to populate the "create assemblage" with the values from the species list
                 //refreshAssemblage();
@@ -233,36 +242,40 @@ public class AddSpeciesController extends UtilityComposer {
         refreshBtnOkDisabled();
     }
 
-    public void onSelect$mSearchSpeciesAuto(Event event) {
+    public void onValueSelected$mSearchSpeciesACComponent(Event event){
         //add to lMultiple
-        Comboitem ci = mSearchSpeciesAuto.getSelectedItem();
+        Comboitem ci = mSearchSpeciesACComponent.getAutoComplete().getSelectedItem();
         if (ci != null && ci.getAnnotatedProperties() != null
                 && ((String) ci.getAnnotatedProperties().get(0)) != null) {
-            String lsid = ((String) ci.getAnnotatedProperties().get(0));
-
-            try {
-                Map<String, String> searchResult = BiocacheQuery.getClassification(lsid);
-
-                String sciname = searchResult.get("scientificName");
-                String family = searchResult.get("family");
-                String kingdom = searchResult.get("kingdom");
-                if (sciname == null) {
-                    sciname = "";
+            String annotatedValue = ((String) ci.getAnnotatedProperties().get(0));
+            if(mSearchSpeciesACComponent.shouldUseRawName()){
+                addTolMultiple(null, annotatedValue, null, null, true);
+            } else { 
+                try {
+                    String lsid = annotatedValue;
+                    Map<String, String> searchResult = BiocacheQuery.getClassification(lsid);
+    
+                    String sciname = searchResult.get("scientificName");
+                    String family = searchResult.get("family");
+                    String kingdom = searchResult.get("kingdom");
+                    if (sciname == null) {
+                        sciname = "";
+                    }
+                    if (family == null) {
+                        family = "";
+                    }
+                    if (kingdom == null) {
+                        kingdom = "";
+                    }
+    
+                    if (sciname != null && sciname.length() > 0) {
+                        addTolMultiple(lsid, sciname, family, kingdom, true);
+    
+                        mSearchSpeciesACComponent.getAutoComplete().setText("");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                if (family == null) {
-                    family = "";
-                }
-                if (kingdom == null) {
-                    kingdom = "";
-                }
-
-                if (sciname != null && sciname.length() > 0) {
-                    addTolMultiple(lsid, sciname, family, kingdom, true);
-
-                    mSearchSpeciesAuto.setText("");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
         refreshBtnOkDisabled();
@@ -287,36 +300,36 @@ public class AddSpeciesController extends UtilityComposer {
         }
     }
 
-    void setLsid(String lsidName) {
-        String[] s = lsidName.split("\t");
-        String species = s[1];
-        String lsid = s[0];
-
-        /* set species from layer selector */
-        if (species != null) {
-            String tmpSpecies = species;
-            searchSpeciesAuto.setValue(tmpSpecies);
-            searchSpeciesAuto.refresh(tmpSpecies);
-
-            if (searchSpeciesAuto.getSelectedItem() == null) {
-                List list = searchSpeciesAuto.getItems();
-                for (int i = 0; i < list.size(); i++) {
-                    Comboitem ci = (Comboitem) list.get(i);
-                    //compare name
-                    if (ci.getLabel().equalsIgnoreCase(searchSpeciesAuto.getValue())) {
-                        //compare lsid
-                        if (ci.getAnnotatedProperties() != null
-                                && ((String) ci.getAnnotatedProperties().get(0)).equals(lsid)) {
-                            searchSpeciesAuto.setSelectedItem(ci);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        refreshBtnOkDisabled();
-    }
+//    void setLsid(String lsidName) {
+//        String[] s = lsidName.split("\t");
+//        String species = s[1];
+//        String lsid = s[0];
+//
+//        /* set species from layer selector */
+//        if (species != null) {
+//            String tmpSpecies = species;
+//            searchSpeciesAuto.setValue(tmpSpecies);
+//            searchSpeciesAuto.refresh(tmpSpecies);
+//
+//            if (searchSpeciesAuto.getSelectedItem() == null) {
+//                List list = searchSpeciesAuto.getItems();
+//                for (int i = 0; i < list.size(); i++) {
+//                    Comboitem ci = (Comboitem) list.get(i);
+//                    //compare name
+//                    if (ci.getLabel().equalsIgnoreCase(searchSpeciesAuto.getValue())) {
+//                        //compare lsid
+//                        if (ci.getAnnotatedProperties() != null
+//                                && ((String) ci.getAnnotatedProperties().get(0)).equals(lsid)) {
+//                            searchSpeciesAuto.setSelectedItem(ci);
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        refreshBtnOkDisabled();
+//    }
 
     public void onCheck$rgAddSpecies(Event event) {
         if (rSearch.isSelected()) {
@@ -348,7 +361,7 @@ public class AddSpeciesController extends UtilityComposer {
     
     private void refreshBtnOkDisabled() {
         if (rSearch.isSelected()) {
-            btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null || searchSpeciesAuto.getSelectedItem().getValue() == null);
+            btnOk.setDisabled(!searchSpeciesACComponent.hasValidItemSelected());
         } else if (rMultiple.isSelected()) {            
             btnOk.setDisabled(getMultipleLsids().length() == 0 && getNamesWithoutLsids() == null);
         } else if(rUploadLSIDs.isSelected()) {
@@ -363,17 +376,15 @@ public class AddSpeciesController extends UtilityComposer {
         // check if the species name is not valid
         // this might happen as we are automatically mapping
         // species without the user pressing a button
-        if (searchSpeciesAuto.getSelectedItem() == null
-                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
-                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
+        if (!searchSpeciesACComponent.hasValidAnnotatedItemSelected()) {
             return;
         }
 
         //btnSearchSpecies.setVisible(true);
-        taxon = searchSpeciesAuto.getValue();
+        taxon = searchSpeciesACComponent.getAutoComplete().getValue();
         rank = "";
 
-        String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
+        String spVal = searchSpeciesACComponent.getAutoComplete().getSelectedItem().getDescription();
         if (spVal.trim().contains(": ")) {
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
             rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
@@ -385,8 +396,7 @@ public class AddSpeciesController extends UtilityComposer {
         if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
             rank = "taxon";
         }
-
-        query = QueryUtil.get((String) searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), true, getGeospatialKosher());
+        query = searchSpeciesACComponent.getQuery(getMapComposer(),true, getGeospatialKosher());
     }
 
     public void onClick$bMultiple(Event event) {
@@ -586,9 +596,9 @@ public class AddSpeciesController extends UtilityComposer {
                     Listitem li = (Listitem) event.getTarget().getParent();
                     Listcell scinameCell = (Listcell) li.getFirstChild().getNextSibling();
                     String sciname = scinameCell.getLabel().replace("(not found)", "").trim();
-                    mSearchSpeciesAuto.refresh(sciname);
-                    mSearchSpeciesAuto.open();
-                    mSearchSpeciesAuto.setText(sciname + " ");
+                    mSearchSpeciesACComponent.getAutoComplete().refresh(sciname);
+                    mSearchSpeciesACComponent.getAutoComplete().open();
+                    mSearchSpeciesACComponent.getAutoComplete().setText(sciname + " ");
                     li.detach();
                 }
             });
@@ -716,6 +726,7 @@ public class AddSpeciesController extends UtilityComposer {
             chkGeoKosherTrue.setChecked(true);
         }
     }
+
    
     private void showExportSpeciesListDialog(){
       String values = getScientificName();//tMultiple.getValue().replace("\n", ",").replace("\t",",");
