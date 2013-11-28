@@ -223,4 +223,7 @@ public interface Query {
      * Create a new Query including or excluding flagged records
      */
     public Query newFlaggedRecords(boolean include);
+    
+    /** Retrieves a new autocomplete list based on the supplied query. */
+    public String getAutoComplete(String facet, String value, int limit);
 }

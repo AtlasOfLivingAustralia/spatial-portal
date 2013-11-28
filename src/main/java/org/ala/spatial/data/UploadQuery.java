@@ -661,4 +661,9 @@ public class UploadQuery implements Query, Serializable {
 
         return newFromValidMapping(valid, count);
     }
+
+    @Override
+    public String getAutoComplete(String facet, String value, int limit) {
+        throw new UnsupportedOperationException("Upload Query does not support the ability to perform an autocomplete.");
+    }
 }

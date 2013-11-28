@@ -45,6 +45,18 @@ public class QueryUtil {
 
         return q;
     }
+    /**
+     * Creates a new query based on the supplied field and values
+     * @param field
+     * @param value
+     * @param mc
+     * @param forMapping
+     * @param geospatialKosher
+     * @return
+     */
+    public static Query get(String field, String value, MapComposer mc, boolean forMapping, boolean[] geospatialKosher){            
+        return new BiocacheQuery(null, null, field+":\""+value+"\"", null, forMapping, geospatialKosher );
+    }
 
     public static Query queryFromSelectedArea(Query baseQuery, SelectedArea sa, boolean forMapping, boolean[] geospatialKosher) {
         return queryFromSelectedArea(baseQuery, sa, null, forMapping, geospatialKosher);
