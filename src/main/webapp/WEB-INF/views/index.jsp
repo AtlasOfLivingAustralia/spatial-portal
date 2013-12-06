@@ -12,14 +12,15 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
 <div id="content">
 
 
-    <header id="page-header">
+
         <div class="inner">
             <section id="content-search">
                 <h1>Spatial Web Services</h1>
+                <p style="color:red">Warning: Some of these services return OK status 200 when an error occurs. Please email <strong>support 'AT' ala.org.au </strong> if you receive unexpected output from a OK return status.</p>
                 <p>Following are a list of ALA Spatial web services.</p>
             </section>
         </div><!--inner-->
-    </header>
+
 
     <div class="inner">
         <div class="col-wide last" style="width:100%">
@@ -372,7 +373,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
             <p>There are three stages in using analysis web services; Start analysis, Monitor analysis, Retrieve output.</p>
             <ul>
                 <li><strong>MaxEnt Prediction</strong>
-                    <p>Start Maxent /ws/maxent/procesgeoq, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/maxent/processgeoq</p>
+                    <p>Start Maxent /alaspatial/ws/maxent, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/maxent</p>
                     Parameters:
                     <ul>
                         <li>taxonid - this will be the name of maxent model.  E.g. “Macropus Rufus”.</li>
@@ -392,12 +393,14 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                         <li>txtTestPercentage - optional percentage of records dedicated to testing.  E.g. “23”.</li>
                         <li>chkJackKnife - optional parameter to enable/disable Jacknifing.  E.g. “Y”.</li>
                         <li>chkResponseCurves – optional parameter to enable/disable plots of response curves.  E.g. “Y”.</li>
+                        <li>removedspecies - optional parameter to remove species from the analysis. Typically used to remove sensitive species that have been denatured.</li>
+                        <li>res - optional paramter to specify the resolution for the maxent model.  Defaults to "0.01" when no value is provided.</li>
                     </ul>
                     <br />
                     <p>Returns: analysis id.  E.g. “123”.</p>
                 </li>
                 <li><strong>Classification (ALOC)</strong>
-                    <p>Start ALOC /ws/aloc/processgeoq, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/aloc/processgeoq</p>
+                    <p>Start ALOC /alaspatial/ws/aloc, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/aloc</p>
                     Parameters:
                     <ul>
                         <li>gc - number of groups to try and produce. No guarantee that convergence to the exact number will occur. If not, it will generate as close a number of groups as possible.  E.g. “20”.</li>
@@ -408,6 +411,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                                 <li>List of analysis valid contextual layers; landcover, landuse, vast, native_veg, present_veg </li>
                             </ul>
                         </li>
+                        <li>res - optional paramter to specify the resolution for the maxent model.  Defaults to "0.01" when no value is provided.</li>
                     </ul>
                     <br />
                     <p>Returns: analysis id.  E.g. “123”.</p>
@@ -415,7 +419,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                 <li><strong>Generalized dissimilarity modelling (GDM)</strong>
                     <p>GDM is split into 2 seperate steps. The first step generates a set of possible thresholds for site pairs. The second step takes
                     the selected threshold and finishes the process</p>
-                    <p>Start GDM /ws/gdm/step1, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/gdm/step1</p>
+                    <p>Start GDM /alaspatial/ws/gdm/step1, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/gdm/step1</p>
                     Parameters:
                     <ul>
                         <li>speciesdata - A comma separated set of species data. Header: Longitude, Latitude, SpeciesIndex</li>
@@ -425,10 +429,12 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                                 <li>List of analysis valid environmental layer short names <a href="http://spatial.ala.org.au/alaspatial/ws/spatial/settings/layers/environmental/string">here</a>. These are a subset of all layers <a href="http://spatial.ala.org.au/layers.">here</a></li>
                             </ul>
                         </li>
+                        <li>res - optional paramter to specify the resolution for the maxent model.  Defaults to "0.01" when no value is provided.</li>
+                       <!-- <li>taxacount - collected in step 1 but never used in step 2</li> -->
                     </ul>
                     <br />
                     <p>Returns: analysis id and a threshold in a CSV format.</p>
-                    <p>Step 2: /ws/gdm/step2, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/gdm/step2</p>
+                    <p>Step 2: /alaspatial/ws/gdm/step2, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/gdm/step2</p>
                     Parameters:
                     <ul>
                         <li>pid - A unique ID generated in Step 1</li>
@@ -442,17 +448,23 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                     <p>Returns: analysis id with which you can pull up the generated data and information.</p>
                 </li>
                 <li><strong>Sites by Species, Occurrence density, Species richness</strong>
-                    <p>Start with /ws/sitesbyspecies/processgeoq, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/sitesbyspecies/processgeoq</p>
-                    Parameters, must include at least one of the optional parameters:
+                    <p>Start with /alaspatial/ws/sitesbyspecies, POST request.  E.g. http://spatial.ala.org.au/alaspatial/ws/sitesbyspecies</p>
+                    Parameters, must include at least one of the optional "Types" parameters:
                     <ul>
-                        <li>speciesq - Data name that appears in the output.  E.g. “genus:Macropus”.</li>
+                        <li>speciesq - The query to perform to get the species data from the biocache.  E.g. “genus:Macropus”.</li>
                         <li>qname - Data name that appears in the output.  E.g. “Macropus”.</li>
                         <li>area - Bounding area in Well Known Text (WKT) format.  E.g.  “POLYGON((118 -30,146 -30,146 -11,118 -11,118 -30))”.</li>
+                        <li>bs - The URL to the biocache service. E.g "http://biocache.ala.org.au/ws"</li>
                         <li>gridsize - Size of output grid cells in decimal degrees.  E.g. "0.1"</li>
                         <li>movingaveragesize - Size of output moving average window for occurrence density and species density layers.  E.g. for a 9x9 grid cell window use "&amp;movingaveragesize=9"</li>
-                        <li>sitesbyspecies - (optional) Include this parameter to produce a sites by species list.  E.g. "&amp;sitesbyspecies=1"</li>
-                        <li>occurrencedensity - (optional) Include this parameter to produce an occurrence density layer.  E.g. "&amp;occurrencedensity=1"</li>
-                        <li>speciesdensity - (optional) Include this parameter to produce a species richness layer.  E.g. "&amp;speciesdensity=1"</li>
+                        <li>areasqkm - (optional) the total squre km area represented by the WKT on the area. This param is only used in the metadata.</li>
+                        <li>Types:
+                        <ul>
+                            <li>sitesbyspecies - (optional) Include this parameter to produce a sites by species list.  E.g. "&amp;sitesbyspecies=1"</li>
+                            <li>occurrencedensity - (optional) Include this parameter to produce an occurrence density layer.  E.g. "&amp;occurrencedensity=1"</li>
+                            <li>speciesdensity - (optional) Include this parameter to produce a species richness layer.  E.g. "&amp;speciesdensity=1"</li>
+                        </ul>
+                        </li>
 
                     </ul>
                     <br />
@@ -460,24 +472,26 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
                 </li>
                 <li><strong>Monitor Analysis</strong>
                     <ul>
-                        <li>/ws/jobs/state?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/state?pid=123
-                            <br />returns one of "WAITING", "RUNNING", "SUCCESSFUL", "FAILED", "CANCELLED", </li>
-                        <li>/ws/jobs/message?pid=&lt;analysis id>&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/message?pid=123
-                            <br />returns any associated message or "job does not exist".</li>
-                        <li>/ws/jobs/status?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/status?pid=123
-                            <br />returns status text that may contain an estimate of time remaining or "job does not exist".</li>
-                        <li>/ws/jobs/progress?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/progress?pid=123
-                            <br />returns analysis job progress as a number between 0 and 1 or "job does not exist".</li>
-                        <li>/ws/jobs/log?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/log?pid=123
-                            <br />returns analysis job log or "job does not exist".</li>
-                        <li>/ws/jobs/cancel?pid=&lt;analysis id&gt;.  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/cancel?pid=123
+                        <li>/alaspatial/ws/job?pid=&lt;analysis id&gt; - returns the status and progress of a job.
+                            E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/state?pid=123
+                            <br />
+                            state - will be either "WAITING", "RUNNING", "SUCCESSFUL", "FAILED", "CANCELLED".  When it is "SUCESSFUL" the results can be retrieved.
+                        </li>
+                        <!-- NQ 2013-12-06: Added these for completeness not sure if we wish to advertise the existence.
+                        <li>/alaspatial/ws/jobs/listrunning - list all the running jobs</li>
+                        <li>/alaspatial/ws/jobs/listfinished - list all the jobs that are finished</li>
+                        <li>/alaspatial/ws/jobs/listwaiting - lists all the jobs that are waiting</li>
+                        <li>/alaspatial/ws/jobs/image?pid=&lt;analysis id&gt; - returns the file path for the image associated with the supplied PID</li>
+                        -->
+                        <li>/alaspatial/ws/jobs/inputs?pid=&lt;analysis id&gt; - lists the inputs that have been supplied to the job</li>
+                        <li>/ws/jobs/cancel?pid=&lt;analysis id&gt; - cancel a job based on the PID .  E.g. http://spatial.ala.org.au/alaspatial/ws/jobs/cancel?pid=123
                             <br />returns nothing if successful or "job does not exist"</li>
                     </ul>
                 </li>
                 <br />
                 <li><strong>Retrieving Results</strong>
                     <ul>
-                        <li>/ws/download/&lt;analysis id&gt;.  E.g. .  E.g. http://spatial.ala.org.au/alaspatial/ws/download/123
+                        <li>/alaspatial/ws/download/&lt;analysis id&gt;.  E.g. .  E.g. http://spatial.ala.org.au/alaspatial/ws/download/123
                             <br />downloads the zipped output of "SUCCESSFUL" analysis.</li>
                         <li>ALOC WMS service for the layer is /geoserver/wms?service=WMS&amp;version=1.1.0&amp;request=GetMap&amp;layers=ALA:aloc_&lt;analysis id&gt;&amp;styles=alastyles&amp;FORMAT=image%2Fpng.
                             <br /> E.g. http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:aloc_123&amp;height=200&amp;width=200
