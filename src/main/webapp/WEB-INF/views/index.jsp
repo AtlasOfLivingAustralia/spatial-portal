@@ -16,7 +16,7 @@ taglib uri="/tld/ala.tld" prefix="ala" %>
         <div class="inner">
             <section id="content-search">
                 <h1>Spatial Web Services</h1>
-                <p style="color:red">Warning: Some of these services return OK status 200 when an error occurs. Please email <strong>support 'AT' ala.org.au </strong> if you receive unexpected output from a OK return status.</p>
+                <p style="color:red">Warning: Some of these services return OK status 200 when an error occurs. This is an issue we will be fixing soon. Please email <strong>support 'AT' ala.org.au </strong> if you receive unexpected output from a OK return status.</p>
                 <p>Following are a list of ALA Spatial web services.</p>
             </section>
         </div><!--inner-->
