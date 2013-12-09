@@ -226,7 +226,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                     //check for the buttons to display
                     if(dto.getExtraInfo()!=null){
                         Div newDiv = new Div();
-                        final boolean[] gk= dto.isGeospatialKosher()? new boolean[] { true, false, false } :null;
+                        final boolean[] gk= dto.isGeospatialKosher()? new boolean[] { true, false, false } :new boolean[] { true, true, false };
                         final boolean kosher=dto.isGeospatialKosher();
                         for(ExtraInfoEnum type : dto.getExtraInfo()){
                             switch(type){
@@ -608,10 +608,11 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     Map<String, Integer> endemismCount(boolean worldSelected, AreaReportItemDTO model) {
         Map<String, Integer> countsData = new HashMap<String, Integer>();
-        Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
+        Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[] { true, true, false });
         int endemic_count = sq.getEndemicSpeciesCount();
         countsData.put("endemicSpeciesCount", endemic_count);
         model.setCount(String.format("%,d",endemic_count));
+        model.setGeospatialKosher(false);
         if(endemic_count > 0){
             model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
             model.setListType(ListType.SPECIES);
