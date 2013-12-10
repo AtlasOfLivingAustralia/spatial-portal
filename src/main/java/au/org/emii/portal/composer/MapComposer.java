@@ -490,14 +490,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         sbContent.append("            <option value='" + dlr.getInt("id") + "'>" + dlr.getString("name") + "</option>");
                     }
                     sbContent.append("            <select></p>");
-
-                    sbContent.append("            <div style='padding: 10px 0;'>");
-                    sbContent.append("                <label for='filename' style='float: left;'>Download type</label>");
-                    sbContent.append("                <div style='display: inline-block; width: 55%; float: left; line-height: 20px; padding-left: 5px;'>");
-                    sbContent.append("                    <input type='radio' name='downloadType' value='fast' class='tooltip' checked='checked' title='Faster download but fewer fields are included'>&nbsp;All Records (fast)<br>");
-                    sbContent.append("                    <input type='radio' name='downloadType' value='detailed' class='tooltip' title='Slower download but more fields are included'>&nbsp;All Records (detailed)");
-                    sbContent.append("                </div>");
-                    sbContent.append("            </div>");
+                  //NQ 2013-12-10 Temporarily disable the download choice
+                    sbContent.append("                    <input style='display:none' type='radio' name='downloadType' value='fast' class='tooltip' checked='checked' title='Faster download but fewer fields are included'>");
+//                    sbContent.append("            <div style='padding: 10px 0;'>");
+//                    sbContent.append("                <label for='filename' style='float: left;'>Download type</label>");
+//                    sbContent.append("                <div style='display: inline-block; width: 55%; float: left; line-height: 20px; padding-left: 5px;'>");
+//                    sbContent.append("                    <input type='radio' name='downloadType' value='fast' class='tooltip' checked='checked' title='Faster download but fewer fields are included'>&nbsp;All Records (fast)<br>");
+//                    sbContent.append("                    <input type='radio' disabled name='downloadType' value='detailed' class='tooltip' title='Slower download but more fields are included'>&nbsp;All Records (detailed)");
+//                    sbContent.append("                </div>");
+//                    sbContent.append("            </div>");
                     sbContent.append("            <p style='clear:both;'>&nbsp;</p>");
                     sbContent.append("            <p style='text-align:center;'><input type='submit' value='Download All Records' id='downloadSubmitButton'/></p>");
                     //sbContent.append("            <input type='submit' value='Download All Records' id='downloadSubmitButton'/>&nbsp;");
