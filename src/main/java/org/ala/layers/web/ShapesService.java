@@ -417,6 +417,7 @@ public class ShapesService {
                 }
 
             } catch (Exception ex) {
+                logger.error("Error processsing shapefile feature request", ex);
                 retMap.put("error", ex.getMessage());
             }
         } else {
