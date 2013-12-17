@@ -38,7 +38,8 @@ public class Bil2diva {
         bil2diva(args[0], args[1], args[2]);
     }
 
-    static public boolean bil2diva(String bilFilename, String divaFilename, String unitsString) {
+    public static boolean bil2diva(String bilFilename, String divaFilename, String unitsString) {
+        System.out.println("Running .bil to diva grid conversion");
         boolean ret = true;
         try {
             File headerFile = new File(bilFilename + ".hdr");
@@ -133,7 +134,7 @@ public class Bil2diva {
             }
 
             String noDataValueString = map.get("nodata");
-            
+
             double missingValue;
             if (noDataValueString == null) {
                 missingValue = Double.MAX_VALUE * -1;
@@ -141,13 +142,14 @@ public class Bil2diva {
                 missingValue = Double.parseDouble(noDataValueString);
             }
 
+            System.out.println("Reading .bil min and max values");
             double[] minmax = getMinMax(nbits, pixelType, nrows, ncols, byteOrder, missingValue, bilFile);
-            
+
             //If no nodata value was supplied, use the minimum value - 1.
             if (noDataValueString == null) {
                 noDataValueString = Double.toString(minmax[0] - 1);
             }
-            
+
             fw.write("NoDataValue=" + noDataValueString + "\n");
 
             fw.write("MinValue=" + minmax[0] + "\n");
@@ -160,6 +162,8 @@ public class Bil2diva {
 
             fw.close();
 
+
+            System.out.println("Creating diva grid file");
 
             //copy bil to gri
             FileInputStream fis = new FileInputStream(bilFile);
@@ -175,6 +179,8 @@ public class Bil2diva {
             ret = false;
             e.printStackTrace();
         }
+
+        System.out.println(".bil to diva grid conversion complete");
         return ret;
     }
 
@@ -185,78 +191,93 @@ public class Bil2diva {
         try {
             RandomAccessFile raf = new RandomAccessFile(bilFile, "r");
             FileChannel channel = raf.getChannel();
-            
-            ByteOrder byteOrder = ByteOrder.BIG_ENDIAN; 
 
-            if (byteOrder == null || byteOrder.equals("m")) {
+            ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
+
+            if (strByteOrder == null || strByteOrder.equals("m")) {
                 byteOrder = ByteOrder.BIG_ENDIAN;
             } else {
                 byteOrder = ByteOrder.LITTLE_ENDIAN;
             }
 
-            int i;
-            int length = nrows * ncols;
-            if (datatype.equalsIgnoreCase("UBYTE")
-                    || datatype.equalsIgnoreCase("INT1U")) {
-                for (i = 0; i < length; i++) {
-                    
-                    double ret = readByte(channel, byteOrder);
-                    if (ret < 0) {
-                        ret += 256;
-                    }
-                    updateMinMax(minmax, ret, missingValue);
-                }
-            } else if (datatype.equalsIgnoreCase("BYTE")
-                    || datatype.equalsIgnoreCase("INT1BYTE")
-                    || datatype.equalsIgnoreCase("INT1B")) {
+            ByteBuffer byteBuffer;
 
-                for (i = 0; i < length; i++) {
-                    updateMinMax(minmax, (double) readByte(channel, byteOrder), missingValue);
+
+            while(channel.position() < channel.size()) {
+                long bytesLeft = channel.size() - channel.position();
+                if (bytesLeft < 1024) {
+                    byteBuffer = ByteBuffer.allocate((int) bytesLeft);
+                } else {
+                    byteBuffer = ByteBuffer.allocate(1024);
                 }
-            } else if (nbits == 16 /*datatype.equalsIgnoreCase("SHORT")
+
+                channel.read(byteBuffer);
+
+                byteBuffer.order(byteOrder);
+                byteBuffer.position(0);
+
+                while(byteBuffer.hasRemaining()) {
+                    if (datatype.equalsIgnoreCase("UBYTE")
+                            || datatype.equalsIgnoreCase("INT1U")) {
+
+                            double ret = byteBuffer.get();
+                            if (ret < 0) {
+                                ret += 256;
+                            }
+                            updateMinMax(minmax, ret, missingValue);
+
+                    } else if (datatype.equalsIgnoreCase("BYTE")
+                            || datatype.equalsIgnoreCase("INT1BYTE")
+                            || datatype.equalsIgnoreCase("INT1B")) {
+
+
+                            updateMinMax(minmax, (double) byteBuffer.get(), missingValue);
+                    } else if (nbits == 16 /*datatype.equalsIgnoreCase("SHORT")
                     || datatype.equalsIgnoreCase("INT2BYTES")
                     || datatype.equalsIgnoreCase("INT2B")
                     || datatype.equalsIgnoreCase("INT16")
                     || datatype.equalsIgnoreCase("INT2S")*/) {
-                for (i = 0; i < length; i++) {
-                    updateMinMax(minmax, (double) readShort(channel, byteOrder), missingValue);
+
+                            updateMinMax(minmax, (double) byteBuffer.getShort(), missingValue);
+
+                    } else if (datatype.equalsIgnoreCase("INT")
+                            || datatype.equalsIgnoreCase("INTEGER")
+                            || datatype.equalsIgnoreCase("INT4BYTES")
+                            || datatype.equalsIgnoreCase("INT4B")
+                            || datatype.equalsIgnoreCase("INT32")
+                            || datatype.equalsIgnoreCase("SMALLINT")) {
+
+                            updateMinMax(minmax, (double) byteBuffer.getInt(), missingValue);
+
+                    } else if (datatype.equalsIgnoreCase("LONG")
+                            || datatype.equalsIgnoreCase("INT8BYTES")
+                            || datatype.equalsIgnoreCase("INT8B")
+                            || datatype.equalsIgnoreCase("INT64")) {
+
+                            updateMinMax(minmax, (double) byteBuffer.getLong(), missingValue);
+
+                    } else if (datatype.equalsIgnoreCase("FLOAT")
+                            || datatype.equalsIgnoreCase("FLT4BYTES")
+                            || datatype.equalsIgnoreCase("FLT4B")
+                            || datatype.equalsIgnoreCase("FLOAT32")
+                            || datatype.equalsIgnoreCase("FLT4S")
+                            || datatype.equalsIgnoreCase("REAL")
+                            || datatype.equalsIgnoreCase("SINGLE")) {
+
+                            updateMinMax(minmax, (double) byteBuffer.getFloat(), missingValue);
+
+                    } else if (datatype.equalsIgnoreCase("DOUBLE")
+                            || datatype.equalsIgnoreCase("FLT8BYTES")
+                            || datatype.equalsIgnoreCase("FLT8B")
+                            || datatype.equalsIgnoreCase("FLOAT64")
+                            || datatype.equalsIgnoreCase("FLT8S")) {
+
+                            updateMinMax(minmax, byteBuffer.getDouble(), missingValue);
+
+                    } else {
+                        System.out.println("UNKNOWN TYPE: " + datatype);
+                    }
                 }
-            } else if (datatype.equalsIgnoreCase("INT")
-                    || datatype.equalsIgnoreCase("INTEGER")
-                    || datatype.equalsIgnoreCase("INT4BYTES")
-                    || datatype.equalsIgnoreCase("INT4B")
-                    || datatype.equalsIgnoreCase("INT32")
-                    || datatype.equalsIgnoreCase("SMALLINT")) {
-                for (i = 0; i < length; i++) {
-                    updateMinMax(minmax, (double) readInt(channel, byteOrder), missingValue);
-                }
-            } else if (datatype.equalsIgnoreCase("LONG")
-                    || datatype.equalsIgnoreCase("INT8BYTES")
-                    || datatype.equalsIgnoreCase("INT8B")
-                    || datatype.equalsIgnoreCase("INT64")) {
-                for (i = 0; i < length; i++) {
-                    updateMinMax(minmax, (double) readLong(channel, byteOrder), missingValue);
-                }
-            } else if (datatype.equalsIgnoreCase("FLOAT")
-                    || datatype.equalsIgnoreCase("FLT4BYTES")
-                    || datatype.equalsIgnoreCase("FLT4B")
-                    || datatype.equalsIgnoreCase("FLOAT32")
-                    || datatype.equalsIgnoreCase("FLT4S")
-                    || datatype.equalsIgnoreCase("REAL")
-                    || datatype.equalsIgnoreCase("SINGLE")) {
-                for (i = 0; i < length; i++) {
-                    updateMinMax(minmax, (double) readFloat(channel, byteOrder), missingValue);
-                }
-            } else if (datatype.equalsIgnoreCase("DOUBLE")
-                    || datatype.equalsIgnoreCase("FLT8BYTES")
-                    || datatype.equalsIgnoreCase("FLT8B")
-                    || datatype.equalsIgnoreCase("FLOAT64")
-                    || datatype.equalsIgnoreCase("FLT8S")) {
-                for (i = 0; i < length; i++) {
-                    updateMinMax(minmax, readDouble(channel, byteOrder), missingValue);
-                }
-            } else {
-                System.out.println("UNKNOWN TYPE: " + datatype);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -279,49 +300,6 @@ public class Bil2diva {
                 }
             }
         }
-    }
-    
-    public static byte readByte(FileChannel channel, ByteOrder byteOrder) {
-        ByteBuffer b = readByteBuffer(1, channel, byteOrder);
-        return b.get();
-    }
-
-    public static short readShort(FileChannel channel, ByteOrder byteOrder) {
-        ByteBuffer b = readByteBuffer(2, channel, byteOrder);       
-        return b.getShort();
-    }
-
-    public static long readLong(FileChannel channel, ByteOrder byteOrder) {
-        ByteBuffer b = readByteBuffer(8, channel, byteOrder);
-        return b.getLong();
-    }
-
-    public static int readInt(FileChannel channel, ByteOrder byteOrder) {
-        ByteBuffer b = readByteBuffer(4, channel, byteOrder);       
-        return b.getInt();
-    }
-    
-    public static float readFloat(FileChannel channel, ByteOrder byteOrder) {
-        ByteBuffer b = readByteBuffer(4, channel, byteOrder);
-        return b.getFloat();
-    }
-    
-    public static float readDouble(FileChannel channel, ByteOrder byteOrder) {
-        ByteBuffer b = readByteBuffer(8, channel, byteOrder);
-        return b.getFloat();
-    }
-    
-    public static ByteBuffer readByteBuffer(int size, FileChannel channel, ByteOrder byteOrder) {
-        ByteBuffer bb = ByteBuffer.allocate(size);
-        try {
-            int bytesRead = channel.read(bb);
-            bb.order(byteOrder);
-            bb.position(0);
-            assert bytesRead == size;
-        } catch (IOException ioex) {
-            throw new RuntimeException(ioex);
-        }
-        return bb;
     }
 }
 
