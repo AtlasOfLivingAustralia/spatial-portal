@@ -277,9 +277,11 @@ public class AddToolALOCComposer extends AddToolComposer {
 
             //estimate analysis size in bytes
             double[][] bbox = null;
-            if(sa.getMapLayer() != null && sa.getMapLayer().getMapLayerMetadata() != null) {
-                List<Double> bb = sa.getMapLayer().getMapLayerMetadata().getBbox();
+          //NQ: 20131219 Added extra check because BB is not supplied in all situations with the metadata (ie WKT has been drawn etc) http://code.google.com/p/ala/issues/detail?id=475
+            if(sa.getMapLayer() != null && sa.getMapLayer().getMapLayerMetadata() != null && sa.getMapLayer().getMapLayerMetadata().getBbox() != null) {                
+                List<Double> bb = sa.getMapLayer().getMapLayerMetadata().getBbox();                
                 bbox = new double[][]{{bb.get(0),bb.get(1)},{bb.get(2),bb.get(3)}};
+                 
             } else {
                 SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
                 if (sr != null) {
