@@ -25,8 +25,8 @@ mv *.txt $OUTPUTDIR
 
 # generate ASCII grid and DIVA grid
 echo "generating grid files" 1>> $OUTPUTDIR/build.log
-java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.spatial.analysis.layers.Endemism 0.1 $OUTPUTDIR/species-cell-counts-0.1-degree.txt $OUTPUTDIR/cell-species-lists-0.1-degree.txt $OUTPUTDIR endemism  1>> $OUTPUTDIR/build.log 2>&1
-java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.spatial.analysis.layers.Endemism 0.1 $OUTPUTDIR/species-cell-counts-0.1-degree-non-marine.txt $OUTPUTDIR/cell-species-lists-0.1-degree-non-marine.txt $OUTPUTDIR endemism_non_marine  1>> $OUTPUTDIR/build.log 2>&1
+java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.spatial.analysis.layers.EndemismLayerGenerator 0.1 $OUTPUTDIR/species-cell-counts-0.1-degree.txt $OUTPUTDIR/cell-species-lists-0.1-degree.txt $OUTPUTDIR endemism  1>> $OUTPUTDIR/build.log 2>&1
+java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.spatial.analysis.layers.EndemismLayerGenerator 0.1 $OUTPUTDIR/species-cell-counts-0.1-degree-non-marine.txt $OUTPUTDIR/cell-species-lists-0.1-degree-non-marine.txt $OUTPUTDIR endemism_non_marine  1>> $OUTPUTDIR/build.log 2>&1
 
 
 cp $OUTPUTDIR/endemism.gr* $PTH/ready/diva 1>> $OUTPUTDIR/build.log 2>&1
