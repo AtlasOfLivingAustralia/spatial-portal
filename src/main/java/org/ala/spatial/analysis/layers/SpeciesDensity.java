@@ -25,6 +25,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
+ * DEPRECATED AND LEFT HERE FOR POSTERITY. SEE CalculatedLayerGenerator and subclasses. CF 12/2013
+ * 
  * Produce a species richness layer with a moving average.
  *
  * Output is diva grid and/or ascii grid.
