@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# THIS SCRIPT IS DEPRECATED BUT IS KEPT FOR POSTERITY
 # This script generates the occurrence density and species richness layers and then loads them into the spatial portal.
 
 DATE=$(date +built_%y%m%d)
