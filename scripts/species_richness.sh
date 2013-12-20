@@ -17,12 +17,12 @@ echo $DATE > $OUTPUTDIR/build.log
 
 # download generated data from the biocache
 echo "downloading data from biocache" >> $OUTPUTDIR/build.log 
-wget http://biocache.ala.org.au/archives/exports/cell-occurrence-counts-0.01-degree.txt 1>> $OUTPUTDIR/build.log 2>&1
+wget http://biocache.ala.org.au/archives/exports/cell-species-lists-0.1-degree.txt 1>> $OUTPUTDIR/build.log 2>&1
 mv *.txt $OUTPUTDIR
 
 # generate ASCII grid and DIVA grid
 echo "generating grid files" 1>> $OUTPUTDIR/build.log
-java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.spatial.analysis.layers.SpeciesRichnessLayerGenerator 0.01 $OUTPUTDIR/cell-species-lists-0.01-degree.txt $OUTPUTDIR srichness 1>> $OUTPUTDIR/build.log 2>&1
+java -Xmx8G -cp ${JAVA_CLASSPATH} org.ala.spatial.analysis.layers.SpeciesRichnessLayerGenerator 0.1 $OUTPUTDIR/cell-species-lists-0.1-degree.txt $OUTPUTDIR srichness 1>> $OUTPUTDIR/build.log 2>&1
 
 
 cp $OUTPUTDIR/srichness.gr* $PTH/ready/diva 1>> $OUTPUTDIR/build.log 2>&1
@@ -42,7 +42,7 @@ chown tomcat:wheel $PTH/ready/geotiff/* 1>> $OUTPUTDIR/build.log 2>&1
 
 # Generate legend
 echo "generating legend" >> $OUTPUTDIR/build.log
-java -Xmx3G -cp ${JAVA_CLASSPATH} org.ala.layers.legend.GridLegend $PTH/ready/diva/srichness $PTH/test/srichness 8 1 1>> $OUTPUTDIR/build.log 2>&1
+java -Xmx8G -cp ${JAVA_CLASSPATH} org.ala.layers.legend.GridLegend $PTH/ready/diva/srichness $PTH/test/srichness 8 1 1>> $OUTPUTDIR/build.log 2>&1
 
 # Upload to geoserver
 echo "uploading to geoserver" 1>> $OUTPUTDIR/build.log
@@ -50,6 +50,9 @@ curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/plain"  -d "file://$PTH/r
 curl -u $GEOSERVER_USRPWD -XPOST -H "Content-type: text/xml"  -d "<style><name>srichness_style</name><filename>srichness.sld</filename></style>"  $GEOSERVER_URL/rest/styles 1>> $OUTPUTDIR/build.log
 curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: application/vnd.ogc.sld+xml"  -d @$PTH/test/srichness.sld $GEOSERVER_URL/rest/styles/srichness_style 1>> $OUTPUTDIR/build.log
 curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/xml"   -d "<layer><enabled>true</enabled><defaultStyle><name>srichness_style</name></defaultStyle></layer>" $GEOSERVER_URL/rest/layers/ALA:srichness 1>> $OUTPUTDIR/build.log
+
+# Remove pre-existing geoserver gwc cached tiles for species richness layer
+rm -r /data2/ala/data/geoserver_data_dir/gwc/ALA_srichness/*
 
 # Regenerate layer analysis and distances
 echo "regenerating layer analysis and distances" 1>> $OUTPUTDIR/build.log
@@ -64,3 +67,4 @@ sh $PTH/process/layer-ingestion-1.0-SNAPSHOT/environmental_background_processing
 echo "finished" 1>> $OUTPUTDIR/build.log
 
 cp $OUTPUTDIR/build.log /data/ala/runtime/output/srichness.log
+

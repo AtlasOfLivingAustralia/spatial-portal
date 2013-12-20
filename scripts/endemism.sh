@@ -64,6 +64,10 @@ curl -u $GEOSERVER_USRPWD -XPOST -H "Content-type: text/xml"  -d "<style><name>e
 curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: application/vnd.ogc.sld+xml"  -d @$PTH/test/endemism_non_marine.sld $GEOSERVER_URL/rest/styles/endemism_non_marine_style 1>> $OUTPUTDIR/build.log
 curl -u $GEOSERVER_USRPWD -XPUT -H "Content-type: text/xml"   -d "<layer><enabled>true</enabled><defaultStyle><name>endemism_non_marine_style</name></defaultStyle></layer>" $GEOSERVER_URL/rest/layers/ALA:endemism_non_marine 1>> $OUTPUTDIR/build.log
 
+# Remove pre-existing geoserver gwc cached tiles for endemism layers
+rm -r /data2/ala/data/geoserver_data_dir/gwc/ALA_endemism/*
+rm -r /data2/ala/data/geoserver_data_dir/gwc/ALA_endemism_non_marine/*
+
 # Regenerate layer analysis and distances
 echo "regenerating layer analysis and distances" 1>> $OUTPUTDIR/build.log
 rm -f /data/ala/data/layers/analysis/0.5/el1055.gr* 1>> $OUTPUTDIR/build.log 2>&1
@@ -80,3 +84,4 @@ sh $PTH/process/layer-ingestion-1.0-SNAPSHOT/environmental_background_processing
 echo "finished" 1>> $OUTPUTDIR/build.log
 
 cp $OUTPUTDIR/build.log /data/ala/runtime/output/endemism.log
+
