@@ -495,8 +495,8 @@ public class FilteringResultsWCController extends UtilityComposer {
                     Clients.evalJavaScript("displayBioStorCount('biostorrow','na');");
                 }
 
-                // kill anything taking longer than 60 secs
-                if (!futureEntry.getValue().isDone() && (System.currentTimeMillis() - futuresStart) > 60000) {
+                // kill anything taking longer than 5 mins
+                if (!futureEntry.getValue().isDone() && (System.currentTimeMillis() - futuresStart) > 300000) {
                     futureEntry.getValue().cancel(true);
                     //now set everything not completed to "Request timed out"
                     for(AreaReportItemDTO model : (List<AreaReportItemDTO>)areaReportListModel.getInnerList()){
