@@ -84,7 +84,7 @@
                     <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
                         <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false" />
                         <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false" />
-                        <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" visible="false" />
+                        <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" visible="true" />
                         <vbox width="100%">
                             <div id="divSpeciesSearch" visible="false" >
                                 <separator />
@@ -100,7 +100,9 @@
                                     </combobox> -->
                                 </hbox>
                                 <separator/>
-                                <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
+                                <label sclass="wCaption" value='It is better to enter a scientific name at a higher taxonomic level'/>
+                                <separator/>
+                                <label sclass="wCaption" value='For example: "Macropus" or "Eucalyptus"'/>
                                 <separator />
                                 <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
