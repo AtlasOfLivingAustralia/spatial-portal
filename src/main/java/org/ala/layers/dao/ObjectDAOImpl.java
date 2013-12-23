@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
+import java.util.zip.ZipInputStream;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -288,18 +289,21 @@ public class ObjectDAOImpl implements ObjectDAO {
                                 // TODO: enable for type 'a' after
                                 // implementation of fields table defaultLayer
                                 // field
-                                /*
-                                 * if (f.getType().equals("a") || s.length == 2)
-                                 * { //class File file = new
-                                 * File(f.getFilePath() + File.separator + s[1]
-                                 * + "." + geomtype + ".zip"); if
-                                 * (file.exists()) { ZipInputStream zis = new
-                                 * ZipInputStream(new FileInputStream(file));
-                                 * zis.getNextEntry(); byte[] buffer = new
-                                 * byte[1024]; int size; while ((size =
-                                 * zis.read(buffer)) > 0) { os.write(buffer, 0,
-                                 * size); } zis.close(); } } else
-                                 */{ // polygon
+
+                                if (f.getType().equals("a") || s.length == 2) {
+                                    // class
+                                    File file = new File(f.getFilePath() + File.separator + s[1] + "." + geomtype + ".zip");
+                                    if (file.exists()) {
+                                        ZipInputStream zis = new ZipInputStream(new FileInputStream(file));
+                                        zis.getNextEntry();
+                                        byte[] buffer = new byte[1024];
+                                        int size;
+                                        while ((size = zis.read(buffer)) > 0) {
+                                            os.write(buffer, 0, size);
+                                        }
+                                        zis.close();
+                                    }
+                                } else { // polygon
                                     BufferedInputStream bis = null;
                                     InputStreamReader isr = null;
                                     try {
@@ -443,7 +447,9 @@ public class ObjectDAOImpl implements ObjectDAO {
     @Override
     public Objects getObjectByIdAndLocation(String fid, Double lng, Double lat) {
         logger.info("Getting object info for fid = " + fid + " at loc: (" + lng + ", " + lat + ") ");
-        String sql = MessageFormat.format("select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from search_objects_by_geometry_intersect(?, ST_GeomFromText(''POINT({0} {1})'', 4326)) o, fields f WHERE o.fid = f.id", lng, lat);
+        String sql = MessageFormat
+                .format("select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from search_objects_by_geometry_intersect(?, ST_GeomFromText(''POINT({0} {1})'', 4326)) o, fields f WHERE o.fid = f.id",
+                        lng, lat);
         List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] { fid });
         updateObjectWms(l);
         if (l == null || l.isEmpty()) {
@@ -632,7 +638,6 @@ public class ObjectDAOImpl implements ObjectDAO {
         return objects;
     }
 
-    
     @Transactional
     @Override
     public String createUserUploadedObject(String wkt, String name, String description, String userid) {
@@ -651,7 +656,7 @@ public class ObjectDAOImpl implements ObjectDAO {
             // get pid and id of new object
             String sql3 = "SELECT MAX(pid) from uploaded_objects_metadata";
             int pid = jdbcTemplate.queryForInt(sql3);
-            
+
             return Integer.toString(pid);
         } catch (DataAccessException ex) {
             throw new IllegalArgumentException("Error writing to database. Check validity of wkt.", ex);
@@ -717,7 +722,7 @@ public class ObjectDAOImpl implements ObjectDAO {
     public int createPointOfInterest(String objectId, String name, String type, Double latitude, Double longitude, Double bearing, String userId, String description, Double focalLength) {
         String sql = "INSERT INTO points_of_interest (id, object_id, name, type, latitude, longitude, bearing, user_id, description, focal_length_millimetres, the_geom) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ST_SetSRID(ST_MakePoint(?, ?),4326))";
         jdbcTemplate.update(sql, objectId, name, type, latitude, longitude, bearing, userId, description, focalLength, longitude, latitude);
-        
+
         // get pid and id of new object
         String sql2 = "SELECT MAX(id) from points_of_interest";
         int id = jdbcTemplate.queryForInt(sql2);
@@ -726,12 +731,12 @@ public class ObjectDAOImpl implements ObjectDAO {
 
     @Override
     public boolean updatePointOfInterest(int id, String objectId, String name, String type, Double latitude, Double longitude, Double bearing, String userId, String description, Double focalLength) {
-        String sql = "UPDATE points_of_interest SET object_id = ?, name = ?, type = ?, latitude = ?, longitude = ?, bearing = ?, user_id = ?, description = ?, focal_length_millimetres = ? WHERE id = ?; " +
-        		"UPDATE points_of_interest SET the_geom = ST_SetSRID(ST_MakePoint(longitude, latitude),4326) WHERE id = ?";
+        String sql = "UPDATE points_of_interest SET object_id = ?, name = ?, type = ?, latitude = ?, longitude = ?, bearing = ?, user_id = ?, description = ?, focal_length_millimetres = ? WHERE id = ?; "
+                + "UPDATE points_of_interest SET the_geom = ST_SetSRID(ST_MakePoint(longitude, latitude),4326) WHERE id = ?";
         int rowsUpdated = jdbcTemplate.update(sql, objectId, name, type, latitude, longitude, bearing, userId, description, focalLength, id, id);
         return (rowsUpdated > 0);
     }
-    
+
     @Override
     public Map<String, Object> getPointOfInterestDetails(int id) {
         String sql = "SELECT id, object_id, name, type, latitude, longitude, bearing, user_id, description, focal_length_millimetres from points_of_interest WHERE id = ?";
@@ -739,7 +744,7 @@ public class ObjectDAOImpl implements ObjectDAO {
         if (poiDetails.isEmpty()) {
             throw new IllegalArgumentException("Invalid point of interest id");
         }
-        
+
         return poiDetails;
     }
 
@@ -749,10 +754,12 @@ public class ObjectDAOImpl implements ObjectDAO {
         int rowsAffected = jdbcTemplate.update(sql, id);
         return (rowsAffected > 0);
     }
-    
+
     @Override
     public List<Objects> getObjectsWithinRadius(String fid, double latitude, double longitude, double radiusKm) {
-        String sql = MessageFormat.format("SELECT o.pid, o.id, o.name, o.desc AS description, o.fid AS fid, f.name AS fieldname, o.bbox, o.area_km FROM objects o, fields f WHERE o.fid = ? AND o.fid = f.id AND ST_DWithin(ST_GeographyFromText(''POINT({0} {1})''), geography(the_geom), ?)", longitude, latitude);
+        String sql = MessageFormat
+                .format("SELECT o.pid, o.id, o.name, o.desc AS description, o.fid AS fid, f.name AS fieldname, o.bbox, o.area_km FROM objects o, fields f WHERE o.fid = ? AND o.fid = f.id AND ST_DWithin(ST_GeographyFromText(''POINT({0} {1})''), geography(the_geom), ?)",
+                        longitude, latitude);
         List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), fid, radiusKm * 1000);
         updateObjectWms(l);
         return l;
@@ -760,7 +767,8 @@ public class ObjectDAOImpl implements ObjectDAO {
 
     @Override
     public List<Objects> getObjectsIntersectingWithGeometry(String fid, String wkt) {
-        //String sql = "SELECT o.pid, o.id, o.name, o.desc AS description, o.fid AS fid, f.name AS fieldname, o.bbox, o.area_km FROM objects o, fields f WHERE o.fid = ? AND o.fid = f.id AND ST_Intersects(ST_GeomFromText(?, 4326), the_geom)";
+        // String sql =
+        // "SELECT o.pid, o.id, o.name, o.desc AS description, o.fid AS fid, f.name AS fieldname, o.bbox, o.area_km FROM objects o, fields f WHERE o.fid = ? AND o.fid = f.id AND ST_Intersects(ST_GeomFromText(?, 4326), the_geom)";
         String sql = "SELECT o.pid, o.id, o.name, o.desc AS description, o.fid AS fid, f.name AS fieldname, o.bbox, o.area_km from search_objects_by_geometry_intersect(?, ST_GeomFromText(?, 4326)) o, fields f WHERE o.fid = f.id";
         List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), fid, wkt);
         updateObjectWms(l);
@@ -769,7 +777,8 @@ public class ObjectDAOImpl implements ObjectDAO {
 
     @Override
     public List<Objects> getObjectsIntersectingWithObject(String fid, String objectPid) {
-        //String sql = "SELECT o.pid, o.id, o.name, o.desc AS description, o.fid AS fid, f.name AS fieldname, o.bbox, o.area_km FROM objects o, fields f WHERE o.fid = ? AND o.fid = f.id AND ST_Intersects((SELECT the_geom FROM objects WHERE pid = ?), the_geom)";
+        // String sql =
+        // "SELECT o.pid, o.id, o.name, o.desc AS description, o.fid AS fid, f.name AS fieldname, o.bbox, o.area_km FROM objects o, fields f WHERE o.fid = ? AND o.fid = f.id AND ST_Intersects((SELECT the_geom FROM objects WHERE pid = ?), the_geom)";
         String sql = "SELECT o.pid, o.id, o.name, o.desc AS description, o.fid AS fid, f.name AS fieldname, o.bbox, o.area_km FROM search_objects_by_geometry_intersect(?, (SELECT the_geom FROM objects WHERE pid = ?)) o, fields f WHERE o.fid = f.id";
         List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), fid, objectPid);
         updateObjectWms(l);
@@ -778,7 +787,9 @@ public class ObjectDAOImpl implements ObjectDAO {
 
     @Override
     public List<Map<String, Object>> getPointsOfInterestWithinRadius(double latitude, double longitude, double radiusKm) {
-        String sql = MessageFormat.format("SELECT id, object_id, name, type, latitude, longitude, bearing, user_id, description, focal_length_millimetres from points_of_interest WHERE ST_DWithin(ST_GeographyFromText(''POINT({0} {1})''), geography(the_geom), ?)", longitude, latitude);
+        String sql = MessageFormat
+                .format("SELECT id, object_id, name, type, latitude, longitude, bearing, user_id, description, focal_length_millimetres from points_of_interest WHERE ST_DWithin(ST_GeographyFromText(''POINT({0} {1})''), geography(the_geom), ?)",
+                        longitude, latitude);
         List<Map<String, Object>> l = jdbcTemplate.queryForList(sql, radiusKm * 1000);
         return l;
     }
