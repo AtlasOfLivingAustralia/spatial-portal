@@ -120,7 +120,7 @@ public class BiocacheQuery implements Query, Serializable {
         if("occurrence_year_individual".equals(facetName)) {
             facetName = "occurrence_year";
         }
-        if("occurrence_year_decade".equals(facetName)) {
+        if("occurrence_year_decade".equals(facetName) || "decade".equals(facetName)) {
             facetName = "occurrence_year";
         }
         return facetName;
@@ -1189,7 +1189,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
         if (lo == null) {
             HttpClient client = new HttpClient();
-            String facetToColourBy = colourmode.equals("occurrence_year_decade")?"occurrence_year":translateFieldForSolr(colourmode);
+            String facetToColourBy = colourmode.equals("occurrence_year_decade")|| colourmode.equals("decade")?"occurrence_year":translateFieldForSolr(colourmode);
 
             try {
                 String url = biocacheServer
@@ -1223,27 +1223,28 @@ public class BiocacheQuery implements Query, Serializable {
                     double[] cutpoints = l.getCutoffdoubles();
                     double[] cutpointmins = l.getCutoffMindoubles();
                     StringBuilder sb = new StringBuilder();
-                    sb.append(colourmode);
+                    //NQ 20140109: use the translated SOLR field as the colour mode so that "decade" does not cause an issue
+                    sb.append(t);
                     int i = 0;
                     int lasti = 0;
                     while (i < cutpoints.length) {
                         if (i == cutpoints.length - 1 || cutpoints[i] != cutpoints[i + 1]) {
                             if (i > 0) {
                                 sb.append(",").append(cutpointmins[i]);
-                                if(colourmode.equals("occurrence_year"))
+                                if(colourmode.equals("occurrence_year") || colourmode.equals("decade"))
                                     sb.append("-01-01T00:00:00Z");
                             } else {
                                 sb.append(",*");
                             }
                             sb.append(",").append(cutpoints[i]);
-                            if(colourmode.equals("occurrence_year"))
+                            if(colourmode.equals("occurrence_year") || colourmode.equals("decade"))
                                     sb.append("-12-31T00:00:00Z");
                             lasti = i;
                         }
                         i++;
                     }
                     String newColourMode = sb.toString();
-                    if(colourmode.equals("occurrence_year")) {
+                    if(colourmode.equals("occurrence_year") || colourmode.equals("decade")) {
                         newColourMode = newColourMode.replace(".0","");
                     }
 
@@ -1268,7 +1269,7 @@ public class BiocacheQuery implements Query, Serializable {
                     legends.put(newColourMode, newlo);
 
                     lo = newlo;
-                } else if (!colourmode.contains(",") && colourmode.equals("occurrence_year_decade")) {
+                } else if (!colourmode.contains(",") && (colourmode.equals("occurrence_year_decade") || colourmode.equals("decade"))) {
                     TreeSet<Integer> decades = new TreeSet<Integer>();
                     for(double d : ((BiocacheLegendObject) lo).categoriesNumeric.keySet()) {
                         decades.add((int)(d/10));

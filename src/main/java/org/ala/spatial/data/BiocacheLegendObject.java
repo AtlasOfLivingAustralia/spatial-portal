@@ -42,7 +42,7 @@ public class BiocacheLegendObject extends LegendObject {
             Logger.getLogger(BiocacheLegendObject.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        boolean isDecade = colourMode.startsWith("occurrence_year_decade");
+        boolean isDecade = colourMode.startsWith("occurrence_year_decade") || colourMode.equals("decade");
         boolean isYear = colourMode.contains("occurrence_year") && !isDecade;
 
         int count = 0;

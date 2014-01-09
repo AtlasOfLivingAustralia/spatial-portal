@@ -195,7 +195,7 @@ public class ClassificationLegend extends UtilityComposer {
                     //test for manual range (solr query)
                 } else if (colourmode.equals("occurrence_year")) {
                     setupForBiocacheNumber(h, colourmode, true);
-                } else if (colourmode.equals("occurrence_year_decade")) {
+                } else if (colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
                     setupForBiocacheDecade();
                 } else if (colourmode.equals("coordinate_uncertainty")) {
                     setupForBiocacheNumber(h, colourmode, false);
@@ -662,7 +662,7 @@ public class ClassificationLegend extends UtilityComposer {
                                 } else {
                                     range = String.format(">= %d and <= %d", (int) cutoffMins[0], (int) cutoffs[0]);
                                 }
-                                if(colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade")) {
+                                if(colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
                                     String minyear = String.valueOf((int) cutoffMins[0]);
                                     while(minyear.length() < 4) minyear = "0" + minyear;
                                     strFacet = "" + facetName + ":[" + minyear + "-01-01T00:00:00Z TO " + (int) cutoffs[0] + "-12-31T00:00:00Z]";
@@ -682,7 +682,7 @@ public class ClassificationLegend extends UtilityComposer {
                                 //range = String.format(">= %d and <= %d", (int) cutoffMins[cutoffMins.length - 1], (int) gMaxValue);
                                 range = String.format("<= %d", (int) gMaxValue);
 
-                                if(colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade")) {
+                                if(colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
                                     String minyear = String.valueOf((int) cutoffMins[cutoffMins.length - 1]);
                                     while(minyear.length() < 4) minyear = "0" + minyear;
                                     strFacet = "" + facetName + ":[" + minyear + "-01-01T00:00:00Z TO " + (int) gMaxValue + "-12-31T00:00:00Z]";
@@ -707,7 +707,7 @@ public class ClassificationLegend extends UtilityComposer {
                                     //range = String.format(">= %d and <= %d", (int) cutoffMins[pos], (int) cutoffs[pos]);
                                     range = String.format("<= %d", (int) cutoffs[pos]);
                                 }
-                                if(colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade")) {
+                                if(colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
                                     String minyear = String.valueOf((int) cutoffMins[pos]);
                                     while(minyear.length() < 4) minyear = "0" + minyear;
                                     strFacet = "" + facetName + ":[" + minyear + "-01-01T00:00:00Z TO " + (int) cutoffs[pos] + "-12-31T00:00:00Z]";

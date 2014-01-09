@@ -212,7 +212,7 @@ public class Facet implements Serializable {
 
             if (field.equals("occurrence_year")) {
                 facet = facet.replace(" TO ","-01-01T00:00:00Z TO ").replace("]","-12-31T00:00:00Z]");
-            } else if (field.equals("occurrence_year_decade")) {
+            } else if (field.equals("occurrence_year_decade") || field.equals("decade")) {
                 if(value.contains("before")) {
                     facet = (includeRange ? "" : "-") + field + ":[* TO 1849-12-31T00:00:00Z]";
                 } else {
@@ -230,7 +230,7 @@ public class Facet implements Serializable {
                     && facet.contains("occurrence_year")) {
                 if (field.equals("occurrence_year")) {
                     parameter = parameter.replace(" TO ","-01-01T00:00:00Z TO ").replace("]","-12-31T00:00:00Z]");
-                } else if (field.equals("occurrence_year_decade")) {
+                } else if (field.equals("occurrence_year_decade") || field.equals("decade")) {
                     //TODO: make this work
                 }
             }
