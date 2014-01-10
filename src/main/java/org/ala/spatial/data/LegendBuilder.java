@@ -53,6 +53,13 @@ public class LegendBuilder {
 
         return new LegendObject(legend, qf.getFieldType());
     }
+    
+    static LegendObject legendForDecades(double[] d, QueryField qf) {
+        Legend legend = new LegendDecade();
+        java.util.Arrays.sort(d);
+        legend.generate(d);
+        return new LegendObject(legend, qf.getFieldType());        
+    }
 
     private static LegendObject longLegend(QueryField qf) {
         long[] raw = qf.longData;

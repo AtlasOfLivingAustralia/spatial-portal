@@ -120,7 +120,7 @@ public class BiocacheQuery implements Query, Serializable {
         if("occurrence_year_individual".equals(facetName)) {
             facetName = "occurrence_year";
         }
-        if("occurrence_year_decade".equals(facetName) || "decade".equals(facetName)) {
+        if("occurrence_year_decade".equals(facetName)) {
             facetName = "occurrence_year";
         }
         return facetName;
@@ -1189,7 +1189,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
         if (lo == null) {
             HttpClient client = new HttpClient();
-            String facetToColourBy = colourmode.equals("occurrence_year_decade")|| colourmode.equals("decade")?"occurrence_year":translateFieldForSolr(colourmode);
+            String facetToColourBy = colourmode.equals("occurrence_year_decade")?"occurrence_year":translateFieldForSolr(colourmode);
 
             try {
                 String url = biocacheServer
@@ -1224,7 +1224,8 @@ public class BiocacheQuery implements Query, Serializable {
                     double[] cutpointmins = l.getCutoffMindoubles();
                     StringBuilder sb = new StringBuilder();
                     //NQ 20140109: use the translated SOLR field as the colour mode so that "decade" does not cause an issue
-                    sb.append(t);
+                    String newFacet = colourmode.equals("decade")?"occurrence_year":colourmode;
+                    sb.append(newFacet);
                     int i = 0;
                     int lasti = 0;
                     while (i < cutpoints.length) {
@@ -1235,7 +1236,7 @@ public class BiocacheQuery implements Query, Serializable {
                                     sb.append("-01-01T00:00:00Z");
                             } else {
                                 sb.append(",*");
-                            }
+                            }                           
                             sb.append(",").append(cutpoints[i]);
                             if(colourmode.equals("occurrence_year") || colourmode.equals("decade"))
                                     sb.append("-12-31T00:00:00Z");

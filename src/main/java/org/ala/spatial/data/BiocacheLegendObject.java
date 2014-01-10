@@ -172,21 +172,30 @@ public class BiocacheLegendObject extends LegendObject {
     }
 
     public LegendObject getAsIntegerLegend() {
-        int size = 0;
-        for(double d : categoriesNumeric.keySet()) {
-            int [] v = categoriesNumeric.get(d);
-            size += v[1];
-        }
-        double [] values = new double[size];
-        int pos = 0;
-        for(double d : categoriesNumeric.keySet()) {
-            int [] v = categoriesNumeric.get(d);
-            for(int i=0;i<v[1];i++) {
-                values[pos] = d;
-                pos++;
+        if(colourMode.equals("decade")){
+            double [] values = new double[categoriesNumeric.size()];
+            int i =0;
+            for(double d : categoriesNumeric.keySet()){
+                values[i++] = d;
             }
+            return LegendBuilder.legendForDecades(values,  new QueryField(colourMode,QueryField.FieldType.INT));
+        } else {
+            int size = 0;
+            for(double d : categoriesNumeric.keySet()) {
+                int [] v = categoriesNumeric.get(d);
+                size += v[1];
+            }
+            double [] values = new double[size];
+            int pos = 0;
+            for(double d : categoriesNumeric.keySet()) {
+                int [] v = categoriesNumeric.get(d);
+                for(int i=0;i<v[1];i++) {
+                    values[pos] = d;
+                    pos++;
+                }
+            }
+    
+            return LegendBuilder.legendFromDoubles(values, new QueryField(colourMode,QueryField.FieldType.INT));
         }
-
-        return LegendBuilder.legendFromDoubles(values, new QueryField(colourMode,QueryField.FieldType.INT));
     }
 }
