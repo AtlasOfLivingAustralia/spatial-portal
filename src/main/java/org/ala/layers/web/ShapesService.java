@@ -511,8 +511,8 @@ public class ShapesService {
             ObjectMapper mapper = new ObjectMapper();
             Map parsedJSON = mapper.readValue(responseText, Map.class);
 
-            boolean valid = (Boolean) parsedJSON.get("valid");
-
+            return (Boolean) parsedJSON.get("valid");
+/*
             if (valid) {
                 String keyUserId = (String) parsedJSON.get("userId");
                 String app = (String) parsedJSON.get("app");
@@ -529,6 +529,7 @@ public class ShapesService {
             } else {
                 return false;
             }
+*/
         } catch (Exception ex) {
             throw new RuntimeException("Error checking API key");
         }
