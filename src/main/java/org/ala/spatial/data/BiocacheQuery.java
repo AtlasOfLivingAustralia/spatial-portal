@@ -59,6 +59,8 @@ public class BiocacheQuery implements Query, Serializable {
     static final String ENDEMIC_SPECIES_SERVICE_CSV="/explore/endemic/species.csv?";
     static final String DEFAULT_ROWS = "pageSize=1000000";
     static final String DEFAULT_ROWS_LARGEST = "pageSize=1000000";
+    //protected Pattern lsidPattern = Pattern.compile("(^|\\s|\"|\\(|\\[|')lsid:\"?([a-zA-Z0-9\\.:\\-_]*)\"?");
+    static final Pattern queryParamsPattern = Pattern.compile("&([a-zA-Z0-9_\\-]+)=");
     /** DEFAULT_VALIDATION must not be null */
     //static final String DEFAULT_VALIDATION = "longitude:[-180 TO 180] AND latitude:[-90 TO 90]";
     static final String DEFAULT_VALIDATION = "";
@@ -922,7 +924,8 @@ public class BiocacheQuery implements Query, Serializable {
                 + "&facet=false";
         PostMethod post = new PostMethod(url);
         try {
-            String[] qs = getFullQ(false).split("&");
+            //NQ: query values could contain embedded &'s 
+            String[] qs = splitOnParams(getFullQ(false));//getFullQ(false).split("&");
             for (int i = 0; i < qs.length; i++) {
                 String q = qs[i];
                 int p = q.indexOf('=');
@@ -949,6 +952,53 @@ public class BiocacheQuery implements Query, Serializable {
             System.out.println("error with url:" + url + " posting q: " + getQ());
             e.printStackTrace();
         }
+    }
+    public static void main(String[] args) throws Exception{
+        String url = "http://www.example.com/something.html?one=11111&two=22222&three=%2233%20&%20333%22";
+        
+        System.out.println(url);
+        //url = URLEncoder.encode(url, "UTF-8");
+        //System.out.println(url);
+        List<org.apache.http.NameValuePair> params = org.apache.http.client.utils.URLEncodedUtils.parse(new java.net.URI(url), "UTF-8");
+
+        for (org.apache.http.NameValuePair param : params) {
+          System.out.println(param.getName() + " : " + param.getValue());
+        }
+        
+        String test1="kosher:true &qc=dh1";
+        printTest(test1,splitOnParams(test1));
+        String test2="&q=testong AND bdsf&wkt=dfhjkdghf&qc=dh1";
+        printTest(test2, splitOnParams(test2));
+    }
+    private static void printTest(String original,String[] ts){
+        System.out.println(original);
+        for(String t:ts){
+            System.out.println(t);
+        }
+    }
+    
+    /**
+     * This method will correctly split on params handling the case where emebedded &'s can exist
+     * @param query
+     * @return
+     */
+    private static String[] splitOnParams(String query){
+        String[] totals = query.split(queryParamsPattern.toString());
+        //printTest(query, totals);
+        //m.
+        int i=1;
+        if(totals.length>1){
+            Matcher m = queryParamsPattern.matcher(query);
+            while(m.find()){
+                totals[i] = m.group(1)+"=" + totals[i];
+                i++;
+            }
+            
+        } 
+        if(totals.length>1 && StringUtils.isEmpty(totals[0])){
+            totals = Arrays.copyOfRange(totals, 1, totals.length);
+        }
+        return totals;
     }
 
     @Override
