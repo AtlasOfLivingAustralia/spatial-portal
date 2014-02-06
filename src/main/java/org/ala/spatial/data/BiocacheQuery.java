@@ -1250,6 +1250,8 @@ public class BiocacheQuery implements Query, Serializable {
                         + getQc();
                 System.out.println(url);
                 GetMethod get = new GetMethod(url);
+                //NQ: Set the header type to JSON so that we can parse JSON instead of CSV (CSV has issue with quoted field where a quote is the escape character)
+                get.addRequestHeader("Accept", "application/json");
 
                 //String legend = null;
 
