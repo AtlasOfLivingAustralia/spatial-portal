@@ -128,7 +128,8 @@
                         </vbox>
                         <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Use existing species list" />
                         <include id="splistbox" src="/WEB-INF/zul/SpeciesListListBox.zul" />
-                        <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import points" />
+                        <!-- NQ:2014-02-10 - AT the moment the Points to Grid does NOT support imported points. This will be solved when we have better sandbox integration -->
+                        <!-- <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import points" /> -->
                     </radiogroup>                    
                 </div>
 
