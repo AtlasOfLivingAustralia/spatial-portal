@@ -526,7 +526,7 @@ public class GridCutter {
 
             Grid grid = Grid.getGrid(getLayerPath(resolution, lf.getLayername()));
 
-            float[] d = grid.getValues2(points);
+            float[] d = grid.getValues3(points, 40960);
 
             for (int i = 0; i < d.length; i++) {
                 if (lf.isValid(d[i])) {
@@ -608,10 +608,19 @@ public class GridCutter {
             }
         }
 
+        double res = Double.parseDouble(resolution);
+        
+        //limit the size of the grid files that can be generated
+        while ((Math.abs(extents[0][1] - extents[1][0])/res) * (Math.abs(extents[0][0] - extents[1][0])/res) > AlaspatialProperties.getAnalysisLimitGridCells()*2.0) {
+            res = res * 2;
+        }
+        if (res != Double.parseDouble(resolution)) {
+            resolution = String.format("%f", res);
+        }
+        
         //get mask and adjust extents for filter
         byte[][] mask;
         int w, h;
-        double res = Double.parseDouble(resolution);
         h = (int) Math.ceil((extents[1][1] - extents[0][1]) / res);
         w = (int) Math.ceil((extents[1][0] - extents[0][0]) / res);
         mask = getEnvelopeMaskAndUpdateExtents(resolution, res, extents, h, w, envelopes);
@@ -649,7 +658,7 @@ public class GridCutter {
                 extents[0][1],
                 extents[1][0],
                 extents[1][1],
-                grid.xres, grid.yres, h, w);
+                res, res, h, w);
 
         return areaSqKm;
     }
