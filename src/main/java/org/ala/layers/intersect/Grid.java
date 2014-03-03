@@ -1000,7 +1000,7 @@ public class Grid { //  implements Serializable
 
         //use preloaded grid data if available
         Grid g = Grid.getLoadedGrid(filename);
-        if (g != null) {
+        if (g != null && g.grid_data != null) {
             return g.getValues2(points);
         }
 
