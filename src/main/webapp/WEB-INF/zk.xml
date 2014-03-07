@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-	Created by ZK Studio
+        Created by ZK Studio
 -->
 
 <zk>
@@ -9,56 +9,62 @@
         <description>Session init (setup objects in session)</description>
         <listener-class>au.org.emii.portal.web.SessionInitImpl</listener-class>
     </listener>
-        
-        
+
+    <listener>
+        <description>Hibernate thread session context management</description>
+        <listener-class>org.zkoss.zkplus.hibernate.HibernateSessionContextListener</listener-class>
+    </listener>
+
+
     <session-config>
-        	<!--  session timeout in seconds -->
+        <!--  session timeout in seconds -->
         <session-timeout>7200</session-timeout>
         <timer-keep-alive>true</timer-keep-alive>
     </session-config>
-        
-		
-		<!--  catch uncaught exceptions when AJAXING on a page -->
+
+
+    <!--  catch uncaught exceptions when AJAXING on a page -->
     <error-page>
         <exception-type>java.lang.Throwable</exception-type>
         <location>/WEB-INF/zul/ZkError.zul</location>
     </error-page>
- 		
- 		<!--  if a user tries to carry on working when their session has timed out
- 		ask them what to do...
- 		 -->
+
+    <!--  if a user tries to carry on working when their session has timed out
+   ask them what to do...
+    -->
     <device-config>
         <device-type>ajax</device-type>
         <timeout-uri>/timeout.zul</timeout-uri>
     </device-config>
 
-        <!--
-        required to prevent getting 'not unique in idspace' errors when
-        using spring web flow - not required otherwise
-        -->
+    <!--
+    required to prevent getting 'not unique in idspace' errors when
+    using spring web flow - not required otherwise
+    -->
 
     <system-config>
         <id-generator-class>zk.extra.IdGeneratorImpl</id-generator-class>
     </system-config>
 
-    <!--richlet>
-        <richlet-name>ZKMonitor</richlet-name>
-        <richlet-class>cz.datalite.zkspring.monitor.ZKMonitorRichlet</richlet-class>
-    </richlet>
-    <richlet-mapping>
-        <richlet-name>ZKMonitor</richlet-name>
-        <url-pattern>/ZKMonitor</url-pattern>
-    </richlet-mapping>
-    <listener>
-        <description>ZK performance monitor</description>
-        <listener-class>cz.datalite.zkspring.monitor.ZKPerformanceMeter</listener-class>
-    </listener-->
-
-    <!--client-config>
-        <debug-js>true</debug-js>
-    </client-config-->
-
     <language-config>
         <addon-uri>/WEB-INF/lang-addon.xml</addon-uri>
     </language-config>
+
+
+    <library-property>
+        <name>org.zkoss.zk.ui.macro.autowire.convention</name>
+        <value>true</value>
+    </library-property>
+
+    <!-- in WEB-INF/zk.xml -->
+    <library-property>
+        <name>org.zkoss.zk.ui.composer.autowire.zscript</name>
+        <value>true</value>
+    </library-property>
+
+    <!-- in WEB-INF/zk.xml -->
+    <library-property>
+        <name>org.zkoss.zk.ui.composer.autowire.xel</name>
+        <value>true</value>
+    </library-property>
 </zk>

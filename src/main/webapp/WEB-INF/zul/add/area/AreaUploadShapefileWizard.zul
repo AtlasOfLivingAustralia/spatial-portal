@@ -1,0 +1,39 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="areashapewizard" use="au.org.ala.spatial.composer.add.area.AreaUploadShapefileWizardController"
+            apply="au.org.ala.spatial.composer.add.area.AreaUploadShapefile"  xmlns:n="http://www.zkoss.org/2005/zk/native"
+            width="90%" sizable="true" contentStyle="overflow:auto">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="shapewizard.detach()" style="display: inline" />
+
+        <caption label="Import Shapefile" />
+        <separator />
+        <vbox>
+            <div>
+                <imagemap id="img" />
+            </div>
+            <div>
+                <vbox>
+                    <hbox>
+                        <button sclass="goButton" label="Select all" id="btnSelectAll" />
+                        <button sclass="goButton" label="Clear selection" id="btnDeselectAll" />
+                        <button sclass="goButton" label="Refresh image" id="btnRefresh" />
+                        <button sclass="goButton" label="Cancel" id="btnCancel" />
+                        <button sclass="goButton" label="Next" id="btnNext" />
+                    </hbox>
+                    <listbox id="lAttributes" width="97%" height="300px" multiple="true" checkmark="true">
+                    </listbox>
+                </vbox>
+            </div>
+        </vbox>
+
+    </window>
+</zk>
+

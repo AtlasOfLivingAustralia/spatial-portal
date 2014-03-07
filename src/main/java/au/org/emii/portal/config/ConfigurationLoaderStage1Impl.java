@@ -5,32 +5,36 @@
 
 package au.org.emii.portal.config;
 
-import au.org.emii.portal.factory.PortalDocumentFactory;
-import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.config.xmlbeans.PortalDocument;
+import au.org.emii.portal.factory.PortalDocumentFactory;
 import au.org.emii.portal.session.PortalSession;
+import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.web.ApplicationInit;
-import java.util.Date;
-import javax.servlet.ServletContext;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
+
+import javax.servlet.ServletContext;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Configuration loader
  * ~~~~~~~~~~~~~~~~~~~~
  * This class loads the config file file.  Stage 1 is to create and save a spring
  * application context
- * 
+ *
  * @author geoff
  */
 public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 {
-    
+
+    public static final ArrayList<Thread> loaders = new ArrayList<Thread>();
+
     /**
      * Logger instance
      */
     private Logger logger = Logger.getLogger(this.getClass());
-    
+
 
     private ConfigurationLoaderStage2 stage2 = null;
 
@@ -75,7 +79,7 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
     public void setStage2(ConfigurationLoaderStage2 stage2) {
         this.stage2 = stage2;
     }
-    
+
     private void load() {
         // protect against sticky error flag (remember we're a singleton)
         error = false;
@@ -85,10 +89,10 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
             logger.info("Configuration file missing or invalid - cannot load portal.  See previous message for cause");
         } else {
             stage2.setPortalDocument(portalDocument);
-            
+
             // Ask stage2 to load the portal from the PortalDocument instance and
             // pass us back the master session that gets created
-            PortalSession masterPortalSession =  stage2.load();
+            PortalSession masterPortalSession = stage2.load();
 
             // did any errors in stage2 occur? - if so, export them through our
             // own error flag so that consumers can read the error flag from one
@@ -113,8 +117,7 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
              *  so that it can be accessed via spring
              */
             servletContext.setAttribute(ApplicationInit.PORTAL_MASTER_SESSION_ATTRIBUTE, masterPortalSession);
-            logger.debug("finished building master portalSession - final structure is: \n" +
-                    portalSessionUtilities.dump(masterPortalSession));
+            logger.debug("finished building master portalSession");
             lastReloaded = new Date();
         }
         reloading = false;
@@ -125,7 +128,7 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
         running = true;
         boolean firstRun = true;
         while (running) {
-            try {              
+            try {
                 load();
                 /* if this is the first run, then set rereadInterval to a smallish
                  * value of the order of one minute or so and then do a re-read of
@@ -165,12 +168,10 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
             } catch (InterruptedException e) {
                 logger.debug(
                         "Configuration Loader was interrupted during its sleep, probably "
-                        + "not important");
+                                + "not important");
             }
         }
     }
-
-
 
 
     /**

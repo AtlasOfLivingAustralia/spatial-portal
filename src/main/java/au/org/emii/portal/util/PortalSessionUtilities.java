@@ -4,28 +4,28 @@
  */
 package au.org.emii.portal.util;
 
-import au.org.emii.portal.value.BoundingBox;
+import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.session.PortalSession;
-import au.org.emii.portal.settings.SettingsSupplementary;
-import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.settings.Settings;
+import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.value.BoundingBox;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 
 /**
- *
  * @author geoff
  */
 public class PortalSessionUtilities {
 
-    private ListUtilities listUtilities = null;
+    private static Logger logger = Logger.getLogger(PortalSessionUtilities.class);
+
     private LanguagePack languagePack = null;
     private SettingsSupplementary settingsSupplementary = null;
     private Settings settings = null;
     /**
-     * Enumeration IDs as used in the config file xml schema - to allow conversion
-     * between strings used in config file and ints used at runtime
+     * Enumeration IDs as used in the config file xml schema - to allow
+     * conversion between strings used in config file and ints used at runtime
      */
     private final static String LAYER_TAB = "LAYER";
     private final static String LINK_TAB = "LINK";
@@ -37,28 +37,24 @@ public class PortalSessionUtilities {
     private final static String LAYER_REGION_TAB = "REGION";
     private final static String LAYER_REALTIME_TAB = "REALTIME";
     private final static String LAYER_USER_TAB = "USER";
-    private Logger logger = Logger.getLogger(getClass());
 
     public MapLayer getUserDefinedById(PortalSession portalSession, String id) {
-        return listUtilities.findInList(id, portalSession.getUserDefinedLayers());
+        for (MapLayer map : portalSession.getUserDefinedLayers()) {
+            if (map != null && map.getId() != null && map.getId().equals(id)) {
+                return map;
+            }
+        }
+        return null;
     }
 
     /**
-     * return the current bounding box - either the default bounding box
-     * or the regional bounding box if a region has been selected
+     * return the current bounding box - either the default bounding box or the
+     * regional bounding box if a region has been selected
+     *
      * @return
      */
     public BoundingBox getCurrentBoundingBox(PortalSession portalSession) {
         return portalSession.getDefaultBoundingBox();
-    }
-
-    public ListUtilities getListUtilities() {
-        return listUtilities;
-    }
-
-    @Required
-    public void setListUtilities(ListUtilities listUtilities) {
-        this.listUtilities = listUtilities;
     }
 
     public SettingsSupplementary getSettingsSupplementary() {
@@ -68,60 +64,6 @@ public class PortalSessionUtilities {
     @Required
     public void setSettingsSupplementary(SettingsSupplementary settingsSupplementary) {
         this.settingsSupplementary = settingsSupplementary;
-    }
-
-    public String dump(PortalSession portalSession) {
-        StringBuffer dump = new StringBuffer();
-
-        if (portalSession == null) {
-            dump.append("*** Null portal session (usually indicates error loading) ***");
-        } else {            
-            dump.append("\nMAPLAYERS (from DataSource declaration");
-            if (portalSession.getMapLayers() != null) {
-                for (MapLayer mapLayer : portalSession.getMapLayers()) {
-                    dump.append(mapLayer.dump("") + "\n");
-                }
-            }
-        }
-        return dump.toString();
-    }
-
-    public MapLayer getMapLayerByIdAndLayer(PortalSession portalSession, String id, String layer) {
-
-        // get the MapLayer instance (if any) bound to the id
-        MapLayer target = getMapLayerById(portalSession, id);
-        if ((target != null) && (layer != null)) {
-            // if there was a MapLayer instance matching the id then
-            // try to get the corresponding layer
-            target = target.findByLayer(layer);
-        }
-
-        return target;
-    }
-
-    /**
-     * Return the MapLayer for a corresponding ID or null if there is no
-     * match.
-     *
-     * Operates on the mapLayers list ONLY (e.g, NOT the user defined layers)
-     * @param id
-     * @return
-     */
-    public MapLayer getMapLayerById(PortalSession portalSession, String id) {
-        MapLayer found = null;
-        int i = 0;
-        while (found == null && i < portalSession.getMapLayers().size()) {
-            MapLayer search = portalSession.getMapLayers().get(i);
-            if (search.getId().equals(id)) {
-                found = search;
-            } else if (search.hasChildren()) {
-                // don't forget to inspect children when searching for maplayer
-                // IDs - this is why you can't just use findInList()
-                found = search.findById(id);
-            }
-            i++;
-        }
-        return found;
     }
 
     public LanguagePack getLanguagePack() {
@@ -176,23 +118,4 @@ public class PortalSessionUtilities {
     public void setSettings(Settings settings) {
         this.settings = settings;
     }
-
-    /**
-     * Get a map layer by URI and Layer
-     * @param portalSession
-     * @param id
-     * @return first matching maplayer instance found by dft.  Null if there are
-     * no matches
-     */
-    public MapLayer getMapLayerByUriAndLayer(PortalSession portalSession, String uri, String layer) {
-        MapLayer found = null;
-        int i = 0;
-        while (found == null && i < portalSession.getMapLayers().size()) {
-            MapLayer search = portalSession.getMapLayers().get(i);
-            found = search.findByUriAndLayer(uri, layer);
-            i++;
-        }
-        return found;
-    }
-    
 }

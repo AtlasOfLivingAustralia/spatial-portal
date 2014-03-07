@@ -1,0 +1,53 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="areaaddressradiusselectionwindow" use="au.org.ala.spatial.composer.add.area.AreaAddressRadiusSelection"
+            apply="au.org.ala.spatial.composer.add.area.AreaAddressRadiusSelection" width="400px"  xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="areaaddressradiusselectionwindow.onClick$btnCancel(null)" style="display: inline" />
+        
+        <caption label="Radius centered on street address" />
+        <vbox width="90%" style="margin-left:10px;margin-right:10px">
+            <hbox width="90%">
+                <div width="80px">
+                    <label value="Area name" sclass="h3" />
+                </div>
+                <textbox id="txtLayerName" width="250px"/>
+            </hbox>
+            <separator />
+            <hbox width="90%">
+                <div width="80px">
+                    <label value="Enter address" sclass="h3" />
+                </div>
+                <textbox id="addressBox" width="220px"/>
+                <button id="btnFindAddress" label="Search" />
+            </hbox>
+            <label sclass="wCaption" value='For example: "Black Mountain, Canberra"'/>
+            <separator />
+            <hbox sclass="highlighted" width="100%">
+                <label id="addressLabel" />
+            </hbox>
+            <separator />
+            <hbox width="100%">
+                <div width="80px">
+                    <label value="Enter radius (km)" sclass="h3" />
+                </div>
+                <doublebox id="dRadius" value="1.0" constraint="no negative,no empty" />
+            </hbox>
+            <div style="float:right;margin-right:5px">
+                <hbox>                    
+                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <button sclass="goButton" label="Next" id="btnOk"/>
+                </hbox>
+            </div>
+        </vbox>
+
+    </window>
+</zk>
+

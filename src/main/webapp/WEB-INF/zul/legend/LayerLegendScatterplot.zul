@@ -1,0 +1,176 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?page title="Maxent" contentType="text/html;charset=UTF-8" id="ScatterplotPage"?>
+<zk xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
+    
+    <window id="scatterplotwindow" use="au.org.emii.portal.composer.legend.LayerLegendScatterplotController"
+            apply="au.org.emii.portal.composer.legend.LayerLegendScatterplotController"
+            width="380px"
+            height="600px"
+            >
+        <vbox style="padding-left:8px;">
+            <button id="btnEditAppearance1" label="Species display settings" sclass="goButton" style="float:left" />
+            <div id="scatterplotDownloads" visible="false">
+                <hbox>
+                    <button sclass="goButton" label="Download image" id="scatterplotImageDownload" />
+                    <button sclass="goButton" label="Download data" id="scatterplotDataDownload" />
+                </hbox>
+            </div>
+            <separator />
+            <hbox>
+                <label id="tbxSelectionCount" />
+                <div id="scatterplotButtons" visible="false">
+                    <button sclass="goButton" label="clear selection" id="btnClearSelection" visible="false" />
+                    <button sclass="goButton" label="add in/out layers to map" id="addNewLayers" visible="false"/>
+                </div>
+            </hbox>
+            <label id="tbxRange" />
+            <label id="tbxDomain" />
+            <separator />
+            <hbox>
+                <checkbox id="chkSelectMissingRecords" style="font-weight: bold" label="SELECT records with missing values " visible="false" />
+                <label id="tbxMissingCount" />
+            </hbox>
+            <separator />
+            <div width="100%" >
+                <label id="lblMissing" value="No records available for the scatterplot" visible="false" style="float:left;"/>
+            </div>    
+            <div id="divHighlightArea" >
+                <label value="Highlight occurrences on the scatterplot that are in an area" />
+                <hbox>
+                    <combobox id="cbHighlightArea" width="300px" readonly="true" />
+                    <button id="bClearHighlightArea" label="Clear" sclass="goButton" />
+                </hbox>
+                <separator />
+            </div>
+        </vbox>
+        
+        
+        <html><![CDATA[       
+        <div id="chartDivBack" class="chartDiv">
+        <div id="chartDiv" class="chartDiv" 
+            onMouseDown="doMouseDown(event)"
+            onMouseMove="doMouseDrag(event)"
+            onMouseUp="doMouseUp(event)"></div></div>
+        <div id="rband"
+            onMouseDown="doMouseDown(event)"
+            onMouseMove="doMouseDrag(event)"
+            onMouseUp="doMouseUp(event)"></div>
+        ]]>
+        </html>
+
+        <div id="chartImg" width="300px" height="300px" style="float:left;" />
+
+        <!-- chartImg.height = scatterplotwindow.height - tbxChartSelection.height -->
+        <textbox id="tbxChartSelection" visible="false" height="215px" />
+        <script type="text/JavaScript"><![CDATA[
+var startx = 0;
+var starty = 0;
+var endx = 0;
+var endy = 0;
+var resizing = false;
+
+function doMouseDown(event) {
+document.getElementById('chartDiv').UNSELECTABLE="on"
+document.getElementById('rband').UNSELECTABLE="on"
+document.getElementById('chartDivBack').UNSELECTABLE="on"
+
+ $('#rband').offset($('#chartDivBack').offset());
+        setPageXY(event);
+        startx = event.pageX;
+        starty = event.pageY;
+        resizing = true;
+
+        $('#rband').offset({ top: starty, left: startx }).show();
+
+        // prevent default behavior of text selection
+        return false;
+}
+
+function setPageXY(event) {
+if (event.pageX || event.pageY) {
+} else if (event.clientX || event.clientY) {
+event.pageX = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+event.pageY = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+}
+}
+
+function doMouseDrag(event) {
+    if(resizing){
+        var left, top, width, height;
+
+        setPageXY(event);
+
+        endx = event.pageX;
+        endy = event.pageY;
+
+        if(event.pageX>startx){
+            left = startx;
+            width = event.pageX - startx;
+        }
+        else {
+            left = event.pageX;
+            width = startx - event.pageX;
+        }
+        if(event.pageY>starty){
+            top = starty;
+            height = event.pageY - starty;
+        }
+        else {
+            top = event.pageY;
+            height = starty - event.pageY;
+        }
+
+        $('#rband').offset({ top: top, left: left });
+        $("#rband").css({
+            'width'  :    width,
+            'height' :    height
+        });
+    }
+}
+
+function doMouseUp(event) {
+    if(resizing){
+        resizing = false;
+        chartSelection(startx, starty, endx, endy);
+    }
+}
+
+function clearSelection() {
+    
+}
+
+function chartSelection(x1, y1, x2, y2) {
+    x1 = x1 + "";
+    x2 = x2 + "";
+    y1 = y1 + "";
+    y2 = y2 + "";
+    var value = (x1.replace("px","")-$(jq('#chartDivBack')[0]).offset().left)
+        + "," + (y1.replace("px","")-$(jq('#chartDivBack')[0]).offset().top)
+        + "," + (x2.replace("px","")-$(jq('#chartDivBack')[0]).offset().left)
+        + "," + (y2.replace("px","")-$(jq('#chartDivBack')[0]).offset().top);
+    var cd = document.getElementById('chartDiv');
+    var ci = document.getElementById('chartDivBack');
+    ci.style.backgroundImage=cd.style.backgroundImage;
+    zAu.send(new zk.Event(zk.Widget.$(jq('$scatterplotwindow')[0]), 'onChange$tbxChartSelection', value));
+}
+
+function updateScatterplot(width, height, background) {
+    var cd = document.getElementById('chartDiv');
+    var ci = document.getElementById('chartDivBack');
+    ci.style.backgroundImage=cd.style.backgroundImage;
+    cd.style.backgroundImage=background;
+    cd.style.width=width + 'px';
+    cd.style.height=height + 'px';
+    ci.style.width=cd.style.width;
+    ci.style.height=cd.style.height;
+
+    $("#rband").css({
+        'width'  : 0,
+        'height' : 0
+    }).hide();
+}
+ ]]>
+        </script>
+
+    </window>
+</zk>

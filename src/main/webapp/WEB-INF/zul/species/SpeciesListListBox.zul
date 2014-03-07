@@ -1,0 +1,20 @@
+<zk>
+
+<vbox id="vboxImportSL" visible="false">                  	                   	
+	<listbox id="speciesListListbox" use="au.org.ala.spatial.composer.species.SpeciesListListbox" mold="paging" height="400px" vflex="true" pageSize="10">
+		<listhead>
+			<listheader width="50px" />		                        
+			<listheader label="List Name" sort="auto" />
+			<listheader label="Date Created" sort="auto" />
+			<listheader label="Owner" sort="auto" />
+			<listheader label="Item Count" sort="auto" />
+			<!-- <listheader label="List Type"/>
+			<listheader label="Username" />
+			<listheader label="First Name"/>
+			<listheader label="Surname" />
+			<listheader width="50px" /> -->
+			<listheader label="DataResourceUID"  visible="false"/>
+		</listhead>
+	</listbox>                    	
+</vbox>
+</zk>

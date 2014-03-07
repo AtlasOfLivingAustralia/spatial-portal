@@ -1,0 +1,42 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="uploadtospecieslistwindow" use="au.org.ala.spatial.composer.input.UploadToSpeciesListController"
+    apply="au.org.ala.spatial.composer.input.UploadToSpeciesListController" width="400px"
+    xmlns:n="http://www.zkoss.org/2005/zk/native" title="Submit Species List">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="uploadtospecieslistwindow.onClick$btnCancel(null)" style="display: inline" />
+
+       <!-- <caption label="Upload Assemblage to Species List" /> -->
+
+        <vbox align="stretch" width="100%">
+            <separator />
+            <label value="1. Enter a title for the list" sclass="word-wrap" style="white-space: normal; padding: 5px" />
+            <textbox id="tbName" width="100%"/>
+             <separator />
+            <label value="2. Enter a description for the list" sclass="word-wrap" style="white-space: normal; padding: 5px"/>
+            <textbox id="tbDesc" width="100%"/>
+            <separator />
+            <label id="tbInstructions" style="white-space: normal; padding: 5px" />
+            <separator />
+            
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <hbox>                    
+                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <button sclass="goButton" label="OK" id="btnOk"/>
+                    
+                    <!-- <button sclass="goButton" id="fileUpload" label="Next" upload="true" /> -->
+                </hbox>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>

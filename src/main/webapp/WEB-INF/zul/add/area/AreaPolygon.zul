@@ -1,0 +1,42 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="areapolygonwindow" use="au.org.ala.spatial.composer.add.area.AreaPolygon"
+            apply="au.org.ala.spatial.composer.add.area.AreaPolygon" width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native"
+            style="position:absolute;left:20px;top:20px" draggable="false">
+        <n:div class="left-cover" />
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="areapolygonwindow.onClick$btnCancel(null)" style="display: inline" />
+
+        <caption label="Draw Polygon" />
+        <vbox sclass="embedWindowsContent">
+            <label sclass="wordwrap" value="1. Name the new polygon layer." />
+            <label sclass="wordwrap" value="2. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button." />
+            <label sclass="wordwrap" value="3. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area." />
+            <separator />
+            <div>
+                <hbox width="100%">
+                    <label value="Area name" sclass="h3" />
+                    <textbox id="txtLayerName" width="250px"/>
+                </hbox>
+            </div>
+            <separator />
+            <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" />
+            <div sclass="embedWindowsButtons">
+                <hbox>
+                    <button sclass="goButton" label="Clear" id="btnClear" disabled="true"/>                    
+                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <button sclass="goButton" label="Next" id="btnNext" disabled="true" />
+                </hbox>
+            </div>
+            <separator />
+        </vbox>
+    </window>
+</zk>
+

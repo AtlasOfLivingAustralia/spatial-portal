@@ -22,7 +22,7 @@ public class ExternalContentComposer extends Window {
                 close();
             }
         });
-        
+
         this.getFellow("reset").addEventListener("onClick", new EventListener() {
 
             public void onEvent(Event event) throws Exception {
@@ -39,7 +39,7 @@ public class ExternalContentComposer extends Window {
     }
 
     @Override
-    public void doModal() throws InterruptedException, SuspendNotAllowedException  {
+    public void doModal() throws SuspendNotAllowedException {
         super.doModal();
 
         this.getFellow("hide").addEventListener("onClick", new EventListener() {
@@ -65,11 +65,11 @@ public class ExternalContentComposer extends Window {
     }
 
     public void setSrc(Event event) {
-        if(event.getData() == null) {
-            ((Iframe)getFellow("externalContentIframe")).setSrc("");
+        if (event.getData() == null) {
+            ((Iframe) getFellow("externalContentIframe")).setSrc("");
             Events.echoEvent("setSrc", event.getTarget(), src);
         } else {
-            ((Iframe)getFellow("externalContentIframe")).setSrc(src);
+            ((Iframe) getFellow("externalContentIframe")).setSrc(src);
         }
     }
 

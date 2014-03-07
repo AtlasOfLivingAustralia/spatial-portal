@@ -1,0 +1,45 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+   
+    <window id="specieslistresultswindow" title="Species List Results Preview" border="normal"
+    use="au.org.ala.spatial.composer.results.SpeciesListResults"
+            apply="au.org.ala.spatial.composer.results.SpeciesListResults"
+            width="90%"
+             xmlns:n="http://www.zkoss.org/2005/zk/native">
+            <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+            <n:div class="fancybox-bg" id="fancybox-bg-se" />
+            <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+            <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+            <n:div class="fancybox-bg" id="fancybox-bg-n" />
+            <n:div class="fancybox-bg" id="fancybox-bg-e" />
+            <n:div class="fancybox-bg" id="fancybox-bg-s" />
+            <n:div class="fancybox-bg" id="fancybox-bg-w" />
+            <a sclass="fancybox-close" onClick="specieslistresultswindow.detach()" style="display: inline" />
+
+             <separator />
+            <label id="results_label" value=""/>
+            <separator />
+            <separator />
+            <listbox id="popup_listbox_results" height="400px">
+                            <listhead sizable="true" >
+                                <listheader label="Family" ></listheader>
+                                <listheader label="Scientific name" ></listheader>
+                                <listheader label="Common name/s" ></listheader>
+                                <listheader label="Taxon rank" align="center" ></listheader>
+                                <!-- <listheader label="LSID" ></listheader>  -->
+                                <listheader label="# Occurrences" align="center" ></listheader>
+                            </listhead>
+                        </listbox>
+
+            <hbox>
+                <hbox>
+                    <separator/>
+                    <separator/>
+                    <button id="btnDownload" label="Download" sclass="goButton" />
+                </hbox>
+                <separator/>
+                <separator/>
+                <div align="right"><button label="Close" onClick="specieslistresultswindow.detach()" sclass="goButton" /> </div>
+            </hbox>
+    </window>
+</zk>

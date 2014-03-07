@@ -1,46 +1,40 @@
 package au.org.emii.portal.menu;
 
-import au.org.emii.portal.util.LayerUtilitiesImpl;
-import au.org.emii.portal.value.AbstractIdentifierImpl;
-import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.ala.spatial.data.Facet;
+import au.org.ala.spatial.data.LegendObject;
+import au.org.ala.spatial.data.Query;
+import au.org.ala.spatial.util.ScatterplotData;
+import au.org.ala.spatial.util.SelectedArea;
+import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.value.AbstractIdentifierImpl;
 import au.org.emii.portal.wms.WMSStyle;
-import java.io.Serializable;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
-import org.ala.spatial.data.BiocacheQuery;
-import org.ala.spatial.data.Query;
-import org.ala.spatial.data.UploadQuery;
-import org.ala.spatial.util.SelectedArea;
-import org.ala.spatial.util.Util;
 import org.apache.commons.lang.StringEscapeUtils;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Representation of a map layer - used for both rendering map layers and
  * building the menu system.
- *
+ * <p/>
  * A tree structured menu is built by adding children with addChild. Each node
  * of the tree knows about it's parent and child objects so it is possible to
  * walk the tree from any given node. The root node is identifiable because it
  * has a null parent. Leaf nodes are identified by either checking for the
  * presence of children or by calling the convenience method isLeaf()
- *
+ * <p/>
  * IMPORTANT - READ NOTES HERE BEFORE MODIFYING THIS CLASS!!
  * ========================================================= IF YOU ADD FIELDS
  * TO THIS CLASS THAT AREN'T SIMPLE PRIMITIVE TYPES, MAKE SURE YOU UPDATE THE
  * clone() METHOD TO ENSURE YOUR CHANGES ARE PICKED UP WHEN THE MAPLAYERS ARE
  * COPIED FOR SESSION CREATION!
  *
- *
  * @author geoff
- *
  */
-public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, Cloneable, Serializable {
+public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Serializable {
 
-    private SettingsSupplementary settingsSupplementary = null;
     private static final long serialVersionUID = 1L;
     /**
      * Used as a value for selectedStyleIndex to indicate that the default
@@ -52,15 +46,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      */
     protected final static String DELIM = "::";
     /**
-     * True if this item is currently being displayed in the active layers list
-     */
-    private boolean listedInActiveLayers = false;
-    /**
-     * Reference to containing parent if there is one or null if this is the top
-     * layer
-     */
-    private MapLayer parent = null;
-    /**
      * Child map layers - infinite depth is supported
      */
     private List<MapLayer> children = new ArrayList<MapLayer>();
@@ -71,14 +56,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      * moment
      */
     private String layer = null;
-    /**
-     * It is possible to display this layer on the map
-     */
-    protected boolean displayable = false;
-    /**
-     * Can this layer handle WFS queries
-     */
-    protected boolean queryable = false;
     /**
      * URI to fetch WMS data from
      */
@@ -101,7 +78,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      * The type of map layer we are - mostly used when generating JavaScript in
      * OpenLayersJavascript to specialcase the output
      */
-    protected int type = LayerUtilitiesImpl.UNSUPPORTED;
+    protected int type = LayerUtilities.UNSUPPORTED;
     /**
      * True if this is a baselayer (prevents anything from showing up in the
      * active layers box and tree menu
@@ -127,10 +104,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      */
     String highlight = null;
     /*
-     * data for 'dummy' layers
-     */
-    HashMap<String, Object> data = new HashMap<String, Object>();
-    /*
      * display name
      */
     String displayName = null;
@@ -145,19 +118,34 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     private boolean removeable = true;
 
     /*
-    * Flag indicating if this layer is removeable
-    */
+     * Flag indicating if this layer is removeable
+     */
     private boolean hasMetadata = true;
-
-    /*
-    * Flag indicating if this layer is removeable
-    */
-    private boolean hasExtent = true;
 
     /*
      * layer sub type. e.g. source
      */
-    protected int subType = LayerUtilitiesImpl.UNSUPPORTED;
+    protected int subType = LayerUtilities.UNSUPPORTED;
+
+    protected String geoJSON = null;
+
+    protected String geometryWKT = null;
+    private String areaSqKm;
+    private Query speciesQuery;
+    private ArrayList<Facet> facets;
+    private String cache;
+    private String envelope;
+    private String spcode;
+    private String poi;
+    private String highlightState;
+    private Integer animationStep;
+    private Double animationInterval;
+    private Integer lastYear;
+    private Integer firstYear;
+    private Integer classificationSelection;
+    private Integer classificationGroupCount;
+    private LegendObject legendObject;
+    private String pid;
 
     public void setDefaultStyleLegendUriSet(boolean defaultStyleLegendUriSet) {
         this.defaultStyleLegendUriSet = defaultStyleLegendUriSet;
@@ -166,7 +154,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public boolean DefaultStyleLegendUriSet() {
         return this.defaultStyleLegendUriSet;
     }
-    protected String geoJSON = null;
 
     public String getGeoJSON() {
         return geoJSON;
@@ -175,7 +162,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public void setGeoJSON(String geoJSON) {
         this.geoJSON = geoJSON;
     }
-    protected String geometryWKT = null;
 
     public String getWKT() {
         if (isPolygonLayer()
@@ -195,6 +181,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public void setWKT(String wkt) {
         this.geometryWKT = wkt;
     }
+
     /**
      * Supported rendering styles as advertised by the server are stored in this
      * list (WMS only)
@@ -213,7 +200,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     /**
      * The user's selection based on an AnimationParameters instance.
      */
-    protected AnimationSelection animationSelection = null;
+//    protected AnimationSelection animationSelection = null;
     /**
      * True if this map layer is currently being displayed on the map as an
      * animation, otherwise false
@@ -237,6 +224,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public void setGeometryType(int geometryType) {
         this.geometryType = geometryType;
     }
+
     private boolean dynamicStyle = false;
     //parameters for the dynamic styled layers
     private int redVal;
@@ -245,6 +233,8 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     private int sizeVal;
     private boolean sizeUncertain;
     private boolean clustered;
+
+    ScatterplotData scatterplotData;
 
     public int getBlueVal() {
         return blueVal;
@@ -293,6 +283,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public void setClustered(boolean clustered) {
         this.clustered = clustered;
     }
+
     private String envColour;
     private String envName;
     private String envSize;
@@ -328,6 +319,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public void setDynamicStyle(boolean dynamicStyle) {
         this.dynamicStyle = dynamicStyle;
     }
+
     /**
      * env params allow the user to dynamically style the Layer
      */
@@ -375,7 +367,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
     /**
      * Constructor
-     *
+     * <p/>
      * Creates a blank default style
      */
     public MapLayer() {
@@ -387,6 +379,8 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         style.setTitle("Default");
 
         styles.add(style);
+
+        setMapLayerMetadata(new MapLayerMetadata());
     }
 
     /**
@@ -431,10 +425,9 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     /**
      * Return the name of the currently selected style or an empty string if
      * nothing has been selected yet.
-     *
+     * <p/>
      * Empty string is returned as the default rendering style can be requested
      * from the wms server by asking for style=""
-     *
      *
      * @return
      */
@@ -460,7 +453,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
         //check if its a dynamically generated style
         //if so go and go build the uri
-
         if (isDynamicStyle()) {
             uri = styles.get(selectedStyleIndex).getLegendUri();
         } else {
@@ -491,10 +483,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         return type;
     }
 
-    public boolean isNcWmsType() {
-        return (type == LayerUtilitiesImpl.NCWMS) ? true : false;
-    }
-
     public void setType(int type) {
         this.type = type;
     }
@@ -515,19 +503,19 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         this.opacity = opacity;
     }
 
-    public boolean isQueryable() {
-        return queryable;
-    }
-
-    public void setQueryable(boolean queryable) {
-        this.queryable = queryable;
-    }
-
     public String getUri() {
-        if (getData("CACHE") != null) {
-            return uri + "&CACHE=" + (String) getData("CACHE");
+        if (cache != null) {
+            return uri + "&CACHE=" + cache;
         }
         return uri;
+    }
+
+    public String getCache() {
+        return cache;
+    }
+
+    public void setCache(String cache) {
+        this.cache = cache;
     }
 
     public void setUri(String uri) {
@@ -582,7 +570,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     }
 
     public void addChild(MapLayer c) {
-        c.setParent(this);
         children.add(c);
     }
 
@@ -630,30 +617,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         return (styles.size() > 0);
     }
 
-    public boolean isListedInActiveLayers() {
-        return listedInActiveLayers;
-    }
-
-    public void setListedInActiveLayers(boolean listedInActiveLayers) {
-        this.listedInActiveLayers = listedInActiveLayers;
-    }
-
-    public MapLayer getParent() {
-        return parent;
-    }
-
-    public void setParent(MapLayer parent) {
-        this.parent = parent;
-    }
-
-    public boolean isDisplayable() {
-        return displayable;
-    }
-
-    public void setDisplayable(boolean displayable) {
-        this.displayable = displayable;
-    }
-
     public boolean isBaseLayer() {
         return baseLayer;
     }
@@ -686,81 +649,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         this.removeable = removeable;
     }
 
-    public boolean isHasMetadata() {
-        return hasMetadata;
-    }
-
-    public void setHasMetadata(boolean hasMetadata) {
-        this.hasMetadata = hasMetadata;
-    }
-
-    public boolean isHasExtent() {
-        return hasExtent;
-    }
-
-    public void setHasExtent(boolean hasExtent) {
-        this.hasExtent = hasExtent;
-    }
-
-    /**
-     * Recursive search for a MapLayer instance matching a given id.
-     *
-     * CAREFUL! MapLayer IDs are not plain strings, they are formed by
-     * concatenating some variables - see method getId() for details
-     *
-     * @param layer
-     * @return
-     */
-    public MapLayer findByLayer(String layer) {
-        MapLayer match = null;
-
-        if (getLayer() == null && layer == null) {
-            match = this;
-        } else if ((getLayer() != null) && (getLayer().equals(layer))) {
-            match = this;
-        } else {
-            int i = 0;
-            while ((match == null) && (i < getChildCount())) {
-                match = getChild(i).findByLayer(layer);
-                i++;
-            }
-        }
-        return match;
-    }
-
-    public MapLayer findByUriAndLayer(String uri, String layer) {
-        MapLayer match = null;
-
-        if ((getUri() != null)
-                && getUri().equals(uri)
-                && (getLayer() != null)
-                && getLayer().equals(layer)) {
-            match = this;
-        } else {
-            int i = 0;
-            while ((match == null) && (i < getChildCount())) {
-                match = getChild(i).findByUriAndLayer(uri, layer);
-                i++;
-            }
-        }
-        return match;
-    }
-
-    public MapLayer findById(String id) {
-        MapLayer match = null;
-
-        if (getId().equals(id)) {
-            match = this;
-        } else {
-            int i = 0;
-            while ((match == null) && (i < getChildCount())) {
-                match = getChild(i).findById(id);
-                i++;
-            }
-        }
-        return match;
-    }
-
     /**
      * Provide a deep copy of the object - equivalent to clone() only not
      * broken. This is to allow us to maintain a single list of layers obtained
@@ -771,7 +659,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      */
     public Object clone() throws CloneNotSupportedException {
         MapLayer mapLayer = (MapLayer) super.clone();
-        mapLayer.parent = null;
         mapLayer.children = new ArrayList<MapLayer>();
         mapLayer.styles = new ArrayList<WMSStyle>();
 
@@ -790,7 +677,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         if (children != null) {
             for (MapLayer child : children) {
                 MapLayer clonedChild = (MapLayer) child.clone();
-                clonedChild.setParent(mapLayer);
                 mapLayer.addChild(clonedChild);
             }
         }
@@ -798,116 +684,19 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         // copy animation parameters - since they are layer specific
         // we can COPY instead of CLONEing
         if (mapLayerMetadata != null) {
-            mapLayer.mapLayerMetadata =
-                    (MapLayerMetadata) mapLayerMetadata;
-        }
-
-        // copy data objects
-        mapLayer.data = new HashMap<String, Object>();
-        if (data != null) {
-            for (Entry<String, Object> entry : mapLayer.data.entrySet()) {
-                mapLayer.data.put(entry.getKey(), entry.getValue());
-            }
+            mapLayer.mapLayerMetadata
+                    = mapLayerMetadata;
         }
 
         return mapLayer;
-    }
-
-    /**
-     * Return a string representation of this menu as ascii art
-     */
-    public String dump(String indent) {
-        String value =
-                "ML" + indent + getName() + "(" + getId() + ") (parent="
-                + ((parent == null) ? "null" : parent.getId()) + ")\n";
-        for (MapLayer child : children) {
-            value += child.dump(indent + "    ");
-        }
-        return value;
-    }
-
-    public Object getChild(Object parent, int index) {
-        return ((TreeMenuItem) parent).getChild(index);
-    }
-
-    public boolean isLeaf(Object parent) {
-        return ((TreeMenuItem) parent).isLeaf();
-    }
-
-    public int getChildCount(Object parent) {
-        return ((TreeMenuItem) parent).getChildCount();
     }
 
     public MapLayerMetadata getMapLayerMetadata() {
         return mapLayerMetadata;
     }
 
-    public void setMapLayerMetadata(MapLayerMetadata mapLayerMetadata) {
+    private void setMapLayerMetadata(MapLayerMetadata mapLayerMetadata) {
         this.mapLayerMetadata = mapLayerMetadata;
-    }
-
-    public AnimationSelection getAnimationSelection() {
-        return animationSelection;
-    }
-
-    public void setAnimationSelection(AnimationSelection animationSelection) {
-        this.animationSelection = animationSelection;
-    }
-
-    public boolean isCurrentlyAnimated() {
-        return currentlyAnimated;
-    }
-
-    public void setCurrentlyAnimated(boolean currentlyAnimated) {
-        this.currentlyAnimated = currentlyAnimated;
-    }
-
-    /**
-     * Get a list of all layerNames for this object
-     *
-     * @return
-     */
-    public List<String[]> getAllLayerNames() {
-        List<String[]> list = new ArrayList<String[]>();
-
-        // add ourself...
-        getAllLayerNames(list);
-
-        return list;
-    }
-
-    private void getAllLayerNames(List<String[]> list) {
-
-        // skip any null layer ids or just not displayable - eg for grouping layers
-        if (layer != null && displayable) {
-            list.add(new String[]{layer, getName()});
-        }
-        // then all children
-        for (MapLayer child : children) {
-            child.getAllLayerNames(list);
-        }
-
-    }
-
-    public boolean isSupportsAnimation() {
-        return (mapLayerMetadata == null)
-                ? false : mapLayerMetadata.isSupportsAnimation();
-    }
-
-    /**
-     * Append append to description
-     *
-     * @param append
-     * @param recursive
-     */
-    public void appendDescription(String append, boolean recursive) {
-        // the leading space in the .properties file seems to go AWOL
-        setDescription(getDescription() + " " + append);
-        if (recursive) {
-            for (MapLayer child : children) {
-                child.appendDescription(append, recursive);
-            }
-        }
     }
 
     /**
@@ -988,14 +777,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         return colourMode;
     }
 
-    public Object getData(String key) {
-        return data.get(key);
-    }
-
-    public void setData(String key, Object value) {
-        data.put(key, value);
-    }
-
     public String getDisplayName() {
         return displayName;
     }
@@ -1019,7 +800,15 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     }
 
     public boolean isSpeciesLayer() {
-        return (getData("query") != null);
+        return (speciesQuery != null);
+    }
+
+    public Query getSpeciesQuery() {
+        return speciesQuery;
+    }
+
+    public void setSpeciesQuery(Query query) {
+        this.speciesQuery = query;
     }
 
     public boolean isGridLayer() {
@@ -1037,10 +826,130 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public void setSubType(int type) {
         subType = type;
     }
-    
+
     public String calculateAndStoreArea() {
-        String area = new SelectedArea(this,null).getKm2Area();
-        setData("area", area);
-        return area;        
+        String area = new SelectedArea(this, null).getKm2Area();
+        setAreaSqKm(area);
+        return area;
+    }
+
+    public String getAreaSqKm() {
+        return areaSqKm;
+    }
+
+    public void setAreaSqKm(String areaSqKm) {
+        this.areaSqKm = areaSqKm;
+    }
+
+    public ScatterplotData getScatterplotData() {
+        return scatterplotData;
+    }
+
+    public void setScatterplotData(ScatterplotData data) {
+        scatterplotData = data;
+    }
+
+    public ArrayList<Facet> getFacets() {
+        return facets;
+    }
+
+    public void setFacets(ArrayList<Facet> facets) {
+        this.facets = facets;
+    }
+
+    public String getHighlightState() {
+        return highlightState;
+    }
+
+    public String getPointsOfInterestWS() {
+        return poi;
+    }
+
+    public LegendObject getLegendObject() {
+        return legendObject;
+    }
+
+    public void setLegendObject(LegendObject lo) {
+        this.legendObject = lo;
+    }
+
+    public Integer getClassificationGroupCount() {
+        return classificationGroupCount;
+    }
+
+    public void setClassificationGroupCount(Integer classificationGroupCount) {
+        this.classificationGroupCount = classificationGroupCount;
+    }
+
+    public Integer getClassificationSelection() {
+        return classificationSelection;
+    }
+
+    public void setClassificationSelection(Integer groupSelection) {
+        this.classificationSelection = groupSelection;
+    }
+
+    public void setAnimationStep(Integer step) {
+        this.animationStep = step;
+    }
+
+    public void setAnimationInterval(Double interval) {
+        this.animationInterval = interval;
+    }
+
+    public void setFirstYear(Integer firstYear) {
+        this.firstYear = firstYear;
+    }
+
+    public void setLastYear(Integer lastYear) {
+        this.lastYear = lastYear;
+    }
+
+    public Integer getFirstYear() {
+        return firstYear;
+    }
+
+    public Integer getLastYear() {
+        return lastYear;
+    }
+
+    public Integer getAnimationStep() {
+        return animationStep;
+    }
+
+    public Double getAnimationInterval() {
+        return animationInterval;
+    }
+
+    public void setHighlightState(String state) {
+        this.highlightState = state;
+    }
+
+    public void setPointsOfInterestWS(String poi) {
+        this.poi = poi;
+    }
+
+    public void setSPCode(String spcode) {
+        this.spcode = spcode;
+    }
+
+    public String getSPCode() {
+        return spcode;
+    }
+
+    public String getEnvelope() {
+        return envelope;
+    }
+
+    public void setEnvelope(String envelope) {
+        this.envelope = envelope;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
+    }
+
+    public String getPid() {
+        return pid;
     }
 }

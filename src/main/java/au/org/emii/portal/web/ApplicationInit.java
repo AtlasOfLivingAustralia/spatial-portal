@@ -1,34 +1,26 @@
 package au.org.emii.portal.web;
 
 import au.org.emii.portal.config.ConfigurationLoaderStage1;
-import au.org.emii.portal.settings.Settings;
-import au.org.emii.portal.settings.SettingsImpl;
-import au.org.emii.portal.util.PortalNamingImpl;
-import au.org.emii.portal.util.ResolveHostNameImpl;
-import java.util.logging.Level;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.zkoss.util.resource.Labels;
-
-
 import zk.extra.BiocacheLabelLocator;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
 
 /**
  * Housekeeping class for setting up objects in application scope.
- * 
+ * <p/>
  * Currently loads and processes the xml configuration file
- * @author geoff
  *
- * also initialises the webapp from ZK point of view
+ * @author geoff
+ *         <p/>
+ *         also initialises the webapp from ZK point of view
  */
-public class ApplicationInit extends ContextLoaderListener{
+public class ApplicationInit extends ContextLoaderListener {
 
     public static final String CONFIGURATION_LOADER_ATTRIBUTE = "configurationLoader";
     public static final String CONFIGURATION_LOADER_THREAD_ATTRIBUTE = "configurationLoaderThread";
@@ -38,30 +30,7 @@ public class ApplicationInit extends ContextLoaderListener{
     /**
      * Logger instance
      */
-    private Logger logger = Logger.getLogger(this.getClass());
-
-    /**
-     * setup log4j - since we have no spring at this point, we have to call
-     * some setters on it ourself...
-     */
-    private void initLog4j() {
-        // Settings and portal naming objects will be replaced by spring once the system is up
-        Settings settings = new SettingsImpl();
-        settings.setConfigPath(System.getProperty(CONFIG_DIR_JVM_ARG));
-        PortalNamingImpl portalNaming = new PortalNamingImpl();
-        portalNaming.setSettings(settings);
-        try {
-            portalNaming.afterPropertiesSet();
-        } catch (Exception ex) {
-            logger.error("Error loading portal naming in application init",ex);
-        }
-
-        Log4jLoader log4jLoader = new Log4jLoader();
-        log4jLoader.setPortalNaming(portalNaming);
-        log4jLoader.setResolveHostname(new ResolveHostNameImpl());
-        log4jLoader.setSettings(settings);
-        log4jLoader.load();
-    }
+    private static Logger logger = Logger.getLogger(ApplicationInit.class);
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
@@ -77,11 +46,9 @@ public class ApplicationInit extends ContextLoaderListener{
             // error message
             logger.error(
                     "Config file location not set.  You must supply the full " +
-                    "path to a web portal configuration directory by starting your " +
-                    "JVM with -D" + CONFIG_DIR_JVM_ARG + "=/full/path/to/config/dir");
+                            "path to a web portal configuration directory by starting your " +
+                            "JVM with -D" + CONFIG_DIR_JVM_ARG + "=/full/path/to/config/dir");
         } else {
-            // set log4j with app name and host name
-            initLog4j();
 
             // now the spring context gets loaded by superclass...
             super.contextInitialized(sce);
@@ -114,9 +81,8 @@ public class ApplicationInit extends ContextLoaderListener{
         logger.debug("* APPLICATION INIT: complete");
 
 
-
     }
-    
+
 
     /**
      * FIXME - MOVE TO DEDICATED SHUTDOWN CLASS!!

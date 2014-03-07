@@ -130,12 +130,6 @@
 
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${org.springframework.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>${org.springframework.version}</version>
         </dependency>
@@ -188,6 +182,12 @@
         <dependency>
             <groupId>org.zkoss.zk</groupId>
             <artifactId>zhtml</artifactId>
+            <version>${zkVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.zkoss.zk</groupId>
+            <artifactId>zkbind</artifactId>
             <version>${zkVersion}</version>
         </dependency>
 
@@ -301,7 +301,12 @@
             <version>2.4.0</version>
         </dependency>
         <dependency>
-            <groupId>com.ibm.icu</groupId>
+            <groupId>org.apache.xmlbeans</groupId>
+            <artifactId>xmlbeans-xmlpublic</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <dependency>
+        <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
             <version>3.8</version>
         </dependency>
@@ -366,6 +371,7 @@
 	    <version>5.0.6.1</version>
 	</dependency>
 
+
         <!--  Spring -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -388,15 +394,15 @@
             <artifactId>spring-webmvc</artifactId>
             <version>${org.springframework.version}</version>
         </dependency>
-        
-        <!-- zk min-max slider -->
+
+        <!-- zk min-max slider
         <dependency>
             <groupId>org.zkoss.zul</groupId>
             <artifactId>rangeslider</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>
-        
-        
+        </dependency>-->
+
+
         <!-- for persistence -->
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
@@ -407,6 +413,11 @@
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ala.layers</groupId>
+            <artifactId>layers-store</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
 
@@ -571,7 +582,7 @@
     <properties>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
         <!-- <springVersion>3.0.1.RELEASE</springVersion> -->
-        <zkVersion>5.0.8</zkVersion>
+        <zkVersion>6.5.4</zkVersion>
         <jerseyVersion>1.1.4.1</jerseyVersion>
         <aspectJVersion>1.6.8</aspectJVersion>
         <geotools.version>2.7.3</geotools.version>

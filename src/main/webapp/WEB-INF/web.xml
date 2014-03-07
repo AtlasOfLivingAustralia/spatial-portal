@@ -1,76 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+<web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
     <display-name>ALA Spatial Portal</display-name>
-    <context-param>
-        <description>Spring config file</description>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>classpath:au/org/emii/portal/application-config.xml</param-value>
-    </context-param>
+
+
+    <!-- //// -->
+    <!-- ZK -->
     <listener>
-        <description>Used to cleanup when a session is destroyed</description>
-        <display-name>ZK Session Cleaner</display-name>
+        <description>ZK listener for cleanup when a session is destroyed</description>
         <listener-class>org.zkoss.zk.ui.http.HttpSessionListener</listener-class>
     </listener>
-    <listener>
-        <description>Load the application config file, then pass control to spring to merge config file keys into bean definitions and create application context</description>
-        <listener-class>au.org.emii.portal.web.ApplicationInit</listener-class>
-    </listener>
     <servlet>
-        <description>The servlet loads the DSP pages.</description>
-        <servlet-name>dspLoader</servlet-name>
-        <servlet-class>org.zkoss.web.servlet.dsp.InterpreterServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <description>ZK loader for ZUML pages</description>
+        <description>ZK loader for evaluating ZUML pages</description>
         <servlet-name>zkLoader</servlet-name>
         <servlet-class>org.zkoss.zk.ui.http.DHtmlLayoutServlet</servlet-class>
+        <!--
+            Must. Specifies URI of the update engine (DHtmlUpdateServlet). It
+            must be the same as <url-pattern> for the update engine.
+        -->
         <init-param>
             <param-name>update-uri</param-name>
             <param-value>/zkau</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
+        <!-- MUST -->
     </servlet>
+    <servlet-mapping>
+        <servlet-name>zkLoader</servlet-name>
+        <url-pattern>*.zul</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>zkLoader</servlet-name>
+        <url-pattern>*.zhtml</url-pattern>
+    </servlet-mapping>
     <servlet>
         <description>The asynchronous update engine for ZK</description>
         <servlet-name>auEngine</servlet-name>
         <servlet-class>org.zkoss.zk.au.http.DHtmlUpdateServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>dspLoader</servlet-name>
-        <url-pattern>*.dsp</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>zkLoader</servlet-name>
-        <url-pattern>*.zul</url-pattern>
-    </servlet-mapping>
-        <servlet-mapping>
-          <servlet-name>zkLoader</servlet-name>
-          <url-pattern>/zk/*</url-pattern>
-    </servlet-mapping>    
-    <servlet-mapping>
-        <servlet-name>zkLoader</servlet-name>
-        <url-pattern>*.zhtml</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
         <servlet-name>auEngine</servlet-name>
         <url-pattern>/zkau/*</url-pattern>
-    </servlet-mapping>    
-    <welcome-file-list>
-        <!--
-        <welcome-file>index.html</welcome-file>
-        <welcome-file>index.htm</welcome-file>
-        <welcome-file>index.jsp</welcome-file>
-        <welcome-file>default.html</welcome-file>
-        <welcome-file>default.htm</welcome-file>
-        <welcome-file>default.jsp</welcome-file>
-        <welcome-file>wrapper.html</welcome-file>
-        -->
-        <welcome-file>index.zul</welcome-file>
-    </welcome-file-list>
-    <error-page>
-        <error-code>500</error-code>
-        <location>/WEB-INF/jsp/Error.jsp</location>
-    </error-page>
+    </servlet-mapping>
+
+    <!-- //// -->
+
+
+    <context-param>
+        <description>Spring config file</description>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:au/org/emii/portal/application-config.xml</param-value>
+    </context-param>
+
+    <listener>
+        <description>Load the application config file, then pass control to spring to merge config file keys into bean
+            definitions and create application context
+        </description>
+        <listener-class>au.org.emii.portal.web.ApplicationInit</listener-class>
+    </listener>
+
     <servlet>
         <description>Externalise a remote request so that squid can cache it</description>
         <display-name>RemoteRequest</display-name>
@@ -81,6 +70,25 @@
         <servlet-name>remoteRequestServlet</servlet-name>
         <url-pattern>/RemoteRequest</url-pattern>
     </servlet-mapping>
+
+    <welcome-file-list>
+        <welcome-file>index.zul</welcome-file>
+    </welcome-file-list>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/WEB-INF/jsp/Error.jsp</location>
+    </error-page>
+
+    <servlet>
+        <description>The servlet loads the DSP pages.</description>
+        <servlet-name>dspLoader</servlet-name>
+        <servlet-class>org.zkoss.web.servlet.dsp.InterpreterServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dspLoader</servlet-name>
+        <url-pattern>*.dsp</url-pattern>
+    </servlet-mapping>
+
 
     <servlet>
         <servlet-name>Spring MVC Dispatcher Servlet</servlet-name>
@@ -97,4 +105,38 @@
         <servlet-name>Spring MVC Dispatcher Servlet</servlet-name>
         <url-pattern>/ws/*</url-pattern>
     </servlet-mapping>
+
+    <!--
+
+        <listener>
+            <description>Used to cleanup when a session is destroyed</description>
+            <display-name>ZK Session Cleaner</display-name>
+            <listener-class>org.zkoss.zk.ui.http.HttpSessionListener</listener-class>
+        </listener>
+
+
+        <servlet>
+            <description>ZK loader for ZUML pages</description>
+            <servlet-name>zkLoader</servlet-name>
+            <servlet-class>org.zkoss.zk.ui.http.DHtmlLayoutServlet</servlet-class>
+            <init-param>
+                <param-name>update-uri</param-name>
+                <param-value>/zkau</param-value>
+            </init-param>
+            <load-on-startup>1</load-on-startup>
+        </servlet>
+        <servlet>
+            <description>The asynchronous update engine for ZK</description>
+            <servlet-name>auEngine</servlet-name>
+            <servlet-class>org.zkoss.zk.au.http.DHtmlUpdateServlet</servlet-class>
+        </servlet>
+
+
+
+
+
+
+
+
+    -->
 </web-app>

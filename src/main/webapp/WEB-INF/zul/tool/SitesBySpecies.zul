@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zk xmlns="http://www.zkoss.org/2005/zul">
+    <window id="addtoolwindow" use="au.org.ala.spatial.composer.tool.ToolSitesBySpeciesComposer"
+    apply="au.org.ala.spatial.composer.tool.ToolSitesBySpeciesComposer" width="750px" height="700px"
+    xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="addtoolwindow.onClick$btnCancel(null)" style="display: inline" />
+        <n:a class="fancybox-help" n:onClick="loadHelp('sitesbyspecies-tools')" style="display: inline" />
+        
+        <separator />
+        <hbox id="stepCounter">
+            <vbox style="padding-left: 10px">
+                <grid width="150px">
+                    <columns>
+                        <column width="120px"/>
+                        <column />
+                    </columns>
+                    <rows>
+                        <row>
+                            <label id="lblStep1" style="font-weight:bold" value="1. Apply to an area"/>
+                            <image id="imgCompletedStep1" visible="false" src="img/accept.png"/>
+                        </row>
+                        <row>
+                            <label id="lblStep2" value="2. Select species"/>
+                            <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
+                        </row>
+                        <row>
+                            <label id="lblStep3" value="3. Points to Grid options"/>
+                            <image id="imgCompletedStep3" visible="false" src="img/accept.png"/>            
+                        </row>                    
+                    </rows>
+        
+                </grid>
+
+                <div id="tlinfo" visible="false">
+                    <separator spacing="20px" />
+                    <label value="The colours against the layers are like traffic lights. Green implies the layer is uncorrelated to all selected layers, orange implies some correlation while red implies high correlation. As you select layers, the colours change to reflect correlation with already selected layers. For example a red layer implies high correlation with at least one selected layer while a green layer implies little or no correlation to any selected layer" />
+                    <separator />
+                    <label value="Note: The correlations are currently based on full layer spatial extents and not any selected sub-area." />
+                </div>
+
+            </vbox>
+            <vbox style="padding-left: 10px" >
+                <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
+                    <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
+                    <label id="atstep1_label" value="" />
+                    <separator />
+                    <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
+                        <radio id="rAreaCurrent" label="Current extent" value="current" />
+                        <radio id="rAreaAustralia" label="Australia" value="australia" />
+                        <radio id="rAreaWorld" label="World" value="world" />
+                        <radio id="rAreaCustom" label="Define new area" value="custom" />
+                    </radiogroup>
+                </div>
+
+                <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep" width="550px" height="600px">
+                    <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
+                    <label id="atstep2_label" value="" />
+                    <vbox>
+                        <separator height="20px" />
+                        <checkbox id="chkGeoKosherTrue" checked="true" label="Include spatially-valid records" />
+                        <checkbox id="chkGeoKosherFalse" checked="false" label="Include spatially-suspect records" />
+                        
+                    </vbox>
+                    <separator />
+                    <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
+                        <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false" />
+                        <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false" />
+                        <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" />
+                        <vbox width="100%">
+                            <div id="divSpeciesSearch" visible="false" >
+                                <separator />
+                                <label sclass="wLabel" value="Enter a scientific or common name"/>
+                                <separator />
+                                <hbox>
+                                    <separator orient="vertical" />
+                                    <div id="searchSpeciesACComp" use="au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent"/>
+                                    <!-- <combobox id="searchSpeciesAuto" use="au.org.ala.spatial.composer.SpeciesAutoComplete"
+                                    autodrop="true"  width="320px" 
+                                    onOK="if(searchSpeciesAuto.getSelectedIndex()>=0)addtoolwindow.onClick$btnOk(null)" >
+                                        <comboitem label=""/>
+                                    </combobox> -->
+                                </hbox>
+                                <separator/>
+                                <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
+                                <separator />
+                                <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
+                            </div>
+                        </vbox>
+                        <radio id="rMultiple" label="Create new species list" value="multiple" />
+                        <vbox id="vboxMultiple" visible="false">
+                            <separator />
+                            <label value="Enter scientific names separated by a comma or new line." />
+                           <label value="Use 'Add from search box' to find and add additional species." />
+                            <hbox>
+                                <textbox id="tMultiple" width="380px" height="100px" multiline="true" />
+                                <button id="bMultiple" label="Add"/>
+                            </hbox>
+                            <separator height="15px"/>
+                            <hbox>
+                                <label value="Add from search" />
+                                <separator orient="vertical" />
+                                <div id="mSearchSpeciesACComp" use="au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent"/>
+                                <!-- <combobox id="mSearchSpeciesAuto" use="au.org.ala.spatial.composer.SpeciesAutoComplete" autodrop="true" width="330px" /> -->
+                            </hbox>
+                            <separator />
+                            <separator />
+                            <listbox id="lMultiple" width="500px" height="200px" >
+                            <listhead>
+                                <listheader label="" width="20px" />
+                                <listheader label="scientific name" id="lhSciName" width="220px"/>
+                                <listheader label="family" id="lhFamily" width="100px"></listheader>
+                                <listheader label="kingdom" id="lhKingdom" width="100px" ></listheader>
+                                <listheader label="count" id="lhCount" width="60px" ></listheader>
+                                <listheader label="lsid" id="lhLSID" visible="false" width="0px"></listheader>
+                                <listheader />
+                            </listhead>
+                        </listbox>
+                            <separator height="20px"/>
+                        </vbox>
+                        <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Use existing species list" />
+                        <include id="splistbox" src="/WEB-INF/zul/species/SpeciesListListBox.zul" />
+                        <!-- NQ:2014-02-10 - AT the moment the Points to Grid does NOT support imported points. This will be solved when we have better sandbox integration -->
+                        <!-- <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import points" /> -->
+                    </radiogroup>                    
+                </div>
+
+                <div id="atstep3" visible="false" zclass="last optional">
+                    <label id="atstep3_desc" value="Points to Grid options." sclass="wSubLabel"/>
+                    <label id="atstep3_label" value="" />
+                    <separator height="15px" />
+                    <hbox>
+                        <label value="Enter grid cell size in decimal degrees" />
+                        <doublebox id="dResolution" constraint="no negative,no empty" value="0.05"/>
+                    </hbox>
+                    <separator height="15px" />
+                        <label value="Enter number of cells in the moving average window (for occurrence density and species richness layers)" />
+                        <combobox id="cbMovingAverageSize" readonly="true" width="200px" constraint="no empty"
+                            value="9x9">
+                            <comboitem label="1x1 (no moving average)" value="1" />
+                            <comboitem label="3x3" value="3" />
+                            <comboitem label="5x5" value="5" />
+                            <comboitem label="7x7" value="7" />
+                            <comboitem label="9x9" value="9" />
+                            <comboitem label="11x11" value="11" />
+                            <comboitem label="13x13" value="13" />
+                            <comboitem label="15x15" value="15" />
+                        </combobox>
+                    <separator height="15px" />
+                    <div visible="true">
+                        <vbox>
+                            <separator />
+                            <checkbox id="chkSitesBySpecies" label="Produce sites by species matrix" checked="true" />
+                            <checkbox id="chkOccurrenceDensity" label="Produce occurrence density layer" />
+                            <checkbox id="chkSpeciesDensity" label="Produce species richness layer" />
+                        </vbox>
+                    </div>
+                    <separator height="60px" />
+                    <vbox>
+                        <hbox>
+                            <label value="* Estimated time to run the process:" />
+                            <label id="lEstimateMessage" value="Unknown" />
+                        </hbox>
+                        <div id="notLoggedIn" visible="false">
+                            <vbox>
+                                <div>
+                                    Your process is estimated to take longer than 5 minutes 
+                                    to process. 
+                                </div>
+                                <div>
+                                    In such instances, we recommend that you 
+                                    log into the ALA system before proceeding with the 
+                                    process. 
+                                </div>
+                                <div>
+                                    1. Click the Login button to authenticate
+                                </div>
+                                <div>
+                                    2. Close the popup window once authenticated
+                                </div>
+                                <div>
+                                    3. Click Next to proceed.
+                                </div>
+                                <div>
+                                    <button id="bLogin" label="Login" sclass="goButton" style="float:left" />
+                                </div>
+                            </vbox>
+                        </div>
+                        <div id="isLoggedIn" visible="false">
+                            Please click the Next button to proceed with the process.
+                        </div>
+                    </vbox>
+                </div>
+            </vbox>
+        </hbox>
+        <div sclass="wizButtonContainer">
+            <hbox>
+                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
+                <button sclass="goButton" label="Cancel" id="btnCancel" />
+                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
+                <button sclass="goButton" label="Next &gt;" id="btnOk" />
+                <fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+                <!-- <button sclass="goButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" /> -->
+            </hbox>
+        </div>
+    </window>
+</zk>

@@ -1,0 +1,42 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="areauploadshapefile" use="au.org.ala.spatial.composer.add.area.AreaUploadShapefile"
+            apply="au.org.ala.spatial.composer.add.area.AreaUploadShapefile"  xmlns:n="http://www.zkoss.org/2005/zk/native"
+            width="400px" >
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="areaboundingboxwindow.onClick$btnCancel(null)" style="display: inline" />
+
+        <caption label="Import Shapefile" />
+        <separator />
+        <vbox width="100%" style="float:left;margin-left:10px">
+            <div>
+                <hbox width="100%">
+                    <label value="Area name" sclass="h3" />
+                    <textbox id="txtLayerName" width="250px"/>
+                </hbox>
+            </div>
+            <separator />
+            <label sclass="wordwrap" value="Select a zipped shapefile folder." />
+            <separator />
+            <div style="float:right;margin-right:10px">
+                <hbox>
+                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <div>
+                        <fileupload label="Next" id="fileUpload" sclass="fUploadButton" />
+                    </div>
+                    <button sclass="goButton" label="Next" id="btnOk" visible="false"/>
+                </hbox>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>
+

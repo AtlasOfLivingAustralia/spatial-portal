@@ -1,35 +1,27 @@
 package au.org.emii.portal.web;
 
+import au.org.emii.portal.config.ConfigurationLoaderStage1Impl;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.session.PortalSession;
-import au.org.emii.portal.config.ConfigurationLoaderStage1Impl;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.PortalSessionCloner;
-import au.org.emii.portal.util.PortalSessionIO;
 import au.org.emii.portal.util.PortalSessionUtilities;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.zkoss.util.resource.Labels;
 import org.zkoss.zk.ui.Desktop;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.util.DesktopInit;
 import org.zkoss.zk.ui.util.SessionInit;
 
-import zk.extra.BiocacheLabelLocator;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
 
 public class SessionInitImpl implements SessionInit, DesktopInit {
 
     public final static String PORTAL_SESSION_ATTRIBUTE = "portalSession";
-    protected Logger logger = Logger.getLogger(this.getClass());
+    private static Logger logger = Logger.getLogger(SessionInitImpl.class);
     private final static String ERROR_PAGE = "/WEB-INF/jsp/Error.jsp";
     // Max time to wait while portal is reloading
     private final static int MAX_TIME_RELOADING_SECONDS = 30;
@@ -57,7 +49,7 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
     private PortalSessionCloner getPortalSessionCloner(Session session) {
         return getApplicationContext(session).getBean(PortalSessionCloner.class);
     }
-    
+
 
     private void waitForPortalReload(ConfigurationLoaderStage1Impl stage1) {
         int seconds = MAX_TIME_RELOADING_SECONDS;
@@ -88,7 +80,7 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
 
         } else if (stage1.isError()) {
             // portal reloaded but has errors
-            redirectAndInvalidateSession(session,ERROR_PAGE);
+            redirectAndInvalidateSession(session, ERROR_PAGE);
         } else {
             // see if there is a master session
             PortalSession masterPortalSession = getMasterPortalSession(session);
@@ -129,41 +121,35 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
     }
 
     @Override
-    public void init(Desktop desktop, Object request) throws Exception {        
+    public void init(Desktop desktop, Object request) throws Exception {
         logger.debug("* INIT Desktop");
         Session session = desktop.getSession();
-        
+
         if (session == null) {
             logger.info(
                     "user has a null session - no idea why (system coming up/going down - "
-                    + "concurrency ?) will redirect to error page");
+                            + "concurrency ?) will redirect to error page");
             redirectAndInvalidateSession(desktop.getSession(), ERROR_PAGE);
         } else {
-            
-            //copy existing session
-            String qs = desktop.getQueryString();
-            if (qs != null &&
-                qs.toLowerCase().contains("session=")) {
-                String s = qs.substring(qs.indexOf("session=") + "session=".length());
-                if (s.indexOf('&') > 0) {
-                    s = s.substring(0,s.indexOf('&'));
-                }
-                loadSession(desktop.getSession(), s);
-            }
-            
             // user has a session...
 
             // Sesssion is OK - do things we want to do before we start
             // composing the page
             PortalSession portalSession = (PortalSession) session.getAttribute(PORTAL_SESSION_ATTRIBUTE);
+            if (portalSession == null) {
+                init(session, null);
+
+                portalSession = (PortalSession) session.getAttribute(PORTAL_SESSION_ATTRIBUTE);
+            }
+
             PortalSessionUtilities portalSessionUtilities = getPortalSessionUtilities(session);
             OpenLayersJavascript openLayersJavascript = getApplicationContext(session).getBean(OpenLayersJavascript.class);
             String script =
                     openLayersJavascript.initialiseMap()
-                    + openLayersJavascript.iFrameReferences
-                    + openLayersJavascript.setBaseLayer(portalSession.getBaseLayer())
-                    + openLayersJavascript.activateMapLayers(portalSession.getActiveLayers())
-                    + openLayersJavascript.zoomToBoundingBox(portalSessionUtilities.getCurrentBoundingBox(portalSession));
+                            + OpenLayersJavascript.iFrameReferences
+                            + openLayersJavascript.setBaseLayer(portalSession.getBaseLayer())
+                            + openLayersJavascript.activateMapLayers(portalSession.getActiveLayers())
+                            + openLayersJavascript.zoomToBoundingBox(portalSessionUtilities.getCurrentBoundingBox(portalSession));
 
             // remove all whitespace
             script = openLayersJavascript.minify(script);
@@ -171,19 +157,5 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
             logger.debug("onIframeMapFullyLoaded set to: " + script);
         }
         logger.debug("...session init complete");
-    }
-
-    void loadSession(Session session, String sessionId) {
-        SettingsSupplementary settingsSupplementary = getApplicationContext(session).getBean(SettingsSupplementary.class);
-        PortalSession ps = PortalSessionIO.readPortalSession(settingsSupplementary.getValue("session_path"), sessionId);
-        
-        try {
-            PortalSessionCloner cloner = getPortalSessionCloner(session);
-            PortalSession portalSession = cloner.clone(ps);
-            session.setAttribute(PORTAL_SESSION_ATTRIBUTE, portalSession);
-            logger.debug("* SESSION LOAD OK");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

@@ -1,28 +1,14 @@
 package au.org.emii.portal.databinding;
 
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.util.LayerUtilities;
-import au.org.emii.portal.event.ActiveLayerDNDEventListener;
-import au.org.emii.portal.event.ActiveLayersInfoEventListener;
-import au.org.emii.portal.event.ActiveLayersLegendEventListener;
-import au.org.emii.portal.event.ActiveLayersRemoveEventListener;
-import au.org.emii.portal.event.ActiveLayersZoomExtentEventListener;
-import au.org.emii.portal.event.LegendTooltipOpenEventListener;
-import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.event.VisibilityToggleEventListener;
+import au.org.emii.portal.event.*;
 import au.org.emii.portal.lang.LanguagePack;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.util.LayerUtilities;
 import org.springframework.beans.factory.annotation.Required;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zul.Checkbox;
-import org.zkoss.zul.Div;
-import org.zkoss.zul.Image;
-import org.zkoss.zul.Label;
-import org.zkoss.zul.Listcell;
-import org.zkoss.zul.Listitem;
-import org.zkoss.zul.ListitemRenderer;
-import org.zkoss.zul.Popup;
+import org.zkoss.zul.*;
 
 public class ActiveLayerRenderer implements ListitemRenderer {
 
@@ -31,7 +17,7 @@ public class ActiveLayerRenderer implements ListitemRenderer {
     private VisibilityToggleEventListener visibilityToggleEventListener = null;
 
     @Override
-    public void render(Listitem item, Object data) throws Exception {
+    public void render(Listitem item, Object data, int item_idx) throws Exception {
         final MapLayer layer = (MapLayer) data;
         Listcell listcell = new Listcell();
         Checkbox checkbox = null;
@@ -58,12 +44,12 @@ public class ActiveLayerRenderer implements ListitemRenderer {
                 }
             });
         }
-        if(!layer.isRemoveable()){
+        if (!layer.isRemoveable()) {
             checkbox.setStyle("float:left; visibility:hidden; ");
             checkbox.setDisabled(true);
         }
 
-        Label label = new Label(layerUtilities.chompLayerName(layer.getDisplayName()));
+        Label label = new Label(layer.getDisplayName());
         //do after legend
         //label.setParent(listcell);
         listcell.setParent(item);
@@ -78,19 +64,19 @@ public class ActiveLayerRenderer implements ListitemRenderer {
         item.setValue(layer);
 
         // simple description for tooltip
-        label.setTooltiptext(layerUtilities.getTooltip(layer.getDisplayName(), layer.getDescription()));
+        label.setTooltiptext(layer.getDescription());
 
         //label.addEventListener("onClick", new ActiveLayersInfoEventListener());
 //        label.setStyle("float:left;");
 
-        if(layer.isRemoveable()){
+        if (layer.isRemoveable()) {
             checkbox.setStyle("float:left;");
         }
 
         /*
          * show the legend graphic when the user hovers over the palette icon
          */
-        if(layer.isRemoveable()){
+        if (layer.isRemoveable()) {
             Image remove = new Image(languagePack.getLang("layer_remove_icon"));
             remove.addEventListener("onClick", new ActiveLayersRemoveEventListener());
             remove.setParent(listcell);
@@ -98,21 +84,17 @@ public class ActiveLayerRenderer implements ListitemRenderer {
             remove.setTooltiptext("remove layer");
         }
 
-        if(layer.isHasMetadata()){
-            Image info = new Image(languagePack.getLang("layer_info_icon"));
-            info.setParent(listcell);
-            info.setStyle("float:right;");
-            info.setTooltiptext("metadata");
-            info.addEventListener("onClick", new ActiveLayersInfoEventListener());
-        }
+        Image info = new Image(languagePack.getLang("layer_info_icon"));
+        info.setParent(listcell);
+        info.setStyle("float:right;");
+        info.setTooltiptext("metadata");
+        info.addEventListener("onClick", new ActiveLayersInfoEventListener());
 
-        if(layer.isHasExtent()){
-            Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
-            zoomextent.setParent(listcell);
-            zoomextent.setStyle("float:right");
-            zoomextent.setTooltiptext("zoom to extent");
-            zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
-        }
+        Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
+        zoomextent.setParent(listcell);
+        zoomextent.setStyle("float:right");
+        zoomextent.setTooltiptext("zoom to extent");
+        zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
 
         //Set the legend graphic based on the layer type
         Image legend = new Image();

@@ -1,10 +1,19 @@
 package au.org.emii.portal.servlet;
 
-import au.org.emii.portal.net.HttpConnection;
 import au.org.emii.portal.config.ConfigurationLoaderStage1Impl;
+import au.org.emii.portal.net.HttpConnection;
 import au.org.emii.portal.settings.Settings;
-
 import au.org.emii.portal.web.ApplicationInit;
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.web.HttpRequestHandler;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -14,53 +23,40 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.ServletContext;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.web.HttpRequestHandler;
 
 /**
- * 'Magically' cache requests to remote servers.  Here's how:
- * 
- * Tomcat is hosted behind apache which is behind squid.  Therefore
- * GET urls are intecepted by squid and cached as required.  By
- * using the university proxy and 'tweaking' the http headers, we
- * can get squid to cache stuff from other people's sites:
- * 
+ * 'Magically' cache requests to remote servers. Here's how:
+ * <p/>
+ * Tomcat is hosted behind apache which is behind squid. Therefore GET urls are
+ * intecepted by squid and cached as required. By using the university proxy and
+ * 'tweaking' the http headers, we can get squid to cache stuff from other
+ * people's sites:
+ * <p/>
  * e.g, user requests a map tile through this servlet:
  * http://imos.aodn.org.au/RemoteRequest?url=http://blah.org/wms?tile=ABC
- * 
+ * <p/>
  * And this will be automatically cached.
- * 
+ * <p/>
  * To protect against creating an open proxy, we will only allow:
- * 
- * A) requests to be sent to hosts whitelisted in the proxyAllowedHosts 
- * section of the config file 
- * 
- * - And - 
- * 
- * B) 'known wms servers' which are those servers that have 
- * been added by the user and have been autodetected as valid
- * WMS servers.
- * 
+ * <p/>
+ * A) requests to be sent to hosts whitelisted in the proxyAllowedHosts section
+ * of the config file
+ * <p/>
  * - And -
- * 
- * C) Act as a proxy for GetFeatureInfo requests to get around
- * the browser server of origin policy.  This replaces the
- * proxy.cgi script
- * 
- * B) will be added later as part of the work for version 2, for now
- * only support for A) will be added which will allow for acceleration 
- * of IVECs THREDDS server which has been impossible so far because
- * of the irritating and pointless proxying setup at UTAS
- * 
+ * <p/>
+ * B) 'known wms servers' which are those servers that have been added by the
+ * user and have been autodetected as valid WMS servers.
+ * <p/>
+ * - And -
+ * <p/>
+ * C) Act as a proxy for GetFeatureInfo requests to get around the browser
+ * server of origin policy. This replaces the proxy.cgi script
+ * <p/>
+ * B) will be added later as part of the work for version 2, for now only
+ * support for A) will be added which will allow for acceleration of IVECs
+ * THREDDS server which has been impossible so far because of the irritating and
+ * pointless proxying setup at UTAS
+ * <p/>
  * Servlet implementation class RemoteRequest
  */
 public class RemoteRequestServlet implements HttpRequestHandler {
@@ -70,7 +66,7 @@ public class RemoteRequestServlet implements HttpRequestHandler {
     /**
      * Logger instance
      */
-    private Logger logger = Logger.getLogger(this.getClass());
+    private static Logger logger = Logger.getLogger(RemoteRequestServlet.class);
     private List<String> allowedHosts = new ArrayList<String>();
     private Date updatedOn = null;
 
@@ -85,7 +81,8 @@ public class RemoteRequestServlet implements HttpRequestHandler {
     }
 
     /**
-     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+     * response)
      */
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -110,8 +107,8 @@ public class RemoteRequestServlet implements HttpRequestHandler {
                     // ok - we are allowed to access this host, now
                     // we can grab the other parameters and append
                     // them to the url
-                    String target =
-                            targetUrl
+                    String target
+                            = targetUrl
                             + rebuildParameters(request.getParameterMap());//LayerUtilities.stripParameter(CACHE_PARAMETER, queryString);
 
                     logger.debug("access granted to hostname : " + hostname);
@@ -129,15 +126,15 @@ public class RemoteRequestServlet implements HttpRequestHandler {
     }
 
     @SuppressWarnings("unchecked")
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="WMI_WRONG_MAP_ITERATOR")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "WMI_WRONG_MAP_ITERATOR")
     private String rebuildParameters(Map params) {
-        StringBuffer uri = new StringBuffer();
+        StringBuilder uri = new StringBuilder();
         String delim = "?";
         for (Object key : params.keySet()) {
             // skip the url parameter - removal from the map is not allowed
             if (!((String) key).equalsIgnoreCase(settings.getCacheParameter())) {
                 String[] value = (String[]) params.get(key);
-                uri.append(delim + key + "=" + value[0]);
+                uri.append(delim).append(key).append("=").append(value[0]);
                 delim = "&";
             }
         }
@@ -173,6 +170,7 @@ public class RemoteRequestServlet implements HttpRequestHandler {
                 try {
                     is.close();
                 } catch (IOException e) {
+                    logger.error("Error closing stream to " + url, e);
                 }
             }
         }
@@ -180,11 +178,12 @@ public class RemoteRequestServlet implements HttpRequestHandler {
 
     /**
      * Check if we are allowed to access hostname
+     *
      * @param hostname
      * @return true if we are allowed (it's whitelisted) otherwise false
      */
     private boolean allowed(String hostname) {
-        return (allowedHosts.contains(hostname)) ? true : false;
+        return (allowedHosts.contains(hostname));
 
     }
 
@@ -205,12 +204,12 @@ public class RemoteRequestServlet implements HttpRequestHandler {
 
     private void initAllowedHosts(HttpServletRequest request) {
         ServletContext servletContext = request.getSession().getServletContext();
-        ConfigurationLoaderStage1Impl stage1 =
-                (ConfigurationLoaderStage1Impl) servletContext.getAttribute(ApplicationInit.CONFIGURATION_LOADER_ATTRIBUTE);
+        ConfigurationLoaderStage1Impl stage1
+                = (ConfigurationLoaderStage1Impl) servletContext.getAttribute(ApplicationInit.CONFIGURATION_LOADER_ATTRIBUTE);
         Date portalLastReloaded = stage1.getLastReloaded();
-        if ((updatedOn == null ||  updatedOn.getTime() < portalLastReloaded.getTime())) {
+        if ((updatedOn == null || updatedOn.getTime() < portalLastReloaded.getTime())) {
             loadList();
-        } 
+        }
     }
 
     private void outputError(HttpServletResponse response) throws IOException {
@@ -234,7 +233,4 @@ public class RemoteRequestServlet implements HttpRequestHandler {
     public void setHttpConnection(HttpConnection httpConnection) {
         this.httpConnection = httpConnection;
     }
-
-
-
 }

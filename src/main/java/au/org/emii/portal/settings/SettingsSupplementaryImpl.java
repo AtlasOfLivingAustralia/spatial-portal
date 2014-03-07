@@ -2,20 +2,17 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package au.org.emii.portal.settings;
 
 import java.util.Map;
 
 /**
- *
  * @author geoff
  */
 public class SettingsSupplementaryImpl implements SettingsSupplementary {
 
     /**
-     * Key/value pairs
-     * From the xml config file's configuration section
+     * Key/value pairs From the xml config file's configuration section
      */
     private Map<String, String> values = null;
 
@@ -26,8 +23,9 @@ public class SettingsSupplementaryImpl implements SettingsSupplementary {
 
     /**
      * Read a value from the xml config file's configuration section.
-     *
+     * <p/>
      * If the key is missing, throw a null pointer exception
+     *
      * @param key
      * @return corresponding value as a String
      */
@@ -42,15 +40,16 @@ public class SettingsSupplementaryImpl implements SettingsSupplementary {
         } else {
             throw new RuntimeException(
                     "Attempt to read configuration value for '" + key + "' with Config.getValue() "
-                    + "before values have been loaded from configuration file");
+                            + "before values have been loaded from configuration file");
         }
         return value;
     }
 
     /**
-     * Read a value from the xml config file's configuration section
-     * and parse an integer from it.  Will throw a runtime exception
-     * if parsing fails (NumberFormatException)
+     * Read a value from the xml config file's configuration section and parse
+     * an integer from it. Will throw a runtime exception if parsing fails
+     * (NumberFormatException)
+     *
      * @param key
      * @return
      */
@@ -60,9 +59,10 @@ public class SettingsSupplementaryImpl implements SettingsSupplementary {
     }
 
     /**
-     * Read a value from the xml config file's configuration section
-     * and parse a float from it.  Will throw a runtime exception
-     * if parsing fails (NumberFormatException)
+     * Read a value from the xml config file's configuration section and parse a
+     * float from it. Will throw a runtime exception if parsing fails
+     * (NumberFormatException)
+     *
      * @param key
      * @return
      */
@@ -72,9 +72,10 @@ public class SettingsSupplementaryImpl implements SettingsSupplementary {
     }
 
     /**
-     * Read a value from the xml config file's configuration section
-     * and parse a double from it.  Will throw a runtime exception
-     * if parsing fails (NumberFormatException)
+     * Read a value from the xml config file's configuration section and parse a
+     * double from it. Will throw a runtime exception if parsing fails
+     * (NumberFormatException)
+     *
      * @param key
      * @return
      */
@@ -84,9 +85,9 @@ public class SettingsSupplementaryImpl implements SettingsSupplementary {
     }
 
     /**
-     * Read a value from the xml config file's configuration section
-     * and parse a boolean from it.  Will throw a runtime exception
-     * if parsing fails
+     * Read a value from the xml config file's configuration section and parse a
+     * boolean from it. Will throw a runtime exception if parsing fails
+     *
      * @param key
      * @return
      */
@@ -97,6 +98,7 @@ public class SettingsSupplementaryImpl implements SettingsSupplementary {
 
     /**
      * Non-static accessor for use in el
+     *
      * @return
      */
     @Override
@@ -104,10 +106,9 @@ public class SettingsSupplementaryImpl implements SettingsSupplementary {
         return values;
     }
 
-
     /**
-     * Find the size of a pixel value key, eg (String) 320px will return
-     * (int) 320
+     * Find the size of a pixel value key, eg (String) 320px will return (int)
+     * 320
      *
      * @param key to lookup
      * @return
@@ -117,7 +118,5 @@ public class SettingsSupplementaryImpl implements SettingsSupplementary {
         String value = getValue(key);
         return Integer.parseInt(value.substring(0, value.length() - 2));
     }
-
-
 
 }

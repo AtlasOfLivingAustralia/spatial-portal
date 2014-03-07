@@ -4,19 +4,19 @@
  */
 package au.org.emii.portal.util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.CommonData;
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+
+import java.io.*;
 
 /**
- *
  * @author Adam
  */
 public class SessionPrint {
+
+    private static Logger logger = Logger.getLogger(SessionPrint.class);
+
 
     final int dpi = 200;
     final double margin_north = .4;  //A4 portrait top
@@ -109,16 +109,16 @@ public class SessionPrint {
         this.sessionid = null;
         this.zoom = zoom;
         this.header = header;
-        
+
         this.format = format;
         this.grid = grid;
 
         double h = Double.parseDouble(height);
         double w = Double.parseDouble(width);
-        int sizelimit = 1200*600;
-        if(h*w > sizelimit) {
+        int sizelimit = 1200 * 600;
+        if (h * w > sizelimit) {
             this.resolution = 1;
-            scaleBy = h*w / sizelimit;
+            scaleBy = h * w / sizelimit;
         } else {
             this.resolution = 0;
             scaleBy = 1.0;
@@ -153,7 +153,7 @@ public class SessionPrint {
 
     String getHtmlContent(boolean setCookie) {
         //html wrapper
-        StringBuffer html = new StringBuffer();
+        StringBuilder html = new StringBuilder();
         html.append("<html><script>");
         if (setCookie) {
             html.append("cookie='");
@@ -169,14 +169,14 @@ public class SessionPrint {
             html.append("</div><br>");
         }
         html.append("<iframe style='border:none' src='");
-        html.append(server + "?p=" + width + "," + height + "," + zoom + "," + grid);
-        if(query != null) {
+        html.append(server).append("?p=").append(width).append(",").append(height).append(",").append(zoom).append(",").append(grid);
+        if (query != null) {
             html.append(query);
         }
 
         //if printing put out scale factor
         if (resolution > 0) {
-            html.append("," + scaleBy);
+            html.append(",").append(scaleBy);
         }
         html.append("' width='");
         html.append(width);
@@ -194,7 +194,7 @@ public class SessionPrint {
             fw.append(getHtmlContent(sessionid != null));
             fw.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error writing html file: " + htmlpthfilename, e);
         }
     }
 
@@ -205,7 +205,7 @@ public class SessionPrint {
             fw.append(getHtmlContent(false));
             fw.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error writing preview file: " + htmlpthfilename);
         }
     }
 
@@ -223,7 +223,7 @@ public class SessionPrint {
 
         try {
             /* webpage to PNG */
-            System.out.println("Running cmd: " + cmd);
+            logger.debug("Running cmd: " + cmd);
 
             //delete any existing output files
             File img = new File(imgFilename);
@@ -245,15 +245,15 @@ public class SessionPrint {
                 if (resolution == 1) { //print resolution
                     now += 25000;
                 }
-                while (now > System.currentTimeMillis() && !img.exists()) Thread.currentThread().yield();
+                while (now > System.currentTimeMillis() && !img.exists()) Thread.yield();
 
                 //int exitVal = proc.waitFor(); //should work here but does not
 
                 if (img.exists()) {
-                    System.out.println("success (" + retry + ") cmd: " + cmd);
+                    logger.debug("success (" + retry + ") cmd: " + cmd);
                     break;
                 } else {
-                    System.out.println("failed (" + retry + ") cmd: " + cmd);
+                    logger.debug("failed (" + retry + ") cmd: " + cmd);
                     proc.destroy();
                 }
                 retry++;
@@ -264,11 +264,11 @@ public class SessionPrint {
             if (resolution == 1) { //print resolution
                 now += 15000;
             }
-            while (now > System.currentTimeMillis()) Thread.currentThread().yield();
+            while (now > System.currentTimeMillis()) Thread.yield();
 
             return;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error producing map print sessionid:" + sessionid, e);
         }
     }
 
@@ -280,14 +280,14 @@ public class SessionPrint {
 
 
         String[][] cmdsScreen = {
-            {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, imgFilename},
-            {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, jpgFilename},
-            {CommonData.convert_cmd, imgFilename, pdfFilename}}; 
+                {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, imgFilename},
+                {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, jpgFilename},
+                {CommonData.convert_cmd, imgFilename, pdfFilename}};
 
         String[][] cmdsPrint = {
-            {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, imgFilename},
-            {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, jpgFilename},
-            {CommonData.convert_cmd, "-density", dpi + "x" + dpi, "-units", "pixelsperinch", imgFilename, pdfFilename}}; 
+                {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, imgFilename},
+                {CommonData.convert_cmd, "-crop", width + "x" + height, imgFilename, jpgFilename},
+                {CommonData.convert_cmd, "-density", dpi + "x" + dpi, "-units", "pixelsperinch", imgFilename, pdfFilename}};
 
         try {
             String[][] cmds = cmdsScreen;
@@ -295,21 +295,21 @@ public class SessionPrint {
                 cmds = cmdsPrint;
             }
 
-            if(format.equals("png")) {
+            if (format.equals("png")) {
                 cmds[1] = cmds[2] = null;
             }
-            if(format.equals("jpg")) {
+            if (format.equals("jpg")) {
                 cmds[0] = cmds[2] = null;
             }
-            if(format.equals("pdf")) {
+            if (format.equals("pdf")) {
                 cmds[1] = null;
             }
 
             for (String[] cmd : cmds) {
-                if(cmd == null) {
+                if (cmd == null) {
                     continue;
                 }
-                System.out.println("running cmd: " + cmd[0] + " " + cmd[1] + " " + cmd[2]);
+                logger.debug("running cmd: " + cmd[0] + " " + cmd[1] + " " + cmd[2]);
 
                 Runtime runtime = Runtime.getRuntime();
 
@@ -323,18 +323,24 @@ public class SessionPrint {
                 if (resolution == 1) { //print resolution
                     now += 2000;
                 }
-                while (now > System.currentTimeMillis()) Thread.currentThread().yield();
+                while (now > System.currentTimeMillis()) Thread.yield();
 
                 //manage for potential crop output file renaming
                 try {
                     File f = new File(imgFilename.replace(".png", "-0.png"));
-                    if(f.exists()) {
-                        try {new File(imgFilename).delete();}catch(Exception e){}
+                    if (f.exists()) {
+                        try {
+                            new File(imgFilename).delete();
+                        } catch (Exception e) {
+                        }
                         FileUtils.moveFile(f, new File(imgFilename));
                     }
                     f = new File(jpgFilename.replace(".jpg", "-0.jpg"));
-                    if(f.exists()) {
-                        try {new File(jpgFilename).delete();}catch(Exception e){}
+                    if (f.exists()) {
+                        try {
+                            new File(jpgFilename).delete();
+                        } catch (Exception e) {
+                        }
                         FileUtils.moveFile(f, new File(jpgFilename));
                     }
                 } catch (Exception e) {
@@ -343,7 +349,7 @@ public class SessionPrint {
 
             return;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error transforming file for output format sessionid=" + sessionid, e);
         }
     }
 
@@ -354,6 +360,7 @@ public class SessionPrint {
 }
 
 class StreamReaderThread implements Runnable {
+    private static Logger logger = Logger.getLogger(StreamReaderThread.class);
 
     Thread t;
     InputStream inputStream;
@@ -366,15 +373,33 @@ class StreamReaderThread implements Runnable {
 
     @Override
     public void run() {
+        InputStreamReader isr = null;
+        BufferedReader br = null;
+
         try {
-            InputStreamReader isr = new InputStreamReader(inputStream);
-            BufferedReader br = new BufferedReader(isr);
+            isr = new InputStreamReader(inputStream);
+            br = new BufferedReader(isr);
             String line;
             while ((line = br.readLine()) != null) {
-                System.out.println(line);
+                logger.info(line);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (Exception ex) {
+                    logger.error("failed to close buffered line reader", ex);
+                }
+            }
+
+            if (isr != null) {
+                try {
+                    isr.close();
+                } catch (Exception ex) {
+                    logger.error("failed to close input stream reader", ex);
+                }
+            }
         }
     }
 }

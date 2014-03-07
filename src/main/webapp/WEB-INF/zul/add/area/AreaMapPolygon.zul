@@ -1,0 +1,66 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?component name="ContextualLayersTree" macro-uri="/WEB-INF/zul/layer/ContextualLayersTree.zul"?>
+<zk>
+    <window id="areamappolygonwindow" use="au.org.ala.spatial.composer.add.area.AreaMapPolygon"
+            apply="au.org.ala.spatial.composer.add.area.AreaMapPolygon" width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native"
+            style="position:absolute;left:20px;top:20px" draggable="false">
+        <n:div class="left-cover" />
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="areamappolygonwindow.onClick$btnCancel(null)" style="display: inline" />
+
+        <caption label="Select Area from Polygonal Layer" />
+        <vbox sclass="embedWindowsContent">
+            <label sclass="wordwrap" value="1. Name the new polygon layer." />
+            <label sclass="wordwrap" value="2. If more than one contextual layer is available, select the desired later." />
+            <label sclass="wordwrap" value="3. Mouse click within the desired polygon on the map." />
+            <label sclass="wordwrap" value="4. The selected area will be highlighted red and its description displayed in the box below." />
+            <label sclass="wordwrap" value="5. Press Next for the layer to be generated." />
+            <separator />
+
+            <div>
+                <hbox width="100%">
+                    <label value="Area name" sclass="h3" />
+                    <textbox id="txtLayerName" width="250px"/>
+                </hbox>
+            </div>
+            <separator />
+
+            <radiogroup id="rgPolygonLayers" orient="vertical">
+                
+            </radiogroup>
+            <vbox id="vbxLayerList" visible="false" sclass="embedWindowsContent">
+                <hbox width="100%">
+                    <combobox id="autoCompleteLayers" use="au.org.ala.spatial.composer.ContextualLayersAutoComplete" autodrop="true" width="320px">
+                        <comboitem label=""/>
+                    </combobox>
+                    
+                    <button sclass="goButton" label="Add" id="btnAddLayer"/>
+                   
+                </hbox>
+                <div height="300px" style="margin-left:20px;overflow: auto">
+                    <ContextualLayersTree id="layerTree" height="400px"/>
+                </div>
+            </vbox>
+            <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px"  />
+            <separator />
+            <checkbox id="displayAsWms" label="display as WMS layer"  visible="false" checked="true" />
+            <div sclass="embedWindowsButtons">
+                <hbox>
+                    <button sclass="goButton" label="Clear" id="btnClear"/>                    
+                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <button sclass="goButton" label="Next" id="btnOk"/>
+                </hbox>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>
+

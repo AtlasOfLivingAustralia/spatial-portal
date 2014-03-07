@@ -1,23 +1,21 @@
 package au.org.emii.portal.session;
 
-
-import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.value.BoundingBox;
+
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents the state of the portal.
- * 
- * On loading the web application a default PortalSession is built, when a 
- * user accesses the portal, the default instance is COPIED into their
- * HTTP session where it can be manipulated through the ZK GUI without 
- * affecting the other sessions 
- * @author geoff
+ * <p/>
+ * On loading the web application a default PortalSession is built, when a user
+ * accesses the portal, the default instance is COPIED into their HTTP session
+ * where it can be manipulated through the ZK GUI without affecting the other
+ * sessions
  *
+ * @author geoff
  */
 public class PortalSession implements Cloneable, Serializable {
 
@@ -30,7 +28,6 @@ public class PortalSession implements Cloneable, Serializable {
     public static final int LAYER_USER_TAB = 2;
     public static final int LAYER_REALTIME_TAB = 3;
 
-
     public final static int LAYER_TAB = 0;
     public final static int SEARCH_TAB = 1;
     public final static int LINK_TAB = 2;
@@ -38,12 +35,10 @@ public class PortalSession implements Cloneable, Serializable {
     public final static int AREA_TAB = 4;
     public final static int MAP_TAB = 5;
 
-    
     /**
-     * Nasty zk hack - have to get and hold a reference to the
-     * error message iframe's media content otherwise if it's
-     * been dereferenced and the browser requests it you get
-     * a SEVERE error (harmless but very annoying)
+     * Nasty zk hack - have to get and hold a reference to the error message
+     * iframe's media content otherwise if it's been dereferenced and the
+     * browser requests it you get a SEVERE error (harmless but very annoying)
      */
     private StringMedia rawErrorMessageMedia = null;
 
@@ -58,24 +53,22 @@ public class PortalSession implements Cloneable, Serializable {
      * The current view we are displaying to the user
      */
     private int currentLayerTab = LAYER_FACILITY_TAB;
-    
+
     /**
-     * The current view we need for displaying the menu
-     * EG, we may be displaying the regions panel but
-     * we want to display an invisible menu on the
-     * facilities panel because the user hasn't selected
-     * a radio button yet
+     * The current view we need for displaying the menu EG, we may be displaying
+     * the regions panel but we want to display an invisible menu on the
+     * facilities panel because the user hasn't selected a radio button yet
      */
     private int tabForCurrentMenu = LAYER_FACILITY_TAB;
 
-    private String onIframeMapFullyLoaded =
-            "alert('onIframeMapFullyLoaded function has not been replaced"
+    private String onIframeMapFullyLoaded
+            = "alert('onIframeMapFullyLoaded function has not been replaced"
             + " - possible race conditon'); ";
     private BoundingBox defaultBoundingbox = null;
 
     /**
-     * Flag to indicate whether the map has been loaded successfully
-     * if false, no openlayers javascript will be executed
+     * Flag to indicate whether the map has been loaded successfully if false,
+     * no openlayers javascript will be executed
      */
     private boolean mapLoaded = false;
     /**
@@ -148,6 +141,7 @@ public class PortalSession implements Cloneable, Serializable {
 
     /**
      * Check if the user defined view is displayable
+     *
      * @return
      */
     public boolean isUserDefinedViewDisplayable() {
@@ -174,7 +168,6 @@ public class PortalSession implements Cloneable, Serializable {
     public BoundingBox getDefaultBoundingBox() {
         return defaultBoundingbox;
     }
-
 
     public void setDefaultBoundingbox(BoundingBox defaultBoundingbox) {
         this.defaultBoundingbox = defaultBoundingbox;
@@ -204,7 +197,7 @@ public class PortalSession implements Cloneable, Serializable {
         this.maximised = maximised;
     }
 
-    public void reset() {        
+    public void reset() {
         mapLayers = new ArrayList<MapLayer>();
         activeLayers = new ArrayList<MapLayer>();
         userDefinedLayers = new ArrayList<MapLayer>();

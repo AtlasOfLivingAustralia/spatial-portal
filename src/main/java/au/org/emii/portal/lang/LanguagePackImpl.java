@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package au.org.emii.portal.lang;
 
 import java.text.MessageFormat;
@@ -11,6 +10,7 @@ import java.util.ResourceBundle;
 
 /**
  * Hold instance of the language pack
+ *
  * @author geoff
  */
 public class LanguagePackImpl implements LanguagePack {
@@ -21,8 +21,9 @@ public class LanguagePackImpl implements LanguagePack {
     private ResourceBundle lang = ResourceBundle.getBundle("language");
 
     /**
-     * Non-static accessor for use in el (doesn't seem to work -
-     * try getLangMap (.langMap) instead...
+     * Non-static accessor for use in el (doesn't seem to work - try getLangMap
+     * (.langMap) instead...
+     *
      * @return
      */
     @Override
@@ -40,9 +41,9 @@ public class LanguagePackImpl implements LanguagePack {
         return map;
     }
 
-
     /**
      * Retrieve a language string from the language pack.
+     *
      * @param key
      * @return
      */
@@ -52,8 +53,10 @@ public class LanguagePackImpl implements LanguagePack {
     }
 
     /**
-     * Format a compound message:  See http://java.sun.com/j2se/1.4.2/docs/api/java/text/MessageFormat.html
-     * @param key Key template message in language pack
+     * Format a compound message: See
+     * http://java.sun.com/j2se/1.4.2/docs/api/java/text/MessageFormat.html
+     *
+     * @param key       Key template message in language pack
      * @param arguments arguments for template
      * @return completed string
      */
@@ -61,6 +64,5 @@ public class LanguagePackImpl implements LanguagePack {
     public String getCompoundLang(String key, Object[] arguments) {
         return MessageFormat.format(getLang(key), arguments);
     }
-
 
 }
