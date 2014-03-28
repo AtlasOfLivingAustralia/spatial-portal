@@ -321,7 +321,7 @@
                                 <listhead>
                                     <listheader label="Taxa Per Cell"  />
                                     <listheader label="Frequency" />
-                                    <listheader label="Cummulative %"  />
+                                    <listheader label="Cumulative %"  />
                                 </listhead>
                                 <listitem value="0">
                                     <listcell>0</listcell>
