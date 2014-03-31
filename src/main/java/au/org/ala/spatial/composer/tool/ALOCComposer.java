@@ -5,7 +5,6 @@
 package au.org.ala.spatial.composer.tool;
 
 import au.org.ala.spatial.composer.progress.ProgressController;
-import au.org.ala.spatial.userpoints.UserPointsUtil;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SelectedArea;
 import au.org.emii.portal.menu.MapLayer;
@@ -92,7 +91,7 @@ public class ALOCComposer extends ToolComposer {
 
             //estimate analysis size in bytes
             double[][] bbox = null;
-            if (sa.getMapLayer() != null && sa.getMapLayer().getMapLayerMetadata() != null) {
+            if (sa.getMapLayer() != null) {
                 List<Double> bb = sa.getMapLayer().getMapLayerMetadata().getBbox();
                 bbox = new double[][]{{bb.get(0), bb.get(1)}, {bb.get(2), bb.get(3)}};
             } else {
@@ -214,14 +213,12 @@ public class ALOCComposer extends ToolComposer {
                 String fileUrl = CommonData.satServer + "/ws/download/" + pid;
                 Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
             } catch (Exception ex) {
-                logger.debug("Error generating download for classification model:");
-                ex.printStackTrace(System.out);
+                logger.error("Error generating download for classification model:", ex);
             }
 
             //Events.echoEvent("openUrl", this.getMapComposer(), infoUrl);
 
             //perform intersection on user uploaded layers so you can facet on this layer
-            UserPointsUtil.addAnalysisLayerToUploadedCoordinates(getPortalSession(), "aloc_" + pid, tToolName.getValue());
         }
 
         this.detach();
@@ -272,7 +269,7 @@ public class ALOCComposer extends ToolComposer {
             //estimate analysis size in bytes
             double[][] bbox = null;
             //NQ: 20131219 Added extra check because BB is not supplied in all situations with the metadata (ie WKT has been drawn etc) http://code.google.com/p/ala/issues/detail?id=475
-            if (sa.getMapLayer() != null && sa.getMapLayer().getMapLayerMetadata() != null && sa.getMapLayer().getMapLayerMetadata().getBbox() != null) {
+            if (sa.getMapLayer() != null && sa.getMapLayer().getMapLayerMetadata().getBbox() != null) {
                 List<Double> bb = sa.getMapLayer().getMapLayerMetadata().getBbox();
                 bbox = new double[][]{{bb.get(0), bb.get(1)}, {bb.get(2), bb.get(3)}};
 
@@ -335,7 +332,7 @@ public class ALOCComposer extends ToolComposer {
             return true;
 
         } catch (Exception ex) {
-            ex.printStackTrace(System.out);
+            logger.error("error opening AnalysisProgress.zul for classification: " + pid, ex);
             getMapComposer().showMessage("Unknown error.", this);
         }
 

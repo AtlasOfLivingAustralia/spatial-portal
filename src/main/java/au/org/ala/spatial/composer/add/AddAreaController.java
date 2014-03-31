@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.add;
 
+
 import au.org.ala.spatial.composer.tool.ToolComposer;
 import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.CommonData;
@@ -30,7 +31,7 @@ public class AddAreaController extends UtilityComposer {
     SettingsSupplementary settingsSupplementary;
     RemoteLogger remoteLogger;
     Radiogroup cbAreaSelection;
-    Radio ciWKT, ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView, ciRadiusManualSelection;
+    Radio ciWKT, ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView, ciRadiusManualSelection, ciMergeAreas;
     Button btnOk;
     private Map args;
 
@@ -105,6 +106,9 @@ public class AddAreaController extends UtilityComposer {
             remoteLogger.logMapArea(layerName, "Area - BoxCurrentView", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciWKT) {
             windowName = "WEB-INF/zul/add/area/AreaWKT.zul";
+        } else if (cbAreaSelection.getSelectedItem() == ciMergeAreas) {
+            windowName = "WEB-INF/zul/add/area/AreaUploadKML.zul";
+            overlapped = false;
         }
         if (!windowName.contentEquals("")) {
             mc.getOpenLayersJavascript().execute(OpenLayersJavascript.iFrameReferences + script);

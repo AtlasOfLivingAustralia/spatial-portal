@@ -49,7 +49,7 @@ public class AreaReportComposer extends ToolComposer {
         boolean includeEndemic = getIsEndemic();
         MapLayer ml = getMapComposer().getMapLayer(areaName);
         double[] bbox = null;
-        if (ml != null && ml.getMapLayerMetadata() != null
+        if (ml != null
                 && ml.getMapLayerMetadata().getBbox() != null
                 && ml.getMapLayerMetadata().getBbox().size() == 4) {
             bbox = new double[4];

@@ -271,8 +271,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             loadOnMap(IDs);
             this.detach();
         } catch (Exception ex) {
-            logger.debug("Error iterating thru' features");
-            ex.printStackTrace(System.out);
+            logger.error("Error iterating thru' features", ex);
         }
     }
 

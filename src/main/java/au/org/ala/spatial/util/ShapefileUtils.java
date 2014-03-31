@@ -6,6 +6,7 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
+import org.apache.log4j.Logger;
 import org.geotools.data.*;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
@@ -30,13 +31,15 @@ import java.util.Map;
  */
 public class ShapefileUtils {
 
+    private static Logger logger = Logger.getLogger(ShapefileUtils.class);
+
     public static Map loadShapefile(File shpfile) {
         try {
 
             FileDataStore store = FileDataStoreFinder.getDataStore(shpfile);
 
-            System.out.println("Loading shapefile. Reading content:");
-            System.out.println(store.getTypeNames()[0]);
+            logger.debug("Loading shapefile. Reading content:");
+            logger.debug(store.getTypeNames()[0]);
 
             FeatureSource featureSource = store.getFeatureSource(store.getTypeNames()[0]);
 
@@ -47,10 +50,10 @@ public class ShapefileUtils {
             StringBuilder sbGeometryCollection = new StringBuilder();
             boolean isGeometryCollection = false;
             while (it.hasNext()) {
-                //System.out.println("======================================");
-                //System.out.println("Feature: ");
+                //logger.debug("======================================");
+                //logger.debug("Feature: ");
                 SimpleFeature feature = (SimpleFeature) it.next();
-                //System.out.println(feature.getID());
+                //logger.debug(feature.getID());
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
                 WKTWriter wkt = new WKTWriter();
 
@@ -97,7 +100,7 @@ public class ShapefileUtils {
 //                }
 
 
-                //System.out.println(wkt.writeFormatted(geom));
+                //logger.debug(wkt.writeFormatted(geom));
                 //addWKTLayer(wkt.write(geom), feature.getID());
 //                shape.put("id", feature.getID());
 //                shape.put("wkt", wktString);
@@ -113,13 +116,12 @@ public class ShapefileUtils {
                 shape.put("wkt", "GEOMETRYCOLLECTION(" + sbGeometryCollection);
             }
 
-            featureCollection.close(it);
+            it.close();
 
             return shape;
 
         } catch (Exception e) {
-            System.out.println("Unable to load shapefile: ");
-            e.printStackTrace(System.out);
+            logger.error("Unable to load shapefile: ", e);
         }
 
         return null;
@@ -179,7 +181,7 @@ public class ShapefileUtils {
                     transaction.commit();
 
                 } catch (Exception problem) {
-                    problem.printStackTrace();
+                    logger.error("error pricessing shape file: " + shpfile.getAbsolutePath(), problem);
                     transaction.rollback();
 
                 } finally {
@@ -187,11 +189,10 @@ public class ShapefileUtils {
                 }
             }
 
-            System.out.println("Active Area shapefile written to: " + shpfile.getAbsolutePath());
+            logger.debug("Active Area shapefile written to: " + shpfile.getAbsolutePath());
 
         } catch (Exception e) {
-            System.out.println("Unable to save shapefile: ");
-            e.printStackTrace(System.out);
+            logger.error("Unable to save shapefile: " + shpfile.getAbsolutePath(), e);
         }
     }
 
@@ -218,20 +219,20 @@ public class ShapefileUtils {
     }
 
     public static void main(String[] args) {
-//        System.out.println("Loading shapefile");
+//        logger.debug("Loading shapefile");
 //        //File shpfile = new File("/Users/ajay/projects/tmp/uploads/SinglePolygon/SinglePolygon.shp");
 //        File shpfile = new File("/Users/ajay/Downloads/My_Area_1_Shapefile/My_Area_1_Shapefile.shp");
 //        loadShapefile(shpfile);
 
 //        try {
-//            System.out.println("Saving shapefile");
+//            logger.debug("Saving shapefile");
 //            File shpfile = new File("/Users/ajay/projects/tmp/uploads/ActiveArea/ActiveArea.shp");
 //            //String wktString = "POLYGON((128.63867187521 -23.275665408794,128.63867187521 -29.031198581005,137.25195312487 -28.56908637161,138.8339843748 -24.561114535569,134.61523437497 -20.83211850342,130.83593750012 -21.160338084068,128.63867187521 -23.275665408794))";
 //            String wktfile = "/Users/ajay/Downloads/Australian_Capital_Territory_WKT.txt";
 //            String wktString = FileUtils.readFileToString(new File(wktfile));
 //            saveShapefile(shpfile, wktString.toString());
 //        } catch (Exception e) {
-//            System.out.println("Error reading wkt file");
+//            logger.debug("Error reading wkt file");
 //            e.printStackTrace(System.out);
 //        }
 

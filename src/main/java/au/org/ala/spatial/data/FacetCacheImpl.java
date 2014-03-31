@@ -1,6 +1,7 @@
 package au.org.ala.spatial.data;
 
 import au.org.ala.spatial.util.CommonData;
+import org.ala.layers.legend.QueryField;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractMessageSource;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,6 +16,7 @@ import java.util.*;
  *
  * @author Natasha Carter (natasha.carter@csiro.au)
  */
+
 @Component("facetCache")
 public class FacetCacheImpl implements FacetCache {
     private final static String facetSuffix = "/search/grouped/facets";
@@ -49,14 +51,13 @@ public class FacetCacheImpl implements FacetCache {
     @Override
     @Scheduled(fixedDelay = 43200000)// schedule to run every 12 hours
     public void reloadCache() {
-        System.out.println();
         Map<String, String[][]> tmpMap = new LinkedHashMap<String, String[][]>();
         List<QueryField> tmpList = new ArrayList<QueryField>();
         List<Map<String, Object>> values = new ArrayList<Map<String, Object>>();
         //get the JSON from the WS
-        //System.out.println("URLRL: " + CommonData.biocacheServer+facetSuffix);
+        //logger.debug("URLRL: " + CommonData.biocacheServer+facetSuffix);
         values = restTemplate.getForObject(CommonData.biocacheServer + facetSuffix, List.class);
-        //System.out.println("FACETCACHE:::: " + values);
+        //logger.debug("FACETCACHE:::: " + values);
         logger.debug(values);
         Map<String, QueryField.FieldType> dataTypes = getDataTypes();
         for (Map<String, Object> value : values) {
@@ -71,6 +72,12 @@ public class FacetCacheImpl implements FacetCache {
                 //Only add if it is not included in the ignore list
                 if (!CommonData.ignoredFacets.contains(field)) {
                     String i18n = messageSource.getMessage("facet." + field, null, field, Locale.getDefault());
+
+                    //TODO: update biocache i18n instead of doing this
+                    if (field.equals("data_provider")) {
+                        i18n = "Data Provider";
+                    }
+
                     facetValues[i][0] = field;
                     facetValues[i][1] = i18n;
                     QueryField.FieldType ftype = dataTypes.containsKey(field) ? dataTypes.get(field) : QueryField.FieldType.STRING;
@@ -92,8 +99,8 @@ public class FacetCacheImpl implements FacetCache {
 
         groupedFacets = tmpMap;
         facetQueryFieldList = tmpList;
-        logger.info("Grouped Facets: " + groupedFacets);
-        logger.info("facet query list : " + facetQueryFieldList);
+        logger.debug("Grouped Facets: " + groupedFacets);
+        logger.debug("facet query list : " + facetQueryFieldList);
     }
 
     /**
@@ -105,7 +112,7 @@ public class FacetCacheImpl implements FacetCache {
         Map<String, QueryField.FieldType> map = new HashMap<String, QueryField.FieldType>();
         List<Map<String, String>> values = new ArrayList<Map<String, String>>();
         //get the JSON from the WS
-        //System.out.println("URLRL: " + CommonData.biocacheServer+facetSuffix);
+        //logger.debug("URLRL: " + CommonData.biocacheServer+facetSuffix);
         values = restTemplate.getForObject(CommonData.biocacheServer + facetSuffix, List.class);
         for (Map<String, String> mvalues : values) {
             String name = mvalues.get("name");

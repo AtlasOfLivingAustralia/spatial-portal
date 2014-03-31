@@ -1,5 +1,7 @@
 package au.org.ala.spatial.util;
 
+import org.apache.log4j.Logger;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +13,8 @@ import java.util.zip.ZipOutputStream;
  * @author ajay
  */
 public class Zipper {
+    private static Logger logger = Logger.getLogger(Zipper.class);
+
     public static Map unzipFile(String name, InputStream data, String basepath) {
         try {
             Map output = new HashMap();
@@ -36,7 +40,7 @@ public class Zipper {
                     continue;
                 }
                 destFile.getParentFile().mkdirs();
-                System.out.println("ze.file: " + ze.getName());
+                logger.debug("ze.file: " + ze.getName());
                 if (ze.getName().endsWith(".shp")) {
                     shpfile = ze.getName();
                     type = "shp";
@@ -49,10 +53,10 @@ public class Zipper {
             zis.close();
 
 //            if (type.equalsIgnoreCase("shp")) {
-//                System.out.println("Uploaded file is a shapefile. Loading...");
+//                logger.debug("Uploaded file is a shapefile. Loading...");
 //                //loadUserShapefile(new File(outputpath + shpfile));
 //            } else {
-//                System.out.println("Unknown file type. ");
+//                logger.debug("Unknown file type. ");
 //                //showMessage("Unknown file type. Please upload a valid CSV, KML or Shapefile. ");
 //            }
 
@@ -63,9 +67,7 @@ public class Zipper {
 
         } catch (Exception e) {
             //showMessage("Unable to load your file. Please try again.");
-
-            System.out.println("unable to load user kml: ");
-            e.printStackTrace(System.out);
+            logger.error("unable to load user kml: ", e);
 
         }
 
@@ -114,7 +116,7 @@ public class Zipper {
                 FileInputStream fis = new FileInputStream(f);
                 String fileToAdd = f.getAbsolutePath().substring(parentDir.length() + 1);
                 ZipEntry anEntry = new ZipEntry(fileToAdd);
-                System.out.println("adding: " + anEntry.getName());
+                logger.debug("adding: " + anEntry.getName());
                 zos.putNextEntry(anEntry);
                 while ((bytesIn = fis.read(readBuffer)) != -1) {
                     zos.write(readBuffer, 0, bytesIn);
@@ -138,7 +140,7 @@ public class Zipper {
                 FileInputStream fis = new FileInputStream(f);
                 String fileToAdd = f.getName();
                 ZipEntry anEntry = new ZipEntry(fileToAdd);
-                System.out.println("adding: " + anEntry.getName());
+                logger.debug("adding: " + anEntry.getName());
                 zos.putNextEntry(anEntry);
                 while ((bytesIn = fis.read(readBuffer)) != -1) {
                     zos.write(readBuffer, 0, bytesIn);
@@ -149,7 +151,7 @@ public class Zipper {
 
             zos.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error zipping to: " + outpath, e);
         }
     }
 }

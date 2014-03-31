@@ -2,7 +2,6 @@ package au.org.ala.spatial.composer.add.area;
 
 import au.org.ala.spatial.composer.layer.EnvLayersCombobox;
 import au.org.ala.spatial.data.BiocacheQuery;
-import au.org.ala.spatial.data.Facet;
 import au.org.ala.spatial.data.Query;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
@@ -11,6 +10,7 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.util.LayerUtilities;
 import net.sf.json.JSONObject;
+import org.ala.layers.legend.Facet;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
@@ -168,7 +168,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
             filter_done.setDisabled(false);
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            logger.error("error adding layer to EE : " + new_value, e);
         }
 
         //reset active area size
@@ -331,8 +331,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             serverFilter();
 
         } catch (Exception e) {
-            logger.debug("slider change min:" + e.toString());
-            e.printStackTrace(System.out);
+            logger.error("slider change min", e);
         }
     }
 
@@ -352,8 +351,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
             serverFilter();
         } catch (Exception e) {
-            logger.debug("slider change max:" + e.toString());
-            e.printStackTrace(System.out);
+            logger.error("slider change max", e);
         }
     }
 
@@ -441,11 +439,13 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     private void doApplyFilter(JSONObject layer, String val1, String val2) {
+        String layername = (layer == null) ? "null" : layer.toString(4);
         try {
+
             loadMap(layer, lbSelLayers.getItemCount() - 1, Double.parseDouble(val1), Double.parseDouble(val2), false);
 
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            logger.error("error adding new filtered layer min/max: " + val1 + "/" + val2 + " layer:" + layername, e);
         }
     }
 
@@ -473,6 +473,11 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             //load the layer
             MapLayer ml = mc.addWMSLayer(pid, txtLayerName.getText(), url, 0.75f, null, null, LayerUtilities.ENVIRONMENTAL_ENVELOPE, null, null);
 
+            //add colour!
+            ml.setRedVal(255);
+            ml.setGreenVal(0);
+            ml.setBlueVal(0);
+
             //make the metadata?
             StringBuilder sb = new StringBuilder();
             StringBuilder sbLayerList = new StringBuilder();
@@ -495,7 +500,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             try {
                 final_wkt = getWkt();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("failed to get WKT", e);
             }
 
             this.layerName = ml.getName();
@@ -520,10 +525,11 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             removeAllSelectedLayers(true);  //this also shows active area
 
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            logger.error("unable to create envelope layer: ", e);
         }
 
         //do detach after adding the new layer
+        mc.updateLayerControls();
     }
 
     void showActiveArea() {
@@ -607,7 +613,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             ((Listcell) popup_item.getChildren().get(2)).setLabel(strCount.split("\n")[0]);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error parsing species count from:" + strCount, e);
         }
     }
 
@@ -628,8 +634,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         try {
             filter = URLEncoder.encode(filter, "UTF-8");
         } catch (Exception e) {
-            logger.debug("invalid filter sld");
-            e.printStackTrace();
+            logger.error("cannot encode filter sld: " + filter, e);
         }
 
         MapLayer ml = mc.getMapLayer(LAYER_PREFIX + layer.getString("name"));

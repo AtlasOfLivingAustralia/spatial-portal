@@ -7,6 +7,7 @@ package au.org.ala.spatial.data;
 import au.org.ala.spatial.util.SelectedArea;
 import au.org.ala.spatial.util.UserData;
 import au.org.emii.portal.composer.MapComposer;
+import org.ala.layers.legend.Facet;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -69,7 +70,7 @@ public class QueryUtil {
             return baseQuery.newWkt(null, forMapping);
         }
         Query q = null;
-        if (sa.getMapLayer() != null && (baseQuery == null || !(baseQuery instanceof UploadQuery))) {
+        if (sa.getMapLayer() != null && (baseQuery == null || !(baseQuery instanceof UserDataQuery))) {
             if (sa.getMapLayer().getFacets() != null) {
                 ArrayList<Facet> facets = sa.getMapLayer().getFacets();
                 if (baseQuery == null) {

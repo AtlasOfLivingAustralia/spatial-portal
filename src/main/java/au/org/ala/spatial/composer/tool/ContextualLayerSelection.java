@@ -2,26 +2,26 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package au.org.ala.spatial.composer.add.area;
+package au.org.ala.spatial.composer.tool;
 
 import au.org.ala.spatial.composer.layer.ContextualLayersAutoComplete;
 import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.ContextualLayerListComposer;
-import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.util.LayerUtilities;
 import net.sf.json.JSONObject;
-import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Window;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author angus
  */
-public class ContextualLayerSelection extends AreaToolComposer {
+public class ContextualLayerSelection extends ToolComposer {
 
-    private static Logger logger = Logger.getLogger(ContextualLayerSelection.class);
     Button btnNext;
     ContextualLayersAutoComplete autoCompleteLayers;
     String treeName, treePath, treeMetadata;
@@ -40,9 +40,15 @@ public class ContextualLayerSelection extends AreaToolComposer {
     }
 
     public void onClick$btnNext(Event event) {
+
+        Map<String, Object> winProps = new HashMap<String, Object>();
+        winProps.put("parent", this);
+        winProps.put("parentname", "Tool");
+        winProps.put("selectedMethod", selectedMethod);
+
         if (treeName != null) {
             getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(treeName), treeName,
-                    treePath,
+                    treePath.replace("&layers=", "&layer="),
                     (float) 0.75, treeMetadata, null, treeSubType, null, null);
 
             String activeLayerName = treePath.replaceAll("^.*ALA:", "").replaceAll("&.*", "");
@@ -60,7 +66,7 @@ public class ContextualLayerSelection extends AreaToolComposer {
         Window window = (Window) Executions.createComponents("WEB-INF/zul/add/area/AreaMapPolygon.zul", this.getParent(), winProps);
         window.doOverlapped();
         String script = getMapComposer().getOpenLayersJavascript().addFeatureSelectionTool();
-        getMapComposer().getOpenLayersJavascript().execute(OpenLayersJavascript.iFrameReferences + script);
+        getMapComposer().getOpenLayersJavascript().execute(getMapComposer().getOpenLayersJavascript().iFrameReferences + script);
 
         this.detach();
     }
@@ -69,10 +75,10 @@ public class ContextualLayerSelection extends AreaToolComposer {
         treeName = null;
         //btnOk.setDisabled(true);
 
-        ContextualLayerListComposer llc = (ContextualLayerListComposer) getFellow("layerTree").getFellow("contextuallayerswindow");
+        ContextualLayerListComposer llc = (ContextualLayerListComposer) getFellow("layerTree").getFellow("contextuallayerlistwindow");
 
         if (autoCompleteLayers.getItemCount() > 0 && autoCompleteLayers.getSelectedItem() != null) {
-            JSONObject jo = autoCompleteLayers.getSelectedItem().getValue();
+            JSONObject jo = (JSONObject) autoCompleteLayers.getSelectedItem().getValue();
             String metadata = "";
 
             metadata = CommonData.layersServer + "/layers/view/more/" + jo.getString("id");
@@ -130,7 +136,7 @@ public class ContextualLayerSelection extends AreaToolComposer {
         autoCompleteLayers.setText(name);
 
         //clear selection on tree
-        ContextualLayerListComposer llc = (ContextualLayerListComposer) getFellow("layerTree").getFellow("contextuallayerswindow");
+        ContextualLayerListComposer llc = (ContextualLayerListComposer) getFellow("layerTree").getFellow("contextuallayerlistwindow");
         llc.tree.clearSelection();
 
         // btnOk.setDisabled(false);

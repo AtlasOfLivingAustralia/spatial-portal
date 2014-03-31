@@ -5,10 +5,7 @@ import au.org.ala.spatial.composer.add.AddSpeciesController;
 import au.org.ala.spatial.composer.add.AddSpeciesInArea;
 import au.org.ala.spatial.composer.tool.ToolComposer;
 import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.QueryField;
-import au.org.ala.spatial.data.UploadQuery;
-import au.org.ala.spatial.userpoints.RecordsLookup;
-import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.data.UserDataQuery;
 import au.org.ala.spatial.util.UserData;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
@@ -16,7 +13,12 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -30,7 +32,7 @@ import org.zkoss.zul.*;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.ArrayList;
+import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
@@ -128,8 +130,7 @@ public class UploadSpeciesController extends UtilityComposer {
                 logger.debug("No attachment");
             }
         } catch (Exception e) {
-            logger.debug("Unable to process media: ");
-            e.printStackTrace(System.out);
+            logger.error("Unable to process media: ", e);
         }
     }
 
@@ -210,8 +211,7 @@ public class UploadSpeciesController extends UtilityComposer {
                 } catch (Exception e) {
                     //last one, report error
                     getMapComposer().showMessage("Unable to load your file. Please try again.");
-                    logger.debug("unable to load user points: ");
-                    e.printStackTrace();
+                    logger.error("unable to load user points: ", e);
                 }
             }
 
@@ -222,7 +222,7 @@ public class UploadSpeciesController extends UtilityComposer {
                 analysisParent.resetWindowFromSpeciesUpload(uploadLSID, uploadType);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("unable to load user points", ex);
         }
     }
 
@@ -234,168 +234,55 @@ public class UploadSpeciesController extends UtilityComposer {
         logger.debug("\n\n\nin loadUserPoints");
         // Read a line in to check if it's a valid file
         // if it throw's an error, then it's not a valid csv file
-        CSVReader reader = new CSVReader(data);
 
-        List userPoints = reader.readAll();
+        StringBuilder sbProcessUrl = new StringBuilder();
+        sbProcessUrl.append(/*CommonData.layersServer*/ "http://localhost:8080/layers-service" + "/userdata/add");
 
-        logger.debug("userPoints.size(): " + userPoints.size());
-        //if only one column treat it as a list of LSID's
-        if (userPoints.size() == 0) {
-            throw (new RuntimeException("no data in csv"));
-        }
-        if (((String[]) userPoints.get(0)).length == 1) {
-            continueLoadUserLSIDs(ud, data, reader, userPoints);
-            return;
-        }
+        //TODO: get signed in user's id
+        sbProcessUrl.append("?user_id=" + "anonymous");
+        sbProcessUrl.append("&name=").append(URLEncoder.encode(this.tbName.getText(), "UTF-8"));
+        sbProcessUrl.append("&description=").append(URLEncoder.encode(this.tbDesc.getText(), "UTF-8"));
 
-        boolean hasHeader = false;
 
-        // check if it has a header
-        String[] upHeader = (String[]) userPoints.get(0);
-        try {
-            Double d1 = new Double(upHeader[1]);
-            Double d2 = new Double(upHeader[2]);
-        } catch (Exception e) {
-            hasHeader = true;
-        }
+        HttpClient client = new HttpClient();
+        PostMethod post = new PostMethod(sbProcessUrl.toString());
 
-        logger.debug("hasHeader: " + hasHeader);
+        post.addRequestHeader("Accept", "application/json");
 
-        // check if the count of points goes over the threshold.
-        int sizeToCheck = (hasHeader) ? userPoints.size() - 1 : userPoints.size();
-        logger.debug("Checking user points size: " + sizeToCheck + " -> " + settingsSupplementary.getValueAsInt("max_record_count_upload"));
-        if (sizeToCheck > settingsSupplementary.getValueAsInt("max_record_count_upload")) {
-            getMapComposer().showMessage(settingsSupplementary.getValue("max_record_count_upload_message"));
-            return;
+        post.addParameter("csv", IOUtils.toString(data));
+
+        logger.debug("calling add user data ws: " + sbProcessUrl.toString());
+        int result = client.executeMethod(post);
+
+        JSONObject jo = (JSONObject) new JSONParser().parse(post.getResponseBodyAsString());
+
+        if (!jo.containsKey("error")) {
+
         }
 
-        ArrayList<QueryField> fields = new ArrayList<QueryField>();
-        if (upHeader.length == 2) {
-            //only points upload, add 'id' column at the start
-            fields.add(new QueryField("id"));
-            fields.get(0).ensureCapacity(sizeToCheck);
-        }
-        String[] defaultHeader = {"id", "longitude", "latitude"};
-        for (int i = 0; i < upHeader.length; i++) {
-            String name = upHeader[i];
-            if (upHeader.length == 2 && i < 2) {
-                name = defaultHeader[i + 1];
-            } else if (upHeader.length > 2 && i < 3) {
-                name = defaultHeader[i];
-            }
-            fields.add(new QueryField("f" + String.valueOf(i), name, QueryField.FieldType.AUTO));
-            fields.get(fields.size() - 1).ensureCapacity(sizeToCheck);
-        }
-
-        double[] points = new double[sizeToCheck * 2];
-        int counter = 1;
-        int hSize = hasHeader ? 1 : 0;
-        for (int i = 0; i < userPoints.size() - hSize; i++) {
-            String[] up = (String[]) userPoints.get(i + hSize);
-            if (up.length > 2) {
-                for (int j = 0; j < up.length && j < fields.size(); j++) {
-                    //replace anything that may interfere with webportal facet parsing
-                    String s = up[j].replace("\"", "'").replace(" AND ", " and ").replace(" OR ", " or ");
-                    if (s.length() > 0 && s.charAt(0) == '*') {
-                        s = "_" + s;
-                    }
-                    fields.get(j).add(s);
-                }
-                try {
-                    points[i * 2] = Double.parseDouble(up[1]);
-                    points[i * 2 + 1] = Double.parseDouble(up[2]);
-                } catch (Exception e) {
-                }
-            } else if (up.length > 1) {
-                fields.get(0).add(ud.getName() + "-" + counter);
-                for (int j = 0; j < up.length && j < fields.size(); j++) {
-                    fields.get(j + 1).add(up[j]);
-                }
-                try {
-                    points[i * 2] = Double.parseDouble(up[0]);
-                    points[i * 2 + 1] = Double.parseDouble(up[1]);
-                } catch (Exception e) {
-                }
-                counter++;
-            }
-        }
-
-        for (int i = 0; i < fields.size(); i++) {
-            fields.get(i).store();
-        }
-
-        String pid = String.valueOf(System.currentTimeMillis());
-
-        ud.setFeatureCount(userPoints.size() - hSize);
-
-        String metadata = "";
-        metadata += "User uploaded points \n";
-        metadata += "Name: " + ud.getName() + " <br />\n";
-        metadata += "Description: " + ud.getDescription() + " <br />\n";
-        metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
-        metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
-
-        ud.setMetadata(metadata);
-        ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
-        ud.setLsid(pid);
-        uploadLSID = pid + "\t" + ud.getName();
-
-        Query q = new UploadQuery(pid, ud.getName(), points, fields, metadata);
-        ud.setQuery(q);
-        RecordsLookup.putData(pid, points, fields, metadata);
-
-        // add it to the user session
-        Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
-        if (htUserSpecies == null) {
-            htUserSpecies = new Hashtable<String, UserData>();
-        }
-        htUserSpecies.put(pid, ud);
-        getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
-
-        logger.debug("addToMap: " + addToMap);
-        logger.debug("uploadLSID: " + uploadLSID);
-        logger.debug("metadata: " + metadata);
+        //this is loading user data there is no need for ud_header_id + facet_id for use in layer creation.
+        UserDataQuery q = new UserDataQuery(String.valueOf(jo.get("ud_header_id")));
 
         if (addToMap) {
-            if (!defineArea) {
-                //do default sampling now
-                ArrayList<QueryField> f = CommonData.getDefaultUploadSamplingFields();
-                //add any analysis layers from the layers list
-                for (MapLayer ml : getMapComposer().getAnalysisLayers()) {
-                    f.add(new QueryField(ml.getName(), ml.getDisplayName(), QueryField.FieldType.AUTO));
-                }
-                if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
-                    q.sample(f);
-                    ((UploadQuery) q).resetOriginalFieldCount(-1);
-                }
-            }
             MapLayer ml = null;
-            if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(MapComposer.POINTS_CLUSTER_THRESHOLD)) {
-                if (defineArea) {
-                    mapFilterGrid(q, ud.getName(), ud.getFeatureCount(), metadata);
-                } else {
-                    ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1,
-                            MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
-                }
+
+            if (defineArea) {
+                mapFilterGrid(q, ud.getName(), ud.getFeatureCount(), q.getMetadataHtml());
             } else {
-                if (defineArea) {
-                    mapFilter(q, ud.getName(), ud.getFeatureCount(), metadata);
-                } else {
-                    ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1,
-                            MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
-                }
+                ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1,
+                        MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
             }
+
             if (ml != null) {
-                ml.getMapLayerMetadata().setMoreInfo(metadata);
+                ml.getMapLayerMetadata().setMoreInfo(q.getMetadataHtml());
             }
         }
 
         if (eventListener != null) {
-            eventListener.onEvent(new Event("", null, pid + "\t" + ud.getName()));
+            eventListener.onEvent(new Event("", null, jo.get("ud_header_id") + "\t" + ud.getName()));
         }
 
-        // close the reader and data streams
-        reader.close();
+
         data.close();
     }
 

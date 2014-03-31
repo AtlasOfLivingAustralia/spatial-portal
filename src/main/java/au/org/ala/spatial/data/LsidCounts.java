@@ -8,6 +8,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
@@ -17,6 +18,7 @@ import java.util.HashMap;
  * @author Adam
  */
 public class LsidCounts {
+    private static Logger logger = Logger.getLogger(LsidCounts.class);
 
     Long[] lft;
     Long[] count;
@@ -25,12 +27,13 @@ public class LsidCounts {
         HttpClient client = new HttpClient();
 
         CSVReader csv = null;
+        String url = null;
         try {
-            String url = CommonData.biocacheServer
+            url = CommonData.biocacheServer
                     + "/webportal/legend?cm=lft&q="
                     + URLEncoder.encode("geospatial_kosher:*", "UTF-8")
                     + CommonData.biocacheQc;
-            System.out.println(url);
+            logger.debug(url);
             GetMethod get = new GetMethod(url);
             HashMap<Long, Long> map = new HashMap<Long, Long>();
             client.getHttpConnectionManager().getParams().setSoTimeout(30000);
@@ -61,7 +64,7 @@ public class LsidCounts {
                 count[i] = map.get(lft[i]);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting LSID count for : " + url, e);
         } finally {
             try {
                 if (csv != null) {

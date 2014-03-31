@@ -5,6 +5,7 @@ import au.org.emii.portal.menu.MapLayer;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.log4j.Logger;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -27,6 +28,8 @@ import java.util.Map.Entry;
  */
 public class LayersUtil {
 
+    private static Logger logger = Logger.getLogger(LayersUtil.class);
+
     public static final String LAYER_TYPE_PLAIN = "text/plain";
     public static final String LAYER_TYPE_CSV = "text/csv";
     public static final String LAYER_TYPE_KML = "application/vnd.google-earth.kml+xml";
@@ -43,7 +46,7 @@ public class LayersUtil {
     public static String getMetadataForWKT(String method, String wkt) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String date = sdf.format(new Date());
-        String area = String.format("%,d", (int) Util.calculateArea(wkt));
+        String area = String.format("%,.2f", Util.calculateArea(wkt) / 1000000.0);
         String shortWkt = (wkt.length() > 300) ? wkt.substring(0, 300) + "..." : wkt;
 
         return "Area metadata\n" + method + "<br>" + date + "<br>" + area + " sq km<br>" + shortWkt;
@@ -184,7 +187,7 @@ public class LayersUtil {
 
 
         } catch (Exception e) {
-            System.out.println("Error checking if pest species ");
+            logger.debug("Error checking if pest species ");
             e.printStackTrace(System.out);
         }
 
@@ -214,8 +217,7 @@ public class LayersUtil {
             String scientficName = jo.getJSONObject("taxonConcept").getString("nameString");
             return scientficName;
         } catch (Exception e) {
-            System.out.println("Error getting scientific name");
-            e.printStackTrace(System.out);
+            logger.error("error getting scientific name: " + snUrl, e);
         }
 
 
@@ -225,7 +227,7 @@ public class LayersUtil {
     static public String getScientificNameRank(String lsid) {
 
         String snUrl = CommonData.bieServer + "/species/" + lsid + ".json";
-        System.out.println(snUrl);
+        logger.debug(snUrl);
 
         try {
             HttpClient client = new HttpClient();
@@ -239,15 +241,14 @@ public class LayersUtil {
             String scientficName = jo.getJSONObject("taxonConcept").getString("nameString");
             String rank = jo.getJSONObject("taxonConcept").getString("rankString");
 
-            System.out.println("Arrays.binarySearch(commonTaxonRanks, rank): " + Arrays.binarySearch(commonTaxonRanks, rank));
+            logger.debug("Arrays.binarySearch(commonTaxonRanks, rank): " + Arrays.binarySearch(commonTaxonRanks, rank));
             if (Arrays.binarySearch(commonTaxonRanks, rank) > -1) {
                 rank = "taxon";
             }
 
             return scientficName + "," + rank;
         } catch (Exception e) {
-            System.out.println("Error getting scientific name");
-            e.printStackTrace(System.out);
+            logger.error("Error getting scientific name rank: " + snUrl, e);
         }
 
 

@@ -700,7 +700,7 @@ public class AddSpeciesController extends UtilityComposer {
             try {
                 importList(readerToString(m.getReaderData()));
                 loaded = true;
-                logger.info("read type " + m.getContentType() + " with getReaderData");
+                logger.debug("read type " + m.getContentType() + " with getReaderData");
             } catch (Exception e) {
                 //e.printStackTrace();
             }
@@ -708,7 +708,7 @@ public class AddSpeciesController extends UtilityComposer {
                 try {
                     importList(new String(m.getByteData()));
                     loaded = true;
-                    logger.info("read type " + m.getContentType() + " with getByteData");
+                    logger.debug("read type " + m.getContentType() + " with getByteData");
                 } catch (Exception e) {
                     //e.printStackTrace();
                 }
@@ -717,7 +717,7 @@ public class AddSpeciesController extends UtilityComposer {
                 try {
                     importList(readerToString(new InputStreamReader(m.getStreamData())));
                     loaded = true;
-                    logger.info("read type " + m.getContentType() + " with getStreamData");
+                    logger.debug("read type " + m.getContentType() + " with getStreamData");
                 } catch (Exception e) {
                     //e.printStackTrace();
                 }
@@ -726,7 +726,7 @@ public class AddSpeciesController extends UtilityComposer {
                 try {
                     importList(m.getStringData());
                     loaded = true;
-                    logger.info("read type " + m.getContentType() + " with getStringData");
+                    logger.debug("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
                     //last one, report error
                     getMapComposer().showMessage("Unable to load your file. Please try again.");

@@ -6,9 +6,10 @@ package au.org.ala.spatial.composer.add.area;
 
 import au.org.ala.spatial.composer.add.AddFacetController;
 import au.org.ala.spatial.composer.tool.ToolComposer;
-import au.org.ala.spatial.data.*;
+import au.org.ala.spatial.data.BiocacheQuery;
+import au.org.ala.spatial.data.Query;
+import au.org.ala.spatial.data.QueryUtil;
 import au.org.ala.spatial.logger.RemoteLogger;
-import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SelectedArea;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
@@ -20,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -117,19 +117,6 @@ public class AreaToolComposer extends UtilityComposer {
                             (getMapComposer().getMapLayer(layerName).getFacets() == null ? wkt : null));
 
                     q = QueryUtil.queryFromSelectedArea(q, sa, true, null);
-
-                    if (q instanceof UploadQuery) {
-                        //do default sampling now
-                        ArrayList<QueryField> f = CommonData.getDefaultUploadSamplingFields();
-                        //add any analysis layers from the layers list
-                        for (MapLayer ml : getMapComposer().getAnalysisLayers()) {
-                            f.add(new QueryField(ml.getName(), ml.getDisplayName(), QueryField.FieldType.AUTO));
-                        }
-                        if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
-                            q.sample(f);
-                            ((UploadQuery) q).resetOriginalFieldCount(-1);
-                        }
-                    }
                 }
                 if (winProps.get("query") == null) {
                     mapSpeciesInArea();

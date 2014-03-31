@@ -9,22 +9,26 @@ import au.org.ala.spatial.data.SpeciesListUtil.IgnoreUnknownPropsStrategyWrapper
 import net.sf.json.JSONArray;
 import net.sf.json.JsonConfig;
 import net.sf.json.util.PropertySetStrategy;
+import org.ala.layers.legend.Legend;
+import org.ala.layers.legend.LegendBuilder;
+import org.ala.layers.legend.LegendObject;
+import org.ala.layers.legend.QueryField;
+import org.apache.log4j.Logger;
 
 import java.awt.*;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Adam
  */
 public class BiocacheLegendObject extends LegendObject {
+    private static Logger logger = Logger.getLogger(BiocacheLegendObject.class);
     //[0] is colour, [1] is count
 
-    HashMap<Double, int[]> categoriesNumeric;
+    HashMap<Float, int[]> categoriesNumeric;
     String csvLegend;
     String rawCsvLegend;
     String colourMode;
@@ -35,7 +39,7 @@ public class BiocacheLegendObject extends LegendObject {
         this.colourMode = colourMode;
         rawCsvLegend = legend;
         categories = new HashMap<String, int[]>();
-        categoriesNumeric = new HashMap<Double, int[]>();
+        categoriesNumeric = new HashMap<Float, int[]>();
         if (legend != null && legend.startsWith("name,red,green,blue,count")) {
             loadFromCsv(legend);
         } else {
@@ -57,12 +61,14 @@ public class BiocacheLegendObject extends LegendObject {
         sb.append("name,red,green,blue,count");
 
 
+        long start = System.currentTimeMillis();
         JSONArray items = JSONArray.fromObject(legend);
         JsonConfig cfg = new JsonConfig();
         cfg.setPropertySetStrategy(new IgnoreUnknownPropsStrategyWrapper(PropertySetStrategy.DEFAULT));
         cfg.setRootClass(LegendItemDTO.class);
         java.util.Collection<LegendItemDTO> c = JSONArray.toCollection(items, cfg);
         LegendItemDTO previous = null;
+        logger.debug("*** time to parse legend to JSON was " + (System.currentTimeMillis() - start) + "ms");
 
         categoryNameOrder = new String[c.size()];
 
@@ -91,7 +97,7 @@ public class BiocacheLegendObject extends LegendObject {
                 d = Double.parseDouble(item.getName());
             } catch (Exception e) {
             }
-            categoriesNumeric.put(d, value);
+            categoriesNumeric.put((float) d, value);
 
 
             //check for endpoint (repitition of colour)
@@ -110,7 +116,11 @@ public class BiocacheLegendObject extends LegendObject {
                 sb.append("\n");
 
                 colour = item.getRed() + "," + item.getGreen() + "," + item.getBlue();
-                line = "\"" + item.getName() + "\"," + colour + "," + item.getCount();
+                line = "\"" + item.getName().replace("\"", "\"\"") + "\"," + colour + "," + item.getCount();
+
+                if (item.getName().startsWith("Camponotus")) {
+                    line = line;
+                }
                 sb.append(line);
             }
             previous = item;
@@ -149,7 +159,7 @@ public class BiocacheLegendObject extends LegendObject {
             csv = csvReader.readAll();
             csvReader.close();
         } catch (IOException ex) {
-            Logger.getLogger(BiocacheLegendObject.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("error reading legend: ", ex);
         }
 
         boolean isDecade = colourMode.startsWith("occurrence_year_decade") || colourMode.equals("decade");
@@ -165,7 +175,7 @@ public class BiocacheLegendObject extends LegendObject {
         for (int i = 1; i < csv.size(); i++) {
             String[] c = csv.get(i);
 //            if(c.length !=5){
-//                System.out.println("ISSUE: " + StringUtils.join(c, "$$$"));
+//                logger.debug("ISSUE: " + StringUtils.join(c, "$$$"));
 //            }
             String[] p = (i > 1) ? csv.get(i - 1) : null;
 
@@ -192,7 +202,7 @@ public class BiocacheLegendObject extends LegendObject {
                 d = Double.parseDouble(c[0]);
             } catch (Exception e) {
             }
-            categoriesNumeric.put(d, value);
+            categoriesNumeric.put((float) d, value);
 
             //check for endpoint (repitition of colour)
             if (p != null && c.length > 4 && p.length > 4
@@ -245,7 +255,7 @@ public class BiocacheLegendObject extends LegendObject {
     }
 
     @Override
-    public int getColour(double value) {
+    public int getColour(float value) {
         int[] data = categoriesNumeric.get(value);
 
         if (data != null) {
@@ -256,14 +266,14 @@ public class BiocacheLegendObject extends LegendObject {
     }
 
     @Override
-    public double[] getMinMax() {
+    public float[] getMinMax() {
         if (getNumericLegend() != null) {
             return super.getMinMax();
         }
-        double[] minmax = new double[2];
+        float[] minmax = new float[2];
         boolean first = true;
-        for (Double d : categoriesNumeric.keySet()) {
-            if (!Double.isNaN(d)) {
+        for (Float d : categoriesNumeric.keySet()) {
+            if (!Float.isNaN(d)) {
                 if (first || minmax[0] > d) {
                     minmax[0] = d;
                 }
@@ -294,16 +304,16 @@ public class BiocacheLegendObject extends LegendObject {
             return LegendBuilder.legendForDecades(values, new QueryField(colourMode, QueryField.FieldType.INT));
         } else {
             int size = 0;
-            for (double d : categoriesNumeric.keySet()) {
-                int[] v = categoriesNumeric.get(d);
+            for (float f : categoriesNumeric.keySet()) {
+                int[] v = categoriesNumeric.get(f);
                 size += v[1];
             }
             double[] values = new double[size];
             int pos = 0;
-            for (double d : categoriesNumeric.keySet()) {
-                int[] v = categoriesNumeric.get(d);
+            for (float f : categoriesNumeric.keySet()) {
+                int[] v = categoriesNumeric.get(f);
                 for (int i = 0; i < v[1]; i++) {
-                    values[pos] = d;
+                    values[pos] = f;
                     pos++;
                 }
             }

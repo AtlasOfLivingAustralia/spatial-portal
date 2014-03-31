@@ -9,15 +9,17 @@ import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.wms.WMSStyle;
+import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zul.Filedownload;
-import org.zkoss.zul.Textbox;
+import org.zkoss.zul.*;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * @author ajay
@@ -38,9 +40,45 @@ public class ImportAnalysisController extends UtilityComposer {
     boolean sxsSpeciesDensity = false;
     String[] gdmEnvlist;
 
+    Listbox lbLog;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
+
+        try {
+            JSONObject jo = remoteLogger.getLogCSV();
+
+
+            if (jo != null && jo.containsKey("abe") && jo.getJSONArray("abe").size() > 0) {
+                ArrayList<String[]> logEntries = new ArrayList<String[]>();
+
+                for (Object o : jo.getJSONArray("abe")) {
+                    JSONObject j = (JSONObject) o;
+
+                    String[] r = new String[4];
+                    r[0] = j.containsKey("id") ? j.getString("id") : "";
+                    r[1] = j.containsKey("time") ? String.format("dd/mm/yyyy hh:MM:ss", new Date(j.getLong("time"))) : "";
+                    r[2] = j.containsKey("category2") ? j.getString("category2") : "";
+                    r[3] = j.containsKey("service") ? j.getJSONObject("service").toString() : "";
+
+                    logEntries.add(r);
+                }
+
+                lbLog.setModel(new SimpleListModel(logEntries));
+            }
+        } catch (Exception e) {
+            logger.error("getting log did not work", e);
+        }
+    }
+
+    public void onSelect$lbLog(Event event) {
+        Listitem li = (Listitem) event.getTarget();
+        String[] r = (String[]) li.getValue();
+
+        JSONObject jo = remoteLogger.getLogItem(r[0]);
+
+        refNum.setValue(jo.getJSONObject("service").getString("processid"));
     }
 
     public void onClick$btnOk(Event event) {
@@ -113,7 +151,7 @@ public class ImportAnalysisController extends UtilityComposer {
 
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error building aloc parameters", e);
         }
         return false;
     }

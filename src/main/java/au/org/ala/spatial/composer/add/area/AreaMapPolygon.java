@@ -1,9 +1,8 @@
 package au.org.ala.spatial.composer.add.area;
 
 import au.org.ala.spatial.composer.gazetteer.GazetteerPointSearch;
-import au.org.ala.spatial.data.BiocacheQuery;
-import au.org.ala.spatial.data.Facet;
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.menu.MapLayer;
@@ -12,7 +11,7 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.ala.layers.intersect.SimpleShapeFile;
+import org.ala.layers.legend.Facet;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.util.Clients;
@@ -182,67 +181,90 @@ public class AreaMapPolygon extends AreaToolComposer {
                             continue;
                         }
 
+                        //***
+                        // avoid using WKT because it can be extremely large for some layers
+                        // instead use the contextual envelope identifier
+                        //***
+
                         //add feature to the map as a new layer
-                        String wkt = readUrl(CommonData.layersServer + "/shape/wkt/" + feature.get("pid"));
-                        JSONObject obj = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
-                        if (wkt.contentEquals("none")) {
-                            continue;
-                            //  break;
+                        //TODO: why is "cl" needed for grid class layers?  fix layers-store/layers-service
+                        JSONObject obj;
+                        if (feature.get("pid").contains(":")) {
+                            //TODO: as with "cl", this is not needed after layers-store/layers-service fix
+                            String pid = feature.get("pid");
+                            if (pid.indexOf(":") != pid.lastIndexOf(":")) {
+                                pid = pid.substring(0, pid.lastIndexOf(":"));
+                                feature.put("pid", pid);
+                            }
+                            obj = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + "cl" + feature.get("pid")));
                         } else {
-
-                            searchComplete = true;
-                            if (wkt.length() > 200) {
-                                displayGeom.setValue(wkt.substring(0, 200) + "...");
-                            } else {
-                                displayGeom.setValue(wkt);
-                            }
-                            logger.debug("setting layerName from " + layerName);
-                            layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
-                            logger.debug("to " + layerName);
-                            MapLayer mapLayer;
-                            if (displayAsWms.isChecked()) {
-                                String url = obj.getString("wmsurl");
-                                mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(txtLayerName.getValue()), txtLayerName.getValue(), url, 0.6f, /*metadata url*/ null,
-                                        null, LayerUtilities.WKT, null, null);
-                                mapLayer.setWKT(wkt);
-                                mapLayer.setPolygonLayer(true);
-                            } else {
-                                mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
-                            }
-                            Facet facet = null;
-                            if (!mapLayer.getWKT().startsWith("POINT") && !feature.get("pid").contains(":")) {
-                                facet = getFacetForObject(feature.get("pid"), feature.get("value"));
-                            }
-                            if (facet != null) {
-                                ArrayList<Facet> facets = new ArrayList<Facet>();
-                                facets.add(facet);
-                                mapLayer.setFacets(facets);
-                            }
-                            MapLayerMetadata md = mapLayer.getMapLayerMetadata();
-                            try {
-                                double[][] bb = SimpleShapeFile.parseWKT(wkt).getBoundingBox();
-                                ArrayList<Double> bbox = new ArrayList<Double>();
-                                bbox.add(bb[0][0]);
-                                bbox.add(bb[0][1]);
-                                bbox.add(bb[1][0]);
-                                bbox.add(bb[1][1]);
-                                md.setBbox(bbox);
-                            } catch (Exception e) {
-                                logger.debug("failed to parse: " + wkt, e);
-                            }
-                            try {
-                                String fid = getStringValue(null, "fid", readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
-                                String spid = getStringValue("\"id\":\"" + fid + "\"", "spid", readUrl(CommonData.layersServer + "/fields"));
-                                md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
-                            } catch (Exception e) {
-                                logger.error("error setting map layer moreInfo", e);
-                            }
-
-                            btnOk.setDisabled(false);
-                            btnClear.setDisabled(false);
-                            break;
-
+                            obj = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
                         }
+
+                        searchComplete = true;
+                        displayGeom.setValue("layer: " + jo.getString("displayname") + "\r\n"
+                                + "area: " + obj.getString("name"));
+
+                        logger.debug("setting layerName from " + layerName);
+                        layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
+                        logger.debug("to " + layerName);
+                        MapLayer mapLayer;
+
+                        String url = obj.getString("wmsurl");
+                        mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(txtLayerName.getValue()), txtLayerName.getValue(), url, 0.6f, /*metadata url*/ null,
+                                null, LayerUtilities.WKT, null, null);
+
+                        //add colour!
+                        ml.setRedVal(255);
+                        ml.setGreenVal(0);
+                        ml.setBlueVal(0);
+
+                        mapLayer.setPolygonLayer(true);
+
+                        JSONObject objJson = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
+
+                        Facet facet = Util.getFacetForObject(objJson, feature.get("value"));
+
+                        if (facet != null) {
+                            ArrayList<Facet> facets = new ArrayList<Facet>();
+                            facets.add(facet);
+                            mapLayer.setFacets(facets);
+
+                            mapLayer.setWKT("ENVELOPE(" + objJson.getString("fid") + "," + feature.get("pid") + ")");
+                        } else {
+                            //no facet = not in Biocache, must use WKT
+                            mapLayer.setWKT(readUrl(CommonData.layersServer + "/shape/wkt/" + feature.get("pid")));
+                        }
+                        MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+                        String bbString = "";
+                        try {
+                            bbString = objJson.getString("bbox");
+                            bbString = bbString.replace("POLYGON((", "").replace("))", "").replace(",", " ");
+                            String[] split = bbString.split(" ");
+                            ArrayList<Double> bbox = new ArrayList<Double>();
+
+                            bbox.add(Double.parseDouble(split[0]));
+                            bbox.add(Double.parseDouble(split[1]));
+                            bbox.add(Double.parseDouble(split[2]));
+                            bbox.add(Double.parseDouble(split[3]));
+
+                            md.setBbox(bbox);
+                        } catch (Exception e) {
+                            logger.debug("failed to parse: " + bbString, e);
+                        }
+                        try {
+                            md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + jo.getString("spid"));
+                        } catch (Exception e) {
+                            logger.error("error setting map layer moreInfo", e);
+                        }
+
+                        //found the object on the layer
+                        btnOk.setDisabled(false);
+                        btnClear.setDisabled(false);
+
+
+                        mc.updateLayerControls();
+                        break;
                     }
                 }
             }
@@ -279,35 +301,5 @@ public class AreaMapPolygon extends AreaToolComposer {
         } catch (Exception e) {
         }
         return content.toString();
-    }
-
-    private Facet getFacetForObject(String pid, String name) {
-        //get field.id.
-        JSONObject jo = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + pid));
-        String fieldId = jo.getString("fid");
-
-        //get field objects.
-        String objects = readUrl(CommonData.layersServer + "/field/" + fieldId);
-        String lookFor = "\"name\":\"" + name + "\"";
-
-        //create facet if name is unique.
-        int p1 = objects.indexOf(lookFor);
-        if (p1 > 0) {
-            int p2 = objects.indexOf(lookFor, p1 + 1);
-            if (p2 < 0) {
-                /* TODO: use correct replacement in 'name' for " characters */
-                /* this function is also in AreaRegionSelection */
-                Facet f = new Facet(fieldId, "\"" + name + "\"", true);
-
-                //test if this facet is in solr
-                ArrayList<Facet> facets = new ArrayList<Facet>();
-                facets.add(f);
-                if (new BiocacheQuery(null, null, null, facets, false, null).getOccurrenceCount() > 0) {
-                    return f;
-                }
-            }
-        }
-
-        return null;
     }
 }

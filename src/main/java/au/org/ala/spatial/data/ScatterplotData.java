@@ -2,10 +2,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package au.org.ala.spatial.util;
+package au.org.ala.spatial.data;
 
-import au.org.ala.spatial.data.LegendObject;
-import au.org.ala.spatial.data.Query;
+import au.org.ala.spatial.util.SelectedArea;
+import org.ala.layers.legend.LegendObject;
 
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
@@ -65,6 +65,7 @@ public class ScatterplotData implements Serializable {
     public String prevResampleLayers = null;
     public String prevResampleHighlight = null;
     public Boolean missing_data_checked;
+    private String id;
 
     public ScatterplotData() {
         enabled = false;
@@ -268,5 +269,13 @@ public class ScatterplotData implements Serializable {
 
     public void setHighlightSa(SelectedArea sa) {
         highlightSa = sa;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

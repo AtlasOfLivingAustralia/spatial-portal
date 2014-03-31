@@ -88,7 +88,7 @@ public class DistributionsController extends UtilityComposer {
 
             Filedownload.save(sb.toString(), "text/plain;charset=UTF-8", type + "_" + sdate + "_" + spid + ".csv");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error downloading distributions area data", e);
         }
     }
 
@@ -244,7 +244,7 @@ public class DistributionsController extends UtilityComposer {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("error updating distributions list data", e);
                 }
             }
         });
@@ -382,7 +382,7 @@ public class DistributionsController extends UtilityComposer {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error fetching collectory details for distributions area", e);
         }
         return null;
     }
@@ -433,7 +433,19 @@ public class DistributionsController extends UtilityComposer {
 
             try {
                 if (jo != null && jo.containsKey("pid") && jo.containsKey("area_name")) {
-                    String fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
+                    String fid;
+                    //TODO: fix requirement for "cl" with grid class layers
+                    if (jo.getString("pid").contains(":")) {
+                        //TODO: as with "cl", this is not needed after layers-store/layers-service fix
+                        String pid = jo.getString("pid");
+                        if (pid.indexOf(":") != pid.lastIndexOf(":")) {
+                            pid = pid.substring(0, pid.lastIndexOf(":"));
+                            jo.put("pid", pid);
+                        }
+                        fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/cl" + jo.getString("pid")));
+                    } else {
+                        fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
+                    }
                     String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
                     if (spid != null) {
                         String layerInfoUrl = CommonData.layersServer + "/layers/view/more/" + spid;
@@ -449,7 +461,7 @@ public class DistributionsController extends UtilityComposer {
 
             return html;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error building html metadata for distributions area", e);
         }
 
         return null;

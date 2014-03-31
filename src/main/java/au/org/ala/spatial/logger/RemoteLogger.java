@@ -1,6 +1,7 @@
 package au.org.ala.spatial.logger;
 
 import au.org.emii.portal.settings.SettingsSupplementary;
+import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -13,6 +14,7 @@ import org.zkoss.zk.ui.Sessions;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.net.URLEncoder;
 
 /**
  * Helper class to send logging information to the logger-service
@@ -92,7 +94,7 @@ public class RemoteLogger {
 
             String userip = Executions.getCurrent().getHeader("x-forwarded-for");
             if (StringUtils.isBlank(userip)) {
-                userip = Sessions.getCurrent().getRemoteAddr();
+                userip = Executions.getCurrent().getRemoteAddr();
                 if (StringUtils.isBlank(userip)) {
                     userip = "";
                 }
@@ -112,7 +114,7 @@ public class RemoteLogger {
             } catch (Exception e) {
             }
 
-            System.out.println("Sending log to: " + logger_service + "/log/action");
+            logger.debug("Sending log to: " + logger_service + "/log/action");
             HttpClient client = new HttpClient();
             PostMethod post = new PostMethod(logger_service + "/log/action");
             post.addRequestHeader("Accept", "application/json");
@@ -175,5 +177,97 @@ public class RemoteLogger {
         }
 
         return -1;
+    }
+
+    public JSONObject getLogCSV() {
+        try {
+
+            if (StringUtils.isBlank(logger_service)) {
+                init();
+            }
+
+            String sessionid = ((HttpSession) Sessions.getCurrent().getNativeSession()).getId();
+
+            String userip = Executions.getCurrent().getHeader("x-forwarded-for");
+            if (StringUtils.isBlank(userip)) {
+                userip = Executions.getCurrent().getRemoteAddr();
+                if (StringUtils.isBlank(userip)) {
+                    userip = "";
+                }
+            }
+
+            String useremail = "guest@ala.org.au";
+            try {
+                Cookie[] cookies = ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies();
+                if (cookies != null) {
+                    for (Cookie cookie : cookies) {
+                        if (cookie.getName().equals("ALA-Auth")) {
+                            useremail = cookie.getValue();
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+            }
+
+            logger.debug("getting log: " + logger_service + "/dashboard/types/tool.json");
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(logger_service + "/dashboard/types/tool.json?email=" + URLEncoder.encode(useremail, "UTF-8") + "&appid=" + URLEncoder.encode(appid, "UTF-8"));
+            //get.addRequestHeader("Accept", "application/json");
+
+            client.executeMethod(get);
+
+            return JSONObject.fromObject(get.getResponseBodyAsString());
+        } catch (Exception e) {
+            logger.error("Error getting logging information from server:", e);
+        }
+
+        return null;
+    }
+
+    public JSONObject getLogItem(String logId) {
+        try {
+
+            if (StringUtils.isBlank(logger_service)) {
+                init();
+            }
+
+            String sessionid = ((HttpSession) Sessions.getCurrent().getNativeSession()).getId();
+
+            String userip = Executions.getCurrent().getHeader("x-forwarded-for");
+            if (StringUtils.isBlank(userip)) {
+                userip = Executions.getCurrent().getRemoteAddr();
+                if (StringUtils.isBlank(userip)) {
+                    userip = "";
+                }
+            }
+
+            String useremail = "guest@ala.org.au";
+            try {
+                Cookie[] cookies = ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies();
+                if (cookies != null) {
+                    for (Cookie cookie : cookies) {
+                        if (cookie.getName().equals("ALA-Auth")) {
+                            useremail = cookie.getValue();
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+            }
+
+            logger.debug("getting log: " + logger_service + "/log/view.json");
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(logger_service + "/log/view.json?email=" + URLEncoder.encode(useremail, "UTF-8") + "&appid=" + URLEncoder.encode(appid, "UTF-8"));
+            //get.addRequestHeader("Accept", "application/json");
+
+            client.executeMethod(get);
+
+            return JSONObject.fromObject(get.getResponseBodyAsString());
+        } catch (Exception e) {
+            logger.error("Error getting logging information from server:", e);
+        }
+
+        return null;
     }
 }

@@ -1,10 +1,10 @@
 package au.org.ala.spatial.composer.tool;
 
-import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.composer.progress.ProgressController;
-import au.org.ala.spatial.data.*;
-import au.org.ala.spatial.exception.NoSpeciesFoundException;
-import au.org.ala.spatial.userpoints.UserPointsUtil;
+import au.org.ala.spatial.data.BiocacheQuery;
+import au.org.ala.spatial.data.Query;
+import au.org.ala.spatial.data.QueryUtil;
+import au.org.ala.spatial.data.UserDataQuery;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SelectedArea;
 import au.org.ala.spatial.util.Util;
@@ -15,7 +15,6 @@ import au.org.emii.portal.util.LayerUtilities;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 import org.zkoss.zhtml.Filedownload;
@@ -24,12 +23,8 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Combobox;
 
-import java.io.StringReader;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * @author ajay
@@ -52,7 +47,6 @@ public class SitesBySpeciesComposer extends ToolComposer {
         this.loadAreaLayers();
         this.loadSpeciesLayers(true);
         this.updateWindowTitle();
-
     }
 
     @Override
@@ -129,6 +123,12 @@ public class SitesBySpeciesComposer extends ToolComposer {
             }
 
             Double gridResolution = dResolution.getValue();
+
+            //something is wrong with the Doublebox, it keeps setting to zero
+            if (gridResolution == 0) {
+                dResolution.setValue(0.05);
+                gridResolution = 0.05;
+            }
             //SelectedArea sa = getSelectedArea();
             SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
             //query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
@@ -154,9 +154,9 @@ public class SitesBySpeciesComposer extends ToolComposer {
             sbProcessUrl.append(CommonData.satServer + "/ws/sitesbyspecies/estimate?");
 
             sbProcessUrl.append("speciesq=").append(URLEncoder.encode(QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher()).getQ(), "UTF-8"));
+            sbProcessUrl.append("&bs=" + URLEncoder.encode(query.getBS(), "UTF-8"));
 
             sbProcessUrl.append("&gridsize=" + URLEncoder.encode(String.valueOf(gridResolution), "UTF-8"));
-            sbProcessUrl.append("&bs=" + URLEncoder.encode(((BiocacheQuery) query).getBS(), "UTF-8"));
 
             if (chkOccurrenceDensity.isChecked()) {
                 sbProcessUrl.append("&occurrencedensity=1");
@@ -201,8 +201,7 @@ public class SitesBySpeciesComposer extends ToolComposer {
             return Long.valueOf(estimate);
 
         } catch (Exception e) {
-            logger.debug("Unable to get estimates");
-            e.printStackTrace(System.out);
+            logger.error("Unable to get estimates", e);
         }
 
         return -1;
@@ -239,6 +238,13 @@ public class SitesBySpeciesComposer extends ToolComposer {
             }
 
             Double gridResolution = dResolution.getValue();
+
+            //something is wrong with the Doublebox, it keeps setting to zero
+            if (gridResolution == 0) {
+                dResolution.setValue(0.05);
+                gridResolution = 0.05;
+            }
+
             //SelectedArea sa = getSelectedArea();
             SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
             //Query query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
@@ -326,19 +332,18 @@ public class SitesBySpeciesComposer extends ToolComposer {
                     BiocacheQuery bq = (BiocacheQuery) query;
                     extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
                     remoteLogger.logMapAnalysis("species to grid", "Tool - Species to Grid", area, bq.getLsids(), "", pid, extras, "STARTED");
-                } else if (query instanceof UploadQuery) {
-                    remoteLogger.logMapAnalysis("species to grid", "Tool - Species to Grid", area, ((UploadQuery) query).getQ(), "", pid, extras, "STARTED");
+                } else if (query instanceof UserDataQuery) {
+                    remoteLogger.logMapAnalysis("species to grid", "Tool - Species to Grid", area, ((UserDataQuery) query).getQ(), "", pid, extras, "STARTED");
                 } else {
                     remoteLogger.logMapAnalysis("species to grid", "Tool - Species to Grid", area, "", "", pid, extras, "STARTED");
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("error logging", e);
             }
 
             return true;
         } catch (Exception e) {
-            logger.debug("SitesBySpecies error: ");
-            e.printStackTrace(System.out);
+            logger.error("SitesBySpecies error: ", e);
             getMapComposer().showMessage("Unknown error.", this);
         }
         return false;
@@ -366,9 +371,6 @@ public class SitesBySpeciesComposer extends ToolComposer {
 
                 md.setMoreInfo(infoUrl + "\nOccurrence Density\npid:" + pid);
                 md.setId(Long.valueOf(pid));
-
-                //perform intersection on user uploaded layers so you can facet on this layer
-                UserPointsUtil.addAnalysisLayerToUploadedCoordinates(getPortalSession(), pid + "_odensity", layername);
             }
 
             if (chkSpeciesDensity.isChecked()) {
@@ -390,17 +392,13 @@ public class SitesBySpeciesComposer extends ToolComposer {
 
                 md.setMoreInfo(infoUrl + "\nSpecies Richness\npid:" + pid);
                 md.setId(Long.valueOf(pid));
-
-                //perform intersection on user uploaded layers so you can facet on this layer
-                UserPointsUtil.addAnalysisLayerToUploadedCoordinates(getPortalSession(), pid + "_srichness", layername);
             }
 
             // set off the download as well
             String fileUrl = CommonData.satServer + "/ws/download/" + pid;
             Filedownload.save(new URL(fileUrl).openStream(), "application/zip", "sites_by_species.zip");
         } catch (Exception ex) {
-            logger.debug("Error generating download for prediction model:");
-            ex.printStackTrace(System.out);
+            logger.error("Error generating download for prediction model:", ex);
         }
 
         this.detach();
@@ -413,133 +411,7 @@ public class SitesBySpeciesComposer extends ToolComposer {
         try {
             window.doModal();
         } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    String getJob(String type) {
-        try {
-            StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append(CommonData.satServer + "/ws/jobs/").append(type).append("?pid=").append(pid);
-
-            logger.debug(sbProcessUrl.toString());
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString());
-
-            get.addRequestHeader("Accept", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            logger.debug(slist);
-            return slist;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    /**
-     * get CSV of speciesName, longitude, latitude in [0] and
-     */
-    private String[] getSpeciesData(Query query) throws NoSpeciesFoundException {
-        if (query instanceof UploadQuery) {
-            //no sensitive records in upload
-            ArrayList<QueryField> fields = new ArrayList<QueryField>();
-            String lsidFieldName = query.getSpeciesIdFieldName();
-            QueryField qf = null;
-            if (lsidFieldName != null) {
-                qf = new QueryField(query.getSpeciesIdFieldName());
-                qf.setStored(true);
-                fields.add(qf);
-            }
-            double[] points = query.getPoints(fields);
-            StringBuilder sb = null;
-            if (points != null) {
-                sb = new StringBuilder();
-                for (int i = 0; i < points.length; i += 2) {
-                    if (sb.length() == 0) {
-                        //header
-                        sb.append("species,longitude,latitude");
-                    }
-                    sb.append("\nspecies,").append(points[i]).append(",").append(points[i + 1]);
-                }
-            }
-
-            String[] out = {((sb == null) ? null : sb.toString()), null};
-            return out;
-        } else {
-            //identify sensitive species records
-            List<String[]> sensitiveSpecies = null;
-            try {
-                String sensitiveSpeciesRaw = new BiocacheQuery(null, null, "sensitive:[* TO *]", null, false, getGeospatialKosher()).speciesList();
-                CSVReader csv = new CSVReader(new StringReader(sensitiveSpeciesRaw));
-                sensitiveSpecies = csv.readAll();
-                csv.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            HashSet<String> sensitiveSpeciesFound = new HashSet<String>();
-            HashSet<String> sensitiveLsids = new HashSet<String>();
-
-            //add to 'identified' sensitive list
-            try {
-                CSVReader csv = new CSVReader(new StringReader(query.speciesList()));
-                List<String[]> fullSpeciesList = csv.readAll();
-                csv.close();
-                for (int i = 0; i < fullSpeciesList.size(); i++) {
-                    String[] sa = fullSpeciesList.get(i);
-                    for (String[] ss : sensitiveSpecies) {
-                        if (sa != null && sa.length > 4
-                                && ss != null && ss.length > 4
-                                && sa[4].equals(ss[4])) {
-                            sensitiveSpeciesFound.add(ss[4] + "," + ss[1] + "," + ss[3]);
-                            sensitiveLsids.add(ss[4]);
-                            break;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            //remove sensitive records that will not be LSID matched
-            Query maxentQuery = query.newFacet(new Facet("sensitive", "[* TO *]", false), false);
-            ArrayList<QueryField> fields = new ArrayList<QueryField>();
-            String lsidFieldName = maxentQuery.getSpeciesIdFieldName();
-            QueryField qf = null;
-            if (lsidFieldName != null) {
-                qf = new QueryField(maxentQuery.getSpeciesIdFieldName());
-                qf.setStored(true);
-                fields.add(qf);
-            }
-            double[] points = maxentQuery.getPoints(fields);
-            StringBuilder sb = null;
-            if (points != null) {
-                sb = new StringBuilder();
-                for (int i = 0; i < points.length; i += 2) {
-                    boolean isSensitive = false;
-                    if (qf != null) {
-                        String lsid = qf.getAsString(i / 2);
-                        isSensitive = sensitiveLsids.contains(lsid);
-                    }
-                    if (!isSensitive) {
-                        if (sb.length() == 0) {
-                            //header
-                            sb.append("species,longitude,latitude");
-                        }
-                        sb.append("\nspecies,").append(points[i]).append(",").append(points[i + 1]);
-                    }
-                }
-            }
-
-            //collate sensitive species found, no header
-            StringBuilder sen = new StringBuilder();
-            for (String s : sensitiveSpeciesFound) {
-                sen.append(s).append("\n");
-            }
-
-            String[] out = {((sb == null) ? null : sb.toString()), (sen.length() == 0) ? null : sen.toString()};
-            return out;
+            logger.error("error opening AnalysisProgress.zul for points to grid: " + pid, e);
         }
     }
 

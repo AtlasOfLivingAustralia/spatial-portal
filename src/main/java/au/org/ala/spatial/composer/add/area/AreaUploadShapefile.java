@@ -141,7 +141,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
             }
         } catch (Exception ex) {
             getMapComposer().showMessage("Unable to load file. Please try again. ");
-            ex.printStackTrace();
+            logger.error("unable to load user area file: ", ex);
         }
     }
 
@@ -189,7 +189,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 return null;
             }
         } catch (Exception e) {
-            logger.debug("Exception checking if kml file", e);
+            logger.error("Exception checking if kml file", e);
         }
         return null;
     }

@@ -124,8 +124,9 @@ public class AreaReportController extends UtilityComposer {
             extras += ";boundingBox: " + boundingBox;
             remoteLogger.logMapAnalysis(displayname, "Tool - Area Report", areaName + "__" + sa.getWkt(), "", "", pid, extras, "0");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error logging", e);
         }
+
 
         // start checking of completed threads
         Events.echoEvent("checkFutures", this, null);
@@ -454,7 +455,7 @@ public class AreaReportController extends UtilityComposer {
 
             futuresStart = System.currentTimeMillis();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error setting counts for futures", e);
         }
     }
 
@@ -470,7 +471,7 @@ public class AreaReportController extends UtilityComposer {
                     try {
                         this.getClass().getMethod(eventToFire, Map.class, Boolean.class).invoke(this, futureEntry.getValue().get(), Boolean.TRUE);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("error firing event: " + eventToFire, e);
                     }
                     firedEvents.add(eventToFire);
                     //inform the list model to update
@@ -512,7 +513,7 @@ public class AreaReportController extends UtilityComposer {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
         }
     }
 
@@ -645,7 +646,7 @@ public class AreaReportController extends UtilityComposer {
             model.setGeospatialKosher(false);
             model.setCount(String.format("%,d", results_count));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("error getting speciescount", ex);
         }
         return countsData;
     }
@@ -653,7 +654,7 @@ public class AreaReportController extends UtilityComposer {
     Map<String, Object> facetCounts(AreaReportItemDTO pmodel) {
         org.zkoss.util.Locales.setThreadLocal(null);
         Map<String, AreaReportItemDTO> countsData = new LinkedHashMap<String, AreaReportItemDTO>();
-        logger.info("Starting to get facet counts for : " + StringUtils.join(CommonData.areaReportFacets));
+        logger.debug("Starting to get facet counts for : " + StringUtils.join(CommonData.areaReportFacets));
         for (String f : CommonData.areaReportFacets) {
             //Map<String, Object> fmap = new HashMap<String,Object>();
             AreaReportItemDTO dto = new AreaReportItemDTO();
@@ -713,7 +714,7 @@ public class AreaReportController extends UtilityComposer {
             model.setGeospatialKosher(true);
             model.setCount(String.format("%,d", results_count_kosher));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("error getting speciesCountKosher", ex);
         }
         return countsData;
     }
@@ -742,7 +743,7 @@ public class AreaReportController extends UtilityComposer {
             }
             model.setGeospatialKosher(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("error getting occurrences count", ex);
         }
         return countsData;
     }
@@ -770,7 +771,7 @@ public class AreaReportController extends UtilityComposer {
             }
             model.setCount(String.format("%,d", results_count_occurrences_kosher));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("error getting occurrences count", ex);
         }
         return countsData;
     }
@@ -792,7 +793,7 @@ public class AreaReportController extends UtilityComposer {
                     Util.nextColour());
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error mapping species in area", e);
         }
     }
 
@@ -812,7 +813,7 @@ public class AreaReportController extends UtilityComposer {
                     Util.nextColour());
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error mapping kosher species in area", e);
         }
     }
 
@@ -842,7 +843,7 @@ public class AreaReportController extends UtilityComposer {
             getMapComposer().mapPointsOfInterest(sb.toString(), activeAreaLayerName, activeAreaLayerName);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error mapping points of interest", e);
         }
     }
 
@@ -856,7 +857,7 @@ public class AreaReportController extends UtilityComposer {
             win.setPosition("center");
             win.setReportArea(sa, name, displayName, areaSqKm, boundingBox, includeEndemic);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error opening AreaReportResults.zul", e);
         }
     }
 
@@ -887,7 +888,7 @@ public class AreaReportController extends UtilityComposer {
                 speciesDistributionText = lines;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting intersected distribution areas", e);
         }
         return speciesDistributions;
     }
@@ -927,7 +928,7 @@ public class AreaReportController extends UtilityComposer {
                 speciesChecklistText = lines;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting intersected species checklists", e);
         }
 
         return checklistsCounts;
@@ -960,7 +961,7 @@ public class AreaReportController extends UtilityComposer {
                 gazPoints = ja;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error with area gaz point count", e);
         }
 
         return gazPointsCounts;
@@ -993,7 +994,7 @@ public class AreaReportController extends UtilityComposer {
                 pointsOfInterest = ja;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("area report error counting points of interest", e);
         }
 
         return poiCounts;
@@ -1092,7 +1093,7 @@ public class AreaReportController extends UtilityComposer {
             }
 
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            logger.error("unable to get area info from biostor, is it down?", e);
             // lblBiostor.setValue("BioStor currently down");
             countData.put("biostor", "Biostor currently down");
             model.setCount("Biostor currently down");
@@ -1162,7 +1163,7 @@ public class AreaReportController extends UtilityComposer {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error building distribution or checklist csv", e);
         }
         return null;
     }
@@ -1185,7 +1186,7 @@ public class AreaReportController extends UtilityComposer {
                 return JSONArray.fromObject(txt);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting number of gaz points in an area: " + wkt, e);
         }
         return null;
     }
@@ -1208,7 +1209,7 @@ public class AreaReportController extends UtilityComposer {
                 return JSONArray.fromObject(txt);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting points of interest in an area: " + wkt, e);
         }
         return null;
     }
@@ -1217,7 +1218,7 @@ public class AreaReportController extends UtilityComposer {
         try {
             return getAreaChecklists(getDistributionsOrChecklists("checklists", lsids, wkt, geom_idx));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting checklists for: " + geom_idx + "," + wkt + "," + lsids, e);
         }
         return null;
     }
@@ -1266,7 +1267,7 @@ public class AreaReportController extends UtilityComposer {
                 lines = java.util.Arrays.copyOf(lines, len);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error building species checklist", e);
             lines = null;
         }
         return lines;
@@ -1328,7 +1329,7 @@ public class AreaReportController extends UtilityComposer {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error building distributions list", e);
         }
         return null;
     }
@@ -1360,7 +1361,7 @@ public class AreaReportController extends UtilityComposer {
                     }
                 });
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("error opening expert distributions window", e);
             }
         }
     }
@@ -1384,7 +1385,7 @@ public class AreaReportController extends UtilityComposer {
                     }
                 });
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("error opening species checklists window", e);
             }
         }
     }
@@ -1410,7 +1411,7 @@ public class AreaReportController extends UtilityComposer {
                     }
                 });
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("error opening area checklists window", e);
             }
         }
     }
@@ -1506,8 +1507,7 @@ public class AreaReportController extends UtilityComposer {
             model.addUrlDetails("Info", "note-area-sq-km");
 
         } catch (Exception e) {
-            logger.debug("Error in calculateArea");
-            e.printStackTrace(System.out);
+            logger.error("Error in calculateArea", e);
             areaCalc.put("area", "");
             model.setCount("ERROR...");
         }
@@ -1578,7 +1578,7 @@ public class AreaReportController extends UtilityComposer {
             getMapComposer().featuresCSV = sb.toString();
             getMapComposer().getOpenLayersJavascript().execute("mapFrame.mapPoints('" + StringEscapeUtils.escapeJavaScript(gazPoints.toString()) + "');");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error mapping gaz points from area report", e);
         }
     }
 

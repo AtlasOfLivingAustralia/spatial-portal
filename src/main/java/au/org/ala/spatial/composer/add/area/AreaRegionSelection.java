@@ -5,14 +5,15 @@
 package au.org.ala.spatial.composer.add.area;
 
 import au.org.ala.spatial.composer.gazetteer.GazetteerAutoComplete;
-import au.org.ala.spatial.data.Facet;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
 import net.sf.json.JSONObject;
+import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
+import org.ala.layers.legend.Facet;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.*;
@@ -49,85 +50,80 @@ public class AreaRegionSelection extends AreaToolComposer {
         }
 
         JSONObject jo = ci.getValue();
-        JSONObject obj = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
+        //TODO: why is "cl" needed for grid class layers?  fix layers-store/layers-service
+        JSONObject obj;
+        if (jo.getString("pid").contains(":")) {
+            obj = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + "cl" + jo.getString("pid")));
+        } else {
+            obj = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
+        }
         String label = ci.getLabel();
 
         //add feature to the map as a new layer
         MapLayer mapLayer;
-        if (displayAsWms.isChecked()) {
-            logger.info(label + " | " + obj.getString("wmsurl"));
-            mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, obj.getString("wmsurl"), 0.6f, /*metadata url*/ null,
+        //   if (displayAsWms.isChecked()) {
+        logger.debug(label + " | " + obj.getString("wmsurl"));
+        mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, obj.getString("wmsurl"), 0.6f, /*metadata url*/ null,
                     null, LayerUtilities.WKT, null, null);
             if (mapLayer == null) {
                 return;
             }
 
-            //TODO: move large WKT objects into envelope form
-            //grid class layers best operate as an envelope
-            if (jo.getString("pid").contains(":")) {
-                String envelope = "cl" + jo.getString("pid");
-                mapLayer.setWKT("ENVELOPE(" + envelope + ")");
-                mapLayer.setEnvelope(envelope);
-                ArrayList<Facet> facets = new ArrayList<Facet>();
-                facets.add(new Facet(envelope.split(":")[0], jo.getString("name"), true));
-                mapLayer.setFacets(facets);
-            } else {
-                mapLayer.setWKT(Util.readUrl(CommonData.layersServer + "/shape/wkt/" + jo.getString("pid")));
-            }
-            mapLayer.setPolygonLayer(true);
-        } else {
-            mapLayer = getMapComposer().addGeoJSON(label, CommonData.layersServer + "/shape/geojson/" + jo.getString("pid"));
-            if (mapLayer == null) {
-                return;
-            }
-        }
+
+        mapLayer.setPolygonLayer(true);
+
         this.layerName = mapLayer.getName();
+
+
+        SimpleRegion sr = SimpleShapeFile.parseWKT(obj.getString("bbox"));
+        double[][] bb = sr.getBoundingBox();
+        ArrayList<Double> dbb = new ArrayList<Double>();
+        dbb.add(bb[0][0]);
+        dbb.add(bb[0][1]);
+        dbb.add(bb[1][0]);
+        dbb.add(bb[1][1]);
+
 
         //if the layer is a point create a radius
         boolean point = false;
-        if (mapLayer.getWKT().startsWith("POINT")) {
+        if ((float) bb[0][0] == (float) bb[1][0] && (float) bb[0][1] == (float) bb[1][1]) {
             point = true;
-            String coords = mapLayer.getWKT().replace("POINT(", "").replace(")", "");
+
+            mapLayer.setWKT("POINT(" + bb[0][0] + " " + bb[0][1] + ")");
 
             double radius = dRadius.getValue() * 1000.0;
 
-            String wkt = Util.createCircleJs(Double.parseDouble(coords.split(" ")[0]), Double.parseDouble(coords.split(" ")[1]), radius);
+            String wkt = Util.createCircleJs(bb[0][0], bb[0][1], radius);
             getMapComposer().removeLayer(label);
             mapLayer = getMapComposer().addWKTLayer(wkt, label, label);
+
+            //redo bounding box
+            sr = SimpleShapeFile.parseWKT(wkt);
+            bb = sr.getBoundingBox();
+            dbb = new ArrayList<Double>();
+            dbb.add(bb[0][0]);
+            dbb.add(bb[0][1]);
+            dbb.add(bb[1][0]);
+            dbb.add(bb[1][1]);
+        } else {
+            mapLayer.setWKT("ENVELOPE(" + obj.getString("fid") + "," + obj.getString("pid") + ")");
         }
 
-        if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null            
-            String bbox = obj.getString("bbox");
-            String fid = obj.getString("fid");
-            String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
+        String fid = obj.getString("fid");
+        String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
 
-            MapLayerMetadata md = mapLayer.getMapLayerMetadata();
-            try {
-                double[][] bb = null;
-                if (point) {
-                    bb = SimpleShapeFile.parseWKT(mapLayer.getWKT()).getBoundingBox();
-                } else {
-                    bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
-                }
-                ArrayList<Double> dbb = new ArrayList<Double>();
-                dbb.add(bb[0][0]);
-                dbb.add(bb[0][1]);
-                dbb.add(bb[1][0]);
-                dbb.add(bb[1][1]);
-                md.setBbox(dbb);
-            } catch (Exception e) {
-                logger.debug("failed to parse: " + mapLayer.getWKT(), e);
-            }
-            md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
+        MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+        md.setBbox(dbb);
 
-            Facet facet = null;
-            if (!point && mapLayer.getFacets() == null) {
-                facet = Util.getFacetForObject(jo.getString("pid"), label);
-                if (facet != null) {
-                    ArrayList<Facet> facets = new ArrayList<Facet>();
-                    facets.add(facet);
-                    mapLayer.setFacets(facets);
-                }
+        md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
+
+        Facet facet = null;
+        if (!point && mapLayer.getFacets() == null) {
+            facet = Util.getFacetForObject(jo, label);
+            if (facet != null) {
+                ArrayList<Facet> facets = new ArrayList<Facet>();
+                facets.add(facet);
+                mapLayer.setFacets(facets);
             }
         }
 

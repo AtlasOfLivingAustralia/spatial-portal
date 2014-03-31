@@ -41,6 +41,8 @@ public class EnvironmentalList extends Listbox {
 
             setupList();
 
+            this.setMultiple(true);
+
         } catch (Exception e) {
             logger.error("error with initial setip of Environmental List", e);
         }
@@ -96,6 +98,18 @@ public class EnvironmentalList extends Listbox {
 
                 @Override
                 public void render(Listitem li, Object data, int item_idx) {
+                    String type = ((ListEntry) data).type;
+
+                    Image imgType = new Image();
+                    if (type.equalsIgnoreCase("environmental")) {
+                        imgType.setSrc("/img/icon_grid-layer.png");
+                    } else {
+                        imgType.setSrc("/img/icon_contextual-layer.png");
+                    }
+                    Listcell tc = new Listcell();
+                    tc.setParent(li);
+                    imgType.setParent(tc);
+
                     Listcell n = new Listcell(((ListEntry) data).catagoryNames());
                     //n.setHflex("1");
                     n.setParent(li);
@@ -107,7 +121,6 @@ public class EnvironmentalList extends Listbox {
                     lc.setParent(li);
                     lc.setValue(data);
 
-                    String type = ((ListEntry) data).type;
                     if (disableContextualLayers && type.equalsIgnoreCase("contextual")) {
                         li.setDisabled(true);
                     }
@@ -156,18 +169,27 @@ public class EnvironmentalList extends Listbox {
             listModel = new SimpleListModel(listEntries);
             setModel(listModel);
 
+            setMultiple(true);
         } catch (Exception e) {
             logger.debug("error setting up env list", e);
         }
     }
 
     @Override
+    public boolean isMultiple() {
+        return true;
+    }
+
+    @Override
     public void toggleItemSelection(Listitem item) {
         super.toggleItemSelection(item);
         //update minimum distances here
+        this.setMultiple(true);
     }
 
     public void updateDistances() {
+        this.setMultiple(true);
+
         if (listEntries == null) {
             return;
         }
@@ -297,7 +319,7 @@ public class EnvironmentalList extends Listbox {
             JSONArray ja = (JSONArray) layerObject.get("fields");
             for (int i = 0; i < ja.size(); i++) {
                 JSONObject jo = (JSONObject) ja.get(i);
-                if (true) { //jo.getString("analysis").equalsIgnoreCase("true")) {
+                if (jo.getString("analysis").equalsIgnoreCase("true")) {
                     fieldId = jo.getString("id");
                     break;
                 }
@@ -309,24 +331,29 @@ public class EnvironmentalList extends Listbox {
     }
 
     public void onSelect(Event event) {
+        this.setMultiple(true);
         updateDistances();
     }
 
     public String[] getSelectedLayers() {
+        this.setMultiple(true);
+
         Set selectedItems = getSelectedItems();
         String[] selected = new String[selectedItems.size()];
         int i = 0;
-        System.out.print("getSelectedLayers: ");
+        logger.debug("getSelectedLayers: ");
         for (Object o : selectedItems) {
             selected[i] = listEntries.get(((Listitem) o).getIndex()).name;
             i++;
-            System.out.print(listEntries.get(((Listitem) o).getIndex()).displayname + ", " + listEntries.get(((Listitem) o).getIndex()).name);
+            logger.debug(listEntries.get(((Listitem) o).getIndex()).displayname + ", " + listEntries.get(((Listitem) o).getIndex()).name);
         }
         logger.debug("");
         return selected;
     }
 
     public void selectLayers(String[] layers) {
+        this.setMultiple(true);
+
         String[] firstDomain = getFirstDomain();
 
         for (int i = 0; i < listEntries.size(); i++) {

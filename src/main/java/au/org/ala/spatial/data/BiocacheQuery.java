@@ -4,8 +4,6 @@
  */
 package au.org.ala.spatial.data;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.org.ala.spatial.exception.NoSpeciesFoundException;
 import au.org.ala.spatial.util.CommonData;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
@@ -14,16 +12,22 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
+import org.ala.layers.legend.Facet;
+import org.ala.layers.legend.Legend;
+import org.ala.layers.legend.LegendObject;
+import org.ala.layers.legend.QueryField;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URLEncoder;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -103,7 +107,7 @@ public class BiocacheQuery implements Query, Serializable {
     //static String[][] facetNameExceptions = {{"cl22", "state"}, {"cl959", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
     HashMap<String, LegendObject> legends = new HashMap<String, LegendObject>();
     HashSet<String> flaggedRecords = new HashSet<String>();
-    private Logger logger = Logger.getLogger(BiocacheQuery.class.getName());
+    private static Logger logger = Logger.getLogger(BiocacheQuery.class);
 
     static String translateFieldForSolr(String facetName) {
         if (facetName == null) {
@@ -294,8 +298,7 @@ public class BiocacheQuery implements Query, Serializable {
         //cannot create the new facet
         if (gk == null) {
             //This should never happen.
-            new Exception("Attempted to add a geospatial_kosher facet to an unsupported query: '" + lsids + "', '" + extraParams + "'").printStackTrace();
-            return newFacet(null, forMapping);
+            logger.error("Attempted to add a geospatial_kosher facet to an unsupported query: '" + lsids + "', '" + extraParams + "'");
         }
 
         int sum = 0;
@@ -369,7 +372,7 @@ public class BiocacheQuery implements Query, Serializable {
 
             sq = new BiocacheQuery(lsids, rawNames, newWkt, extraParams, facets, forMapping, null, biocacheServer, biocacheWebServer, this.supportsDynamicFacets);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting new WKT from an intersection", e);
         }
 
         return sq;
@@ -390,7 +393,7 @@ public class BiocacheQuery implements Query, Serializable {
                 + "&q=" + getQ()
                 + paramQueryFields(fields)
                 + getQc();
-        System.out.println(url);
+        logger.debug(url);
         GetMethod get = new GetMethod(url);
 
         String sample = null;
@@ -408,9 +411,9 @@ public class BiocacheQuery implements Query, Serializable {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error sampling", e);
         }
-        System.out.println("get sample in " + (System.currentTimeMillis() - start) + "ms");
+        logger.debug("get sample in " + (System.currentTimeMillis() - start) + "ms");
 
         return sample;
     }
@@ -460,11 +463,11 @@ public class BiocacheQuery implements Query, Serializable {
                         }
                     }
                 } else {
-                    logger.log(Level.WARNING, "There was an issue performing the autocomplete from the biocache: " + result);
+                    logger.warn("There was an issue performing the autocomplete from the biocache: " + result);
                 }
 
             } catch (Exception e) {
-                logger.log(Level.SEVERE, e.getMessage());
+                logger.error("failed to get autocomplete facet=" + facet + ", value=" + value, e);
             }
         }
         return slist.toString();
@@ -487,14 +490,14 @@ public class BiocacheQuery implements Query, Serializable {
                 + DEFAULT_ROWS_LARGEST
                 + "&q=" + getQ()
                 + getQc();
-        logger.info(url);
+        logger.debug(url);
         GetMethod get = new GetMethod(url);
 
         try {
             int result = client.executeMethod(get);
             speciesList = get.getResponseBodyAsString();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting species list from: " + url);
         }
 
         return speciesList;
@@ -510,14 +513,14 @@ public class BiocacheQuery implements Query, Serializable {
                 + ENDEMIC_SPECIES_SERVICE_CSV
                 + "q=" + getQ()
                 + getQc();
-        System.out.println(url);
+        logger.debug(url);
         GetMethod get = new GetMethod(url);
 
         try {
             int result = client.executeMethod(get);
             endemicSpeciesList = get.getResponseBodyAsString();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting endemic species result", e);
         }
 
         return endemicSpeciesList;
@@ -540,7 +543,7 @@ public class BiocacheQuery implements Query, Serializable {
                 + "pageSize=0&facet=false"
                 + "&q=" + getQ()
                 + getQc();
-        System.out.println(url);
+        logger.debug(url);
         GetMethod get = new GetMethod(url);
 
         try {
@@ -553,7 +556,7 @@ public class BiocacheQuery implements Query, Serializable {
 
             occurrenceCount = Integer.parseInt(response.substring(startPos, response.indexOf(end, startPos)));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting records count: " + url, e);
         }
 
         return occurrenceCount;
@@ -608,7 +611,7 @@ public class BiocacheQuery implements Query, Serializable {
 //                + "q=" + getQ()
 //                + getQc() 
 //                +"&facets=species_guid";
-//        System.out.println(url);
+//        logger.debug(url);
 //        GetMethod get = new GetMethod(url);
 //
 //        try {
@@ -664,125 +667,7 @@ public class BiocacheQuery implements Query, Serializable {
         return occurrenceCountAny = newFacetGeospatialKosher(new boolean[]{true, true, true}, false).getOccurrenceCount();
     }
 
-    /**
-     * Get parsed coordinates and optional fields for this query.
-     *
-     * @param fields QueryFields to return in the sample as ArrayList<QueryField>.
-     *               If a QueryField isStored() it will be populated with the field data.
-     * @return coordinates as double [] like [lng, lat, lng, lat, ...].
-     */
-    @Override
-    public double[] getPoints(ArrayList<QueryField> fields) throws NoSpeciesFoundException {
-        //if no additional fields requested, return points only
-        if (fields == null && points != null) {
-            return points;
-        }
 
-        if (fields == null) {
-            fields = new ArrayList<QueryField>();
-        }
-        fields.add(new QueryField("longitude"));
-        fields.add(new QueryField("latitude"));
-
-        String sample = sample(fields);
-
-        long start = System.currentTimeMillis();
-
-        int lineCount = -1; //header count offset
-        int pos = -1;
-        while ((pos = sample.indexOf('\n', pos + 1)) >= 0) {
-            lineCount++;
-        }
-        System.out.println("sampled records count: " + lineCount);
-
-        if (lineCount == -1) {
-            throw new NoSpeciesFoundException();
-        }
-
-
-        CSVReader csv = new CSVReader(new StringReader(sample));
-
-        //process header
-        int[] fieldsToCsv = new int[fields.size()];
-        for (int i = 0; i < fieldsToCsv.length; i++) {
-            fieldsToCsv[i] = -1;
-        }
-        String[] line = {};
-        try {
-            line = csv.readNext();
-        } catch (IOException ex) {
-            Logger.getLogger(BiocacheQuery.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        for (int i = 0; i < line.length; i++) {
-            if (line[i] != null && i < fieldsToCsv.length) {
-                for (int j = 0; j < fields.size(); j++) {
-                    if (fields.get(j).getName().equals(line[i])) {
-                        fieldsToCsv[j] = i;
-                        break;
-                    }
-                }
-            }
-        }
-        int longitudePos = fieldsToCsv[fieldsToCsv.length - 2];
-        int latitudePos = fieldsToCsv[fieldsToCsv.length - 1];
-
-        //process records
-        points = new double[lineCount * 2];
-        int errCount = 0;
-        pos = 0;
-        try {
-            for (int i = 0; i < fields.size(); i++) {
-                if (fields.get(i).isStored()) {
-                    fields.get(i).ensureCapacity(lineCount);
-                }
-            }
-
-            while ((line = csv.readNext()) != null) {
-                boolean ok = false;
-                try {
-                    points[pos] = Double.parseDouble(line[longitudePos]);
-                    points[pos + 1] = Double.parseDouble(line[latitudePos]);
-                    pos += 2;
-                    ok = true;
-                } catch (Exception e) {
-                    errCount++;
-                }
-                if (ok) {
-                    for (int i = 0; i < fields.size(); i++) {
-                        if (fields.get(i).isStored()) {
-                            try {
-                                fields.get(i).add(line[fieldsToCsv[i]]);
-                            } catch (Exception ex) {
-                                fields.get(i).add("");
-                            }
-                        }
-                    }
-                }
-            }
-
-            for (int i = 0; i < fields.size(); i++) {
-                if (fields.get(i).isStored()) {
-                    long st = System.currentTimeMillis();
-                    fields.get(i).store();
-                    System.out.println(fields.get(i).getDisplayName() + " stored in " + (System.currentTimeMillis() - st) + "ms");
-                }
-            }
-
-            csv.close();
-        } catch (IOException ex) {
-            Logger.getLogger(BiocacheQuery.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        if (points.length != pos) {
-            double[] pointsCopy = new double[pos];
-            System.arraycopy(points, 0, pointsCopy, 0, pos);
-            points = pointsCopy;
-            System.out.println("pointsCopy, errCount=" + errCount);
-        }
-
-        System.out.println("filled getPoints in " + (System.currentTimeMillis() - start) + "ms");
-
-        return points;
-    }
 
     String paramQueryFields(ArrayList<QueryField> fields) {
         StringBuilder sb = new StringBuilder();
@@ -889,7 +774,7 @@ public class BiocacheQuery implements Query, Serializable {
             try {
                 sb.append(URLEncoder.encode(s, "UTF-8"));
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("error encoding: " + s, e);
             }
         }
 
@@ -901,7 +786,7 @@ public class BiocacheQuery implements Query, Serializable {
         try {
             return sb.toString();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error returning a string", e);
         }
 
         return "";
@@ -934,10 +819,10 @@ public class BiocacheQuery implements Query, Serializable {
                 int p = q.indexOf('=');
                 if (p < 0) {
                     post.addParameter("q", q.substring(p + 1));
-                    System.out.println("param: " + "q" + " : " + q.substring(p + 1));
+                    logger.debug("param: " + "q" + " : " + q.substring(p + 1));
                 } else {
                     post.addParameter(q.substring(0, p), q.substring(p + 1));
-                    System.out.println("param: " + q.substring(0, p) + " : " + q.substring(p + 1));
+                    logger.debug("param: " + q.substring(0, p) + " : " + q.substring(p + 1));
                 }
                 post.addParameter("bbox", forMapping ? "true" : "false");
             }
@@ -947,26 +832,25 @@ public class BiocacheQuery implements Query, Serializable {
             if (result == 200) {
                 paramId = response;
 
-                System.out.println(url + " > " + paramId);
+                logger.debug(url + " > " + paramId);
             } else {
-                System.out.println("error with url:" + url + " posting q: " + getQ() + " > response_code:" + result + " response:" + response);
+                logger.debug("error with url:" + url + " posting q: " + getQ() + " > response_code:" + result + " response:" + response);
             }
         } catch (Exception e) {
-            System.out.println("error with url:" + url + " posting q: " + getQ());
-            e.printStackTrace();
+            logger.error("error getting biocache param id from: " + url + " for " + getQ(), e);
         }
     }
 
     public static void main(String[] args) throws Exception {
         String url = "http://www.example.com/something.html?one=11111&two=22222&three=%2233%20&%20333%22";
 
-        System.out.println(url);
+        logger.debug(url);
         //url = URLEncoder.encode(url, "UTF-8");
-        //System.out.println(url);
+        //logger.debug(url);
         List<org.apache.http.NameValuePair> params = org.apache.http.client.utils.URLEncodedUtils.parse(new java.net.URI(url), "UTF-8");
 
         for (org.apache.http.NameValuePair param : params) {
-            System.out.println(param.getName() + " : " + param.getValue());
+            logger.debug(param.getName() + " : " + param.getValue());
         }
 
         String test1 = "kosher:true &qc=dh1";
@@ -976,9 +860,9 @@ public class BiocacheQuery implements Query, Serializable {
     }
 
     private static void printTest(String original, String[] ts) {
-        System.out.println(original);
+        logger.debug(original);
         for (String t : ts) {
-            System.out.println(t);
+            logger.debug(t);
         }
     }
 
@@ -1052,26 +936,26 @@ public class BiocacheQuery implements Query, Serializable {
 //        BiocacheQuery sq = new BiocacheQuery();
 //
 //        //count all occurrences and species
-//        System.out.println("total number of occurrences: " + sq.getOccurrenceCount());
-//        System.out.println("total number of species: " + sq.getSpeciesCount());
+//        logger.debug("total number of occurrences: " + sq.getOccurrenceCount());
+//        logger.debug("total number of species: " + sq.getSpeciesCount());
 //
 //        //Repeat in a polygon
 //        String wkt = "POLYGON((140:-37,151:-37,151:-26,140.1310:-26,140:-37))";
 //        sq.addWkt(wkt);
-//        System.out.println("wkt: " + wkt);
-//        System.out.println("number of occurrences in wkt: " + sq.getOccurrenceCount());
-//        System.out.println("number of species in wkt: " + sq.getSpeciesCount());
+//        logger.debug("wkt: " + wkt);
+//        logger.debug("number of occurrences in wkt: " + sq.getOccurrenceCount());
+//        logger.debug("number of species in wkt: " + sq.getSpeciesCount());
 //
 //        //Sample some points
 //        ArrayList<QueryField> fields = new ArrayList<QueryField>();
 //        fields.add(new QueryField("id", "uuid"));
 //        String sample = sq.sample(fields);
-//        System.out.println("sample:");
-//        System.out.println(sample.substring(0, 500) + ((sample.length() <= 500) ? "" : "..."));
+//        logger.debug("sample:");
+//        logger.debug(sample.substring(0, 500) + ((sample.length() <= 500) ? "" : "..."));
 //
 //        //Sample some coordinates
 //        double[] coordinates = sq.getPoints(null);
-//        System.out.println("coordinates:");
+//        logger.debug("coordinates:");
 //        for (int i = 0; coordinates != null && i < coordinates.length && i < 100; i += 2) {
 //            System.out.print(coordinates[0] + "," + coordinates[1] + " ");
 //        }
@@ -1083,7 +967,7 @@ public class BiocacheQuery implements Query, Serializable {
     static public String getScientificNameRank(String lsid) {
 
         String snUrl = CommonData.bieServer + BIE_SPECIES + lsid + ".json";
-        System.out.println(snUrl);
+        logger.debug(snUrl);
 
         try {
             HttpClient client = new HttpClient();
@@ -1097,15 +981,14 @@ public class BiocacheQuery implements Query, Serializable {
             String scientficName = jo.getJSONObject("taxonConcept").getString("nameString");
             String rank = jo.getJSONObject("taxonConcept").getString("rankString");
 
-            System.out.println("Arrays.binarySearch(commonTaxonRanks, rank): " + Arrays.binarySearch(commonTaxonRanks, rank));
+            logger.debug("Arrays.binarySearch(commonTaxonRanks, rank): " + Arrays.binarySearch(commonTaxonRanks, rank));
             if (Arrays.binarySearch(commonTaxonRanks, rank) > -1) {
                 rank = "taxon";
             }
 
             return scientficName + "," + rank;
         } catch (Exception e) {
-            System.out.println("Error getting scientific name");
-            e.printStackTrace(System.out);
+            logger.error("error getting scientific name:" + snUrl, e);
         }
 
         return null;
@@ -1123,16 +1006,11 @@ public class BiocacheQuery implements Query, Serializable {
             }
             s = new String(baos.toByteArray());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error decompressing gz stream", e);
         }
         gzipped.close();
 
         return s;
-    }
-
-    @Override
-    public String getWMSpath() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     ArrayList<QueryField> facetFieldList = null;
@@ -1147,8 +1025,8 @@ public class BiocacheQuery implements Query, Serializable {
     private List<QueryField> retrieveCustomFacets() {
         List<QueryField> customFacets = new ArrayList<QueryField>();
         //look up facets
+        final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" + getFullQ(true) + "&qc=" + getQc();
         try {
-            final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" + getFullQ(true) + "&qc=" + getQc();
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(jsonUri);
             get.addRequestHeader("Content-type", "application/json");
@@ -1162,12 +1040,13 @@ public class BiocacheQuery implements Query, Serializable {
                 String facetName = jsonObject.getString("name");
                 String facetDisplayName = jsonObject.getString("displayName");
 
-                System.out.println("Adding custom index : " + arrayElement);
+                logger.debug("Adding custom index : " + arrayElement);
                 customFacets.add(new QueryField(facetName, facetDisplayName, QueryField.GroupType.CUSTOM, QueryField.FieldType.STRING));
             }
         } catch (Exception e) {
             //System.err.println("Unable to load custom facets for : " + dr);
-            e.printStackTrace();
+            //e.printStackTrace();
+            logger.error("error loading custom facets for: " + jsonUri, e);
         }
         return customFacets;
     }
@@ -1240,7 +1119,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
         LegendObject lo = legends.get(colourmode);
         if (lo != null && lo.getColourMode() != null && !lo.getColourMode().equals(colourmode)) {
-            System.out.println("lo not empty and lo=" + lo);
+            logger.debug("lo not empty and lo=" + lo);
             lo = legends.get(lo.getColourMode());
         }
         if (lo == null) {
@@ -1254,7 +1133,7 @@ public class BiocacheQuery implements Query, Serializable {
                         + "&q=" + getQ()
                         + "&cm=" + URLEncoder.encode(facetToColourBy, "UTF-8")
                         + getQc();
-                System.out.println(url);
+                logger.debug(url);
                 GetMethod get = new GetMethod(url);
                 //NQ: Set the header type to JSON so that we can parse JSON instead of CSV (CSV has issue with quoted field where a quote is the escape character)
                 get.addRequestHeader("Accept", "application/json");
@@ -1277,9 +1156,9 @@ public class BiocacheQuery implements Query, Serializable {
 
                     //apply cutpoints to colourMode string
                     Legend l = lo.getNumericLegend();
-                    double[] minmax = l.getMinMax();
-                    double[] cutpoints = l.getCutoffdoubles();
-                    double[] cutpointmins = l.getCutoffMindoubles();
+                    float[] minmax = l.getMinMax();
+                    float[] cutpoints = l.getCutoffFloats();
+                    float[] cutpointmins = l.getCutoffMinFloats();
                     StringBuilder sb = new StringBuilder();
                     //NQ 20140109: use the translated SOLR field as the colour mode so that "decade" does not cause an issue
                     String newFacet = colourmode.equals("decade") ? "occurrence_year" : colourmode;
@@ -1362,7 +1241,7 @@ public class BiocacheQuery implements Query, Serializable {
                     legends.put(colourmode, lo);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("error getting legend for : " + colourmode, e);
             }
         }
 
@@ -1405,8 +1284,6 @@ public class BiocacheQuery implements Query, Serializable {
                 + "&q=" + getQ()
                 + getQc();
 
-        System.out.println(url);
-
         GetMethod get = new GetMethod(url);
         try {
             int result = client.executeMethod(get);
@@ -1423,7 +1300,7 @@ public class BiocacheQuery implements Query, Serializable {
             bbox.add(Math.min(180, sr.getBoundingBox()[1][0]));
             bbox.add(Math.min(90, sr.getBoundingBox()[1][1]));
 
-            e.printStackTrace();
+            logger.error("error getting species layer bounding box from biocache:" + url, e);
         }
 
         return bbox;
@@ -1535,7 +1412,7 @@ public class BiocacheQuery implements Query, Serializable {
         Map<String, String> classification = new LinkedHashMap<String, String>();
 
         String snUrl = CommonData.bieServer + BIE_SPECIES + lsid + ".json";
-        System.out.println(snUrl);
+        logger.debug(snUrl);
 
         try {
             HttpClient client = new HttpClient();
@@ -1558,8 +1435,7 @@ public class BiocacheQuery implements Query, Serializable {
             }
 
         } catch (Exception e) {
-            System.out.println("Error getting scientific name");
-            e.printStackTrace(System.out);
+            logger.error("error getting scientific name at: " + snUrl, e);
         }
 
         return classification;
@@ -1593,7 +1469,7 @@ public class BiocacheQuery implements Query, Serializable {
             } else
                 return null;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting guid at: " + url, e);
             return null;
         }
     }
@@ -1610,7 +1486,7 @@ public class BiocacheQuery implements Query, Serializable {
         Map<String, String> classification = new LinkedHashMap<String, String>();
 
         String snUrl = CommonData.bieServer + BIE_SPECIES + lsid + ".json";
-        System.out.println(snUrl);
+        logger.debug(snUrl);
 
         try {
             HttpClient client = new HttpClient();
@@ -1631,7 +1507,7 @@ public class BiocacheQuery implements Query, Serializable {
             }
 
         } catch (Exception e) {
-            System.out.println("Error getting scientific name for: " + lsid);
+            logger.debug("Error getting scientific name for: " + lsid);
             //e.printStackTrace(System.out);
         }
 
@@ -1662,11 +1538,6 @@ public class BiocacheQuery implements Query, Serializable {
         return biocacheServer + DOWNLOAD_URL + "q=" + getQ() + sb.toString() + getQc();
     }
 
-    @Override
-    public byte[] getDownloadBytes(String[] extraFields, String[] displayNames) {
-        return null;
-    }
-
     private String getDataProviders() {
         HttpClient client = new HttpClient();
         String url = biocacheServer
@@ -1674,7 +1545,7 @@ public class BiocacheQuery implements Query, Serializable {
                 + DEFAULT_ROWS
                 + "&q=" + getQ()
                 + getQc();
-        System.out.println(url);
+        logger.debug(url);
         GetMethod get = new GetMethod(url);
 
         try {
@@ -1695,7 +1566,7 @@ public class BiocacheQuery implements Query, Serializable {
                 return html;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting query data providers for html:" + url, e);
         }
 
         return null;
@@ -1732,7 +1603,7 @@ public class BiocacheQuery implements Query, Serializable {
                 + "&q=" + getQ()
                 + getQc()
                 + "&pageSize=0&facet=false";
-        System.out.println("Retrieving query metadata: " + url);
+        logger.debug("Retrieving query metadata: " + url);
         GetMethod get = new GetMethod(url);
 
         try {
@@ -1762,12 +1633,12 @@ public class BiocacheQuery implements Query, Serializable {
                     }
 
                     solrName = title;
-                    System.out.println("solrName12=" + solrName);
+                    logger.debug("solrName12=" + solrName);
                     return solrName;
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting solr name for a query: " + url, e);
         }
 
         return null;

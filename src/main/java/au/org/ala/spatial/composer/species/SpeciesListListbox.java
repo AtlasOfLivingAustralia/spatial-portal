@@ -13,6 +13,7 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.*;
 import org.zkoss.zul.event.ListDataEvent;
+import org.zkoss.zul.ext.Sortable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -190,7 +191,7 @@ public class SpeciesListListbox extends Listbox {
      * The List Model to be used by the species list listbox. This supports the paging of lists via the use of
      * WS calls to the list tool.
      */
-    public class SpeciesListListModel extends AbstractListModel implements ListModelExt {
+    public class SpeciesListListModel extends AbstractListModel implements Sortable {
         int pageSize = 10;
         int currentOffset = 0;
         List<SpeciesListDTO> currentLists;

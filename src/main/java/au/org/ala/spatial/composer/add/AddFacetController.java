@@ -1,7 +1,9 @@
 package au.org.ala.spatial.composer.add;
 
 import au.com.bytecode.opencsv.CSVReader;
-import au.org.ala.spatial.data.*;
+import au.org.ala.spatial.data.BiocacheQuery;
+import au.org.ala.spatial.data.Query;
+import au.org.ala.spatial.data.QueryUtil;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SelectedArea;
 import au.org.ala.spatial.util.Util;
@@ -10,6 +12,10 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
+import org.ala.layers.legend.Facet;
+import org.ala.layers.legend.Legend;
+import org.ala.layers.legend.LegendObject;
+import org.ala.layers.legend.QueryField;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
@@ -21,7 +27,6 @@ import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.*;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 
@@ -39,7 +44,7 @@ public class AddFacetController extends UtilityComposer {
     String imagePath = "";
     public Listbox legend;
     Button createInGroup;
-    ArrayList<String> legend_lines;
+    List<String[]> legend_lines;
     Doublebox dmin;
     Doublebox dmax;
     double minValue;
@@ -76,6 +81,8 @@ public class AddFacetController extends UtilityComposer {
     MapLayer prevTopArea = null;
     Checkbox chkGeoKosherTrue, chkGeoKosherFalse;
     LegendObject lo = null;
+    Checkbox cbContinousRange;
+    Label lblOccurrencesSelected;
 
     @Override
     public void afterCompose() {
@@ -228,26 +235,25 @@ public class AddFacetController extends UtilityComposer {
                 return;
             }
 
-            String[] lines = slist.split("\r\n");
-            if (lines.length == 1) {
-                lines = slist.split("\n");
+
+            try {
+                legend_lines = new CSVReader(new StringReader(slist)).readAll();
+            } catch (Exception e) {
+                logger.error("failed to read legend list as csv", e);
             }
-            legend_lines = new ArrayList<String>();
-            int i = 0;
-            for (i = 1; i < lines.length; i++) {
-                if (lines[i].split(",").length > 3) {
-                    legend_lines.add(lines[i]);
-                }
-            }
+            String[] first_line = legend_lines.get(0);
+            legend_lines.remove(0);
 
             String h = "";
             facet = null;
 
+            divContinous.setVisible(false);
+
             //test for range (user upload)
             if (legend_lines.size() > 1) {
-                String first = legend_lines.get(0);
+                String first = legend_lines.get(0)[0];
                 if (first == null || first.length() == 0 || first.startsWith("Unknown")) {
-                    first = legend_lines.get(1);
+                    first = legend_lines.get(1)[0];
                 }
                 if (!checkmarks && query.getLegend(colourmode) != null
                         && query.getLegend(colourmode).getNumericLegend() != null) {
@@ -257,15 +263,11 @@ public class AddFacetController extends UtilityComposer {
                     setupForBiocacheNumber(h, colourmode, true);
                 } else if (colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
                     setupForBiocacheDecade();
-                } else if (colourmode.equals("coordinate_uncertainty")) {
+                } else if (colourmode.equals("coordinate_uncertainty") || colourmode.equals("uncertainty")) {
                     setupForBiocacheNumber(h, colourmode, false);
                 } else if (colourmode.equals("month")) {
                     setupForBiocacheMonth();
                 }
-            }
-
-            if ("geospatial_kosher".equals(colourmode)) {
-                setupForBiocacheGeospatialKosher();
             }
 
             /* apply something to line onclick in lb */
@@ -273,14 +275,8 @@ public class AddFacetController extends UtilityComposer {
 
                 @Override
                 public void render(Listitem li, Object data, int item_idx) {
-                    String[] ss = null;
-                    try {
-                        CSVReader csv = new CSVReader(new StringReader((String) data));
-                        ss = csv.readNext();
-                        csv.close();
-                    } catch (IOException ex) {
-                        logger.error("error closing legend list", ex);
-                    }
+                    String[] ss = (String[]) data;
+
                     if (ss == null) {
                         return;
                     }
@@ -296,6 +292,7 @@ public class AddFacetController extends UtilityComposer {
                                 btnOk.setDisabled(false);
                             }
                         });
+                        cb.setVisible(!cbContinousRange.isChecked());
                     }
 
                     Listcell lc;
@@ -314,9 +311,14 @@ public class AddFacetController extends UtilityComposer {
                     }
                     lc.setParent(li);
 
-                    int red = Integer.parseInt(ss[1]);
-                    int green = Integer.parseInt(ss[2]);
-                    int blue = Integer.parseInt(ss[3]);
+                    int red = 0, green = 0, blue = 0;
+                    try {
+                        red = Integer.parseInt(ss[1]);
+                        green = Integer.parseInt(ss[2]);
+                        blue = Integer.parseInt(ss[3]);
+                    } catch (Exception e) {
+                        logger.error("error parsing colours : " + ss[0], e);
+                    }
 
                     lc = new Listcell("   ");
                     lc.setStyle("background-color: rgb(" + red + "," + green
@@ -336,7 +338,6 @@ public class AddFacetController extends UtilityComposer {
             });
 
             legend.setModel(new SimpleListModel(legend_lines));
-            legend.renderAll();
 
         } catch (Exception e) {
             logger.error("error rendering legend", e);
@@ -347,47 +348,48 @@ public class AddFacetController extends UtilityComposer {
         StringBuilder values = new StringBuilder();
 
         boolean unknown = false;
-        for (Listitem li : legend.getItems()) {
-            if (li.getFirstChild().getChildren().size() > 0
-                    && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
-                String v = ((Listcell) li.getChildren().get(1)).getLabel();
-                v = displayToActualLabel(v);
-                if (legend_facets != null) {
-                    if (v.equals("Unknown") || v.contains("occurrence_year") || v.contains("uncertainty")) {
-                        //keep unchanged
-                        divContinous.setVisible(true);
-                    } else {
-                        v = legend_facets.get(v);
-                    }
-                }
-
-                if (v.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && v.equals("Unknown"))) {
-                    unknown = true;
-                } else {
-                    if (values.length() > 0) {
-                        values.append(" OR ");
-                    }
+        if (!divContinous.isVisible() || !cbContinousRange.isChecked()) {
+            for (Listitem li : legend.getItems()) {
+                if (li.getFirstChild().getChildren().size() > 0
+                        && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
+                    String v = ((Listcell) li.getChildren().get(1)).getLabel();
+                    v = displayToActualLabel(v);
                     if (legend_facets != null) {
-                        values.append(v);
+                        if (v.equals("Unknown") || v.contains("occurrence_year") || v.contains("uncertainty") || v.contains("coordinate_uncertainty")) {
+                            //keep unchanged
+                            divContinous.setVisible(true);
+                            onCheck$cbContinousRange(null);
+                        } else {
+                            v = legend_facets.get(v);
+                        }
+                    }
+
+                    if (v.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && v.equals("Unknown"))) {
+                        unknown = true;
                     } else {
-                        values.append(colourmode).append(":\"");
-                        values.append(v).append("\"");
+                        if (values.length() > 0) {
+                            values.append(" OR ");
+                        }
+                        if (legend_facets != null) {
+                            values.append(v);
+                        } else {
+                            values.append(colourmode).append(":\"");
+                            values.append(v).append("\"");
+                        }
                     }
                 }
             }
-        }
-        String unknownSearch = divContinous.isVisible() ? ":[* TO *]" : ":*";
-        if (unknown) {
-            if (values.length() > 0) {
-                String newValues = "-(" + colourmode + unknownSearch + " AND -" + values.toString().replace(" OR ", " AND -") + ")";
-                values = new StringBuilder();
-                values.append(newValues);
-            } else {
-                values.append("-").append(colourmode).append(unknownSearch);
+            String unknownSearch = divContinous.isVisible() ? ":[* TO *]" : ":*";
+            if (unknown) {
+                if (values.length() > 0) {
+                    String newValues = "-(" + colourmode + unknownSearch + " AND -" + values.toString().replace(" OR ", " AND -") + ")";
+                    values = new StringBuilder();
+                    values.append(newValues);
+                } else {
+                    values.append("-").append(colourmode).append(unknownSearch);
+                }
             }
-        }
-
-        if (values.length() == 0) {
+        } else {
             if (minValue == gMinValue && maxValue == gMaxValue && dunknown.isChecked()) {
                 //no facet
             } else {
@@ -439,6 +441,11 @@ public class AddFacetController extends UtilityComposer {
         uncheckAll();
         minValue = dmin.getValue();
         maxValue = dmax.getValue();
+
+        //get count and display
+        Facet f = Facet.parseFacet(getSelectionFacet());
+        Query querynew = query.newFacet(f, true);
+        lblOccurrencesSelected.setValue(querynew.getOccurrenceCount() + " occurrences selected");
     }
 
     public void onCheck$dunknown(Event event) {
@@ -454,34 +461,12 @@ public class AddFacetController extends UtilityComposer {
         }
     }
 
-    void updateD() {
-        Facet f = Facet.parseFacet(getSelectionFacet());
-        Query querynew = query.newFacet(f, true);
-        if (querynew.getOccurrenceCount() <= 0) {
-            getMapComposer().showMessage("no occurrences in this selection");
-        } else {
-            getMapComposer().mapSpecies(querynew,
-                    "My facet", "species", -1, LayerUtilities.SPECIES, null, 0, MapComposer.DEFAULT_POINT_SIZE,
-                    MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
-            this.detach();
-        }
-    }
-
-    void setEnableContinousControls(boolean enable) {
-        dmax.setDisabled(!enable);
-        dmin.setDisabled(!enable);
-        dbutton.setDisabled(!enable);
-        if (!enable) {
-            dlabel.setValue("list selection underway, range selection disabled");
-        }
-        dunknown.setDisabled(!enable);
-    }
-
     private void setupForNumericalList(String first, String facetString) {
         String h = facetString;
         legend_facets = new HashMap<String, String>();
         try {
             divContinous.setVisible(!disableselection);
+            onCheck$cbContinousRange(null);
             if (lo.getFieldType() == QueryField.FieldType.INT
                     || lo.getFieldType() == QueryField.FieldType.LONG) {
                 intContinous = true;
@@ -493,6 +478,8 @@ public class AddFacetController extends UtilityComposer {
             if (intContinous && rng < SLIDER_MAX && rng > 0) {
                 SLIDER_MAX = (int) rng;
             }
+            dmin.setValue(gMinValue);
+            dmax.setValue(gMaxValue);
 
             try {
                 if (facet != null) {
@@ -517,21 +504,16 @@ public class AddFacetController extends UtilityComposer {
                 logger.error("error with numerical legend", e);
             }
             for (int j = 0; j < legend_lines.size(); j++) {
-                String s = legend_lines.get(j);
-                String back = s.substring(s.indexOf(','));
-                String front = s.substring(0, s.indexOf(','));
-                if (s.length() > 2 && s.charAt(0) == '-' || s.charAt(1) == '-') {
-                    legend_lines.set(j, "Unknown" + back);
-                    String v = front;
-                    if (v.startsWith("\"") && v.endsWith("\"")) {
-                        v = v.substring(1, v.length() - 1);
-                    }
-                    legend_facets.put("Unknown", v);
-                } else {
-                    String[] ss = s.split(" ");
 
-                    double[] cutoffs = lo.getNumericLegend().getCutoffdoubles();
-                    double[] cutoffMins = lo.getNumericLegend().getCutoffMindoubles();
+                String label = legend_lines.get(j)[0];
+                if (label.charAt(0) == '-') {
+                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
+                    legend_lines.get(j)[0] = "Unknown";
+                } else {
+                    String[] ss = legend_lines.get(j);
+
+                    float[] cutoffs = lo.getNumericLegend().getCutoffFloats();
+                    float[] cutoffMins = lo.getNumericLegend().getCutoffMinFloats();
                     String range, strFacet;
                     double min;
                     double max;
@@ -580,7 +562,7 @@ public class AddFacetController extends UtilityComposer {
 
                             strFacet = colourmode + ":[" + min + " TO " + max + "]";
                         }
-                        legend_lines.set(j, range + back);
+                        legend_lines.get(j)[0] = range;
                         legend_facets.put(range, strFacet);
                     }
                 }
@@ -588,7 +570,8 @@ public class AddFacetController extends UtilityComposer {
             checkmarks = true;
         } catch (Exception e) {
             divContinous.setVisible(false);
-            logger.error("error building numberical legend", e);
+            onCheck$cbContinousRange(null);
+            logger.error("error building numerical legend", e);
         }
     }
 
@@ -601,8 +584,13 @@ public class AddFacetController extends UtilityComposer {
         if (lo != null) {
             //enable sliders
             divContinous.setVisible(!disableselection);
+            onCheck$cbContinousRange(null);
             gMinValue = minValue = lo.getMinMax()[0];
             gMaxValue = maxValue = lo.getMinMax()[1];
+
+            dmin.setValue(gMinValue);
+            dmax.setValue(gMaxValue);
+
             if (intContinous) {
                 SLIDER_MAX = Math.min(SLIDER_MAX, (int) (gMaxValue - gMinValue));
             }
@@ -629,23 +617,18 @@ public class AddFacetController extends UtilityComposer {
 
             //update text in legend lines
             for (int j = 0; j < legend_lines.size(); j++) {
-                String s = legend_lines.get(j);
-                String back = s.substring(s.indexOf(','));
-                String front = s.substring(0, s.indexOf(','));
-                if (s.length() > 2 && s.charAt(0) == '-' || s.charAt(1) == '-') {
-                    legend_lines.set(j, "Unknown" + back);
-                    String v = front;
-                    if (v.startsWith("\"") && v.endsWith("\"")) {
-                        v = v.substring(1, v.length() - 1);
-                    }
-                    legend_facets.put("Unknown", v);
-                } else {
-                    s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
-                    s = s.replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "");
-                    String[] ss = s.split(" TO ");
 
-                    double[] cutoffs = lo.getNumericLegend().getCutoffdoubles();
-                    double[] cutoffMins = lo.getNumericLegend().getCutoffMindoubles();
+                String label = legend_lines.get(j)[0];
+                if (label.charAt(0) == '-') {
+                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
+                    legend_lines.get(j)[0] = "Unknown";
+                } else {
+                    String s = legend_lines.get(j)[0];
+
+                    String[] ss = s.replace("[", "").replace("]", "").replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "").split(" TO ");
+
+                    float[] cutoffs = lo.getNumericLegend().getCutoffFloats();
+                    float[] cutoffMins = lo.getNumericLegend().getCutoffMinFloats();
                     String range, strFacet;
                     if (ss.length > 1) {
                         if (ss[0].equals("*")) {
@@ -723,7 +706,7 @@ public class AddFacetController extends UtilityComposer {
                                 strFacet = "" + facetName + ":[" + cutoffMins[pos] + " TO " + cutoffs[pos] + "]";
                             }
                         }
-                        legend_lines.set(j, range + back);
+                        legend_lines.get(j)[0] = range;
                         legend_facets.put(range, strFacet);
                     }
                 }
@@ -741,29 +724,24 @@ public class AddFacetController extends UtilityComposer {
         if (lo != null) {
             //update text in legend lines
             for (int j = 0; j < legend_lines.size(); j++) {
-                String s = legend_lines.get(j);
-                String back = s.substring(s.indexOf(','));
-                String front = s.substring(0, s.indexOf(','));
-                if (s.length() > 2 && s.charAt(0) == '-' || s.charAt(1) == '-') {
-                    legend_lines.set(j, "Unknown" + back);
-                    String v = front;
-                    if (v.startsWith("\"") && v.endsWith("\"")) {
-                        v = v.substring(1, v.length() - 1);
-                    }
-                    legend_facets.put("Unknown", v);
+                String label = legend_lines.get(j)[0];
+                if (label.charAt(0) == '-') {
+                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
+                    legend_lines.get(j)[0] = "Unknown";
                 } else {
-                    s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
-                    s = s.replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "");
-                    String[] ss = s.split(" TO ");
+                    //String[] ss = legend_lines.get(j);
+                    //s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
+                    //s = s.replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "");
+                    String[] ss = legend_lines.get(j)[0].split(" TO ");
 
                     String range, strFacet;
                     if (ss.length > 1) {
-                        String yr = ss[1].substring(0, ss[1].length() - 1);
+                        String yr = ss[1].substring(0, ss[1].length() - 2);
 
                         range = String.format("%s0s", yr);
                         strFacet = "occurrence_year:[" + yr + "0-01-01T00:00:00Z TO " + yr + "9-12-31T00:00:00Z]";
 
-                        legend_lines.set(j, range + back);
+                        legend_lines.get(j)[0] = range;
                         legend_facets.put(range, strFacet);
                     }
                 }
@@ -775,19 +753,17 @@ public class AddFacetController extends UtilityComposer {
         legend_facets = new HashMap<String, String>();
         //update text in legend lines
         for (int j = 0; j < legend_lines.size(); j++) {
-            String s = legend_lines.get(j);
-            int firstDelim = s.indexOf(',');
-            String value = s.substring(0, firstDelim);
-            String back = s.substring(firstDelim);
-            if (value.equals("\"true\"")) {
+            String value = legend_lines.get(j)[0];
+            String s;
+            if (value.equals("true")) {
                 s = "Spatially valid";
-            } else if (value.equals("\"false\"")) {
+            } else if (value.equals("false")) {
                 s = "Spatially suspect";
             } else {
                 s = "Coordinates not supplied";
             }
             legend_facets.put(s, "geospatial_kosher:" + value);
-            legend_lines.set(j, s + back);
+            legend_lines.get(j)[0] = s;
         }
     }
 
@@ -796,12 +772,12 @@ public class AddFacetController extends UtilityComposer {
         legend_facets = new HashMap<String, String>();
         //update text in legend lines
         for (int j = 0; j < legend_lines.size(); j++) {
-            String s = legend_lines.get(j);
-            String back = s.substring(s.indexOf(','));
-            if (s.length() > 2 && s.charAt(0) == '-' || s.charAt(1) == '-') {
-                legend_lines.set(j, "Unknown" + back);
-                legend_facets.put("Unknown", "Unknown");
+            String label = legend_lines.get(j)[0];
+            if (label.charAt(0) == '-') {
+                legend_facets.put("Unknown", legend_lines.get(j)[0]);
+                legend_lines.get(j)[0] = "Unknown";
             } else {
+                String s = legend_lines.get(j)[0];
                 s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
                 String[] ss = s.split(" TO ");
                 if (ss.length > 1) {
@@ -832,7 +808,7 @@ public class AddFacetController extends UtilityComposer {
                     }
                 }
                 legend_facets.put(s, "month:[" + ss[1] + " TO " + ss[1] + "]");
-                legend_lines.set(j, s + back);
+                legend_lines.get(j)[0] = s;
             }
 
         }
@@ -961,7 +937,17 @@ public class AddFacetController extends UtilityComposer {
                 if (state[0] == 0) {
                     btnOk.setDisabled(true);
                 }
-                updateD();
+
+                Facet f = Facet.parseFacet(getSelectionFacet());
+                Query querynew = query.newFacet(f, true);
+                if (querynew.getOccurrenceCount() <= 0) {
+                    getMapComposer().showMessage("no occurrences in this selection");
+                } else {
+                    getMapComposer().mapSpecies(querynew,
+                            "My facet", "species", -1, LayerUtilities.SPECIES, null, 0, MapComposer.DEFAULT_POINT_SIZE,
+                            MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
+                    this.detach();
+                }
             }
 
         } catch (Exception ex) {
@@ -1297,8 +1283,7 @@ public class AddFacetController extends UtilityComposer {
             fixFocus();
 
         } catch (SuspendNotAllowedException ex) {
-            logger.debug("Exception when resetting analysis window");
-            ex.printStackTrace(System.out);
+            logger.error("Exception when resetting analysis window", ex);
         }
     }
 
@@ -1351,5 +1336,24 @@ public class AddFacetController extends UtilityComposer {
             s = v;
         }
         return s;
+    }
+
+    public void onCheck$cbContinousRange(Event c) {
+        dmin.setDisabled(!cbContinousRange.isChecked());
+        dmax.setDisabled(!cbContinousRange.isChecked());
+        dbutton.setDisabled(!cbContinousRange.isChecked());
+        dunknown.setDisabled(!cbContinousRange.isChecked());
+
+        for (Listitem li : legend.getItems()) {
+            if (li.getFirstChild().getChildren().size() > 0) {
+                ((Checkbox) li.getFirstChild().getFirstChild()).setVisible(!cbContinousRange.isChecked());
+            }
+        }
+
+        if (!cbContinousRange.isChecked()) {
+            dlabel.setValue("list selection underway, range selection disabled");
+        } else {
+            dlabel.setValue("range selection underway, list selection disabled");
+        }
     }
 }

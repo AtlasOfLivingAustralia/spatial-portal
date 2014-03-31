@@ -10,7 +10,7 @@ import au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent;
 import au.org.ala.spatial.composer.species.SpeciesListListbox;
 import au.org.ala.spatial.data.BiocacheQuery;
 import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.UploadQuery;
+import au.org.ala.spatial.data.UserDataQuery;
 import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SelectedArea;
@@ -53,10 +53,10 @@ import java.util.*;
 public class ToolComposer extends UtilityComposer {
     private static Logger logger = Logger.getLogger(ToolComposer.class);
     SettingsSupplementary settingsSupplementary;
-    RemoteLogger remoteLogger;
+    public RemoteLogger remoteLogger;
     int currentStep = 1, totalSteps = 5;
     Map<String, Object> params;
-    String selectedMethod = "";
+    protected String selectedMethod = "";
     String pid = "";
     Radiogroup rgArea, rgAreaHighlight, rgSpecies, rgSpeciesBk;
     Radio rMaxent, rAloc, rScatterplot, rGdm, rTabulation;
@@ -447,25 +447,12 @@ public class ToolComposer extends UtilityComposer {
             String selectedLayerName = (String) params.get("polygonLayerName");
             Radio rSelectedLayer = null;
 
-            StringBuilder allWKT = new StringBuilder();
             int count_not_envelopes = 0;
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
                 rAr.setValue(lyr.getWKT());
-
-                if (!lyr.getWKT().contains("ENVELOPE")) {
-                    if (count_not_envelopes > 0) {
-                        allWKT.append(',');
-                    }
-                    count_not_envelopes++;
-                    String wkt = lyr.getWKT();
-                    if (wkt.startsWith("GEOMETRYCOLLECTION(")) {
-                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length() - 1);
-                    }
-                    allWKT.append(wkt);
-                }
 
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
@@ -474,13 +461,6 @@ public class ToolComposer extends UtilityComposer {
                     rSelectedLayer = rAr;
                     rAreaSelected = rAr;
                 }
-            }
-
-            if (!layers.isEmpty() && count_not_envelopes > 1) {
-                Radio rAr = new Radio("All area layers" + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
-                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
-                rAr.setParent(rgArea);
-                rgArea.insertBefore(rAr, rAreaCurrent);
             }
 
             if (selectedAreaName != null && !selectedAreaName.equals("")) {
@@ -538,25 +518,12 @@ public class ToolComposer extends UtilityComposer {
             String selectedLayerName = (String) params.get("polygonLayerName");
             Radio rSelectedLayer = null;
 
-            StringBuilder allWKT = new StringBuilder();
             int count_not_envelopes = 0;
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
                 rAr.setValue(lyr.getWKT());
-
-                if (!lyr.getWKT().contains("ENVELOPE")) {
-                    if (count_not_envelopes > 0) {
-                        allWKT.append(',');
-                    }
-                    count_not_envelopes++;
-                    String wkt = lyr.getWKT();
-                    if (wkt.startsWith("GEOMETRYCOLLECTION(")) {
-                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length() - 1);
-                    }
-                    allWKT.append(wkt);
-                }
 
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrentHighlight);
@@ -565,13 +532,6 @@ public class ToolComposer extends UtilityComposer {
                     rSelectedLayer = rAr;
                     // rAreaSelected = rAr;
                 }
-            }
-
-            if (!layers.isEmpty() && count_not_envelopes > 1) {
-                Radio rAr = new Radio("All area layers" + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
-                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
-                rAr.setParent(rgArea);
-                rgArea.insertBefore(rAr, rAreaCurrentHighlight);
             }
 
             if (selectedAreaName != null && !selectedAreaName.equals("")) {
@@ -705,11 +665,6 @@ public class ToolComposer extends UtilityComposer {
                     sarea = ml.getAreaSqKm();
                     if (sarea == null)
                         sarea = ml.calculateAndStoreArea();
-                } else {
-                    // for 'all areas'
-                    SelectedArea sa = new SelectedArea(null, rAreaSelected.getLabel());
-                    sarea = sa.getKm2Area();
-
                 }
                 try {
                     Float area = Float.parseFloat(sarea.replaceAll(",", ""));
@@ -1083,7 +1038,7 @@ public class ToolComposer extends UtilityComposer {
             }
 
             if (!currentDiv.getZclass().contains("last")) {
-                if (currentDiv.getZclass().contains("species") && (rSpeciesUploadSpecies.isSelected())) {
+                if (currentDiv.getZclass().contains("species") && (rSpeciesUploadSpecies != null && rSpeciesUploadSpecies.isSelected())) {
                     Boolean test = currentDiv.getZclass().contains("species") && (rSpeciesUploadSpecies.isSelected());
                     logger.debug("test=" + test);
                     onClick$btnUpload(event);
@@ -1129,7 +1084,7 @@ public class ToolComposer extends UtilityComposer {
                 if (nextDiv != null && rgSpecies != null && (includeAnalysisLayersForUploadQuery || includeAnalysisLayersForAnyQuery)) {
                     Query q = getSelectedSpecies();
                     if (q != null) {
-                        boolean test = (includeAnalysisLayersForAnyQuery || (q instanceof UploadQuery));
+                        boolean test = (includeAnalysisLayersForAnyQuery || (q instanceof UserDataQuery));
 
                         if (selectedLayersCombobox != null) {
                             if ((selectedLayersCombobox.getIncludeAnalysisLayers()) != test) {
@@ -1322,10 +1277,6 @@ public class ToolComposer extends UtilityComposer {
                     }
                 }
 
-                // for 'all areas'
-                if (sa == null) {
-                    sa = new SelectedArea(null, area);
-                }
             }
         } catch (Exception e) {
             logger.warn("Unable to retrieve selected area", e);
@@ -1353,11 +1304,6 @@ public class ToolComposer extends UtilityComposer {
                         sa = new SelectedArea(ml, null);
                         break;
                     }
-                }
-
-                // for 'all areas'
-                if (sa == null) {
-                    sa = new SelectedArea(null, area);
                 }
             }
         } catch (Exception e) {
@@ -1708,31 +1654,33 @@ public class ToolComposer extends UtilityComposer {
             onCheck$rgSpeciesBk(null);
         }
 
-        if (currentDiv.getZclass().contains("layers2auto")) {
-            cbLayer2 = (EnvLayersCombobox) getFellowIfAny("cbLayer2");
-            cbLayer1 = (EnvLayersCombobox) getFellowIfAny("cbLayer1");
-            btnOk.setDisabled(cbLayer2.getSelectedItem() == null || cbLayer1.getSelectedItem() == null);
-        }
-
-        if (currentDiv.getZclass().contains("optional")) {
-            btnOk.setDisabled(false);
-        }
-
-        if (currentDiv.getZclass().contains("species")) {
-            // if (divSpeciesSearch != null && divSpeciesSearch.isVisible()){
-            if (divSpeciesSearch.isVisible()) {
-                btnOk.setDisabled(!searchSpeciesACComp.hasValidAnnotatedItemSelected());
-//                btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() != null
-//                        && (searchSpeciesAuto.getSelectedItem().getValue() == null || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null || searchSpeciesAuto.getSelectedItem()
-//                                .getAnnotatedProperties().size() == 0));
-            } else if (vboxMultiple.isVisible()) {
-                btnOk.setDisabled(getMultipleLsids().length() == 0);
+        if (currentDiv != null) {
+            if (currentDiv.getZclass().contains("layers2auto")) {
+                cbLayer2 = (EnvLayersCombobox) getFellowIfAny("cbLayer2");
+                cbLayer1 = (EnvLayersCombobox) getFellowIfAny("cbLayer1");
+                btnOk.setDisabled(cbLayer2.getSelectedItem() == null || cbLayer1.getSelectedItem() == null);
             }
-            if (chkGeoKosherTrue != null) {
-                updateGeospatialKosherCheckboxes();
+
+            if (currentDiv.getZclass().contains("optional")) {
+                btnOk.setDisabled(false);
             }
-            if (chkGeoKosherTrueBk != null) {
-                updateGeospatialKosherCheckboxesBk();
+
+            if (currentDiv.getZclass().contains("species")) {
+                // if (divSpeciesSearch != null && divSpeciesSearch.isVisible()){
+                if (divSpeciesSearch.isVisible()) {
+                    btnOk.setDisabled(!searchSpeciesACComp.hasValidAnnotatedItemSelected());
+                    //                btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() != null
+                    //                        && (searchSpeciesAuto.getSelectedItem().getValue() == null || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null || searchSpeciesAuto.getSelectedItem()
+                    //                                .getAnnotatedProperties().size() == 0));
+                } else if (vboxMultiple.isVisible()) {
+                    btnOk.setDisabled(getMultipleLsids().length() == 0);
+                }
+                if (chkGeoKosherTrue != null) {
+                    updateGeospatialKosherCheckboxes();
+                }
+                if (chkGeoKosherTrueBk != null) {
+                    updateGeospatialKosherCheckboxesBk();
+                }
             }
         }
 
@@ -2098,14 +2046,14 @@ public class ToolComposer extends UtilityComposer {
             try {
                 loadLayerList(m.getReaderData());
                 loaded = true;
-                logger.info("read type " + m.getContentType() + " with getReaderData");
+                logger.debug("read type " + m.getContentType() + " with getReaderData");
             } catch (Exception e) {
             }
             if (!loaded) {
                 try {
                     loadLayerList(new StringReader(new String(m.getByteData())));
                     loaded = true;
-                    logger.info("read type " + m.getContentType() + " with getByteData");
+                    logger.debug("read type " + m.getContentType() + " with getByteData");
                 } catch (Exception e) {
                 }
             }
@@ -2113,7 +2061,7 @@ public class ToolComposer extends UtilityComposer {
                 try {
                     loadLayerList(new InputStreamReader(m.getStreamData()));
                     loaded = true;
-                    logger.info("read type " + m.getContentType() + " with getStreamData");
+                    logger.debug("read type " + m.getContentType() + " with getStreamData");
                 } catch (Exception e) {
                 }
             }
@@ -2121,7 +2069,7 @@ public class ToolComposer extends UtilityComposer {
                 try {
                     loadLayerList(new StringReader(m.getStringData()));
                     loaded = true;
-                    logger.info("read type " + m.getContentType() + " with getStringData");
+                    logger.debug("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
                     // last one, report error
                     getMapComposer().showMessage("Unable to load your file.");
@@ -2886,7 +2834,7 @@ public class ToolComposer extends UtilityComposer {
             try {
                 importList(readerToString(m.getReaderData()));
                 loaded = true;
-                logger.info("read type " + m.getContentType() + " with getReaderData");
+                logger.debug("read type " + m.getContentType() + " with getReaderData");
             } catch (Exception e) {
                 // e.printStackTrace();
             }
@@ -2894,7 +2842,7 @@ public class ToolComposer extends UtilityComposer {
                 try {
                     importList(new String(m.getByteData()));
                     loaded = true;
-                    logger.info("read type " + m.getContentType() + " with getByteData");
+                    logger.debug("read type " + m.getContentType() + " with getByteData");
                 } catch (Exception e) {
                     // e.printStackTrace();
                 }
@@ -2903,7 +2851,7 @@ public class ToolComposer extends UtilityComposer {
                 try {
                     importList(readerToString(new InputStreamReader(m.getStreamData())));
                     loaded = true;
-                    logger.info("read type " + m.getContentType() + " with getStreamData");
+                    logger.debug("read type " + m.getContentType() + " with getStreamData");
                 } catch (Exception e) {
                     // e.printStackTrace();
                 }
@@ -2912,7 +2860,7 @@ public class ToolComposer extends UtilityComposer {
                 try {
                     importList(m.getStringData());
                     loaded = true;
-                    logger.info("read type " + m.getContentType() + " with getStringData");
+                    logger.debug("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
                     // last one, report error
                     getMapComposer().showMessage("Unable to load your file. Please try again.");

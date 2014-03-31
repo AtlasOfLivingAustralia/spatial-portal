@@ -6,6 +6,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
 
 import java.io.InputStreamReader;
@@ -23,6 +24,7 @@ import java.util.zip.ZipInputStream;
  * @author adam
  */
 public class Sampling {
+    private static Logger logger = Logger.getLogger(Sampling.class);
 
     public static ArrayList<String[]> sampling(ArrayList<String> facetIds, double[][] points) {
         //form request and get from layers-service
@@ -78,7 +80,7 @@ public class Sampling {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error with sampling", e);
         }
 
         return null;
@@ -104,7 +106,7 @@ public class Sampling {
                 downloadUrl = "";
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting response from : " + statusUrl, e);
         }
 
         return downloadUrl;
@@ -146,10 +148,10 @@ public class Sampling {
 
                 zip.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("failed to read zipped stream from: " + downloadUrl, e);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting response from url: " + downloadUrl, e);
         }
 
         return output;

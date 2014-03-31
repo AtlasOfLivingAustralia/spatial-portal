@@ -5,12 +5,13 @@
 package au.org.ala.spatial.util;
 
 import au.org.ala.spatial.data.LsidCounts;
-import au.org.ala.spatial.data.QueryField;
 import au.org.emii.portal.util.LayerSelection;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.layers.legend.QueryField;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -24,6 +25,8 @@ import java.util.*;
  * @author Adam
  */
 public class CommonData {
+
+    private static Logger logger = Logger.getLogger(CommonData.class);
 
     //common data
     static public final String WORLD_WKT = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 84.999,179.999 -89.999,-179.999 -89.999))";
@@ -240,15 +243,12 @@ public class CommonData {
     static public void initLayerDistances() {
         copy_distances = null;
         copy_distances_map = null;
-        System.out.println("CommonData::initLayerDistances()");
+        logger.debug("CommonData::initLayerDistances()");
+        String url = satServer + "/ws/layerdistances";
         try {
-            //environmental only
-            StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append(satServer).append("/ws/layerdistances");
-
-            System.out.println(sbProcessUrl.toString());
+            logger.debug(url);
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString());
+            GetMethod get = new GetMethod(url);
 
             int result = client.executeMethod(get);
 
@@ -279,7 +279,7 @@ public class CommonData {
         } catch (Exception e) {
             copy_distances = null;
             copy_distances_map = null;
-            e.printStackTrace();
+            logger.error("error getting layer distances", e);
         }
     }
 
@@ -289,8 +289,9 @@ public class CommonData {
 
     static void initLayerList() {
         copy_layerlistJSON = null;
+        String layersListURL = layersServer + "/layers";
         try {
-            String layersListURL = layersServer + "/layers";
+
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(layersListURL);
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
@@ -303,7 +304,7 @@ public class CommonData {
 
             addFieldsToLayers(copy_layerlistJSON);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting layers list: " + layersListURL, e);
             copy_layerlistJSON = null;
         }
     }
@@ -326,7 +327,10 @@ public class CommonData {
             if (layer.containsKey("id")) {
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject jo = ja.getJSONObject(i);
-                    if (jo.containsKey("spid") && jo.getString("spid").equals(layer.getString("id"))) {
+                    if (
+                            jo.containsKey("defaultlayer") && jo.getString("defaultlayer").equals("true")
+
+                                    && jo.containsKey("spid") && jo.getString("spid").equals(layer.getString("id"))) {
                         //add to layer
                         if (!layer.containsKey("fields")) {
                             layer.put("fields", new JSONArray());
@@ -348,6 +352,7 @@ public class CommonData {
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(layersListURL);
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            get.addRequestHeader("Accept-Encoding", "gzip");
 
             copy_species_wms_layers = new HashMap<String, String[]>();
             copy_species_metadata_layers = new HashMap<String, String[]>();
@@ -359,7 +364,7 @@ public class CommonData {
 
             JSONArray ja = JSONArray.fromObject(slist);
 
-            System.out.println(ja.size() + " species wms distributions");
+            logger.debug(ja.size() + " species wms distributions");
 
             for (int i = 0; i < ja.size(); i++) {
                 JSONObject jo = ja.getJSONObject(i);
@@ -437,6 +442,11 @@ public class CommonData {
             client = new HttpClient();
             get = new GetMethod(layersListURL);
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            result = client.executeMethod(get);
+
+            get.addRequestHeader("Accept-Encoding", "gzip");
+
             result = client.executeMethod(get);
 
             copy_checklistspecies_wms_layers = new HashMap<String, String[]>();
@@ -448,7 +458,7 @@ public class CommonData {
                 slist = get.getResponseBodyAsString();
                 ja = JSONArray.fromObject(slist);
 
-                System.out.println(ja.size() + " species wms checklists");
+                logger.debug(ja.size() + " species wms checklists");
 
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject jo = ja.getJSONObject(i);
@@ -516,7 +526,9 @@ public class CommonData {
             copy_checklistspecies_metadata_layers = null;
             copy_checklistspecies_spcode_layers = null;
             copy_checklistspecies_wms_layers_by_spcode = null;
-            e.printStackTrace();
+
+
+            logger.error("error getting species and distributions checklists", e);
         }
     }
 
@@ -699,7 +711,7 @@ public class CommonData {
                         for (int j = 0; j < ja.size(); j++) {
                             JSONObject f = ja.getJSONObject(j);
                             if (f.containsKey("defaultlayer") && f.getBoolean("defaultlayer")) {
-                                System.out.println("adding defaultlayer: " + jo.getString("name") + ", " + f.getString("id"));
+                                logger.debug("adding defaultlayer: " + jo.getString("name") + ", " + f.getString("id"));
                                 String layer = jo.getString("name");
                                 String facet = f.getString("id");
 
@@ -716,7 +728,7 @@ public class CommonData {
                 facetToLayer = ftl;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error reading layer info", e);
         }
     }
 
@@ -740,7 +752,7 @@ public class CommonData {
 
             i18nProperites = p;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error loading /messages.properties file", e);
         }
     }
 
@@ -762,11 +774,11 @@ public class CommonData {
     static public void initSimpleShapeFileCache(String[] fields) {
         String[] layers = new String[fields.length];
         String[] columns = new String[fields.length];
-        System.out.println("defaultFieldString: " + defaultFieldString);
+        logger.debug("defaultFieldString: " + defaultFieldString);
         for (int i = 0; i < fields.length; i++) {
             layers[i] = getFacetLayerName(fields[i]);
             columns[i] = getFacetShapeNameField(fields[i]);
-            System.out.println("field,layer,columns:" + fields[i] + "," + layers[i] + "," + columns[i]);
+            logger.debug("field,layer,columns:" + fields[i] + "," + layers[i] + "," + columns[i]);
         }
     }
 
@@ -787,7 +799,7 @@ public class CommonData {
 
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error setting up analysis layer sets", e);
         }
         analysisLayerSets = a;
     }
@@ -824,15 +836,13 @@ public class CommonData {
 
     static public void initDownloadReasons() {
         copy_download_reasons = null;
-        System.out.println("CommonData::initDownloadReasons()");
+        logger.debug("CommonData::initDownloadReasons()");
+        String url = "http://logger.ala.org.au/service/logger/reasons";
         try {
-            //environmental only
-            StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append("http://logger.ala.org.au/service/logger/reasons");
 
-            System.out.println(sbProcessUrl.toString());
+            logger.debug(url);
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString());
+            GetMethod get = new GetMethod(url);
 
             int result = client.executeMethod(get);
 
@@ -841,7 +851,7 @@ public class CommonData {
             }
         } catch (Exception e) {
             copy_download_reasons = null;
-            e.printStackTrace();
+            logger.error("error getting reasons: " + url, e);
         }
     }
 
@@ -869,22 +879,21 @@ public class CommonData {
     }
 
     static void initBiocacheLayerList() {
+        String url = biocacheServer + "/index/fields";
+
         try {
             //environmental only
-            StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append(biocacheServer).append("/index/fields");
-
-            System.out.println(sbProcessUrl.toString());
+            logger.debug(url);
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString());
+            GetMethod get = new GetMethod(url);
 
             int result = client.executeMethod(get);
 
-            System.out.println("initBiocacheLayerList: " + sbProcessUrl.toString() + " > " + result);
+            logger.debug("initBiocacheLayerList: " + url + " > " + result);
             if (result == 200) {
                 Set<String> set = new HashSet<String>();
                 JSONArray ja = JSONArray.fromObject(get.getResponseBodyAsString());
-                System.out.println("size: " + ja.size());
+                logger.debug("size: " + ja.size());
 
                 // Populate the biocache layer list with the names of all
                 // indexed fields. The additional non-layer field names will
@@ -905,7 +914,7 @@ public class CommonData {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error getting: " + url, e);
         }
     }
 }

@@ -175,6 +175,10 @@ public class SpeciesAutoComplete extends Combobox {
 
 
                         myci.setDisabled(false);
+
+                        myci.setValue(taxon);
+
+                        myci.setDisabled(false);
                         if (myci.getAnnotations() != null) {
                             myci.getAnnotations().clear();
                         }
@@ -185,7 +189,6 @@ public class SpeciesAutoComplete extends Combobox {
                             myci.addAnnotation(spVal[0], "value", null);
                         }
 
-                        myci.setValue(taxon);
                     }
                 }
             }
@@ -195,8 +198,7 @@ public class SpeciesAutoComplete extends Combobox {
             }
 
         } catch (Exception e) {
-            logger.debug("Oopss! something went wrong in SpeciesAutoComplete.refresh");
-            e.printStackTrace(System.out);
+            logger.error("Oopss! something went wrong in SpeciesAutoComplete.refresh", e);
         }
     }
 
@@ -231,8 +233,7 @@ public class SpeciesAutoComplete extends Combobox {
                 }
             }
         } catch (Exception e) {
-            logger.debug("Unable to load user points into Species Auto Complete");
-            e.printStackTrace(System.out);
+            logger.error("Unable to load user points into Species Auto Complete", e);
         }
 
         return userPoints;
@@ -408,8 +409,7 @@ public class SpeciesAutoComplete extends Combobox {
                 }
             }
         } catch (Exception e) {
-            logger.debug("SPECIES AUTOCOMPLETE ERROR|" + sdf.format(new Date()) + "|" + (System.currentTimeMillis() - start) + "ms|" + nsurl + "|" + e.getMessage());
-            e.printStackTrace();
+            logger.error("SPECIES AUTOCOMPLETE ERROR|" + sdf.format(new Date()) + "|" + (System.currentTimeMillis() - start) + "ms|" + nsurl, e);
         }
 
         return slist.toString();

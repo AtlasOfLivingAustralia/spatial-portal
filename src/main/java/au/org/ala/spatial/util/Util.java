@@ -5,12 +5,12 @@
 package au.org.ala.spatial.util;
 
 import au.org.ala.spatial.data.BiocacheQuery;
-import au.org.ala.spatial.data.Facet;
-import au.org.ala.spatial.data.LegendObject;
 import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.io.WKTWriter;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import org.ala.layers.legend.Facet;
+import org.ala.layers.legend.LegendObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.JTS;
@@ -38,9 +38,7 @@ public class Util {
     /**
      * get Active Area as WKT string, from a layer name and feature class
      *
-     * @param layer          name of layer as String
-     * @param classification value of feature classification
-     * @param register_shape true to register the shape with alaspatial shape register
+     * @param layer name of layer as String
      * @return
      */
     public static String getWktFromURI(String layer) {
@@ -90,7 +88,7 @@ public class Util {
                     + " UNIT[\"m\", 1.0], "
                     + " AXIS[\"x\", EAST], "
                     + " AXIS[\"y\", NORTH], "
-                    + " AUTHORITY[\"EPSG\",\"900913\"]] ";
+                    + " AUTHORITY[\"EPSG\",\"3857\"]] ";
             CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
             CoordinateReferenceSystem googleCRS = CRS.parseWKT(wkt900913);
             MathTransform transform = CRS.findMathTransform(wgsCRS, googleCRS);
@@ -98,7 +96,7 @@ public class Util {
             Geometry geom = JTS.transform(point, transform);
             Point gPoint = geometryFactory.createPoint(new Coordinate(geom.getCoordinate()));
 
-            System.out.println("Google point:" + gPoint.getCoordinate().x + "," + gPoint.getCoordinate().y);
+            logger.debug("Google point:" + gPoint.getCoordinate().x + "," + gPoint.getCoordinate().y);
 
             MathTransform reverseTransform = CRS.findMathTransform(googleCRS, wgsCRS);
             final int SIDES = sides;
@@ -122,7 +120,7 @@ public class Util {
             return wkt.replaceAll("POLYGON ", "POLYGON").replaceAll(", ", ",");
 
         } catch (Exception e) {
-            System.out.println("Circle fail!");
+            logger.debug("Circle fail!");
             return "none";
         }
 
@@ -162,7 +160,7 @@ public class Util {
                     + " UNIT[\"m\", 1.0], "
                     + " AXIS[\"x\", EAST], "
                     + " AXIS[\"y\", NORTH], "
-                    + " AUTHORITY[\"EPSG\",\"900913\"]] ";
+                    + " AUTHORITY[\"EPSG\",\"3857\"]] ";
             CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
             CoordinateReferenceSystem googleCRS = CRS.parseWKT(wkt900913);
             MathTransform transform = CRS.findMathTransform(wgsCRS, googleCRS);
@@ -180,8 +178,7 @@ public class Util {
             bbox[3] = gPoint.getCoordinate().y;
 
         } catch (Exception e) {
-            System.out.println("failed to convert: " + minx + "," + miny + "," + maxx + "," + maxy);
-            e.printStackTrace();
+            logger.error("failed to convert: " + minx + "," + miny + "," + maxx + "," + maxy, e);
             return null;
         }
         return bbox;
@@ -364,8 +361,7 @@ public class Util {
                 sumarea += Math.abs(shapearea);
 
             } catch (Exception e) {
-                System.out.println("Error in calculateArea");
-                e.printStackTrace(System.out);
+                logger.error("Error in calculateArea", e);
             }
         }
 
@@ -535,9 +531,9 @@ public class Util {
         return content.toString();
     }
 
-    public static Facet getFacetForObject(String pid, String name) {
+    public static Facet getFacetForObject(JSONObject jo, String name) {
         //get field.id.
-        JSONObject jo = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + pid));
+        //JSONObject jo = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + pid));
         String fieldId = jo.getString("fid");
 
         //get field objects.

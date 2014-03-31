@@ -4,7 +4,9 @@
  */
 package au.org.ala.spatial.data;
 
-import au.org.ala.spatial.exception.NoSpeciesFoundException;
+import org.ala.layers.legend.Facet;
+import org.ala.layers.legend.LegendObject;
+import org.ala.layers.legend.QueryField;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,16 +53,6 @@ public interface Query {
      * @return The number of endemic species or -1 on error
      */
     int getEndemicSpeciesCount();
-
-
-    /**
-     * Get parsed coordinates and optional field data for this query.
-     *
-     * @param fields QueryFields to return in the sample as ArrayList<QueryField>.
-     *               If a QueryField isStored() it will be populated with the field data.
-     * @return coordinates as double [] like [lng, lat, lng, lat, ...].
-     */
-    double[] getPoints(ArrayList<QueryField> fields) throws NoSpeciesFoundException;
 
     /**
      * Get unique term.
@@ -113,13 +105,6 @@ public interface Query {
      * @return
      */
     Query newFacets(List<Facet> facet, boolean forMapping);
-
-    /**
-     * Get WMS server path.
-     *
-     * @return
-     */
-    String getWMSpath();
 
     /**
      * Get list of available facets.
@@ -196,8 +181,6 @@ public interface Query {
 
     public String getDownloadUrl(String[] extraFields);
 
-    public byte[] getDownloadBytes(String[] extraFields, String[] displayNames);
-
     /**
      * Get parameter to add into WMS requests
      */
@@ -234,4 +217,6 @@ public interface Query {
      * Retrieves a new autocomplete list based on the supplied query.
      */
     public String getAutoComplete(String facet, String value, int limit);
+
+    public String getBS();
 }

@@ -80,8 +80,7 @@ public class ContextualMenu extends UtilityComposer {
                 if (firstLayer == null) {
                     firstLayer = layers.get(i);
                 }
-            } else if (layers.get(i).getMapLayerMetadata() != null
-                    && layers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
+            } else if (layers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
                 if (firstLayer == null) {
                     firstLayer = layers.get(i);
                 }

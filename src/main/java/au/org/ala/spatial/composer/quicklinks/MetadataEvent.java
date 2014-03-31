@@ -6,7 +6,7 @@
 package au.org.ala.spatial.composer.quicklinks;
 
 import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.util.ScatterplotData;
+import au.org.ala.spatial.data.ScatterplotData;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.util.LayerUtilities;
@@ -35,8 +35,7 @@ public class MetadataEvent implements EventListener {
                 //TODO: update for scatterplot layers
                 Query q = mapLayer.getSpeciesQuery();
                 Events.echoEvent("openHTML", mc, q.getMetadataHtml());
-            } else if (mapLayer.getMapLayerMetadata() != null
-                    && mapLayer.getMapLayerMetadata().getMoreInfo() != null
+            } else if (mapLayer.getMapLayerMetadata().getMoreInfo() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo().startsWith("http://")) {
                 String infourl = mapLayer.getMapLayerMetadata().getMoreInfo().replace("__", ".");
                 if (mapLayer.getSubType() == LayerUtilities.SCATTERPLOT) {
@@ -47,8 +46,7 @@ public class MetadataEvent implements EventListener {
                 // send the user to the BIE page for the species
                 Events.echoEvent("openUrl", mc, infourl);
 
-            } else if (mapLayer.getMapLayerMetadata() != null
-                    && mapLayer.getMapLayerMetadata().getMoreInfo() != null
+            } else if (mapLayer.getMapLayerMetadata().getMoreInfo() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
                 //logger.debug("performing a MapComposer.showMessage for following content " + activeLayer.getMapLayerMetadata().getMoreInfo());
                 Events.echoEvent("openHTML", mc, mapLayer.getMapLayerMetadata().getMoreInfo());

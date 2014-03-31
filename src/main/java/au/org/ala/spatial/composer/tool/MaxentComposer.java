@@ -4,11 +4,10 @@
  */
 package au.org.ala.spatial.composer.tool;
 
-import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.composer.progress.ProgressController;
-import au.org.ala.spatial.data.*;
-import au.org.ala.spatial.exception.NoSpeciesFoundException;
-import au.org.ala.spatial.userpoints.UserPointsUtil;
+import au.org.ala.spatial.data.BiocacheQuery;
+import au.org.ala.spatial.data.Query;
+import au.org.ala.spatial.data.QueryUtil;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SelectedArea;
 import au.org.ala.spatial.util.Util;
@@ -26,12 +25,8 @@ import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Textbox;
 
-import java.io.StringReader;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * @author ajay
@@ -104,7 +99,7 @@ public class MaxentComposer extends ToolComposer {
     SelectedArea sa = null;
     Query query = null;
     String sbenvsel = "";
-    String[] speciesData = null;
+    //String[] speciesData = null;
 
     private void setupData() throws Exception {
         if (query == null) {
@@ -112,26 +107,23 @@ public class MaxentComposer extends ToolComposer {
             query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
 
             sbenvsel = getSelectedLayers();
-            speciesData = getSpeciesData(query);
         }
     }
 
     @Override
     public long getEstimate() {
         try {
-
             setupData();
-
-//            sa = getSelectedArea();
-//            query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
-//
-//            sbenvsel = getSelectedLayers();
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/maxent/estimate?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(query.getName(), "UTF-8"));
             sbProcessUrl.append("&taxonlsid=" + URLEncoder.encode(query.getQ(), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+
+            sbProcessUrl.append("&speciesq=").append(URLEncoder.encode(QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher()).getQ(), "UTF-8"));
+            sbProcessUrl.append("&bs=" + URLEncoder.encode(((BiocacheQuery) query).getBS(), "UTF-8"));
+
             if (chkJackknife.isChecked()) {
                 sbProcessUrl.append("&chkJackknife=on");
             }
@@ -155,26 +147,26 @@ public class MaxentComposer extends ToolComposer {
                 get.addParameter("area", area);
             }
 
-            logger.debug("Getting species data");
-//            speciesData = getSpeciesData(query);
-            System.out.print("checking for species data...");
-            //check for no data
-            if (speciesData[0] == null || speciesData[0].trim().equals("")) {
-                logger.debug("none available");
-                if (speciesData[1] == null) {
-                    getMapComposer().showMessage("No records available for Prediction", this);
-                } else {
-                    getMapComposer().showMessage("All species and records selected are marked as sensitive", this);
-                }
-                return -1;
-            } else {
-                logger.debug("available");
-            }
-
-            get.addParameter("species", speciesData[0]);
-            if (speciesData[1] != null) {
-                get.addParameter("removedspecies", speciesData[1]);
-            }
+//            logger.debug("Getting species data");
+////            speciesData = getSpeciesData(query);
+//            System.out.print("checking for species data...");
+//            //check for no data
+//            if (speciesData[0] == null || speciesData[0].trim().equals("")) {
+//                logger.debug("none available");
+//                if (speciesData[1] == null) {
+//                    getMapComposer().showMessage("No records available for Prediction", this);
+//                } else {
+//                    getMapComposer().showMessage("All species and records selected are marked as sensitive", this);
+//                }
+//                return -1;
+//            } else {
+//                logger.debug("available");
+//            }
+//
+//            get.addParameter("species", speciesData[0]);
+//            if (speciesData[1] != null) {
+//                get.addParameter("removedspecies", speciesData[1]);
+//            }
 
             get.addRequestHeader("Accept", "text/plain");
 
@@ -186,7 +178,6 @@ public class MaxentComposer extends ToolComposer {
         } catch (Exception e) {
             logger.error("Unable to get estimates", e);
         }
-
         return -1;
     }
 
@@ -226,6 +217,9 @@ public class MaxentComposer extends ToolComposer {
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(query.getName(), "UTF-8"));
             sbProcessUrl.append("&taxonlsid=" + URLEncoder.encode(query.getQ(), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+            sbProcessUrl.append("&speciesq=").append(URLEncoder.encode(QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher()).getQ(), "UTF-8"));
+            sbProcessUrl.append("&bs=" + URLEncoder.encode(((BiocacheQuery) query).getBS(), "UTF-8"));
+
             if (chkJackknife.isChecked()) {
                 sbProcessUrl.append("&chkJackknife=on");
             }
@@ -250,28 +244,28 @@ public class MaxentComposer extends ToolComposer {
             }
 
             logger.debug("Getting species data");
-            //String[] speciesData = getSpeciesData(query);
-            System.out.print("checking for species data...");
-            //check for no data
-            if (speciesData[0] == null || speciesData[0].trim().equals("")) {
-                logger.debug("none available");
-                if (speciesData[1] == null) {
-                    getMapComposer().showMessage("No records available for Prediction", this);
-                } else {
-                    getMapComposer().showMessage("All species and records selected are marked as sensitive", this);
-                }
-                return false;
-            } else {
-                logger.debug("available");
-            }
-//            logger.debug("displaying species data: '");
-//            logger.debug(speciesData[0]);
-//            logger.debug("'");
-
-            get.addParameter("species", speciesData[0]);
-            if (speciesData[1] != null) {
-                get.addParameter("removedspecies", speciesData[1]);
-            }
+//            //String[] speciesData = getSpeciesData(query);
+//            System.out.print("checking for species data...");
+//            //check for no data
+//            if (speciesData[0] == null || speciesData[0].trim().equals("")) {
+//                logger.debug("none available");
+//                if (speciesData[1] == null) {
+//                    getMapComposer().showMessage("No records available for Prediction", this);
+//                } else {
+//                    getMapComposer().showMessage("All species and records selected are marked as sensitive", this);
+//                }
+//                return false;
+//            } else {
+//                logger.debug("available");
+//            }
+////            logger.debug("displaying species data: '");
+////            logger.debug(speciesData[0]);
+////            logger.debug("'");
+//
+//            get.addParameter("species", speciesData[0]);
+//            if (speciesData[1] != null) {
+//                get.addParameter("removedspecies", speciesData[1]);
+//            }
 
             get.addRequestHeader("Accept", "text/plain");
 
@@ -375,13 +369,6 @@ public class MaxentComposer extends ToolComposer {
         }
 
         this.detach();
-
-        //getMapComposer().showMessage("Reference number to retrieve results: " + pid);
-
-        //showInfoWindow("/output/maxent/" + pid + "/species.html");
-
-        //perform intersection on user uploaded layers so you can facet on this layer
-        UserPointsUtil.addAnalysisLayerToUploadedCoordinates(getPortalSession(), "species_" + pid, tToolName.getValue());
     }
 
     String getJob() {
@@ -405,114 +392,114 @@ public class MaxentComposer extends ToolComposer {
         return "";
     }
 
-    /**
-     * get CSV of speciesName, longitude, latitude in [0] and
-     *
-     * @param selectedSpecies
-     * @param area
-     * @return
-     */
-    private String[] getSpeciesData(Query query) throws NoSpeciesFoundException {
-        if (query instanceof UploadQuery) {
-            //no sensitive records in upload
-            ArrayList<QueryField> fields = new ArrayList<QueryField>();
-            String lsidFieldName = query.getSpeciesIdFieldName();
-            QueryField qf = null;
-            if (lsidFieldName != null) {
-                qf = new QueryField(query.getSpeciesIdFieldName());
-                qf.setStored(true);
-                fields.add(qf);
-            }
-            double[] points = query.getPoints(fields);
-            StringBuilder sb = null;
-            if (points != null) {
-                sb = new StringBuilder();
-                for (int i = 0; i < points.length; i += 2) {
-                    if (sb.length() == 0) {
-                        //header
-                        sb.append("species,longitude,latitude");
-                    }
-                    sb.append("\nspecies,").append(points[i]).append(",").append(points[i + 1]);
-                }
-            }
-
-            String[] out = {((sb == null) ? null : sb.toString()), null};
-            return out;
-        } else {
-            //identify sensitive species records
-            List<String[]> sensitiveSpecies = null;
-            try {
-                String sensitiveSpeciesRaw = new BiocacheQuery(null, null, "sensitive:[* TO *]", null, false, null).speciesList();
-                CSVReader csv = new CSVReader(new StringReader(sensitiveSpeciesRaw));
-                sensitiveSpecies = csv.readAll();
-                csv.close();
-            } catch (Exception e) {
-                logger.error("error getting sensitive species list", e);
-            }
-            HashSet<String> sensitiveSpeciesFound = new HashSet<String>();
-            HashSet<String> sensitiveLsids = new HashSet<String>();
-
-            //add to 'identified' sensitive list
-            try {
-                CSVReader csv = new CSVReader(new StringReader(query.speciesList()));
-                List<String[]> fullSpeciesList = csv.readAll();
-                csv.close();
-                for (int i = 0; i < fullSpeciesList.size(); i++) {
-                    String[] sa = fullSpeciesList.get(i);
-                    for (String[] ss : sensitiveSpecies) {
-                        if (sa != null && sa.length > 4
-                                && ss != null && ss.length > 4
-                                && sa[4].equals(ss[4])) {
-                            sensitiveSpeciesFound.add(ss[4] + "," + ss[1] + "," + ss[3]);
-                            sensitiveLsids.add(ss[4]);
-                            break;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                logger.error("error matching sensitive species list", e);
-            }
-
-            //remove sensitive records that will not be LSID matched
-            Query maxentQuery = query.newFacet(new Facet("sensitive", "[* TO *]", false), false);
-            ArrayList<QueryField> fields = new ArrayList<QueryField>();
-            String lsidFieldName = maxentQuery.getSpeciesIdFieldName();
-            QueryField qf = null;
-            if (lsidFieldName != null) {
-                qf = new QueryField(maxentQuery.getSpeciesIdFieldName());
-                qf.setStored(true);
-                fields.add(qf);
-            }
-            double[] points = maxentQuery.getPoints(fields);
-            StringBuilder sb = null;
-            if (points != null) {
-                sb = new StringBuilder();
-                for (int i = 0; i < points.length; i += 2) {
-                    boolean isSensitive = false;
-                    if (qf != null) {
-                        String lsid = qf.getAsString(i / 2);
-                        isSensitive = sensitiveLsids.contains(lsid);
-                    }
-                    if (!isSensitive) {
-                        if (sb.length() == 0) {
-                            //header
-                            sb.append("species,longitude,latitude");
-                        }
-                        sb.append("\nspecies,").append(points[i]).append(",").append(points[i + 1]);
-                    }
-                }
-            }
-
-            //collate sensitive species found, no header
-            StringBuilder sen = new StringBuilder();
-            for (String s : sensitiveSpeciesFound) {
-                sen.append(s).append("\n");
-            }
-
-            String[] out = {((sb == null) ? null : sb.toString()), (sen.length() == 0) ? null : sen.toString()};
-            return out;
-        }
-    }
+//    /**
+//     * get CSV of speciesName, longitude, latitude in [0] and
+//     *
+//     * @param selectedSpecies
+//     * @param area
+//     * @return
+//     */
+//    private String[] getSpeciesData(Query query) throws NoSpeciesFoundException {
+//        if (query instanceof UploadQuery) {
+//            //no sensitive records in upload
+//            ArrayList<QueryField> fields = new ArrayList<QueryField>();
+//            String lsidFieldName = query.getSpeciesIdFieldName();
+//            QueryField qf = null;
+//            if (lsidFieldName != null) {
+//                qf = new QueryField(query.getSpeciesIdFieldName());
+//                qf.setStored(true);
+//                fields.add(qf);
+//            }
+//            double[] points = query.getPoints(fields);
+//            StringBuilder sb = null;
+//            if (points != null) {
+//                sb = new StringBuilder();
+//                for (int i = 0; i < points.length; i += 2) {
+//                    if (sb.length() == 0) {
+//                        //header
+//                        sb.append("species,longitude,latitude");
+//                    }
+//                    sb.append("\nspecies,").append(points[i]).append(",").append(points[i + 1]);
+//                }
+//            }
+//
+//            String[] out = {((sb == null) ? null : sb.toString()), null};
+//            return out;
+//        } else {
+//            //identify sensitive species records
+//            List<String[]> sensitiveSpecies = null;
+//            try {
+//                String sensitiveSpeciesRaw = new BiocacheQuery(null, null, "sensitive:[* TO *]", null, false, null).speciesList();
+//                CSVReader csv = new CSVReader(new StringReader(sensitiveSpeciesRaw));
+//                sensitiveSpecies = csv.readAll();
+//                csv.close();
+//            } catch (Exception e) {
+//                logger.error("error getting sensitive species list", e);
+//            }
+//            HashSet<String> sensitiveSpeciesFound = new HashSet<String>();
+//            HashSet<String> sensitiveLsids = new HashSet<String>();
+//
+//            //add to 'identified' sensitive list
+//            try {
+//                CSVReader csv = new CSVReader(new StringReader(query.speciesList()));
+//                List<String[]> fullSpeciesList = csv.readAll();
+//                csv.close();
+//                for (int i = 0; i < fullSpeciesList.size(); i++) {
+//                    String[] sa = fullSpeciesList.get(i);
+//                    for (String[] ss : sensitiveSpecies) {
+//                        if (sa != null && sa.length > 4
+//                                && ss != null && ss.length > 4
+//                                && sa[4].equals(ss[4])) {
+//                            sensitiveSpeciesFound.add(ss[4] + "," + ss[1] + "," + ss[3]);
+//                            sensitiveLsids.add(ss[4]);
+//                            break;
+//                        }
+//                    }
+//                }
+//            } catch (Exception e) {
+//                logger.error("error matching sensitive species list", e);
+//            }
+//
+//            //remove sensitive records that will not be LSID matched
+//            Query maxentQuery = query.newFacet(new Facet("sensitive", "[* TO *]", false), false);
+//            ArrayList<QueryField> fields = new ArrayList<QueryField>();
+//            String lsidFieldName = maxentQuery.getSpeciesIdFieldName();
+//            QueryField qf = null;
+//            if (lsidFieldName != null) {
+//                qf = new QueryField(maxentQuery.getSpeciesIdFieldName());
+//                qf.setStored(true);
+//                fields.add(qf);
+//            }
+//            double[] points = maxentQuery.getPoints(fields);
+//            StringBuilder sb = null;
+//            if (points != null) {
+//                sb = new StringBuilder();
+//                for (int i = 0; i < points.length; i += 2) {
+//                    boolean isSensitive = false;
+//                    if (qf != null) {
+//                        String lsid = qf.getAsString(i / 2);
+//                        isSensitive = sensitiveLsids.contains(lsid);
+//                    }
+//                    if (!isSensitive) {
+//                        if (sb.length() == 0) {
+//                            //header
+//                            sb.append("species,longitude,latitude");
+//                        }
+//                        sb.append("\nspecies,").append(points[i]).append(",").append(points[i + 1]);
+//                    }
+//                }
+//            }
+//
+//            //collate sensitive species found, no header
+//            StringBuilder sen = new StringBuilder();
+//            for (String s : sensitiveSpeciesFound) {
+//                sen.append(s).append("\n");
+//            }
+//
+//            String[] out = {((sb == null) ? null : sb.toString()), (sen.length() == 0) ? null : sen.toString()};
+//            return out;
+//        }
+//    }
 
     @Override
     void fixFocus() {

@@ -80,12 +80,6 @@ public class SamplingProgressController extends UtilityComposer {
     }
 
     public void start(Query q, String[] l) {
-        if (l == null || l.length == 0) {
-            download = query.getDownloadBytes(layers, null);
-            finish();
-            return;
-        }
-
         this.query = q;
         this.layers = l;
 
@@ -126,7 +120,7 @@ public class SamplingProgressController extends UtilityComposer {
 
             @Override
             public void run() {
-                download = query.getDownloadBytes(layers, displayNames);
+                // download = query.getDownloadBytes(layers, displayNames);
             }
         };
 

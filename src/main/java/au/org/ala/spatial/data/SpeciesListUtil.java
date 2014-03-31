@@ -92,13 +92,13 @@ public class SpeciesListUtil {
             int result = client.executeMethod(get);
             if (result == 200) {
                 String rawJSON = get.getResponseBodyAsString();
-                //System.out.println(rawJSON);
+                //logger.debug(rawJSON);
                 JSONObject object = JSONObject.fromObject(rawJSON);
 
                 return object;
             } else {
                 logger.error("Unable to retrieve species list. " + result);
-                logger.info("Extra information about the error: " + get.getResponseBodyAsString());
+                logger.debug("Extra information about the error: " + get.getResponseBodyAsString());
             }
 
         } catch (Exception e) {
@@ -132,12 +132,12 @@ public class SpeciesListUtil {
 //            int result = client.executeMethod(get);
 //            if(result == 200){
 //                String rawJSON = get.getResponseBodyAsString();
-//                //System.out.println(rawJSON);
+//                //logger.debug(rawJSON);
 //                publicSpeciesLists = JSONArray.toCollection(JSONArray.fromObject(rawJSON), SpeciesListDTO.class);
 //            }
 //            else{
 //                logger.error("Unable to retrieve species list. " + result);
-//                logger.info("Extra information about the error: " + get.getResponseBodyAsString());
+//                logger.debug("Extra information about the error: " + get.getResponseBodyAsString());
 //            }
 //           
 //        }
@@ -167,11 +167,11 @@ public class SpeciesListUtil {
             int result = client.executeMethod(get);
             if (result == 200) {
                 String rawJSON = get.getResponseBodyAsString();
-                //System.out.println(rawJSON);
+                //logger.debug(rawJSON);
                 return JSONArray.toCollection(JSONArray.fromObject(rawJSON), SpeciesListItemDTO.class);
             } else {
                 logger.error("Unable to retrieve species list items for " + listUid + ". " + result);
-                logger.info("Extra information about the error: " + get.getResponseBodyAsString());
+                logger.debug("Extra information about the error: " + get.getResponseBodyAsString());
             }
         } catch (Exception e) {
             logger.error("Error retrieving list items.", e);
@@ -228,8 +228,8 @@ public class SpeciesListUtil {
 
     public static void main(String[] args) {
         CommonData.speciesListServer = "http://natasha.ala.org.au:8080/specieslist-webapp";
-        System.out.println(getPublicSpeciesLists(null, null, null, null, null));
-        //System.out.println(createNewList("FirstTestList","Callocephalon fimbriatum,Ornithorhynchus anatinus","The description","The url","natasha.carter@csiro"));
+        logger.debug(getPublicSpeciesLists(null, null, null, null, null));
+        //logger.debug(createNewList("FirstTestList","Callocephalon fimbriatum,Ornithorhynchus anatinus","The description","The url","natasha.carter@csiro"));
     }
 
 

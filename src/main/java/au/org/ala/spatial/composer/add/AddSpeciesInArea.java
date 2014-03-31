@@ -1,6 +1,8 @@
 package au.org.ala.spatial.composer.add;
 
-import au.org.ala.spatial.data.*;
+import au.org.ala.spatial.data.BiocacheQuery;
+import au.org.ala.spatial.data.Query;
+import au.org.ala.spatial.data.QueryUtil;
 import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SelectedArea;
@@ -16,7 +18,6 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,18 +152,7 @@ public class AddSpeciesInArea extends UtilityComposer {
 
             Query q = null;
             q = QueryUtil.queryFromSelectedArea(query, sa, true, geospatialKosher);
-            if (q instanceof UploadQuery) {
-                //do default sampling now
-                ArrayList<QueryField> f = CommonData.getDefaultUploadSamplingFields();
-                //add any analysis layers from the layers list
-                for (MapLayer m : getMapComposer().getAnalysisLayers()) {
-                    f.add(new QueryField(m.getName(), m.getDisplayName(), QueryField.FieldType.AUTO));
-                }
-                if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
-                    q.sample(f);
-                    ((UploadQuery) q).resetOriginalFieldCount(-1);
-                }
-            }
+
             if (byLsid) {
                 ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                         Util.nextColour());

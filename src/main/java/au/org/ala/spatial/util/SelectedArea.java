@@ -48,7 +48,7 @@ public class SelectedArea implements Serializable {
                 double totalarea = Util
                         .calculateArea(getWkt());
                 DecimalFormat df = new DecimalFormat("###,###.##");
-                area = df.format(totalarea / 1000 / 1000);
+                area = df.format(totalarea / 1000.0 / 1000.0);
 
 
             } catch (Exception e) {

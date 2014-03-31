@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.util;
 
+import org.apache.log4j.Logger;
 import org.geotools.data.DataStore;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -23,26 +24,23 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.identity.FeatureId;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author ajay
  */
 public class ShapefileRenderer {
+
+    private static Logger logger = Logger.getLogger(ShapefileRenderer.class);
 
     public static String generateShapeImage(String filename, String outputdir, String column, String userFilter) {
 
@@ -52,7 +50,7 @@ public class ShapefileRenderer {
             dataStore = new ShapefileDataStore(new URL("file://" + filename));
             //dataStore = FileDataStoreFinder.getDataStore(new File(filename));
             if (dataStore == null) {
-                System.out.println("Opps, datastore is null for " + filename);
+                logger.debug("Opps, datastore is null for " + filename);
             }
             String typename = dataStore.getTypeNames()[0];
             SimpleFeatureSource source = dataStore.getFeatureSource(typename);
@@ -84,7 +82,7 @@ public class ShapefileRenderer {
                 SimpleFeatureIterator fif = sff.features();
                 while (fif.hasNext()) {
                     SimpleFeature f = fif.next();
-                    System.out.println(" > " + f.getID() + " - " + f.getAttribute("ECOREGION") + " - " + f.getAttribute("PROVINCE"));
+                    logger.debug(" > " + f.getID() + " - " + f.getAttribute("ECOREGION") + " - " + f.getAttribute("PROVINCE"));
                 }
             }
 
@@ -116,7 +114,7 @@ public class ShapefileRenderer {
                     + " UNIT[\"m\", 1.0], "
                     + " AXIS[\"x\", EAST], "
                     + " AXIS[\"y\", NORTH], "
-                    + " AUTHORITY[\"EPSG\",\"900913\"]] ";
+                    + " AUTHORITY[\"EPSG\",\"3857\"]] ";
             CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
             CoordinateReferenceSystem googleCRS = CRS.parseWKT(wkt900913);
 
@@ -150,7 +148,7 @@ public class ShapefileRenderer {
 
             int imageWidth = 1000;
             int imageHeight = 600;
-            //System.out.println("\n\nDrawing Image");
+            //logger.debug("\n\nDrawing Image");
             MapContext map = new DefaultMapContext();
             //CoordinateReferenceSystem crs = CRS.decode("EPSG:4326");
             map.setCoordinateReferenceSystem(wgsCRS);
@@ -161,7 +159,7 @@ public class ShapefileRenderer {
             ReferencedEnvelope mapBounds = map.getLayerBounds();
             GTRenderer renderer = new StreamingRenderer();
             renderer.setContext(map);
-            //System.out.println("mapBounds: " + mapBounds);
+            //logger.debug("mapBounds: " + mapBounds);
             double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
             //Rectangle imageBounds = new Rectangle(0, 0, imageWidth, (int) Math.round(imageWidth * heightToWidth));
             Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
@@ -174,14 +172,8 @@ public class ShapefileRenderer {
 
             return outputdir + typename + ".jpg";
 
-        } catch (NoSuchAuthorityCodeException ex) {
-            Logger.getLogger(ShapefileRenderer.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (FactoryException ex) {
-            Logger.getLogger(ShapefileRenderer.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(ShapefileRenderer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
-            Logger.getLogger(ShapefileRenderer.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("error generating shape image", ex);
         }
 
         return "";
@@ -207,17 +199,17 @@ public class ShapefileRenderer {
                 }
             }
         } else {
-            System.out.println("\n\nUsage:\n\tShapefileRenderer </path/to/shapefile> </path/to/output/directory/> <filter_attribute | \"none\"> <filter_value_1 filter_value_2 ... filter_value_n | \"none\">\n\n");
+            logger.debug("\n\nUsage:\n\tShapefileRenderer </path/to/shapefile> </path/to/output/directory/> <filter_attribute | \"none\"> <filter_value_1 filter_value_2 ... filter_value_n | \"none\">\n\n");
             System.exit(1);
         }
 
-//        System.out.println(shapepath);
-//        System.out.println(shapeout);
-//        System.out.println(column);
-//        System.out.println(filters);
+//        logger.debug(shapepath);
+//        logger.debug(shapeout);
+//        logger.debug(column);
+//        logger.debug(filters);
 
-        //System.out.println(generateShapeImage("/Users/ajay/Downloads/MEOW_zip/MEOW2/meow_ecos.shp", "/Users/ajay/Downloads/MEOW_zip/", "ECOREGION", "Baltic Sea"));
-        //System.out.println(generateShapeImage(args[0],args[1],args[2],args[3]));
-        System.out.println(generateShapeImage(shapepath, shapeout, column, filters));
+        //logger.debug(generateShapeImage("/Users/ajay/Downloads/MEOW_zip/MEOW2/meow_ecos.shp", "/Users/ajay/Downloads/MEOW_zip/", "ECOREGION", "Baltic Sea"));
+        //logger.debug(generateShapeImage(args[0],args[1],args[2],args[3]));
+        logger.debug(generateShapeImage(shapepath, shapeout, column, filters));
     }
 }

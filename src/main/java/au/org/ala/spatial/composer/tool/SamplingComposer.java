@@ -5,18 +5,18 @@
 package au.org.ala.spatial.composer.tool;
 
 import au.org.ala.spatial.composer.output.SamplingAnalysisDownloadWCController;
-import au.org.ala.spatial.composer.progress.SamplingProgressController;
 import au.org.ala.spatial.data.BiocacheQuery;
 import au.org.ala.spatial.data.Query;
 import au.org.ala.spatial.data.QueryUtil;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SelectedArea;
 import org.apache.log4j.Logger;
-import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zul.Filedownload;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -139,20 +139,10 @@ public class SamplingComposer extends ToolComposer {
                 this.detach();
             } else {
 
-                //download byte data.  Requires a progress bar to prevent timeout issues.
-                Component c = getMapComposer().getFellowIfAny("samplingprogress");
-                if (c != null) {
-                    c.detach();
-                }
-                SamplingProgressController window = (SamplingProgressController) Executions.createComponents("WEB-INF/zul/progress/AnalysisSamplingProgress.zul",
-                        getMapComposer(), null);
-                window.parent = this;
-                window.start(query, layers);
-                try {
-                    window.doModal();
-                } catch (Exception e) {
-                    logger.error("error opening analysissamplingprogress.zul", e);
-                }
+                String fileUrl = query.getDownloadUrl(layers); //CommonData.satServer + "/ws/download/" + pid;
+
+                Filedownload.save(new URL(fileUrl).openStream(), "application/zip", query.getName().replaceAll(" ", "_") + "_sample_" + ".zip");
+
                 try {
                     remoteLogger.logMapAnalysis("species sampling", "Export - Species Sampling", sa.getWkt(), query.getName(), envlayers, pid, "", "");
                 } catch (Exception e) {

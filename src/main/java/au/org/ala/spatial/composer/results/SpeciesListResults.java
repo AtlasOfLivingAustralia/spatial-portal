@@ -138,7 +138,7 @@ public class SpeciesListResults extends UtilityComposer {
                         }
                     });
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error reading species list data", e);
         }
     }
 
