@@ -8,31 +8,33 @@
 
 
     <name>ALA Spatial Portal</name>
-    <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
+    <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA
+        data. The project is built upon Open Source technologies, the ZK Ajax frameowrk and OpenLayers toolkit.
+    </description>
     <url>http://www.ala.org.au</url>
     <dependencies>
-    <!-- Sun's DI API -->
-    <dependency>
-      <groupId>javax.inject</groupId>
-      <artifactId>javax.inject</artifactId>
-      <version>1</version>
-    </dependency>
-        <!-- alaspatial styles -->        
-        <!--dependency>
+        <!-- Sun's DI API -->
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+        </dependency>
+        <!-- alaspatial styles
+        <dependency>
             <groupId>org.ala.spatial</groupId>
             <artifactId>alaspatial</artifactId>
             <version>1.00</version>
-        </dependency-->
+        </dependency>
         <dependency>
             <groupId>jfree</groupId>
             <artifactId>jfreechart</artifactId>
             <version>1.0.13</version>
-        </dependency>
+        </dependency>-->
 
         <!--<dependency>-->
-            <!--<groupId>geoGoogle</groupId>-->
-            <!--<artifactId>geoGoogle</artifactId>-->
-            <!--<version>1.5.0</version>-->
+        <!--<groupId>geoGoogle</groupId>-->
+        <!--<artifactId>geoGoogle</artifactId>-->
+        <!--<version>1.5.0</version>-->
         <!--</dependency>-->
         <dependency>
             <groupId>org.geotools</groupId>
@@ -62,6 +64,11 @@
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-render</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-wms</artifactId>
             <version>${geotools.version}</version>
         </dependency>
         <dependency>
@@ -206,13 +213,13 @@
         <dependency>
             <groupId>org.zkoss.zk</groupId>
             <artifactId>zkspring-core</artifactId>
-            <version>3.0</version>
+            <version>3.1.1</version>
             <!--<version>3.0RC-FL-2010-08-10</version>-->
         </dependency>
         <dependency>
             <groupId>org.zkoss.zk</groupId>
             <artifactId>zkspring-security</artifactId>
-            <version>3.0</version>
+            <version>3.1.1</version>
             <!--<version>3.0RC-FL-2010-08-10</version>-->
         </dependency>
 
@@ -258,6 +265,12 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>1.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.zkoss.theme</groupId>
+            <artifactId>atlantic</artifactId>
+            <version>7.0.1</version>
         </dependency>
         <!--
         http client 3.1
@@ -306,7 +319,7 @@
             <version>2.4.0</version>
         </dependency>
         <dependency>
-        <groupId>com.ibm.icu</groupId>
+            <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
             <version>3.8</version>
         </dependency>
@@ -365,19 +378,13 @@
             <artifactId>jts</artifactId>
             <version>1.11</version>
         </dependency>
-	<dependency>
-	    <groupId>org.zkoss.theme</groupId>
-	    <artifactId>silvertail</artifactId>
-	    <version>5.0.6.1</version>
-	</dependency>
-
 
         <!--  Spring -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${org.springframework.version}</version>
-            <exclusions>               
+            <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
                     <artifactId>commons-logging</artifactId>
@@ -417,7 +424,7 @@
         <dependency>
             <groupId>org.ala.layers</groupId>
             <artifactId>layers-store</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.1-SNAPSHOT</version>
         </dependency>
 
 
@@ -498,7 +505,7 @@
 
         </plugins>
     </build>
-    <repositories>         
+    <repositories>
         <repository>
             <url>http://download.java.net/maven/2</url>
             <id>hibernate-support</id>
@@ -524,11 +531,12 @@
         -->
 
         <repository>
-           <id>ala-repository</id>
-           <name>ala-repository</name>
-           <url>http://maven.ala.org.au/repository</url>
-         </repository>
+            <id>ala-repository</id>
+            <name>ala-repository</name>
+            <url>http://maven.ala.org.au/repository</url>
+        </repository>
 
+        <!--
         <repository>
             <releases>
                 <updatePolicy>never</updatePolicy>
@@ -539,10 +547,12 @@
             <name>geogoogle repo</name>
             <url>https://www.cs.drexel.edu/~zl25/maven2/repo</url>
         </repository>
-        
+        -->
         <repository>
             <id>unknown-jars-temp-repo</id>
-            <name>A temporary repository created by NetBeans for libraries and jars it could not identify. Please replace the dependencies in this repository with correct ones and delete this repository.</name>
+            <name>A temporary repository created by NetBeans for libraries and jars it could not identify. Please
+                replace the dependencies in this repository with correct ones and delete this repository.
+            </name>
             <url>file:${project.basedir}/lib</url>
         </repository>
     </repositories>
@@ -581,12 +591,11 @@
     </reporting>
     <properties>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
-        <!-- <springVersion>3.0.1.RELEASE</springVersion> -->
-        <zkVersion>6.5.4</zkVersion>
+        <zkVersion>7.0.1</zkVersion>
         <jerseyVersion>1.1.4.1</jerseyVersion>
         <aspectJVersion>1.6.8</aspectJVersion>
         <geotools.version>2.7.3</geotools.version>
-        <org.springframework.version>3.0.1.RELEASE</org.springframework.version>
+        <org.springframework.version>3.0.6.RELEASE</org.springframework.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
