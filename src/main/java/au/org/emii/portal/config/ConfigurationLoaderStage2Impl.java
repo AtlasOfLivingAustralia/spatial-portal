@@ -177,7 +177,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
         logger.debug("settings...");
         au.org.emii.portal.config.xmlbeans.Settings xmlSettings = portalDocument.getPortal().getSettings();
         try {
-            logger.info("Settings from config file:");
+            logger.debug("Settings from config file:");
 
             settings.setConfigRereadInitialInterval(xmlSettings.getConfigRereadInitialInterval().intValue());
             settings.setConfigRereadInterval(xmlSettings.getConfigRereadInterval().intValue());
@@ -246,7 +246,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
 
                 String key = cursor.getName().getLocalPart();
                 String value = cursor.getTextValue();
-                logger.info("settings/supplementary/" + key + " ==> " + value);
+                logger.debug("settings/supplementary/" + key + " ==> " + value);
                 supplementaryValues.put(key, value);
                 finished = !cursor.toNextSibling();
             }

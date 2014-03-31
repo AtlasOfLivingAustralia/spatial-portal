@@ -433,12 +433,25 @@ public class LayerUtilitiesImpl implements LayerUtilities {
      */
     @Override
     public String getLayers(String uri) {
-        return getParameterValue(LAYERS_REGEXP, uri);
+        String layers = getParameterValue(LAYERS_REGEXP, uri);
+
+        //found some layers are defined with both layer and layers
+        if (layers == null) {
+            layers = getParameterValue(LAYER_REGEXP, uri);
+        }
+        return layers;
     }
 
     @Override
     public String getLayer(String uri) {
-        return getParameterValue(LAYER_REGEXP, uri);
+        String layer = getParameterValue(LAYER_REGEXP, uri);
+
+        //found some layers are defined with both layer and layers
+        if (layer == null) {
+            layer = getParameterValue(LAYERS_REGEXP, uri);
+        }
+
+        return layer;
     }
 
     @Override
@@ -719,18 +732,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
             }
 
             //extract layer name
-            String name = "";
-            int a = uri.toLowerCase().indexOf("layers=");
-            if (a > 0) {
-                int b = uri.toLowerCase().substring(a, uri.length()).indexOf("&");
-                if (b > 0) {
-                    //name is between a+len(layer=) and a+b
-                    name = uri.substring(a + 7, a + b);
-                } else {
-                    //name is between a+len(layer=) and len(uri)
-                    name = uri.substring(a + 7, uri.length());
-                }
-            }
+            String name = getLayer(uri);
 
             //don't use gwc/service/ because it is returning the wrong boundingbox
             server = server.replace("gwc/service/", "");

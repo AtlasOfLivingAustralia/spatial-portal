@@ -68,7 +68,7 @@ public class LeftMenuSearchComposer extends UtilityComposer {
             try {
                 el.onEvent(null);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.error("error running viewport change listener", ex);
             }
         }
     }

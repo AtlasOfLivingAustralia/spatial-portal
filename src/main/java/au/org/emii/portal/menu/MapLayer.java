@@ -1,14 +1,14 @@
 package au.org.emii.portal.menu;
 
-import au.org.ala.spatial.data.Facet;
-import au.org.ala.spatial.data.LegendObject;
 import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.util.ScatterplotData;
+import au.org.ala.spatial.data.ScatterplotData;
 import au.org.ala.spatial.util.SelectedArea;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.value.AbstractIdentifierImpl;
 import au.org.emii.portal.wms.WMSStyle;
+import org.ala.layers.legend.Facet;
+import org.ala.layers.legend.LegendObject;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.Serializable;
@@ -695,7 +695,7 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         return mapLayerMetadata;
     }
 
-    private void setMapLayerMetadata(MapLayerMetadata mapLayerMetadata) {
+    public void setMapLayerMetadata(MapLayerMetadata mapLayerMetadata) {
         this.mapLayerMetadata = mapLayerMetadata;
     }
 

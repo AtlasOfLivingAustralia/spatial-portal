@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 /**
- *
  * @author Adam
  */
 public class LayerSelection {
@@ -68,13 +67,13 @@ public class LayerSelection {
     public String getLayers() {
         return layers;
     }
-    
+
     @Override
     public String toString() {
-        if(displayString != null) {
+        if (displayString != null) {
             return displayString;
         }
-        
+
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy hh:mm:ss");
         int len = layers.split(",").length;
         if (len != 1) {
@@ -85,30 +84,30 @@ public class LayerSelection {
     }
 
     public boolean equalsList(LayerSelection ls) {
-        String [] thisList = layers.split(",");
-        String [] thatList = ls.layers.split(",");
+        String[] thisList = layers.split(",");
+        String[] thatList = ls.layers.split(",");
 
-        for(int i=0;i<thisList.length;i++) {
+        for (int i = 0; i < thisList.length; i++) {
             boolean found = false;
-            for(int j=0;j<thatList.length;j++) {
-                if(thisList[i].equals(thatList[j])) {
+            for (int j = 0; j < thatList.length; j++) {
+                if (thisList[i].equals(thatList[j])) {
                     found = true;
                     break;
                 }
             }
-            if(!found) {
+            if (!found) {
                 return false;
             }
         }
-        for(int j=0;j<thatList.length;j++) {
+        for (int j = 0; j < thatList.length; j++) {
             boolean found = false;
-            for(int i=0;i<thisList.length;i++) {
-                if(thisList[i].equals(thatList[j])) {
+            for (int i = 0; i < thisList.length; i++) {
+                if (thisList[i].equals(thatList[j])) {
                     found = true;
                     break;
                 }
             }
-            if(!found) {
+            if (!found) {
                 return false;
             }
         }

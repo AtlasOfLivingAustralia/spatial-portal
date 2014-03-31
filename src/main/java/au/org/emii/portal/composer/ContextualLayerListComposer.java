@@ -1,6 +1,6 @@
 package au.org.emii.portal.composer;
 
-import au.org.ala.spatial.composer.add.area.ContextualLayerSelection;
+import au.org.ala.spatial.composer.tool.ContextualLayerSelection;
 import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.util.LayerUtilities;
 import net.sf.json.JSONArray;
@@ -165,7 +165,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
 
     private void renderTree() {
 
-        tree.setTreeitemRenderer(new TreeitemRenderer() {
+        tree.setItemRenderer(new TreeitemRenderer() {
 
             @Override
             public void render(Treeitem item, Object data, int item_idx) throws Exception {

@@ -53,7 +53,6 @@ public class ActiveLayerRenderer implements ListitemRenderer {
         //do after legend
         //label.setParent(listcell);
         listcell.setParent(item);
-        listcell.setStyle("padding:5px;");
 
         // dnd list reordering support
         item.addEventListener("onDrop", new ActiveLayerDNDEventListener());
@@ -90,11 +89,13 @@ public class ActiveLayerRenderer implements ListitemRenderer {
         info.setTooltiptext("metadata");
         info.addEventListener("onClick", new ActiveLayersInfoEventListener());
 
-        Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
-        zoomextent.setParent(listcell);
-        zoomextent.setStyle("float:right");
-        zoomextent.setTooltiptext("zoom to extent");
-        zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
+        if (layer.getType() != LayerUtilities.MAP) {
+            Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
+            zoomextent.setParent(listcell);
+            zoomextent.setStyle("float:right");
+            zoomextent.setTooltiptext("zoom to extent");
+            zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
+        }
 
         //Set the legend graphic based on the layer type
         Image legend = new Image();
@@ -117,6 +118,53 @@ public class ActiveLayerRenderer implements ListitemRenderer {
         legend.setTooltiptext("View/edit the legend");
         legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
         label.setParent(listcell);
+
+        // adding buttons to basemap in layer list
+        if (layer.getType() == LayerUtilities.MAP) {
+            //add select all or unselect all button
+
+            Button b = new Button("Delete all");
+            b.setParent(listcell);
+            b.setVisible(false);
+            b.setStyle("float:right;margin-right:30px");
+            b.addEventListener("onClick", new EventListener() {
+
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    if (Messagebox.show("All layers will be deleted, are you sure?", "Warning", Messagebox.OK | Messagebox.CANCEL, Messagebox.EXCLAMATION) == Messagebox.OK) {
+                        ((MapComposer) event.getPage().getFellow("mapPortalPage")).onClick$removeAllLayers();
+                    }
+
+                }
+            });
+
+            b = new Button("Show all");
+            b.setParent(listcell);
+            b.setVisible(false);
+            b.setStyle("float:right;margin-right:30px");
+            b.addEventListener("onClick", new EventListener() {
+
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    ((MapComposer) event.getPage().getFellow("mapPortalPage")).setLayersVisible(true);
+
+                }
+            });
+            b = new Button("Hide all");
+            b.setParent(listcell);
+            b.setVisible(false);
+            b.setStyle("float:right");
+            b.addEventListener("onClick", new EventListener() {
+
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    ((MapComposer) event.getPage().getFellow("mapPortalPage")).setLayersVisible(false);
+
+                }
+            });
+
+            ((MapComposer) listcell.getPage().getFellow("mapPortalPage")).adjustActiveLayersList();
+        }
     }
 
     public LanguagePack getLanguagePack() {

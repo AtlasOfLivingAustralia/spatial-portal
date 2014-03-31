@@ -27,10 +27,10 @@ public class ActiveLayerDNDEventListener extends PortalEvent implements EventLis
                 if (eventType instanceof Listitem) {
                     reorderList(mapComposer, dragEvent);
                 } else {
-                    logger.info("unsupported dnd event " + eventType.getClass().getName());
+                    logger.debug("unsupported dnd event " + eventType.getClass().getName());
                 }
             } else {
-                logger.info("event is not a DropEvent instance: " + event.getClass().getName());
+                logger.debug("event is not a DropEvent instance: " + event.getClass().getName());
             }
         }
     }

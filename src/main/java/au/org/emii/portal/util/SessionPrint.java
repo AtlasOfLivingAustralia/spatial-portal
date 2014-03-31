@@ -381,7 +381,7 @@ class StreamReaderThread implements Runnable {
             br = new BufferedReader(isr);
             String line;
             while ((line = br.readLine()) != null) {
-                logger.info(line);
+                logger.debug(line);
             }
         } catch (Exception e) {
 

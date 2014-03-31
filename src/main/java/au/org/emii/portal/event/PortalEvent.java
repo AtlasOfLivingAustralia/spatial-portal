@@ -38,7 +38,7 @@ public abstract class PortalEvent {
                 && ((page = event.getPage()) != null)
                 && ((mapComposer = (MapComposer) page.getFellow("mapPortalPage")) != null)) {
         } else {
-            logger.info(
+            logger.debug(
                     "Unable to obtain reference to mapPortalPage instance to perform changes "
                             + "I think this is a strange concurrent access problem, I've only ever seen "
                             + "it once (ignoring and proceeding normally)"

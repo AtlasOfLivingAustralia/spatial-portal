@@ -5,12 +5,12 @@
 package au.org.emii.portal.composer.legend;
 
 import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.QueryField;
-import au.org.ala.spatial.data.UploadQuery;
+import au.org.ala.spatial.data.UserDataQuery;
 import au.org.ala.spatial.util.LegendMaker;
 import au.org.emii.portal.composer.GenericAutowireAutoforwardComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import org.ala.layers.legend.QueryField;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Component;
@@ -201,7 +201,7 @@ public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardCo
         map.put("readonly", "true");
         map.put("colourmode", cbColour.getSelectedItem().getValue());
         if (!mapLayer.getColourMode().equals("grid")
-                && query.getLegend((String) cbColour.getSelectedItem().getValue()).getCategories() != null) {
+                && query.getLegend((String) cbColour.getSelectedItem().getValue()).getCategoryNameOrder() != null) {
             map.put("checkmarks", "true");
         }
         map.put("disableselection", "true");
@@ -285,7 +285,7 @@ public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardCo
                 //listener.onEvent(null);
                 Component c = getParent().getFellowIfAny("scatterplotwindow");
                 if (c != null && c instanceof LayerLegendScatterplotController) {
-                    ((LayerLegendScatterplotController) c).updateFromLegend();
+                    //((LayerLegendScatterplotController) c).updateFromLegend();
                 }
             } catch (Exception e) {
                 logger.error("Error updating legend in scatterplot window", e);
@@ -326,7 +326,7 @@ public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardCo
             for (QueryField field : fields) {
                 if (q != null
                         && field.getFieldType() == QueryField.FieldType.STRING
-                        && (q instanceof UploadQuery
+                        && (q instanceof UserDataQuery
                         || !(field.getName().equalsIgnoreCase("occurrence_year")
                         || field.getName().equalsIgnoreCase("coordinate_uncertainty")
                         || field.getName().equalsIgnoreCase("month")))) {

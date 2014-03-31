@@ -86,7 +86,7 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
         reloading = true;
         PortalDocument portalDocument = portalDocumentFactory.createPortalDocumentInstance();
         if (portalDocument == null) {
-            logger.info("Configuration file missing or invalid - cannot load portal.  See previous message for cause");
+            logger.debug("Configuration file missing or invalid - cannot load portal.  See previous message for cause");
         } else {
             stage2.setPortalDocument(portalDocument);
 

@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Required;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.util.Clients;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -150,7 +152,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     @Override
     public String zoomGeoJsonExtent(MapLayer ml) {
         String script = "";
-        if (ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getBboxString() != null) {
+        if (ml.getMapLayerMetadata().getBboxString() != null) {
             // cluster
             script = "window.mapFrame.map.zoomToExtent(new OpenLayers.Bounds.fromString('" + ml.getMapLayerMetadata().getBboxString()
                     + "').transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()))";
@@ -166,17 +168,17 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     public void zoomLayerExtent(MapLayer ml) {
         String script;
         /* if map boundingbox is defined use it to zoom */
-        if (ml.getMapLayerMetadata() != null) {
-            if (ml.getMapLayerMetadata().getBboxString() != null) {
-                script = "map.zoomToExtent(new OpenLayers.Bounds(" + ml.getMapLayerMetadata().getBboxString() + ")" + ".transform(" + "  new OpenLayers.Projection('EPSG:4326'),"
-                        + "  map.getProjectionObject()));";
-            } else {
 
-                script = "window.mapFrame.loadBaseMap();";
-            }
+        if (ml.getMapLayerMetadata().getBboxString() != null) {
+            script = "map.zoomToExtent(new OpenLayers.Bounds(" + ml.getMapLayerMetadata().getBboxString() + ")" + ".transform(" + "  new OpenLayers.Projection('EPSG:4326'),"
+                    + "  map.getProjectionObject()));";
         } else {
-            script = "window.mapFrame.zoomBoundsLayer('" + ml.getName() + "')";
+
+            script = "window.mapFrame.loadBaseMap();";
+
+            //script = "window.mapFrame.zoomBoundsLayer('" + ml.getName() + "')";
         }
+
         execute(script);
     }
 
@@ -197,7 +199,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 // + "             map.baseLayer.getExtent(),       "
                 + " 		new OpenLayers.Size(" + settingsSupplementary.getValue("animation_width") + "," + settingsSupplementary.getValue("animation_height") + "), " + "		{" + "			format: 'image/png', "
                 + "			opacity:" + mapLayer.getOpacity() + ", " + "			isBaseLayer : false, " + "			maxResolution: map.baseLayer.maxResolution, "
-                + "           minResolution: map.baseLayer.minResolution, " + "           projection: new OpenLayers.Projection('EPSG:900913'), " + "			resolutions: map.baseLayer.resolutions "
+                + "           minResolution: map.baseLayer.minResolution, " + "           projection: new OpenLayers.Projection('EPSG:3857'), " + "			resolutions: map.baseLayer.resolutions "
                 + "		} " + "	); " + // register for loading images...
                 "registerLayer(mapLayers['" + mapLayer.getUniqueIdJS() + "']);";
 
@@ -223,7 +225,6 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
      * - don't forget to scope your iFrameReferences first - see
      * removeLayerNow()
      *
-     * @param id
      * @return
      */
     @Override
@@ -256,8 +257,6 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     /**
      * As removeLayer but execute immediately without returning any code
-     *
-     * @param id
      */
     @Override
     public void removeMapLayerNow(MapLayer mapLayer) {
@@ -515,15 +514,56 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             params += ", ";
         }
         if (!Validate.empty(layer.getEnvParams())) {
-            params += "env: '" + layer.getEnvParams().replace("'", "\\'") + "', ";
+            try {
+                params += "env: '" + URLEncoder.encode(layer.getEnvParams().replace("'", "\\'"), "UTF-8") + "', ";
+            } catch (UnsupportedEncodingException e) {
+                logger.error("failed to encode env params : " + layer.getEnvParams().replace("'", "\\'"), e);
+            }
+        }
+
+        String dynamic_style = "";
+        if (layer.isPolygonLayer()) {
+            String colour = Integer.toHexString((0xFF0000 & (layer.getRedVal() << 16)) | (0x00FF00 & layer.getGreenVal() << 8) | (0x0000FF & layer.getBlueVal()));
+            while (colour.length() < 6) {
+                colour = "0" + colour;
+            }
+            String filter;
+            /*
+                two types of areas are displayed as WMS.
+                1. environmental envelopes. these are backed by a grid file.
+                2. layerdb, objects table, areas referenced by a pid.  these are geometries.
+             */
+            if (layer.getUri().contains("ALA:envelope")) {
+                filter = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\">"
+                        + "<NamedLayer><Name>" + layerUtilities.getLayer(layer.getUri()) + "</Name>"
+                        + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
+                        + "<ColorMap>"
+                        + "<ColorMapEntry color=\"#ffffff\" opacity=\"0\" quantity=\"0\"/>"
+                        + "<ColorMapEntry color=\"#" + colour + "\" opacity=\"1\" quantity=\"1\" />"
+                        + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
+
+            } else {
+                filter = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor version=\"1.0.0\" xmlns=\"http://www.opengis.net/sld\">"
+                        + "<NamedLayer><Name>" + layerUtilities.getLayer(layer.getUri()) + "</Name>"
+                        + "<UserStyle><FeatureTypeStyle><Rule><Title>Polygon</Title><PolygonSymbolizer><Fill>"
+                        + "<CssParameter name=\"fill\">#" + colour + "</CssParameter></Fill>"
+                        + "</PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
+            }
+            try {
+                dynamic_style = "&sld_body=" + URLEncoder.encode(filter, "UTF-8");
+            } catch (Exception e) {
+                logger.debug("invalid filter sld", e);
+            }
         }
 
         String script = "	" + associativeArray + "['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.WMS(" + "		'"
                 + layer.getNameJS() + "', " + "		'"
-                + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&", "wms\\/reflect?") + "', " + "		{"
-                + ((layer.getSelectedStyleNameJS().equals("Default")) ? "" : "			styles: '" + layer.getSelectedStyleNameJS() + "', ") + "			layers: '" + layer.getLayerJS() + "', " + "			format: '"
-                + layer.getImageFormat() + "', " + "         srs: 'epsg:900913', " + "			transparent: " + (!layer.isBaseLayer()) + ", " +
+                + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&", "wms\\/reflect?") + dynamic_style + "', " + "		{"
+                + ((layer.getSelectedStyleNameJS().equals("Default")) ? "" : "			styles: '" + layer.getSelectedStyleNameJS() + "', ")
+                + "			layers: '" + layer.getLayerJS() + "', " + "			format: '"
+                + layer.getImageFormat() + "', " + "         srs: 'epsg:3857', " + "			transparent: " + (!layer.isBaseLayer()) + ", " +
                 "			" + params + wmsVersionDeclaration(layer) + // ","
+
                 "		}, " + "		{ "
                 // + "             " + "maxExtent: (new OpenLayers.Bounds(" +
                 // bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," +
@@ -612,7 +652,6 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
      * Set the opacity for the layer at the position key in the associative
      * array of layers
      *
-     * @param key
      * @param percentage
      * @return
      */
@@ -672,7 +711,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             logger.debug("exec javascript: " + script);
             Clients.evalJavaScript(script);
         } else {
-            logger.info("refused to execute javascript - map not loaded");
+            logger.debug("refused to execute javascript - map not loaded");
         }
     }
 

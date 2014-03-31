@@ -4,7 +4,9 @@
  */
 package au.org.emii.portal.composer.legend;
 
-import au.org.ala.spatial.data.*;
+import au.org.ala.spatial.data.BiocacheQuery;
+import au.org.ala.spatial.data.Query;
+import au.org.ala.spatial.data.UserDataQuery;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LegendMaker;
 import au.org.ala.spatial.util.Util;
@@ -14,9 +16,10 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.util.LayerUtilities;
+import org.ala.layers.legend.LegendObject;
+import org.ala.layers.legend.QueryField;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
@@ -226,7 +229,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
         String colourmode = cbColour.getSelectedItem().getValue();
         if (!mapLayer.getColourMode().equals("grid")
-                && query.getLegend(colourmode).getCategories() != null) {
+                && query.getLegend(colourmode).getCategoryNameOrder() != null) {
             map.put("checkmarks", "true");
         }
 
@@ -370,7 +373,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
         String colourmode = cbColour.getSelectedItem().getValue();
         if (!m.getColourMode().equals("grid")
-                && query.getLegend(colourmode).getCategories() != null) {
+                && query.getLegend(colourmode).getCategoryNameOrder() != null) {
             map.put("checkmarks", "true");
         }
         try {
@@ -435,15 +438,19 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     }
 
     public void setupLayerControls(MapLayer m) {
-
         MapLayer currentSelection = m;
 
         if (currentSelection != null) {
             if (currentSelection.isDynamicStyle()) {
                 if (m.getColourMode().equals("grid")) {
                     pointtype.setSelectedItem(rGrid);
+                    uncertainty.setVisible(false);
                 } else {
                     pointtype.setSelectedItem(rPoint);
+
+                    //uncertainty circles are only applicable to biocache point data
+                    uncertainty.setVisible(currentSelection.getSpeciesQuery() != null
+                            && currentSelection.getSpeciesQuery() instanceof BiocacheQuery);
                 }
 
                 //fill cbColour
@@ -468,7 +475,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                     if (m.getGeoJSON() != null && m.getGeoJSON().length() > 0) {
                         uncertainty.setVisible(false);
                     } else {
-                        uncertainty.setVisible(!(query instanceof UploadQuery));
+                        uncertainty.setVisible(!(query instanceof UserDataQuery));
                     }
                 }
 
@@ -531,6 +538,8 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 legendImg.setVisible(false);
                 colourChooser.setVisible(false);
                 sizeChooser.setVisible(false);
+                cbColour.setVisible(false);
+                uncertainty.setVisible(false);
             } else if (currentSelection.getCurrentLegendUri() != null) {
                 // works for normal wms layers
                 legendImgUri.setSrc(currentSelection.getCurrentLegendUri());
@@ -538,8 +547,17 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 legendHtml.setVisible(false);
                 legendLabel.setVisible(false);
                 legendImg.setVisible(false);
-                colourChooser.setVisible(false);
+
+                //if it is an envelope or layerdb object table layer (i.e. polygon layer)
+                //the colour choose must be visible, wms legend off and colour combobox not visible
+                colourChooser.setVisible(mapLayer.isPolygonLayer());
+                if (mapLayer.isPolygonLayer()) {
+                    cbColour.setVisible(false);
+                    legendImgUri.setVisible(false);
+                }
+
                 sizeChooser.setVisible(false);
+                uncertainty.setVisible(false);
             } else {
                 //image layer?
                 legendImgUri.setVisible(false);
@@ -548,6 +566,8 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 legendImg.setVisible(false);
                 colourChooser.setVisible(false);
                 sizeChooser.setVisible(false);
+                cbColour.setVisible(false);
+                uncertainty.setVisible(false);
             }
             layerControls.setVisible(true);
             layerControls.setAttribute("activeLayerName", currentSelection.getName());
@@ -773,7 +793,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
         Integer start = intAnimationYearStart.getValue();
         Integer end = intAnimationYearEnd.getValue();
-        String script = "mapFrame.animateStart('" + StringEscapeUtils.escapeJavaScript(mapLayer.getNameJS()) + "',"
+        String script = "mapFrame.animateStart('" + mapLayer.getNameJS() + "',"
                 + monthOrYear + ","
                 + interval * 1000 + ","
                 + start + ","
@@ -830,7 +850,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 dblAnimationSeconds.setValue(interval);
             }
 
-            if (firstYear < lastYear) {
+            if (firstYear != null && firstYear < lastYear) {
                 //lblAnimationLabel.setValue("years " + firstYear + " to " + lastYear);
                 intAnimationYearStart.setValue(firstYear);
                 intAnimationYearEnd.setValue(lastYear);
@@ -840,7 +860,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     }
 
     public void onClick$btnAnimationStop(Event event) {
-        String script = "mapFrame.animateStop('" + StringEscapeUtils.escapeJavaScript(mapLayer.getNameJS()) + "');";
+        String script = "mapFrame.animateStop('" + mapLayer.getNameJS() + "');";
         getMapComposer().getOpenLayersJavascript().execute(script);
         btnAnimationStop.setDisabled(true);
     }

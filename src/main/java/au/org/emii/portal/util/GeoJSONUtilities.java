@@ -10,7 +10,6 @@ import au.org.emii.portal.net.HttpConnection;
 import net.sf.json.JSONObject;
 
 /**
- *
  * @author brendon
  */
 public interface GeoJSONUtilities {

@@ -1,23 +1,27 @@
 package au.org.emii.portal.composer.legend;
 
 import au.com.bytecode.opencsv.CSVReader;
-import au.org.ala.spatial.data.*;
+import au.org.ala.spatial.data.BiocacheQuery;
+import au.org.ala.spatial.data.Query;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.util.LayerUtilities;
+import org.ala.layers.legend.Facet;
+import org.ala.layers.legend.Legend;
+import org.ala.layers.legend.LegendObject;
+import org.ala.layers.legend.QueryField;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.*;
 
-import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ClassificationLegend extends UtilityComposer {
 
@@ -32,7 +36,7 @@ public class ClassificationLegend extends UtilityComposer {
     public Listbox legend;
     Button createInGroup;
     Button clearSelection;
-    ArrayList<String> legend_lines;
+    List<String[]> legend_lines;
     boolean readonly = false;
     boolean checkmarks = false;
     Doublebox dmin;
@@ -153,26 +157,24 @@ public class ClassificationLegend extends UtilityComposer {
                 return;
             }
 
-            String[] lines = slist.split("\r\n");
-            if (lines.length == 1) {
-                lines = slist.split("\n");
+            try {
+                legend_lines = new CSVReader(new StringReader(slist)).readAll();
+            } catch (Exception e) {
+                logger.error("failed to read legend list as csv", e);
             }
-            legend_lines = new ArrayList<String>();
-            int i = 0;
-            for (i = 1; i < lines.length; i++) {
-                if (lines[i].split(",").length > 3) {
-                    legend_lines.add(lines[i]);
-                }
-            }
+            String[] first_line = legend_lines.get(0);
+            legend_lines.remove(0);
 
             String h = mapLayer.getHighlight();
             facet = Facet.parseFacet(h);
 
+            divContinous.setVisible(false);
+
             //test for range (user upload)
             if (legend_lines.size() > 1) {
-                String first = legend_lines.get(0);
+                String first = legend_lines.get(0)[0];
                 if (first == null || first.length() == 0 || first.startsWith("Unknown")) {
-                    first = legend_lines.get(1);
+                    first = legend_lines.get(1)[0];
                 }
                 if (!checkmarks && query.getLegend(colourmode) != null
                         && query.getLegend(colourmode).getNumericLegend() != null) {
@@ -182,15 +184,11 @@ public class ClassificationLegend extends UtilityComposer {
                     setupForBiocacheNumber(h, colourmode, true);
                 } else if (colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
                     setupForBiocacheDecade();
-                } else if (colourmode.equals("coordinate_uncertainty")) {
+                } else if (colourmode.equals("coordinate_uncertainty") || colourmode.equals("uncertainty")) {
                     setupForBiocacheNumber(h, colourmode, false);
                 } else if (colourmode.equals("month")) {
                     setupForBiocacheMonth();
                 }
-            }
-
-            if ("geospatial_kosher".equals(colourmode)) {
-                setupForBiocacheGeospatialKosher();
             }
 
             /* apply something to line onclick in lb */
@@ -198,14 +196,8 @@ public class ClassificationLegend extends UtilityComposer {
 
                 @Override
                 public void render(Listitem li, Object data, int item_idx) {
-                    String[] ss = null;
-                    try {
-                        CSVReader csv = new CSVReader(new StringReader((String) data));
-                        ss = csv.readNext();
-                        csv.close();
-                    } catch (IOException e) {
-                        logger.error("error reading legend csv", e);
-                    }
+                    String[] ss = (String[]) data;
+
                     if (ss == null) {
                         return;
                     }
@@ -240,9 +232,14 @@ public class ClassificationLegend extends UtilityComposer {
                     }
                     lc.setParent(li);
 
-                    int red = Integer.parseInt(ss[1]);
-                    int green = Integer.parseInt(ss[2]);
-                    int blue = Integer.parseInt(ss[3]);
+                    int red = 0, green = 0, blue = 0;
+                    try {
+                        red = Integer.parseInt(ss[1]);
+                        green = Integer.parseInt(ss[2]);
+                        blue = Integer.parseInt(ss[3]);
+                    } catch (Exception e) {
+                        logger.error("error parsing colours : " + ss[0], e);
+                    }
 
                     lc = new Listcell("   ");
                     lc.setStyle("background-color: rgb(" + red + "," + green
@@ -266,7 +263,6 @@ public class ClassificationLegend extends UtilityComposer {
 
 
             legend.setModel(new SimpleListModel(legend_lines));
-            legend.renderAll();
 
             createInGroup.setVisible(!disableselection && mapLayer.getHighlight() != null && mapLayer.getHighlight().length() > 0);
             clearSelection.setVisible(!disableselection && mapLayer.getHighlight() != null && mapLayer.getHighlight().length() > 0);
@@ -294,7 +290,7 @@ public class ClassificationLegend extends UtilityComposer {
                 String v = ((Listcell) li.getChildren().get(1)).getLabel();
                 v = displayToActualLabel(v);
                 if (legend_facets != null) {
-                    if (v.equals("Unknown")) {
+                    if (v.equals("Unknown") || v.contains("occurrence_year") || v.contains("uncertainty") || v.contains("coordinate_uncertainty")) {
                         //keep unchanged
                     } else {
                         v = legend_facets.get(v);
@@ -347,7 +343,7 @@ public class ClassificationLegend extends UtilityComposer {
         }
         if (values.length() > 0) {
             facet = Facet.parseFacet(values.toString());
-            return values.toString();
+            return facet.toString();
         } else {
             facet = null;
             return "";
@@ -503,21 +499,15 @@ public class ClassificationLegend extends UtilityComposer {
                 logger.error("error setting up the numerical listing", e);
             }
             for (int j = 0; j < legend_lines.size(); j++) {
-                String s = legend_lines.get(j);
-                String back = s.substring(s.indexOf(','));
-                String front = s.substring(0, s.indexOf(','));
-                if (s.length() > 2 && s.charAt(0) == '-' || s.charAt(1) == '-') {
-                    legend_lines.set(j, "Unknown" + back);
-                    String v = front;
-                    if (v.startsWith("\"") && v.endsWith("\"")) {
-                        v = v.substring(1, v.length() - 1);
-                    }
-                    legend_facets.put("Unknown", v);
+                String label = legend_lines.get(j)[0];
+                if (label.charAt(0) == '-') {
+                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
+                    legend_lines.get(j)[0] = "Unknown";
                 } else {
-                    String[] ss = s.split(" ");
+                    String[] ss = legend_lines.get(j);
 
-                    double[] cutoffs = lo.getNumericLegend().getCutoffdoubles();
-                    double[] cutoffMins = lo.getNumericLegend().getCutoffMindoubles();
+                    float[] cutoffs = lo.getNumericLegend().getCutoffFloats();
+                    float[] cutoffMins = lo.getNumericLegend().getCutoffMinFloats();
                     String range, strFacet;
                     double min;
                     double max;
@@ -566,7 +556,7 @@ public class ClassificationLegend extends UtilityComposer {
 
                             strFacet = colourmode + ":[" + min + " TO " + max + "]";
                         }
-                        legend_lines.set(j, range + back);
+                        legend_lines.get(j)[0] = range;
                         legend_facets.put(range, strFacet);
                     }
                 }
@@ -620,23 +610,17 @@ public class ClassificationLegend extends UtilityComposer {
 
             //update text in legend lines
             for (int j = 0; j < legend_lines.size(); j++) {
-                String s = legend_lines.get(j);
-                String back = s.substring(s.indexOf(','));
-                String front = s.substring(0, s.indexOf(','));
-                if (s.length() > 2 && s.charAt(0) == '-' || s.charAt(1) == '-') {
-                    legend_lines.set(j, "Unknown" + back);
-                    String v = front;
-                    if (v.startsWith("\"") && v.endsWith("\"")) {
-                        v = v.substring(1, v.length() - 1);
-                    }
-                    legend_facets.put("Unknown", v);
+                String label = legend_lines.get(j)[0];
+                if (label.charAt(0) == '-') {
+                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
+                    legend_lines.get(j)[0] = "Unknown";
                 } else {
-                    s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
-                    s = s.replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "");
-                    String[] ss = s.split(" TO ");
+                    String s = legend_lines.get(j)[0];
 
-                    double[] cutoffs = lo.getNumericLegend().getCutoffdoubles();
-                    double[] cutoffMins = lo.getNumericLegend().getCutoffMindoubles();
+                    String[] ss = s.replace("[", "").replace("]", "").replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "").split(" TO ");
+
+                    float[] cutoffs = lo.getNumericLegend().getCutoffFloats();
+                    float[] cutoffMins = lo.getNumericLegend().getCutoffMinFloats();
                     String range, strFacet;
                     if (ss.length > 1) {
                         if (ss[0].equals("*")) {
@@ -708,7 +692,7 @@ public class ClassificationLegend extends UtilityComposer {
                                 strFacet = "" + facetName + ":[" + cutoffMins[pos] + " TO " + cutoffs[pos] + "]";
                             }
                         }
-                        legend_lines.set(j, range + back);
+                        legend_lines.get(j)[0] = range;
                         legend_facets.put(range, strFacet);
                     }
                 }
@@ -727,20 +711,15 @@ public class ClassificationLegend extends UtilityComposer {
         if (lo != null) {
             //update text in legend lines
             for (int j = 0; j < legend_lines.size(); j++) {
-                String s = legend_lines.get(j);
-                String back = s.substring(s.indexOf(','));
-                String front = s.substring(0, s.indexOf(','));
-                if (s.length() > 2 && s.charAt(0) == '-' || s.charAt(1) == '-') {
-                    legend_lines.set(j, "Unknown" + back);
-                    String v = front;
-                    if (v.startsWith("\"") && v.endsWith("\"")) {
-                        v = v.substring(1, v.length() - 1);
-                    }
-                    legend_facets.put("Unknown", v);
+                String label = legend_lines.get(j)[0];
+                if (label.charAt(0) == '-') {
+                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
+                    legend_lines.get(j)[0] = "Unknown";
                 } else {
-                    s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
-                    s = s.replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "");
-                    String[] ss = s.split(" TO ");
+                    //String[] ss = legend_lines.get(j);
+                    //s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
+                    //s = s.replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "");
+                    String[] ss = legend_lines.get(j)[0].split(" TO ");
 
                     String range, strFacet;
                     if (ss.length > 1) {
@@ -749,7 +728,7 @@ public class ClassificationLegend extends UtilityComposer {
                         range = String.format("%s0s", yr);
                         strFacet = "occurrence_year:[" + yr + "0-01-01T00:00:00Z TO " + yr + "9-12-31T00:00:00Z]";
 
-                        legend_lines.set(j, range + back);
+                        legend_lines.get(j)[0] = range;
                         legend_facets.put(range, strFacet);
                     }
                 }
@@ -762,12 +741,12 @@ public class ClassificationLegend extends UtilityComposer {
         legend_facets = new HashMap<String, String>();
         //update text in legend lines
         for (int j = 0; j < legend_lines.size(); j++) {
-            String s = legend_lines.get(j);
-            String back = s.substring(s.indexOf(','));
-            if (s.length() > 2 && s.charAt(0) == '-' || s.charAt(1) == '-') {
-                legend_lines.set(j, "Unknown" + back);
-                legend_facets.put("Unknown", "Unknown");
+            String label = legend_lines.get(j)[0];
+            if (label.charAt(0) == '-') {
+                legend_facets.put("Unknown", legend_lines.get(j)[0]);
+                legend_lines.get(j)[0] = "Unknown";
             } else {
+                String s = legend_lines.get(j)[0];
                 s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
                 String[] ss = s.split(" TO ");
                 if (ss.length > 1) {
@@ -798,31 +777,12 @@ public class ClassificationLegend extends UtilityComposer {
                     }
                 }
                 legend_facets.put(s, "month:[" + ss[1] + " TO " + ss[1] + "]");
-                legend_lines.set(j, s + back);
+                legend_lines.get(j)[0] = s;
             }
 
         }
     }
 
-    private void setupForBiocacheGeospatialKosher() {
-        legend_facets = new HashMap<String, String>();
-        //update text in legend lines
-        for (int j = 0; j < legend_lines.size(); j++) {
-            String s = legend_lines.get(j);
-            int firstDelim = s.indexOf(',');
-            String value = s.substring(0, firstDelim);
-            String back = s.substring(firstDelim);
-            if (value.equals("\"true\"")) {
-                s = "Spatially valid";
-            } else if (value.equals("\"false\"")) {
-                s = "Spatially suspect";
-            } else {
-                s = "Coordinates not supplied";
-            }
-            legend_facets.put(s, "geospatial_kosher:" + value);
-            legend_lines.set(j, s + back);
-        }
-    }
 
     public void checkboxClick(Event event) {
         //reload the map layer with this highlight.

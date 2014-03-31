@@ -286,9 +286,9 @@ public class RemoteMapImpl implements RemoteMap {
         mapLayer.setName(label);
 
         mapLayer.setUri(uri);
-        mapLayer.setLayer(uri);
+        mapLayer.setLayer(layerUtilities.getLayer(uri));
         mapLayer.setOpacity(opacity);
-        mapLayer.setImageFormat(uri);
+        mapLayer.setImageFormat(layerUtilities.getImageFormat(uri));
 
         /* attempt to retrieve bounding box */
         List<Double> bbox = layerUtilities.getBBox(uri);

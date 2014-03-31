@@ -40,7 +40,7 @@ public class PortalSession implements Cloneable, Serializable {
      * iframe's media content otherwise if it's been dereferenced and the
      * browser requests it you get a SEVERE error (harmless but very annoying)
      */
-    private StringMedia rawErrorMessageMedia = null;
+    //private StringMedia rawErrorMessageMedia = null;
 
     /* Datasources - Discovery and Service both resolve to MapLayer instances,
      * static links are handled separately
@@ -179,14 +179,6 @@ public class PortalSession implements Cloneable, Serializable {
 
     public void setMapLoaded(boolean mapLoaded) {
         this.mapLoaded = mapLoaded;
-    }
-
-    public StringMedia getRawErrorMessageMedia() {
-        return rawErrorMessageMedia;
-    }
-
-    public void setRawErrorMessageMedia(StringMedia rawErrorMessageMedia) {
-        this.rawErrorMessageMedia = rawErrorMessageMedia;
     }
 
     public boolean isMaximised() {

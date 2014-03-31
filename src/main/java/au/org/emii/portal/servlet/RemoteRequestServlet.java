@@ -89,7 +89,7 @@ public class RemoteRequestServlet implements HttpRequestHandler {
 
         String queryString = request.getQueryString();
         logger.debug("requested: " + queryString);
-        String targetUrl = request.getParameter(settings.getCacheParameter());
+        String targetUrl = request.getParameter("url");
         if (targetUrl == null) {
             logger.debug("no url parameter supplied");
             outputError(response);
@@ -132,7 +132,7 @@ public class RemoteRequestServlet implements HttpRequestHandler {
         String delim = "?";
         for (Object key : params.keySet()) {
             // skip the url parameter - removal from the map is not allowed
-            if (!((String) key).equalsIgnoreCase(settings.getCacheParameter())) {
+            if (!((String) key).equalsIgnoreCase("url")) {
                 String[] value = (String[]) params.get(key);
                 uri.append(delim).append(key).append("=").append(value[0]);
                 delim = "&";

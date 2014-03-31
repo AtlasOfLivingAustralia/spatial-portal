@@ -6,7 +6,6 @@
 package au.org.emii.portal.wms;
 
 /**
- *
  * @author brendon
  */
 public class ImageLayerSupport {
@@ -65,5 +64,5 @@ public class ImageLayerSupport {
     public void setZoomLevels(int zoomLevels) {
         this.zoomLevels = zoomLevels;
     }
-    
+
 }

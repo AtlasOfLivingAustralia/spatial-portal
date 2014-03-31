@@ -8,11 +8,11 @@ package au.org.emii.portal.composer;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.QueryField;
 import au.org.ala.spatial.sampling.Sampling;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
+import org.ala.layers.legend.QueryField;
 import org.apache.log4j.Logger;
 import org.zkoss.zul.Filedownload;
 

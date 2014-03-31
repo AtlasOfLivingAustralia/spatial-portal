@@ -126,7 +126,7 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
         Session session = desktop.getSession();
 
         if (session == null) {
-            logger.info(
+            logger.debug(
                     "user has a null session - no idea why (system coming up/going down - "
                             + "concurrency ?) will redirect to error page");
             redirectAndInvalidateSession(desktop.getSession(), ERROR_PAGE);
