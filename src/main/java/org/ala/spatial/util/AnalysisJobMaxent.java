@@ -34,6 +34,7 @@ import org.ala.layers.intersect.SimpleRegion;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -128,77 +129,100 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
             setProgress(0, "preparing input files and run parameters");
 
-            String cutDataPath = GridCutter.cut2(envnameslist, resolution, region, envelope, null);
+                //get species query data
+                File speciesqueryfile = new File(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species_query.csv");
+                BufferedReader br = new BufferedReader(new FileReader(speciesqueryfile));
+                String speciesq = br.readLine();
+                String bs = br.readLine();
+                br.close();
+                FileUtils.deleteQuietly(speciesqueryfile);
+                OccurrenceData od = new OccurrenceData();
+                String [] s = od.getSpeciesData(speciesq, bs, null);
 
-            System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
-
-            MaxentSettings msets = new MaxentSettings();
-            msets.setMaxentPath(AlaspatialProperties.getAnalysisMaxentCmd());
-            msets.setRandomTestPercentage(Integer.parseInt(txtTestPercentage));
-            msets.setEnvPath(cutDataPath);          //use (possibly) cut layers
-
-            String ctxVarToggler = "";
-            for (int l = 0; l < envnameslist.length; l++) {
-                if (Client.getLayerDao().getLayerByName(envnameslist[l]) != null && Client.getLayerDao().getLayerByName(envnameslist[l]).getType().equals("contextual")) {
-                    ctxVarToggler += envnameslist[l] + " ";
-                } else if (envnameslist[l].startsWith("aloc_")) {
-                    ctxVarToggler += envnameslist[l] + " ";
-                }
-            }
-            msets.setEnvVarToggler(ctxVarToggler);
-            msets.setEnvList(Arrays.asList(envnameslist.clone()));
-
-            //msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator));
-            msets.setSpeciesFilepath(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species_points.csv");
-            msets.setOutputPath(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator);
-            if (chkJackknife != null) {
-                msets.setDoJackknife(true);
-            }
-            if (chkResponseCurves != null) {
-                msets.setDoResponsecurves(true);
-            }
-
-            MaxentServiceImpl maxent = new MaxentServiceImpl();
-            maxent.setMaxentSettings(msets);
-
-            System.out.println("To run: " + msets.toString());
-
-            setStage(1);
-
-            setProgress(0, "running Maxent");
-
-            int exitValue = maxent.process(this);
-            System.out.println("Completed: " + exitValue);
-
-            setProgress(1, "Maxent finished with exit value=" + exitValue);
-
-            setStage(2);
-
-            setProgress(0, "exporting results");
-
-            Hashtable htProcess = new Hashtable();
-
-            String[] imgExtensions = {".png", "_only.png", "_only_thumb.png", "_thumb.png"};
-
-            if (isCancelled()) {
-                //
-            } else if (exitValue == 0) {
-
-                // check if there is an error
-                String maxentError = getMaxentError(new File(msets.getOutputPath() + "maxent.log"), 2);
-                if (maxentError != null) {
+                if (s[0] == null) {
+                    //error, no species
                     System.out.println("Has error, sending maxent error message");
-                    setProgress(1, "failed: " + maxentError);
+                    setProgress(1, "failed: ");
                     setCurrentState(FAILED);
-                    if (maxentError.equals("Warning: Skipping species because it has 0 test samples")) {
-                        setMessage("Warning: Skipping species because it has 0 test samples." + (msets.getRandomTestPercentage() > 0 ? "\nHint: Try to set the test percetage to '0'" : ""));
-                    } else if (maxentError.equals("No species selected")) {
-                        setMessage("No species selected.\nHint: Make sure your active area includes species occurrences");
-                    }
+                    setMessage("No species selected.\nHint: Make sure your active area includes species occurrences");
                 } else {
-                    // rename the env filenames to their display names
-                    String pth_plots = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "plots" + File.separator;
-                    String pth = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator;
+
+                writeFile(s[0], currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator, "species_points.csv");
+                if (s[1] != null) {
+                    writeFile(s[1], currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator, "Prediction_removedSpecies.txt");
+                }
+
+                String cutDataPath = GridCutter.cut2(envnameslist, resolution, region, envelope, null);
+
+                System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
+
+                MaxentSettings msets = new MaxentSettings();
+                msets.setMaxentPath(AlaspatialProperties.getAnalysisMaxentCmd());
+                msets.setRandomTestPercentage(Integer.parseInt(txtTestPercentage));
+                msets.setEnvPath(cutDataPath);          //use (possibly) cut layers
+
+                String ctxVarToggler = "";
+                for (int l = 0; l < envnameslist.length; l++) {
+                    if (Client.getLayerDao().getLayerByName(envnameslist[l]) != null && Client.getLayerDao().getLayerByName(envnameslist[l]).getType().equals("contextual")) {
+                        ctxVarToggler += envnameslist[l] + " ";
+                    } else if (envnameslist[l].startsWith("aloc_")) {
+                        ctxVarToggler += envnameslist[l] + " ";
+                    }
+                }
+                msets.setEnvVarToggler(ctxVarToggler);
+                msets.setEnvList(Arrays.asList(envnameslist.clone()));
+
+                //msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator));
+                msets.setSpeciesFilepath(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species_points.csv");
+                msets.setOutputPath(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator);
+                if (chkJackknife != null) {
+                    msets.setDoJackknife(true);
+                }
+                if (chkResponseCurves != null) {
+                    msets.setDoResponsecurves(true);
+                }
+
+                MaxentServiceImpl maxent = new MaxentServiceImpl();
+                maxent.setMaxentSettings(msets);
+
+                System.out.println("To run: " + msets.toString());
+
+                setStage(1);
+
+                setProgress(0, "running Maxent");
+
+                int exitValue = maxent.process(this);
+                System.out.println("Completed: " + exitValue);
+
+                setProgress(1, "Maxent finished with exit value=" + exitValue);
+
+                setStage(2);
+
+                setProgress(0, "exporting results");
+
+                Hashtable htProcess = new Hashtable();
+
+                String[] imgExtensions = {".png", "_only.png", "_only_thumb.png", "_thumb.png"};
+
+                if (isCancelled()) {
+                    //
+                } else if (exitValue == 0) {
+
+                    // check if there is an error
+                    String maxentError = getMaxentError(new File(msets.getOutputPath() + "maxent.log"), 2);
+                    if (maxentError != null) {
+                        System.out.println("Has error, sending maxent error message");
+                        setProgress(1, "failed: " + maxentError);
+                        setCurrentState(FAILED);
+                        if (maxentError.equals("Warning: Skipping species because it has 0 test samples")) {
+                            setMessage("Warning: Skipping species because it has 0 test samples." + (msets.getRandomTestPercentage() > 0 ? "\nHint: Try to set the test percetage to '0'" : ""));
+                        } else if (maxentError.equals("No species selected")) {
+                            setMessage("No species selected.\nHint: Make sure your active area includes species occurrences");
+                        }
+                    } else {
+                        // rename the env filenames to their display names
+                        String pth_plots = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "plots" + File.separator;
+                        String pth = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator;
 //                for (int ei = 0; ei < envnameslist.length; ei++) {
 //                    readReplace(pth + "species.html", ".*?\\b"+envpathlist[ei]+"\\b.*?", Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + "("+envnameslist[ei]+")" );
 //                    for (int j = 0; j < imgExtensions.length; j++) {
@@ -217,84 +241,84 @@ public class AnalysisJobMaxent extends AnalysisJob {
 //                readReplace(pth + "species.html", "plots\\\\", "plots/");
 //
 //                readReplace(pth + "species.html", "<a href = \"species_samplePredictions.csv\">The prediction strength at the training and (optionally) test presence sites</a><br>", "");
-                    String input = getInputs();
+                        String input = getInputs();
 //                    String sciname = input.substring(input.indexOf("scientificName:") + 15, input.indexOf(";", input.indexOf("scientificName:") + 15));
 //                    String scirank = input.substring(input.indexOf("taxonRank:") + 10, input.indexOf(";", input.indexOf("taxonRank:") + 10));
-                    readReplace(pth + "species.html", "Maxent model for species", "Maxent model for " + taxon);
+                        readReplace(pth + "species.html", "Maxent model for species", "Maxent model for " + taxon);
 
-                    String paramlist = "Model reference number: " + getName()
-                            + "<br>Species: " + taxon //+ " (" + scirank + ")"
-                            + "<br>Layers: <ul>";
+                        String paramlist = "Model reference number: " + getName()
+                                + "<br>Species: " + taxon //+ " (" + scirank + ")"
+                                + "<br>Layers: <ul>";
 
-                    LayerDAO layerDao = Client.getLayerDao();
-                    for (int ei = 0; ei < envnameslist.length; ei++) {
-                        System.out.println("LAYER NAME: " + envnameslist[ei]);
-                        Layer lyr = layerDao.getLayerByName(envnameslist[ei]);
-                        if (lyr != null) {
-                            paramlist += "<li>" + lyr.getDisplayname() + " (" + envnameslist[ei] + ")</li>";
-                        } else {
-                            if (envnameslist[ei].startsWith("aloc_")) {
-                                paramlist += "<li>Classification (" + envnameslist[ei].split("_")[1] + ")</li>";
+                        LayerDAO layerDao = Client.getLayerDao();
+                        for (int ei = 0; ei < envnameslist.length; ei++) {
+                            System.out.println("LAYER NAME: " + envnameslist[ei]);
+                            Layer lyr = layerDao.getLayerByName(envnameslist[ei]);
+                            if (lyr != null) {
+                                paramlist += "<li>" + lyr.getDisplayname() + " (" + envnameslist[ei] + ")</li>";
                             } else {
-                                paramlist += "<li>" + envnameslist[ei] + "</li>";
-                            }
-                        }
-                    }
-                    paramlist += "</ul>";
-
-                    readReplace(pth + "species.html", "end of this page.<br>", "end of this page.<br><p>" + paramlist + "</p>");
-                    readReplace(pth + "species.html", msets.getOutputPath(), "");
-                    readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
-                    readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
-
-                    // replace the summary
-                    readReplace(pth + "species.html", "This page contains some analysis of the Maxent model for", "This <a href='http://www.cs.princeton.edu/~schapire/maxent/'>Maxent</a> v3.3.3e predictive model for");
-                    readReplace(pth + "species.html", ", created", " was created");
-                    readReplace(pth + "species.html", " using Maxent version 3.3.3e.", ".");
-                    readReplace(pth + "species.html", "If you would like to do further analyses, the raw data used here is linked to at the end of this page", "Links at the bottom of this page to the raw data may be used for further analysis");
-
-                    if (chkResponseCurves != null) {
-                        StringBuffer sbTable = new StringBuffer();
-                        String[] ctxlist = msets.getEnvVarToggler().split(" ");
-                        if (msets.getEnvVarToggler().length() > 0) {
-                            sbTable.append("<pre>");
-                            for (String ctx : ctxlist) {
-                                if (ctx.startsWith("aloc_")) {
-                                    continue;
+                                if (envnameslist[ei].startsWith("aloc_")) {
+                                    paramlist += "<li>Classification (" + envnameslist[ei].split("_")[1] + ")</li>";
+                                } else {
+                                    paramlist += "<li>" + envnameslist[ei] + "</li>";
                                 }
-                                sbTable.append("<span style='font-weight: bold; text-decoration: underline'>" + ctx + " legend</span><br />");
-                                //sbTable.append(IOUtils.toString(new FileInputStream(/*TabulationSettings.environmental_data_path + ctx + ".txt"*/"")));
-                                sbTable.append(IOUtils.toString(new FileInputStream(GridCutter.getLayerPath(resolution, ctx) + ".txt")));
-                                sbTable.append("<br /><br />");
                             }
-                            sbTable.append("</pre>");
-                            readReplace(pth + "species.html", "<br><HR><H2>Analysis of variable contributions</H2><br>", sbTable.toString() + "<br><HR><H2>Analysis of variable contributions</H2><br>");
                         }
-                    }
+                        paramlist += "</ul>";
 
-                    readReplaceBetween(pth + "species.html", "<br>Click <a href=species_explain.bat", "memory.<br>", "");
-                    readReplaceBetween(pth + "species.html", "(A link to the Explain", "additive models.)", "");
+                        readReplace(pth + "species.html", "end of this page.<br>", "end of this page.<br><p>" + paramlist + "</p>");
+                        readReplace(pth + "species.html", msets.getOutputPath(), "");
+                        readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
+                        readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
 
-                    StringBuffer removedSpecies = new StringBuffer();
-                    try {
-                        BufferedReader br = new BufferedReader(new FileReader(
-                                currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "Prediction_removedSpecies.txt"));
-                        String s;
-                        while ((s = br.readLine()) != null) {
-                            removedSpecies.append(s);
+                        // replace the summary
+                        readReplace(pth + "species.html", "This page contains some analysis of the Maxent model for", "This <a href='http://www.cs.princeton.edu/~schapire/maxent/'>Maxent</a> v3.3.3e predictive model for");
+                        readReplace(pth + "species.html", ", created", " was created");
+                        readReplace(pth + "species.html", " using Maxent version 3.3.3e.", ".");
+                        readReplace(pth + "species.html", "If you would like to do further analyses, the raw data used here is linked to at the end of this page", "Links at the bottom of this page to the raw data may be used for further analysis");
+
+                        if (chkResponseCurves != null) {
+                            StringBuffer sbTable = new StringBuffer();
+                            String[] ctxlist = msets.getEnvVarToggler().split(" ");
+                            if (msets.getEnvVarToggler().length() > 0) {
+                                sbTable.append("<pre>");
+                                for (String ctx : ctxlist) {
+                                    if (ctx.startsWith("aloc_")) {
+                                        continue;
+                                    }
+                                    sbTable.append("<span style='font-weight: bold; text-decoration: underline'>" + ctx + " legend</span><br />");
+                                    //sbTable.append(IOUtils.toString(new FileInputStream(/*TabulationSettings.environmental_data_path + ctx + ".txt"*/"")));
+                                    sbTable.append(IOUtils.toString(new FileInputStream(GridCutter.getLayerPath(resolution, ctx) + ".txt")));
+                                    sbTable.append("<br /><br />");
+                                }
+                                sbTable.append("</pre>");
+                                readReplace(pth + "species.html", "<br><HR><H2>Analysis of variable contributions</H2><br>", sbTable.toString() + "<br><HR><H2>Analysis of variable contributions</H2><br>");
+                            }
                         }
-                        br.close();
-                    } catch (Exception e) {
-                    }
-                    if (removedSpecies.length() > 0) {
-                        String header = "'Sensitive species' have been masked out of the model. See: http://www.ala.org.au/about/program-of-projects/sds/\r\n\r\nLSID,Species scientific name,Taxon rank";
-                        writeToFile(header + removedSpecies.toString(),
-                                currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "Prediction_maskedOutSensitiveSpecies.csv");
 
-                        String insertBefore = "<a href = \"species.asc\">The";
-                        String insertText = "<b><a href = \"Prediction_maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br></b>";
-                        readReplace(pth + "species.html", insertBefore, insertText + insertBefore);
-                    }
+                        readReplaceBetween(pth + "species.html", "<br>Click <a href=species_explain.bat", "memory.<br>", "");
+                        readReplaceBetween(pth + "species.html", "(A link to the Explain", "additive models.)", "");
+
+                        StringBuffer removedSpecies = new StringBuffer();
+                        try {
+                            br = new BufferedReader(new FileReader(
+                                    currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "Prediction_removedSpecies.txt"));
+                            String ss;
+                            while ((ss = br.readLine()) != null) {
+                                removedSpecies.append(ss);
+                            }
+                            br.close();
+                        } catch (Exception e) {
+                        }
+                        if (removedSpecies.length() > 0) {
+                            String header = "'Sensitive species' have been masked out of the model. See: http://www.ala.org.au/about/program-of-projects/sds/\r\n\r\nLSID,Species scientific name,Taxon rank";
+                            writeToFile(header + removedSpecies.toString(),
+                                    currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "Prediction_maskedOutSensitiveSpecies.csv");
+
+                            String insertBefore = "<a href = \"species.asc\">The";
+                            String insertText = "<b><a href = \"Prediction_maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br></b>";
+                            readReplace(pth + "species.html", insertBefore, insertText + insertBefore);
+                        }
 
 //                //delete image
 //                FileUtils.deleteQuietly(new File(pth_plots + "species.png"));
@@ -302,52 +326,53 @@ public class AnalysisJobMaxent extends AnalysisJob {
 //                FileUtils.deleteQuietly(new File(pth + "maxent.log"));
 //                FileUtils.deleteQuietly(new File(msets.getSpeciesFilepath()));
 
-                    writeProjectionFile(msets.getOutputPath());
+                        writeProjectionFile(msets.getOutputPath());
 
-                    // if generated successfully, then add it to geoserver
-                    String url = AlaspatialProperties.getGeoserverUrl() + "/rest/workspaces/ALA/coveragestores/maxent_" + getName() + "/file.arcgrid?coverageName=species_" + getName();
-                    String extra = "";
-                    String username = AlaspatialProperties.getGeoserverUsername();
-                    String password = AlaspatialProperties.getGeoserverPassword();
+                        // if generated successfully, then add it to geoserver
+                        String url = AlaspatialProperties.getGeoserverUrl() + "/rest/workspaces/ALA/coveragestores/maxent_" + getName() + "/file.arcgrid?coverageName=species_" + getName();
+                        String extra = "";
+                        String username = AlaspatialProperties.getGeoserverUsername();
+                        String password = AlaspatialProperties.getGeoserverPassword();
 
-                    // first zip up the file as it's going to be sent as binary
-                    //String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
-                    String[] infiles = {msets.getOutputPath() + "species.asc", msets.getOutputPath() + "species.prj"};
-                    String ascZipFile = msets.getOutputPath() + "species.zip";
-                    Zipper.zipFiles(infiles, ascZipFile);
+                        // first zip up the file as it's going to be sent as binary
+                        //String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
+                        String[] infiles = {msets.getOutputPath() + "species.asc", msets.getOutputPath() + "species.prj"};
+                        String ascZipFile = msets.getOutputPath() + "species.zip";
+                        Zipper.zipFiles(infiles, ascZipFile);
 
-                    // Upload the file to GeoServer using REST calls
-                    System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
-                    UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
+                        // Upload the file to GeoServer using REST calls
+                        System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
+                        UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
 
-                    //Enable browser caching, FIX for zoom to extent required.
+                        //Enable browser caching, FIX for zoom to extent required.
 //                    String data = "<coverage><metadata><entry key=\"cacheAgeMax\">3600</entry><entry key=\"cachingEnabled\">true</entry><entry key=\"dirName\">maxent_" + getName() + "_species</entry></metadata></coverage>";
 //                    url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/maxent_" + getName() + "/coverages/maxent_" + getName() + ".xml";
 //                    UploadSpatialResource.assignSld(url, extra, username, password, data);
 
-                    htProcess.put("status", "success"); ///
-                    htProcess.put("pid", getName());
-                    htProcess.put("info", "/output/maxent/" + getName() + "/species.html");
+                        htProcess.put("status", "success"); ///
+                        htProcess.put("pid", getName());
+                        htProcess.put("info", "/output/maxent/" + getName() + "/species.html");
 
-                    //convert .asc to .grd/.gri
-                    convertAscToDiva(msets.getOutputPath() + "species.asc", msets.getOutputPath() + getName());
+                        //convert .asc to .grd/.gri
+                        convertAscToDiva(msets.getOutputPath() + "species.asc", msets.getOutputPath() + getName());
 
-                    setStage(3);
+                        setStage(3);
 
-                    // generate the readme.txt file
-                    CitationService.generatePredictionReadme(msets.getOutputPath(), msets.getSpeciesFilepath().substring(msets.getSpeciesFilepath().lastIndexOf("points")));
+                        // generate the readme.txt file
+                        CitationService.generatePredictionReadme(msets.getOutputPath(), msets.getSpeciesFilepath().substring(msets.getSpeciesFilepath().lastIndexOf("points")));
 
-                    setProgress(1, "finished");
+                        setProgress(1, "finished");
 
-                    setCurrentState(SUCCESSFUL);
+                        setCurrentState(SUCCESSFUL);
 
-                    //write out infor for adjusting input parameters
-                    System.out.println("MAXENT:" + cells + "," + envnameslist.length + " " + speciesCount + " " + (stageTimes[1] - stageTimes[0]) + " " + (stageTimes[2] - stageTimes[0]) + " " + (stageTimes[3] - stageTimes[2]));
+                        //write out infor for adjusting input parameters
+                        System.out.println("MAXENT:" + cells + "," + envnameslist.length + " " + speciesCount + " " + (stageTimes[1] - stageTimes[0]) + " " + (stageTimes[2] - stageTimes[0]) + " " + (stageTimes[3] - stageTimes[2]));
+                    }
+                } else {
+                    System.out.println("Failed 1");
+                    setProgress(1, "failed");
+                    setCurrentState(FAILED);
                 }
-            } else {
-                System.out.println("Failed 1");
-                setProgress(1, "failed");
-                setCurrentState(FAILED);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -715,5 +740,25 @@ public class AnalysisJobMaxent extends AnalysisJob {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private String writeFile(String contents, String outputpath, String filename) {
+        try {
+            File fDir = new File(outputpath);
+            fDir.mkdir();
+
+            File spFile = new File(fDir, filename);
+            PrintWriter spWriter = new PrintWriter(new BufferedWriter(new FileWriter(spFile)));
+
+            spWriter.write(contents);
+            spWriter.close();
+
+            return spFile.getAbsolutePath();
+        } catch (IOException ex) {
+            System.out.println("error writing species file:");
+            ex.printStackTrace(System.out);
+        }
+
+        return null;
     }
 }

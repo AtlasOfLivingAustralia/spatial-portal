@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>org.ala.layers</groupId>
 			<artifactId>layers-store</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>1.1-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
 					<groupId>net.sourceforge.andspidclient</groupId>
@@ -81,13 +81,6 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 			<version>${org.springframework.version}</version>
-			<exclusions>
-				<!-- Exclude Commons Logging in favor of SLF4j -->
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -182,23 +175,6 @@
 
 		<!-- Logging -->
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${org.slf4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jcl-over-slf4j</artifactId>
-			<version>${org.slf4j.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${org.slf4j.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
@@ -220,64 +196,8 @@
 					<artifactId>jmxri</artifactId>
 				</exclusion>
 			</exclusions>
-			<scope>runtime</scope>
 		</dependency>
 
-		<!-- JSR 303 with Hibernate Validator -->
-		<dependency>
-			<groupId>javax.validation</groupId>
-			<artifactId>validation-api</artifactId>
-			<version>1.0.0.GA</version>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
-			<version>4.0.2.GA</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-core</artifactId>
-			<version>3.3.2.GA</version>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-entitymanager</artifactId>
-			<version>3.4.0.GA</version>
-		</dependency>
-		<!-- <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-annotations</artifactId> 
-			<version>3.4.0.GA</version> </dependency> -->
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-c3p0</artifactId>
-			<version>3.3.2.GA</version>
-		</dependency>
-
-		<!-- hibernate spatial <dependency> <groupId>org.hibernatespatial</groupId> 
-			<artifactId>hibernate-spatial-postgis</artifactId> <version>1.0-M2</version> 
-			<exclusions> <exclusion> <groupId>org.hibernate</groupId> <artifactId>hibernate</artifactId> 
-			</exclusion> </exclusions> </dependency> -->
-
-		<!-- hibernate spatial -->
-		<dependency>
-			<groupId>org.hibernatespatial</groupId>
-			<artifactId>hibernate-spatial-postgis</artifactId>
-			<version>1.1.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!-- postgresql -->
-
-		<dependency>
-			<groupId>postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>8.4-701.jdbc4</version>
-		</dependency>
 
 		<!-- csv -->
 		<dependency>
@@ -285,15 +205,6 @@
 			<artifactId>opencsv</artifactId>
 			<version>2.1</version>
 		</dependency>
-
-
-
-
-		<!-- Joda Time -->
-		<!-- <dependency> <groupId>joda-time</groupId> <artifactId>joda-time</artifactId> 
-			<version>1.6</version> <scope>runtime</scope> </dependency> <dependency> 
-			<groupId>joda-time</groupId> <artifactId>joda-time-jsptags</artifactId> <version>1.0.2</version> 
-			<scope>runtime</scope> </dependency> -->
 
 		<!-- HTTP Client -->
 		<dependency>
@@ -307,7 +218,7 @@
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.4.2</version>
+			<version>1.8.5</version>
 		</dependency>
 
 		<!-- URL Rewrite -->
@@ -360,7 +271,7 @@
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
-			<version>1.3.1</version>
+			<version>1.4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -368,7 +279,27 @@
 			<version>3.2.0.Final</version>
 			<type>jar</type>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.apache.odftoolkit</groupId>
+            <artifactId>simple-odf</artifactId>
+            <version>0.8-incubating</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.odftoolkit</groupId>
+            <artifactId>simple-odf</artifactId>
+            <version>0.8-incubating</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.odftoolkit</groupId>
+            <artifactId>simple-odf</artifactId>
+            <version>0.8-incubating</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.odftoolkit</groupId>
+            <artifactId>simple-odf</artifactId>
+            <version>0.8-incubating</version>
+        </dependency>
+    </dependencies>
 	<repositories>
 		<!-- For JSR 303 and Hibernate Validator only - Encourage JBoss to publish 
 			these artifacts to Maven Central! -->

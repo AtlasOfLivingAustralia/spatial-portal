@@ -20,6 +20,8 @@ import java.util.TreeMap;
 import org.ala.layers.client.Client;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
+import org.ala.layers.intersect.SimpleShapeFile;
+import org.ala.layers.intersect.SimpleShapeFileCache;
 import org.ala.layers.util.SpatialUtil;
 import org.ala.spatial.analysis.index.LayerFilter;
 
@@ -285,6 +287,13 @@ public class GridCutter {
                 return null;
             }
         }
+        //do extents check for contextual envelopes as well
+        if(envelopes != null) {
+            extents = internalExtents(extents, getLayerFilterExtents(envelopes));
+            if (!isValidExtents(extents)) {
+                return null;
+            }
+        }
 
         //get mask and adjust extents for filter
         byte[][] mask;
@@ -350,12 +359,22 @@ public class GridCutter {
 
     static double[][] getLayerExtents(String resolution, String layer) {
         double[][] extents = new double[2][2];
-        Grid g = Grid.getGrid(getLayerPath(resolution, layer));
 
-        extents[0][0] = g.xmin;
-        extents[0][1] = g.ymin;
-        extents[1][0] = g.xmax;
-        extents[1][1] = g.ymax;
+        if (getLayerPath(resolution, layer) == null && Client.getFieldDao().getFieldById(layer).getType().equalsIgnoreCase("c")) {
+            //use world extents here, remember to do object extents later.
+            extents[0][0] = -180;
+            extents[0][1] = -90;
+            extents[1][0] = 180;
+            extents[1][1] = 90;
+
+        } else {
+            Grid g = Grid.getGrid(getLayerPath(resolution, layer));
+
+            extents[0][0] = g.xmin;
+            extents[0][1] = g.ymin;
+            extents[1][0] = g.xmax;
+            extents[1][1] = g.ymax;
+        }
 
         return extents;
     }
@@ -402,6 +421,52 @@ public class GridCutter {
             } else {
                 System.out.println("getLayerPath, cannot find for: " + layer + ", " + resolution);
                 return null;
+            }
+        }
+    }
+
+
+    public static boolean existsLayerPath(String resolution, String layer, boolean do_not_lower_resolution) {
+        String field = Layers.getFieldId(layer);
+
+        File file = new File(AlaspatialProperties.getAnalysisLayersDir() + File.separator + resolution + File.separator + field + ".grd");
+
+        //move up a resolution when the file does not exist at the target resolution
+        try {
+            while (!file.exists() && !do_not_lower_resolution) {
+                TreeMap<Double, String> resolutionDirs = new TreeMap<Double, String>();
+                for (File dir : new File(AlaspatialProperties.getAnalysisLayersDir()).listFiles()) {
+                    if (dir.isDirectory()) {
+                        try {
+                            resolutionDirs.put(Double.parseDouble(dir.getName()), dir.getName());
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+
+                String newResolution = resolutionDirs.higherEntry(Double.parseDouble(resolution)).getValue();
+
+                if (newResolution.equals(resolution)) {
+                    break;
+                } else {
+                    resolution = newResolution;
+                    file = new File(AlaspatialProperties.getAnalysisLayersDir() + File.separator + resolution + File.separator + field + ".grd");
+                }
+            }
+        } catch (Exception e) {
+        }
+
+        String layerPath = AlaspatialProperties.getAnalysisLayersDir() + File.separator + resolution + File.separator + field;
+
+        if (new File(layerPath + ".grd").exists()) {
+            return true;
+        } else {
+            //look for an analysis layer
+            String[] info = Client.getLayerIntersectDao().getConfig().getAnalysisLayerInfo(layer);
+            if (info != null) {
+                return true;
+            } else {
+                return false;
             }
         }
     }
@@ -524,13 +589,36 @@ public class GridCutter {
         for (int k = 0; k < envelopes.length; k++) {
             LayerFilter lf = envelopes[k];
 
-            Grid grid = Grid.getGrid(getLayerPath(resolution, lf.getLayername()));
+            // if it is contextual and a grid file does not exist at the requested resolution
+            // and it is not a grid processed as a shape file,
+            // then get the shape file to do the intersection
+            if (existsLayerPath(resolution, lf.getLayername(), true) && lf.isContextual()
+                    && Client.getFieldDao().getFieldById(lf.getLayername()).getType().equalsIgnoreCase("c")) {
 
-            float[] d = grid.getValues3(points, 40960);
+                String [] ids = lf.getIds();
+                SimpleRegion [] srs = new SimpleRegion[ids.length];
 
-            for (int i = 0; i < d.length; i++) {
-                if (lf.isValid(d[i])) {
-                    mask[i / w][i % w]++;
+                for(int i=0;i<ids.length;i++) {
+                    srs[i] = SimpleShapeFile.parseWKT(Client.getObjectDao().getObjectsGeometryById(ids[i],"WKT"));
+
+                }
+                for(int i=0;i<points.length;i++) {
+                    for(int j=0;j<srs.length;j++) {
+                        if(srs[j].isWithin(points[i][0],points[i][1])) {
+                            mask[i/w][i%w]++;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                Grid grid = Grid.getGrid(getLayerPath(resolution, lf.getLayername()));
+
+                float[] d = grid.getValues3(points, 40960);
+
+                for (int i = 0; i < d.length; i++) {
+                    if (lf.isValid(d[i])) {
+                        mask[i / w][i % w]++;
+                    }
                 }
             }
         }
@@ -607,6 +695,11 @@ public class GridCutter {
                 return -1;
             }
         }
+        //do extents check for contextual envelopes as well
+        extents = internalExtents(extents, getLayerFilterExtents(envelopes));
+        if (!isValidExtents(extents)) {
+            return -1;
+        }
 
         double res = Double.parseDouble(resolution);
         
@@ -663,6 +756,27 @@ public class GridCutter {
         return areaSqKm;
     }
 
+    private static double[][] getLayerFilterExtents(LayerFilter[] envelopes) {
+
+        double [][] extents = new double [][] {{-180, -90}, {180, 90}};
+        for(int i=0;i<envelopes.length;i++) {
+            if (Client.getFieldDao().getFieldById(envelopes[i].getLayername()).getType().equalsIgnoreCase("c")) {
+                String [] ids = envelopes[i].getIds();
+                for(int j=0;j<ids.length;j++) {
+                    try {
+                        double [][] bbox = SimpleShapeFile.parseWKT(Client.getObjectDao().getObjectByPid(ids[j]).getBbox()).getBoundingBox();
+                        extents = internalExtents(extents,bbox);
+                    } catch (Exception e) {
+                        //Expecting this to fail often!
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+        }
+        return extents;
+    }
+
 
     /**
      * Test if the layer filter is valid.
@@ -676,7 +790,12 @@ public class GridCutter {
      */
     public static boolean isValidLayerFilter(String resolution, LayerFilter[] filter) {
         for (LayerFilter lf : filter) {
-            if (GridCutter.getLayerPath(resolution, lf.getLayername()) == null) {
+            //it is not valid if the layer itself does not exist.
+            // so if there is not grid file available to GridCutter
+            // and the layer is not a contextual layer of type 'c' (ie, not a grid file based contextual layer)
+            // it is not valid
+            if (GridCutter.getLayerPath(resolution, lf.getLayername()) == null
+                    && !(lf.isContextual() && Client.getFieldDao().getFieldById(lf.getLayername()).getType().equalsIgnoreCase("c"))) {
                 return false;
             }
         }

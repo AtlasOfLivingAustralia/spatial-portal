@@ -28,6 +28,7 @@ import org.ala.layers.client.Client;
 import org.ala.layers.intersect.Grid;
 import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.GridCutter;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Generates inter layer association distances for analysis environmental grid
@@ -189,8 +190,14 @@ public class LayerDistanceIndex {
         Map<String, Double> map = new ConcurrentHashMap<String, Double>();
         BufferedReader br = null;
         try {
-            br = new BufferedReader(new FileReader(AlaspatialProperties.getAnalysisWorkingDir()
-                    + LAYER_DISTANCE_FILE));
+            File file = new File(AlaspatialProperties.getAnalysisWorkingDir()
+                    + LAYER_DISTANCE_FILE);
+            if (!file.exists()) {
+                //attempt to create empty file if it does not exist
+                file.mkdirs();
+                FileUtils.writeStringToFile(file,"");
+            }
+            br = new BufferedReader(new FileReader(file));
 
             String line;
             while ((line = br.readLine()) != null) {

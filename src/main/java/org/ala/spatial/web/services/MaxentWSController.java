@@ -26,6 +26,7 @@ import org.ala.spatial.util.AnalysisQueue;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
 import org.ala.spatial.util.AlaspatialProperties;
+import org.ala.spatial.util.OccurrenceData;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -48,13 +49,16 @@ public class MaxentWSController {
             String currentPath = AlaspatialProperties.getBaseOutputDir();
             String taxon = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__", ".");
             String taxonlsid = URLDecoder.decode(req.getParameter("taxonlsid"), "UTF-8").replace("__", ".");
-            String species = req.getParameter("species");
-            String removedSpecies = req.getParameter("removedspecies");
+            //String species = req.getParameter("species");
+            //String removedSpecies = req.getParameter("removedspecies");
             String area = req.getParameter("area");
             String envlist = req.getParameter("envlist");
             String txtTestPercentage = req.getParameter("txtTestPercentage");
             String chkJackknife = req.getParameter("chkJackknife");
             String chkResponseCurves = req.getParameter("chkResponseCurves");
+            String speciesq = req.getParameter("speciesq");
+            String bs = req.getParameter("bs");
+
 
             String resolution = req.getParameter("res");
             if (resolution == null) {
@@ -70,10 +74,9 @@ public class MaxentWSController {
             }
 
             String pid = Long.toString(currTime);
-            writeFile(species, currentPath + "output" + File.separator + "maxent" + File.separator + pid + File.separator, "species_points.csv");
-            if (removedSpecies != null) {
-                writeFile(removedSpecies, currentPath + "output" + File.separator + "maxent" + File.separator + pid + File.separator, "Prediction_removedSpecies.txt");
-            }
+
+            writeFile(speciesq + "\n" + bs,currentPath + "output" + File.separator + "maxent" + File.separator + pid + File.separator, "species_query.csv");
+
             AnalysisJobMaxent ajm = new AnalysisJobMaxent(pid, currentPath, taxon, envlist, region, filter, txtTestPercentage, chkJackknife, chkResponseCurves, resolution);
             StringBuffer inputs = new StringBuffer();
             inputs.append("pid:").append(pid);

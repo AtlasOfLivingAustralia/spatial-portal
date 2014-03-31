@@ -51,7 +51,7 @@ public class EnvelopeWSController {
             if (resolution == null) {
                 resolution = "0.01";
             }
-
+            
             LayerFilter[] filter = null;
             if (area != null /*
                      * && area.startsWith("ENVELOPE")
@@ -61,7 +61,7 @@ public class EnvelopeWSController {
 
             //test envelope
             if (!GridCutter.isValidLayerFilter(resolution, filter)) {
-                return null;
+               return null;
             }
 
             String pid = String.valueOf(System.currentTimeMillis());

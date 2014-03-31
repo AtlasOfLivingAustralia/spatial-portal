@@ -77,7 +77,10 @@ public class AnalysisJobAloc extends AnalysisJob {
         try {
             //get extents from aloc run
             StringBuffer extents = new StringBuffer();
-            BufferedReader br = new BufferedReader(new FileReader(filepath + "extents.txt"));
+
+            File file = new File(filepath + "extents.txt");
+
+            BufferedReader br = new BufferedReader(new FileReader(file));
             int width = Integer.parseInt(br.readLine());
             int height = Integer.parseInt(br.readLine());
             double xmin = Double.parseDouble(br.readLine());
@@ -305,7 +308,9 @@ public class AnalysisJobAloc extends AnalysisJob {
             msets.setEnvList(Arrays.asList(envnameslist));
             msets.setNumberOfGroups(numberOfGroups);
             msets.setEnvPath(cutDataPath);          //use (possibly) cut layers
-            msets.setOutputPath(currentPath + "output" + File.separator + "aloc" + File.separator + getName() + File.separator);
+            File dir = new File(currentPath + "output" + File.separator + "aloc" + File.separator + getName() + File.separator);
+            dir.mkdirs();
+            msets.setOutputPath(dir.getPath() + File.separator);
 
             AlocServiceImpl aloc = new AlocServiceImpl();
             aloc.setAlocSettings(msets);

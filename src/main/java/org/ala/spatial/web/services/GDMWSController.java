@@ -40,11 +40,7 @@ import org.ala.layers.intersect.IniReader;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
 import org.ala.spatial.analysis.index.LayerFilter;
-import org.ala.spatial.util.AlaspatialProperties;
-import org.ala.spatial.util.GridCutter;
-import org.ala.spatial.util.SpatialTransformer;
-import org.ala.spatial.util.UploadSpatialResource;
-import org.ala.spatial.util.Zipper;
+import org.ala.spatial.util.*;
 import org.apache.commons.io.FileUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
@@ -85,9 +81,18 @@ public class GDMWSController {
             long currTime = System.currentTimeMillis();
 
             String envlist = req.getParameter("envlist");
-            String speciesdata = req.getParameter("speciesdata");
+            //String speciesdata = req.getParameter("speciesdata");
             String area = req.getParameter("area");
-            String taxacount = req.getParameter("taxacount"); 
+            String taxacount = req.getParameter("taxacount");
+
+
+            String bs = req.getParameter("bs");
+            String speciesq = req.getParameter("speciesq");
+
+            OccurrenceData od = new OccurrenceData();
+            String [] s = od.getSpeciesData(speciesq, bs, null);
+
+            String speciesdata = s[0];
 
             //Layer[] layers = getEnvFilesAsLayers(envlist);
 
