@@ -1,8 +1,8 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>   
     <window id="distributionresults" title="Expert Distributions" border="normal"
-    use="au.org.ala.spatial.composer.results.DistributionsWCController"
-            apply="au.org.ala.spatial.composer.results.DistributionsWCController"
+    use="au.org.ala.spatial.composer.results.DistributionsController"
+            apply="au.org.ala.spatial.composer.results.DistributionsController"
             closable="true" mode="embedded" width="90%">
                 
             <separator />

@@ -234,7 +234,7 @@ function buildMapReal() {
         new OpenLayers.Control.Navigation()
     ];
     var mapOptions = {
-        projection: new OpenLayers.Projection("EPSG:900913"),
+        projection: new OpenLayers.Projection("EPSG:3857"),
         displayProjection: new OpenLayers.Projection("EPSG:4326"),
         units: "m",
         numZoomLevels: 18,
@@ -274,7 +274,7 @@ function buildMapReal() {
         {
             isBaseLayer: true,
             'wrapDateLine': true,
-            projection: new OpenLayers.Projection("EPSG:900913"),
+            projection: new OpenLayers.Projection("EPSG:3857"),
             'sphericalMercator': true
         }
     );
@@ -371,7 +371,7 @@ function iterateSpeciesInfoQuery(curr) {
         }
     } catch (err) {
     }
-
+    console.log("testing");
     var url = query_url[pos] + "&start=" + curpos;
     //alert(url);
     $.getJSON(proxy_script + URLEncode(url), function (data) {
@@ -380,7 +380,7 @@ function iterateSpeciesInfoQuery(curr) {
             var ulyr_occ_id = data.occurrences[0].id;
             var ulyr_occ_lng = data.occurrences[0].longitude;
             var ulyr_occ_lat = data.occurrences[0].latitude;
-            var ulyr_meta = data.metadata;
+            var ulyr_meta = "";//data.metadata;
 
             var data = ulyr_meta.replace(/_n_/g, "<br />");
 
@@ -388,7 +388,8 @@ function iterateSpeciesInfoQuery(curr) {
             if (query_count_total == 1) {
                 heading = "<h2>Occurrence information (1 occurrence)</h2>";
             }
-
+            console.log("testing");
+            console.log(data);
             var infohtml = "<div id='sppopup2'> " +
                 heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
                 " Longitude: " + ulyr_occ_lng + " , Latitude: " + ulyr_occ_lat + " (<a href='javascript:goToLocation(" + ulyr_occ_lng + ", " + ulyr_occ_lat + ", 15);relocatePopup(" + ulyr_occ_lng + ", " + ulyr_occ_lat + ");'>zoom to</a>) <br/>" +
@@ -576,7 +577,7 @@ function pointSpeciesSearch(e) {
                         if (p1 < 0) p1 = layer.url.indexOf(";", p0);
                         if (p1 < 0) p1 = layer.url.length;
                         if (p0 >= 0 && p1 >= 0 && layer.params != null) {
-                            if (layer.url.contains(webportal_url)) {
+                            if (layer.url.contains("/userdata/")) {
                                 userquery = layer.url.substring(p0 + 11, p1);
                             } else {
                                 query = layer.url.substring(p0 + 11, p1);
@@ -1788,7 +1789,7 @@ function initNearest() {
                 var data = envLayerNearest(e);
                 if (data != null) {
                     setTimeout(function () { //fix for some browsers
-                        parent.document.getElementById('nearestOutput').innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>";
+                        parent.document.getElementById('nearestOutput').innerHTML = "<table style='background-color:white'><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>";
                     }, 200)
                 } else {
                     setTimeout(function () { //fix for some browsers
@@ -1976,13 +1977,14 @@ function getOccurrenceUploaded(layer, query, lat, lon, start, pos, dotradius) {
         map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
     var lonSize = Math.abs(lon - lonlat.lon);
     var latSize = Math.abs(lat - lonlat.lat);
-    var url = parent.jq('$webportal_url')[0].innerHTML + "/ws/occurrences?q=" + query
+    var url = layer.url.substring(0, layer.url.indexOf("/userdata")) + "/occurrences?q=" + query
         + "&box=" + (lon - lonSize) + "," + (lat - latSize) + "," + (lon + lonSize) + "," + (lat + latSize);
     var ret = null;
     $.ajax({
         url: proxy_script + URLEncode(url + "&start=" + start),
         dataType: "json",
         success: function (data) {
+            console.log(data);
             ret = data;
         },
         async: false
@@ -2060,7 +2062,7 @@ function loadPanoramio(pictureIndexFrom, pictureIndexTo) {
             var photo_url = panoramio.photos[i].photo_url;
 
             var fpoint = new OpenLayers.Geometry.Point(longitude, latitude);
-            fpoint.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
+            fpoint.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:3857"));
             var attributes = {
                 'upload_date': upload_date,
                 'owner_name': owner_name,

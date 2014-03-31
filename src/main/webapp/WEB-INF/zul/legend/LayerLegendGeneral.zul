@@ -42,7 +42,7 @@
                         <hbox>
                             <style dynamic="true">
 			                    <!-- cut/hide the vertical borders in the grid rows -->
-                                .noborder  tr.z-row td.z-row-inner, tr.z-row .z-cell, div.z-grid
+                                .noborder tr.z-row td.z-row-inner, tr.z-row .z-cell, div.z-grid
                                 {
                                     border: none;
                                     zoom: 1;
@@ -51,12 +51,12 @@
                                     border-left: none;
                                     border-right: none;
                                     border-bottom: none;
-                                    padding: 1px 5px 0px 0px;
+                                    padding: 1px 2px 0px 0px;
                                 }
                             </style>
-                            <grid id="cpGrid" width="280px" sclass="noborder" style="padding-left:2px;margin-left:65px;" >
+                            <grid id="cpGrid" width="280px" zclass="noborder" style="padding-left:2px;margin-left:65px;" >
                                 <rows>
-                                    <row>
+                                    <row >
                                         <div style="background-color:#8b0000" height="12px" onClick="layerlegend.selectColour(self)" />
                                         <div style="background-color:#FF0000" height="12px" onClick="layerlegend.selectColour(self)"  />
                                         <div style="background-color:#CD5C5C" height="12px" onClick="layerlegend.selectColour(self)"  />
@@ -250,14 +250,14 @@
                                 <hbox>
 
                                 </hbox>
-                                <hbox>
+                                <hbox width="250px">
                                     <div style="padding-top:3px" width="60px">
                                         <label value="Year range" sclass="h3"/>
                                     </div>
                                     <div>
-                                      <intbox id="intAnimationYearStart" width="30px" value="10"/>
+                                      <intbox id="intAnimationYearStart" width="40px" value="10"/>
                                       to
-                                      <intbox id="intAnimationYearEnd" width="30px" value="10"/>
+                                      <intbox id="intAnimationYearEnd" width="40px" value="10"/>
                                     </div>
                                 </hbox>
                                 <hbox>

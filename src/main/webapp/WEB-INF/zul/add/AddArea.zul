@@ -48,13 +48,14 @@
                     <label value="Other" sclass="wSubLabel" />
                     <radio label="Define environmental envelope" id="ciEnvironmentalEnvelope" />
                     <radio label="Enter area coordinates (WKT)" id="ciWKT" />
+                    <radio label="Merge map areas" id="ciMergeAreas" />
                     </vbox>
                 </radiogroup>
             </div>
         </vbox>
 
             <separator />
-            <div sclass="wButtons">
+            <div sclass="wButtons wizButtonContainer">
                 <hbox>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel" />
                     <button sclass="goButton" label="Next" id="btnOk" disabled="false" />

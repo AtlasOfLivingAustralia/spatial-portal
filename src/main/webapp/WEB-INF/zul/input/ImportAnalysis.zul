@@ -23,10 +23,17 @@
         </div>
         <separator/>
         <separator/>
+        <div id="divPriorAnalysis">
+            <vbox>
+                <label value="Select prior analysis" />
+
+                <listbox id="lbLog" />
+            </vbox>
+        </div>
         <separator/>
         <separator/>
         <separator/>
-        <div sclass="wButtons">
+        <div sclass="wButtons wizButtonContainer">
             <hbox>
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
                 <button sclass="goButton" label="Next" id="btnOk"/>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul" xmlns:n="http://www.zkoss.org/2005/zk/native">
-    <window id="addtoolwindow" title="Add tool" use="au.org.ala.spatial.composer.tool.ToolScatterplotComposer"
-    apply="au.org.ala.spatial.composer.tool.ToolScatterplotComposer" width="750px" height="700px"
+    <window id="addtoolwindow" title="Add tool" use="au.org.ala.spatial.composer.tool.ScatterplotComposer"
+    apply="au.org.ala.spatial.composer.tool.ScatterplotComposer" width="750px" height="700px"
    xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -61,7 +61,6 @@
                     <radio id="rAreaCurrent" label="Current extent" value="current" />
                     <radio id="rAreaAustralia" label="Australia" value="australia" />
                     <radio id="rAreaWorld" label="World" value="world" />
-                    <radio id="rAreaCustom" label="Define new area" value="custom" />
                 </radiogroup>
             </div>
 
@@ -87,7 +86,7 @@
                                 <hbox>
                                     <separator orient="vertical" />
                                     <div id="searchSpeciesACComp" use="au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent"/>
-                                    <!--<combobox id="searchSpeciesAuto" use="au.org.ala.spatial.composer.SpeciesAutoComplete"
+
                                     autodrop="true"  width="320px"  
                                     onOK="if(searchSpeciesAuto.getSelectedIndex()>=0)addtoolwindow.onClick$btnOk(null)">
                                         <comboitem label=""/>
@@ -114,7 +113,7 @@
                             <label value="Add from search" />
                             <separator orient="vertical" />
                             <div id="mSearchSpeciesACComp" use="au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent"/>
-                            <!-- <combobox id="mSearchSpeciesAuto" use="au.org.ala.spatial.composer.SpeciesAutoComplete" autodrop="true" width="330px" /> -->
+
                         </hbox>
                         <separator />
                         <separator />
@@ -147,7 +146,6 @@
                     <radio id="rAreaCurrentHighlight" label="Current extent" value="current"/>
                     <radio id="rAreaAustraliaHighlight" label="Australia" value="australia" />
                     <radio id="rAreaWorldHighlight" label="World" value="world" />
-                    <radio id="rAreaCustomHighlight" label="Define new area" value="custom" />
                 </radiogroup>
             </div>
 
@@ -157,7 +155,7 @@
                 <separator height="20px"/>
                 <hbox width="500px">
                     <label value="X" width="15px" />
-                    <combobox id="cbLayer2" use="au.org.ala.spatial.composer.EnvLayersCombobox" autodrop="true" width="280px" />                    
+                    <combobox id="cbLayer2" use="au.org.ala.spatial.composer.layer.EnvLayersCombobox" autodrop="true" width="280px" />
                     <menubar orient="vertical" autodrop="true">
                         <menu label="mapped layers" >
                             <menupopup id="mpLayer2" />
@@ -167,7 +165,7 @@
                 <separator height="15px"/>
                 <hbox>
                     <label value="Y" width="15px" />
-                    <combobox id="cbLayer1" use="au.org.ala.spatial.composer.EnvLayersCombobox" autodrop="true" width="280px" />
+                    <combobox id="cbLayer1" use="au.org.ala.spatial.composer.layer.EnvLayersCombobox" autodrop="true" width="280px" />
                     <menubar orient="vertical" autodrop="true" >
                         <menu label="mapped layers" >
                             <menupopup id="mpLayer1" />
@@ -200,7 +198,7 @@
                                 <hbox>
                                     <separator orient="vertical" />
                                     <div id="bgSearchSpeciesACComp" use="au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent"/>
-                                    <!-- <combobox id="bgSearchSpeciesAuto" use="au.org.ala.spatial.composer.SpeciesAutoComplete" 
+
                                     autodrop="true"  width="320px"  
                                     onOK="if(bgSearchSpeciesAuto.getSelectedIndex()>=0)addtoolwindow.onClick$btnOk(null)">
                                         <comboitem label=""/> 
@@ -225,7 +223,7 @@
                             <label value="Add from search" />
                             <separator orient="vertical" />
                             <div id="mSearchSpeciesACCompBk" use="au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent"/>
-                            <!-- <combobox id="mSearchSpeciesAutoBk" use="au.org.ala.spatial.composer.SpeciesAutoComplete" autodrop="true" width="330px" /> -->
+
                         </hbox>
                         <separator />
                         <separator />

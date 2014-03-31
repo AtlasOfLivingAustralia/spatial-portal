@@ -16,10 +16,21 @@
         <property name="useCodeAsDefaultMessage" value="true"/>
     </bean>
 
+
+    <!-- beans for RestTemplate  -->
+    <bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+        <property name="messageConverters">
+            <list>
+                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
+            </list>
+        </property>
+    </bean>
+
+
+    <bean id="facetCache" class="au.org.ala.spatial.data.FacetCacheImpl">
+    </bean>
+
     <!-- Configures Spring MVC -->
     <import resource="mvc-config.xml"/>
-
-    <!-- Configures hibernate -->
-    <!--import resource="data-config.xml" /-->
 
 </beans>

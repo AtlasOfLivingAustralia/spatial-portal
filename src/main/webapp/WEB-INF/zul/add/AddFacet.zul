@@ -49,10 +49,9 @@
                         <radio id="rAreaCurrent" label="Current extent" value="current"/>
                         <radio id="rAreaAustralia" label="Australia" value="australia"/>
                         <radio id="rAreaWorld" label="World" value="world" checked="true"/>
-                        <radio id="rAreaCustom" label="Define new area" value="custom"/>
                     </radiogroup>
                 </div>
-                <div id="atstep2" visible="false" zclass="last optional" sclass="atstep"  width="560px" height="600px" style="padding:5px;">
+                <div id="atstep2" visible="false" zclass="last optional" sclass="atstep"  width="560px" height="450px" style="padding:5px;">
                     <label id="atstep2_desc" value="" sclass="wSubLabel"/>
                     <label id="atstep2_label" value="" />
                 <div id="colourChooser">
@@ -62,14 +61,35 @@
                         <combobox id="cbColour" width="200px" autodrop="true">
                         </combobox>
                     </hbox>
-                    <separator spacing="10px" />
                     <hbox>
                         <a href="resources/FacetFields.htm" target="_blank" label="Facet Fields and definitions"/>
                     </hbox>
                 </div>
-                
-                <separator spacing="10px" />
-                    <div width="60px" >
+
+
+                            <div id="divContinous" visible="false">
+                            <separator />
+                               <label id="dlabel" width="350px" />
+                               <checkbox id="cbContinousRange" label="Use range" checked="false" />
+                                <!--rangeslider id="dslider" width="350px" /-->
+                                <hbox>
+                                    <doublebox id="dmin" />
+                                    <vbox>
+                                        <separator height="10px" />
+                                        <label value=" TO " style="" />
+                                    </vbox>
+                                    <doublebox id="dmax" />
+                                    <button id="dbutton" label="Select" sclass="gobutton" />
+                                </hbox>
+                                <checkbox id="dunknown" label="Select Unknown" checked="false" />
+                                <label id="lblOccurrencesSelected" width="350px" />
+                                <separator />
+                             </div>
+
+
+
+
+             <div width="60px" >
                         <label value="Legend" style="font-weight:bold" />
                     </div>
             <!--div id="dCreateButtons"  height="20px" style="bottom: 0px; right: 100px 5px 5px 100px;padding: 0px 5px 5px 0px;"-->
@@ -77,43 +97,30 @@
                 <button id="selectAll" label="Select all" sclass="goButton" />
                 <button id="clearSelection" label="Clear selection" sclass="goButton"/>
             </div>
-            <div height="420px">
-            <listbox sclass="legendlist2" id="legend" width="525px" height="100%" vflex="true">
+            <div height="350px">
+            <listbox sclass="legendlist2" id="legend" width="525px" vflex="true"  mold="paging" autopaging="true" >
                 <listhead sizable="true">
                     <listheader label="   " width="25px" id="lhFirstColumn" />
                     <listheader label="class" width="300px" id="lhSecondColumn"></listheader>
-                    <listheader label="colour" width="50px" id="lhThirdColumn" ></listheader>
+                    <listheader label="colour" width="0px" id="lhThirdColumn" ></listheader>
                     <listheader label="count" width="150px" align="right" id="lhFourthColumn"></listheader>
                 </listhead>
             </listbox>
+
             </div>
-            <vbox height="30px" visible="false">
-                <separator height="15px" />
-                <div id="divContinous" visible="false">
-                   <label id="dlabel" width="350px" />
-                    <!--rangeslider id="dslider" width="350px" /-->
-                    <hbox>
-                        <doublebox id="dmin" />
-                        <vbox>
-                            <separator height="10px" />
-                            <label value=" TO " style="" />
-                        </vbox>
-                        <doublebox id="dmax" />
-                        <button id="dbutton" label="Select" sclass="gobutton" />
-                    </hbox>
-                    <checkbox id="dunknown" label="Select Unknown" checked="false" />
-                 </div>
-            </vbox>
+
             </div>
+ <div sclass="wizButtonContainer">
+                                    <hbox>
+                                        <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
+                                        <button sclass="goButton" label="Cancel" id="btnCancel" />
+                                        <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
+                                        <button sclass="goButton" label="Next &gt;" id="btnOk" disabled="true" />
+                                    </hbox>
+                                </div>
+
             </vbox>
         </hbox>
-        <div sclass="wizButtonContainer">
-            <hbox>
-                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
-                <button sclass="goButton" label="Cancel" id="btnCancel" />
-                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
-                <button sclass="goButton" label="Next &gt;" id="btnOk" disabled="true" />
-            </hbox>
-        </div>
+
     </window>
 </zk>

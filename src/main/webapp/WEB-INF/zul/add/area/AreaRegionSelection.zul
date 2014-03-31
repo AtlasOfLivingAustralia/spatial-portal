@@ -19,7 +19,7 @@
             <separator />
             <hbox>
                 <separator orient="vertical" />
-                <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true"  width="320px" >
+                <combobox id="gazetteerAuto" use="au.org.ala.spatial.composer.gazetteer.GazetteerAutoComplete" autodrop="true"  width="320px" >
                     <comboitem label=""/>
                 </combobox>
             </hbox>
@@ -38,7 +38,7 @@
 
         </vbox>
         <separator />
-        <div sclass="wButtons">
+        <div sclass="wButtons wizButtonContainer">
             <hbox>                
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
                 <button sclass="goButton" label="Next" id="btnOk" disabled="true" />

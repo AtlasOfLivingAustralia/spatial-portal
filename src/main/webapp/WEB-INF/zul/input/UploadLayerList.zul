@@ -17,7 +17,7 @@
         <separator height="20px"/>
         <label style="margin-left:20px" value="Import a previously downloaded layer list." />
         <separator height="40px"/>
-        <div sclass="wButtons">
+        <div sclass="wButtons wizButtonContainer">
             <hbox>
                 <button sclass="goButton" id="btnCancel" label="Cancel"/>
                 <!--button sclass="goButton" label="Next" id="btnOk"/-->

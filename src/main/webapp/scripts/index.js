@@ -1,7 +1,7 @@
 //zk.Widget.$(jq('$westContent')[0]).firstChild.lastChild.listen({onMouseUp: function () { console.log('map.pan');setTimeout("map.pan(1,1);",300); }});
 
-$(".z-west-colpsd").click(function() {
-    $(".menudiv").css("top",0);
+$(".z-west-colpsd").click(function () {
+    $(".menudiv").css("top", 0);
 });
 
 if (readCookie('ALA-Auth')) {
@@ -14,24 +14,24 @@ if (readCookie('ALA-Auth')) {
 }
 
 
-function updateSafeToLoadMap(status) {                        
+function updateSafeToLoadMap(status) {
     try {
         zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'safeToLoadMap', status));
     } catch (err) {
-        setTimeout(function() {
+        setTimeout(function () {
             updateSafeToLoadMap(status);
         }, 1000);
     }
 }
 
 function roundNumber(num, dec) {
-    var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
+    var result = Math.round(num * Math.pow(10, dec)) / Math.pow(10, dec);
     return result;
 }
-        
-function setSearchPoint(lon,lat) {
+
+function setSearchPoint(lon, lat) {
     if (setSearchPointAnalysis != undefined) {
-        setSearchPointAnalysis(lon,lat)
+        setSearchPointAnalysis(lon, lat)
     }
 }
 
@@ -71,18 +71,18 @@ function reloadSpecies() {
 }
 
 function showInfo(curr) {
-    window.mapFrame.showInfo(curr); 
+    window.mapFrame.showInfo(curr);
 }
 
 function setSearchPointAnalysis(point_orig) {
     var point = point_orig.clone();
-   
+
     // transform the point from Google Projection to EPSG:4326
     var mapObj = window.frames.mapFrame.map;
     point.transform(mapObj.projection, mapObj.displayProjection);
     var value = point.lon + "," + point.lat;
     zAu.send(new zk.Event(zk.Widget.$(jq('$areamappolygonwindow')[0]), 'onSearchPoint', value));
-   // zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onSearchPoint', value));
+    // zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onSearchPoint', value));
 }
 
 function setSpeciesSearchPointAnalysis(point_orig) {
@@ -93,7 +93,7 @@ function setSpeciesSearchPointAnalysis(point_orig) {
     point.transform(mapObj.projection, mapObj.displayProjection);
     var value = point.lon + "," + point.lat;
     zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSearchSpeciesPoint', value));
-    
+
 }
 
 function setSelectionGeometry(geometry_orig) {
@@ -105,8 +105,8 @@ function setSelectionGeometry(geometry_orig) {
     var value = geometry.toString();
     zAu.send(new zk.Event(zk.Widget.$(jq('$areapolygonwindow')[0]), 'onSelectionGeom', value));
     zAu.send(new zk.Event(zk.Widget.$(jq('$areapointandradiuswindow')[0]), 'onSelectionGeom', value));
-    
-    
+
+
 }
 
 function setSelectionLayerGeometry(geometry_orig) {
@@ -128,38 +128,36 @@ function setBoxGeometry(geometry_orig) {
 
 function roundNumber(num, dec) {
     var result =
-    Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
+        Math.round(num * Math.pow(10, dec)) / Math.pow(10, dec);
     return result;
 }
 
 
+var retryFixExtent = 0;
+function fixExtent(a, b, c, d) {
+    map.zoomToExtent(new OpenLayers.Bounds(a, b, c, d), true);
 
+    //does not always stick
+    if (retryFixExtent < 1) {
+        retryFixExtent++;
+        setTimeout(function () {
+            fixExtent(a, b, c, d);
+        }, 2000);
+    }
+}
+function fixExtent4326(a, b, c, d) {
+    map.zoomToExtent(new OpenLayers.Bounds(a, b, c, d).transform(
+        new OpenLayers.Projection("EPSG:4326"),
+        map.getProjectionObject()), true);
 
-
-
-
-        var retryFixExtent = 0;
-        function fixExtent(a,b,c,d) {
-            map.zoomToExtent(new OpenLayers.Bounds(a,b,c,d),true);
-
-            //does not always stick
-            if(retryFixExtent < 1) {
-                retryFixExtent++;
-                setTimeout(function() {fixExtent(a,b,c,d);}, 2000);
-            }
-        }
-        function fixExtent4326(a,b,c,d) {
-            map.zoomToExtent(new OpenLayers.Bounds(a,b,c,d).transform(
-                new OpenLayers.Projection("EPSG:4326"),
-                map.getProjectionObject()),true);
-
-            //does not always stick
-            if(retryFixExtent < 1) {
-                retryFixExtent++;
-                setTimeout(function() {fixExtent4326(a,b,c,d);}, 2000);
-            }
-        }
-
+    //does not always stick
+    if (retryFixExtent < 1) {
+        retryFixExtent++;
+        setTimeout(function () {
+            fixExtent4326(a, b, c, d);
+        }, 2000);
+    }
+}
 
 
 ///////////////////////////////////////////////////
@@ -167,7 +165,6 @@ function roundNumber(num, dec) {
 ////  code for "onIframeMapFullyLoaded"
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
-
 
 
 jQuery('.hidden_image :hidden').show();
@@ -181,7 +178,7 @@ if (parent.location.href.indexOf("explore") > -1 && parent.location.href.indexOf
 
 function printHack(o) {
     //session variables not in session
-    var size = map.getSize().w + "," + (document.body.clientHeight-68);
+    var size = map.getSize().w + "," + (document.body.clientHeight - 68);
     var extent = map.getExtent().toBBOX();
     var lhsWidth = 0;
     var basemap = currentbaselayertxt
@@ -217,7 +214,7 @@ function showSpeciesInfo(occids, lon, lat) {
 
 function goToUserLocation() {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position){
+        navigator.geolocation.getCurrentPosition(function (position) {
             window.mapFrame.goToLocation(position.coords.longitude, position.coords.latitude, 15);
         });
     } else {
@@ -225,25 +222,25 @@ function goToUserLocation() {
     }
 }
 
-function displayBioStorCount(comp,val) {
+function displayBioStorCount(comp, val) {
     console.log("displayBioStorCount");
     console.log(comp);
     console.log(val);
     if (isNaN(val)) {
-        $("#biostorrow").css('display','none');
+        $("#biostorrow").css('display', 'none');
     } else {
-        $("#biostorrow").css('display','block');
-        $("#"+comp).html(val);
+        $("#biostorrow").css('display', 'block');
+        $("#" + comp).html(val);
     }
 }
 function displayHTMLInformation(element, info) {
-    $('#'+element).html(info);
+    $('#' + element).html(info);
 }
 function displayArea(area) {
-   $('#jsarea').html('OL area: ' + addCommas(area.toFixed(2)) + ' sq km');
+    $('#jsarea').html('OL area: ' + addCommas(area.toFixed(2)) + ' sq km');
 }
 function displayArea2(area) {
-  $('#jsarea2').html(addCommas('' + area.toFixed(2)));
+    $('#jsarea2').html(addCommas('' + area.toFixed(2)));
 }
 function addCommas(nStr) {
     nStr += '';
@@ -282,79 +279,79 @@ function addCommas(nStr) {
 
 //TODO: WIRE THESE INTO ZK
 
-function addSpeciesAction(){
+function addSpeciesAction() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddSpecies', null));
 }
 
-function addAreaAction(){
+function addAreaAction() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddArea', null));
 }
 
-function addLayerAction(){
-   zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddLayer', null));
+function addLayerAction() {
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddLayer', null));
 }
 
-function addFacetAction(){
-   zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddFacet', null));
+function addFacetAction() {
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddFacet', null));
 }
 
-function addWMSLayerAction(){
-   zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddWMSLayer', null));
+function addWMSLayerAction() {
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddWMSLayer', null));
 }
 
-function runSpeciesList(){
+function runSpeciesList() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnSpeciesList', null));
 }
 
-function runSitesBySpecies(){
+function runSitesBySpecies() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnSitesBySpecies', null));
 }
 
-function runAreaReport(){
+function runAreaReport() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAreaReport', null));
 }
 
-function runNearestLocality(){
+function runNearestLocality() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'runNearestLocalityAction', null));
     mapFrame.toggleActiveNearest();
 }
 
-function runSamplingAction(){
+function runSamplingAction() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddSampling', null));
 }
 
-function runPrediction(){
+function runPrediction() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddMaxent', null));
 }
 
-function runClassification(){
+function runClassification() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddAloc', null));
 }
 
-function runScatterPlot(){
+function runScatterPlot() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddScatterplot', null));
 }
 
-function runScatterPlotList(){
+function runScatterPlotList() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddScatterplotList', null));
 }
 
-function runTabulation(){
+function runTabulation() {
 //  uncomment this to trigger an error window
 //    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onSearchSpeciesPoint', null));
     //alert("Run Tabulation");
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'runTabulation', null));
 }
 
-function runGDM(){
+function runGDM() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddGDM', null));
 }
 
-function runImportSpecies(type){
+function runImportSpecies(type) {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'importSpecies', type));
 }
 
-function runImportAreas(){
+function runImportAreas() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'importAreas', null));
 }
 
@@ -362,26 +359,26 @@ function runImportAnalysis() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'importAnalysis', null));
 }
 
-function runExport(){
+function runExport() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'exportArea', null));
 }
 
-function resetMap(){
+function resetMap() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$reloadPortal', null));
 }
 
-function loadHelp(page){
+function loadHelp(page) {
     help_base_url = jq('$help_url')[0].innerHTML + "/spatial-portal-help";
-    if (undefined === page){
+    if (undefined === page) {
         page = 'spatial-portal-help-contents';
     }
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', help_base_url + "/" + page));
 }
-function loadMetadataUrl(type){
+function loadMetadataUrl(type) {
     var metaurl = "http://www.google.com/intl/en_au/help/terms_maps.html";
-    if (type=="minimal") {
-        metaurl = "http://www.openstreetmap.org/copyright";
-    } else if (type=="outline") {
+    if (type == "minimal") {
+        metaurl = "openstreetmap_metadata.html";
+    } else if (type == "outline") {
         metaurl = "http://www.naturalearthdata.com/about/terms-of-use";
     } else {
         metaurl = "http://www.google.com/intl/en_au/help/terms_maps.html";
@@ -389,22 +386,22 @@ function loadMetadataUrl(type){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', metaurl));
 }
 
-function clearNearestMarkerLayer(){
-    if(mapFrame != null && map != null && mapFrame.markers != null) {
+function clearNearestMarkerLayer() {
+    if (mapFrame != null && map != null && mapFrame.markers != null) {
         map.removeLayer(mapFrame.markers);
         mapFrame.markers = null;
     }
 }
 
-function openDistributions(lsids){
+function openDistributions(lsids) {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$openDistributions', lsids));
 }
 
-function openChecklists(lsids){
+function openChecklists(lsids) {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$openChecklists', lsids));
 }
 
-function openAreaChecklist(geom_idx){
+function openAreaChecklist(geom_idx) {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$openAreaChecklist', geom_idx));
 }
 
@@ -413,9 +410,9 @@ function isFlaggedRecord(layer, id) {
     return flaggedRecords[layer + "\n" + id] != undefined
 }
 function flagRecord(layer, id, set) {
-    if(isFlaggedRecord(layer, id) != set) {
+    if (isFlaggedRecord(layer, id) != set) {
         var key = layer + "\n" + id;
-        if(set) flaggedRecords[key] = true
+        if (set) flaggedRecords[key] = true
         else flaggedRecords[key] = undefined;
 
         zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'updateAdhocGroup', key + "\n" + set))
@@ -423,12 +420,13 @@ function flagRecord(layer, id, set) {
 }
 function addFlaggedRecords(pairs) {
     var list = pairs.split('\n');
-    for(i=0;i<list.length;i++) {
+    for (i = 0; i < list.length; i++) {
         flaggedRecords[list[i]] = true
     }
 }
 
-function doNothing(){}
+function doNothing() {
+}
 
 function saveSession() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'saveUserSession', null));

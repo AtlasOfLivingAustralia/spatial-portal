@@ -37,7 +37,7 @@
             </radiogroup>
             <vbox id="vbxLayerList" visible="false" sclass="embedWindowsContent">
                 <hbox width="100%">
-                    <combobox id="autoCompleteLayers" use="au.org.ala.spatial.composer.ContextualLayersAutoComplete" autodrop="true" width="320px">
+                    <combobox id="autoCompleteLayers" use="au.org.ala.spatial.composer.layer.ContextualLayersAutoComplete" autodrop="true" width="320px">
                         <comboitem label=""/>
                     </combobox>
                     
@@ -51,7 +51,7 @@
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px"  />
             <separator />
             <checkbox id="displayAsWms" label="display as WMS layer"  visible="false" checked="true" />
-            <div sclass="embedWindowsButtons">
+            <div sclass="wizButtonContainer">
                 <hbox>
                     <button sclass="goButton" label="Clear" id="btnClear"/>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>

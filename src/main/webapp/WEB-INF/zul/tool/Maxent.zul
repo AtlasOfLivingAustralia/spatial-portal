@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-    <window id="addtoolwindow" use="au.org.ala.spatial.composer.tool.ToolMaxentComposer"
-            apply="au.org.ala.spatial.composer.tool.ToolMaxentComposer" width="810px" height="700px"
+    <window id="addtoolwindow" use="au.org.ala.spatial.composer.tool.MaxentComposer"
+            apply="au.org.ala.spatial.composer.tool.MaxentComposer" width="810px" height="700px"
             xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -67,7 +67,6 @@
                         <radio id="rAreaCurrent" label="Current extent" value="current" />
                         <radio id="rAreaAustralia" label="Australia" value="australia" />
                         <radio id="rAreaWorld" label="World" value="world" />
-                        <radio id="rAreaCustom" label="Define new area" value="custom" />
                     </radiogroup>
                 </div>
 
@@ -115,7 +114,7 @@
                                 <label value="Add from search" />
                                 <separator orient="vertical" />
                                 <div id="mSearchSpeciesACComp" use="au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent"/>
-                                <!-- <combobox id="mSearchSpeciesAuto" use="au.org.ala.spatial.composer.SpeciesAutoComplete" autodrop="true" width="330px" /> -->
+
                             </hbox>
                             <separator />
                             <separator />
@@ -150,26 +149,26 @@
                     <separator />
                     <hbox>
                         <label value="Add set a of layers:" />
-                        <combobox id="selectedLayersCombobox" use="au.org.ala.spatial.composer.SelectedLayersCombobox" width="320px" readonly="true"/>
-                        <!--<fileupload sclass="fUploadButton" id="uploadLayerList" label="Upload set" upload="true" />-->
-                        <!--<button sclass="goButton" id="uploadLayerList" label="Upload set" upload="true" />-->
+                        <combobox id="selectedLayersCombobox" use="au.org.ala.spatial.composer.layer.SelectedLayersCombobox" width="320px" readonly="true"/>
+
                     </hbox>
                     <separator />
                     <hbox>
                         <label value="Add from search:" />
-                        <combobox id="cbLayerMix" use="au.org.ala.spatial.composer.EnvLayersCombobox" autodrop="true" width="350px" />
+                        <combobox id="cbLayerMix" use="au.org.ala.spatial.composer.layer.EnvLayersCombobox" autodrop="true" width="350px" />
                     </hbox>
                     <separator />
                     <vbox>
                         <label value="Environmental layers" sclass="wSubLabel" />
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                                 use="au.org.ala.spatial.composer.EnvironmentalList" width="610px"
+                                 use="au.org.ala.spatial.composer.layer.EnvironmentalList" width="610px"
                                  height="430px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
                             <listhead>
-                                <listheader label="category" hflex="1"/>
-                                <listheader label="name"  hflex="1"/>
-                                <listheader label=" "  width="25px"/>
-                                <listheader label=" " width="14px" />
+                                <listheader label=" " width="48px"  />
+                                                            <listheader label="category" hflex="1"/>
+                                                            <listheader label="name"  hflex="1"/>
+                                                            <listheader label=" "  width="25px"/>
+                                                            <listheader label=" " width="25px" />
                             </listhead>
                         </listbox>
                         <hbox>

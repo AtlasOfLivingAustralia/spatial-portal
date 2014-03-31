@@ -1,3 +1,4 @@
+@CHARSET "ISO-8859-1";
 /*
  Logo colours 54BCEB 3B6E8F
  Map background: 3c668d
@@ -134,7 +135,6 @@ a[rel="external"], a.external {
     padding-left: 12px;
     background: url(../img/required.png) no-repeat 0% 50%;
 }
-
 /*
 
 .error, .z-errbox {
@@ -602,7 +602,7 @@ tr.z-listitem-disd a:visited, tr.z-listitem-disd a:hover, td.z-listcell-disd a:v
 }
 
 #ft  /* area with the copyright info */
-  {
+ {
     display: block;
     margin: 5px 30px;
     text-align: center;
@@ -622,7 +622,6 @@ tr.z-listitem-disd a:visited, tr.z-listitem-disd a:hover, td.z-listcell-disd a:v
 #ft a:hover {
     color: white;
 }
-
 /*
 .motd-title {
     font-weight: bold;
@@ -660,9 +659,9 @@ tr.z-listitem-disd a:visited, tr.z-listitem-disd a:hover, td.z-listcell-disd a:v
 }
 */
 
-.helpButton {
-    color: #EEEEEE;
-    /*background:transparent url('/img/help.png') no-repeat left top;*/
+ .helpButton {
+     color: #EEEEEE;
+     /*background:transparent url('/img/help.png') no-repeat left top;*/
     padding: 2px;
 }
 
@@ -694,6 +693,7 @@ closebox a.helpButtonMain:hover {
 .exampleText {
     color: #AAA;
 }
+
 
 /*
 * hide the north and south panels as the site will now be wrapped
@@ -1019,7 +1019,6 @@ tr.z-listitem-over, tr.z-listitem-over span, tr.z-listitem-over div {
     position: absolute;
     z-index: 200;
 }
-
 /*
 div.z-center-body {
     overflow: auto;
@@ -1163,7 +1162,6 @@ div.z-listheader-cnt {
     cursor: pointer;
     z-index: 1103;
 }
-
 /*
 .z-window-modal, .z-window-overlapped {
     overflow: visible;
@@ -1278,6 +1276,8 @@ div.z-window-modal-header, div.z-window-overlapped-header {
     font-size: 10px;
 }*/
 
+
+
 .xRemove {
     text-decoration: underline;
 }
@@ -1368,24 +1368,39 @@ div.z-window-modal-header, div.z-window-overlapped-header {
 }
 */
 
+
+
+
+
 .z-north, .z-south, .z-west, .z-center, .z-east {
     border: 0px
 
 }
 
 /* Page font */
-.z-a, .z-label, .z-button, .z-radio-content, .z-checkbox-content, body, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content, .z-textbox, .z-decimalbox, .z-intbox, .z-longbox, .z-doublebox, .z-combobox-input, .z-bandbox-input, .z-datebox-input, .z-timebox-input, .z-spinner-input, .z-doublespinner-input, .z-caption, .z-caption-content, .z-row:hover > .z-row-inner > .z-row-content, .z-row, .z-row-inner, .z-row-content, .z-combobox-popup, .z-bandbox-popup, .z-datebox-popup, .z-timebox-popup {
-    font-family: Arial, Helvetica, sans-serif;
+.z-a,.z-label, .z-button, .z-radio-content, .z-checkbox-content, body,.z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content,.z-textbox, .z-decimalbox, .z-intbox, .z-longbox, .z-doublebox,.z-combobox-input, .z-bandbox-input, .z-datebox-input, .z-timebox-input, .z-spinner-input, .z-doublespinner-input
+, .z-caption,.z-caption-content
+,.z-row:hover>.z-row-inner>.z-row-content
+,.z-combobox-popup, .z-bandbox-popup, .z-datebox-popup, .z-timebox-popup{
+    font-family: Arial, Helvetica,sans-serif;
     font-size: 12px;
 }
 
 /* padding */
-body, .z-button, .z-window-content, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content, .z-textbox, .z-decimalbox, .z-intbox, .z-longbox, .z-doublebox, .z-combobox-input, .z-bandbox-input, .z-datebox-input, .z-timebox-input, .z-spinner-input, .z-doublespinner-input, .z-caption, .z-caption-content, .z-row:hover > .z-row-inner > .z-row-content, .z-combobox-popup, .z-bandbox-popup, .z-datebox-popup, .z-timebox-popup {
+body, .z-button, .z-window-content, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content,.z-textbox, .z-decimalbox, .z-intbox, .z-longbox, .z-doublebox,.z-combobox-input, .z-bandbox-input, .z-datebox-input, .z-timebox-input, .z-spinner-input, .z-doublespinner-input
+, .z-caption,.z-caption-content
+,.z-row:hover>.z-row-inner>.z-row-content
+,.z-combobox-popup, .z-bandbox-popup, .z-datebox-popup, .z-timebox-popup {
     padding: 0px;
 }
 
-.z-textbox, .z-decimalbox, .z-intbox, .z-longbox, .z-doublebox, .z-combobox-input, .z-bandbox-input, .z-datebox-input, .z-timebox-input, .z-spinner-input, .z-doublespinner-input, .z-caption, .z-caption-content, .z-combobox-popup, .z-bandbox-popup, .z-datebox-popup, .z-timebox-popup, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content {
-    line-height: 24px;
+.z-textbox, .z-decimalbox, .z-intbox, .z-longbox, .z-doublebox,.z-combobox-input, .z-bandbox-input, .z-datebox-input
+, .z-timebox-input, .z-spinner-input, .z-doublespinner-input
+, .z-caption,.z-caption-content
+,.z-row:hover>.z-row-inner>.z-row-content
+,.z-combobox-popup, .z-bandbox-popup, .z-datebox-popup, .z-timebox-popup
+,.z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content{
+    line-height: 20px;
     height: 20px;
 }
 
@@ -1404,14 +1419,12 @@ body, .z-button, .z-window-content, .z-listcell-content, .z-listgroup-content, .
 }
 
 .z-listheader-content {
-    line-height: 24px;
+    line-height: 20px;
 }
-
 .z-combobox-icon, .z-bandbox-icon, .z-datebox-icon, .z-timebox-icon, .z-spinner-icon, .z-doublespinner-icon {
-    width: 22px;
-    line-height: 24px;
+    width:22px;
+    line-height:22px;
 }
-
 .z-combobox-button, .z-bandbox-button, .z-datebox-button, .z-timebox-button, .z-spinner-button, .z-doublespinner-button,
 .z-slider-horizontal {
     width: 22px;
@@ -1422,7 +1435,7 @@ body, .z-button, .z-window-content, .z-listcell-content, .z-listgroup-content, .
     padding: 4px;
 }
 
-.z-row:first-child .z-row-content, .z-row:first-child .z-group-content {
+.z-row:first-child .z-row-content,.z-row:first-child .z-group-content {
     padding: 0px;
 }
 
@@ -1432,7 +1445,7 @@ body, .z-button, .z-window-content, .z-listcell-content, .z-listgroup-content, .
 }
 
 .z-caption {
-    float: right;
+    float:right;
 }
 
 .z-caption-content {
@@ -1448,22 +1461,24 @@ body, .z-button, .z-window-content, .z-listcell-content, .z-listgroup-content, .
     float: right;
 }
 
-.z-row:hover > .z-row-inner > .z-row-content {
-    color: #50a0b0
+.z-row:hover>.z-row-inner>.z-row-content {
+    color:#50a0b0
 }
 
-.z-row:hover > .z-row-inner, .z-row:hover > .z-cell {
+.z-row:hover>.z-row-inner, .z-row:hover>.z-cell {
     background: white;
     padding: 0px;
 }
-
 .selectedLayer {
-    font-size: 14px;
+    font-size:14px;
 }
 
 .z-toolbarbutton {
-    float: right;
+    float:right;
 }
+
+
+
 
 .lcWhite {
     background: #ffffff;
@@ -1485,20 +1500,20 @@ body, .z-button, .z-window-content, .z-listcell-content, .z-listgroup-content, .
     color: red;
 }
 
-.lcRed > .z-listcell-content {
+.lcRed>.z-listcell-content {
     background: #bb2222;
 }
 
-.lcGreen > .z-listcell-content {
+.lcGreen>.z-listcell-content {
     background: #22aa22;
 }
 
-.lcYellow > .z-listcell-content {
+.lcYellow>.z-listcell-content {
     background: #ffff22;
 }
 
 .z-listcell-content {
-    padding: 1px;
+    padding:1px;
 }
 
 .z-listitem:first-child .z-listcell-content, .z-listitem:first-child .z-listgroup-content {
@@ -1514,18 +1529,10 @@ body, .z-button, .z-window-content, .z-listcell-content, .z-listgroup-content, .
     color: #555;
     font-size: 10px;
     padding-left: 15px;
-    line-height: 24px;
+    line-height: 0px;
 }
+
 
 .envlist .z-listheader-checkable {
     display: none;
-}
-
-#zk_download {
-    display: none;
-}
-
-z-listbox-autopaging .z-listcell-cnt {
-    height: 24px;
-    overflow: hidden;
 }

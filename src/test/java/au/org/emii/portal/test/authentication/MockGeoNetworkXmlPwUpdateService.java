@@ -4,17 +4,19 @@
  */
 package au.org.emii.portal.test.authentication;
 
-import java.io.IOException;
-import java.io.PrintStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.core.Container;
 
+import java.io.IOException;
+import java.io.PrintStream;
+
 /**
  * Fake password change service used for changing passwords when the old
  * password is known
+ *
  * @author geoff
  */
 public class MockGeoNetworkXmlPwUpdateService implements Container {
@@ -23,7 +25,7 @@ public class MockGeoNetworkXmlPwUpdateService implements Container {
     public static final String BAD_PASSWORD = "aaaaaa";
     public static final String GOOD_PASSWORD = "bbbbbb";
     public static final String NEW_PASSWORD = "nnnnnn";
-    
+
     private static final String SUCCEED_OUTPUT = "test_data/xml.user.pwupdate-succeed";
     private static final String WRONG_PASSWORD_OUTPUT = "test_data/xml.user.pwupdate-fail_wrong_password";
     private static final String UNAUTHORISED_OUTPUT = "test_data/xml.user.pwupdate-fail-unauthorised";
@@ -77,5 +79,5 @@ public class MockGeoNetworkXmlPwUpdateService implements Container {
         this.loggedIn = loggedIn;
     }
 
-    
+
 }

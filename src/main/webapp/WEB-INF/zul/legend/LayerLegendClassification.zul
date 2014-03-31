@@ -2,21 +2,20 @@
 <zk>
     <window
      border="none"
-     apply="au.org.ala.spatial.composer.ClassificationLegend"
-     use="au.org.ala.spatial.composer.ClassificationLegend" mode="embedded" width="98%" >
+     apply="au.org.emii.portal.composer.legend.ClassificationLegend"
+     use="au.org.emii.portal.composer.legend.ClassificationLegend" mode="embedded" width="98%" >
         <style>
             .legendlist div.z-listitem-cnt {
                 font-size: 10px;
-                /*border-top: 1px solid grey;*/
                 border: 2px solid red;
              }
         </style>            
-            <listbox sclass="legendlist" id="legend" width="360px" vflex="true" >
+            <listbox sclass="legendlist" id="legend" width="360px" vflex="true" mold="paging">
                 <listhead>
-                    <listheader label="   " width="20px" id="lhFirstColumn" />
-                    <listheader label="class" width="230px" id="lhSecondColumn"/>
-                    <listheader label="colour" width="50px" id="lhThirdColumn"/>
-                    <listheader label="count" width="60px" align="right" id="lhFourthColumn"/>
+                    <listheader label="   " width="20px" id="lhFirstColumn"  style="font-size:12px"/>
+                    <listheader label="class" width="230px" id="lhSecondColumn" style="font-size:12px"/>
+                    <listheader label="colour" width="50px" id="lhThirdColumn" style="font-size:12px"/>
+                    <listheader label="count" width="60px" align="right" id="lhFourthColumn" style="font-size:12px"/>
                 </listhead>
             </listbox>
             <vbox>

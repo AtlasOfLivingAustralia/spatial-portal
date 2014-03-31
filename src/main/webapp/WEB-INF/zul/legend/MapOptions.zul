@@ -2,7 +2,8 @@
 <zk>
     <window id="mapoptionswindow" xmlns:n="http://www.zkoss.org/2005/zk/native"
             use="au.org.emii.portal.composer.legend.MapOptions"
-            apply="au.org.emii.portal.composer.legend.MapOptions" style="padding-top:1px; margin-left: 3px;" >
+            apply="au.org.emii.portal.composer.legend.MapOptions" style="margin-left: 3px;
+           " >
         <vbox width="100%" style="padding-top:1px;">
             <vbox width="100%">
                 <radiogroup id="rgBaseMap">
@@ -21,7 +22,7 @@
                             <listcell>
                                 <radio value="minimal" onCheck='Clients.evalJavaScript("window.mapFrame.baseLayerSwitchStatus=1;changeBaseLayer(\"minimal\");")' label="Minimal" />
                             </listcell>
-                            <listcell image="/img/information.png" onClick='mapPortalPage.activateLink("http://www.openstreetmap.org/copyright", "Metadata", false);'></listcell>
+                            <listcell image="/img/information.png" onClick='mapPortalPage.activateLink("openstreetmap_metadata.html", "Metadata", false);'></listcell>
                         </listitem>
                         <listitem>
                             <listcell>
@@ -37,7 +38,7 @@
                         </listitem>
                     </listbox>
                 </radiogroup>
-                <hbox style="margin-top:10px;">
+                <hbox style="margin-top:10px;" sclass="wizButtonContainer">
                     <button sclass="goButton" label="Add WMS Layer" onClick='Clients.evalJavaScript("addWMSLayerAction();")' />
                     <separator />
                     <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />

@@ -27,7 +27,7 @@
             <separator />
             
             <separator />
-            <div style="float:right;margin-right:5px">
+            <div sclass="wizButtonContainer">
                 <hbox>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
                     <button sclass="goButton" label="OK" id="btnOk"/>

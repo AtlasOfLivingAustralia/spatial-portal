@@ -42,7 +42,7 @@
                 <doublebox id="dRadius" width="100px" constraint="no negative,no empty" value="1.0"/>
             </hbox>
             <separator />
-            <div style="float:right;margin-right:5px">
+            <div sclass="wizButtonContainer">
                 <hbox>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
                     <button sclass="goButton" label="Next" id="btnOk"/>

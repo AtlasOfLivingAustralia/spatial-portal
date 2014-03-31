@@ -28,7 +28,8 @@
             </div>
             <separator />
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" />
-            <div sclass="embedWindowsButtons">
+            <label id="invalidWKT" width="100%" style="color: red" visible="true"/>
+            <div sclass="wizButtonContainer">
                 <hbox>
                     <button sclass="goButton" label="Clear" id="btnClear" disabled="true"/>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>

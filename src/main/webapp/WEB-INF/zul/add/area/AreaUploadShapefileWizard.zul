@@ -21,7 +21,7 @@
             </div>
             <div>
                 <vbox>
-                    <hbox>
+                    <hbox sclass="wizButtonContainer">
                         <button sclass="goButton" label="Select all" id="btnSelectAll" />
                         <button sclass="goButton" label="Clear selection" id="btnDeselectAll" />
                         <button sclass="goButton" label="Refresh image" id="btnRefresh" />

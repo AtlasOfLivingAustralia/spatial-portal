@@ -29,7 +29,7 @@
             </div>
             <separator />
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" />
-            <div style="float:right;margin-right:5px">
+            <div sclass="wizButtonContainer">
                 <hbox>
                     <button sclass="goButton" label="Clear" id="btnClear" disabled="true"/>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>

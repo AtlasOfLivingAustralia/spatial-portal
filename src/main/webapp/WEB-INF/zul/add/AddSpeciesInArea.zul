@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addspeciesinareawindow" title="Restrict mapped species to an area" use="au.org.ala.spatial.composer.add.AddSpeciesInArea"
-    apply="au.org.ala.spatial.composer.add.AddSpeciesInArea" width="500px" height="300px"
+    apply="au.org.ala.spatial.composer.add.AddSpeciesInArea" width="500px" height="400px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -16,16 +16,15 @@
         <n:a class="fancybox-help" n:onClick="loadHelp('species-add-to-map')" style="display: inline" />
 
         <separator />
-        <vbox style="padding-left:10px" >
+        <vbox style="padding-left:10px" height="300px" >
             <radiogroup id="rgArea" orient="vertical" focus="true" onOK="addspeciesinareawindow.onClick$btnOk(null)">
                 <radio id="rAreaCurrent" label="Current extent" value="current" />
                 <radio id="rAreaAustralia" label="Australia" value="australia" />
                 <radio id="rAreaWorld" label="World" value="world" checked="true"/>
-                <radio id="rAreaCustom" label="Define new area" value="custom" />
             </radiogroup>
         </vbox>
 
-       <div sclass="wButtons">
+       <div sclass="wButtons wizButtonContainer">
             <hbox>                
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
                 <button sclass="goButton" label="Next" id="btnOk" />

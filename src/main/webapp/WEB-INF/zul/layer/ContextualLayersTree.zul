@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-    <vbox id="contextuallayerswindow" style="text-align: left" use="au.org.emii.portal.composer.layer.ContextualLayerListComposer" 
-          apply="au.org.emii.portal.composer.layer.ContextualLayerListComposer">
+    <vbox id="contextuallayerlistwindow" style="text-align: left" use="au.org.emii.portal.composer.ContextualLayerListComposer"
+          apply="au.org.emii.portal.composer.ContextualLayerListComposer">
         <vbox>
             <label value="Browse layers via categories" style="font-weight: bold;" />
         </vbox>

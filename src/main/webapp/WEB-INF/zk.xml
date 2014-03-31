@@ -15,12 +15,26 @@
         <listener-class>org.zkoss.zkplus.hibernate.HibernateSessionContextListener</listener-class>
     </listener>
 
+    <library-property>
+        <name>org.zkoss.theme.preferred</name>
+        <value>atlantic</value>
+    </library-property>
 
     <session-config>
         <!--  session timeout in seconds -->
         <session-timeout>7200</session-timeout>
         <timer-keep-alive>true</timer-keep-alive>
     </session-config>
+
+    <library-property>
+        <name>org.zkoss.zul.nativebar</name>
+        <value>true</value>
+    </library-property>
+
+    <library-property>
+        <name>org.zkoss.zul.borderlayout.animation.disabed</name>
+        <value>true</value>
+    </library-property>
 
 
     <!--  catch uncaught exceptions when AJAXING on a page -->

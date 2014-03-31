@@ -111,4 +111,5 @@
         <property name="portalSessionUtilities" ref="portalSessionUtilities"/>
     </bean>
 
+
 </beans>

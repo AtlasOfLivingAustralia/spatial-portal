@@ -24,7 +24,7 @@
             <separator />
             <label sclass="wordwrap" value="Select a KML (*.kml) file to upload." />
             <separator />
-            <div style="float:right;margin-right:10px">
+            <div style="float:right;margin-right:10px" sclass="wizButtonContainer">
                 <hbox>
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
                     <div>

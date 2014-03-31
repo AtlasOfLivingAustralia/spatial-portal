@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-    <window id="addtoolwindow" use="au.org.ala.spatial.composer.output.ExportLayerComposer"
-    apply="au.org.ala.spatial.composer.output.ExportLayerComposer" width="600px" height="300px"
+    <window id="addtoolwindow" use="au.org.ala.spatial.composer.tool.ExportLayerComposer"
+    apply="au.org.ala.spatial.composer.tool.ExportLayerComposer" width="600px" height="300px"
     xmlns:n="http://www.zkoss.org/2005/zk/native" title="Export area">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
