@@ -16,11 +16,8 @@ package org.ala.layers.client;
 
 import java.util.Iterator;
 import java.util.List;
-import org.ala.layers.dao.AnalysisLayerDAO;
-import org.ala.layers.dao.FieldDAO;
-import org.ala.layers.dao.LayerDAO;
-import org.ala.layers.dao.LayerIntersectDAO;
-import org.ala.layers.dao.ObjectDAO;
+
+import org.ala.layers.dao.*;
 import org.ala.layers.dto.Layer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -81,5 +78,10 @@ public class Client {
     public static ObjectDAO getObjectDao() {
         initContext();
         return (ObjectDAO) gContext.getBean("objectDao");
+    }
+
+    public static UserDataDAO getUserDataDao() {
+        initContext();
+        return (UserDataDAO) gContext.getBean("userDataDao");
     }
 }

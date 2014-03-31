@@ -22,7 +22,6 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -105,7 +104,7 @@ public class IniReader {
             }
             in.close();
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getFullStackTrace(e));
+            logger.error("error opening ini file",e);
         }
     }
 

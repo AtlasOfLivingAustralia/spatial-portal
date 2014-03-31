@@ -22,7 +22,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Comparator;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -416,8 +415,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error("An error has occurred - probably a file error");
-            logger.error(ExceptionUtils.getFullStackTrace(e));
+            logger.error("An error has occurred - probably a file error",e);
         }
         grid_data = ret;
         return ret;
@@ -461,7 +459,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getFullStackTrace(e));
+            logger.error("error writing grid file",e);
         }
 
 
@@ -517,7 +515,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getFullStackTrace(e));
+            logger.error("error writing grid file",e);
         }
 
         writeHeader(newfilename, xmin, ymin, xmin + xres * ncols, ymin + yres * nrows, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
@@ -560,7 +558,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getFullStackTrace(e));
+            logger.error("error writing grid file",e);
         }
 
         writeHeader(newfilename, xmin, ymin, xmin + xres * ncols, ymin + yres * nrows, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
@@ -598,7 +596,7 @@ public class Grid { //  implements Serializable
             fw.flush();
             fw.close();
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getFullStackTrace(e));
+            logger.error("error writing grid file header",e);
 
         }
     }
@@ -775,8 +773,7 @@ public class Grid { //  implements Serializable
                 }
             }
         } catch (Exception e) {
-            logger.error("GRID: " + e.toString());
-            logger.error(ExceptionUtils.getFullStackTrace(e));
+            logger.error("GRID: " + e.toString(),e);
         }
         grid_data = ret;
         return ret;
@@ -980,7 +977,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getFullStackTrace(e));
+            logger.error("error getting grid file values",e);
         }
         return ret;
     }
@@ -1208,7 +1205,7 @@ public class Grid { //  implements Serializable
 
             return ret;
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getFullStackTrace(e));
+            logger.error("error getting grid file values",e);
         }
         return null;
     }
@@ -1315,19 +1312,12 @@ public class Grid { //  implements Serializable
             afile.write(bb.array());
             afile.close();
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getFullStackTrace(e));
+            logger.error("error getting grid file values",e);
         }
     }
 
     /**
      * buffering on top of RandomAccessFile
-     * 
-     * @param afile
-     * @param buffer
-     * @param fileOffset
-     * @param bufferPos
-     * @param seekTo
-     * @return
      */
     private byte getByte(RandomAccessFile raf, byte[] buffer, Long bufferOffset, long seekTo) throws IOException {
         long relativePos = seekTo - bufferOffset;
@@ -1352,13 +1342,6 @@ public class Grid { //  implements Serializable
 
     /**
      * buffering on top of RandomAccessFile
-     *
-     * @param afile
-     * @param buffer
-     * @param fileOffset
-     * @param bufferPos
-     * @param seekTo
-     * @return
      */
     private Long getBytes(RandomAccessFile raf, byte[] buffer, Long bufferOffset, long seekTo, byte[] dest) throws IOException {
         long relativePos = seekTo - bufferOffset;
@@ -1389,8 +1372,6 @@ public class Grid { //  implements Serializable
 
      /**
      *
-     * @param points input array for longitude and latitude
-     *                  double[number_of_points][2]
      * @return calculated min and max values of a grid file as float [] where [0] is min and [1] is max.
      */
     public float[] calculatetMinMax() {
@@ -1525,7 +1506,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getFullStackTrace(e));
+            logger.error("error calculating min/max of a grid file",e);
         }
         return ret;
     }

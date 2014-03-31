@@ -412,7 +412,7 @@ public class ObjectDAOImpl implements ObjectDAO {
                             o.setFid(f.getFieldId());
                             o.setFieldname(f.getFieldName());
 
-                            if (/* f.getType().equals("a") || */s.length == 2) {
+                            if (f.getType().equals("a") || s.length == 2) {
                                 o.setBbox(gc.getBbox());
                                 o.setArea_km(gc.getArea_km());
                                 o.setWmsurl(getGridClassWms(f.getLayerName(), gc));
@@ -473,7 +473,7 @@ public class ObjectDAOImpl implements ObjectDAO {
                         o.setArea_km(gc.getArea_km());
                         o.setWmsurl(getGridClassWms(f.getLayerName(), gc));
                         l.add(o);
-                    } else { // if(f.getType().equals("b")) {//polygon pid
+                    } else if(f.getType().equals("b")) {//polygon pid
                         Grid g = new Grid(f.getFilePath() + File.separator + "polygons");
                         if (g != null) {
                             float[] vs = g.getValues(new double[][] { { lng, lat } });

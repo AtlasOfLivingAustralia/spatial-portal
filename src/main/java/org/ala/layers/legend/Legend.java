@@ -10,14 +10,32 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.Serializable;
 import javax.imageio.ImageIO;
 import org.ala.layers.intersect.Grid;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonSubTypes;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 /**
  *
  * @author Adam
  */
-public abstract class Legend {
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "typeName")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = LegendDecade.class, name = "Decade Legend"),
+        @JsonSubTypes.Type(value = LegendEqualArea.class, name = "Equal Area"),
+        @JsonSubTypes.Type(value = LegendEqualSize.class, name = "Equal Size"),
+        @JsonSubTypes.Type(value = LegendEvenInterval.class, name = "Even Interval"),
+        @JsonSubTypes.Type(value = LegendEvenIntervalLog.class, name = "Even Interval Log"),
+        @JsonSubTypes.Type(value = LegendEvenIntervalLog10.class, name = "Even Interval Log 10"),
+})
+@JsonIgnoreProperties({"minMax","cutoffs"})
+public abstract class Legend implements Serializable {
 
     final static String LEGEND_KEY = "/legend_key.png";
 
@@ -29,9 +47,14 @@ public abstract class Legend {
     final public static int[] colours = {0x00002DD0, 0x00005BA2, 0x00008C73, 0x0000B944, 0x0000E716, 0x00A0FF00, 0x00FFFF00, 0x00FFC814, 0x00FFA000, 0x00FF5B00, 0x00FF0000};
 
     /*
-     * for determining the records that are equal to the maximum value
-     */
+         * for determining the records that are equal to the maximum value
+         */
     float[] cutoffs;
+
+    /*
+     * for determining the records that are equal to the minimum value
+     */
+    float[] cutoffMins;
 
     /*
      * cutoffs.length may not match colours.length, this a translation
@@ -45,6 +68,11 @@ public abstract class Legend {
      * number of group members by Area
      */
     int[] groupSizesArea;
+
+    /*
+     * number of NaN values from counts
+     */
+    int countOfNaN;
 
     /*
      * min/max values
@@ -153,8 +181,10 @@ public abstract class Legend {
         groupSizes = new int[cutoffs.length];
 
         int cutoffPos = 0;
+        countOfNaN = 0;
         for (int i = 0; i < d.length; i++) {
             if (Float.isNaN(d[i])) {
+                countOfNaN++;
                 continue;
             } else if (d[i] > cutoffs[cutoffPos]) {
                 while (d[i] > cutoffs[cutoffPos]) {
@@ -204,6 +234,7 @@ public abstract class Legend {
             return null;
         }
 
+        cutoffMins = new float[cutoffs.length];
         int[] grpSizes = new int[cutoffs.length];
 
         int cutoffPos = 0;
@@ -214,6 +245,7 @@ public abstract class Legend {
             while (d[i] > cutoffs[cutoffPos]) {
                 while (d[i] > cutoffs[cutoffPos]) {
                     cutoffPos++;
+                    cutoffMins[cutoffPos] = d[i];
                 }
             }
             grpSizes[cutoffPos]++;
@@ -572,5 +604,113 @@ public abstract class Legend {
             e.printStackTrace(System.out);
         }
 
+    }
+
+    public float[] getCutoffMinFloats() {
+        return this.cutoffMins;
+    }
+
+    public void setCutoffs(float[] cutoffs) {
+        this.cutoffs = cutoffs;
+    }
+
+    public float[] getCutoffMins() {
+        return cutoffMins;
+    }
+
+    public void setCutoffMins(float[] cutoffMins) {
+        this.cutoffMins = cutoffMins;
+    }
+
+    public float[] getCutoffsColours() {
+        return cutoffsColours;
+    }
+
+    public void setCutoffsColours(float[] cutoffsColours) {
+        this.cutoffsColours = cutoffsColours;
+    }
+
+    public int[] getGroupSizes() {
+        return groupSizes;
+    }
+
+    public void setGroupSizes(int[] groupSizes) {
+        this.groupSizes = groupSizes;
+    }
+
+    public int[] getGroupSizesArea() {
+        return groupSizesArea;
+    }
+
+    public void setGroupSizesArea(int[] groupSizesArea) {
+        this.groupSizesArea = groupSizesArea;
+    }
+
+    public int getCountOfNaN() {
+        return countOfNaN;
+    }
+
+    public void setCountOfNaN(int countOfNaN) {
+        this.countOfNaN = countOfNaN;
+    }
+
+    public float getMin() {
+        return min;
+    }
+
+    public void setMin(float min) {
+        this.min = min;
+    }
+
+    public float getMax() {
+        return max;
+    }
+
+    public void setMax(float max) {
+        this.max = max;
+    }
+
+    public int getNumberOfRecords() {
+        return numberOfRecords;
+    }
+
+    public void setNumberOfRecords(int numberOfRecords) {
+        this.numberOfRecords = numberOfRecords;
+    }
+
+    public int getNumberOfUniqueValues() {
+        return numberOfUniqueValues;
+    }
+
+    public void setNumberOfUniqueValues(int numberOfUniqueValues) {
+        this.numberOfUniqueValues = numberOfUniqueValues;
+    }
+
+    public int getLastValue() {
+        return lastValue;
+    }
+
+    public void setLastValue(int lastValue) {
+        this.lastValue = lastValue;
+    }
+
+    public int getDivisions() {
+        return divisions;
+    }
+
+    public void setDivisions(int divisions) {
+        this.divisions = divisions;
+    }
+
+    public void setCutoffFloats(float [] cutoffs) {
+        this.cutoffs = cutoffs;
+    }
+
+    public void setCutoffMinFloats(float [] cutoffMins) {
+        this.cutoffMins = cutoffMins;
+    }
+
+    public void setTypeName(String typeName) {
+        //does nothing
     }
 }
