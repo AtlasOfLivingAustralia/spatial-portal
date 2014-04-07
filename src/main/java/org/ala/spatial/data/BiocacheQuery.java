@@ -107,7 +107,7 @@ public class BiocacheQuery implements Query, Serializable {
     //static String[][] facetNameExceptions = {{"cl22", "state"}, {"cl959", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
     HashMap<String, LegendObject> legends = new HashMap<String, LegendObject>();
     HashSet<String> flaggedRecords = new HashSet<String>();
-    private Logger logger = Logger.getLogger(BiocacheQuery.class.getName());
+    private static Logger logger = Logger.getLogger(BiocacheQuery.class.getName());
 
     static String translateFieldForSolr(String facetName) {
         if (facetName == null) {
