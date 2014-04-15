@@ -33,9 +33,9 @@ public class QueryField implements Serializable {
         TAXONOMIC("Taxonomic", 1),
         GEOSPATIAL("Geospatial", 2),
         TEMPORAL("Temporal", 3),
-        RECORD_DETAILS("Record Details", 4),
+        RECORD_DETAILS("Record details", 4),
         ATTRIBUTION("Attribution", 5),
-        RECORD_ASSERTIONS("Record Assertions", 6),
+        RECORD_ASSERTIONS("Record assertions", 6),
         CUSTOM("Custom", 0);
         private static final Map<String, GroupType> nameLookup = new HashMap<String, GroupType>();
         static {
