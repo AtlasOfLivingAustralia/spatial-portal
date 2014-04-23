@@ -73,7 +73,7 @@ class GetValuesSpeciesThread extends Thread {
 
     /**
      * Construct with a list of parts.
-     *
+     * <p/>
      * Must use function 'set' before running this thread.
      *
      * @param parts
@@ -98,8 +98,8 @@ class GetValuesSpeciesThread extends Thread {
      * @param row
      */
     public void set(CountDownLatch cdl, int partSize, BitSet[][] bsRows,
-            BitSet thisCell, float[] values, boolean worldwrap,
-            int height, int width, int offset, int currentRow, int row) {
+                    BitSet thisCell, float[] values, boolean worldwrap,
+                    int height, int width, int offset, int currentRow, int row) {
         this.cdl = cdl;
         this.partSize = partSize;
         this.bsRows = bsRows;

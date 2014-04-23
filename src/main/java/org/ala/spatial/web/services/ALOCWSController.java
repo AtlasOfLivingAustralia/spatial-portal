@@ -14,6 +14,7 @@
 package org.ala.spatial.web.services;
 
 import javax.servlet.http.HttpServletRequest;
+
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
 import org.ala.spatial.analysis.index.LayerFilter;
@@ -34,7 +35,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class ALOCWSController {
 
     @RequestMapping(value = "/ws/aloc", method = RequestMethod.POST)
-    public @ResponseBody
+    public
+    @ResponseBody
     String aloc(HttpServletRequest req) {
         String pid = "";
         try {
@@ -76,7 +78,8 @@ public class ALOCWSController {
     }
 
     @RequestMapping(value = "/ws/aloc/estimate", method = {RequestMethod.POST, RequestMethod.GET})
-    public @ResponseBody
+    public
+    @ResponseBody
     String alocEstimate(HttpServletRequest req) {
         String pid = "";
         try {

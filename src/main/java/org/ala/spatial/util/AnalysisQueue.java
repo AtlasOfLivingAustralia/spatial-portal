@@ -30,14 +30,14 @@ import java.util.logging.Logger;
 /**
  * Manages the analysis queue. Maximum number of analysis jobs running at the
  * same time is set by limit.jobs in alaspatial.properties.
- *
+ * <p/>
  * Has two threads, a job consumer and a finished job monitor.
- *
+ * <p/>
  * All analysis jobs are serialised into workingdir set in alaspatial.properties
  * as files with the name "JOB" + analysisId.
- *
+ * <p/>
  * All analysis jobs extend AnalysisJob.
- *
+ * <p/>
  * Use:
  * <code>AlaysisQueue.addJob(analysisJob);</code>
  *
@@ -264,7 +264,7 @@ public class AnalysisQueue {
         try {
             FileOutputStream fos = new FileOutputStream(
                     AlaspatialProperties.getAnalysisWorkingDir()
-                    + "JOB" + j.getName());
+                            + "JOB" + j.getName());
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(j);
@@ -279,7 +279,7 @@ public class AnalysisQueue {
         try {
             FileInputStream fis = new FileInputStream(
                     AlaspatialProperties.getAnalysisWorkingDir()
-                    + "JOB" + pid);
+                            + "JOB" + pid);
             BufferedInputStream bis = new BufferedInputStream(fis);
             ObjectInputStream ois = new ObjectInputStream(bis);
             try {

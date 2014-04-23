@@ -18,19 +18,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.legend.Legend;
 import org.ala.layers.legend.LegendEqualArea;
 import org.ala.spatial.analysis.index.LayerFilter;
-import org.ala.spatial.analysis.layers.OccurrenceDensity;
-import org.ala.spatial.analysis.layers.Records;
-import org.ala.spatial.analysis.layers.SitesBySpecies;
-import org.ala.spatial.analysis.layers.SpeciesDensity;
+import org.ala.spatial.analysis.layers.*;
 
 /**
  * Use for sites by species requests.
- * 
+ *
  * @author Adam
  */
 public class AnalysisJobSitesBySpecies extends AnalysisJob {
@@ -78,7 +76,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                     || movingAverageSize >= 16) {
                 String msg = "Moving average size " + movingAverageSize + " is not valid.  Must be odd and between 1 and 15.";
                 setProgress(1, "failed: " + msg);
-                setCurrentState(FAILED);                
+                setCurrentState(FAILED);
                 setMessage(msg);
                 return;
             }
@@ -94,12 +92,15 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
 
             // dump the species data to a file
             setProgress(0, "getting species data");
-            Records records = new Records(biocacheserviceurl/*
-                     * TabulationSettings.biocache_service
-                     */,
-                    speciesq, bbox, /*
-                     * currentPath + File.separator + "raw_data.csv"
-                     */ null, region);
+            Records records = null;
+
+            //is it biocache or layers-service?
+            if (biocacheserviceurl.contains("layers-service") || biocacheserviceurl.contains("spatial")) {
+                records = new LayersServiceRecords(biocacheserviceurl, speciesq, bbox, null, region);
+            } else {
+                records = new Records(biocacheserviceurl,
+                        speciesq, bbox, null, region);
+            }
 
             //update bbox with spatial extent of records
             double minx = 180, miny = 90, maxx = -180, maxy = -90;
@@ -122,7 +123,7 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
             int occurrenceCount = records.getRecordsSize();
             int boundingboxcellcount = (int) ((bbox[2] - bbox[0])
                     * (bbox[3] - bbox[1])
-                    / (gridsize * gridsize));            
+                    / (gridsize * gridsize));
             String error = null;
             if (boundingboxcellcount > AlaspatialProperties.getAnalysisLimitGridCells()) {
                 error = "Too many potential output grid cells.  Decrease area or increase resolution.";
@@ -169,29 +170,29 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                 String extra = "";
                 String username = AlaspatialProperties.getGeoserverUsername();
                 String password = AlaspatialProperties.getGeoserverPassword();
-                
+
                 // first zip up the file as it's going to be sent as binary
                 String[] infiles = {currentPath + "occurrence_density.asc", currentPath + "occurrence_density.prj"};
                 String ascZipFile = currentPath + "occurrence_density.zip";
                 Zipper.zipFiles(infiles, ascZipFile);
-                
+
                 // Upload the file to GeoServer using REST calls
                 UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
 
                 //sld
                 occurrencesLegend = produceSld(currentPath + File.separator + "occurrence_density");
-                
+
                 //geoserver/rest/styles/add_nrm_style
                 url = AlaspatialProperties.getGeoserverUrl() + "/rest/styles/";
                 UploadSpatialResource.loadCreateStyle(url, extra, username, password, "odensity_" + getName());
                 url = AlaspatialProperties.getGeoserverUrl() + "/rest/styles/odensity_" + getName();
                 UploadSpatialResource.loadSld(url, extra, username, password, currentPath + File.separator + "occurrence_density.sld");
-                
+
                 //Apply style
                 String data = "<layer><enabled>true</enabled><defaultStyle><name>odensity_" + getName() + "</name></defaultStyle></layer>";
                 url = AlaspatialProperties.getGeoserverUrl() + "/rest/layers/ALA:odensity_" + getName();
                 UploadSpatialResource.assignSld(url, extra, username, password, data);
-                
+
                 occurrencesLegend.generateLegend(currentPath + File.separator + "occurrence_density_legend.png");
 
                 writeMetadata(currentPath + File.separator + "odensity_metadata.html", "Occurrence Density", records, bbox, occurrencedensity, false, null, null);
@@ -217,24 +218,24 @@ public class AnalysisJobSitesBySpecies extends AnalysisJob {
                 String[] infiles = {currentPath + "species_richness.asc", currentPath + "species_richness.prj"};
                 String ascZipFile = currentPath + "species_richness.zip";
                 Zipper.zipFiles(infiles, ascZipFile);
- 
+
                 // Upload the file to GeoServer using REST calls
                 UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
 
                 //sld
                 speciesLegend = produceSld(currentPath + File.separator + "species_richness");
-                
+
                 //geoserver/rest/styles/add_nrm_style
                 url = AlaspatialProperties.getGeoserverUrl() + "/rest/styles/";
                 UploadSpatialResource.loadCreateStyle(url, extra, username, password, "srichness_" + getName());
                 url = AlaspatialProperties.getGeoserverUrl() + "/rest/styles/srichness_" + getName();
                 UploadSpatialResource.loadSld(url, extra, username, password, currentPath + File.separator + "species_richness.sld");
-                
+
                 //Apply style
                 String data = "<layer><enabled>true</enabled><defaultStyle><name>srichness_" + getName() + "</name></defaultStyle></layer>";
                 url = AlaspatialProperties.getGeoserverUrl() + "/rest/layers/ALA:srichness_" + getName();
                 UploadSpatialResource.assignSld(url, extra, username, password, data);
- 
+
                 speciesLegend.generateLegend(currentPath + File.separator + "species_richness_legend.png");
 
                 writeMetadata(currentPath + File.separator + "srichness_metadata.html", "Species Richness", records, bbox, false, speciesdensity, null, null);

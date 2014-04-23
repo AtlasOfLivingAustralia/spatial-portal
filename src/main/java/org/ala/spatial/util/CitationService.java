@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.Map;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
@@ -47,7 +48,7 @@ public class CitationService {
             if (params != null) {
                 if (!asBody) {
 
-                    for (Iterator ekeys = params.keySet().iterator(); ekeys.hasNext();) {
+                    for (Iterator ekeys = params.keySet().iterator(); ekeys.hasNext(); ) {
                         String key = (String) ekeys.next();
                         String value = (String) params.get(key);
                         post.addParameter(key, URLEncoder.encode(value, "UTF-8"));
@@ -55,7 +56,7 @@ public class CitationService {
                 } else {
                     StringBuilder sbParams = new StringBuilder();
 
-                    for (Iterator ekeys = params.keySet().iterator(); ekeys.hasNext();) {
+                    for (Iterator ekeys = params.keySet().iterator(); ekeys.hasNext(); ) {
                         String key = (String) ekeys.next();
                         String value = (String) params.get(key);
                         sbParams.append(value);

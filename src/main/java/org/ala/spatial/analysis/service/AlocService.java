@@ -26,6 +26,7 @@ import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
+
 import org.ala.layers.intersect.Grid;
 import org.ala.spatial.analysis.method.Aloc;
 import org.ala.spatial.analysis.method.Pca;
@@ -38,11 +39,10 @@ import org.ala.spatial.util.GridCutter;
 
 /**
  * entry into running Aloc
- *
+ * <p/>
  * use run
  *
  * @author adam
- *
  */
 public class AlocService {
 
@@ -50,12 +50,12 @@ public class AlocService {
      * exports means and colours of a classification (ALOC) into a csv
      *
      * @param filename csv filename to export into
-     * @param means mean values for each legend record as [n][m] where n is
-     * number of records m is number of layers used to generate the
-     * classification (ALOC)
-     * @param colours RGB colours of legend records as [n][3] where n is number
-     * of records [][0] is red [][1] is green [][2] is blue
-     * @param layers layers used to generate the classification as Layer[]
+     * @param means    mean values for each legend record as [n][m] where n is
+     *                 number of records m is number of layers used to generate the
+     *                 classification (ALOC)
+     * @param colours  RGB colours of legend records as [n][3] where n is number
+     *                 of records [][0] is red [][1] is green [][2] is blue
+     * @param layers   layers used to generate the classification as Layer[]
      */
     static void exportMeansColours(String filename, double[][] means, int[][] colours, Layer[] layers) {
         try {
@@ -178,17 +178,17 @@ public class AlocService {
 
     /**
      * exports a geoserver sld file for legend generation
-     *
+     * <p/>
      * TODO: find out why it reports error when attached layer is called
      *
      * @param filename sld filename to export into
-     * @param means mean values for each legend record as [n][m] where n is
-     * number of records m is number of layers used to generate the
-     * classification (ALOC)
-     * @param colours RGB colours of legend records as [n][3] where n is number
-     * of records [][0] is red [][1] is green [][2] is blue
-     * @param layers layers used to generate the classification as Layer[]
-     * @param id unique id (likely to be session_id) as String
+     * @param means    mean values for each legend record as [n][m] where n is
+     *                 number of records m is number of layers used to generate the
+     *                 classification (ALOC)
+     * @param colours  RGB colours of legend records as [n][3] where n is number
+     *                 of records [][0] is red [][1] is green [][2] is blue
+     * @param layers   layers used to generate the classification as Layer[]
+     * @param id       unique id (likely to be session_id) as String
      */
     static void exportSLD(String filename, double[][] means, int[][] colours, Layer[] layers, String id) {
         try {
@@ -533,7 +533,7 @@ public class AlocService {
         try {
             fw = new BufferedWriter(
                     new OutputStreamWriter(
-                    new FileOutputStream(filename.replace("aloc.png", name + ".asc")), "US-ASCII"));
+                            new FileOutputStream(filename.replace("aloc.png", name + ".asc")), "US-ASCII"));
             fw.append("ncols ").append(String.valueOf(width)).append("\n");
             fw.append("nrows ").append(String.valueOf(height)).append("\n");
             fw.append("xllcorner ").append(String.valueOf(extents[2])).append("\n");

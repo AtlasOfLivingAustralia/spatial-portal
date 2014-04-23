@@ -17,7 +17,7 @@ import org.ala.layers.intersect.SimpleRegion;
 
 /**
  * Generates a integer-based domain grid based on a set of grid values
- *
+ * <p/>
  * 1 for positive intersecting values -9999 for no intersecting values
  *
  * @author ajay

@@ -19,12 +19,11 @@ import org.apache.commons.math3.util.Pair;
  * Generates a layer using species cell count and cell species list data
  * generated from the biocache-store. The layer is generated for the entire
  * globe (latitude -90 to 90, longitude -180 to 180)
- * 
+ * <p/>
  * Layer data is output in both ESRI ASCII grid format (.asc) and in DIVA grid
  * format (.gri/.grd). -9999 is used as the no data value.
- * 
+ *
  * @author ChrisF
- * 
  */
 public abstract class CalculatedLayerGenerator {
 
@@ -36,24 +35,24 @@ public abstract class CalculatedLayerGenerator {
     public CalculatedLayerGenerator(BigDecimal resolution) throws IOException {
         _resolution = resolution;
     }
-    
+
     // read species cell counts into memory
     protected void readSpeciesCellCounts(File speciesCellCountFile) throws IOException {
         _speciesCellCounts = new HashMap<String, Integer>();
-        
+
         List<String> speciesCellCountLines = FileUtils.readLines(speciesCellCountFile);
         for (String line : speciesCellCountLines) {
             String[] tokens = line.split(",");
             String speciesLsid = tokens[0];
             int cellCount = Integer.parseInt(tokens[1]);
             _speciesCellCounts.put(speciesLsid, cellCount);
-        }        
+        }
     }
-    
+
     // Read cell species lists into memory
     protected void readCellSpeciesLists(File cellSpeciesFile) throws IOException {
         _cellSpecies = new HashMap<Pair<BigDecimal, BigDecimal>, List<String>>();
-        
+
         List<String> cellSpeciesLines = FileUtils.readLines(cellSpeciesFile);
         for (String line : cellSpeciesLines) {
             String[] tokens = line.split(",");
@@ -67,7 +66,7 @@ public abstract class CalculatedLayerGenerator {
     // Read cell species lists into memory
     protected void readCellOccurrenceCounts(File cellOccurrenceCountsFile) throws IOException {
         _cellOccurrenceCounts = new HashMap<Pair<BigDecimal, BigDecimal>, Long>();
-        
+
         List<String> cellOccurrenceCountsLines = FileUtils.readLines(cellOccurrenceCountsFile);
         for (String line : cellOccurrenceCountsLines) {
             String[] tokens = line.split(",");
@@ -75,7 +74,7 @@ public abstract class CalculatedLayerGenerator {
             BigDecimal longitude = new BigDecimal(tokens[1]).setScale(2);
             long cellOccurrencesCount = Long.parseLong(tokens[2]);
             _cellOccurrenceCounts.put(new Pair(latitude, longitude), cellOccurrencesCount);
-        } 
+        }
     }
 
     protected int calculateNumberOfRows() {
@@ -149,17 +148,13 @@ public abstract class CalculatedLayerGenerator {
     /**
      * Handles the cell as defined by the coordiate pair, writes necessary
      * changes to the ascPrintWriter and divaOutputStream
-     * 
-     * @param coordPair
-     *            the coordinate pair that defines the cell
-     * @param maxValue
-     *            the current maximum value for the generated raster layer
-     * @param ascPrintWriter
-     *            PrintWriter for writing the asc grid
-     * @param divaOutputStream
-     *            output stream for writing the diva grid
+     *
+     * @param coordPair        the coordinate pair that defines the cell
+     * @param maxValue         the current maximum value for the generated raster layer
+     * @param ascPrintWriter   PrintWriter for writing the asc grid
+     * @param divaOutputStream output stream for writing the diva grid
      * @return the new maxValue, this will equal to or greater than the maxValue
-     *         supplied to the method.
+     * supplied to the method.
      */
     protected abstract float handleCell(Pair<BigDecimal, BigDecimal> coordPair, float maxValue, PrintWriter ascPrintWriter, BufferedOutputStream divaOutputStream) throws IOException;
 

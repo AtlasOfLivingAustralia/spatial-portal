@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
+
 import org.ala.layers.client.Client;
 import org.ala.layers.dto.Field;
 import org.ala.layers.dto.Layer;
@@ -41,7 +42,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class LayerDistancesWSController {
 
     @RequestMapping(value = "/ws/layerdistances", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     Map<String, Double> aloc(HttpServletRequest req) {
         Map<String, Double> map = new HashMap<String, Double>();
         return LayerDistanceIndex.loadDistances();
@@ -49,7 +51,7 @@ public class LayerDistancesWSController {
 
     @RequestMapping(value = "/layers/analysis/inter_layer_association_rawnames.csv", method = RequestMethod.GET)
     public ResponseEntity<String> CSVrawnames(HttpServletRequest req) {
-        String csv =  makeCSV("name");
+        String csv = makeCSV("name");
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.parseMediaType("text/csv"));
         return new ResponseEntity<String>(csv, responseHeaders, HttpStatus.CREATED);
@@ -60,7 +62,7 @@ public class LayerDistancesWSController {
         String csv = makeCSV("displayname");
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.parseMediaType("text/csv"));
-        return new ResponseEntity<String>(csv, responseHeaders, HttpStatus.CREATED);        
+        return new ResponseEntity<String>(csv, responseHeaders, HttpStatus.CREATED);
     }
 
     private String makeCSV(String type) {

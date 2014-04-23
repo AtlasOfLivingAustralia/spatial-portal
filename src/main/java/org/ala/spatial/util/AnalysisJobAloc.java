@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Arrays;
+
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.service.AlocServiceImpl;
@@ -24,7 +25,7 @@ import org.ala.spatial.analysis.service.AlocSettings;
 
 /**
  * Use to run ALOC requests.
- * 
+ *
  * @author Adam
  */
 public class AnalysisJobAloc extends AnalysisJob {
@@ -55,14 +56,14 @@ public class AnalysisJobAloc extends AnalysisJob {
         resolution = resolution_;
 
         layerCount = envlist.split(":").length;
-        
+
         if (region != null) {
             cells = (int) Math.ceil((region.getWidth() / Double.parseDouble(resolution))
                     * (region.getHeight() / Double.parseDouble(resolution)));
         } else {
             cells = 1000000; //or something
         }
-        
+
         stageTimes = new long[4];
 
         setStage(0);
@@ -116,7 +117,7 @@ public class AnalysisJobAloc extends AnalysisJob {
             }
             flegend.close();
 
-            StringBuffer metadata = new StringBuffer();            
+            StringBuffer metadata = new StringBuffer();
             BufferedReader fmetadata = new BufferedReader(new FileReader(filepath + "classification.html"));
             while ((line = fmetadata.readLine()) != null) {
                 metadata.append(line);

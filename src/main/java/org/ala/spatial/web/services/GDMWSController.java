@@ -14,6 +14,7 @@
 package org.ala.spatial.web.services;
 
 import au.com.bytecode.opencsv.CSVReader;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -34,6 +35,7 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
+
 import org.ala.layers.client.Client;
 import org.ala.layers.dao.LayerDAO;
 import org.ala.layers.intersect.IniReader;
@@ -63,7 +65,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- *
  * @author ajay
  */
 @Controller
@@ -90,7 +91,7 @@ public class GDMWSController {
             String speciesq = req.getParameter("speciesq");
 
             OccurrenceData od = new OccurrenceData();
-            String [] s = od.getSpeciesData(speciesq, bs, null);
+            String[] s = od.getSpeciesData(speciesq, bs, null);
 
             String speciesdata = s[0];
 
@@ -157,13 +158,12 @@ public class GDMWSController {
             }
 
 
-
             // write the properties to a file so we can grab them back later
             Properties props = new Properties();
             props.setProperty("pid", Long.toString(currTime));
             props.setProperty("envlist", envlist);
             props.setProperty("area", area);
-            props.setProperty("taxacount", taxacount); 
+            props.setProperty("taxacount", taxacount);
             //props.store(new PrintWriter(new BufferedWriter(new FileWriter(outputdir + "ala.properties"))), "");
             props.store(new FileOutputStream(outputdir + "ala.properties"), "ALA GDM Properties");
 
@@ -425,7 +425,7 @@ public class GDMWSController {
         return outputdir + "gdm_params.txt";
     }
 
-//    private Layer[] getEnvFilesAsLayers(String envNames) {
+    //    private Layer[] getEnvFilesAsLayers(String envNames) {
 //        try {
 //            envNames = URLDecoder.decode(envNames, "UTF-8");
 //        } catch (UnsupportedEncodingException ex) {
@@ -522,10 +522,10 @@ public class GDMWSController {
                 }
                 String lyr = f.getName().substring(0, f.getName().length() - 4);
                 System.out.println("Converting " + lyr);
-                SpatialTransformer.convertDivaToAsc(outputdir+lyr, outputdir+lyr+".asc");
+                SpatialTransformer.convertDivaToAsc(outputdir + lyr, outputdir + lyr + ".asc");
 
-                String[] infiles = {outputdir+lyr+".asc", outputdir+lyr+".prj"};
-                String ascZipFile = outputdir+lyr+".zip";
+                String[] infiles = {outputdir + lyr + ".asc", outputdir + lyr + ".prj"};
+                String ascZipFile = outputdir + lyr + ".zip";
                 Zipper.zipFiles(infiles, ascZipFile);
 
                 url = AlaspatialProperties.getGeoserverUrl() + "/rest/workspaces/ALA/coveragestores/gdm_" + lyr + "_" + pid + "/file.arcgrid?coverageName=gdm_" + lyr + "_" + pid;
@@ -661,7 +661,6 @@ public class GDMWSController {
 
             System.out.println("Writing image....");
             ChartUtilities.saveChartAsPNG(new File(outputdir + "plots/obspredissim.png"), jChart1, 600, 400);
-
 
 
             // For chart 3

@@ -22,6 +22,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
@@ -52,9 +53,8 @@ public class SitesBySpeciesTabulated {
     int width, height;
 
     /**
-     *
      * @param resolution decimal degrees as double.
-     * @param bbox bounding area as double [] with xmin, ymin, xmax, ymax.
+     * @param bbox       bounding area as double [] with xmin, ymin, xmax, ymax.
      */
     public SitesBySpeciesTabulated(double resolution, double[] bbox) {
         this.resolution = resolution;
@@ -65,7 +65,6 @@ public class SitesBySpeciesTabulated {
     }
 
     /**
-     *
      * @param resolution
      */
     void setResolution(double resolution) {
@@ -75,7 +74,6 @@ public class SitesBySpeciesTabulated {
     }
 
     /**
-     *
      * @param bbox
      */
     void setBBox(double[] bbox) {
@@ -86,25 +84,25 @@ public class SitesBySpeciesTabulated {
 
     /**
      * Generate and write the sites by species list.
-     *
+     * <p/>
      * Output files have both .csv and .json decades, tabulation by decades
      * decadecounts, tabulation by (species in) sequential decades
      * bioregionName, tabulation by bioregions (from ssf or grid & gridColumns)
      *
-     * @param records all occurrence records for this density grid as Records.
+     * @param records         all occurrence records for this density grid as Records.
      * @param outputDirectory path to the output directory.
-     * @param region area restriction, or null for everywhere the occurrences
-     * appear, as SimpleRegion.
-     * @param envelopeGrid area restriction as an envelope grid, or null for
-     * everywhere the occurrences appear, as Grid
-     * @param bioregionName null or output bioregion name.
-     * @param ssf null or bioregion as shape file with a single column as
-     * SimpleRegion.
-     * @param grid null or bioregion as Grid. Must also have gridColumns.
-     * @param gridColumns null or grid bioregion category lookup values as
-     * String [].
-     * @param decade true to generate decades and decadecounts output
-     * tabulations.
+     * @param region          area restriction, or null for everywhere the occurrences
+     *                        appear, as SimpleRegion.
+     * @param envelopeGrid    area restriction as an envelope grid, or null for
+     *                        everywhere the occurrences appear, as Grid
+     * @param bioregionName   null or output bioregion name.
+     * @param ssf             null or bioregion as shape file with a single column as
+     *                        SimpleRegion.
+     * @param grid            null or bioregion as Grid. Must also have gridColumns.
+     * @param gridColumns     null or grid bioregion category lookup values as
+     *                        String [].
+     * @param decade          true to generate decades and decadecounts output
+     *                        tabulations.
      * @throws IOException
      */
     public void write(Records records, String outputDirectory, SimpleRegion region, Grid envelopeGrid, String bioregionName, SimpleShapeFile ssf, Grid grid, String[] gridColumns, boolean decade) throws IOException {
@@ -166,7 +164,7 @@ public class SitesBySpeciesTabulated {
         }
         int[] decContinousCounts = new int[records.getSpeciesSize()];
 
-        for (int pos = 0; pos < records.getRecordsSize();) {
+        for (int pos = 0; pos < records.getRecordsSize(); ) {
             //find end pos
             int x = (int) ((records.getLongitude(pos) - bbox[0]) / resolution);
             int y = (int) ((records.getLatitude(pos) - bbox[1]) / resolution);
@@ -307,12 +305,12 @@ public class SitesBySpeciesTabulated {
 
     /**
      * write decades tabulation.
-     *
+     * <p/>
      * Output filename is "decades.csv" and "decades.json".
      *
      * @param outputDirectory path to output directory.
-     * @param decadeIdx array of decades.
-     * @param decMap array of map of values to write.
+     * @param decadeIdx       array of decades.
+     * @param decMap          array of map of values to write.
      * @return
      */
     private Map writeDecades(String outputDirectory, short[] decadeIdx, HashMap<Integer, Integer>[] decMap) {
@@ -388,12 +386,12 @@ public class SitesBySpeciesTabulated {
 
     /**
      * write decade counts tabulation.
-     *
+     * <p/>
      * Output filename is "decadecounts.csv" and "decadecounts.json".
      *
      * @param outputDirectory path to output directory.
-     * @param decadeIdx array of decades.
-     * @param decMap array of map of values to write.
+     * @param decadeIdx       array of decades.
+     * @param decMap          array of map of values to write.
      * @return
      */
     private Map writeDecadeCounts(String outputDirectory, HashMap<Integer, Integer>[] decCountMap) {
@@ -461,13 +459,13 @@ public class SitesBySpeciesTabulated {
 
     /**
      * write bioregion tabulation.
-     *
+     * <p/>
      * Output filename is name + ".csv" and name + ".json".
      *
-     * @param name output filename
+     * @param name            output filename
      * @param outputDirectory directory for output.
-     * @param columns list of the bioregion names.
-     * @param bioMap data to write.
+     * @param columns         list of the bioregion names.
+     * @param bioMap          data to write.
      * @return
      */
     private Map writeBioregions(String name, String outputDirectory, String[] columns, HashMap<Integer, Integer>[] bioMap) {

@@ -14,10 +14,12 @@
 package org.ala.spatial.analysis.layers;
 
 import au.com.bytecode.opencsv.CSVReader;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.intersect.SimpleRegion;
 
@@ -54,7 +56,6 @@ public class SitesBySpecies {
     }
 
     /**
-     *
      * @param resolution
      */
     void setResolution(double resolution) {
@@ -64,7 +65,6 @@ public class SitesBySpecies {
     }
 
     /**
-     *
      * @param bbox
      */
     void setBBox(double[] bbox) {
@@ -75,15 +75,15 @@ public class SitesBySpecies {
 
     /**
      * Generate and write the sites by species list.
-     *
+     * <p/>
      * Output file is named "SitesBySpecies.csv"
      *
-     * @param records all occurrence records for this density grid as Records.
+     * @param records         all occurrence records for this density grid as Records.
      * @param outputDirectory path to the output directory for the list.
-     * @param region area restriction, or null for everywhere the occurrences
-     * appear.
-     * @param envelopeGrid area restriction as an envelope grid, or null for
-     * everywhere the occurrences appear.
+     * @param region          area restriction, or null for everywhere the occurrences
+     *                        appear.
+     * @param envelopeGrid    area restriction as an envelope grid, or null for
+     *                        everywhere the occurrences appear.
      * @return array as int[] with { grid cells with an occurrence, grid cells
      * in the area }
      * @throws IOException

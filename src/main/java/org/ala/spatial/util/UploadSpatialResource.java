@@ -15,6 +15,7 @@ package org.ala.spatial.util;
 
 import java.io.File;
 import java.io.FileWriter;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -27,7 +28,7 @@ import org.apache.commons.httpclient.methods.RequestEntity;
 /**
  * UploadSpatialResource helps with loading any dynamically generated spatial
  * data into geoserver.
- *
+ * <p/>
  * Main code from:
  * http://svn.apache.org/viewvc/httpcomponents/oac.hc3x/trunk/src/examples/BasicAuthenticationExample.java?view=log
  *
@@ -238,14 +239,14 @@ public class UploadSpatialResource {
      * sends a PUT or POST call to a URL using authentication and including a
      * file upload
      *
-     * @param type one of UploadSpatialResource.PUT for a PUT call or
-     * UploadSpatialResource.POST for a POST call
-     * @param url URL for PUT/POST call
-     * @param username account username for authentication
-     * @param password account password for authentication
+     * @param type         one of UploadSpatialResource.PUT for a PUT call or
+     *                     UploadSpatialResource.POST for a POST call
+     * @param url          URL for PUT/POST call
+     * @param username     account username for authentication
+     * @param password     account password for authentication
      * @param resourcepath local path to file to upload, null for no file to
-     * upload
-     * @param contenttype file MIME content type
+     *                     upload
+     * @param contenttype  file MIME content type
      * @return server response status code as String or empty String if
      * unsuccessful
      */
@@ -262,7 +263,8 @@ public class UploadSpatialResource {
             entity = new FileRequestEntity(input, contenttype);
         }
 
-        HttpMethod call = null;;
+        HttpMethod call = null;
+        ;
         if (type == PUT) {
             PutMethod put = new PutMethod(url);
             put.setDoAuthentication(true);

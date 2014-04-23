@@ -17,6 +17,7 @@ import java.io.*;
 import java.util.Iterator;
 import javax.servlet.http.HttpServletResponse;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
 import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.Zipper;
 import org.apache.commons.io.FileUtils;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- *
  * @author ajay
  */
 @Controller
@@ -42,17 +42,17 @@ public class DownloadController {
     @ResponseBody
     public String downloadSessionUrl(@PathVariable String sessionid, HttpServletResponse response) {
         try {
-            
+
             String basedir = AlaspatialProperties.getBaseOutputDir() + File.separator + "output" + File.separator;
             String sessiondir = basedir + "session" + File.separator + sessionid;
             File sDir = new File(sessiondir);
-            
+
             if (sDir.exists() && sDir.isDirectory()) {
                 StringBuffer sbSession = new StringBuffer();
                 sbSession.append("[InternetShortcut]").append("\n");
                 sbSession.append("URL=").append(AlaspatialProperties.getBaseOutputURL());
                 sbSession.append("?ss=").append(sessionid).append("\n");
-                
+
                 response.setContentType("application/internet-shortcut");
                 response.setContentLength(safeLongToInt(sbSession.length()));
                 response.setHeader("Content-Disposition", "attachment; filename=\"ALA_Spatial_Portal_Session_" + sessionid + ".url\"");
@@ -62,12 +62,12 @@ public class DownloadController {
                 return null;
             }
         } catch (Exception e) {
-            System.out.println("Could not find session directory");            
+            System.out.println("Could not find session directory");
         }
-        
-        return ""; 
+
+        return "";
     }
-    
+
     @RequestMapping(value = "/{pid}", method = RequestMethod.GET)
     @ResponseBody
     public String download(@PathVariable String pid, HttpServletResponse response) {
@@ -88,13 +88,12 @@ public class DownloadController {
                 } else if ("layers".equals(parentPath) || "aloc".equals(parentPath)) {
                     fixAlocFiles(pid, dir);
                     Zipper.zipDirectory(dir.getParent() + "/temp/" + pid, zipfile);
-                }else if ("gdm".equals(parentPath)) {
+                } else if ("gdm".equals(parentPath)) {
                     fixGdmFiles(pid, dir);
-                    Zipper.zipDirectory(dir.getParent()+"/temp/"+pid, zipfile);
+                    Zipper.zipDirectory(dir.getParent() + "/temp/" + pid, zipfile);
                 } else {
                     Zipper.zipDirectory(dir.getAbsolutePath(), zipfile);
                 }
-
 
 
                 System.out.println("Found " + dir.getName() + " in " + dir.getParent() + " and zipped at: " + zipfile);
@@ -359,7 +358,6 @@ public class DownloadController {
                 } else {
                     Zipper.zipDirectory(dir.getAbsolutePath(), zipfile);
                 }
-
 
 
                 System.out.println("Found " + dir.getName() + " in " + dir.getParent() + " and zipped at: " + zipfile);

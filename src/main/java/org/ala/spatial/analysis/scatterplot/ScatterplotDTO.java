@@ -3,6 +3,7 @@
  * and open the template in the editor.
  */
 package org.ala.spatial.analysis.scatterplot;
+
 import au.com.bytecode.opencsv.CSVReader;
 import org.ala.spatial.util.AlaspatialProperties;
 import org.apache.log4j.Logger;
@@ -18,8 +19,8 @@ public class ScatterplotDTO implements Serializable {
 
     private static Logger logger = Logger.getLogger(ScatterplotDTO.class);
 
-    String [] layers;
-    String [] layernames;
+    String[] layers;
+    String[] layernames;
 
     String name;
 
@@ -37,17 +38,18 @@ public class ScatterplotDTO implements Serializable {
     int gridDivisions = 0;
     private String id;
 
-    public ScatterplotDTO() {}
+    public ScatterplotDTO() {
+    }
 
-    public ScatterplotDTO(String fqs, String fbs, String fname, String bqs, String bbs, String bname, String name, String layer1, String layer1name, String layer2, String layer2name,  int gridDivisions, String filterWkt) {
+    public ScatterplotDTO(String fqs, String fbs, String fname, String bqs, String bbs, String bname, String name, String layer1, String layer1name, String layer2, String layer2name, int gridDivisions, String filterWkt) {
         this.foregroundOccurrencesQs = fqs;
         this.foregroundOccurrencesBs = fbs;
         this.foregroundName = fname;
 
         this.name = name;
 
-        this.layers = new String [] {layer1, layer2};
-        this.layernames = new String [] {layer1name, layer2name};
+        this.layers = new String[]{layer1, layer2};
+        this.layernames = new String[]{layer1name, layer2name};
 
         this.backgroundOccurrencesQs = bqs;
         this.backgroundOccurrencesBs = bbs;
@@ -60,7 +62,7 @@ public class ScatterplotDTO implements Serializable {
 
     @JsonIgnore
     public String getLayer2() {
-        if(layers != null) {
+        if (layers != null) {
             return layers[1];
         } else {
             return null;
@@ -69,7 +71,7 @@ public class ScatterplotDTO implements Serializable {
 
     @JsonIgnore
     public void setLayer2(String layer2) {
-        if(layers == null) {
+        if (layers == null) {
             layers = new String[2];
         }
 
@@ -79,20 +81,57 @@ public class ScatterplotDTO implements Serializable {
     @JsonIgnore
     public String getLayer2name() {
 
-        if(layernames != null) {
+        if (layernames != null) {
             return layernames[1];
-        }else {
+        } else {
             return null;
         }
     }
 
     @JsonIgnore
     public void setLayer2name(String layer2name) {
-        if(layernames == null) {
+        if (layernames == null) {
             layernames = new String[2];
         }
 
         layernames[1] = layer2name;
+    }
+
+    @JsonIgnore
+    public String getLayer1() {
+        if (layers != null) {
+            return layers[0];
+        } else {
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public void setLayer1(String layer1) {
+        if (layers == null) {
+            layers = new String[2];
+        }
+
+        layers[0] = layer1;
+    }
+
+    @JsonIgnore
+    public String getLayer1name() {
+
+        if (layernames != null) {
+            return layernames[0];
+        } else {
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public void setLayer1name(String layer2name) {
+        if (layernames == null) {
+            layernames = new String[2];
+        }
+
+        layernames[0] = layer2name;
     }
 
     public String getName() {
@@ -181,14 +220,18 @@ public class ScatterplotDTO implements Serializable {
     }
 
     public void setLayers(String[] layers) {
-        if(layers != null && layers.length >= 2) {
+        if (layers != null && layers.length >= 2) {
             this.layers = layers;
+        } else if (layers != null && layers.length >= 1) {
+            setLayers(layers[0]);
         }
     }
 
     public void setLayernames(String[] layernames) {
-        if(layernames != null && layernames.length >= 2) {
+        if (layernames != null && layernames.length >= 2) {
             this.layernames = layernames;
+        } else if (layernames != null && layernames.length >= 1) {
+            setLayernames(layernames[0]);
         }
     }
 
@@ -206,7 +249,7 @@ public class ScatterplotDTO implements Serializable {
 
             this.layernames = reader.readNext();
         } catch (Exception e) {
-            logger.error("failed to read layernames to string as CSV: " + layernames,e);
+            logger.error("failed to read layernames to string as CSV: " + layernames, e);
         }
     }
 

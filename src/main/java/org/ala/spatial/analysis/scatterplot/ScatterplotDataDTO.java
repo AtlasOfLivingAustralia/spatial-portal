@@ -20,14 +20,13 @@ public class ScatterplotDataDTO {
 
     int missingCount;
 
-    double [][] gridData;
-    float [][] gridCutoffs;
+    double[][] gridData;
+    float[][] gridCutoffs;
 
     //fields that can change and then require data to be refreshed
     String colourMode;
     String layer1;
     String layer2;
-    private double[] extents;
 
     public ScatterplotDataDTO() {
     }
@@ -152,11 +151,28 @@ public class ScatterplotDataDTO {
         this.layer2 = layer2;
     }
 
-    public double[] getExtents() {
-        return extents;
-    }
+    //only returns extents for the first two layers
+    public double[][] layerExtents() {
+        double minx = Double.NaN;
+        double maxx = Double.NaN;
+        double miny = Double.NaN;
+        double maxy = Double.NaN;
 
-    public void setExtents(double [] extents) {
-        this.extents = extents;
+        for (int i = 0; i < data.length; i++) {
+            if (Double.isNaN(minx) || minx > data[i][0]) {
+                minx = data[i][0];
+            }
+            if (Double.isNaN(maxx) || maxx < data[i][0]) {
+                maxx = data[i][0];
+            }
+            if (Double.isNaN(miny) || miny > data[i][1]) {
+                miny = data[i][1];
+            }
+            if (Double.isNaN(maxy) || maxy < data[i][1]) {
+                maxy = data[i][1];
+            }
+        }
+
+        return new double[][]{{minx, maxx}, {miny, maxy}};
     }
 }

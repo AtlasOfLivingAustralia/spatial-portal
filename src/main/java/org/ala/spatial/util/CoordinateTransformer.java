@@ -21,10 +21,10 @@ import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+
 import org.ala.layers.intersect.Grid;
 
 /**
- *
  * @author ajay
  */
 public class CoordinateTransformer {

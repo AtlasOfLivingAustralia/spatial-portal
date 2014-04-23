@@ -18,6 +18,7 @@ import java.io.FilenameFilter;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.ala.spatial.util.AlaspatialProperties;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;

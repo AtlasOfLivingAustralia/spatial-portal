@@ -1,6 +1,7 @@
 package org.ala.spatial.util;
 
 import au.com.bytecode.opencsv.CSVReader;
+import org.ala.spatial.analysis.layers.LayersServiceRecords;
 import org.ala.spatial.analysis.layers.Records;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -18,16 +19,20 @@ import java.util.logging.Logger;
  */
 public class OccurrenceData {
 
-    static final String SPECIES_LIST_SERVICE_CSV = "/webportal/species.csv?";
+    static final String SPECIES_LIST_SERVICE_CSV = "/occurrences/facets/download?facets=species_guid&lookup=true&count=true";
 
-    public String [] getSpeciesData(String q, String bs, String records_filename) {
-            HashMap<String, Object> result = new HashMap<String, Object>();
+    public String[] getSpeciesData(String q, String bs, String records_filename) {
+        //TODO: better test for layers-service vs biocache points
+        boolean userdata = bs.contains("layers-service") || bs.contains("spatial");
 
-            HashSet<String> sensitiveSpeciesFound = new HashSet<String>();
+        HashMap<String, Object> result = new HashMap<String, Object>();
 
-            //add to 'identified' sensitive list
+        HashSet<String> sensitiveSpeciesFound = new HashSet<String>();
+
+        //add to 'identified' sensitive list
+        if (!userdata) {
             try {
-                CSVReader csv = new CSVReader(new StringReader(getSpecies(q + "&fq=" + URLEncoder.encode("-sensitive:[* TO *]", "UTF-8"),bs)));
+                CSVReader csv = new CSVReader(new StringReader(getSpecies(q + "&fq=" + URLEncoder.encode("-sensitive:[* TO *]", "UTF-8"), bs)));
                 List<String[]> fullSpeciesList = csv.readAll();
                 csv.close();
                 for (int i = 0; i < fullSpeciesList.size(); i++) {
@@ -36,40 +41,47 @@ public class OccurrenceData {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            //remove sensitive records that will not be LSID matched
-            try {
-                Records r = new Records(bs,q + "&fq=" + URLEncoder.encode("-sensitive:[* TO *]","UTF-8"),null,records_filename,null);
-
-                StringBuilder sb = null;
-                if (r.getRecordsSize() > 0) {
-                    sb = new StringBuilder();
-                    for (int i = 0; i <  r.getRecordsSize(); i ++) {
-                        if (sb.length() == 0) {
-                            //header
-                            sb.append("species,longitude,latitude");
-                        }
-                        sb.append("\nspecies,").append(r.getLongitude(i)).append(",").append(r.getLatitude(i));
-                    }
-                }
-
-                //collate sensitive species found, no header
-                StringBuilder sen = new StringBuilder();
-                for (String s : sensitiveSpeciesFound) {
-                    sen.append(s).append("\n");
-                }
-
-                String[] out = {((sb == null) ? null : sb.toString()), (sen.length() == 0) ? null : sen.toString()};
-
-                return out;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
         }
 
+        //remove sensitive records that will not be LSID matched
+        try {
+            Records r = null;
+            if (userdata) {
+                r = new LayersServiceRecords(bs, q, null, records_filename, null);
+            } else {
+                r = new Records(bs, q + "&fq=" + URLEncoder.encode("-sensitive:[* TO *]", "UTF-8"), null, records_filename, null);
+            }
 
-    public String getSpecies (String q, String bs) {
+            StringBuilder sb = null;
+            if (r.getRecordsSize() > 0) {
+                sb = new StringBuilder();
+                for (int i = 0; i < r.getRecordsSize(); i++) {
+                    if (sb.length() == 0) {
+                        //header
+                        sb.append("species,longitude,latitude");
+                    }
+                    sb.append("\nspecies,").append(r.getLongitude(i)).append(",").append(r.getLatitude(i));
+                }
+            }
+
+            //collate sensitive species found, no header
+            StringBuilder sen = new StringBuilder();
+            for (String s : sensitiveSpeciesFound) {
+                sen.append(s).append("\n");
+            }
+
+            String[] out = {((sb == null) ? null : sb.toString()), (sen.length() == 0) ? null : sen.toString()};
+
+            return out;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+    public String getSpecies(String q, String bs) {
         HttpClient client = new HttpClient();
         String url = bs
                 + SPECIES_LIST_SERVICE_CSV

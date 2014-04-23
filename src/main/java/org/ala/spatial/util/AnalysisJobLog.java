@@ -17,7 +17,7 @@ import java.io.FileWriter;
 
 /**
  * Use for offline analysis requests.
- * 
+ * <p/>
  * Does the log printing to System.out the optional specified log file.
  *
  * @author Adam

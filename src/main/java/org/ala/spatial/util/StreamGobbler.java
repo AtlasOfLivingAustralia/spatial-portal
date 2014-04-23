@@ -19,19 +19,19 @@ import java.io.InputStreamReader;
 
 /**
  * Use to consume streams when exec'ing analysis functions.
- *
+ * <p/>
  * E.g.
  * <code>
  * //init and start
  * StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "ERROR", job);
  * errorGobbler.start();
- *
+ * <p/>
  * //do stuff
- *
+ * <p/>
  * //end the stream
  * errorGobbler.interrupt();
  * </code>
- *
+ * <p/>
  * </code>
  *
  * @author Adam

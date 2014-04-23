@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import net.sf.json.JSONObject;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.util.AnalysisQueue;
@@ -57,7 +58,8 @@ public class SitesBySpeciesWSControllerTabulated {
     static Object lockProperties = new Object();
 
     @RequestMapping(value = "/ws/sitesbyspeciestabulated", method = {RequestMethod.POST, RequestMethod.GET})
-    public @ResponseBody
+    public
+    @ResponseBody
     String processgeoq(HttpServletRequest req) {
 
         try {
@@ -94,9 +96,9 @@ public class SitesBySpeciesWSControllerTabulated {
 
             AnalysisJobSitesBySpeciesTabulated sbs =
                     new AnalysisJobSitesBySpeciesTabulated(pid, currentPath, "",
-                    speciesq, gridsize, region, filter, biocacheurl,
-                    layers == null ? null : layers.split(","),
-                    true, facetName);
+                            speciesq, gridsize, region, filter, biocacheurl,
+                            layers == null ? null : layers.split(","),
+                            true, facetName);
 
             StringBuffer inputs = new StringBuffer();
             inputs.append("pid:").append(pid);
@@ -157,8 +159,8 @@ public class SitesBySpeciesWSControllerTabulated {
      */
     @RequestMapping(value = "sxs/{analysisId}/{tableType}", method = RequestMethod.GET)
     public ModelAndView sxsViewByType(@PathVariable("analysisId") String analysisId,
-            @PathVariable("tableType") String tableType,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+                                      @PathVariable("tableType") String tableType,
+                                      HttpServletRequest req, HttpServletResponse resp) throws IOException {
         List tables = getTablesFor(analysisId);
 
         String json = readFile(AlaspatialProperties.getBaseOutputDir() + File.separator + "output" + File.separator + "sitesbyspecies" + File.separator + analysisId + File.separator + tableType + ".json");
@@ -231,7 +233,8 @@ public class SitesBySpeciesWSControllerTabulated {
      * list distribution table records, GET
      */
     @RequestMapping(value = "sxsrun", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     String sxsRun(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         run();
 

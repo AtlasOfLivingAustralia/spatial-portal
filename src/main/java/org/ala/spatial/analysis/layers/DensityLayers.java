@@ -20,7 +20,7 @@ import java.util.Date;
 
 /**
  * Generate occurrence density and species richness layers.
- * 
+ * <p/>
  * Outputs are diva grids.
  *
  * @author Adam

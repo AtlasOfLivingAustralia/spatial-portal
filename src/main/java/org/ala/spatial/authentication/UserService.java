@@ -23,6 +23,7 @@ public interface UserService {
 
     /**
      * Get a particular session data.
+     *
      * @param sid Key for the session param id
      * @return Object value for the requested session param id
      */
@@ -30,6 +31,7 @@ public interface UserService {
 
     /**
      * Set a particular session data.
+     *
      * @param sid Key for the session param id
      * @param obj Value for the session param id
      */

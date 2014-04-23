@@ -17,7 +17,7 @@ import java.io.Serializable;
 
 /**
  * Data structure to house database Layer attributes for analysis.
- *
+ * <p/>
  * Suitable as a reference to a database table as well as an environmental data
  * file (e.g. WorldClim grid files)
  *
@@ -46,12 +46,12 @@ public class Layer extends Object implements Serializable {
     /**
      * Constructor for this data structure
      *
-     * @param _name table or file name as String
+     * @param _name         table or file name as String
      * @param _display_name text as String for UI, keep it short
-     * @param _description more detailed text for UI as String
-     * @param _type one of 'contextual' or 'environmental' as String not
-     * enforced here.
-     * @param _fields array of accessible table fields as Field []
+     * @param _description  more detailed text for UI as String
+     * @param _type         one of 'contextual' or 'environmental' as String not
+     *                      enforced here.
+     * @param _fields       array of accessible table fields as Field []
      * @see Field
      */
     public Layer(String _name, String _display_name, String _description, String _type) {

@@ -15,6 +15,7 @@ package org.ala.spatial.analysis.layers;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**

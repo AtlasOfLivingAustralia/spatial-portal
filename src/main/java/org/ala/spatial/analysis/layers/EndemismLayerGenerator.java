@@ -32,7 +32,7 @@ public class EndemismLayerGenerator extends CalculatedLayerGenerator {
 
         new EndemismLayerGenerator(resolution, speciesCellCountFile, cellSpeciesFile).writeGrid(outputFileDirectory, outputFileNamePrefix);
     }
-    
+
     public EndemismLayerGenerator(BigDecimal resolution, File speciesCellCountFile, File cellSpeciesFile) throws IOException {
         super(resolution);
         readSpeciesCellCounts(speciesCellCountFile);
@@ -68,7 +68,7 @@ public class EndemismLayerGenerator extends CalculatedLayerGenerator {
             bb.order(ByteOrder.LITTLE_ENDIAN);
             bb.putFloat(endemicityValue);
             divaOutputStream.write(bb.array());
-            
+
             return newMaxValue;
         } else {
             // No species occurrences in this cell. Endemism value

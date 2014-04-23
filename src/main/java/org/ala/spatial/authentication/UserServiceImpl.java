@@ -15,7 +15,7 @@ package org.ala.spatial.authentication;
 
 /**
  * Implementation class for the UserService
- * 
+ *
  * @author ajayr
  */
 public class UserServiceImpl implements UserService {

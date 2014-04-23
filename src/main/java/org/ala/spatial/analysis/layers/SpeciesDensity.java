@@ -26,11 +26,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * DEPRECATED AND LEFT HERE FOR POSTERITY. SEE CalculatedLayerGenerator and subclasses. CF 12/2013
- * 
+ * <p/>
  * Produce a species richness layer with a moving average.
- *
+ * <p/>
  * Output is diva grid and/or ascii grid.
- *
+ * <p/>
  * Construct then run .write
  *
  * @author Adam
@@ -59,10 +59,9 @@ public class SpeciesDensity {
     int width, height;
 
     /**
-     *
-     * @param gridSize this is (moving average - 1) / 2 as int.
+     * @param gridSize   this is (moving average - 1) / 2 as int.
      * @param resolution output grid resolution as double in decimal degrees.
-     * @param bbox output grid bounds xmin,ymin,xmax,ymax as double [].
+     * @param bbox       output grid bounds xmin,ymin,xmax,ymax as double [].
      */
     public SpeciesDensity(int gridSize, double resolution, double[] bbox) {
         this.gridSize = gridSize;
@@ -74,7 +73,6 @@ public class SpeciesDensity {
     }
 
     /**
-     *
      * @param gridSize
      */
     void setGridSize(int gridSize) {
@@ -82,7 +80,6 @@ public class SpeciesDensity {
     }
 
     /**
-     *
      * @param resolution
      */
     void setResolution(double resolution) {
@@ -92,7 +89,6 @@ public class SpeciesDensity {
     }
 
     /**
-     *
      * @param bbox
      */
     void setBBox(double[] bbox) {
@@ -104,12 +100,12 @@ public class SpeciesDensity {
     /**
      * Generate and write the species richness grid.
      *
-     * @param records all occurrence records for this density grid as Records.
+     * @param records         all occurrence records for this density grid as Records.
      * @param outputDirectory path to output directory as String.
-     * @param filename output filename as String. No file extentions.
-     * @param threadCount number of threads to use during calculations as int.
-     * @param outputDivaGrid true to write a diva grid, as boolean.
-     * @param outputASC true to write an ascii grid, as boolean.
+     * @param filename        output filename as String. No file extentions.
+     * @param threadCount     number of threads to use during calculations as int.
+     * @param outputDivaGrid  true to write a diva grid, as boolean.
+     * @param outputASC       true to write an ascii grid, as boolean.
      * @throws IOException
      */
     public void write(Records records, String outputDirectory, String filename, int threadCount, boolean outputDivaGrid, boolean outputASC) throws IOException {

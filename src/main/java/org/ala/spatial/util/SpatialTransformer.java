@@ -20,11 +20,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+
 import org.ala.layers.intersect.Grid;
 
 /**
  * SpatialTransformer
- *
+ * <p/>
  * Transforms DIVA grids to ASCII grids
  *
  * @author ajay
@@ -44,7 +45,7 @@ public class SpatialTransformer {
         try {
             fw = new BufferedWriter(
                     new OutputStreamWriter(
-                    new FileOutputStream(ascfilename), "US-ASCII"));
+                            new FileOutputStream(ascfilename), "US-ASCII"));
             fw.append("ncols ").append(String.valueOf(grid.ncols)).append("\n");
             fw.append("nrows ").append(String.valueOf(grid.nrows)).append("\n");
             fw.append("xllcorner ").append(String.valueOf(grid.xmin)).append("\n");

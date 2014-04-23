@@ -17,8 +17,8 @@ public class ScatterplotStyleDTO {
 
     String highlightWkt = null;
 
-    double [] selection = null;
-    double [] prevSelection = null;
+    double[] selection = null;
+    double[] prevSelection = null;
 
     int width = 320;
     int height = 320;
@@ -80,7 +80,11 @@ public class ScatterplotStyleDTO {
     }
 
     public void setHighlightWkt(String highlightWkt) {
-        this.highlightWkt = highlightWkt;
+        if (highlightWkt != null && highlightWkt.length() == 0) {
+            this.highlightWkt = null;
+        } else {
+            this.highlightWkt = highlightWkt;
+        }
     }
 
     public double[] getSelection() {

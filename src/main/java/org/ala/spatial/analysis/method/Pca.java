@@ -25,7 +25,7 @@ public class Pca {
      * uses PCA to make colours (0-255, RGB) of data
      *
      * @param data
-     * @return	for each data record, one r, one g and one b component as 0-255
+     * @return for each data record, one r, one g and one b component as 0-255
      * integer
      */
     public static int[][] getColours(double[][] cdata) {

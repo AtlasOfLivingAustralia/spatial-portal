@@ -20,6 +20,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Thread operating to calculate occurrence density, with a moving average,
  * grid values from a list of parts.
+ *
  * @author Adam
  */
 class GetValuesOccurrencesThread extends Thread {
@@ -60,7 +61,7 @@ class GetValuesOccurrencesThread extends Thread {
      * current row.
      */
     int currentRow;
-    /** 
+    /**
      * active row.
      */
     int row;
@@ -70,8 +71,8 @@ class GetValuesOccurrencesThread extends Thread {
     }
 
     public void set(CountDownLatch cdl, int partSize, int[][] cRows,
-            float[] values, boolean worldwrap,
-            int height, int width, int offset, int currentRow, int row) {
+                    float[] values, boolean worldwrap,
+                    int height, int width, int offset, int currentRow, int row) {
         this.cdl = cdl;
         this.partSize = partSize;
         this.cRows = cRows;

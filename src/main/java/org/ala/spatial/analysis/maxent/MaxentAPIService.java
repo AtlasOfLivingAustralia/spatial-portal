@@ -6,7 +6,6 @@
 package org.ala.spatial.analysis.maxent;
 
 /**
- *
  * @author ajay
  */
 public class MaxentAPIService {

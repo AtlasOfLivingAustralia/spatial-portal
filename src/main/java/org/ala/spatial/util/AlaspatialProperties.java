@@ -13,17 +13,22 @@
  */
 package org.ala.spatial.util;
 
+import org.apache.log4j.Logger;
+
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 /**
  * Provides access to alaspatial.properties.
- *
+ * <p/>
  * Parameter details in alaspatial.properties.
  *
  * @author Adam
  */
 public class AlaspatialProperties {
+    private static Logger logger = Logger.getLogger(AlaspatialProperties.class);
 
     /**
      * Properties object.
@@ -33,15 +38,26 @@ public class AlaspatialProperties {
     // read in properties file.
     static {
         properties = new Properties();
+        InputStream is = null;
         try {
-            InputStream is = AlaspatialProperties.class.getResourceAsStream("/alaspatial.properties");
+            String alaspatial_properties = "/data/alaspatial/config/alaspatial-config.properties";
+            is = new FileInputStream(alaspatial_properties);
             if (is != null) {
                 properties.load(is);
             } else {
-                String msg = "cannot get properties file: " + AlaspatialProperties.class.getResource("alaspatial.properties").getFile();
+                String msg = "cannot get properties file: " + alaspatial_properties;
+                logger.warn(msg);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            logger.error(null, ex);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    logger.error("failed to close alaspatial-config.properties", e);
+                }
+            }
         }
     }
 

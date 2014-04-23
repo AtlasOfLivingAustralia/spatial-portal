@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
+
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.util.AnalysisJobMaxent;
 import org.ala.spatial.util.AnalysisQueue;
@@ -33,14 +34,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- *
  * @author ajay
  */
 @Controller
 public class MaxentWSController {
 
     @RequestMapping(value = "/ws/maxent", method = RequestMethod.POST)
-    public @ResponseBody
+    public
+    @ResponseBody
     String maxent(HttpServletRequest req) {
 
         try {
@@ -75,7 +76,7 @@ public class MaxentWSController {
 
             String pid = Long.toString(currTime);
 
-            writeFile(speciesq + "\n" + bs,currentPath + "output" + File.separator + "maxent" + File.separator + pid + File.separator, "species_query.csv");
+            writeFile(speciesq + "\n" + bs, currentPath + "output" + File.separator + "maxent" + File.separator + pid + File.separator, "species_query.csv");
 
             AnalysisJobMaxent ajm = new AnalysisJobMaxent(pid, currentPath, taxon, envlist, region, filter, txtTestPercentage, chkJackknife, chkResponseCurves, resolution);
             StringBuffer inputs = new StringBuffer();
@@ -124,7 +125,8 @@ public class MaxentWSController {
     }
 
     @RequestMapping(value = "/ws/maxent/estimate", method = RequestMethod.POST)
-    public @ResponseBody
+    public
+    @ResponseBody
     String maxentEstimate(HttpServletRequest req) {
 
         try {

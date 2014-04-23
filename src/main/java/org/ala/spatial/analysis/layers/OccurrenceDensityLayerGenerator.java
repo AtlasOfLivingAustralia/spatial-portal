@@ -29,13 +29,13 @@ public class OccurrenceDensityLayerGenerator extends CalculatedLayerGenerator {
 
         new OccurrenceDensityLayerGenerator(resolution, cellOccurrenceCountsFile).writeGrid(outputFileDirectory, outputFileNamePrefix);
     }
-    
+
     public OccurrenceDensityLayerGenerator(BigDecimal resolution, File cellOccurrenceCountsFile) throws IOException {
         super(resolution);
         readCellOccurrenceCounts(cellOccurrenceCountsFile);
     }
 
-    
+
     @Override
     protected float handleCell(Pair<BigDecimal, BigDecimal> coordPair, float maxValue, PrintWriter ascPrintWriter, BufferedOutputStream divaOutputStream) throws IOException {
         if (_cellOccurrenceCounts.containsKey(coordPair)) {

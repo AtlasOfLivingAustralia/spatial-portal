@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+
 import org.ala.spatial.util.AnalysisJob;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SpatialLogger;
@@ -25,7 +26,6 @@ import org.ala.spatial.util.SpatialLogger;
  * ALOC
  *
  * @author adam
- *
  */
 public class Aloc {
 
@@ -33,13 +33,13 @@ public class Aloc {
 
     /**
      * produces group allocations by ALOC with gower metric measure
-     *
+     * <p/>
      * - reduces iteration duration dependance on #groups
      * - increases memory usage
-     *  from
-     *      #cells*#layers
-     *  to
-     *      #cells*#layers + #cells*#groups
+     * from
+     * #cells*#layers
+     * to
+     * #cells*#layers + #cells*#groups
      *
      * @param data_pieces
      * @param nNoOfGroups
@@ -766,9 +766,9 @@ class AlocPieceData {
     public double[] rowDist;
 
     public AlocPieceData(float[] data_,
-            double[] distances_,
-            short[] groups_,
-            double[] rowDist_) {
+                         double[] distances_,
+                         short[] groups_,
+                         double[] rowDist_) {
         data = data_;
         distances = distances_;
         groups = groups_;
@@ -784,7 +784,7 @@ class AlocThreadData {
     public int movement;
 
     public AlocThreadData(int[] groupsize_, int[] seeds_nvm_adjustment_,
-            double[] seeds_adjustment_) {
+                          double[] seeds_adjustment_) {
         groupsize = groupsize_;
         seeds_nmv_adjustment = seeds_nvm_adjustment_;
         seeds_adjustment = seeds_adjustment_;

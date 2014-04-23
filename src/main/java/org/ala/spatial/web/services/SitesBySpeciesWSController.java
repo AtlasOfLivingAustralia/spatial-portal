@@ -16,6 +16,7 @@ package org.ala.spatial.web.services;
 import java.io.File;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
+
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.util.AnalysisJobSitesBySpecies;
 import org.ala.spatial.util.AnalysisQueue;
@@ -29,14 +30,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * Sites by species webservices.
- * 
+ *
  * @author ajay
  */
 @Controller
 public class SitesBySpeciesWSController {
 
     @RequestMapping(value = "/ws/sitesbyspecies", method = RequestMethod.POST)
-    public @ResponseBody
+    public
+    @ResponseBody
     String processgeoq(HttpServletRequest req) {
 
         try {
@@ -95,7 +97,8 @@ public class SitesBySpeciesWSController {
     }
 
     @RequestMapping(value = "/ws/sitesbyspecies/estimate", method = RequestMethod.POST)
-    public @ResponseBody
+    public
+    @ResponseBody
     String processgeoqEstimate(HttpServletRequest req) {
 
         try {

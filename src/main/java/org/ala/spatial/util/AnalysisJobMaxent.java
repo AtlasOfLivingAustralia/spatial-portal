@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Hashtable;
+
 import org.ala.layers.client.Client;
 import org.ala.layers.dao.LayerDAO;
 import org.ala.layers.dto.Field;
@@ -38,7 +39,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 /**
- *
  * @author Adam
  */
 public class AnalysisJobMaxent extends AnalysisJob {
@@ -129,23 +129,23 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
             setProgress(0, "preparing input files and run parameters");
 
-                //get species query data
-                File speciesqueryfile = new File(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species_query.csv");
-                BufferedReader br = new BufferedReader(new FileReader(speciesqueryfile));
-                String speciesq = br.readLine();
-                String bs = br.readLine();
-                br.close();
-                FileUtils.deleteQuietly(speciesqueryfile);
-                OccurrenceData od = new OccurrenceData();
-                String [] s = od.getSpeciesData(speciesq, bs, null);
+            //get species query data
+            File speciesqueryfile = new File(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species_query.csv");
+            BufferedReader br = new BufferedReader(new FileReader(speciesqueryfile));
+            String speciesq = br.readLine();
+            String bs = br.readLine();
+            br.close();
+            FileUtils.deleteQuietly(speciesqueryfile);
+            OccurrenceData od = new OccurrenceData();
+            String[] s = od.getSpeciesData(speciesq, bs, null);
 
-                if (s[0] == null) {
-                    //error, no species
-                    System.out.println("Has error, sending maxent error message");
-                    setProgress(1, "failed: ");
-                    setCurrentState(FAILED);
-                    setMessage("No species selected.\nHint: Make sure your active area includes species occurrences");
-                } else {
+            if (s[0] == null) {
+                //error, no species
+                System.out.println("Has error, sending maxent error message");
+                setProgress(1, "failed: ");
+                setCurrentState(FAILED);
+                setMessage("No species selected.\nHint: Make sure your active area includes species occurrences");
+            } else {
 
                 writeFile(s[0], currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator, "species_points.csv");
                 if (s[1] != null) {

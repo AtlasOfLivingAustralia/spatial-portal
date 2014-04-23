@@ -25,13 +25,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * DEPRECATED AND LEFT HERE FOR POSTERITY. SEE CalculatedLayerGenerator and subclasses. CF 12/2013
- * 
+ * <p/>
  * Produce an occurrence density layer with a moving average.
- * 
+ * <p/>
  * Output is diva grid and/or ascii grid.
- * 
+ * <p/>
  * Construct then run .write
- * 
+ *
  * @author Adam
  */
 public class OccurrenceDensity {
@@ -56,12 +56,11 @@ public class OccurrenceDensity {
      * output grid dimensions.
      */
     int width, height;
-    
+
     /**
-     * 
-     * @param gridSize this is (moving average - 1) / 2 as int.
+     * @param gridSize   this is (moving average - 1) / 2 as int.
      * @param resolution output grid resolution as double in decimal degrees.
-     * @param bbox output grid bounds xmin,ymin,xmax,ymax as double [].
+     * @param bbox       output grid bounds xmin,ymin,xmax,ymax as double [].
      */
     public OccurrenceDensity(int gridSize, double resolution, double[] bbox) {
         this.gridSize = gridSize;
@@ -73,16 +72,14 @@ public class OccurrenceDensity {
     }
 
     /**
-     * 
-     * @param gridSize 
+     * @param gridSize
      */
     void setGridSize(int gridSize) {
         this.gridSize = gridSize;
     }
 
     /**
-     * 
-     * @param resolution 
+     * @param resolution
      */
     void setResolution(double resolution) {
         this.resolution = resolution;
@@ -91,8 +88,7 @@ public class OccurrenceDensity {
     }
 
     /**
-     * 
-     * @param bbox 
+     * @param bbox
      */
     void setBBox(double[] bbox) {
         this.bbox = bbox;
@@ -102,13 +98,14 @@ public class OccurrenceDensity {
 
     /**
      * Generate and write the occurrence density grid.
-     * @param records all occurrence records for this density grid as Records.
+     *
+     * @param records         all occurrence records for this density grid as Records.
      * @param outputDirectory path to output directory as String.
-     * @param filename output filename as String.  No file extentions.
-     * @param threadCount number of threads to use during calculations as int.
-     * @param outputDivaGrid true to write a diva grid, as boolean.
-     * @param outputASC true to write an ascii grid, as boolean.
-     * @throws IOException 
+     * @param filename        output filename as String.  No file extentions.
+     * @param threadCount     number of threads to use during calculations as int.
+     * @param outputDivaGrid  true to write a diva grid, as boolean.
+     * @param outputASC       true to write an ascii grid, as boolean.
+     * @throws IOException
      */
     public void write(Records records, String outputDirectory, String filename, int threadCount, boolean outputDivaGrid, boolean outputASC) throws IOException {
         if (filename == null) {
@@ -134,7 +131,7 @@ public class OccurrenceDensity {
             bb.mark();
         }
 
-        if(bw != null) {
+        if (bw != null) {
             bw.append("ncols " + width + "\n"
                     + "nrows " + height + "\n"
                     + "xllcorner " + bbox[0] + "\n"
@@ -242,16 +239,17 @@ public class OccurrenceDensity {
         }
         if (bw != null) {
             bw.close();
-        }        
+        }
     }
 
     /**
      * Get grid cell counts for the next row.
+     *
      * @param records
      * @param rowStarts
      * @param row
      * @param counts
-     * @return 
+     * @return
      */
     int[] getNextCountsRow(Records records, int[] rowStarts, int row, int[] counts) {
         //get count for each grid cell

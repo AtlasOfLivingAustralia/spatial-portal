@@ -16,6 +16,7 @@ package org.ala.spatial.web.services;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+
 import org.ala.spatial.util.AnalysisQueue;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,8 @@ public class JobsController {
     static HashMap<String, Integer> lastLogPos = new HashMap<String, Integer>();
 
     @RequestMapping(value = "/ws/job", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     Map job(@RequestParam(value = "pid", required = true, defaultValue = "") String pid, HttpServletRequest req) {
         String fullLog = req.getParameter("log");
         Map m = new HashMap<String, String>();
@@ -64,7 +66,8 @@ public class JobsController {
     }
 
     @RequestMapping(value = "/ws/jobs/listwaiting", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     String listWaiting() {
         try {
             String s = AnalysisQueue.listWaiting();
@@ -80,7 +83,8 @@ public class JobsController {
     }
 
     @RequestMapping(value = "/ws/jobs/listrunning", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     String listRunning() {
         try {
             String s = AnalysisQueue.listRunning();
@@ -96,7 +100,8 @@ public class JobsController {
     }
 
     @RequestMapping(value = "/ws/jobs/listfinished", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     String listFinished() {
         try {
             String s = AnalysisQueue.listFinished();
@@ -112,7 +117,8 @@ public class JobsController {
     }
 
     @RequestMapping(value = "/ws/jobs/cancel", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     String cancel(@RequestParam(value = "pid", required = true, defaultValue = "") String pid) {
         try {
 
@@ -126,7 +132,8 @@ public class JobsController {
     }
 
     @RequestMapping(value = "/ws/jobs/inputs", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     String inputs(@RequestParam(value = "pid", required = true, defaultValue = "") String pid) {
         try {
             String s = AnalysisQueue.getInputs(pid);
@@ -139,7 +146,8 @@ public class JobsController {
     }
 
     @RequestMapping(value = "/ws/jobs/image", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     String image(@RequestParam(value = "pid", required = true, defaultValue = "") String pid) {
         try {
             String s = AnalysisQueue.getImage(pid);

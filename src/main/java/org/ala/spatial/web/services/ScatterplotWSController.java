@@ -24,12 +24,13 @@ import java.util.Map;
  * @author Adam
  */
 @Controller
-public class ScatterplotWSController  {
+public class ScatterplotWSController {
 
     private static Logger logger = Logger.getLogger(ScatterplotWSController.class);
 
     @RequestMapping(value = {"/ws/scatterplot/new", "/ws/scatterplotlist"}, method = {RequestMethod.POST, RequestMethod.GET})
-    public @ResponseBody
+    public
+    @ResponseBody
     Map envelope(@ModelAttribute ScatterplotDTO desc,
                  @ModelAttribute ScatterplotStyleDTO style,
                  HttpServletRequest req) {
@@ -58,29 +59,30 @@ public class ScatterplotWSController  {
         } else {
             //scatterplot
             map.put("missingCount", scat.getScatterplotDataDTO().getMissingCount());
-            map.put("extents", scat.getScatterplotDataDTO().getExtents());
+            map.put("extents", scat.getScatterplotDataDTO().layerExtents());
             map.put("layers", scat.getScatterplotDTO().getLayers());
             map.put("imageUrl", scat.getImageURL());
         }
-        map.put("id",scat.getScatterplotDTO().getId());
+        map.put("id", scat.getScatterplotDTO().getId());
 
         return map;
 
     }
 
     @RequestMapping(value = "/ws/scatterplot/{id}", method = {RequestMethod.POST, RequestMethod.GET})
-    public @ResponseBody
+    public
+    @ResponseBody
     void update(@PathVariable("id") String id,
-                @RequestParam(value="minx",required=false) Integer minx,
-               @RequestParam(value="miny",required=false) Integer miny,
-               @RequestParam(value="maxx",required=false) Integer maxx,
-               @RequestParam(value="maxy",required=false) Integer maxy,
-               HttpServletRequest req, HttpServletResponse response) {
+                @RequestParam(value = "minx", required = false) Double minx,
+                @RequestParam(value = "miny", required = false) Double miny,
+                @RequestParam(value = "maxx", required = false) Double maxx,
+                @RequestParam(value = "maxy", required = false) Double maxy,
+                HttpServletRequest req, HttpServletResponse response) {
 
         Scatterplot scat = ScatterplotStore.getData(id);
 
         if (scat != null && minx != null & miny != null && maxx != null && maxy != null) {
-            scat.annotatePixelBox(minx, miny, maxx, maxy);
+            scat.annotatePixelBox((int) minx.doubleValue(), (int) miny.doubleValue(), (int) maxx.doubleValue(), (int) maxy.doubleValue());
         }
 
         try {
@@ -110,15 +112,26 @@ public class ScatterplotWSController  {
     }
 
     @RequestMapping(value = "/ws/scatterplot/style/{id}", method = {RequestMethod.POST, RequestMethod.GET})
-    public @ResponseBody
+    public
+    @ResponseBody
     Map style(@PathVariable("id") String id,
               @ModelAttribute ScatterplotStyleDTO style,
-               HttpServletRequest req) {
+              HttpServletRequest req) {
 
         Scatterplot scat = ScatterplotStore.getData(id);
 
         if (scat != null) {
-            scat.reStyle(style);
+            scat.reStyle(style
+                    , req.getParameter("colourMode") != null
+                    , req.getParameter("red") != null
+                    , req.getParameter("green") != null
+                    , req.getParameter("blue") != null
+                    , req.getParameter("opacity") != null
+                    , req.getParameter("size") != null
+                    , req.getParameter("highlightWkt") != null
+            );
+
+            ScatterplotStore.addData(id, scat);
         }
 
         HashMap<String, Object> map = new HashMap<String, Object>();
@@ -131,16 +144,15 @@ public class ScatterplotWSController  {
     }
 
     @RequestMapping(value = "/ws/scatterplot/csv/{id}", method = {RequestMethod.POST, RequestMethod.GET})
-    public @ResponseBody
+    public
+    @ResponseBody
     String csv(@PathVariable("id") String id,
-              HttpServletRequest req) {
+               HttpServletRequest req) {
 
         Scatterplot scat = ScatterplotStore.getData(id);
 
         return scat.getCSV();
     }
-
-
 
 
 }

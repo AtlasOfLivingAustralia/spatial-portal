@@ -14,9 +14,11 @@
 package org.ala.spatial.analysis.maxent;
 
 import org.ala.spatial.util.StreamGobbler;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+
 import org.ala.spatial.util.AnalysisJob;
 import org.ala.spatial.util.AnalysisJobMaxent;
 

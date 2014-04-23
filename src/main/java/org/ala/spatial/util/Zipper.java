@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
 import org.ala.layers.intersect.Grid;
 
 /**
@@ -37,7 +38,7 @@ public class Zipper {
     /**
      * zipFile method for zipping a single file. Provide an zip filename.
      *
-     * @param infile Input file to be zipped
+     * @param infile  Input file to be zipped
      * @param outfile Output zipped filename
      */
     public static void zipFile(String infile, String outfile) {
@@ -64,9 +65,9 @@ public class Zipper {
     /**
      * zipFiles method to zip a bunch of files. Output filename to be provided.
      *
-     * @param infiles Input files to be zipped
+     * @param infiles   Input files to be zipped
      * @param filenames Human-readable filenames
-     * @param outfile Output zipped filename
+     * @param outfile   Output zipped filename
      */
     public static void zipFiles(String[] infiles, String[] filenames, String outfile) {
         byte[] buf = new byte[1024];
@@ -158,11 +159,11 @@ public class Zipper {
     /**
      * Unzip a file
      *
-     * @param name Name of the file without the path
-     * @param data InputStream data
-     * @param basepath String path where the file will be unzipped to
+     * @param name            Name of the file without the path
+     * @param data            InputStream data
+     * @param basepath        String path where the file will be unzipped to
      * @param createDirectory If the unzipped file should be unzipped into it's
-     * own folder or the base folder
+     *                        own folder or the base folder
      * @return
      */
     public static boolean unzipFile(String name, InputStream data, String basepath, boolean createDirectory) {

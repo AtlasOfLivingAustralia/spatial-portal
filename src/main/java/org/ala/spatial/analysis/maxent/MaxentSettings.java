@@ -15,6 +15,7 @@ package org.ala.spatial.analysis.maxent;
 
 import java.util.Iterator;
 import java.util.List;
+
 import org.ala.spatial.util.AlaspatialProperties;
 import org.ala.spatial.util.Layers;
 
@@ -200,7 +201,7 @@ public class MaxentSettings {
         }
 
         // add the env vars
-        for (Iterator<String> itr = envList.iterator(); itr.hasNext();) {
+        for (Iterator<String> itr = envList.iterator(); itr.hasNext(); ) {
             String eval = itr.next();
 
             if (eval.length() == 1) {
