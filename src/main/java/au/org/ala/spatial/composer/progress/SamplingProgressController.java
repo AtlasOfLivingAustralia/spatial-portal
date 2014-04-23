@@ -84,9 +84,9 @@ public class SamplingProgressController extends UtilityComposer {
         this.layers = l;
 
         //estimate
-        double perGrid = getMapComposer().getSettingsSupplementary().getValueAsDouble("sampling_time_per_grid");
-        double perShapeFile = getMapComposer().getSettingsSupplementary().getValueAsDouble("sampling_time_per_shape_file");
-        int threadCount = getMapComposer().getSettingsSupplementary().getValueAsInt("sampling_thread_count");
+        double perGrid = Double.parseDouble(CommonData.settings.getProperty("sampling_time_per_grid"));
+        double perShapeFile = Double.parseDouble(CommonData.settings.getProperty("sampling_time_per_shape_file"));
+        int threadCount = Integer.parseInt(CommonData.settings.getProperty("sampling_thread_count"));
         estimate = 0;
         for (int i = 0; i < l.length; i++) {
             if (l[i] == null) {

@@ -2,7 +2,7 @@
 <?component name="uploadSpecies" macro-uri="/WEB-INF/zul/input/UploadSpecies.zul"?>
 <zk>
     <window id="importanalysis" use="au.org.ala.spatial.composer.input.ImportAnalysisController"
-            apply="au.org.ala.spatial.composer.input.ImportAnalysisController" width="400px" height="200px" xmlns:n="http://www.zkoss.org/2005/zk/native">
+            apply="au.org.ala.spatial.composer.input.ImportAnalysisController" width="400px" style="overflow:visible" xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -15,7 +15,7 @@
         <n:a class="fancybox-help" n:onClick="loadHelp('species-add-to-map')" style="display: inline" />
         <caption label="Restore prior analysis" sclass="caption" />
         <separator/>
-        <div style="margin-left:20px" >
+        <div  >
             <hbox>
                 <label value="Enter reference number"/>
                 <textbox id="refNum" width="200px" />
@@ -23,7 +23,7 @@
         </div>
         <separator/>
         <separator/>
-        <div id="divPriorAnalysis">
+        <div id="divPriorAnalysis" visible="false">
             <vbox>
                 <label value="Select prior analysis" />
 
@@ -33,12 +33,9 @@
         <separator/>
         <separator/>
         <separator/>
-        <div sclass="wButtons wizButtonContainer">
-            <hbox>
-                <button sclass="goButton" label="Cancel" id="btnCancel"/>
-                <button sclass="goButton" label="Next" id="btnOk"/>
-            </hbox>
+        <div class="btn-group" >
+                <button  label="Cancel" id="btnCancel"/>
+                <button  class="btn-primary" label="Next" id="btnOk"/>
         </div>
-        <separator />
     </window>
 </zk>

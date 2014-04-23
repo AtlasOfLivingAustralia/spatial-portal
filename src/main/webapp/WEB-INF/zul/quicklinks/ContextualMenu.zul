@@ -1,10 +1,39 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="contextualMenuWindow" use="au.org.ala.spatial.composer.quicklinks.ContextualMenu"
-    apply="au.org.ala.spatial.composer.quicklinks.ContextualMenu" width="100%">
-            <div width="400px" style="margin:0px; padding:0px;">
-                <label sclass="h2" value="Quick links"  style="margin:0 0 0 10px; padding:0px;"/>
+    apply="au.org.ala.spatial.composer.quicklinks.ContextualMenu" style="background-color: #3C668D"  >
+            <div style="margin:0px; padding:3px;opacity: 0.9;
+       z-index: 410;
+       background-color: #3C668D;
+       color: #FFF;
+       cursor: pointer;
+       font-family: Arial;
+       font-size: x-small;
+       min-width:100px;
+       border-bottom: 1px solid #FFF;
+       line-height:16px;
+       overflow:visible:
+"
+onClick='contents.setVisible(!contents.isVisible());if(contents.isVisible())quick_button.setValue("x");else quick_button.setValue("^");'
+>
+
+                <label sclass="h2" value="Quick links" style="padding:3px;"/>
+                <label id="quick_button" sclass="h2" value="x" style="float:right;padding-right:3px;padding-top:3px;"
+
+
+
+                />
+
             </div>
-            <vbox id="contents" sclass="ctxbox"/>
+
+
+            <vbox id="contents" zclass="ctxbox" style="opacity: 0.9;
+                  z-index: 410;
+                  background-color: #3C668D;
+                  color: #FFF;
+                  cursor: pointer;
+                  font-family: Arial;
+                  font-size: x-small;
+"/>
     </window>
 </zk>

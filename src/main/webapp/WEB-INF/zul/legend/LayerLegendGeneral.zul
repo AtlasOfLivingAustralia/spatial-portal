@@ -1,5 +1,5 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
-<?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
+<?page contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
     <window id="layerlegend" use="au.org.emii.portal.composer.legend.LayerLegendGeneralComposer"
     apply="au.org.emii.portal.composer.legend.LayerLegendGeneralComposer" width="400px">
@@ -10,8 +10,12 @@
                     <div style="padding-top:0px" width="65px"  >
                         <label value="Layer name" sclass="h3" />
                     </div>
-                    <textbox id="txtLayerName" width="230px" onFocus="btnLayerName.setDisabled(false)" />
-                    <button id="btnLayerName" sclass="goButton" label="Rename" forward="onOK$txtLayerName" disabled="true" />
+                    <div class="input-group"  width="260px">
+                        <textbox class="form-control" id="txtLayerName" onFocus="btnLayerName.setDisabled(false)"/>
+                        <span class="input-group-btn" style="float:none">
+                            <button class="btn-mini" id="btnLayerName" forward="onOK$txtLayerName" disabled="true">Rename</button>
+                        </span>
+                    </div>
                 </hbox>
             </div>
             <!-- points or grids -->
@@ -174,6 +178,7 @@
                         </div>
                     </hbox>
                 </div>
+                <separator />
                 <div id="legendImgUriDiv" width="60%">
                     <image id="legendImgUri" visible="false"/>
                 </div>
@@ -212,7 +217,9 @@
                         <hbox>
                             <label value="Adhoc selection: " />
                             <label id="lInGroupCount" value="0 records"/>
-                            <button id="btnCreateGroupLayers" label="add in/out layers to map" />
+                            <div class="btn-group">
+                                <button class="btn-small" id="btnCreateGroupLayers" label="add in/out layers to map" />
+                            </div>
                         </hbox>
                     </div>
                 </vbox>
@@ -250,19 +257,20 @@
                                 <hbox>
 
                                 </hbox>
-                                <hbox width="250px">
-                                    <div style="padding-top:3px" width="60px">
+                                <hbox width="390px">
+                                    <div width="60px">
                                         <label value="Year range" sclass="h3"/>
                                     </div>
                                     <div>
-                                      <intbox id="intAnimationYearStart" width="40px" value="10"/>
+                                      <intbox id="intAnimationYearStart" width="50px" value="10"/>
                                       to
-                                      <intbox id="intAnimationYearEnd" width="40px" value="10"/>
+                                      <intbox id="intAnimationYearEnd" width="50px" value="10"/>
                                     </div>
-                                </hbox>
-                                <hbox>
-                                    <button label="Start" id="btnAnimationStart" />
-                                    <button label="Stop" id="btnAnimationStop" disabled="true" />
+
+                                    <div class="btn-group">
+                                        <button class="btn-small" label="Start" id="btnAnimationStart" />
+                                        <button class="btn-small" label="Stop" id="btnAnimationStop" disabled="true" />
+                                    </div>
                                     <n:div id="animationStatus" style="font-size:150%;text-align:right;"></n:div>
                                 </hbox>
                             </vbox>

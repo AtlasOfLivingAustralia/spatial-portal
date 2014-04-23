@@ -10,7 +10,6 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
@@ -21,6 +20,7 @@ import org.zkoss.zul.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author ajay
@@ -28,7 +28,6 @@ import java.util.Map;
 public class AddSpeciesInArea extends UtilityComposer {
 
     private static Logger logger = Logger.getLogger(AddSpeciesInArea.class);
-    SettingsSupplementary settingsSupplementary;
     RemoteLogger remoteLogger;
     String selectedMethod = "";
     String pid = "";
@@ -172,7 +171,7 @@ public class AddSpeciesInArea extends UtilityComposer {
 
                 //test limit
                 if (results_count_occurrences > 0
-                        && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
+                        && results_count_occurrences <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
 
                     String activeAreaLayerName = getSelectedAreaDisplayName();
                     String layerName = "Occurrences in " + activeAreaLayerName;
@@ -193,7 +192,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 } else {
                     getMapComposer().showMessage(results_count_occurrences
                             + " occurrences in this area.\r\nSelect an area with fewer than "
-                            + settingsSupplementary.getValueAsInt("max_record_count_map")
+                            + CommonData.settings.getProperty("max_record_count_map")
                             + " occurrences");
                 }
 

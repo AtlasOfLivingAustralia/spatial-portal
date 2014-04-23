@@ -5,30 +5,14 @@
 
 package au.org.emii.portal.config;
 
-import au.org.emii.portal.config.xmlbeans.PortalDocument;
 import au.org.emii.portal.session.PortalSession;
+
+import java.util.Properties;
 
 /**
  * @author geoff
  */
 public interface ConfigurationLoaderStage2 {
-
-    /**
-     * Method used to provide configuration information - xmlbeans representation
-     * of the the configuration file xml document
-     *
-     * @return
-     */
-    public void setPortalDocument(PortalDocument portalDocument);
-
-    /**
-     * Get a reference to the PortalDocument instance being processed.  Not
-     * currently used but added for convienience because the setter exists
-     *
-     * @return
-     */
-    public PortalDocument getPortalDocument();
-
 
     /**
      * Get the current working portal session that is currently under
@@ -65,57 +49,12 @@ public interface ConfigurationLoaderStage2 {
      */
     public boolean isReloading();
 
-    /**
-     * Load the configuration and process all directives
-     * <p/>
-     * XPATHS to Main sections of the config file:
-     * <p/>
-     * NOTE:
-     * * denotes element repeated 0 or more times
-     * This list is a broad overview, its not conclusive!
-     * <p/>
-     * /portal
-     * |-settings
-     * |  |-'well known' values
-     * |  |-mestConfigurations
-     * |  |   |-mestConfiguration*
-     * |  |-supplementary
-     * |      |- key/value pairs*
-     * |-menu
-     * |  |-facilities
-     * |  |   |-facilitiy*
-     * |  |       |-menu
-     * |  |-regions
-     * |  |   |-region*
-     * |  |       |-menu
-     * |  |-realtimes
-     * |  |   |-realtime*
-     * |  |       |-menu
-     * |  | staticLinks
-     * |      |-staticLinkIdRef*
-     * |-uriResolver
-     * |  |-mapping*
-     * |  |-uriEndPoint*
-     * |-search
-     * |  |-searchCatalogue*
-     * |-dataSource
-     * |  |-activeByDefault
-     * |  |-blacklist
-     * |  |-discoveries
-     * |  |   |-discovery*
-     * |  |-services
-     * |  |   |-service*
-     * |  |-baseLayers
-     * |  |   |-baseLayer*
-     * |  |-staticLinks
-     * |      |-staticLink*
-     * |-userAccount
-     * |-mestUserManagementService*
-     */
     public PortalSession load();
 
     /**
      * Cleanup any resources we are holding (portal document and portal session)
      */
     public void cleanup();
+
+    void setProperties(Properties portalDocument);
 }

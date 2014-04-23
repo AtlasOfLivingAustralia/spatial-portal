@@ -9,7 +9,7 @@
                 <radiogroup id="rgBaseMap">
                     <listbox>
                         <listhead>
-                            <listheader label="Base map" width="100px" />
+                            <listheader label="Base map" width="300px" />
                             <listheader label=" "  />
                         </listhead>
                         <listitem>
@@ -38,13 +38,12 @@
                         </listitem>
                     </listbox>
                 </radiogroup>
-                <hbox style="margin-top:10px;" sclass="wizButtonContainer">
-                    <button sclass="goButton" label="Add WMS Layer" onClick='Clients.evalJavaScript("addWMSLayerAction();")' />
-                    <separator />
-                    <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
-                    <separator />
-                    <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
-                </hbox>
+                <separator />
+                <div class="btn-group" style="padding-left:50px;padding-right:3px">
+                    <button class="btn-small" label="Add WMS Layer" onClick='Clients.evalJavaScript("addWMSLayerAction();")' />
+                    <button class="btn-small" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
+                    <button class="btn-small" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
+                </div>
             </vbox>
         </vbox>
     </window>

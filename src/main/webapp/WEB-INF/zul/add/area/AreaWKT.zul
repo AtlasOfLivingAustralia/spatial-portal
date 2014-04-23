@@ -2,7 +2,9 @@
 <zk>
     <window id="areawkt" use="au.org.ala.spatial.composer.add.area.AreaWKT"
             apply="au.org.ala.spatial.composer.add.area.AreaWKT" width="360px" xmlns:n="http://www.zkoss.org/2005/zk/native"
-            style="position:absolute;left:20px;top:20px" draggable="false">
+            draggable="false"
+            style="position:absolute;left:10px;top:10px;overflow:visible"
+            >
         <n:div class="left-cover" />
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -12,9 +14,10 @@
         <n:div class="fancybox-bg" id="fancybox-bg-e" />
         <n:div class="fancybox-bg" id="fancybox-bg-s" />
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
-        <a sclass="fancybox-close" onClick="areaboundingboxwindow.onClick$btnCancel(null)" style="display: inline" />
+        <a sclass="fancybox-close" onClick="areawkt.onClick$btnCancel(null)" style="display: inline" />
 
         <caption label="Paste Well Known Text (WKT)" />
+        <separator />
         <vbox sclass="embedWindowsContent">
             <div>
                 <hbox width="100%">
@@ -44,14 +47,14 @@
             <separator />
             <textbox id="displayGeom" readonly="false" width="100%" visible="true" multiline="true" height="100px" />
             <label id="invalidWKT" width="100%" style="color: red" visible="false"/>
-            <div style="float:right;margin-right:5px">
-                <hbox>
-                    <button sclass="goButton" label="Clear" id="btnClear" disabled="false"/>                    
-                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
-                    <button sclass="goButton" label="Next" id="btnOk" disabled="false" />
-                </hbox>
-            </div>
-            <separator />
+
+            <div class="btn-group">
+
+                                            <button label="Clear" id="btnClear" disabled="false"/>
+                                            <button label="Cancel" id="btnCancel" />
+                                            <button class="btn-primary" label="Next >" id="btnOk" disabled="false" />
+                                    </div>
+
         </vbox>
 
     </window>

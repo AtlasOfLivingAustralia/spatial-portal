@@ -106,30 +106,13 @@ public class SpeciesListResults extends UtilityComposer {
                             Listcell lc = new Listcell(ss[0]);
                             lc.setParent(li);
 
-                            if (ss.length > 1) {
-                                lc = new Listcell(ss[1]);
+                            int col = 1;
+                            while (col < ss.length) {
+                                lc = new Listcell(ss[col]);
                                 lc.setParent(li);
+                                col++;
                             }
 
-                            if (ss.length > 2) {
-                                lc = new Listcell(ss[2]);
-                                lc.setParent(li);
-                            }
-
-                            if (ss.length > 3) {
-                                lc = new Listcell(ss[3]);
-                                lc.setParent(li);
-                            }
-
-//                            if (ss.length > 4) {
-//                                lc = new Listcell(ss[4]);
-//                                lc.setParent(li);
-//                            }
-
-                            if (ss.length > 5) {
-                                lc = new Listcell(ss[5]);
-                                lc.setParent(li);
-                            }
                             try {
                                 reader.close();
                             } catch (IOException e) {
@@ -144,7 +127,7 @@ public class SpeciesListResults extends UtilityComposer {
 
     public void onClick$btnDownload() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Family Name,Scientific Name,Common name/s,Taxon rank,Scientific Name LSID,Number of Occurrences\r\n");
+        sb.append("Species,Species Name,Scientific Name,Taxon Rank,Kingdom,Phylum,Class,Order,Family,Genus,Vernacular Name,Number of records\r\n");
         for (String s : results) {
             sb.append(s);
             sb.append("\r\n");

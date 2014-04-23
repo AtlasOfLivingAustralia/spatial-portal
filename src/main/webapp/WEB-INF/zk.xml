@@ -1,8 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
-        Created by ZK Studio
--->
 
 <zk>
     <listener>
@@ -16,8 +11,20 @@
     </listener>
 
     <library-property>
-        <name>org.zkoss.theme.preferred</name>
-        <value>atlantic</value>
+        <name>org.zkoss.zul.Button.mold</name>
+        <value>bs</value>
+    </library-property>
+    <library-property>
+        <name>org.zkoss.zul.Menupopup.mold</name>
+        <value>bs</value>
+    </library-property>
+    <library-property>
+        <name>org.zkoss.zul.Paging.mold</name>
+        <value>bs</value>
+    </library-property>
+    <library-property>
+        <name>org.zkoss.zul.Panel.mold</name>
+        <value>bs</value>
     </library-property>
 
     <session-config>

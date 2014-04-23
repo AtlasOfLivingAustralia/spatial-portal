@@ -3,7 +3,8 @@
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" use="au.org.ala.spatial.composer.tool.ExportLayerComposer"
     apply="au.org.ala.spatial.composer.tool.ExportLayerComposer" width="600px" height="300px"
-    xmlns:n="http://www.zkoss.org/2005/zk/native" title="Export area">
+    style="overflow:visible"
+    xmlns:n="http://www.zkoss.org/2005/zk/native" >
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -14,7 +15,7 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="addtoolwindow.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('export-tools')" style="display: inline" />
-
+<caption id="cTitle" label="Export Area"/>
         <separator />
         <hbox>
             <vbox style="padding-left: 10px">
@@ -63,13 +64,12 @@
                     </radiogroup>
                 </div>
 
-                <div sclass="wizButtonContainer">
-                    <hbox>
-                    <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
-                    <button sclass="goButton" label="Cancel" id="btnCancel" />
-                    <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
-                    <button sclass="goButton" label="Next &gt;" id="btnOk" />
-                    </hbox>
+                <div class="btn-group" style="position:absolute;right:10px;bottom:10px;">
+
+                    <button label="Cancel" id="btnCancel" />
+                    <button label="&lt; Back" id="btnBack" disabled="true" />
+                    <button class="btn-primary" label="Next &gt;" id="btnOk" />
+
                 </div>
             </vbox>
         </hbox>

@@ -1,21 +1,25 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>   
-    <window id="distributionresults" title="Expert Distributions" border="normal"
+    <window id="distributionresults" border="normal"
     use="au.org.ala.spatial.composer.results.DistributionsController"
             apply="au.org.ala.spatial.composer.results.DistributionsController"
-            closable="true" mode="embedded" width="90%">
-                
+            closable="true" mode="embedded" width="90%"
+            style="overflow:visible"
+            >
+                <caption id="cTitle" label="Expert Distributions"/>
             <separator />
-            <label id="distributionLabel" value="" style="margin-left:10px"/>
+            <label id="distributionLabel" value="" />
             <separator height="20px"/>
-            <hbox style="margin-left:10px">
+            <hbox >
                 <label value="min depth" />
                 <doublebox id="minDepth" />
                 <separator orient="vertical" />
                 <label value="max depth" />
                 <doublebox id="maxDepth" />
-                <button id="btnApplyDepthFilter" label="Apply" />
-                <button id="btnClearDepthFilter" label="Clear" />
+                <div class="btn-group">
+                    <button class="btn-small" id="btnApplyDepthFilter" label="Apply" />
+                    <button class="btn-small" id="btnClearDepthFilter" label="Clear" />
+                </div>
             </hbox>
             <separator />
             <div height="400px" style="margin-left:10px">
@@ -42,15 +46,11 @@
                 </listbox>
             </div>            
             <separator/>
-            <hbox>
-                <hbox>
-                    <separator/>
-                    <separator/>
-                    <button id="btnDownload" label="Download" sclass="goButton" />
-                </hbox>
-                <separator/>
-                <separator/>
-                <div align="right"><button label="Close" onClick="distributionresults.detach()" sclass="goButton" /> </div>
-            </hbox>
+
+                    <div class="btn-group">
+                        <button id="btnDownload" label="Download"  />
+                        <button label="Close" onClick="distributionresults.detach()"/>
+                    </div>
+
     </window>
 </zk>

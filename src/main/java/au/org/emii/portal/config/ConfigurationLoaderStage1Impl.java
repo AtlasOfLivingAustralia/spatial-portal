@@ -5,7 +5,7 @@
 
 package au.org.emii.portal.config;
 
-import au.org.emii.portal.config.xmlbeans.PortalDocument;
+
 import au.org.emii.portal.factory.PortalDocumentFactory;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.settings.Settings;
@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Required;
 import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Properties;
 
 /**
  * Configuration loader
@@ -84,11 +85,11 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
         // protect against sticky error flag (remember we're a singleton)
         error = false;
         reloading = true;
-        PortalDocument portalDocument = portalDocumentFactory.createPortalDocumentInstance();
+        Properties portalDocument = portalDocumentFactory.createPortalDocumentInstance();
         if (portalDocument == null) {
             logger.debug("Configuration file missing or invalid - cannot load portal.  See previous message for cause");
         } else {
-            stage2.setPortalDocument(portalDocument);
+            stage2.setProperties(portalDocument);
 
             // Ask stage2 to load the portal from the PortalDocument instance and
             // pass us back the master session that gets created

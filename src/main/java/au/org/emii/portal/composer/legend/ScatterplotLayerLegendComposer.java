@@ -9,7 +9,6 @@ import au.org.ala.spatial.data.UserDataQuery;
 import au.org.ala.spatial.util.LegendMaker;
 import au.org.emii.portal.composer.GenericAutowireAutoforwardComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import org.ala.layers.legend.QueryField;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -35,8 +34,6 @@ import java.util.Map;
 public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardComposer {
 
     private static Logger logger = Logger.getLogger(ScatterplotLayerLegendComposer.class);
-
-    SettingsSupplementary settingsSupplementary = null;
 
     Slider opacitySlider;
     Label opacityLabel;
@@ -236,16 +233,15 @@ public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardCo
         plotSizeSlider.setCurpos(size);
         onScroll$plotSizeSlider();
 
+        //fill cbColour
+        setupCBColour(query);
         for (Comboitem item : cbColour.getItems()) {
-            if (item.getValue().equals(colourMode)) {
+            if (item.getValue() != null && item.getValue().equals(colourMode)) {
                 cbColour.setSelectedItem(item);
                 break;
             }
         }
         this.listener = listener;
-
-        //fill cbColour
-        setupCBColour(query);
 
         updateUserColourDiv();
         updateLegendImage();
@@ -285,7 +281,7 @@ public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardCo
                 //listener.onEvent(null);
                 Component c = getParent().getFellowIfAny("scatterplotwindow");
                 if (c != null && c instanceof LayerLegendScatterplotController) {
-                    //((LayerLegendScatterplotController) c).updateFromLegend();
+                    ((LayerLegendScatterplotController) c).updateFromLegend();
                 }
             } catch (Exception e) {
                 logger.error("Error updating legend in scatterplot window", e);

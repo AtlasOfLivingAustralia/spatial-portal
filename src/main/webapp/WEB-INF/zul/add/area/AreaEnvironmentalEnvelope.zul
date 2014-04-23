@@ -3,7 +3,7 @@
     <window id="areaenvironmentalenvelopewindow" use="au.org.ala.spatial.composer.add.area.AreaEnvironmentalEnvelope"
             apply="au.org.ala.spatial.composer.add.area.AreaEnvironmentalEnvelope" 
             width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native"
-            style="position:absolute;left:10px;top:10px;padding:10px" draggable="false">
+            style="position:absolute;left:10px;top:10px;overflow:visible" draggable="false">
         <n:div class="left-cover" />
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -18,6 +18,7 @@
         <caption label="Environmental Envelope" />
 
         <vbox height="600px">
+        <separator />
             <div>
                 <hbox width="100%">
                     <label value="Area name" sclass="h3" />
@@ -31,22 +32,24 @@
             <label sclass="exampleText">e.g. Annual Mean Temperature</label>
 
             <separator />
-            <button style="float:left" id="btnClearSelection" label="Clear layers" sclass="goButton" />
+
+
             <listbox id="lbSelLayers" multiple="false" checkmark="false" height="300px" >
                 <listhead>
-                    <listheader  width="40%" >
-                        <label value="Layer" /></listheader>
-                    <listheader>
-                        <label value="Envelope extent" width="40%"></label>
+                    <listheader  width="40%" align="center"  >
+                        <label value="Layer"/></listheader>
+                    <listheader align="center"   >
+                        <label value="Envelope extent" width="40%"  ></label>
                     </listheader>
-                    <listheader width="20%">
-                        <vbox>
-                            <label value="Species"></label>
-                            <label value="count"></label>
-                        </vbox>
+                    <listheader width="20%" align="center" >
+                        <label style="white-space:normal" value="Species Count" />
                     </listheader>
                 </listhead>
             </listbox>
+            <div class="btn-group" style="float:left">
+            <button class="btn-small" id="btnClearSelection" label="Clear layers"  />
+            </div>
+
             <div id="popup_continous" visible="false" width="100%" >
 
                                         <label sclass="word-wrap"
@@ -71,21 +74,20 @@
                                                 <doublebox id="popup_maximum" width="80px"></doublebox>
                                                 <textbox id="popup_idx" visible="false"></textbox>
                                             </hbox>
-                                            <hbox>
-                                                <button label="Update species count" id="apply_continous" sclass="goButton" autodisable="self"/>
-                                                <button label="Remove" id="remove_continous" sclass="goButton" />
-                                            </hbox>
+                                            <div class="btn-group">
+                                                <button class="btn-small" label="Update species count" id="apply_continous"  autodisable="self"/>
+                                                <button class="btn-small" label="Remove" id="remove_continous" />
+                                            </div>
                                         </vbox>
                                     </div>
             <separator />
             <separator />
         </vbox>
-        <div sclass="wizButtonContainer">
-            <hbox>                
-                <button sclass="goButton" label="Cancel" id="btnCancel" onClick="areaenvironmentalenvelopewindow.detach()"/>
-                <button label="Next" id="filter_done" sclass="goButton" disabled="true" autodisable="self"/>
-            </hbox>
-        </div>
+
+        <div class="btn-group" style="float:right;">
+                                        <button label="Cancel" id="btnCancel" />
+                                        <button class="btn-primary" label="Next >" id="filter_done" disabled="false" autodisable="self" />
+                                </div>
 
     </window>
 </zk>

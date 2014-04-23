@@ -15,9 +15,9 @@ import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SelectedArea;
 import au.org.ala.spatial.util.UserData;
+import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerSelection;
 import au.org.emii.portal.util.LayerUtilities;
 import net.sf.json.JSONArray;
@@ -52,7 +52,6 @@ import java.util.*;
  */
 public class ToolComposer extends UtilityComposer {
     private static Logger logger = Logger.getLogger(ToolComposer.class);
-    SettingsSupplementary settingsSupplementary;
     public RemoteLogger remoteLogger;
     int currentStep = 1, totalSteps = 5;
     Map<String, Object> params;
@@ -123,7 +122,17 @@ public class ToolComposer extends UtilityComposer {
         winLeft = this.getLeft();
 
         setupDefaultParams();
-        setParams(Executions.getCurrent().getAttributes());
+
+        HashMap<String, Object> tmp = new HashMap<String, Object>();
+        Map m = Executions.getCurrent().getArg();
+        if (m != null) {
+            for (Object k : m.keySet()) {
+                if (k instanceof String) {
+                    tmp.put((String) k, m.get(k));
+                }
+            }
+        }
+        setParams(tmp);
 
         //add the species lists stuff
         if (rSpeciesUploadLSID != null && this.hasFellow("splistbox")) {
@@ -271,25 +280,14 @@ public class ToolComposer extends UtilityComposer {
     }
 
     private void setupDefaultParams() {
-        Hashtable<String, Object> p = new Hashtable<String, Object>();
-        p.put("step1", "Select area(s)");
-        p.put("step2", "Select species(s)");
-        p.put("step3", "Select grid(s)");
-        p.put("step4", "Select your analytical options");
-        p.put("step5", "Name your output for");
-
-        if (params == null) {
-            params = p;
-        } else {
-            setParams(p);
-        }
-
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
         btnOk.setLabel("Next >");
     }
 
     public void updateWindowTitle() {
-        this.setTitle("Step " + currentStep + " of " + totalSteps + " - " + selectedMethod);
+        if (this.getFellowIfAny("cTitle") != null) {
+            ((Caption) this.getFellowIfAny("cTitle")).setLabel("Step " + currentStep + " of " + totalSteps + " - " + selectedMethod);
+        }
     }
 
     public void updateName(String name) {
@@ -315,19 +313,11 @@ public class ToolComposer extends UtilityComposer {
     }
 
     public void setParams(Map<String, Object> params) {
-        // iterate thru' the passed params and load them into the
-        // existing default params
-        if (params == null) {
-            setupDefaultParams();
+        if (this.params == null) {
+            this.params = new HashMap<String, Object>();
         }
-        if (params != null && params.keySet() != null && params.keySet().iterator() != null) {
-            Iterator<String> it = params.keySet().iterator();
-            while (it.hasNext()) {
-                String key = it.next();
-                this.params.put(key, params.get(key));
-            }
-        } else {
-            this.params = params;
+        if (params != null) {
+            this.params.putAll(params);
         }
     }
 
@@ -879,7 +869,7 @@ public class ToolComposer extends UtilityComposer {
         Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep - 1))) : null;
 
         if (currentDiv.getZclass().contains("first")) {
-            btnBack.setDisabled(true);
+            if (btnBack != null) btnBack.setDisabled(true);
         } else {
             currentDiv.setVisible(false);
             previousDiv.setVisible(true);
@@ -896,7 +886,7 @@ public class ToolComposer extends UtilityComposer {
             currentStep--;
 
             if (previousDiv != null) {
-                btnBack.setDisabled(((previousDiv.getZclass().contains("first"))));
+                if (btnBack != null) btnBack.setDisabled(((previousDiv.getZclass().contains("first"))));
             }
         }
 
@@ -1156,7 +1146,9 @@ public class ToolComposer extends UtilityComposer {
                     updateLayerListText();
                 }
 
-                btnBack.setDisabled(false);
+                if (btnBack != null) {
+                    btnBack.setDisabled(false);
+                }
                 updateWindowTitle();
             }
 
@@ -1254,7 +1246,7 @@ public class ToolComposer extends UtilityComposer {
     }
 
     public boolean isUserLoggedIn() {
-        String authCookie = getMapComposer().getCookieValue("ALA-Auth");
+        String authCookie = Util.getUserEmail();
         return (authCookie != null);
     }
 
@@ -1393,7 +1385,7 @@ public class ToolComposer extends UtilityComposer {
         Query q = null;
 
         String species = rgSpeciesBk.getSelectedItem().getValue();
-        String id = rgSpecies.getSelectedItem().getId();
+        String id = rgSpeciesBk.getSelectedItem().getId();
 
         MapLayer ml = getMapComposer().getMapLayer(species);
         if (ml != null) {

@@ -5,6 +5,7 @@ import au.org.ala.spatial.data.SpeciesListDTO;
 import au.org.ala.spatial.data.SpeciesListItemDTO;
 import au.org.ala.spatial.data.SpeciesListUtil;
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
@@ -198,7 +199,7 @@ public class SpeciesListListbox extends Listbox {
         Integer size = null;
         String sort = null;
         String order = null;
-        String user = getMapComposer().getCookieValue("ALA-Auth");
+        String user = Util.getUserEmail();
 
         public void refreshModel() {
             //remove the cached version of the current lists

@@ -1,7 +1,9 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="areaaddressradiusselectionwindow" use="au.org.ala.spatial.composer.add.area.AreaAddressRadiusSelection"
-            apply="au.org.ala.spatial.composer.add.area.AreaAddressRadiusSelection" width="400px"  xmlns:n="http://www.zkoss.org/2005/zk/native">
+            apply="au.org.ala.spatial.composer.add.area.AreaAddressRadiusSelection"
+              style="position:absolute;left:10px;top:10px;overflow:visible"
+              xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -13,38 +15,49 @@
         <a sclass="fancybox-close" onClick="areaaddressradiusselectionwindow.onClick$btnCancel(null)" style="display: inline" />
         
         <caption label="Radius centered on street address" />
-        <vbox width="90%" style="margin-left:10px;margin-right:10px">
-            <hbox width="90%">
-                <div width="80px">
+        <vbox width="90%">
+        <separator/>
+
+            <hbox width="100%">
+                <div width="90px">
                     <label value="Area name" sclass="h3" />
                 </div>
-                <textbox id="txtLayerName" width="250px"/>
+                <div class="input-group">
+                <textbox class="form-control"  id="txtLayerName" width="250px"/>
+                </div>
             </hbox>
             <separator />
-            <hbox width="90%">
-                <div width="80px">
+            <hbox width="450px">
+                <div width="90px">
                     <label value="Enter address" sclass="h3" />
                 </div>
-                <textbox id="addressBox" width="220px"/>
-                <button id="btnFindAddress" label="Search" />
+
+                <div class="input-group"  width="400px">
+                    <textbox class="form-control" id="addressBox" />
+                    <span class="input-group-btn" style="float:none">
+                        <button class="btn-small" id="btnFindAddress">Search</button>
+                    </span>
+                </div>
+
             </hbox>
             <label sclass="wCaption" value='For example: "Black Mountain, Canberra"'/>
             <separator />
-            <hbox sclass="highlighted" width="100%">
-                <label id="addressLabel" />
+            <separator />
+            <hbox width="100%">
+                <label style="background-color:lightgray" id="addressLabel" />
             </hbox>
             <separator />
             <hbox width="100%">
-                <div width="80px">
+                <div width="100px">
                     <label value="Enter radius (km)" sclass="h3" />
                 </div>
-                <doublebox id="dRadius" value="1.0" constraint="no negative,no empty" />
+                <div class="input-group">
+                <doublebox class="form-control"  id="dRadius" value="1.0" constraint="no negative,no empty" />
+                </div>
             </hbox>
-            <div sclass="wizButtonContainer">
-                <hbox>                    
-                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
-                    <button sclass="goButton" label="Next" id="btnOk"/>
-                </hbox>
+            <div class="btn-group" style="float:right;">
+                    <button label="Cancel" id="btnCancel" />
+                    <button class="btn-primary" label="Next >" id="btnOk" />
             </div>
         </vbox>
 

@@ -5,6 +5,7 @@
 package au.org.ala.spatial.composer.tool;
 
 import au.org.ala.spatial.data.*;
+import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SelectedArea;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
@@ -13,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.zkoss.zul.Checkbox;
 
 import java.awt.geom.Rectangle2D;
+import java.net.URLEncoder;
 
 /**
  * @author ajay
@@ -87,7 +89,10 @@ public class ScatterplotComposer extends ToolComposer {
 
         Query lsidQuery = QueryUtil.queryFromSelectedArea(lsid, filterSa, false, getGeospatialKosher());
 
-        Query backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false, getGeospatialKosherBk());
+        Query backgroundLsidQuery = null;
+        if (backgroundLsid != null) {
+            backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false, getGeospatialKosherBk());
+        }
 
         ScatterplotData data = new ScatterplotData(lsidQuery, name, lyr1value,
                 lyr1name, lyr2value, lyr2name, pid, selection, enabled,
@@ -96,19 +101,17 @@ public class ScatterplotComposer extends ToolComposer {
 
         try {
             HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod("http://localhost:8082/alaspatial/ws/scatterplot/new");
+            PostMethod post = new PostMethod(CommonData.satServer + "/ws/scatterplot/new");
 
             //add data parameters
-            post.addParameter("layer1", lyr1value);
-            post.addParameter("layer1name", lyr1name);
-            post.addParameter("layer2", lyr2value);
-            post.addParameter("layer2name", lyr2name);
-            post.addParameter("foregroundOccurrencesQs", lsidQuery.getFullQ(false));
+            post.addParameter("layers", lyr1value + ":" + lyr2value);   //colon delimited
+            post.addParameter("layernames", "\"" + lyr1name.replace("\"", "\"\"") + "\",\"" + lyr2name.replace("\"", "\"\"") + "\"");  //CSV format
+            post.addParameter("foregroundOccurrencesQs", lsidQuery.getQ());
             post.addParameter("foregroundOccurrencesBs", lsidQuery.getBS());
             post.addParameter("foregroundName", lsidQuery.getName());
 
             if (backgroundLsidQuery != null) {
-                post.addParameter("backgroundOccurrencesQs", backgroundLsidQuery.getFullQ(false));
+                post.addParameter("backgroundOccurrencesQs", backgroundLsidQuery.getQ());
                 post.addParameter("backgroundOccurrencesBs", backgroundLsidQuery.getBS());
                 post.addParameter("backgroundName", backgroundLsidQuery.getName());
             }
@@ -126,16 +129,16 @@ public class ScatterplotComposer extends ToolComposer {
                 post.addParameter("highlightWkt", highlightSa.getWkt());
             }
 
-            post.addRequestHeader("Accept", "text/plain");
+            post.addRequestHeader("Accept", "application/json");
 
             int result = client.executeMethod(post);
-            String has_id = post.getResponseBodyAsString();
 
-            int startpos = has_id.indexOf("id:") + 4;
-            int endpos = has_id.indexOf("\"", startpos + 1);
-            String id = has_id.substring(startpos, endpos - startpos);
+            JSONObject jsonObject = JSONObject.fromObject(post.getResponseBodyAsString());
 
-            data.setId(id);
+            if (jsonObject != null && jsonObject.containsKey("id")) {
+                data.setId(jsonObject.getString("id"));
+                data.setMissingCount((jsonObject.getInt("missingCount")));
+            }
 
         } catch (Exception e) {
             logger.error("error getting a new scatterplot id", e);

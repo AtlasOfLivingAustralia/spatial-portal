@@ -2,7 +2,6 @@ package au.org.ala.spatial.composer.layer;
 
 import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
@@ -16,6 +15,7 @@ import org.zkoss.zul.Comboitem;
 
 import java.net.URLEncoder;
 import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * Extend a combobox to provide autocomplete facilities for all mappable layers
@@ -25,9 +25,6 @@ import java.util.Iterator;
 public class ContextualLayersAutoComplete extends Combobox {
 
     private static Logger logger = Logger.getLogger(ContextualLayersAutoComplete.class);
-
-    SettingsSupplementary settingsSupplementary = null;
-
     ;
 
     public ContextualLayersAutoComplete() {
@@ -53,15 +50,6 @@ public class ContextualLayersAutoComplete extends Combobox {
     }
 
     private void refresh(String val) {
-
-        //TODO get this from the config file
-        if (settingsSupplementary != null) {
-        } else if (this.getParent() != null) {
-            settingsSupplementary = settingsSupplementary = ((MapComposer) getPage().getFellow("mapPortalPage")).getSettingsSupplementary();
-            logger.debug("LAC got SS: " + settingsSupplementary);
-        } else {
-            return;
-        }
 
         String baseUrl = CommonData.layersServer + "/layers/";
         try {

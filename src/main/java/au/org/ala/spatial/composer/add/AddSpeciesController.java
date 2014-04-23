@@ -9,8 +9,8 @@ import au.org.ala.spatial.data.Query;
 import au.org.ala.spatial.data.SpeciesListItemDTO;
 import au.org.ala.spatial.data.SpeciesListUtil;
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
@@ -21,22 +21,19 @@ import org.apache.log4j.Logger;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.*;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Adam
  */
 public class AddSpeciesController extends UtilityComposer {
     private static Logger logger = Logger.getLogger(AddSpeciesController.class);
-    SettingsSupplementary settingsSupplementary;
     SpeciesAutoCompleteComponent searchSpeciesACComponent;
 
     Button btnOk, bMultiple, bAssemblageExport;
@@ -78,7 +75,7 @@ public class AddSpeciesController extends UtilityComposer {
         vboxImportSL = (Vbox) this.getFellow("splistbox").getFellow("vboxImportSL");
         speciesListListbox = (SpeciesListListbox) this.getFellow("splistbox").getFellow("speciesListListbox");
         //check to see if a user is logged in
-        user = getMapComposer().getCookieValue("ALA-Auth");
+        user = Util.getUserEmail();
         if (user != null && user.length() > 0) {
             rMultiple.setDisabled(false);
         } else {
@@ -248,7 +245,6 @@ public class AddSpeciesController extends UtilityComposer {
             vboxImportSL.setVisible(false);
             aMessage.setVisible(false);
             lblMessage.setValue("");
-            String authCookie = getMapComposer().getCookieValue("ALA-Auth");
         } else if (rUploadLSIDs.isSelected()) {
             vboxSearch.setVisible(false);
             vboxMultiple.setVisible(false);

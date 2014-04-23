@@ -64,10 +64,10 @@ public class AreaRegionSelection extends AreaToolComposer {
         //   if (displayAsWms.isChecked()) {
         logger.debug(label + " | " + obj.getString("wmsurl"));
         mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, obj.getString("wmsurl"), 0.6f, /*metadata url*/ null,
-                    null, LayerUtilities.WKT, null, null);
-            if (mapLayer == null) {
-                return;
-            }
+                null, LayerUtilities.WKT, null, null);
+        if (mapLayer == null) {
+            return;
+        }
 
 
         mapLayer.setPolygonLayer(true);

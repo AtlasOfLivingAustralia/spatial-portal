@@ -23,7 +23,6 @@ import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.net.HttpConnection;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.settings.Settings;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.*;
 import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
@@ -77,7 +76,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     private static Logger logger = Logger.getLogger(MapComposer.class);
 
-    private SettingsSupplementary settingsSupplementary = null;
+    private Properties settingsSupplementary = null;
     private static final String MENU_DEFAULT_WIDTH = "menu_default_width";
     private static final String MENU_MINIMISED_WIDTH = "menu_minimised_width";
     public static final String POINTS_CLUSTER_THRESHOLD = "points_cluster_threshold";
@@ -112,7 +111,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     int mapZoomLevel = 4;
     Hashtable activeLayerMapProperties;
     Label lblSelectedLayer;
-    String useSpeciesWMSCache = "on";
+    String useSpeciesWMSCache = "off";
     ArrayList<LayerSelection> selectedLayers = new ArrayList<LayerSelection>();
 
     /*
@@ -1812,6 +1811,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     void maximise() {
         boolean maximise = getPortalSession().isMaximised();
 
+        /*
         if (maximise) {
             menus.setWidth(settingsSupplementary.getValue(MENU_MINIMISED_WIDTH));
             menus.setBorder("none");
@@ -1824,6 +1824,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         westContent.setVisible(!maximise);
         westMinimised.setVisible(maximise);
         menus.setSplittable(!maximise);
+        */
     }
 
     public MapLayer mapPointsOfInterest(String wkt, String label, String displayName) {
@@ -1856,7 +1857,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else if (setGrid == 1) {
             grid = true;
         } else {
-            grid = sq.getOccurrenceCount() > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD);
+            grid = sq.getOccurrenceCount() > Integer.parseInt(getSettingsSupplementary().getProperty("points_cluster_threshold"));
         }
         MapLayer ml = mapSpeciesFilter(sq, species, rank, count, subType, wkt, grid, size, opacity, colour);
 
@@ -2313,11 +2314,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         this.languagePack = languagePack;
     }
 
-    public SettingsSupplementary getSettingsSupplementary() {
-        return settingsSupplementary;
+    public Properties getSettingsSupplementary() {
+        settingsSupplementary = CommonData.settings;
+        return CommonData.settings;
     }
 
-    public void setSettingsSupplementary(SettingsSupplementary settingsSupplementary) {
+    public void setSettingsSupplementary(Properties settingsSupplementary) {
         this.settingsSupplementary = settingsSupplementary;
     }
 
@@ -2380,7 +2382,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String[] ps = p.split(",");
 
         String server;
-        server = settingsSupplementary.getValue("print_server_url");
+        server = getSettingsSupplementary().getProperty("print_server_url");
 
         String jsessionid = getCookieValue("JSESSIONID");
         if (jsessionid == null) {
@@ -2422,10 +2424,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //unique id
         String uid = String.valueOf(System.currentTimeMillis());
 
-        String pth = this.settingsSupplementary.getValue("print_output_path");
+        String pth = getSettingsSupplementary().getProperty("print_output_path");
 
         String htmlpth = pth;
-        String htmlurl = settingsSupplementary.getValue("print_output_url");
+        String htmlurl = getSettingsSupplementary().getProperty("print_output_url");
 
         try {
             SessionPrint pp = new SessionPrint(server, height, width, htmlpth, htmlurl, uid, jsessionid, zoom, header, grid, format, resolution);
@@ -2561,6 +2563,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 0, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, Util.nextColour());
         ml.setDisplayName(lyrName);
         ml.setSubType(LayerUtilities.SCATTERPLOT);
+        ml.setType(LayerUtilities.SCATTERPLOT);
         ml.setScatterplotData(data);
         addUserDefinedLayerToMenu(ml, true);
         updateLayerControls();
@@ -2965,8 +2968,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         }
                     }
 
+                    //Buttons are created in the ActiveLayerRenderer for the base map layer.
                     //update label
-                    Button unsel = (Button) lc.getLastChild();
+                    Div div = (Div) lc.getLastChild();
+                    Button unsel = (Button) div.getLastChild();
                     Button sel = (Button) unsel.getPreviousSibling();
                     Button remove = (Button) sel.getPreviousSibling();
 
@@ -3176,7 +3181,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 jsessionid = "test";
             }
 
-            String sfld = getSettingsSupplementary().getValue("analysis_output_dir") + "session/" + jsessionid;
+            String sfld = getSettingsSupplementary().getProperty("analysis_output_dir") + "session/" + jsessionid;
 
             // if the session dir exists, then clear it,
             // if not let's create it.
@@ -3235,7 +3240,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Scanner scanner = null;
         try {
 
-            String sfld = getSettingsSupplementary().getValue("analysis_output_dir") + "session/" + sessionid;
+            String sfld = getSettingsSupplementary().getProperty("analysis_output_dir") + "session/" + sessionid;
 
             File sessfolder = new File(sfld);
             if (!sessfolder.exists()) {

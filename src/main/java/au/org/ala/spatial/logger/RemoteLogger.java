@@ -1,13 +1,17 @@
 package au.org.ala.spatial.logger;
 
-import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.Util;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.springframework.beans.factory.annotation.Required;
+import org.zkoss.lang.Threads;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
 
@@ -15,6 +19,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.net.URLEncoder;
+import java.security.Principal;
+import java.util.Properties;
 
 /**
  * Helper class to send logging information to the logger-service
@@ -25,22 +31,12 @@ public class RemoteLogger {
 
     private static Logger logger = Logger.getLogger(RemoteLogger.class);
 
-    SettingsSupplementary settingsSupplementary;
     String logger_service = "";
     String appid = "";
 
     private void init() {
-        logger_service = settingsSupplementary.getValue("logging_url");
-        appid = settingsSupplementary.getValue("app_id");
-    }
-
-    public SettingsSupplementary getSettingsSupplementary() {
-        return settingsSupplementary;
-    }
-
-    @Required
-    public void setSettingsSupplementary(SettingsSupplementary settingsSupplementary) {
-        this.settingsSupplementary = settingsSupplementary;
+        logger_service = CommonData.settings.getProperty("logging_url");
+        appid = CommonData.settings.getProperty("app_id");
     }
 
     public void logMapSpecies(String name, String lsid, String area, String extra) {
@@ -100,19 +96,7 @@ public class RemoteLogger {
                 }
             }
 
-            String useremail = "guest@ala.org.au";
-            try {
-                Cookie[] cookies = ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies();
-                if (cookies != null) {
-                    for (Cookie cookie : cookies) {
-                        if (cookie.getName().equals("ALA-Auth")) {
-                            useremail = cookie.getValue();
-                            break;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-            }
+            String useremail = Util.getUserEmail();
 
             logger.debug("Sending log to: " + logger_service + "/log/action");
             HttpClient client = new HttpClient();
@@ -180,44 +164,25 @@ public class RemoteLogger {
     }
 
     public JSONObject getLogCSV() {
+        init();
+
         try {
+            if (Util.isLoggedIn()) {
+                String url = logger_service + "/app/types/tool.json?"
+                        + "email=" + URLEncoder.encode(Util.getUserEmail(), "UTF-8")
+                        + "&appid=" + URLEncoder.encode(appid, "UTF-8");
 
-            if (StringUtils.isBlank(logger_service)) {
-                init();
+                HttpClient client = new HttpClient();
+                GetMethod get = new GetMethod(url);
+
+                get.addRequestHeader("Accept", "application/json");
+
+                client.executeMethod(get);
+
+                logger.debug("get: " + url + ", response: " + get.getResponseBodyAsString());
+
+                return JSONObject.fromObject(get.getResponseBodyAsString());
             }
-
-            String sessionid = ((HttpSession) Sessions.getCurrent().getNativeSession()).getId();
-
-            String userip = Executions.getCurrent().getHeader("x-forwarded-for");
-            if (StringUtils.isBlank(userip)) {
-                userip = Executions.getCurrent().getRemoteAddr();
-                if (StringUtils.isBlank(userip)) {
-                    userip = "";
-                }
-            }
-
-            String useremail = "guest@ala.org.au";
-            try {
-                Cookie[] cookies = ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies();
-                if (cookies != null) {
-                    for (Cookie cookie : cookies) {
-                        if (cookie.getName().equals("ALA-Auth")) {
-                            useremail = cookie.getValue();
-                            break;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-            }
-
-            logger.debug("getting log: " + logger_service + "/dashboard/types/tool.json");
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(logger_service + "/dashboard/types/tool.json?email=" + URLEncoder.encode(useremail, "UTF-8") + "&appid=" + URLEncoder.encode(appid, "UTF-8"));
-            //get.addRequestHeader("Accept", "application/json");
-
-            client.executeMethod(get);
-
-            return JSONObject.fromObject(get.getResponseBodyAsString());
         } catch (Exception e) {
             logger.error("Error getting logging information from server:", e);
         }
@@ -226,44 +191,29 @@ public class RemoteLogger {
     }
 
     public JSONObject getLogItem(String logId) {
+        init();
+
         try {
 
-            if (StringUtils.isBlank(logger_service)) {
-                init();
+            if (Util.isLoggedIn()) {
+                String url = logger_service + "/log/view.json?"
+                        + "id=" + logId;
+                //+ "&email=" + URLEncoder.encode(Util.getUserEmail(), "UTF-8")
+                //+ "&appid=" + URLEncoder.encode(appid,"UTF-8");
+
+
+                HttpClient client = new HttpClient();
+                GetMethod get = new GetMethod(url);
+
+                get.addRequestHeader("Accept", "application/json");
+
+                client.executeMethod(get);
+
+                logger.debug("get: " + url + ", response: " + get.getResponseBodyAsString());
+
+                return JSONObject.fromObject(get.getResponseBodyAsString());
             }
 
-            String sessionid = ((HttpSession) Sessions.getCurrent().getNativeSession()).getId();
-
-            String userip = Executions.getCurrent().getHeader("x-forwarded-for");
-            if (StringUtils.isBlank(userip)) {
-                userip = Executions.getCurrent().getRemoteAddr();
-                if (StringUtils.isBlank(userip)) {
-                    userip = "";
-                }
-            }
-
-            String useremail = "guest@ala.org.au";
-            try {
-                Cookie[] cookies = ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies();
-                if (cookies != null) {
-                    for (Cookie cookie : cookies) {
-                        if (cookie.getName().equals("ALA-Auth")) {
-                            useremail = cookie.getValue();
-                            break;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-            }
-
-            logger.debug("getting log: " + logger_service + "/log/view.json");
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(logger_service + "/log/view.json?email=" + URLEncoder.encode(useremail, "UTF-8") + "&appid=" + URLEncoder.encode(appid, "UTF-8"));
-            //get.addRequestHeader("Accept", "application/json");
-
-            client.executeMethod(get);
-
-            return JSONObject.fromObject(get.getResponseBodyAsString());
         } catch (Exception e) {
             logger.error("Error getting logging information from server:", e);
         }

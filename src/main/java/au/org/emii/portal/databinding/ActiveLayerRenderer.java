@@ -121,27 +121,40 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 
         // adding buttons to basemap in layer list
         if (layer.getType() == LayerUtilities.MAP) {
-            //add select all or unselect all button
+            //add select all or unselect all button or delete all buttons
+            //NOTE: Objects created here are referenced by relative location in the listcell.
+            //      Changes made here must also be made in MapComposer.adjustActiveLayersList
+
+            Div div = new Div();
+            div.setClass("btn-group");
+            div.setParent(listcell);
+            div.setStyle("float:right;margin-right:30px");
 
             Button b = new Button("Delete all");
-            b.setParent(listcell);
+            b.setClass("btn-mini");
+            b.setParent(div);
             b.setVisible(false);
-            b.setStyle("float:right;margin-right:30px");
             b.addEventListener("onClick", new EventListener() {
 
                 @Override
                 public void onEvent(Event event) throws Exception {
-                    if (Messagebox.show("All layers will be deleted, are you sure?", "Warning", Messagebox.OK | Messagebox.CANCEL, Messagebox.EXCLAMATION) == Messagebox.OK) {
-                        ((MapComposer) event.getPage().getFellow("mapPortalPage")).onClick$removeAllLayers();
-                    }
-
+                    Messagebox.show("All layers will be deleted, are you sure?", "Warning", Messagebox.OK | Messagebox.CANCEL, Messagebox.EXCLAMATION
+                            , new EventListener() {
+                        public void onEvent(Event evt) {
+                            switch (((Integer) evt.getData()).intValue()) {
+                                case Messagebox.OK:
+                                    ((MapComposer) evt.getPage().getFellow("mapPortalPage")).onClick$removeAllLayers();
+                                    break;
+                            }
+                        }
+                    });
                 }
             });
 
             b = new Button("Show all");
-            b.setParent(listcell);
+            b.setClass("btn-mini");
+            b.setParent(div);
             b.setVisible(false);
-            b.setStyle("float:right;margin-right:30px");
             b.addEventListener("onClick", new EventListener() {
 
                 @Override
@@ -151,9 +164,9 @@ public class ActiveLayerRenderer implements ListitemRenderer {
                 }
             });
             b = new Button("Hide all");
-            b.setParent(listcell);
+            b.setClass("btn-mini");
+            b.setParent(div);
             b.setVisible(false);
-            b.setStyle("float:right");
             b.addEventListener("onClick", new EventListener() {
 
                 @Override

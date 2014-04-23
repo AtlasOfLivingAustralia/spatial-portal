@@ -7,7 +7,6 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -31,7 +30,6 @@ import java.util.Map;
 public class AreaMapPolygon extends AreaToolComposer {
 
     private static Logger logger = Logger.getLogger(AreaMapPolygon.class);
-    SettingsSupplementary settingsSupplementary;
     private Textbox displayGeom;
     Textbox txtLayerName;
     Button btnOk;

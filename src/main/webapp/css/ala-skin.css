@@ -23,14 +23,14 @@ header#site-header {
     background-image: -o-linear-gradient(top, #3d464c, #353d43);
     background-image: linear-gradient(top, #3d464c, #353d43);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#3d464c', EndColorStr='#353d43');
-    border-bottom: 2px solid #5c656b;
+   /* border-bottom: 2px solid #5c656b;*/
 }
 
 header#site-header #nav-search {
     /*width:40%;*/
     float: right;
     position: relative;
-    padding-top: 1px;
+    padding-top: 10px;
 }
 
 header#site-header nav {
@@ -80,7 +80,7 @@ header#site-header h1 {
     text-align: left;
     margin: 0 auto;
     width: 972px;
-    padding: 10px 14px 0 14px;
+    padding: 4px 14px 0 14px;
     /*background:url(images/guides.png) center top repeat-y;*/
 }
 

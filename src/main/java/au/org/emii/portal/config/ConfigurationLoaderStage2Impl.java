@@ -5,11 +5,8 @@
 package au.org.emii.portal.config;
 
 import au.org.ala.spatial.util.CommonData;
-import au.org.emii.portal.config.xmlbeans.PortalDocument;
-import au.org.emii.portal.config.xmlbeans.Supplementary;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.settings.Settings;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.wms.RemoteMap;
@@ -18,6 +15,7 @@ import org.apache.xmlbeans.XmlCursor;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * Configuration loader
@@ -42,7 +40,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
      * spring doesn't know about it - gets set by configuration loader
      * stage 1 before processing stage 2
      */
-    private PortalDocument portalDocument = null;
+    private Properties portalDocument = null;
     /**
      * PortalSession instance - this will (eventually) become the master
      * portal session - this one can be spring injected(?) maybe...
@@ -55,7 +53,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
     /**
      * Supplementary settings (key/value pairs) spring autowired
      */
-    private SettingsSupplementary settingsSupplementary = null;
+    private Properties settingsSupplementary = null;
     private PortalSessionUtilities portalSessionUtilities = null;
     /**
      * Error occurred during loading (flag)
@@ -67,53 +65,6 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
      */
     private boolean reloading = false;
 
-    /**
-     * Load the configuration and process all directives
-     * <p/>
-     * XPATHS to Main sections of the config file:
-     * <p/>
-     * NOTE:
-     * * denotes element repeated 0 or more times
-     * This list is a broad overview, its not conclusive!
-     * <p/>
-     * /portal
-     * |-settings
-     * |  |-'well known' values
-     * |  |-mestConfigurations
-     * |  |   |-mestConfiguration*
-     * |  |-supplementary
-     * |      |- key/value pairs*
-     * |-menu
-     * |  |-facilities
-     * |  |   |-facilitiy*
-     * |  |       |-menu
-     * |  |-regions
-     * |  |   |-region*
-     * |  |       |-menu
-     * |  |-realtimes
-     * |  |   |-realtime*
-     * |  |       |-menu
-     * |  | staticLinks
-     * |      |-staticLinkIdRef*
-     * |-uriResolver
-     * |  |-mapping*
-     * |  |-uriEndPoint*
-     * |-search
-     * |  |-searchCatalogue*
-     * |-dataSource
-     * |  |-activeByDefault
-     * |  |-blacklist
-     * |  |-discoveries
-     * |  |   |-discovery*
-     * |  |-services
-     * |  |   |-service*
-     * |  |-baseLayers
-     * |  |   |-baseLayer*
-     * |  |-staticLinks
-     * |      |-staticLink*
-     * |-userAccount
-     * |-mestUserManagementService*
-     */
     @Override
     public PortalSession load() {
         reloading = true;
@@ -148,7 +99,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
         }
 
         //geoserver/alaspatial analysis page data       
-        CommonData.init(settingsSupplementary.getValues());
+        CommonData.init(settingsSupplementary);
 
         cleanup();
         reloading = false;
@@ -173,23 +124,26 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
         workingPortalSession = null;
     }
 
+    @Override
+    public void setProperties(Properties portalDocument) {
+        this.portalDocument = portalDocument;
+    }
+
     private void settings() {
         logger.debug("settings...");
-        au.org.emii.portal.config.xmlbeans.Settings xmlSettings = portalDocument.getPortal().getSettings();
+
         try {
             logger.debug("Settings from config file:");
 
-            settings.setConfigRereadInitialInterval(xmlSettings.getConfigRereadInitialInterval().intValue());
-            settings.setConfigRereadInterval(xmlSettings.getConfigRereadInterval().intValue());
+            settings.setConfigRereadInitialInterval(Integer.parseInt(portalDocument.getProperty("configRereadInitialInterval")));
+            settings.setConfigRereadInterval(Integer.parseInt(portalDocument.getProperty("configRereadInterval")));
 
-            settings.setNetConnectSlowTimeout(xmlSettings.getNetConnectSlowTimeout().intValue());
-            settings.setNetConnectTimeout(xmlSettings.getNetConnectTimeout().intValue());
-            settings.setNetReadSlowTimeout(xmlSettings.getNetReadSlowTimeout().intValue());
-            settings.setNetReadTimeout(xmlSettings.getNetReadTimeout().intValue());
+            settings.setNetConnectSlowTimeout(Integer.parseInt(portalDocument.getProperty("netConnectSlowTimeout")));
+            settings.setNetConnectTimeout(Integer.parseInt(portalDocument.getProperty("netConnectTimeout")));//xmlSettings.getNetConnectTimeout().intValue());
+            settings.setNetReadSlowTimeout(Integer.parseInt(portalDocument.getProperty("netReadSlowTimeout")));//xmlSettings.getNetReadSlowTimeout().intValue());
+            settings.setNetReadTimeout(Integer.parseInt(portalDocument.getProperty("netReadTimeout")));//xmlSettings.getNetReadTimeout().intValue());
 
-            settings.setProxyAllowedHosts(xmlSettings.getProxyAllowedHosts());
-
-            settings.setXmlMimeType(xmlSettings.getXmlMimeType());
+            settings.setProxyAllowedHosts((portalDocument.getProperty("proxyAllowedHosts")));//xmlSettings.getProxyAllowedHosts());
 
             // remaining items are complex types so needs special handling
             settings.setDefaultBoundingBox(defaultBoundingBox());
@@ -205,62 +159,20 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
      */
     private BoundingBox defaultBoundingBox() {
         BoundingBox bbox = new BoundingBox();
-        bbox.copyFrom(portalDocument.getPortal().getSettings().getDefaultBoundingBox());
+        try {
+            bbox.setMinLatitude(Float.parseFloat(portalDocument.getProperty("defaultBoundingBox.minLatitude")));
+            bbox.setMaxLatitude(Float.parseFloat(portalDocument.getProperty("defaultBoundingBox.maxLatitude")));
+            bbox.setMinLongitude(Float.parseFloat(portalDocument.getProperty("defaultBoundingBox.minLongitude")));
+            bbox.setMaxLongitude(Float.parseFloat(portalDocument.getProperty("defaultBoundingBox.maxLongitude")));
+        } catch (Exception e) {
+            logger.error("failed to parse defaultBoundBox values", e);
+        }
 
         return bbox;
     }
 
-    /**
-     * process the <config> directive.  Read it into a Map which gets stored
-     * statically in the Config class
-     * <p/>
-     * Children of configure should be key values pairs, e.g.:
-     * <p/>
-     * <config>
-     * <myval1>foo</myval1>
-     * <myval2>foo</myval2>
-     * ...
-     * <myvaln>foo</myvaln>
-     * </config
-     * <p/>
-     * Will produce a hashmap like this:
-     * value['myval1']='foo'
-     * value['myval2']='foo'
-     * value['myval3']='foo'
-     * value['myvaln']='foo'
-     * <p/>
-     * ... which is then accessible by calling Config.getValue:
-     * logger.debug(Config.getValue('myval1'));
-     * <p/>
-     * prints 'foo'
-     */
     private void settingsSupplementary() {
-        Supplementary supplementary = portalDocument.getPortal().getSettings().getSupplementary();
-        XmlCursor cursor = supplementary.newCursor();
-        HashMap<String, String> supplementaryValues = new HashMap<String, String>();
-        boolean finished = false;
-        // enter the <configuration> block and read the first child if there is one
-        if (cursor.toFirstChild()) {
-
-            while (!finished) {
-
-                String key = cursor.getName().getLocalPart();
-                String value = cursor.getTextValue();
-                logger.debug("settings/supplementary/" + key + " ==> " + value);
-                supplementaryValues.put(key, value);
-                finished = !cursor.toNextSibling();
-            }
-            cursor.dispose();
-        } else {
-            cursor.dispose();
-            logger.error("Unable to select supplementary settings from configuration file");
-            error = true;
-        }
-
-        /* now give the hashmap we made to the Config class which keeps values
-         * for the duration of our application's life.
-         */
-        settingsSupplementary.setValues(supplementaryValues);
+        settingsSupplementary = portalDocument;
     }
 
     public RemoteMap getRemoteMap() {
@@ -270,16 +182,6 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
     @Required
     public void setRemoteMap(RemoteMap remoteMap) {
         this.remoteMap = remoteMap;
-    }
-
-    @Override
-    public PortalDocument getPortalDocument() {
-        return portalDocument;
-    }
-
-    @Override
-    public void setPortalDocument(PortalDocument portalDocument) {
-        this.portalDocument = portalDocument;
     }
 
     @Override
@@ -304,15 +206,6 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
     @Override
     public boolean isError() {
         return error;
-    }
-
-    public SettingsSupplementary getSettingsSupplementary() {
-        return settingsSupplementary;
-    }
-
-    @Required
-    public void setSettingsSupplementary(SettingsSupplementary settingsSupplementary) {
-        this.settingsSupplementary = settingsSupplementary;
     }
 
 

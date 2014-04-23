@@ -6,7 +6,7 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.settings.SettingsSupplementary;
+
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.wms.WMSStyle;
 import net.sf.json.JSONObject;
@@ -27,7 +27,7 @@ import java.util.Date;
 public class ImportAnalysisController extends UtilityComposer {
 
     private static Logger logger = Logger.getLogger(ImportAnalysisController.class);
-    SettingsSupplementary settingsSupplementary;
+
     RemoteLogger remoteLogger;
     Textbox refNum;
     String pid;
@@ -47,6 +47,8 @@ public class ImportAnalysisController extends UtilityComposer {
         super.afterCompose();
 
         try {
+
+            remoteLogger = new RemoteLogger();
             JSONObject jo = remoteLogger.getLogCSV();
 
 

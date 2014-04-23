@@ -3,7 +3,6 @@ package au.org.ala.spatial.composer.input;
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.composer.tool.ToolComposer;
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import org.apache.log4j.Logger;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Event;
@@ -21,7 +20,6 @@ import java.io.StringReader;
 public class UploadLayerListController extends UtilityComposer {
 
     private static Logger logger = Logger.getLogger(UploadLayerListController.class);
-    SettingsSupplementary settingsSupplementary;
     String layerList;
 
     @Override

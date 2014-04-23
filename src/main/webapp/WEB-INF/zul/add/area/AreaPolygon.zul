@@ -2,7 +2,8 @@
 <zk>
     <window id="areapolygonwindow" use="au.org.ala.spatial.composer.add.area.AreaPolygon"
             apply="au.org.ala.spatial.composer.add.area.AreaPolygon" width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native"
-            style="position:absolute;left:20px;top:20px" draggable="false">
+            style="position:absolute;left:10px;top:10px;overflow:visible"
+             draggable="false">
         <n:div class="left-cover" />
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -29,14 +30,14 @@
             <separator />
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" />
             <label id="invalidWKT" width="100%" style="color: red" visible="true"/>
-            <div sclass="wizButtonContainer">
-                <hbox>
-                    <button sclass="goButton" label="Clear" id="btnClear" disabled="true"/>                    
-                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
-                    <button sclass="goButton" label="Next" id="btnNext" disabled="true" />
-                </hbox>
-            </div>
-            <separator />
+
+            <div class="btn-group" style="float:right;">
+
+                                            <button label="Clear" id="btnClear" disabled="true"/>
+                                            <button label="Cancel" id="btnCancel" />
+                                            <button class="btn-primary" label="Next >" id="btnNext" disabled="true" />
+                                    </div>
+
         </vbox>
     </window>
 </zk>

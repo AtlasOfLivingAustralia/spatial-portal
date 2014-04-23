@@ -25,12 +25,14 @@ import org.zkoss.zul.Combobox;
 
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Properties;
 
 /**
  * @author ajay
  */
 public class SitesBySpeciesComposer extends ToolComposer {
     private static Logger logger = Logger.getLogger(SitesBySpeciesComposer.class);
+
 
     Checkbox chkOccurrenceDensity;
     Checkbox chkSpeciesDensity;
@@ -45,7 +47,7 @@ public class SitesBySpeciesComposer extends ToolComposer {
         this.totalSteps = 3;
 
         this.loadAreaLayers();
-        this.loadSpeciesLayers(true);
+        this.loadSpeciesLayers(false);
         this.updateWindowTitle();
     }
 
@@ -139,14 +141,14 @@ public class SitesBySpeciesComposer extends ToolComposer {
 
             logger.debug("SitesBySpecies for " + occurrenceCount + " occurrences in up to " + boundingboxcellcount + " grid cells.");
 
-            if (boundingboxcellcount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells")) {
+            if (boundingboxcellcount > Integer.parseInt(CommonData.settings.getProperty("sitesbyspecies_maxbbcells"))) {
                 //getMapComposer().showMessage("Too many potential output grid cells.  Reduce by at least " + String.format("%.2f",100* (1-boundingboxcellcount / (double)settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells"))) + "% by decreasing area or increasing resolution.", this);
                 getMapComposer().showMessage("Too many output grid cells: Decrease area or increase grid size.", this);
                 return -1;
             }
 
-            if (occurrenceCount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxoccurrences")) {
-                getMapComposer().showMessage("Too many occurrences for the selected species in this area.  " + occurrenceCount + " occurrences found, must be less than " + settingsSupplementary.getValueAsInt("sitesbyspecies_maxoccurrences"), this);
+            if (occurrenceCount > Integer.parseInt(CommonData.settings.getProperty("sitesbyspecies_maxoccurrences"))) {
+                getMapComposer().showMessage("Too many occurrences for the selected species in this area.  " + occurrenceCount + " occurrences found, must be less than " + CommonData.settings.getProperty("sitesbyspecies_maxoccurrences"), this);
                 return -1;
             }
 
@@ -255,14 +257,14 @@ public class SitesBySpeciesComposer extends ToolComposer {
 
             logger.debug("SitesBySpecies for " + occurrenceCount + " occurrences in up to " + boundingboxcellcount + " grid cells.");
 
-            if (boundingboxcellcount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells")) {
+            if (boundingboxcellcount > Integer.parseInt(CommonData.settings.getProperty("sitesbyspecies_maxbbcells"))) {
                 //getMapComposer().showMessage("Too many potential output grid cells.  Reduce by at least " + String.format("%.2f",100* (1-boundingboxcellcount / (double)settingsSupplementary.getValueAsInt("sitesbyspecies_maxbbcells"))) + "% by decreasing area or increasing resolution.", this);
                 getMapComposer().showMessage("Too many output grid cells: Decrease area or increase grid size.", this);
                 return false;
             }
 
-            if (occurrenceCount > settingsSupplementary.getValueAsInt("sitesbyspecies_maxoccurrences")) {
-                getMapComposer().showMessage("Too many occurrences for the selected species in this area.  " + occurrenceCount + " occurrences found, must be less than " + settingsSupplementary.getValueAsInt("sitesbyspecies_maxoccurrences"), this);
+            if (occurrenceCount > Integer.parseInt(CommonData.settings.getProperty("sitesbyspecies_maxoccurrences"))) {
+                getMapComposer().showMessage("Too many occurrences for the selected species in this area.  " + occurrenceCount + " occurrences found, must be less than " + CommonData.settings.getProperty("sitesbyspecies_maxoccurrences"), this);
                 return false;
             }
 
@@ -272,7 +274,12 @@ public class SitesBySpeciesComposer extends ToolComposer {
             sbProcessUrl.append("speciesq=").append(URLEncoder.encode(QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher()).getQ(), "UTF-8"));
 
             sbProcessUrl.append("&gridsize=" + URLEncoder.encode(String.valueOf(gridResolution), "UTF-8"));
-            sbProcessUrl.append("&bs=" + URLEncoder.encode(((BiocacheQuery) query).getBS(), "UTF-8"));
+
+            if (query instanceof BiocacheQuery) {
+                sbProcessUrl.append("&bs=" + URLEncoder.encode(((BiocacheQuery) query).getBS(), "UTF-8"));
+            } else {
+                sbProcessUrl.append("&bs=" + URLEncoder.encode(((UserDataQuery) query).getBS(), "UTF-8"));
+            }
 
             if (chkOccurrenceDensity.isChecked()) {
                 sbProcessUrl.append("&occurrencedensity=1");

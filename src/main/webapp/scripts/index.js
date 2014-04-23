@@ -1,8 +1,9 @@
 //zk.Widget.$(jq('$westContent')[0]).firstChild.lastChild.listen({onMouseUp: function () { console.log('map.pan');setTimeout("map.pan(1,1);",300); }});
 
-$(".z-west-colpsd").click(function () {
+$(".z-west-collapsed").click(function () {
     $(".menudiv").css("top", 0);
 });
+
 
 if (readCookie('ALA-Auth')) {
     $(".not_logged_in").hide();
@@ -11,6 +12,9 @@ if (readCookie('ALA-Auth')) {
     $(".not_logged_in").show();
     $(".logged_in").hide();
     //$(".login-bubble").show().delay(8000).fadeOut(2000);
+
+
+    $(".login-bubble")[0].style.right  = ($(window).width() - $(".login-button").offset().left - $(".login-button").width()) + "px";
 }
 
 

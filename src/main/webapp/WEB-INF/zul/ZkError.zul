@@ -10,16 +10,19 @@
  -->
 <window zclass="z-window-popup" title="Internal Error" width="400px" border="normal"
 		mode="overlapped" use="au.org.emii.portal.composer.ZkErrorComposer"
-		apply="au.org.emii.portal.composer.ZkErrorComposer" position="center,center">
+		apply="au.org.emii.portal.composer.ZkErrorComposer" position="center,center"
+
+		style="overflow:visible;background-color:white;padding:3px;"
+		>
     <caption image="/img/error.png"/>
-    <vbox style="padding:10px">
+    <vbox >
    
 		The ALA Spatial Portal encountered a serious error.  It is recommended
 		to reload the portal but it may be possible to continue.  We have recorded
 		the error and will investigate a fix.
-        <hbox style="margin-left:auto; margin-right:auto; padding-top:10px">
+        <div class="btn-group">
             <button id="continueButton" label="Continue" />
             <button id="reloadButton" label="Reload" href="./"/>            
-        </hbox>        
+        </div>
     </vbox>    
 </window>

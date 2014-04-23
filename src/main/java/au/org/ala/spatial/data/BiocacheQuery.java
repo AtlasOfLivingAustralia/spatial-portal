@@ -6,8 +6,11 @@ package au.org.ala.spatial.data;
 
 import au.org.ala.spatial.util.CommonData;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.PrecisionModel;
+import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
+import com.vividsolutions.jts.operation.valid.IsValidOp;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.layers.intersect.SimpleRegion;
@@ -44,8 +47,7 @@ public class BiocacheQuery implements Query, Serializable {
 //    FacetCache facetCache;
     static final String SAMPLING_SERVICE_CSV_GZIP = "/webportal/occurrences.gz?";
     static final String SAMPLING_SERVICE = "/webportal/occurrences?";
-    static final String SPECIES_LIST_SERVICE = "/webportal/species?";
-    static final String SPECIES_LIST_SERVICE_CSV = "/webportal/species.csv?";
+    static final String SPECIES_LIST_SERVICE_CSV = "/occurrences/facets/download?facets=species_guid&lookup=true&count=true&";
     static final String DOWNLOAD_URL = "/occurrences/download?";
     static final String DATA_PROVIDERS_SERVICE = "/webportal/dataProviders?";
     static final String QUERY_TITLE_URL = "/occurrences/search?";
@@ -487,7 +489,6 @@ public class BiocacheQuery implements Query, Serializable {
         HttpClient client = new HttpClient();
         String url = biocacheServer
                 + SPECIES_LIST_SERVICE_CSV
-                + DEFAULT_ROWS_LARGEST
                 + "&q=" + getQ()
                 + getQc();
         logger.debug(url);
@@ -668,7 +669,6 @@ public class BiocacheQuery implements Query, Serializable {
     }
 
 
-
     String paramQueryFields(ArrayList<QueryField> fields) {
         StringBuilder sb = new StringBuilder();
 
@@ -728,10 +728,22 @@ public class BiocacheQuery implements Query, Serializable {
             queryTerms++;
         }
 
+        if (encode) {
+            try {
+                StringBuilder sb2 = new StringBuilder();
+                sb.append(URLEncoder.encode(sb.toString(), "UTF-8"));
+                sb = sb2;
+            } catch (Exception e) {
+                logger.error("error encoding: " + sb.toString(), e);
+            }
+        } else {
+            //do not encode sb
+        }
+
         if (facets != null && facets.size() > 0) {
             for (int i = 0; i < facets.size(); i++) {
                 if (queryTerms > 0) {
-                    sb.append(" AND ");
+                    sb.append("&fq=");
                 }
                 String facet = facets.get(i).toString();
                 int p = facet.indexOf(':');
@@ -746,35 +758,50 @@ public class BiocacheQuery implements Query, Serializable {
                 if (facet.contains(" OR ") && !facet.startsWith("-")) {
                     facet = "(" + facet + ")";
                 }
-                sb.append(facet);
+                if (encode) {
+                    try {
+                        sb.append(URLEncoder.encode(facet, "UTF-8"));
+                    } catch (Exception e) {
+                        logger.error("error encoding: " + facet, e);
+                    }
+                } else {
+                    sb.append(extraParams);
+                }
                 queryTerms++;
             }
         }
 
         if (DEFAULT_VALIDATION.length() > 0) {
             if (queryTerms > 0) {
-                sb.append(" AND ");
+                sb.append("&fq=");
             }
             queryTerms++;
-            sb.append(DEFAULT_VALIDATION);
+            if (encode) {
+                try {
+                    sb.append(URLEncoder.encode(DEFAULT_VALIDATION, "UTF-8"));
+                } catch (Exception e) {
+                    logger.error("error encoding: " + DEFAULT_VALIDATION, e);
+                }
+            } else {
+                sb.append(extraParams);
+            }
         }
 
         //extra parameters
         if (extraParams != null) {
             if (queryTerms > 0) {
-                sb.append(" AND ");
+                sb.append("&fq=");
             }
             queryTerms++;
-            sb.append(extraParams);
-        }
 
-        if (encode) {
-            String s = sb.toString();
-            sb = new StringBuilder();
-            try {
-                sb.append(URLEncoder.encode(s, "UTF-8"));
-            } catch (Exception e) {
-                logger.error("error encoding: " + s, e);
+            if (encode) {
+                try {
+                    sb.append(URLEncoder.encode(extraParams, "UTF-8"));
+                } catch (Exception e) {
+                    logger.error("error encoding: " + extraParams, e);
+                }
+            } else {
+                sb.append(extraParams);
             }
         }
 
@@ -803,6 +830,21 @@ public class BiocacheQuery implements Query, Serializable {
         //do not create paramId for short queries
         if (wkt == null && !forMapping && getFullQ(true).length() < CommonData.maxQLength) {
             return;
+        }
+
+        //reduce wkt (may also need to validate WKT)
+        if (wkt != null && wkt.length() > Integer.parseInt(CommonData.settings.getProperty("max_q_wkt_length"))) {
+            try {
+                int start_length = wkt.length();
+                WKTReader wktReader = new WKTReader();
+                com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
+                g = com.vividsolutions.jts.precision.GeometryPrecisionReducer.reduce(g, new PrecisionModel(10)); //reduce to 1 decimal place
+                wkt = g.toString();
+
+                logger.info("reduced WKT from string length " + start_length + " to " + wkt.length());
+            } catch (ParseException parseException) {
+                logger.error("failed to reduce WKT size", parseException);
+            }
         }
 
         HttpClient client = new HttpClient();

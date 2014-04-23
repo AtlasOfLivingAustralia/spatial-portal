@@ -16,14 +16,18 @@ import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
+import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.zkoss.zk.ui.Executions;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -611,5 +615,32 @@ public class Util {
         }
 
         return list;
+    }
+
+    public static String getUserEmail() {
+        String useremail = null;
+        try {
+            if (Executions.getCurrent().getUserPrincipal() != null) {
+                Principal principal = Executions.getCurrent().getUserPrincipal();
+                if (principal instanceof AttributePrincipal) {
+                    AttributePrincipal ap = (AttributePrincipal) principal;
+                    useremail = (String) ap.getAttributes().get("email");
+                } else {
+                    useremail = principal.getName();
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("No user available");
+        }
+
+        return useremail;
+    }
+
+    public static boolean isLoggedIn() {
+        if (getUserEmail() == null) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }

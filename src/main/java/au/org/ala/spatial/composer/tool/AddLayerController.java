@@ -92,7 +92,11 @@ public class AddLayerController extends ToolComposer {
 
                 getMapComposer().addWMSLayer(s, treeName, treePath, (float) 0.75, metadata, legendurl, type.equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL, null, null, null);
 
-                remoteLogger.logMapArea(treeName, "Layer - " + type, treePath, s, metadata);
+                try {
+                    remoteLogger.logMapArea(treeName, "Layer - " + type, treePath, s, metadata);
+                } catch (Exception e) {
+                    //logger
+                }
             }
         }
         this.detach();

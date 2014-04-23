@@ -9,6 +9,8 @@
 <?link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"?>
 <?meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" ?>
 
+<?style href="css/bootstrap.css" type="text/css" ?>
+<?style href="css/bootstrap-responsive.css" type="text/css" ?>
 <?style href="css/zkcomponents.css" type="text/css" ?>
 <?style href="css/ala-skin.css" type="text/css" ?>
 <?style href="css/sf.css" type="text/css" ?>
@@ -39,6 +41,7 @@
 
     body {
         padding:0;border:0;
+        background-color: #FFFEF7;
         }
         .z-window-content {
         			padding:0;border:0;
@@ -54,6 +57,9 @@
                     line-height: 24px;
                     overflow: auto;
                     }
+
+
+
 
 
     			</style>
@@ -78,134 +84,154 @@
         </script>
         <script defer="true" type="text/JavaScript" src="scripts/index.js" />
 
-        <timer id="timerKeepAliveSession" repeats="true" delay="30000" onTimer="" />
+<timer id="timerKeepAliveSession" repeats="true" delay="30000" onTimer="" />
 
         <div id="menucontainer">
-            <div width="400px" id="menudiv" sclass="menudiv" height="39px" style="position:absolute; top:58px">
-                <n:div id="nav-sp">
-                    <n:ul class="sf">
-                        <n:li class='nav-home' style="display:none">
-                            <n:a href="http://www.ala.org.au/" target="_blank">Home</n:a>
-                        </n:li>
-                        <n:li>
-                            <n:a href="" n:onClick="doNothing()">Add to Map</n:a>
-                            <n:ul>
-                                <n:li>
-                                    <n:a href="#" n:onClick="addSpeciesAction();">Species</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="addAreaAction();">Areas</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="addLayerAction();">Layers</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="addFacetAction();">Facet</n:a>
-                                </n:li>
-                            </n:ul>
-                        </n:li>
-                        <n:li>
-                            <n:a href="" n:onClick="doNothing()">Tools</n:a>
-                            <n:ul>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runAreaReport();">Area Report</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runNearestLocality();">Nearest locality</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runScatterPlotList();">Scatterplot List</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runTabulation();">Tabulate</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runSitesBySpecies();">Points to Grid</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runClassification();">Classify</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runPrediction();">Predict</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runGDM();">GDM</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runImportAnalysis();">Restore prior analysis</n:a>
-                                </n:li>
-                            </n:ul>
-                        </n:li>
-                        <n:li>
-                            <n:a href="" n:onClick="doNothing()">Import</n:a>
-                            <n:ul>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runImportSpecies('points');">Points</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runImportSpecies('assemblage');">Species list</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runImportAreas();">Areas</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runImportAnalysis();">Restore prior analysis</n:a>
-                                </n:li>
-                            </n:ul>
-                        </n:li>
-                        <n:li>
-                            <n:a href="" n:onClick="doNothing()">Export</n:a>
-                            <n:ul>
-                                <n:li>
-                                    <n:a href="#" n:onClick='printHack();'>Map</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runSpeciesList();">Checklist</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runSamplingAction();">Point Sample</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="runExport();">Areas</n:a>
-                                </n:li>
-                            </n:ul>
-                        </n:li>
-                        <n:li>
-                            <n:a href="" n:onClick="doNothing()">Help</n:a>
-                            <n:ul>
-                                <n:li>
-                                    <n:a href="#" n:onClick="loadHelp('getting-started');">Getting Started</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="loadHelp('add-to-map');">Add To Map</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="loadHelp('tools');">Tools</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="loadHelp('import');">Import</n:a>
-                                </n:li>
-                                <n:li>
-                                    <n:a href="#" n:onClick="loadHelp('export');">Export</n:a>
-                                </n:li>
-                            </n:ul>
-                        </n:li>
-                    </n:ul>
-                </n:div>
-                <div onClick='menus.setOpen(false);menudiv.setStyle("position:absolute; top:0px");menudiv.setParent(menucontainerwest);' sclass="z-west-colps z-borderlayout-icon"
-                style="position: absolute; z-index: 201; left: 380px; top: 3px;" >
+            <div width="400px" id="menudiv" sclass="menudiv" height="39px" style="position:absolute; top:56px">
+
+            <style>
+                        #nav-site .navbar-inner .nav > li > a {
+                        padding-left:8px;
+                        padding-right:8px;
+                        }
+                        #nav-site .navbar-inner {
+                        padding-left:0px;
+                        padding-right:0px;
+                        border: 0px;
+                        }
+                        </style>
+            <n:div n:id="nav-site" n:class="navbar">
+            <n:div n:class="navbar-inner">
+                                        <n:ul n:class="nav">
+                                            <n:li n:class="dropdown" >
+                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" >Add to Map  <n:b n:class="caret" /></n:a>
+                                                <n:ul n:class="dropdown-menu">
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="addSpeciesAction();">Species</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="addAreaAction();">Areas</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="addLayerAction();">Layers</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="addFacetAction();">Facet</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <a href="#" onClick="test_internal_error();">Error testing</a>
+                                                    </n:li>
+                                                </n:ul>
+                                            </n:li>
+                                            <n:li n:class="dropdown">
+                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" >Tools <n:b n:class="caret" /></n:a>
+                                                <n:ul n:class="dropdown-menu">
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runAreaReport();">Area Report</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runNearestLocality();">Nearest locality</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runScatterPlotList();">Scatterplot List</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runTabulation();">Tabulate</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runSitesBySpecies();">Points to Grid</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runClassification();">Classify</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runPrediction();">Predict</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runGDM();">GDM</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runImportAnalysis();">Restore prior analysis</n:a>
+                                                    </n:li>
+                                                </n:ul>
+                                            </n:li>
+                                            <n:li n:class="dropdown">
+                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown">Import <n:b n:class="caret" /></n:a>
+                                                <n:ul n:class="dropdown-menu">
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runImportSpecies('points');">Points</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runImportSpecies('assemblage');">Species list</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runImportAreas();">Areas</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runImportAnalysis();">Restore prior analysis</n:a>
+                                                    </n:li>
+                                                </n:ul>
+                                            </n:li>
+                                            <n:li n:class="dropdown">
+                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" >Export <n:b n:class="caret" /></n:a>
+                                                <n:ul n:class="dropdown-menu">
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick='printHack();'>Map</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runSpeciesList();">Checklist</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runSamplingAction();">Point Sample</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runExport();">Areas</n:a>
+                                                    </n:li>
+                                                </n:ul>
+                                            </n:li>
+                                            <n:li n:class="dropdown">
+                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" >Help <n:b n:class="caret" /></n:a>
+                                                <n:ul class="dropdown-menu" n:style="margin-left:-100px">
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="loadHelp('getting-started');">Getting Started</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="loadHelp('add-to-map');">Add To Map</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="loadHelp('tools');">Tools</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="loadHelp('import');">Import</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="loadHelp('export');">Export</n:a>
+                                                    </n:li>
+                                                </n:ul>
+                                            </n:li>
+                                        </n:ul>
+                                        </n:div>
+                                    </n:div>
+
+<div style="position: absolute; z-index: 201; left: 380px; top: 0px; width:20px; height:38px; background-color: #df4a21;color:white" >
+                <div onClick='
+                menus.setOpen(false);menudiv.setStyle("position:absolute; top:0px");menudiv.setParent(menucontainerwest);
+                '
+                sclass="z-borderlayout-icon z-icon-chevron-left"
+                style="padding-left:9px;line-height:39px">
                 </div>
+</div>
             </div>
         </div>
 
         <borderlayout width="100%" height="100%">
-            <north id="header" height="58" visible="true" style="height: 58px">
+            <north id="header" height="56" visible="true" style="height: 56px">
                 <html id="headerhtml"><![CDATA[
 <header id="site-header">
-	<div class="inner">
+	<div class="inner" style="vertical-align:middle;">
 		<h1 title="Atlas of Living Australia"><a href="http://www.ala.org.au" title="Atlas of Living Australia home"><img src="img/test.ala.logo.png" width="315" height="33" alt="" /></a></h1>
 		<section id="nav-search">
 			<section id="header-search">
@@ -220,7 +246,7 @@
                     <!-- <li><a href="http://www.ala.org.au/my-profile/" title="My profile">My profile</a></li> -->
                     <li><a href="/actions/dashboard" title="Spatial Portal Dashboard">Dashboard</a></li>
                     <li><a href="javascript:saveSession();" title="Save current session">Save session</a></li>
-					<li class="last"><a href="https://auth.ala.org.au/cas/login?service=http://spatial.ala.org.au/">Log in</a></li>
+					<li class="last login-button"><a href="https://auth.ala.org.au/cas/login?service=http://spatial-dev.ala.org.au/webportal/">Log in</a></li>
 				</ol>
 			</nav>
 			<nav class="logged_in">
@@ -258,19 +284,86 @@
                     <div id="westContent" class="westContent" visible="true" height="100%">
                         <borderlayout style="position:absolute;top:0px;left:0px">
                             <north height="189px">
-                                <div>
-                                    <!-- space for top level menu -->
-                                    <div height="39px" />
-                                    <div id="activeLayersHolder" width="400px" style="overflow: auto;background:white" height="160px">
+                            <div width="400px">
+                                    <!-- top level menu
+                                      <menupopup id="m_addtomap">
+                                              	<menuitem label="Species" id="btnAddSpecies" />
+                                                	<menuitem label="Areas" id="btnAddArea" />
+                                                	<menuitem label="Layers" id="btnAddLayer" />
+                                                	<menuitem label="Facets" id="btnAddFacet"/>
+                                                	<menuitem label="WMS Layer" id="btnAddWMSLayer"/>
+                                                </menupopup>
+
+                                                <menupopup id="m_tools">
+                                                	<menuitem label="Area Report" id="btnAreaReport" />
+                                                	<menuitem label="Nearest Locality" onClick="mapPortalPage.runNearestLocalityAction(null)"/>
+                                                	<menuitem label="Scatterplot" id="btnAddScatterplot"/>
+                                                	<menuitem label="Scatterplot List" id="btnAddScatterplotList" />
+                                                	<menuitem label="Tabulate" onClick="mapPortalPage.runTabulation(null)"/>
+                                                	<menuitem label="Points to Grid" id="btnSitesBySpecies" />
+                                                	<menuitem label="Classify" id="btnAddAloc" />
+                                                	<menuitem label="Predict" id="btnAddMaxent" />
+                                                	<menuitem label="GDM" id="btnAddGDM"/>
+                                                	<menuitem label="Restore Prior Analysis" onClick="mapPortalPage.importAnalysis(null);"/>
+                                                </menupopup>
+
+                                                <menupopup id="m_import">
+                                                	<menuitem label="Points" onClick="mapPortalPage.importSpecies('points')"/>
+                                                	<menuitem label="Species List" id="btnSpeciesList" />
+                                                	<menuitem label="Areas" onClick="mapPortalPage.importAreas(null);"/>
+                                                	<menuitem label="Restore Prior Analysis" onClick="mapPortalPage.importAnalysis(null);"/>
+                                                </menupopup>
+
+                                                <menupopup id="m_export">
+                                                	<menuitem label="Map" onClick="printHack();"/>
+                                                	<menuitem label="Checklist" onClick="runSpeciesList();"/>
+                                                	<menuitem label="Point Sample" id="btnAddSampling"/>
+                                                	<menuitem label="Areas" onClick="mapPortalPage.exportAreas(null)"/>
+                                                </menupopup>
+
+                                                <menupopup id="m_help">
+                                                	<menuitem label="Getting Started" onClick="loadHelp('getting-started');"/>
+                                                	<menuitem label="Add to Map" onClick="loadHelp('add-to-map');"/>
+                                                	<menuitem label="Tools" onClick="loadHelp('tools');"/>
+                                                	<menuitem label="Import" onClick="loadHelp('import');"/>
+                                                	<menuitem label="Export" onClick="loadHelp('export');"/>
+                                                </menupopup>
+
+                                                        <div class="btn-group" width="400px">
+                                                        	<button class="btn-default dropdown-toggle"
+                                                        		popup="m_addtomap, after_start" iconSclass="caret" width="120px">
+                                                        		Add to Map
+                                                        	</button>
+                                                        	<button class="btn-default dropdown-toggle"
+                                                                popup="m_tools, after_start" iconSclass="caret" width="70px">
+                                                                Tools
+                                                            </button>
+                                                            <button class="btn-default dropdown-toggle"
+                                                                popup="m_import, after_start" iconSclass="caret" width="70px">
+                                                                Import
+                                                            </button>
+                                                            <button class="btn-default dropdown-toggle"
+                                                                popup="m_export, after_start" iconSclass="caret" width="70px">
+                                                                Export
+                                                            </button>
+                                                            <button class="btn-default dropdown-toggle"
+                                                                popup="m_help, after_start" iconSclass="caret" width="70px">
+                                                                Help
+                                                            </button>
+                                                        </div>
+
+                                                        -->
+                                                        <div height="38px" />
+                                    <div id="activeLayersHolder" width="400px" style="overflow: auto;background:#FFFEF7" height="160px">
                                         <listbox id="activeLayersList" width="100%"/>
                                         <separator />
                                         <separator />
                                     </div>
                                     <div width="100%" height="1px" sclass="selectedLayerDiv" />
-                                </div>
+                                    </div>
                             </north>
                             <center vflex="false">
-                                <vlayout height="100%" style="overflow-y: auto;border-style:solid;border-width:1px" >
+                                <vlayout height="100%" style="overflow-y: auto;border-style:solid;border-width:1px 0px 0px 0px;border-color: gray" >
                                     <div width="400px" style="margin-left:3px;
                 font-size: 14px;
                 color: rgb(172, 172, 172);;
@@ -281,10 +374,8 @@
                                     <div  id="layerControls"/>
                                 </vlayout>
                             </center>
-                            <south height="110px;">
-                                <div sclass="contextualDivMenu" height="90px" width="390px" style="margin:0; padding:0px;">
-                                    <contextualMenu id="contextualMenu" style="margin:2px;" width="390px" />
-                                </div>
+                            <south height="0px;">
+
                             </south>
                         </borderlayout>
                     </div>
@@ -296,6 +387,17 @@
                 <div id="mapcontainer" width="100%" height="100%" >
                     <div style="float:left" width="100%" height="100%" >
                         <iframe id="mapIframe" width="100%" height="100%" name="mapFrame" src="./map2.html?" />
+                        <div sclass="contextualDivMenu" zclass="contextualDiv" id="contextualDivMenu" >
+                                    <contextualMenu id="contextualMenu" style="display: block; padding: 3px;
+                                                                                           opacity: 0.9;
+                                                                                           z-index: 410;
+                                                                                           background-color: #3C668D;
+                                                                                           color: #FFF;
+                                                                                           cursor: pointer;
+                                                                                           font-family: Arial;
+                                                                                           font-size: x-small;
+                                                                                           " />
+                                </div>
                     </div>
                 </div>
             </center>
@@ -603,7 +705,7 @@ function readCookie(name) {
                     //do nothing with drag/drop
                 } else if(!overlayon && (zkmoving != null || zkresizing != null)) {
                     //sit above zk (z-index:1800)
-                    parent.jq(parent.document.body).append("<div id='overlay_' style='position:absolute;width:100%;height:100%;top:0;left:0;z-index:1900;background-color:white;opacity:0.01;filter:alpha(opacity=1);'></div>");
+                    parent.jq(parent.document.body).append("<div id='overlay_' style='position:absolute;width:100%;height:100%;top:0;left:0;z-index:1900;background-color:#FFFEF7;opacity:0.01;filter:alpha(opacity=1);'></div>");
                     overlayon = true;
                 } else if(overlayon && zkmoving == null && zkresizing == null) {
                     overlayon = false;
@@ -619,7 +721,7 @@ function readCookie(name) {
                  xmlns:n="http://www.zkoss.org/2005/zk/native" mode="overlapped" width="450px" height="120px" position="center,top">
             <n:a class="fancybox-close" n:onClick="mapFrame.doSome('min');" style="display: inline" />
             <caption label="Layer value hover tool" />
-            <div height="100%" style="background:white">
+            <div height="100%" style="background:#FFFEF7">
                 <n:div id="hoverOutput"></n:div>
             </div>
         </window>
@@ -631,7 +733,7 @@ function readCookie(name) {
                     <n:span style="color:black;text-decoration:underline;float:right">remove all markers</n:span>
                 </n:a>
             </caption>
-            <div height="100%" style="background:white">
+            <div height="100%" style="background:#FFFEF7">
                 <n:div id="nearestOutput"></n:div>
             </div>
         </window>
@@ -646,7 +748,7 @@ function readCookie(name) {
                     <n:span style="color:black;text-decoration:underline">download CSV</n:span>
                 </n:a>
             </caption>
-            <div height="100%" style="background:white">
+            <div height="100%" style="background:#FFFEF7">
                 <n:div n:style="height:300px;overflow:auto;" id="featureOutput"></n:div>
             </div>
         </window>
@@ -665,6 +767,8 @@ function readCookie(name) {
             nearesttool.setVisible(false);
             featuretool.setVisible(false);
         </zscript>
+
+
 
     </window>
 

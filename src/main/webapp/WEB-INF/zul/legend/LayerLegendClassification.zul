@@ -9,35 +9,42 @@
                 font-size: 10px;
                 border: 2px solid red;
              }
-        </style>            
-            <listbox sclass="legendlist" id="legend" width="360px" vflex="true" mold="paging">
+        </style>
+        <div id="divContinous" visible="false" >
+                            <separator height="10px" />
+                           <label id="dlabel" width="350px" />
+                            <!--rangeslider id="dslider" width="350px" /-->
+                            <hbox>
+                                <doublebox id="dmin" width="60px"/>
+
+                                    <label value=" TO " style="" />
+                                <doublebox id="dmax" width="60px"/>
+                                <checkbox id="dunknown" label="Select Unknown" checked="true" />
+                                <div class="btn-group">
+                                    <button class="btn-small" id="dbutton" label="Select" />
+                                </div>
+                            </hbox>
+
+                         </div>
+
+            <listbox sclass="legendlist" id="legend" width="380px" vflex="true" mold="paging">
                 <listhead>
                     <listheader label="   " width="20px" id="lhFirstColumn"  style="font-size:12px"/>
-                    <listheader label="class" width="230px" id="lhSecondColumn" style="font-size:12px"/>
+                    <listheader label="class" width="240px" id="lhSecondColumn" style="font-size:12px"/>
                     <listheader label="colour" width="50px" id="lhThirdColumn" style="font-size:12px"/>
-                    <listheader label="count" width="60px" align="right" id="lhFourthColumn" style="font-size:12px"/>
+                    <listheader label="count" width="65px" align="right" id="lhFourthColumn" style="font-size:12px"/>
                 </listhead>
             </listbox>
-            <vbox>
-                <div id="divContinous" visible="false" style="max-height:60px; overflow:auto;">
-                   <label id="dlabel" width="350px" />
-                    <!--rangeslider id="dslider" width="350px" /-->
-                    <hbox>
-                        <doublebox id="dmin" />
-                        <vbox>
-                            <separator height="10px" />
-                            <label value=" TO " style="" />
-                        </vbox>
-                        <doublebox id="dmax" />
-                        <button id="dbutton" label="Select" sclass="gobutton" />
-                    </hbox>
-                    <checkbox id="dunknown" label="Select Unknown" checked="true" />
-                 </div>
+
+            <vbox width="380px">
+                        <div class="btn-group" id="dCreateButtons" >
+                            <button class="btn-small" id="selectAll" label="Select all"  />
+                            <button class="btn-small"  id="clearSelection" label="Clear selection"  visible="true" />
+                            <button class="btn-small btn-primary"  id="createInGroup" label="Create layer" visible="true" />
+                        </div>
+
+
             </vbox>
-            <div id="dCreateButtons" height="20px" style="bottom: 0px;right: 0px;margin: 3px 5px 5px 0px;padding: 0px 5px 5px 0px;" >
-                <button id="selectAll" label="Select all" sclass="goButton" />
-                <button id="createInGroup" label="Create layer" sclass="goButton" visible="true" />
-                <button id="clearSelection" label="Clear selection" sclass="goButton" visible="true" />
-            </div>
+
     </window>
 </zk>

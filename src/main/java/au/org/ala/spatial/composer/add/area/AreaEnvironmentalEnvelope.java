@@ -64,6 +64,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     int speciescount = 0;
     boolean isDirtyCount = true;
     String final_wkt = null;
+    boolean cancelling = false; //set to true and calling 'remove all layers' will end by closing the popup.
 
     @Override
     public void afterCompose() {
@@ -699,10 +700,13 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         }
         if (selectedLayers.size() > 0) {
             Events.echoEvent("removeLayers", this, sb.toString());
+        } else if (cancelling) {
+            this.detach();
         }
     }
 
     public void onClick$btnCancel(Event event) {
+        cancelling = true;
         removeAllSelectedLayers(false);
     }
 }

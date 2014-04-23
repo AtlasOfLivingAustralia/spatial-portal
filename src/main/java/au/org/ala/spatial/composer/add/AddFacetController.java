@@ -10,7 +10,6 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import org.ala.layers.legend.Facet;
 import org.ala.layers.legend.Legend;
@@ -67,7 +66,6 @@ public class AddFacetController extends UtilityComposer {
     Listheader lhThirdColumn;
     Listheader lhFourthColumn;
     Combobox cbColour;
-    SettingsSupplementary settingsSupplementary;
     boolean hasCustomArea = false;
     Radiogroup rgArea, rgAreaHighlight, rgSpecies, rgSpeciesBk;
     SelectedArea sa;
@@ -90,7 +88,17 @@ public class AddFacetController extends UtilityComposer {
         winTop = this.getTop();
         winLeft = this.getLeft();
         setupDefaultParams();
-        setParams(Executions.getCurrent().getAttributes());
+        HashMap<String, Object> tmp = new HashMap<String, Object>();
+        Map m = Executions.getCurrent().getArg();
+        if (m != null) {
+            for (Object k : m.keySet()) {
+                if (k instanceof String) {
+                    tmp.put((String) k, m.get(k));
+                }
+            }
+        }
+        setParams(tmp);
+
         selectedMethod = "Add facet";
         updateWindowTitle();
         fixFocus();
@@ -103,16 +111,6 @@ public class AddFacetController extends UtilityComposer {
     }
 
     private void setupDefaultParams() {
-        Hashtable<String, Object> p = new Hashtable<String, Object>();
-        p.put("step1", "Select area");
-        p.put("step2", "Select facet");
-
-        if (params == null) {
-            params = p;
-        } else {
-            setParams(p);
-        }
-
         btnOk.setDisabled(true);
     }
 
@@ -134,7 +132,7 @@ public class AddFacetController extends UtilityComposer {
     }
 
     public void updateWindowTitle() {
-        this.setTitle("Step " + currentStep + " of " + totalSteps + " - " + selectedMethod);
+        ((Caption) getFellow("cTitle")).setLabel("Step " + currentStep + " of " + totalSteps + " - " + selectedMethod);
     }
 
     void fixFocus() {
@@ -510,7 +508,9 @@ public class AddFacetController extends UtilityComposer {
                     legend_facets.put("Unknown", legend_lines.get(j)[0]);
                     legend_lines.get(j)[0] = "Unknown";
                 } else {
-                    String[] ss = legend_lines.get(j);
+                    String s = legend_lines.get(j)[0];
+
+                    String[] ss = s.replace("[", "").replace("]", "").replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "").split(" TO ");
 
                     float[] cutoffs = lo.getNumericLegend().getCutoffFloats();
                     float[] cutoffMins = lo.getNumericLegend().getCutoffMinFloats();

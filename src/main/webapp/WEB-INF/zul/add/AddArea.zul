@@ -1,7 +1,8 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="addareawindow" use="au.org.ala.spatial.composer.add.AddAreaController"
-    apply="au.org.ala.spatial.composer.add.AddAreaController" width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native">
+    apply="au.org.ala.spatial.composer.add.AddAreaController" xmlns:n="http://www.zkoss.org/2005/zk/native"
+    style="overflow:visible;position:absolute;left:20px;top:20px">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -16,11 +17,10 @@
         <caption label="Add Area" />
 
         <vbox width="100%">
-            <label sclass="wLabel" value="Select method to define area." style="margin-left:20px"/>
-            <div style="margin-left:20px" >
+            <n:h4>Select method to define area.</n:h4>
+            <div >
                 <radiogroup id="cbAreaSelection" orient="vertical" onOK="addareawindow.onClick$btnOk(null)" >
                     <vbox>
-                    <separator />
                     <label value="Interact with the map" sclass="wSubLabel"/>
                     <radio label="Draw bounding box" id="ciBoundingBox" focus="true" checked="true" />
                     <radio label="Draw polygon" id="ciPolygon" />
@@ -53,14 +53,10 @@
                 </radiogroup>
             </div>
         </vbox>
-
-            <separator />
-            <div sclass="wButtons wizButtonContainer">
-                <hbox>                    
-                    <button sclass="goButton" label="Cancel" id="btnCancel" />
-                    <button sclass="goButton" label="Next" id="btnOk" disabled="false" />
-                </hbox>
+<separator />
+            <div class="btn-group" style="float:right;">
+                    <button label="Cancel" id="btnCancel" />
+                    <button class="btn-primary" label="Next >" id="btnOk" disabled="false" />
             </div>
-            <separator />
     </window>
 </zk>

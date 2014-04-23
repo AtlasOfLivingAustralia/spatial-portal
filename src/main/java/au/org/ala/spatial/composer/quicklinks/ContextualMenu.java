@@ -2,7 +2,6 @@ package au.org.ala.spatial.composer.quicklinks;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import org.apache.log4j.Logger;
 import org.zkoss.zhtml.Li;
@@ -20,7 +19,7 @@ public class ContextualMenu extends UtilityComposer {
 
     private static Logger logger = Logger.getLogger(ContextualMenu.class);
 
-    SettingsSupplementary settingsSupplementary;
+
     Vbox contents;
 
     public void refresh() {

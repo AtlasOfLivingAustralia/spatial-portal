@@ -9,7 +9,6 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -28,7 +27,6 @@ public class AddAreaController extends UtilityComposer {
 
     private static Logger logger = Logger.getLogger(AddAreaController.class);
 
-    SettingsSupplementary settingsSupplementary;
     RemoteLogger remoteLogger;
     Radiogroup cbAreaSelection;
     Radio ciWKT, ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView, ciRadiusManualSelection, ciMergeAreas;

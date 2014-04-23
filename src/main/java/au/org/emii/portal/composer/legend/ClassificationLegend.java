@@ -504,7 +504,9 @@ public class ClassificationLegend extends UtilityComposer {
                     legend_facets.put("Unknown", legend_lines.get(j)[0]);
                     legend_lines.get(j)[0] = "Unknown";
                 } else {
-                    String[] ss = legend_lines.get(j);
+                    String s = legend_lines.get(j)[0];
+
+                    String[] ss = s.substring(s.indexOf("[")).replace("[", "").replace("]", "").replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "").split(" TO ");
 
                     float[] cutoffs = lo.getNumericLegend().getCutoffFloats();
                     float[] cutoffMins = lo.getNumericLegend().getCutoffMinFloats();
@@ -513,12 +515,11 @@ public class ClassificationLegend extends UtilityComposer {
                     double max;
                     double nextmin;
                     if (ss.length > 1) {
-                        if (ss[1].equals("*")) {
-                            double v = Double.parseDouble(ss[3]);
+                        if (ss[0].equals("*")) {
                             min = cutoffMins[0];
                             max = cutoffs[0];
                             nextmin = cutoffMins.length > 1 ? cutoffMins[1] : cutoffMins[0];
-                        } else if (ss[3].equals("*")) {
+                        } else if (ss[1].equals("*")) {
                             min = cutoffMins[cutoffMins.length - 1];
                             max = gMaxValue;
                             nextmin = gMaxValue;
@@ -617,7 +618,7 @@ public class ClassificationLegend extends UtilityComposer {
                 } else {
                     String s = legend_lines.get(j)[0];
 
-                    String[] ss = s.replace("[", "").replace("]", "").replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "").split(" TO ");
+                    String[] ss = s.substring(s.indexOf("[")).replace("[", "").replace("]", "").replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "").split(" TO ");
 
                     float[] cutoffs = lo.getNumericLegend().getCutoffFloats();
                     float[] cutoffMins = lo.getNumericLegend().getCutoffMinFloats();

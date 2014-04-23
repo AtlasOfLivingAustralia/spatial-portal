@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.UserData;
 import au.org.ala.spatial.util.Zipper;
 import au.org.emii.portal.composer.UtilityComposer;
@@ -11,6 +12,9 @@ import au.org.emii.portal.menu.MapLayer;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.operation.valid.IsValidOp;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.data.DataStore;
@@ -91,7 +95,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
     }
 
     private void processMedia() {
-        Map input = Zipper.unzipFile(media.getName(), media.getStreamData(), getMapComposer().getSettingsSupplementary().getValue("analysis_output_dir") + "layers/");
+        Map input = Zipper.unzipFile(media.getName(), media.getStreamData(), CommonData.settings.getProperty("analysis_output_dir") + "layers/");
         String type = "";
         //String file = "";
         if (input.containsKey("type")) {
@@ -113,7 +117,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
         Process proc;
         try {
             logger.debug("Generating image via Runtime");
-            String shapeimageexe = getMapComposer().getSettingsSupplementary().getValue("shapeimagepath");
+            String shapeimageexe = CommonData.settings.getProperty("shapeimagepath");
             String shapeout = shapepath.substring(0, shapepath.lastIndexOf("/") + 1);
 
             if (StringUtils.isBlank(column)) {
@@ -344,28 +348,71 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             } else {
                 sbGeometryCollection.append(")");
                 wkt = "GEOMETRYCOLLECTION(" + sbGeometryCollection.toString();
+                getMapComposer().showMessage("Shape is invalid: " + "GEOMETRYCOLLECTION not supported.");
             }
 
             GeometryFactory gf = new GeometryFactory();
             GeometryCollection gcol = gf.createGeometryCollection(GeometryFactory.toGeometryArray(geoms));
 
-            MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layername, layername);
-            UserData ud = new UserData(layername);
-            ud.setFilename(media.getName());
+            String msg = "";
+            boolean invalid = false;
+            try {
+                WKTReader wktReader = new WKTReader();
+                com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
+                //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
+                //logger.debug("GEOMETRY TYPE: " + g.getGeometryType());
+                IsValidOp op = new IsValidOp(g);
+                if (!op.isValid()) {
+                    invalid = true;
+                    logger.warn("WKT is invalid." + op.getValidationError().getMessage());
+                    msg = op.getValidationError().getMessage();
+                    //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
+                } else if (g.isRectangle()) {
+                    //NC 20130319: When the shape is a rectangle ensure that the points a specified in the correct order.
+                    //get the new WKT for the rectangle will possibly need to change the order.
 
-            ud.setUploadedTimeInMs(System.currentTimeMillis());
-            ud.setType("shapefile");
+                    com.vividsolutions.jts.geom.Envelope envelope = g.getEnvelopeInternal();
+                    String wkt2 = "POLYGON(("
+                            + envelope.getMinX() + " " + envelope.getMinY() + ","
+                            + envelope.getMaxX() + " " + envelope.getMinY() + ","
+                            + envelope.getMaxX() + " " + envelope.getMaxY() + ","
+                            + envelope.getMinX() + " " + envelope.getMaxY() + ","
+                            + envelope.getMinX() + " " + envelope.getMinY() + "))";
+                    if (!wkt.equals(wkt2)) {
+                        logger.debug("NEW WKT for Rectangle: " + wkt);
+                        msg = "Shape is not in the correct order (anti-clockwise)";
+                        invalid = true;
+                    }
+                }
+                if (!invalid) {
+                    invalid = !op.isValid();
+                }
+            } catch (ParseException parseException) {
+                logger.error("error testing validity of uploaded shape file wkt", parseException);
+            }
 
-            String metadata = "";
-            metadata += "User uploaded Shapefile \n";
-            metadata += "Name: " + ud.getName() + " <br />\n";
-            metadata += "Filename: " + ud.getFilename() + " <br />\n";
-            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
-            metadata += "Selected polygons (fid): <br />\n";
-            metadata += "<ul>";
-            metadata += "</ul>";
+            if (invalid) {
+                getMapComposer().showMessage("Shape is invalid: " + msg);
+            } else {
 
-            mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
+                MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layername, layername);
+                UserData ud = new UserData(layername);
+                ud.setFilename(media.getName());
+
+                ud.setUploadedTimeInMs(System.currentTimeMillis());
+                ud.setType("shapefile");
+
+                String metadata = "";
+                metadata += "User uploaded Shapefile \n";
+                metadata += "Name: " + ud.getName() + " <br />\n";
+                metadata += "Filename: " + ud.getFilename() + " <br />\n";
+                metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+                metadata += "Selected polygons (fid): <br />\n";
+                metadata += "<ul>";
+                metadata += "</ul>";
+
+                mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
+            }
 
         } catch (IOException e) {
             logger.debug("IO Error retrieving geometry", e);

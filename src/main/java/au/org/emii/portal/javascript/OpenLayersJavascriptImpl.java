@@ -2,9 +2,9 @@ package au.org.emii.portal.javascript;
 
 import au.org.ala.spatial.data.BiocacheQuery;
 import au.org.ala.spatial.data.Query;
+import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.session.PortalSession;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.Validate;
 import au.org.emii.portal.value.BoundingBox;
@@ -17,6 +17,7 @@ import org.zkoss.zk.ui.util.Clients;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Support for generating javascript for use with an openlayers map held within
@@ -32,7 +33,6 @@ import java.util.List;
 public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     private LayerUtilities layerUtilities = null;
-    private SettingsSupplementary settingsSupplementary = null;
     protected final static Logger logger = Logger.getLogger(OpenLayersJavascriptImpl.class);
 
     @Override
@@ -180,31 +180,6 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         }
 
         execute(script);
-    }
-
-    @Override
-    public String defineImageMapLayer(MapLayer mapLayer) {
-        List<Double> bbox = mapLayer.getMapLayerMetadata().getBbox();
-
-        String script = "	mapLayers['" + mapLayer.getUniqueIdJS() + "'] = new OpenLayers.Layer.Image(" + "		'" + mapLayer.getNameJS() + "', " + "		'" + mapLayer.getUriJS() + "', "
-                + " 		new OpenLayers.Bounds(";
-
-        if (mapLayer.getSubType() == LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
-            script += "112" + "," + "-44" + "," + "154" + "," + "-9";
-        } else {
-            script += bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3);
-        }
-
-        script += "		).transform(map.displayProjection, map.projection), "
-                // + "             map.baseLayer.getExtent(),       "
-                + " 		new OpenLayers.Size(" + settingsSupplementary.getValue("animation_width") + "," + settingsSupplementary.getValue("animation_height") + "), " + "		{" + "			format: 'image/png', "
-                + "			opacity:" + mapLayer.getOpacity() + ", " + "			isBaseLayer : false, " + "			maxResolution: map.baseLayer.maxResolution, "
-                + "           minResolution: map.baseLayer.minResolution, " + "           projection: new OpenLayers.Projection('EPSG:3857'), " + "			resolutions: map.baseLayer.resolutions "
-                + "		} " + "	); " + // register for loading images...
-                "registerLayer(mapLayers['" + mapLayer.getUniqueIdJS() + "']);";
-
-        return wrapWithSafeToProceed(script);
-
     }
 
     @Override
@@ -360,11 +335,6 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 script.append(defineWKTMapLayer(mapLayer));
                 okToAddLayer = true;
                 break;
-            case LayerUtilities.IMAGELAYER:
-                script.append(defineImageMapLayer(mapLayer));
-                okToAddLayer = true;
-
-                break;
             default:
                 script.append(defineWMSMapLayer(mapLayer));
                 okToAddLayer = true;
@@ -507,7 +477,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             associativeArray = "baseLayers";
         } else {
             associativeArray = "mapLayers";
-            gutter = settingsSupplementary.getValue("openlayers_tile_gutter");
+            gutter = CommonData.settings.getProperty("openlayers_tile_gutter");
         }
         if (!Validate.empty(layer.getCql())) {
             params = "CQL_FILTER: '" + layer.getCqlJS() + "' ";
@@ -578,7 +548,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 // - do not set buffer
                 // it's used to set a margin of cached
                 // tiles around the viewport!!
-                associativeArray + "['" + layer.getUniqueIdJS() + "']" + ".getFeatureInfoBuffer =" + settingsSupplementary.getValue("get_feature_info_buffer") + "; ";
+                associativeArray + "['" + layer.getUniqueIdJS() + "']" + ".getFeatureInfoBuffer =" + CommonData.settings.getProperty("get_feature_info_buffer") + "; ";
         // add ws and bs urls for species layers
         if (layer.getSpeciesQuery() != null) {
             Query q = layer.getSpeciesQuery();
@@ -756,14 +726,6 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         this.layerUtilities = layerUtilities;
     }
 
-    public SettingsSupplementary getSettingsSupplementary() {
-        return settingsSupplementary;
-    }
-
-    @Required
-    public void setSettingsSupplementary(SettingsSupplementary settingsSupplementary) {
-        this.settingsSupplementary = settingsSupplementary;
-    }
 
     private String additionalScript = "";
 

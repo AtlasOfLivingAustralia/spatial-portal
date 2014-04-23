@@ -51,7 +51,7 @@ public class ProgressController extends UtilityComposer {
         pid = pid_;
         tbPid.setValue(pid_);
         this.name = name;
-        this.setTitle(name);
+        ((Caption) getFellow("cTitle")).setLabel(name);
         this.background = background;
 
         if (this.background) {

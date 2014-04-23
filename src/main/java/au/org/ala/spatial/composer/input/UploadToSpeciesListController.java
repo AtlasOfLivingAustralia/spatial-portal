@@ -3,6 +3,7 @@ package au.org.ala.spatial.composer.input;
 import au.org.ala.spatial.composer.add.AddSpeciesController;
 import au.org.ala.spatial.composer.tool.ToolComposer;
 import au.org.ala.spatial.data.SpeciesListUtil;
+import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.UtilityComposer;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
@@ -37,7 +38,7 @@ public class UploadToSpeciesListController extends UtilityComposer {
         if (tbName.getValue().length() > 0) {
             String name = tbName.getValue();
             String description = tbDesc.getValue();
-            dataResourceUid = SpeciesListUtil.createNewList(name, species, description, null, getMapComposer().getCookieValue("ALA-Auth"));
+            dataResourceUid = SpeciesListUtil.createNewList(name, species, description, null, Util.getUserEmail());
             logger.debug("The data resource uid: " + dataResourceUid);
             if (this.getParent() instanceof AddSpeciesController) {
                 ((AddSpeciesController) this.getParent()).updateSpeciesListMessage(dataResourceUid);

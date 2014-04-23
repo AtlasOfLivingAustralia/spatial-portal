@@ -2,8 +2,11 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addfacetwindow" use="au.org.ala.spatial.composer.add.AddFacetController"
-    apply="au.org.ala.spatial.composer.add.AddFacetController" width="758px" height="650px"
-    xmlns:n="http://www.zkoss.org/2005/zk/native">
+    apply="au.org.ala.spatial.composer.add.AddFacetController" style="overflow:visible;"
+    xmlns:n="http://www.zkoss.org/2005/zk/native"
+    width="700px"
+    height="700px"
+>
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -14,9 +17,11 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="addfacetwindow.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('layers-add-to-map')" style="display: inline" />
+
+        <caption id="cTitle" />
         <separator />
         <hbox id="stepCounter">
-            <vbox style="padding-left: 25px">
+            <vbox>
                 <grid width="150px">
                     <columns>
                         <column width="120px"/>
@@ -34,8 +39,8 @@
                     </rows>        
                 </grid>
             </vbox>
-            <vbox style="padding-left: 5px" >
-                <div id="atstep1" visible="true" zclass="first optional" sclass="atstep" style="padding:5px;">
+            <vbox >
+                <div id="atstep1" visible="true" zclass="first optional" sclass="atstep" >
                     <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                     <label id="atstep1_label" value="" />
                     <separator />
@@ -45,46 +50,29 @@
                         
                     </vbox>
                     <separator />
-                    <radiogroup id="rgArea" orient="vertical" onOK="addfacetwindow.onClick$btnOk(null)">
+                    <radiogroup id="rgArea" orient="vertical" onOK="addfacetwindow.onClick$btnOk(null)" height="500px">
                         <radio id="rAreaCurrent" label="Current extent" value="current"/>
                         <radio id="rAreaAustralia" label="Australia" value="australia"/>
                         <radio id="rAreaWorld" label="World" value="world" checked="true"/>
                     </radiogroup>
                 </div>
-                <div id="atstep2" visible="false" zclass="last optional" sclass="atstep"  width="560px" height="450px" style="padding:5px;">
+                <div id="atstep2" visible="false" zclass="last optional" sclass="atstep" >
                     <label id="atstep2_desc" value="" sclass="wSubLabel"/>
                     <label id="atstep2_label" value="" />
                 <div id="colourChooser">
                     <hbox>
                         <label value="Facet" style="font-weight:bold"/>
                         <separator orient="vertical" />
-                        <combobox id="cbColour" width="200px" autodrop="true">
+                        <div class="input-group">
+                            <combobox id="cbColour" width="300px" autodrop="true" >
                         </combobox>
-                    </hbox>
-                    <hbox>
+                        </div>
                         <a href="resources/FacetFields.htm" target="_blank" label="Facet Fields and definitions"/>
                     </hbox>
                 </div>
 
 
-                            <div id="divContinous" visible="false">
-                            <separator />
-                               <label id="dlabel" width="350px" />
-                               <checkbox id="cbContinousRange" label="Use range" checked="false" />
-                                <!--rangeslider id="dslider" width="350px" /-->
-                                <hbox>
-                                    <doublebox id="dmin" />
-                                    <vbox>
-                                        <separator height="10px" />
-                                        <label value=" TO " style="" />
-                                    </vbox>
-                                    <doublebox id="dmax" />
-                                    <button id="dbutton" label="Select" sclass="gobutton" />
-                                </hbox>
-                                <checkbox id="dunknown" label="Select Unknown" checked="false" />
-                                <label id="lblOccurrencesSelected" width="350px" />
-                                <separator />
-                             </div>
+
 
 
 
@@ -92,32 +80,61 @@
              <div width="60px" >
                         <label value="Legend" style="font-weight:bold" />
                     </div>
-            <!--div id="dCreateButtons"  height="20px" style="bottom: 0px; right: 100px 5px 5px 100px;padding: 0px 5px 5px 0px;"-->
-            <div id="dCreateButtons"  height="25px" align="right">
-                <button id="selectAll" label="Select all" sclass="goButton" />
-                <button id="clearSelection" label="Clear selection" sclass="goButton"/>
-            </div>
-            <div height="350px">
+
+
+            <div height="450px">
             <listbox sclass="legendlist2" id="legend" width="525px" vflex="true"  mold="paging" autopaging="true" >
                 <listhead sizable="true">
                     <listheader label="   " width="25px" id="lhFirstColumn" />
-                    <listheader label="class" width="300px" id="lhSecondColumn"></listheader>
+                    <listheader label="class" align="center"  width="300px" id="lhSecondColumn"></listheader>
                     <listheader label="colour" width="0px" id="lhThirdColumn" ></listheader>
-                    <listheader label="count" width="150px" align="right" id="lhFourthColumn"></listheader>
+                    <listheader label="count" width="150px" align="center" id="lhFourthColumn"></listheader>
                 </listhead>
             </listbox>
 
             </div>
+             <div id="dCreateButtons"  height="25px" align="left">
+
+                <div class="btn-group" style="float:left;">
+                    <button id="selectAll" label="Select all"  style="btn-small"  />
+                    <button id="clearSelection" style="btn-small" label="Clear selection" />
+                </div>
 
             </div>
- <div sclass="wizButtonContainer">
-                                    <hbox>
-                                        <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
-                                        <button sclass="goButton" label="Cancel" id="btnCancel" />
-                                        <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
-                                        <button sclass="goButton" label="Next &gt;" id="btnOk" disabled="true" />
-                                    </hbox>
-                                </div>
+
+            </div>
+
+            <div id="divContinous" visible="false">
+                                        <separator />
+                                           <checkbox id="cbContinousRange" label="Use range" checked="false" />
+                                           <label id="dlabel" width="350px" />
+
+                                            <!--rangeslider id="dslider" width="350px" /-->
+
+                                             <div class="input-group">
+                                             <hbox>
+                                                <doublebox class="form-control" id="dmin" width="70px"/>
+                                                    <label value=" TO " style="" />
+                                                <doublebox class="form-control" id="dmax" width="70px" />
+
+
+
+                                                <checkbox id="dunknown" label="Select Unknown" checked="false" />
+
+                                                <div style="btn-group">
+                                                    <button id="dbutton" label="Apply" />
+                                                </div>
+                                            </hbox>
+                                                                            </div>
+                                            <label id="lblOccurrencesSelected" width="350px" />
+                                            <separator />
+                                         </div>
+            <div class="btn-group" style="position:absolute; bottom:10px; right:10px;">
+                <button label="Cancel" id="btnCancel" />
+
+                <button label="&lt; Back" id="btnBack" disabled="true" />
+                <button class="btn-primary" label="Next >" id="btnOk" disabled="false" />
+        </div>
 
             </vbox>
         </hbox>

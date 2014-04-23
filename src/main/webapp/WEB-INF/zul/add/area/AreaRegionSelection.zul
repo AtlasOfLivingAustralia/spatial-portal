@@ -1,7 +1,9 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="arearegionselectionwindow" use="au.org.ala.spatial.composer.add.area.AreaRegionSelection"
-            apply="au.org.ala.spatial.composer.add.area.AreaRegionSelection" width="400px"  xmlns:n="http://www.zkoss.org/2005/zk/native" >
+            apply="au.org.ala.spatial.composer.add.area.AreaRegionSelection" width="400px"  xmlns:n="http://www.zkoss.org/2005/zk/native"
+             style="position:absolute;left:10px;top:10px;overflow:visible"
+             >
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -14,6 +16,7 @@
 
         <caption label="Gazetteer polygon" />
         <vbox width="100%">
+        <div class="input-group" >
             <separator />
             <label sclass="wLabel" value="Enter a place name"/>
             <separator />
@@ -36,14 +39,15 @@
             <checkbox id="displayAsWms" label="display as WMS layer" visible="false" checked="true" />
             <separator />
 
+</div>
         </vbox>
         <separator />
-        <div sclass="wButtons wizButtonContainer">
-            <hbox>                
-                <button sclass="goButton" label="Cancel" id="btnCancel"/>
-                <button sclass="goButton" label="Next" id="btnOk" disabled="true" />
-            </hbox>
-        </div>
+
+        <div class="btn-group" >
+                                        <button label="Cancel" id="btnCancel" />
+                                        <button class="btn-primary" label="Next >" id="btnOk"/>
+                                </div>
+
 
     </window>
 </zk>

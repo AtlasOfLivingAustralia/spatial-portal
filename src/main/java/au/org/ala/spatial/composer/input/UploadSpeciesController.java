@@ -6,12 +6,12 @@ import au.org.ala.spatial.composer.add.AddSpeciesInArea;
 import au.org.ala.spatial.composer.tool.ToolComposer;
 import au.org.ala.spatial.data.Query;
 import au.org.ala.spatial.data.UserDataQuery;
+import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.UserData;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -45,7 +45,6 @@ public class UploadSpeciesController extends UtilityComposer {
     private static Logger logger = Logger.getLogger(UploadSpeciesController.class);
 
     Button btnOk;
-    SettingsSupplementary settingsSupplementary;
     Textbox tbDesc;
     Textbox tbName;
     Button fileUpload;
@@ -236,7 +235,7 @@ public class UploadSpeciesController extends UtilityComposer {
         // if it throw's an error, then it's not a valid csv file
 
         StringBuilder sbProcessUrl = new StringBuilder();
-        sbProcessUrl.append(/*CommonData.layersServer*/ "http://localhost:8080/layers-service" + "/userdata/add");
+        sbProcessUrl.append(CommonData.layersServer + "/userdata/add");
 
         //TODO: get signed in user's id
         sbProcessUrl.append("?user_id=" + "anonymous");
@@ -336,10 +335,10 @@ public class UploadSpeciesController extends UtilityComposer {
         tbInstructions.setValue(instructions);
         if (instructions.contains("longitude")) {
             lsidinfo.setVisible(false);
-            this.setTitle("Import points");
+            ((Caption) getFellow("cTitle")).setLabel("Import points");
         } else {
             lsidinfo.setVisible(true);
-            this.setTitle("Import assemblage");
+            ((Caption) getFellow("cTitle")).setLabel("Import assemblage");
         }
     }
 

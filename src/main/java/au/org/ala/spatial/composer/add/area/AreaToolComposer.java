@@ -10,12 +10,12 @@ import au.org.ala.spatial.data.BiocacheQuery;
 import au.org.ala.spatial.data.Query;
 import au.org.ala.spatial.data.QueryUtil;
 import au.org.ala.spatial.logger.RemoteLogger;
+import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SelectedArea;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Component;
@@ -31,7 +31,6 @@ public class AreaToolComposer extends UtilityComposer {
 
     private static Logger logger = Logger.getLogger(AreaToolComposer.class);
     String layerName;
-    SettingsSupplementary settingsSupplementary;
     RemoteLogger remoteLogger;
     boolean isAnalysisChild = false;
     boolean isFacetChild = false;
@@ -150,7 +149,10 @@ public class AreaToolComposer extends UtilityComposer {
                 }
                 if (getMapComposer().getMapLayer(layerName) != null) {
                     String displayName = getMapComposer().getMapLayer(layerName).getDisplayName();
-                    remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, wkt);
+                    try {
+                        remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, wkt);
+                    } catch (Exception e) {
+                    }
                 }
             }
         } else {
@@ -168,7 +170,10 @@ public class AreaToolComposer extends UtilityComposer {
                 } else {
                     getMapComposer().removeAttribute("activeLayerName");
                 }
-                remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, getMapComposer().getMapLayer(layerName).getWKT(), activeLayerName, fromLayer);
+                try {
+                    remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, getMapComposer().getMapLayer(layerName).getWKT(), activeLayerName, fromLayer);
+                } catch (Exception e) {
+                }
             }
         }
     }
@@ -188,14 +193,14 @@ public class AreaToolComposer extends UtilityComposer {
             int results_count_occurrences = sq.getOccurrenceCount();
 
             //test limit
-            if (results_count_occurrences > 0 && results_count_occurrences <= getMapComposer().getSettingsSupplementary().getValueAsInt("max_record_count_map")) {
+            if (results_count_occurrences > 0 && results_count_occurrences <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
                 String activeAreaLayerName = layers.get(0).getDisplayName();
                 getMapComposer().mapSpecies(sq, "Occurrences in " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, wkt,
                         -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
             } else {
                 getMapComposer().showMessage(results_count_occurrences
                         + " occurrences in this area.\r\nSelect an area with fewer than "
-                        + settingsSupplementary.getValueAsInt("max_record_count_map")
+                        + CommonData.settings.getProperty("max_record_count_map")
                         + " occurrences");
             }
         } catch (Exception e) {

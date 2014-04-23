@@ -1,66 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
-    <display-name>ALA Spatial Portal</display-name>
-
-
-    <!-- //// -->
-    <!-- ZK -->
-    <listener>
-        <description>ZK listener for cleanup when a session is destroyed</description>
-        <listener-class>org.zkoss.zk.ui.http.HttpSessionListener</listener-class>
-    </listener>
-    <servlet>
-        <description>ZK loader for evaluating ZUML pages</description>
-        <servlet-name>zkLoader</servlet-name>
-        <servlet-class>org.zkoss.zk.ui.http.DHtmlLayoutServlet</servlet-class>
-        <!--
-            Must. Specifies URI of the update engine (DHtmlUpdateServlet). It
-            must be the same as <url-pattern> for the update engine.
-        -->
-        <init-param>
-            <param-name>update-uri</param-name>
-            <param-value>/zkau</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-        <!-- MUST -->
-    </servlet>
-
-    <servlet>
-        <description>The asynchronous update engine for ZK</description>
-        <servlet-name>auEngine</servlet-name>
-        <servlet-class>org.zkoss.zk.au.http.DHtmlUpdateServlet</servlet-class>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>zkLoader</servlet-name>
-        <url-pattern>*.zul</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>zkLoader</servlet-name>
-        <url-pattern>*.zhtml</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>auEngine</servlet-name>
-        <url-pattern>/zkau/*</url-pattern>
-    </servlet-mapping>
-
-    <!-- //// -->
-
-
-    <context-param>
-        <description>Spring config file</description>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>classpath:au/org/emii/portal/application-config.xml</param-value>
-    </context-param>
-
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+  <display-name>zkspringcoresec</display-name>
+  <servlet>
+    <servlet-name>zkLoader</servlet-name>
+    <servlet-class>
+			org.zkoss.zk.ui.http.DHtmlLayoutServlet
+		</servlet-class>
+    <init-param>
+      <param-name>update-uri</param-name>
+      <param-value>/zkau</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>
+			/WEB-INF/applicationContext.xml
+		</param-value>
+  </context-param>
+  <listener>
+    <listener-class>org.zkoss.spring.web.context.CoreContextListener</listener-class>
+  </listener>
+  <listener>
+    <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+  </listener>
+  <listener>
+    <description>Used to cleanup when a session is destroyed</description>
+    <display-name>ZK Session Cleaner</display-name>
+    <listener-class>org.zkoss.zk.ui.http.HttpSessionListener</listener-class>
+  </listener>
+  <listener>
+    <listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
+  </listener>
+	<context-param>
+		<param-name>log4jConfigLocation</param-name>
+		<param-value>classpath:log4j.xml</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+	</listener>
     <listener>
         <description>Load the application config file, then pass control to spring to merge config file keys into bean
             definitions and create application context
         </description>
         <listener-class>au.org.emii.portal.web.ApplicationInit</listener-class>
     </listener>
+
+
+
+
+  <servlet>
+    <servlet-name>auEngine</servlet-name>
+    <servlet-class>
+			org.zkoss.zk.au.http.DHtmlUpdateServlet
+		</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>zkLoader</servlet-name>
+    <url-pattern>*.zul</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>zkLoader</servlet-name>
+    <url-pattern>*.zhtml</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>auEngine</servlet-name>
+    <url-pattern>/zkau/*</url-pattern>
+  </servlet-mapping>
+
 
     <servlet>
         <description>Externalise a remote request so that squid can cache it</description>
@@ -72,14 +79,6 @@
         <servlet-name>remoteRequestServlet</servlet-name>
         <url-pattern>/RemoteRequest</url-pattern>
     </servlet-mapping>
-
-    <welcome-file-list>
-        <welcome-file>index.zul</welcome-file>
-    </welcome-file-list>
-    <error-page>
-        <error-code>500</error-code>
-        <location>/WEB-INF/jsp/Error.jsp</location>
-    </error-page>
 
     <servlet>
         <description>The servlet loads the DSP pages.</description>
@@ -106,5 +105,108 @@
         <servlet-name>Spring MVC Dispatcher Servlet</servlet-name>
         <url-pattern>/ws/*</url-pattern>
     </servlet-mapping>
+
+
+
+    <welcome-file-list>
+        <welcome-file>index.zul</welcome-file>
+    </welcome-file-list>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/WEB-INF/jsp/Error.jsp</location>
+    </error-page>
+
+    <!-- CAS Authentication related properties -->
+
+    <context-param>
+        <!-- Parameter used by CAS filters -->
+        <param-name>serverName</param-name>
+        <param-value>http://spatial-dev.ala.org.au</param-value>
+    </context-param>
+
+    <!-- CAS filter context path - for local development - there is no context for production deployment -->
+    <context-param>
+        <param-name>contextPath</param-name>
+        <param-value>/</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>casServerName</param-name>
+        <param-value>https://auth.ala.org.au/cas</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>authenticateOnlyIfLoggedInFilterPattern</param-name>
+        <param-value>.*, /zkau, /webportal/zkau, /ws/pgtCallback</param-value>
+    </context-param>
+
+    <filter>
+        <filter-name>CAS Validation Filter</filter-name>
+        <filter-class>au.org.ala.cas.client.UriFilter</filter-class>
+        <init-param>
+            <param-name>filterClass</param-name>
+            <param-value>org.jasig.cas.client.validation.Cas20ProxyReceivingTicketValidationFilter</param-value>
+        </init-param>
+        <init-param>
+            <param-name>casServerUrlPrefix</param-name>
+            <param-value>https://auth.ala.org.au/cas</param-value>
+        </init-param>
+        <!--init-param>
+            <param-name>proxyReceptorUrl</param-name>
+            <param-value>/ws/pgtCallback</param-value>
+        </init-param>
+        <init-param>
+            <param-name>proxyCallbackUrl</param-name>
+            <param-value>https://localhost:8444/webportal/ws/pgtCallback</param-value>
+        </init-param-->
+
+        <init-param>
+            <param-name>proxyGrantingTicketStorageClass</param-name>
+            <param-value>org.jasig.cas.client.proxy.ProxyGrantingTicketStorageImpl</param-value>
+        </init-param>
+
+    </filter>
+
+    <!-- CAS Authentication Service filters -->
+    <filter>
+        <filter-name>CAS Authentication Filter</filter-name>
+        <filter-class>au.org.ala.cas.client.UriFilter</filter-class>
+        <init-param>
+            <param-name>filterClass</param-name>
+            <param-value>org.jasig.cas.client.authentication.AuthenticationFilter</param-value>
+        </init-param>
+        <init-param>
+            <param-name>casServerLoginUrl</param-name>
+            <param-value>https://auth.ala.org.au/cas/login</param-value>
+        </init-param>
+        <init-param>
+            <param-name>gateway</param-name>
+            <param-value>false</param-value>
+        </init-param>
+    </filter>
+
+    <filter>
+        <filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
+        <filter-class>au.org.ala.cas.client.UriFilter</filter-class>
+        <init-param>
+            <param-name>filterClass</param-name>
+            <param-value>au.org.ala.cas.client.AlaHttpServletRequestWrapperFilter</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>CAS Authentication Filter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>CAS Validation Filter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
 </web-app>

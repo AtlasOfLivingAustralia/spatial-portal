@@ -4,6 +4,7 @@
     <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
     <window id="addwmslayerwindow" apply="au.org.ala.spatial.composer.add.AddWMSLayerComposer"
             use="au.org.ala.spatial.composer.add.AddWMSLayerComposer" width="810px" height="350px"
+            style="overflow:visible"
             xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -16,12 +17,10 @@
         <a sclass="fancybox-close" onClick="addwmslayerwindow.detach()" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('layers-add-to-map')" style="display: inline" />
         
-        
-        <div sclass="highlighted">
+        <caption label="Add WMS Layer" />
+        <separator />
 
-            <div align="right" visible="false">
-                <button sclass="goButton" label="Hide" id="hideExtLayersButton" />
-            </div>
+        <div sclass="highlighted">
 	<!--  label -->
             <div>
                 <checkbox id="nameAutomatically" 
@@ -97,9 +96,9 @@
                     </div>	
                 </div>
 
-                <div align="right">
-                    <button sclass="goButton" id="selectLayersButton" label="Select Layers" />
-                    <button sclass="goButton" id="addAllLayersButton" label="Add All" visible="false" />
+                <div class="btn-group">
+                    <button class="btn-small" id="selectLayersButton" label="Select Layers" />
+                    <button class="btn-small" id="addAllLayersButton" label="Add All" visible="false" />
                 </div> 	
 	
 	   	<!--  Select layers -->
@@ -133,12 +132,10 @@
 	<!--  result label -->
             <label value="" visible="false" id="resultLabel" style="color: green; font-weight:bold" />
         </div>
-        <div sclass="wizButtonContainer">
-            <hbox>
-                <button sclass="goButton"  id="addDiscoveredLayerButton" label="Add To Map" visible="false" />
-                <button sclass="goButton"  id="addManualLayerButton" label="Add To Map" visible="false" />
-                <button sclass="goButton" label="Close" id="btnCancel" onClick="addwmslayerwindow.detach()" />
-            </hbox>
-        </div>
+        <div class="btn-group" style="position:absolute;bottom:10px;right:10px;">
+                <button   label="Close" id="btnCancel" onClick="addwmslayerwindow.detach()" />
+                <button class="btn-primary" id="addDiscoveredLayerButton" label="Add To Map" visible="false" />
+                <button class="btn-primary" id="addManualLayerButton" label="Add To Map" visible="false" />
+           </div>
     </window>
 </zk>

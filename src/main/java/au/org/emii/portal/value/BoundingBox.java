@@ -51,14 +51,6 @@ public class BoundingBox implements Serializable, Cloneable {
         this.maxLongitude = maxLongitude;
     }
 
-
-    public void copyFrom(au.org.emii.portal.config.xmlbeans.BoundingBox boundingBox) {
-        setMinLatitude(boundingBox.getMinLatitude());
-        setMaxLatitude(boundingBox.getMaxLatitude());
-        setMinLongitude(boundingBox.getMinLongitude());
-        setMaxLongitude(boundingBox.getMaxLongitude());
-    }
-
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }

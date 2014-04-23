@@ -13,7 +13,7 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.GenericAutowireAutoforwardComposer;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
+
 import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.util.LayerUtilities;
 import org.ala.layers.legend.LegendObject;
@@ -44,8 +44,6 @@ import java.util.Map;
 public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardComposer {
 
     private static Logger logger = Logger.getLogger(LayerLegendGeneralComposer.class);
-
-    SettingsSupplementary settingsSupplementary = null;
 
     Slider opacitySlider;
     Label opacityLabel;

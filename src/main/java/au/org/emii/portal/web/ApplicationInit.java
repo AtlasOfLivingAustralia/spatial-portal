@@ -25,7 +25,6 @@ public class ApplicationInit extends ContextLoaderListener {
     public static final String CONFIGURATION_LOADER_ATTRIBUTE = "configurationLoader";
     public static final String CONFIGURATION_LOADER_THREAD_ATTRIBUTE = "configurationLoaderThread";
     public static final String PORTAL_MASTER_SESSION_ATTRIBUTE = "masterPortalSession";
-    public static final String CONFIG_DIR_JVM_ARG = "WEBPORTAL_CONFIG_DIR";
 
     /**
      * Logger instance
@@ -40,40 +39,40 @@ public class ApplicationInit extends ContextLoaderListener {
 
         // quick sanity check that JVM arg spring will look for is really there
         // so we can give a friendlier error message than spring does
-        if (System.getProperty(CONFIG_DIR_JVM_ARG) == null) {
-            // If config dir not set, no point setting up log4j - will fail so use
-            // the default log4j.xml file in the classpath to print the following
-            // error message
-            logger.error(
-                    "Config file location not set.  You must supply the full " +
-                            "path to a web portal configuration directory by starting your " +
-                            "JVM with -D" + CONFIG_DIR_JVM_ARG + "=/full/path/to/config/dir");
-        } else {
+//        if (System.getProperty(CONFIG_DIR_JVM_ARG) == null) {
+//            // If config dir not set, no point setting up log4j - will fail so use
+//            // the default log4j.xml file in the classpath to print the following
+//            // error message
+//            logger.error(
+//                    "Config file location not set.  You must supply the full " +
+//                            "path to a web portal configuration directory by starting your " +
+//                            "JVM with -D" + CONFIG_DIR_JVM_ARG + "=/full/path/to/config/dir");
+//        } else {
 
-            // now the spring context gets loaded by superclass...
-            super.contextInitialized(sce);
-            ServletContext servletContext = sce.getServletContext();
-            WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+        // now the spring context gets loaded by superclass...
+        super.contextInitialized(sce);
+        ServletContext servletContext = sce.getServletContext();
+        WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
 
             /* configurationLoader is a daemon thread that runs for the duration
              * of the application - it is set to periodically reload the configuration.
              * We store the both the thread and the runnable in application scope so
              * we can kill the thread cleanly
              */
-            ConfigurationLoaderStage1 configurationLoader = context.getBean(ConfigurationLoaderStage1.class);
-            configurationLoader.setServletContext(servletContext);
-            servletContext.setAttribute(CONFIGURATION_LOADER_ATTRIBUTE, configurationLoader);
-            Thread configurationLoaderThread = new Thread(configurationLoader);
+        ConfigurationLoaderStage1 configurationLoader = context.getBean(ConfigurationLoaderStage1.class);
+        configurationLoader.setServletContext(servletContext);
+        servletContext.setAttribute(CONFIGURATION_LOADER_ATTRIBUTE, configurationLoader);
+        Thread configurationLoaderThread = new Thread(configurationLoader);
 
-            // set the name for debugging purposes.  We tostring the thread object
-            // so that the name will contain the memory address so we can distinguish
-            // between diferent instances of the same thread should this happen.
-            configurationLoaderThread.setName("ConfigurationLoader-instance-" + configurationLoaderThread.toString());
-            servletContext.setAttribute(CONFIGURATION_LOADER_THREAD_ATTRIBUTE, configurationLoaderThread);
+        // set the name for debugging purposes.  We tostring the thread object
+        // so that the name will contain the memory address so we can distinguish
+        // between diferent instances of the same thread should this happen.
+        configurationLoaderThread.setName("ConfigurationLoader-instance-" + configurationLoaderThread.toString());
+        servletContext.setAttribute(CONFIGURATION_LOADER_THREAD_ATTRIBUTE, configurationLoaderThread);
 
-            // start the tread running and return control immediately
-            configurationLoaderThread.start();
-        }
+        // start the tread running and return control immediately
+        configurationLoaderThread.start();
+//        }
 
         //NC 2013-11-26: initialise the ZK Labels to include biocache WS i18n version. 
         logger.debug("REGISTERING Biocache Labeller...");

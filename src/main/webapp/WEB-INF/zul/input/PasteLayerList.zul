@@ -2,7 +2,7 @@
 <?component name="uploadSpecies" macro-uri="/WEB-INF/zul/input/UploadSpecies.zul"?>
 <zk>
      <window id="pastelayerlist" use="au.org.ala.spatial.composer.input.PasteLayerListController"
-    apply="au.org.ala.spatial.composer.input.PasteLayerListController" width="580px" height="450px" xmlns:n="http://www.zkoss.org/2005/zk/native">
+    apply="au.org.ala.spatial.composer.input.PasteLayerListController" width="580px" style="overflow:visible" xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -14,7 +14,7 @@
         <a sclass="fancybox-close" onClick="pastelayerlist.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('species-add-to-map')" style="display: inline" />
         <caption label="Paste in a layer list" sclass="caption" />
-        <div style="margin-left:20px" width="520px" >
+        <div style="width:520px" >
 
             <separator/>
             <label value="Enter a comma separated list of layer Short names." />
@@ -25,11 +25,10 @@
         </div>
         <separator/>
         <separator/>
-        <div sclass="wButtons wizButtonContainer">
-            <hbox>
-                <button sclass="goButton" label="Cancel" id="btnCancel"/>
-                <button sclass="goButton" label="Next" id="btnOk"/>
-            </hbox>
+        <div class="btn-group" >
+                <button label="Cancel" id="btnCancel"/>
+                <button class="btn-primary"  label="Next" id="btnOk"/>
+
         </div>
         <separator />
     </window>

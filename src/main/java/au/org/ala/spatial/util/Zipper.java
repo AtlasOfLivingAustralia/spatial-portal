@@ -114,7 +114,7 @@ public class Zipper {
                     continue;
                 }
                 FileInputStream fis = new FileInputStream(f);
-                String fileToAdd = f.getAbsolutePath().substring(parentDir.length() + 1);
+                String fileToAdd = f.getName();
                 ZipEntry anEntry = new ZipEntry(fileToAdd);
                 logger.debug("adding: " + anEntry.getName());
                 zos.putNextEntry(anEntry);

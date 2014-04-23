@@ -12,8 +12,11 @@ import org.ala.layers.legend.QueryField;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * common data store
@@ -96,7 +99,7 @@ public class CommonData {
     static public String speciesListServer;
     static public String collectoryServer;
     static public int maxQLength;
-    static public Map<String, String> settings;
+    static public Properties settings;
     //lsid counts, for species autocomplete
     static public LsidCounts lsidCounts;
     static public String biocacheQc;
@@ -117,42 +120,42 @@ public class CommonData {
     /*
      * initialize common data from geoserver and satserver
      */
-    static public void init(Map<String, String> settings) {
+    static public void init(Properties settings) {
         CommonData.settings = settings;
 
         //Common
-        satServer = settings.get(SAT_URL);
-        geoServer = settings.get(GEOSERVER_URL);
-        layersServer = settings.get(LAYERS_URL);
-        webportalServer = settings.get(WEBPORTAL_URL);
-        bieServer = settings.get(BIE_URL);
-        biocacheServer = settings.get(BIOCACHE_SERVICE_URL);
-        biocacheWebServer = settings.get(BIOCACHE_WEBAPP_URL);
-        speciesListServer = settings.get(SPECIES_LIST_URL);
-        collectoryServer = settings.get(COLLECTORY_URL);
-        defaultFieldString = settings.get(DEFAULT_UPLOAD_SAMPLING);
-        maxQLength = Integer.parseInt(settings.get(MAX_Q_LENGTH));
+        satServer = settings.getProperty(SAT_URL);
+        geoServer = settings.getProperty(GEOSERVER_URL);
+        layersServer = settings.getProperty(LAYERS_URL);
+        webportalServer = settings.getProperty(WEBPORTAL_URL);
+        bieServer = settings.getProperty(BIE_URL);
+        biocacheServer = settings.getProperty(BIOCACHE_SERVICE_URL);
+        biocacheWebServer = settings.getProperty(BIOCACHE_WEBAPP_URL);
+        speciesListServer = settings.getProperty(SPECIES_LIST_URL);
+        collectoryServer = settings.getProperty(COLLECTORY_URL);
+        defaultFieldString = settings.getProperty(DEFAULT_UPLOAD_SAMPLING);
+        maxQLength = Integer.parseInt(settings.getProperty(MAX_Q_LENGTH));
         //handle the situation where there is no config value for endemic area and use default value of 50,000km
-        String maxendemic = settings.get(MAX_AREA_FOR_ENDEMIC) != null ? settings.get(MAX_AREA_FOR_ENDEMIC) : "50000";
+        String maxendemic = settings.getProperty(MAX_AREA_FOR_ENDEMIC) != null ? settings.getProperty(MAX_AREA_FOR_ENDEMIC) : "50000";
         maxEndemicArea = Integer.parseInt(maxendemic);
-        biocacheQc = settings.get(BIOCACHE_QC);
+        biocacheQc = settings.getProperty(BIOCACHE_QC);
         if (biocacheQc == null) {
             biocacheQc = "";
         }
-        wkhtmltoimage_cmd = settings.get("wkhtmltoimage_cmd");
-        convert_cmd = settings.get("convert_cmd");
-        print_output_path = settings.get("print_output_path");
-        print_output_url = settings.get("print_output_url");
-        facetNameExceptions = parseFacetNameExceptions(settings.get("facet_name_exceptions"));
-        customFacets = settings.containsKey(CUSTOM_FACETS) ? settings.get(CUSTOM_FACETS).split(",") : new String[]{};
-        ignoredFacets = Arrays.asList(settings.containsKey(IGNORED_FACETS) ? settings.get(IGNORED_FACETS).split(",") : new String[]{});
-        areaReportFacets = settings.containsKey(AREA_REPORT_FACETS) ? settings.get(AREA_REPORT_FACETS).split(",") : new String[]{};
+        wkhtmltoimage_cmd = settings.getProperty("wkhtmltoimage_cmd");
+        convert_cmd = settings.getProperty("convert_cmd");
+        print_output_path = settings.getProperty("print_output_path");
+        print_output_url = settings.getProperty("print_output_url");
+        facetNameExceptions = parseFacetNameExceptions(settings.getProperty("facet_name_exceptions"));
+        customFacets = settings.containsKey(CUSTOM_FACETS) ? settings.getProperty(CUSTOM_FACETS).split(",") : new String[]{};
+        ignoredFacets = Arrays.asList(settings.containsKey(IGNORED_FACETS) ? settings.getProperty(IGNORED_FACETS).split(",") : new String[]{});
+        areaReportFacets = settings.containsKey(AREA_REPORT_FACETS) ? settings.getProperty(AREA_REPORT_FACETS).split(",") : new String[]{};
         if (settings.containsKey(EXTRA_DOWNLOAD_FIELDS)) {
-            extraDownloadFields = settings.get(EXTRA_DOWNLOAD_FIELDS);
+            extraDownloadFields = settings.getProperty(EXTRA_DOWNLOAD_FIELDS);
         }
 
         if (settings.containsKey(DISPLAY_POINTS_OF_INTEREST)) {
-            displayPointsOfInterest = Boolean.parseBoolean(settings.get(DISPLAY_POINTS_OF_INTEREST));
+            displayPointsOfInterest = Boolean.parseBoolean(settings.getProperty(DISPLAY_POINTS_OF_INTEREST));
         } else {
             displayPointsOfInterest = false;
         }
@@ -785,8 +788,8 @@ public class CommonData {
     static void setupAnalysisLayerSets() {
         ArrayList<LayerSelection> a = new ArrayList<LayerSelection>();
         try {
-            if (CommonData.settings.get(ANALYSIS_LAYER_SETS) != null) {
-                String[] list = settings.get(ANALYSIS_LAYER_SETS).split("\\|");
+            if (CommonData.settings.getProperty(ANALYSIS_LAYER_SETS) != null) {
+                String[] list = settings.getProperty(ANALYSIS_LAYER_SETS).split("\\|");
 
                 for (String row : list) {
                     if (row.length() > 0) {
@@ -916,5 +919,23 @@ public class CommonData {
         } catch (Exception e) {
             logger.error("error getting: " + url, e);
         }
+    }
+
+    static ConcurrentHashMap<String, String> proxyAuthTickets = new ConcurrentHashMap<String, String>();
+
+    public static void putProxyAuthTicket(String pgt_iou, String pgt) {
+        proxyAuthTickets.put(pgt_iou, pgt);
+    }
+
+    public static String takeProxyAuthTicket(String pgt_iou) {
+        String pgt = proxyAuthTickets.get(pgt_iou);
+
+        proxyAuthTickets.remove(pgt_iou);
+
+        return pgt;
+    }
+
+    public static boolean hasProxyAuthTicket(String pgt_iou) {
+        return proxyAuthTickets.get(pgt_iou) != null;
     }
 }

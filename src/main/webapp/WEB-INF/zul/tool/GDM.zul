@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" use="au.org.ala.spatial.composer.tool.GDMComposer"
-    apply="au.org.ala.spatial.composer.tool.GDMComposer" width="810px" height="700px"
+    apply="au.org.ala.spatial.composer.tool.GDMComposer" width="810px" height="700px" style="overflow:visible"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -14,10 +14,10 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="addtoolwindow.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('prediction-tools')" style="display: inline" />
-        
+        <caption id="cTitle" />
         <separator />
         <hbox id="stepCounter">
-            <vbox style="padding-left: 10px">
+            <vbox >
                 <grid width="150px">
                     <columns>
                         <column width="120px"/>
@@ -58,7 +58,7 @@
                 </div>
 
             </vbox>
-            <vbox style="padding-left: 10px" >
+            <vbox >
                 <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
                     <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                     <label id="atstep1_label" value="" />
@@ -98,7 +98,6 @@
                                 <separator/>
                                 <label sclass="wCaption" value='For example: "Macropus" or "Eucalyptus"'/>
                                 <separator />
-                                <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
                         </vbox>
                         <radio id="rMultiple" label="Create new species list" value="multiple" />
@@ -108,8 +107,10 @@
                             <label value="Use 'Add from search' box to find and add additional species." />
                             <hbox>
                                 <textbox id="tMultiple" width="380px" height="100px" multiline="true" />
-                                <button id="bMultiple" label="Add"/>
-                                <fileupload label="Upload" id="bSpeciesListUpload" sclass="fUploadButton" />
+                                <div class="btn-group">
+                                    <button id="bMultiple" label="Add"/>
+                                    <fileupload label="Upload" id="bSpeciesListUpload" class="btn btn-default" />
+                                </div>
                             </hbox>
                             <separator height="15px"/>
                             <hbox>
@@ -131,7 +132,9 @@
                                     <listheader />
                                 </listhead>
                             </listbox>
-                            <button id="bAssemblageExport" label="Export set" sclass="goButton" />
+                            <div class="btn-group" style="float:left">
+                                <button id="bAssemblageExport" label="Export set" class="btn-small" >
+                            </div>
                             <separator height="5px"/>
                         </vbox>
                         <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Use existing species list" />
@@ -152,8 +155,7 @@
                     <hbox>
                         <label value="Add set a of layers:" />
                         <combobox id="selectedLayersCombobox" use="au.org.ala.spatial.composer.layer.SelectedLayersCombobox" width="320px" readonly="true"/>
-                        <!--<fileupload sclass="fUploadButton" id="uploadLayerList" label="Upload set" upload="true" />-->
-                        <button sclass="goButton" id="uploadLayerList" label="Upload set" upload="true" />
+
                     </hbox>
                     <separator />
                     <hbox>
@@ -163,70 +165,31 @@
                     <separator />
                     <vbox>
                         <label value="Environmental layers" sclass="wSubLabel" />
-                        <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                    use="au.org.ala.spatial.composer.layer.EnvironmentalList" width="610"
-                    height="430px" multiple="true" checkmark="true" apply="" onOK="addtoolwindow.onClick$btnOk(null)">
-                            <listhead>
-                               <listheader label=" " width="48px"  />
-                                                           <listheader label="category" hflex="1"/>
-                                                           <listheader label="name"  hflex="1"/>
-                                                           <listheader label=" "  width="25px"/>
-                                                           <listheader label=" " width="25px" />
-                            </listhead>
-                        </listbox>
+
+                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
+                                            use="au.org.ala.spatial.composer.layer.EnvironmentalList" width="620px" height="430px" multiple="true"
+                                            checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
+                                                <listhead>
+                                                    <listheader label=" " width="43px"  />
+                                                    <listheader label=" category" hflex="1" />
+                                                    <listheader label=" name"  hflex="1" />
+                                                    <listheader label=" "  width="25px"/>
+                                                    <listheader label=" " width="25px" />
+                                                </listhead>
+                                                </listbox>
+
                         <hbox>
-                            <button id="btnClearSelection" label="Clear layers" sclass="goButton" style="float:left" />
-                            <button id="bLayerListDownload1" label="Export set" sclass="goButton" />
-                            <vbox>
-                                <separator height="2px" />
-                                <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />
-                            </vbox>
-                        </hbox>
+                        <div class="btn-group" style="float:left">
+                            <button id="btnClearSelection" label="Clear layers" class="btn-small" />
+                            <button id="bLayerListDownload1" label="Export set" class="btn-small" />
+
+                        </div>
+                        <vbox>
+                                                        <separator height="2px" />
+                                                        <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />
+                                                    </vbox></hbox>
                     </vbox>
 
-                        <!--
-                        <label id="atstep4_desc" value="Select one or more contextual layers" sclass="wSubLabel"/>
-                        <label id="atstep4_label" value="" />
-                        -->
-                    <separator />
-                    <vbox visible="false">
-                        <label value="Contextual layers" sclass="wSubLabel" />
-                        <listbox sclass="envlist" fixedLayout="false" id="lbListLayersCtx" width="500px"
-                    height="135px" multiple="true" checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
-                            <listhead>
-                                <listheader label="category" />
-                                <listheader label="name" width="300px" />
-                                <listheader label=" "  />
-                                <listheader label=" " width="10px" visible="false" />
-                            </listhead>
-                            <listitem value="landcover">
-                                <listcell>Vegetation</listcell>
-                                <listcell>Land cover</listcell>
-                                <listcell value="618" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/more/618", "Metadata", false);'></listcell>
-                            </listitem>
-                            <listitem value="landuse">
-                                <listcell>Vegetation</listcell>
-                                <listcell>Land use</listcell>
-                                <listcell value="678" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/more/678", "Metadata", false);'></listcell>
-                            </listitem>
-                            <listitem value="vast">
-                                <listcell>Vegetation</listcell>
-                                <listcell>Vegetation condition</listcell>
-                                <listcell value="619" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/more/619", "Metadata", false);'></listcell>
-                            </listitem>
-                            <listitem value="native_veg">
-                                <listcell>Vegetation</listcell>
-                                <listcell>Vegetation types - native</listcell>
-                                <listcell value="617" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/more/617", "Metadata", false);'></listcell>
-                            </listitem>
-                            <listitem value="present_veg">
-                                <listcell>Vegetation</listcell>
-                                <listcell>Vegetation types - present</listcell>
-                                <listcell value="620" image="/img/information.png" onClick='addtoolwindow.getMapComposer().activateLink("http://spatial.ala.org.au/layers/more/620", "Metadata", false);'></listcell>
-                            </listitem>
-                        </listbox>
-                        <button id="btnClearSelectionCtx" label="Clear layers"  sclass="goButton" style="float:left" />
-                    </vbox>
                 </div>
 
 
@@ -249,7 +212,9 @@
                                 <listitem value="p30" label="p30" />
                                 <listitem value="p35" label="p35" />
                             </listbox>
-                            <button id="btnClearlbenvlayers" label="Clear layers"  sclass="goButton" style="float:left" />
+                            <div class="btn-group" >
+                                <button id="btnClearlbenvlayers" label="Clear layers" class-"btn-small" />
+                            </div>
                         </vbox>
                     </groupbox>
 
@@ -258,56 +223,12 @@
 
 
 
-                <!--
-                <div id="atstep4" visible="false" zclass="step4 minlayers1">
-                    <label id="atstep4_desc" value="Select one or more contextual layers" sclass="wSubLabel"/>
-                    <label id="atstep4_label" value="" />
-                    <separator />
-                    <vbox>
-                        <listbox sclass="envlist" fixedLayout="false" id="lbListLayersCtx"
-                    width="500px"
-                    height="450px" multiple="true" checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
-                            <listhead>
-                                <listheader label="category"  />
-                                <listheader label="name" />
-                                <listheader label=" "  />
-                                <listheader label=" " width="10px" visible="false" />
-                            </listhead>
-                            <listitem value="landcover">
-                                <listcell>Vegetation</listcell>
-                                <listcell>Land cover</listcell>
-                                <listcell value="618" image="/img/information.png"></listcell>
-                            </listitem>
-                            <listitem value="landuse">
-                                <listcell>Vegetation</listcell>
-                                <listcell>Land use</listcell>
-                                <listcell value="618" image="/img/information.png"></listcell>
-                            </listitem>
-                            <listitem value="present_veg">
-                                <listcell>Vegetation</listcell>
-                                <listcell>Vegetation types - present</listcell>
-                                <listcell value="618" image="/img/information.png"></listcell>
-                            </listitem>
-                        </listbox>
-                        <button id="btnClearSelectionCtx" label="Clear layers"  sclass="goButton" style="float:left" />
-                    </vbox>
-                </div>
-                -->
+
 
                 <div id="atstep4" visible="false" zclass="step4 optional">
                     <label id="atstep4_desc" value="GDM options" sclass="wSubLabel"/>
                     <label id="atstep4_label" value="" />
-<!--                    <vbox>
-                        <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" onOK="addtoolwindow.onClick$btnOk(null)"/>
-                        <checkbox id="chkRCurves" label="Create response curves" checked="true" onOK="addtoolwindow.onClick$btnOk(null)"/>
-                    </vbox>
-                    <vbox>
-                        <separator />
-                        <hbox>
-                            <label value="Random test percentage (0 - 100):" />
-                            <textbox id="txtTestPercentage" value="0"  onOK="addtoolwindow.onClick$btnOk(null)"/>
-                        </hbox>
-                    </vbox>-->
+
                     <vbox>
 
                         <vbox>
@@ -327,16 +248,10 @@
                         </vbox>
                         <hbox>
                             <label value="Generate quantile from:  Data" />
-                    <!--
-                    <combobox id="quantile">
-                        <comboitem label="Data" />
-                        <comboitem label="Grid" />
-                    </combobox>
-                    -->
+
                         </hbox>
 
-                <!--<checkbox id="useDistance" label="Use geographic (Euclidean) distance" />-->
-                        <hbox>
+                       <hbox>
                             <label value="Use geographic distance as additional predictor:" />
                             <radiogroup id="rgdistance">
                                 <radio value="1" label="yes" />
@@ -392,15 +307,14 @@
                 </div>
             </vbox>
         </hbox>
-        <div sclass="wizButtonContainer">
-            <hbox>
-                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
-                <button sclass="goButton" label="Cancel" id="btnCancel" />
-                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
-                <button sclass="goButton" label="Next &gt;" id="btnOk" />
-                <fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
-                <!-- <button sclass="goButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" /> -->
-            </hbox>
-        </div>
+         <div class="btn-group" style="position:absolute;right:10px;bottom:10px">
+
+                        <button label="Cancel" id="btnCancel" />
+                        <button label="&lt; Back" id="btnBack" disabled="true" />
+                         <fileupload class="btn-primary" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+                         <button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self" />
+
+
+                </div>
     </window>
 </zk>

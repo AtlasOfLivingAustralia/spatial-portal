@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:sec="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+
+
+
+    <!-- substitutde JVM args with ${varname} -->
+    <context:property-placeholder/>
+
+
+    <!-- Scans for application @Components to deploy
+    <context:component-scan base-package="org.zkoss.reference.developer" />-->
+
+    <!--
+    Main settings from config file
+    -->
+    <bean id="settings" class="au.org.emii.portal.settings.SettingsImpl">
+        <property name="configPath" value="/data/webportal/config/webportal-config.properties"/>
+    </bean>
+
+
+    <!--
+    Additional key/value pair values from config file
+    -->
+    <bean id="settingsSupplementary" class="java.util.Properties"/>
+
+    <!--
+    Language strings and icon names
+    -->
+    <bean id="languagePack" class="au.org.emii.portal.lang.LanguagePackImpl"/>
+
+    <bean id="configurationLoaderStage1" class="au.org.emii.portal.config.ConfigurationLoaderStage1Impl">
+        <property name="portalDocumentFactory" ref="portalDocumentFactory"/>
+        <property name="settings" ref="settings"/>
+        <property name="stage2" ref="configurationLoaderStage2"/>
+        <property name="portalSessionUtilities" ref="portalSessionUtilities"/>
+    </bean>
+
+    <bean id="configurationLoaderStage2" class="au.org.emii.portal.config.ConfigurationLoaderStage2Impl">
+        <property name="remoteMap" ref="remoteMap"/>
+        <property name="settings" ref="settings"/>
+        <property name="portalSessionUtilities" ref="portalSessionUtilities"/>
+    </bean>
+
+    <bean id="layerUtilities" class="au.org.emii.portal.util.LayerUtilitiesImpl">
+        <property name="settings" ref="settings"/>
+    </bean>
+
+
+    <bean id="portalDocumentFactory" class="au.org.emii.portal.factory.PortalDocumentFactoryFileImpl">
+        <property name="settings" ref="settings"/>
+    </bean>
+
+    <!--
+    Example of how to read (a string) from settingsSupplementary
+    <property name="animationHeight" value="#{settingsSupplementary.values['animation_height']}" />
+    -->
+
+    <bean id="remoteMap" class="au.org.emii.portal.wms.RemoteMapImpl" scope="prototype">
+        <property name="languagePack" ref="languagePack"/>
+        <property name="layerUtilities" ref="layerUtilities"/>
+        <property name="httpConnection" ref="httpConnection"/>
+        <property name="geoJSONUtilities" ref="geoJSONUtilities"/>
+    </bean>
+
+    <bean id="geoJSONUtilities" class="au.org.emii.portal.util.GeoJSONUtilitiesImpl">
+        <property name="httpConnection" ref="httpConnection"/>
+    </bean>
+
+    <bean id="openLayersJavascript" class="au.org.emii.portal.javascript.OpenLayersJavascriptImpl">
+        <property name="layerUtilities" ref="layerUtilities"/>
+    </bean>
+
+    <bean id="remoteRequestServlet" class="au.org.emii.portal.servlet.RemoteRequestServlet">
+        <property name="settings" ref="settings"/>
+        <property name="httpConnection" ref="httpConnection"/>
+    </bean>
+
+    <bean id="httpConnection" class="au.org.emii.portal.net.HttpConnectionImpl">
+        <property name="settings" ref="settings"/>
+    </bean>
+
+    <bean id="activeLayerRenderer" class="au.org.emii.portal.databinding.ActiveLayerRenderer">
+        <property name="languagePack" ref="languagePack"/>
+        <property name="layerUtilities" ref="layerUtilities"/>
+        <property name="visibilityToggleEventListener" ref="visibilityToggleEventListener"/>
+    </bean>
+
+    <bean id="visibilityToggleEventListener" class="au.org.emii.portal.event.VisibilityToggleEventListener">
+        <property name="openLayersJavascript" ref="openLayersJavascript"/>
+    </bean>
+
+    <bean id="portalSessionUtilities" class="au.org.emii.portal.util.PortalSessionUtilities">
+        <property name="languagePack" ref="languagePack"/>
+        <property name="settings" ref="settings"/>
+    </bean>
+
+    <bean id="portalSessionCloner" class="au.org.emii.portal.util.PortalSessionCloner">
+        <property name="portalSessionUtilities" ref="portalSessionUtilities"/>
+    </bean>
+</beans>

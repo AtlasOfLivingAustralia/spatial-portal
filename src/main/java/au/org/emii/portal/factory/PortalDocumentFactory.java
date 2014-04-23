@@ -5,7 +5,7 @@
 
 package au.org.emii.portal.factory;
 
-import au.org.emii.portal.config.xmlbeans.PortalDocument;
+import java.util.Properties;
 
 /**
  * @author geoff
@@ -20,6 +20,6 @@ public interface PortalDocumentFactory {
      *
      * @return PortalDocument instance if reading succeeded, null if an error was encountered
      */
-    public PortalDocument createPortalDocumentInstance();
+    public Properties createPortalDocumentInstance();
 
 }

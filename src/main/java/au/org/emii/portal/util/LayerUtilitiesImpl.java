@@ -4,7 +4,6 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.net.HttpConnection;
 import au.org.emii.portal.settings.Settings;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
@@ -23,6 +22,7 @@ import java.net.URLDecoder;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,7 +59,6 @@ public class LayerUtilitiesImpl implements LayerUtilities {
     private final static String VERSION_REGEXP = "[Vv][Ee][Rr][Ss][Ii][Oo][Nn]";
     private ArrayList<String> versions = null;
     private Settings settings = null;
-    private SettingsSupplementary settingsSupplementary = null;
     private List<Double> worldBBox = null;
 
     public LayerUtilitiesImpl() {
@@ -344,7 +343,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
     public int getMaxNameLength() {
         int maxLength;
         try {
-            maxLength = Integer.parseInt(settingsSupplementary.getValue("layer_name_max_length"));
+            maxLength = Integer.parseInt(CommonData.settings.getProperty("layer_name_max_length"));
         } catch (NumberFormatException e) {
             maxLength = 20;
             logger.error(
@@ -596,15 +595,6 @@ public class LayerUtilitiesImpl implements LayerUtilities {
     @Required
     public void setSettings(Settings settings) {
         this.settings = settings;
-    }
-
-    public SettingsSupplementary getSettingsSupplementary() {
-        return settingsSupplementary;
-    }
-
-    @Required
-    public void setSettingsSupplementary(SettingsSupplementary settingsSupplementary) {
-        this.settingsSupplementary = settingsSupplementary;
     }
 
     /**

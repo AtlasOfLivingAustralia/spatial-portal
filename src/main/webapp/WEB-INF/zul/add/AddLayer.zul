@@ -3,6 +3,8 @@
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addlayerwindow" use="au.org.ala.spatial.composer.tool.AddLayerController"
     apply="au.org.ala.spatial.composer.tool.AddLayerController" width="850px" height="700px"
+    style="overflow:visible"
+
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -14,7 +16,8 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="addlayerwindow.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('layers-add-to-map')" style="display: inline" />
-        
+
+        <caption label="Add Layer" />
         
         <separator />
         <hbox id="stepCounter">
@@ -48,13 +51,13 @@
                 </div>
 
             </vbox>
-            <vbox style="padding-left: 10px" >
+            <vbox  >
                 
                 <div id="atstep1" visible="true" zclass="last optional" sclass="atstep"  width="670px" height="600px">
-                    <label id="atstep1_desc" value="Select one or more layers" sclass="wSubLabel"/>
-                    <label id="atstep1_label" value="" />
-                    <separator height="15px" />
                     <hbox>
+                        <label id="atstep1_desc" value="Select one or more layers." class="h3"/>
+                        <label id="atstep1_label" value="" />
+
                         <label value="The layer sets use layer 'short name': see " />
                         <a href="http://spatial.ala.org.au/layers" target="_blank" label="layers"/>
                     </hbox>
@@ -72,25 +75,28 @@
                         <label value="" />
                         
                         <listbox sclass="envlist" fixedLayout="false" id="lbListLayers"
-                    use="au.org.ala.spatial.composer.layer.EnvironmentalList" width="620px" height="430px" multiple="true"
+                    use="au.org.ala.spatial.composer.layer.EnvironmentalList" width="620px" height="470px" multiple="true"
                     checkmark="true" onOK="addlayerwindow.onClick$btnOk(null)">
                         <listhead>
-                            <listheader label=" " width="48px"  />
-                            <listheader label="category" hflex="1"/>
-                            <listheader label="name"  hflex="1"/>
+                            <listheader label=" " width="43px"  />
+                            <listheader label=" category" hflex="1" />
+                            <listheader label=" name"  hflex="1" />
                             <listheader label=" "  width="25px"/>
                             <listheader label=" " width="25px" />
                         </listhead>
                         </listbox>
-                        
+
                         <hbox>
-                            <button id="btnClearSelection" label="Clear selection" sclass="goButton" style="float:left" />
-                            <button id="bLayerListDownload1" label="Export set" sclass="goButton" />
-                            <vbox>
-                                <separator height="2px" />
-                                <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />
-                            </vbox>
-                        </hbox>
+                        <div class="btn-group" style="float:left">
+                            <button id="btnClearSelection"  class="btn-small" label="Clear selection"  />
+                            <button id="bLayerListDownload1" class="btn-small" label="Export set"  />
+
+                        </div>
+                        <vbox>
+                                                        <separator height="2px" />
+                                                        <label id="lLayersSelected" value="0 layers selected" class="h3" style="padding-left: 10px;"/>
+                                                    </vbox>
+                                                    </hbox>
                     </vbox>
                 </div>
                 <textbox id="tToolName" visible="false"/>
@@ -108,9 +114,7 @@
                     <separator height="60px" />
                     <vbox id="dLayerSummary" visible="true" >
                         <label value="List of selected environmental layers" />
-                        <textbox id="tLayerList" width="500px" height="80px" readonly="true" multiline="true"/>
-                        
-                        
+
                     </vbox>
                 </div>-->
                 
@@ -123,14 +127,10 @@
                 
             </vbox>
         </hbox>
-        <div sclass="wizButtonContainer">
-            <hbox>
-                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
-                <button sclass="goButton" label="Cancel" id="btnCancel" />
-                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
-                <button sclass="goButton" label="Next &gt;" id="btnOk" />
-                
-            </hbox>
+        <div class="btn-group" style="float:right">
+                <button label="Cancel" id="btnCancel" />
+                <button  label="Next >"  class="btn-primary" id="btnOk" />
+
         </div>
     </window>
 </zk>

@@ -50,7 +50,7 @@ public class UserDataQuery implements Query {
      */
 
     static final String DEFAULT_VALIDATION = "";
-    static final String WMS_URL = "userdata/wms/reflect?";
+    static final String WMS_URL = "/userdata/wms/reflect?";
 
     String name;
     String ud_header_id;
@@ -80,7 +80,7 @@ public class UserDataQuery implements Query {
 
         //make new facet from layersServiceService
         StringBuilder sbProcessUrl = new StringBuilder();
-        sbProcessUrl.append(/*CommonData.layersServer*/ "http://localhost:8080/layers-service" + "/userdata/facet");
+        sbProcessUrl.append(CommonData.layersServer + "/userdata/facet");
 
         HttpClient client = new HttpClient();
         PostMethod post = new PostMethod(sbProcessUrl.toString());
@@ -114,6 +114,9 @@ public class UserDataQuery implements Query {
                     bbox.add(Double.parseDouble(b[2]));
                     bbox.add(Double.parseDouble(b[3]));
                 }
+                if (j.containsKey("number_of_records")) {
+                    occurrenceCount = ((Long) j.get("number_of_records")).intValue();
+                }
             }
 
         } catch (Exception e) {
@@ -133,7 +136,7 @@ public class UserDataQuery implements Query {
 
         //make new facet from layersServiceService
         StringBuilder sbProcessUrl = new StringBuilder();
-        sbProcessUrl.append(/*CommonData.layersServer*/ "http://localhost:8080/layers-service" + "/userdata/facet");
+        sbProcessUrl.append(CommonData.layersServer + "/userdata/facet");
 
         HttpClient client = new HttpClient();
         PostMethod post = new PostMethod(sbProcessUrl.toString());
@@ -176,6 +179,9 @@ public class UserDataQuery implements Query {
                     bbox.add(Double.parseDouble(b[1]));
                     bbox.add(Double.parseDouble(b[2]));
                     bbox.add(Double.parseDouble(b[3]));
+                }
+                if (j.containsKey("number_of_records")) {
+                    occurrenceCount = ((Long) j.get("number_of_records")).intValue();
                 }
             }
 
@@ -287,7 +293,6 @@ public class UserDataQuery implements Query {
      */
     @Override
     public int getOccurrenceCount() {
-        //TODO: this is ALWAYS set on layer creation
         return occurrenceCount;
     }
 
@@ -405,10 +410,10 @@ public class UserDataQuery implements Query {
 
         try {
             ObjectMapper om = new ObjectMapper();
-            List ja = om.readValue(new URL("http://localhost:8080/layers-service/userdata/list?id=" + ud_header_id), List.class);
+            List ja = om.readValue(new URL(CommonData.layersServer + "/userdata/list?id=" + ud_header_id), List.class);
 
             for (int i = 0; i < ja.size(); i++) {
-                fields.add(getQueryField((String) ja.get(0)));
+                fields.add(getQueryField((String) ja.get(i)));
             }
 
             //also include defaults
@@ -425,7 +430,7 @@ public class UserDataQuery implements Query {
     private QueryField getQueryField(String field) {
         ObjectMapper om = new ObjectMapper();
         try {
-            return om.readValue(new URL("http://localhost:8080/layers-service/userdata/getqf?id=" + ud_header_id + "&field=" + URLEncoder.encode(field, "UTF-8")), QueryField.class);
+            return om.readValue(new URL(CommonData.layersServer + "/userdata/getqf?id=" + ud_header_id + "&field=" + URLEncoder.encode(field, "UTF-8")), QueryField.class);
         } catch (Exception e) {
             logger.error("error getting query field header: " + ud_header_id + " field: " + field, e);
         }
@@ -516,7 +521,7 @@ public class UserDataQuery implements Query {
 
     @Override
     public String getUrl() {
-        return "http://localhost:8080/layers-service/" /*layersServiceServer*/ + WMS_URL;
+        return CommonData.layersServer + WMS_URL;
     }
 
     @Override
@@ -641,6 +646,6 @@ public class UserDataQuery implements Query {
 
     @Override
     public String getBS() {
-        return null;
+        return CommonData.layersServer;
     }
 }

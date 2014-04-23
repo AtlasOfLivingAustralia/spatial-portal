@@ -1,8 +1,8 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="uploadspecieswindow" use="au.org.ala.spatial.composer.input.UploadSpeciesController"
-    apply="au.org.ala.spatial.composer.input.UploadSpeciesController" width="400px"
-    xmlns:n="http://www.zkoss.org/2005/zk/native" title="Import points">
+    apply="au.org.ala.spatial.composer.input.UploadSpeciesController" width="400px" style="overflow:visible"
+    xmlns:n="http://www.zkoss.org/2005/zk/native" >
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -13,7 +13,7 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="uploadspecieswindow.onClick$btnCancel(null)" style="display: inline" />
 
-        <!-- <caption label="Import points" /> -->
+        <caption id="cTitle" label="Import points" />
 
         <vbox width="100%">
             <separator />
@@ -35,12 +35,9 @@
                 </p>
             ]]></html>
             <separator />
-            <div sclass="wizButtonContainer">
-                <hbox>                    
-                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
-                    <fileupload sclass="fUploadButton" id="fileUpload" label="Next" upload="true" />
-                    <!-- <button sclass="goButton" id="fileUpload" label="Next" upload="true" /> -->
-                </hbox>
+            <div class="btn-group">
+                    <button  label="Cancel" id="btnCancel"/>
+                    <fileupload class="btn-primary btn"   id="fileUpload" label="Next" upload="true" />
             </div>
             <separator />
         </vbox>

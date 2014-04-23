@@ -17,6 +17,7 @@ import org.zkoss.zul.Filedownload;
 
 import java.awt.geom.Rectangle2D;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 /**
@@ -46,6 +47,7 @@ public class ScatterplotListComposer extends ToolComposer {
         this.loadAreaLayers("World");
         this.loadSpeciesLayers();
         this.loadAreaLayersHighlight();
+        this.loadGridLayers(true, false, true);
         this.loadSpeciesLayersBk();
         this.updateWindowTitle();
 
@@ -92,7 +94,10 @@ public class ScatterplotListComposer extends ToolComposer {
 
         boolean envGrid = chkShowEnvIntersection.isChecked();
 
-        Query backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false, getGeospatialKosherBk());
+        Query backgroundLsidQuery = null;
+        if (backgroundLsid != null) {
+            backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false, getGeospatialKosherBk());
+        }
 
         ArrayList<ScatterplotData> datas = new ArrayList<ScatterplotData>();
 
@@ -113,17 +118,17 @@ public class ScatterplotListComposer extends ToolComposer {
 
         try {
             HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod("http://localhost:8082/alaspatial/ws/scatterplot/new");
+            PostMethod post = new PostMethod(CommonData.satServer + "/ws/scatterplotlist");
 
             //add data parameters
             post.addParameter("layers", getSelectedLayers());
             post.addParameter("layernames", layernames);
-            post.addParameter("foregroundOccurrencesQs", lsidQuery.getFullQ(false));
+            post.addParameter("foregroundOccurrencesQs", lsidQuery.getQ());
             post.addParameter("foregroundOccurrencesBs", lsidQuery.getBS());
             post.addParameter("foregroundName", lsidQuery.getName());
 
             if (backgroundLsidQuery != null) {
-                post.addParameter("backgroundOccurrencesQs", backgroundLsidQuery.getFullQ(false));
+                post.addParameter("backgroundOccurrencesQs", backgroundLsidQuery.getQ());
                 post.addParameter("backgroundOccurrencesBs", backgroundLsidQuery.getBS());
                 post.addParameter("backgroundName", backgroundLsidQuery.getName());
             }
@@ -141,7 +146,7 @@ public class ScatterplotListComposer extends ToolComposer {
                 post.addParameter("highlightWkt", highlightSa.getWkt());
             }
 
-            post.addRequestHeader("Accept", "text/plain");
+            post.addRequestHeader("Accept", "application/json");
 
             int result = client.executeMethod(post);
             String has_id = post.getResponseBodyAsString();
@@ -157,7 +162,7 @@ public class ScatterplotListComposer extends ToolComposer {
                 htmlUrl = jo.getString("htmlUrl");
             }
             if (jo.containsKey("downloadUrl")) {
-                htmlUrl = jo.getString("downloadUrl");
+                downloadUrl = jo.getString("downloadUrl");
             }
 
             if (htmlUrl != null && downloadUrl != null) {
@@ -194,7 +199,7 @@ public class ScatterplotListComposer extends ToolComposer {
                     e.printStackTrace();
                 }
             } else {
-                logger.error("failed to produce a scatterplot list");
+                logger.error("failed to produce a scatterplot list.  response: " + jo);
             }
 
         } catch (Exception e) {

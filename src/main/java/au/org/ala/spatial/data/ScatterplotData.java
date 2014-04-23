@@ -64,7 +64,7 @@ public class ScatterplotData implements Serializable {
     public String prevResampleData = null;
     public String prevResampleLayers = null;
     public String prevResampleHighlight = null;
-    public Boolean missing_data_checked;
+    public Boolean missing_data_checked = false;
     private String id;
 
     public ScatterplotData() {

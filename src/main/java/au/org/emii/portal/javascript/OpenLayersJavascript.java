@@ -79,8 +79,6 @@ public interface OpenLayersJavascript {
 
     public void redrawWKTFeatures(MapLayer selectedLayer);
 
-    public String defineImageMapLayer(MapLayer mapLayer);
-
     public String defineKMLMapLayer(MapLayer layer);
 
     public String defineGeoJSONMapLayer(MapLayer layer);

@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" use="au.org.ala.spatial.composer.tool.TabulationComposer"
-    apply="au.org.ala.spatial.composer.tool.TabulationComposer" width="750px" height="700px"
+    apply="au.org.ala.spatial.composer.tool.TabulationComposer" width="750px" height="700px" style="overflow:visible"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -14,10 +14,10 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="addtoolwindow.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('sitesbyspecies-tools')" style="display: inline" />
-        
+        <caption id="cTitle" />
         <separator />
         <hbox id="stepCounter">
-            <vbox style="padding-left: 10px">
+            <vbox >
                 <grid width="150px">
                     <columns>
                         <column width="120px"/>
@@ -32,7 +32,7 @@
         
                 </grid>
             </vbox>
-            <vbox style="padding-left: 10px" >
+            <vbox  >
                 <div id="atstep1" visible="true" zclass="first last optional" sclass="atstep">
                     <label id="atstep1_desc" value="Select layers for tabulation" sclass="wSubLabel"/>
                     <label id="atstep1_label" value="" />
@@ -63,15 +63,13 @@
                 </div>
             </vbox>
         </hbox>
-        <div sclass="wizButtonContainer">
-            <hbox>
-                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
-                <button sclass="goButton" label="Cancel" id="btnCancel" />
-                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
-                <button sclass="goButton" label="Next &gt;" id="btnOk" />
-                <fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
-                <!-- <button sclass="goButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" /> -->
-            </hbox>
-        </div>
+         <div class="btn-group" style="position:absolute;right:10px;bottom:10px">
+
+                        <button label="Cancel" id="btnCancel" />
+                        <button label="&lt; Back" id="btnBack" disabled="true" />
+                        <button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self" />
+                        <fileupload class="btn-primary" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+
+                </div>
     </window>
 </zk>

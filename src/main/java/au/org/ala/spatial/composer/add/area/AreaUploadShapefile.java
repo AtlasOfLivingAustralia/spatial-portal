@@ -6,7 +6,10 @@ import au.org.ala.spatial.util.Zipper;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
+import com.vividsolutions.jts.operation.valid.IsValidOp;
 import org.apache.log4j.Logger;
 import org.geotools.kml.KMLConfiguration;
 import org.geotools.xml.Parser;
@@ -115,21 +118,64 @@ public class AreaUploadShapefile extends AreaToolComposer {
                         return;
                     } else {
                         String wkt = (String) shape.get("wkt");
-                        logger.debug("Got shapefile wkt...");
-                        layerName = txtLayerName.getValue();
-                        MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName, layerName);
+                        logger.debug("Got shapefile wkt...validating");
+                        String msg = "";
+                        boolean invalid = false;
+                        try {
+                            WKTReader wktReader = new WKTReader();
+                            com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
+                            //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
+                            //logger.debug("GEOMETRY TYPE: " + g.getGeometryType());
+                            IsValidOp op = new IsValidOp(g);
+                            if (!op.isValid()) {
+                                invalid = true;
+                                logger.warn("WKT is invalid." + op.getValidationError().getMessage());
+                                msg = op.getValidationError().getMessage();
+                                //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
+                            } else if (g.isRectangle()) {
+                                //NC 20130319: When the shape is a rectangle ensure that the points a specified in the correct order.
+                                //get the new WKT for the rectangle will possibly need to change the order.
 
-                        ud.setUploadedTimeInMs(System.currentTimeMillis());
-                        ud.setType("shapefile");
+                                com.vividsolutions.jts.geom.Envelope envelope = g.getEnvelopeInternal();
+                                String wkt2 = "POLYGON(("
+                                        + envelope.getMinX() + " " + envelope.getMinY() + ","
+                                        + envelope.getMaxX() + " " + envelope.getMinY() + ","
+                                        + envelope.getMaxX() + " " + envelope.getMaxY() + ","
+                                        + envelope.getMinX() + " " + envelope.getMaxY() + ","
+                                        + envelope.getMinX() + " " + envelope.getMinY() + "))";
+                                if (!wkt.equals(wkt2)) {
+                                    logger.debug("NEW WKT for Rectangle: " + wkt);
+                                    msg = "Shape is not in the correct order (anti-clockwise)";
+                                    invalid = true;
+                                }
+                            }
+                            if (!invalid) {
+                                invalid = !op.isValid();
+                            }
+                        } catch (ParseException parseException) {
+                            logger.error("error testing validity of uploaded shape file wkt", parseException);
+                        }
 
-                        String metadata = "";
-                        metadata += "User uploaded Shapefile \n";
-                        metadata += "Name: " + ud.getName() + " <br />\n";
-                        metadata += "Filename: " + ud.getFilename() + " <br />\n";
-                        metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+                        if (invalid) {
+                            ok = false;
+                            getMapComposer().showMessage("Shape is invalid: " + msg);
+                        } else {
 
-                        mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
-                        ok = true;
+                            layerName = txtLayerName.getValue();
+                            MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName, layerName);
+
+                            ud.setUploadedTimeInMs(System.currentTimeMillis());
+                            ud.setType("shapefile");
+
+                            String metadata = "";
+                            metadata += "User uploaded Shapefile \n";
+                            metadata += "Name: " + ud.getName() + " <br />\n";
+                            metadata += "Filename: " + ud.getFilename() + " <br />\n";
+                            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+
+                            mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
+                            ok = true;
+                        }
                     }
                 } else {
                     logger.debug("Unknown file type. ");
@@ -239,25 +285,69 @@ public class AreaUploadShapefile extends AreaToolComposer {
             MapComposer mc = getMapComposer();
             layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
             String wkt = getKMLPolygonAsWKT(kmlstr);
-            MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
 
-            ud.setUploadedTimeInMs(Long.parseLong(id));
-            ud.setType("kml");
 
-            String metadata = "";
-            metadata += "User uploaded KML area \n";
-            metadata += "Name: " + ud.getName() + " <br />\n";
-            metadata += "Filename: " + ud.getFilename() + " <br />\n";
-            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+            boolean invalid = false;
+            String msg = "";
+            try {
+                WKTReader wktReader = new WKTReader();
+                com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
+                //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
+                //logger.debug("GEOMETRY TYPE: " + g.getGeometryType());
+                IsValidOp op = new IsValidOp(g);
+                if (!op.isValid()) {
+                    invalid = true;
+                    logger.warn("WKT is invalid." + op.getValidationError().getMessage());
+                    msg = op.getValidationError().getMessage();
+                    //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
+                } else if (g.isRectangle()) {
+                    //NC 20130319: When the shape is a rectangle ensure that the points a specified in the correct order.
+                    //get the new WKT for the rectangle will possibly need to change the order.
 
-            mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
+                    com.vividsolutions.jts.geom.Envelope envelope = g.getEnvelopeInternal();
+                    String wkt2 = "POLYGON(("
+                            + envelope.getMinX() + " " + envelope.getMinY() + ","
+                            + envelope.getMaxX() + " " + envelope.getMinY() + ","
+                            + envelope.getMaxX() + " " + envelope.getMaxY() + ","
+                            + envelope.getMinX() + " " + envelope.getMaxY() + ","
+                            + envelope.getMinX() + " " + envelope.getMinY() + "))";
+                    if (!wkt.equals(wkt2)) {
+                        logger.debug("NEW WKT for Rectangle: " + wkt);
+                        msg = "Shape is not in the correct order (anti-clockwise)";
+                        invalid = true;
+                    }
+                }
+                if (!invalid) {
+                    invalid = !op.isValid();
+                }
+            } catch (ParseException parseException) {
+                logger.error("error testing validity of uploaded shape file wkt", parseException);
+            }
 
-            if (mapLayer == null) {
-                logger.debug("The layer " + name + " couldnt be created");
-                mc.showMessage(mc.getLanguagePack().getLang("ext_layer_creation_failure"));
+            if (invalid) {
+                ok = false;
+                getMapComposer().showMessage("Shape is invalid: " + msg);
             } else {
-                ok = true;
-                mc.addUserDefinedLayerToMenu(mapLayer, true);
+                MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
+
+                ud.setUploadedTimeInMs(Long.parseLong(id));
+                ud.setType("kml");
+
+                String metadata = "";
+                metadata += "User uploaded KML area \n";
+                metadata += "Name: " + ud.getName() + " <br />\n";
+                metadata += "Filename: " + ud.getFilename() + " <br />\n";
+                metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+
+                mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
+
+                if (mapLayer == null) {
+                    logger.debug("The layer " + name + " couldnt be created");
+                    mc.showMessage(mc.getLanguagePack().getLang("ext_layer_creation_failure"));
+                } else {
+                    ok = true;
+                    mc.addUserDefinedLayerToMenu(mapLayer, true);
+                }
             }
         } catch (Exception e) {
 

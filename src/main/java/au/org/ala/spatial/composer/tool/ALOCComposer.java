@@ -25,11 +25,13 @@ import org.zkoss.zul.Intbox;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author ajay
  */
 public class ALOCComposer extends ToolComposer {
+
     private static Logger logger = Logger.getLogger(ALOCComposer.class);
     private Intbox groupCount;
     String selectedLayers = "";
@@ -111,8 +113,8 @@ public class ALOCComposer extends ToolComposer {
                     + ", groups=" + groupCount.getValue()
                     + ", layers=" + sbenvsel.split(":").length
                     + ", size=" + size / 1024 / 1024
-                    + ", max size=" + settingsSupplementary.getValueAsInt("aloc_size_limit_in_mb"));
-            if (size / 1024 / 1024 > settingsSupplementary.getValueAsInt("aloc_size_limit_in_mb")) {
+                    + ", max size=" + CommonData.settings.getProperty("aloc_size_limit_in_mb"));
+            if (size / 1024 / 1024 > Integer.parseInt(CommonData.settings.getProperty("aloc_size_limit_in_mb"))) {
                 getMapComposer().showMessage("Analysis is too large.  Reduce the number of groups, number of layers or area.", this);
                 return -1;
             }
@@ -290,8 +292,8 @@ public class ALOCComposer extends ToolComposer {
                     + ", groups=" + groupCount.getValue()
                     + ", layers=" + sbenvsel.split(":").length
                     + ", size=" + size / 1024 / 1024
-                    + ", max size=" + settingsSupplementary.getValueAsInt("aloc_size_limit_in_mb"));
-            if (size / 1024 / 1024 > settingsSupplementary.getValueAsInt("aloc_size_limit_in_mb")) {
+                    + ", max size=" + CommonData.settings.getProperty("aloc_size_limit_in_mb"));
+            if (size / 1024 / 1024 > Integer.parseInt(CommonData.settings.getProperty("aloc_size_limit_in_mb"))) {
                 getMapComposer().showMessage("Analysis is too large.  Reduce the number of groups, number of layers or area.", this);
                 return false;
             }

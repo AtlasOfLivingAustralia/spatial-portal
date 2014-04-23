@@ -8,10 +8,11 @@ import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.settings.Settings;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.value.BoundingBox;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
+
+import java.util.Properties;
 
 /**
  * @author geoff
@@ -21,7 +22,6 @@ public class PortalSessionUtilities {
     private static Logger logger = Logger.getLogger(PortalSessionUtilities.class);
 
     private LanguagePack languagePack = null;
-    private SettingsSupplementary settingsSupplementary = null;
     private Settings settings = null;
     /**
      * Enumeration IDs as used in the config file xml schema - to allow
@@ -55,15 +55,6 @@ public class PortalSessionUtilities {
      */
     public BoundingBox getCurrentBoundingBox(PortalSession portalSession) {
         return portalSession.getDefaultBoundingBox();
-    }
-
-    public SettingsSupplementary getSettingsSupplementary() {
-        return settingsSupplementary;
-    }
-
-    @Required
-    public void setSettingsSupplementary(SettingsSupplementary settingsSupplementary) {
-        this.settingsSupplementary = settingsSupplementary;
     }
 
     public LanguagePack getLanguagePack() {

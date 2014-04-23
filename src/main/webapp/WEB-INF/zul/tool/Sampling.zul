@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-    <window id="addtoolwindow" title="Add tool" use="au.org.ala.spatial.composer.tool.SamplingComposer"
-    apply="au.org.ala.spatial.composer.tool.SamplingComposer" width="810px" height="700px"
+    <window id="addtoolwindow" use="au.org.ala.spatial.composer.tool.SamplingComposer"
+    apply="au.org.ala.spatial.composer.tool.SamplingComposer" width="810px" height="700px" style="overflow:visible"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -14,10 +14,10 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="addtoolwindow.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('sampling-tools')" style="display: inline" />
-
+<caption id="cTitle" />
         <separator />
 <hbox>
-         <vbox style="padding-left: 10px">
+         <vbox >
             <grid width="150px">
 <columns>
  <column width="120px"/>
@@ -51,7 +51,7 @@
                     <label value="Note: The correlations are currently based on full layer spatial extents and not any selected sub-area." />
                 </div>
         </vbox>
-        <vbox style="padding-left: 10px" >
+        <vbox  >
 
             <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
                 <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
@@ -100,8 +100,10 @@
                         <label value="Use 'Add from search' box to find and add additional species." />
                         <hbox>
                             <textbox id="tMultiple" width="380px" height="100px" multiline="true" />
-                            <button id="bMultiple" label="Add"/>
-                            <fileupload label="Upload" id="bSpeciesListUpload" sclass="fUploadButton" />
+                            <div class="btn-group">
+                                <button id="bMultiple" label="Add"/>
+                                <fileupload label="Upload" id="bSpeciesListUpload" class="btn btn-default"/>
+                            </div>
                         </hbox>
                         <separator height="15px"/>
                         <hbox>
@@ -123,7 +125,9 @@
                                 <listheader />
                             </listhead>
                         </listbox>
-                        <button id="bAssemblageExport" label="Export set" sclass="goButton" />
+                        <div class="btn-group" style="float:left">
+                            <button id="bAssemblageExport" label="Export set" class="btn-small" />
+                        </div>
                         <separator height="5px"/>
                     </vbox>
                     <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import assemblage" />
@@ -164,28 +168,29 @@
                         </listhead>
                     </listbox>
                     <hbox>
-                        <button id="btnClearSelection" label="Clear layers" sclass="goButton" style="float:left" />
-                        <button id="bLayerListDownload1" label="Export set" sclass="goButton" />
-                        <vbox>
-                            <separator height="2px" />
-                            <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />
-                        </vbox>
-                    </hbox>
+                    <div class="btn-group" style="float:left">
+                        <button id="btnClearSelection"  class="btn-small" label="Clear selection"  />
+                        <button id="bLayerListDownload1" class="btn-small" label="Export set"  />
+
+                    </div>
+                    <vbox>
+                                                    <separator height="2px" />
+                                                    <label id="lLayersSelected" value="0 layers selected" class="h3" style="padding-left: 10px;"/>
+                                                </vbox>
+                                                </hbox>
                 </vbox>
             </div>
 
             <textbox id="tToolName" visible="false" />
         </vbox>       
         </hbox>
-        <div sclass="wizButtonContainer">
-            <hbox>
-                <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
-                <button sclass="goButton" label="Cancel" id="btnCancel" />
-                <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
-                <button sclass="goButton" label="Next &gt;" id="btnOk" />
-                <fileupload sclass="fUploadButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
-                <!--<button sclass="goButton" id="fileUpload" label="Next &gt;" upload="true" visible="false" />-->
-            </hbox>
-        </div>
+         <div class="btn-group" style="position:absolute;right:10px;bottom:10px">
+
+                        <button label="Cancel" id="btnCancel" />
+                        <button label="&lt; Back" id="btnBack" disabled="true" />
+                        <fileupload class="btn-primary" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+<button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self" />
+
+                </div>
     </window>
 </zk>

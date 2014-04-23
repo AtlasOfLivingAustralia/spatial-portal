@@ -14,18 +14,24 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.ala.layers.legend.Facet;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.*;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +40,12 @@ import java.util.Map;
 /**
  * @author Adam
  */
-public class LayerLegendScatterplotController extends UtilityComposer {
+public class LayerLegendScatterplotController extends UtilityComposer implements HasMapLayer {
 
     private static Logger logger = Logger.getLogger(LayerLegendScatterplotController.class);
 
     private static final String NUMBER_SERIES = "Number series";
     private static final String ACTIVE_AREA_SERIES = "In Active Area";
-    private SettingsSupplementary settingsSupplementary = null;
 
     Textbox tbxChartSelection;
     Label tbxSelectionCount;
@@ -58,8 +63,6 @@ public class LayerLegendScatterplotController extends UtilityComposer {
     Label lblMissing;
     Button addNewLayers;
     Combobox cbHighlightArea;
-
-    ScatterplotLayerLegendComposer layerWindow = null;
 
     @Override
     public void afterCompose() {
@@ -110,16 +113,16 @@ public class LayerLegendScatterplotController extends UtilityComposer {
 
             String params = "?minx=" + coordsDbl[0] + "&miny=" + coordsDbl[1] + "&maxx=" + coordsDbl[2] + "&maxy=" + coordsDbl[3];
 
-            data.imagePath = "http://localhost:8082/alaspatial/ws/scatterplot/img/" + data.getId() + params;
+            data.imagePath = CommonData.satServer + "/ws/scatterplot/" + data.getId() + params;
 
             ObjectMapper om = new ObjectMapper();
-            Map map = om.readValue(new URL(data.imagePath), Map.class);
+            JSONArray ja = om.readValue(new URL(data.imagePath), JSONArray.class);
 
             data.prevSelection = new double[4];
-            data.prevSelection[0] = Double.parseDouble((String) map.get("minx"));
-            data.prevSelection[1] = Double.parseDouble((String) map.get("miny"));
-            data.prevSelection[2] = Double.parseDouble((String) map.get("maxx"));
-            data.prevSelection[3] = Double.parseDouble((String) map.get("maxy"));
+            data.prevSelection[0] = ja.getDouble(0);
+            data.prevSelection[1] = ja.getDouble(1);
+            data.prevSelection[2] = ja.getDouble(2);
+            data.prevSelection[3] = ja.getDouble(3);
 
             Facet f = getFacetIn();
             if (f != null) {
@@ -134,7 +137,10 @@ public class LayerLegendScatterplotController extends UtilityComposer {
             tbxDomain.setValue(String.format("%s: %g - %g", data.getLayer1Name(), data.prevSelection[1], data.prevSelection[3]));
             tbxRange.setValue(String.format("%s: %g - %g", data.getLayer2Name(), data.prevSelection[0], data.prevSelection[2]));
 
-            data.imagePath = null;
+            data.imagePath = CommonData.satServer + "/ws/scatterplot/" + data.getId() + ".png" + params;
+
+            registerScatterPlotSelection();
+
             redraw();
         } catch (Exception e) {
             logger.error("failed to build scatterplot legend", e);
@@ -144,6 +150,9 @@ public class LayerLegendScatterplotController extends UtilityComposer {
     }
 
     void redraw() {
+        getScatterplotData();
+        updateCbHighlightArea();
+
         int width = Integer.parseInt(this.getWidth().replace("px", "")) - 20;
         int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px", ""));
         if (height > width) {
@@ -152,10 +161,18 @@ public class LayerLegendScatterplotController extends UtilityComposer {
             width = height;
         }
 
+        if (data.imagePath == null || !data.imagePath.contains(".png")) {
+            data.imagePath = CommonData.satServer + "/ws/scatterplot/" + data.getId() + ".png?" + System.currentTimeMillis();
+        }
         String script = "updateScatterplot(" + width + "," + height + ",'url(" + data.imagePath + ")')";
         Clients.evalJavaScript(script);
 
         scatterplotDownloads.setVisible(true);
+
+        updateCount(String.valueOf(data.selectionCount));
+        if (data.missing_data_checked != chkSelectMissingRecords.isChecked()) {
+            chkSelectMissingRecords.setChecked(data.missing_data_checked);
+        }
 
         if (data.getMissingCount() > 0) {
             tbxMissingCount.setValue("(" + data.getMissingCount() + ")");
@@ -171,8 +188,8 @@ public class LayerLegendScatterplotController extends UtilityComposer {
             double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
             if (data.prevSelection != null) {
                 x1 = data.prevSelection[0];
-                x2 = data.prevSelection[1];
-                y1 = data.prevSelection[2];
+                x2 = data.prevSelection[2];
+                y1 = data.prevSelection[1];
                 y2 = data.prevSelection[3];
             }
 
@@ -230,12 +247,12 @@ public class LayerLegendScatterplotController extends UtilityComposer {
     public void onClick$addSelectedRecords(Event event) {
         Facet f = getFacetIn();
         if (f != null) {
-            addUserLayer(data.getQuery().newFacet(getFacetIn(), true), "IN " + data.getSpeciesName(), "from scatterplot in group", data.selectionCount);
+            addUserLayer(data.getQuery().newFacet(getFacetIn(), true), "IN " + data.getSpeciesName(), null, 0);
         }
     }
 
     public void onClick$addUnSelectedRecords(Event event) {
-        addUserLayer(data.getQuery().newFacet(getFacetOut(), true), "OUT " + data.getSpeciesName(), "from scatterplot out group", data.results.split("\n").length - data.selectionCount - 1);   //-1 for header
+        addUserLayer(data.getQuery().newFacet(getFacetOut(), true), "OUT " + data.getSpeciesName(), null, 0);   //-1 for header
     }
 
     void addUserLayer(Query query, String layername, String description, int numRecords) {
@@ -252,7 +269,15 @@ public class LayerLegendScatterplotController extends UtilityComposer {
 
     public void onClick$scatterplotImageDownload(Event event) {
         try {
-            Filedownload.save(new File(data.imagePath), "image/png");
+            byte[] b = null;
+            InputStream in = new URL(data.imagePath).openStream();
+            try {
+                b = IOUtils.toByteArray(in);
+            } finally {
+                IOUtils.closeQuietly(in);
+            }
+
+            Filedownload.save(b, "image/png", "scatterplot.png");
         } catch (Exception e) {
             logger.error("error saving scatterplot image: " + data.imagePath, e);
         }
@@ -263,7 +288,13 @@ public class LayerLegendScatterplotController extends UtilityComposer {
         try {
             ObjectMapper om = new ObjectMapper();
 
-            String csv = om.readValue(new URL("http://localhost:8082/alaspatial/ws/scatterplot/csv/" + data.getId()), String.class);
+            String csv = null;
+            InputStream in = new URL(CommonData.satServer + "/ws/scatterplot/csv/" + data.getId()).openStream();
+            try {
+                csv = IOUtils.toString(in);
+            } finally {
+                IOUtils.closeQuietly(in);
+            }
 
             Filedownload.save(csv, "text/plain", "scatterplot.csv");
         } catch (Exception e) {
@@ -290,6 +321,7 @@ public class LayerLegendScatterplotController extends UtilityComposer {
             tbxChartSelection.setText("");
 
             data.imagePath = null;
+            data.missing_data_checked = chkSelectMissingRecords.isChecked();
             redraw();
         } catch (Exception e) {
             e.printStackTrace();
@@ -327,6 +359,28 @@ public class LayerLegendScatterplotController extends UtilityComposer {
         data.size = size;
         data.colourMode = colourMode;
 
+        try {
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(CommonData.satServer + "/ws/scatterplot/style/" + data.getId());
+
+            //set style parameters that can change here
+            post.addParameter("colourMode", String.valueOf(data.colourMode));
+            post.addParameter("red", String.valueOf(data.red));
+            post.addParameter("green", String.valueOf(data.green));
+            post.addParameter("blue", String.valueOf(data.blue));
+            post.addParameter("opacity", String.valueOf(data.opacity));
+            post.addParameter("size", String.valueOf(data.size));
+
+            post.addRequestHeader("Accept", "application/json");
+
+            int result = client.executeMethod(post);
+
+            JSONObject jsonObject = JSONObject.fromObject(post.getResponseBodyAsString());
+
+        } catch (Exception e) {
+            logger.error("error getting a new scatterplot id", e);
+        }
+
         data.imagePath = null;
         redraw();
     }
@@ -346,8 +400,8 @@ public class LayerLegendScatterplotController extends UtilityComposer {
             fq = "-(" + e1 + ":[* TO *] AND " + e2 + ":[* TO *])";
         } else if (data.prevSelection != null) {
             double x1 = data.prevSelection[0];
-            double x2 = data.prevSelection[1];
-            double y1 = data.prevSelection[2];
+            double x2 = data.prevSelection[2];
+            double y1 = data.prevSelection[1];
             double y2 = data.prevSelection[3];
 
             Facet f1 = new Facet(e1, y1, y2, true);
@@ -470,6 +524,28 @@ public class LayerLegendScatterplotController extends UtilityComposer {
         } else {
             data.setHighlightSa(null);
         }
+
+        try {
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(CommonData.satServer + "/ws/scatterplot/style/" + data.getId());
+
+            //add style parameters (highlight area)
+            if (data.getHighlightSa() != null) {
+                post.addParameter("highlightWkt", data.getHighlightSa().getWkt());
+            } else {
+                post.addParameter("highlightWkt", "");
+            }
+
+            post.addRequestHeader("Accept", "application/json");
+
+            int result = client.executeMethod(post);
+
+            JSONObject jsonObject = JSONObject.fromObject(post.getResponseBodyAsString());
+
+        } catch (Exception e) {
+            logger.error("error getting a new scatterplot id", e);
+        }
+
         data.imagePath = null;
         redraw();
     }
@@ -478,4 +554,46 @@ public class LayerLegendScatterplotController extends UtilityComposer {
         cbHighlightArea.setSelectedIndex(-1);
         onSelect$cbHighlightArea(null);
     }
+
+    @Override
+    public void setMapLayer(MapLayer mapLayer) {
+        this.mapLayer = mapLayer;
+    }
+
+    ScatterplotLayerLegendComposer layerWindow = null;
+
+    public void onClick$btnEditAppearance1(Event event) {
+        if (layerWindow != null) {
+            boolean closing = layerWindow.getParent() != null;
+            layerWindow.detach();
+            layerWindow = null;
+
+            if (closing) {
+                return;
+            }
+        }
+
+        getScatterplotData();
+
+        if (data.getQuery() != null) {
+            //preview species list
+            layerWindow = (ScatterplotLayerLegendComposer) Executions.createComponents("WEB-INF/zul/legend/ScatterplotLayerLegend.zul", getRoot(), null);
+            EventListener el = new EventListener() {
+
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    updateFromLegend();
+                }
+            };
+            layerWindow.init(data.getQuery(), mapLayer, data.red, data.green, data.blue, data.size, data.opacity, data.colourMode, el);
+
+            try {
+                layerWindow.doOverlapped();
+                layerWindow.setPosition("right");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

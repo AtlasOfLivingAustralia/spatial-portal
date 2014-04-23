@@ -1,8 +1,8 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="areaboundingboxwindow" use="au.org.ala.spatial.composer.add.area.AreaBoundingBox"
-            apply="au.org.ala.spatial.composer.add.area.AreaBoundingBox" width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native"
-            style="position:absolute;left:20px;top:20px" draggable="false">
+            apply="au.org.ala.spatial.composer.add.area.AreaBoundingBox" width="400px"  xmlns:n="http://www.zkoss.org/2005/zk/native"
+           style="position:absolute;left:10px;top:10px;overflow:visible" draggable="false">
         <n:div class="left-cover" />
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -29,13 +29,14 @@
             </div>
             <separator />
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" />
-            <div sclass="wizButtonContainer">
-                <hbox>
-                    <button sclass="goButton" label="Clear" id="btnClear" disabled="true"/>                    
-                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
-                    <button sclass="goButton" label="Next" id="btnNext" disabled="true" />
-                </hbox>
-            </div>
+
+            <div class="btn-group" >
+                                <button label="Clear" id="btnClear" disabled="true"/>
+
+                                <button label="Cancel" id="btnCancel" />
+
+                                <button class="btn-primary" label="Next >" id="btnNext" disabled="true" />
+                        </div>
             <separator />
         </vbox>
 

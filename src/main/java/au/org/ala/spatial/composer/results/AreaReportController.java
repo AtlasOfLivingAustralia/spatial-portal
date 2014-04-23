@@ -14,7 +14,7 @@ import au.org.ala.spatial.util.SelectedArea;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
+
 import au.org.emii.portal.util.LayerUtilities;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -74,7 +74,6 @@ public class AreaReportController extends UtilityComposer {
     String[] areaChecklistText = null;
     Window window = null;
     public String pid;
-    private SettingsSupplementary settingsSupplementary = null;
     boolean addedListener = false;
 
     SelectedArea selectedArea = null;
@@ -111,7 +110,7 @@ public class AreaReportController extends UtilityComposer {
         this.areaSqKm = areaSqKm;
         this.boundingBox = boundingBox;
         this.includeEndemic = includeEndemic;
-        setTitle(displayname);
+        ((Caption) getFellow("cTitle")).setLabel(displayname);
 
         if (name.equals("Current extent")) {
             addListener();
@@ -124,7 +123,7 @@ public class AreaReportController extends UtilityComposer {
             extras += ";boundingBox: " + boundingBox;
             remoteLogger.logMapAnalysis(displayname, "Tool - Area Report", areaName + "__" + sa.getWkt(), "", "", pid, extras, "0");
         } catch (Exception e) {
-            logger.error("error logging", e);
+            //logger.error("error logging", e);
         }
 
 
@@ -532,7 +531,7 @@ public class AreaReportController extends UtilityComposer {
 
         Integer occurrenceCount = (Integer) recordCounts.get("occurrencesCount");
 
-        if (occurrenceCount > 0 && occurrenceCount <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
+        if (occurrenceCount > 0 && occurrenceCount <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
 
 
         } else {
@@ -738,7 +737,7 @@ public class AreaReportController extends UtilityComposer {
             model.setCount(String.format("%,d", results_count_occurrences));
             //add the info about the buttons to include
             //model.put("button", "MS");
-            if (results_count_occurrences > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
+            if (results_count_occurrences > 0 && results_count_occurrences <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
                 model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.MAP_ALL, ExtraInfoEnum.SAMPLE});
             }
             model.setGeospatialKosher(false);
@@ -766,7 +765,7 @@ public class AreaReportController extends UtilityComposer {
             }
             model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.MAP_ALL, ExtraInfoEnum.SAMPLE});
             model.setGeospatialKosher(true);
-            if (results_count_occurrences_kosher > 0 && results_count_occurrences_kosher <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
+            if (results_count_occurrences_kosher > 0 && results_count_occurrences_kosher <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
                 countsData.put("occurrencesCountKosher", results_count_occurrences_kosher);
             }
             model.setCount(String.format("%,d", results_count_occurrences_kosher));

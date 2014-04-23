@@ -93,7 +93,7 @@ public class DistributionsController extends UtilityComposer {
     }
 
     public void init(String[] text, String type, String count, EventListener el) {
-        this.setTitle(type);
+        ((Caption) getFellow("cTitle")).setLabel(type);
 
         this.el = el;
         this.original_count = count;

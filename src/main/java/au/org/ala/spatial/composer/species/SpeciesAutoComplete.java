@@ -4,7 +4,7 @@ import au.org.ala.spatial.data.BiocacheQuery;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.UserData;
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
@@ -25,7 +25,6 @@ public class SpeciesAutoComplete extends Combobox {
     private static Logger logger = Logger.getLogger(SpeciesAutoComplete.class);
 
     private boolean bSearchCommon = false;
-    private SettingsSupplementary settingsSupplementary = null;
     boolean biocacheOnly = false;
     private BiocacheQuery biocacheQuery;
     /**
@@ -79,13 +78,6 @@ public class SpeciesAutoComplete extends Combobox {
 
         // Start by constraining the search to a min 3-chars
         if (val.length() < 3) {
-            return;
-        }
-
-        if (settingsSupplementary != null) {
-        } else if (this.getParent() != null) {
-            settingsSupplementary = ((MapComposer) getPage().getFellow("mapPortalPage")).getSettingsSupplementary();
-        } else {
             return;
         }
 

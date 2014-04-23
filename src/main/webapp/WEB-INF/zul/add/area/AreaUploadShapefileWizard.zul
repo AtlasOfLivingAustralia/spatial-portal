@@ -2,7 +2,9 @@
 <zk>
     <window id="areashapewizard" use="au.org.ala.spatial.composer.add.area.AreaUploadShapefileWizardController"
             apply="au.org.ala.spatial.composer.add.area.AreaUploadShapefile"  xmlns:n="http://www.zkoss.org/2005/zk/native"
-            width="90%" sizable="true" contentStyle="overflow:auto">
+            width="90%" sizable="true"
+            style="position:absolute;left:10px;top:10px;overflow:visible"
+            >
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -11,7 +13,7 @@
         <n:div class="fancybox-bg" id="fancybox-bg-e" />
         <n:div class="fancybox-bg" id="fancybox-bg-s" />
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
-        <a sclass="fancybox-close" onClick="shapewizard.detach()" style="display: inline" />
+        <a sclass="fancybox-close" onClick="areashapewizard.detach()" style="display: inline" />
 
         <caption label="Import Shapefile" />
         <separator />
@@ -21,13 +23,13 @@
             </div>
             <div>
                 <vbox>
-                    <hbox sclass="wizButtonContainer">
-                        <button sclass="goButton" label="Select all" id="btnSelectAll" />
-                        <button sclass="goButton" label="Clear selection" id="btnDeselectAll" />
-                        <button sclass="goButton" label="Refresh image" id="btnRefresh" />
-                        <button sclass="goButton" label="Cancel" id="btnCancel" />
-                        <button sclass="goButton" label="Next" id="btnNext" />
-                    </hbox>
+                    <div class="btn-group">
+                        <button label="Select all" id="btnSelectAll" />
+                        <button label="Clear selection" id="btnDeselectAll" />
+                        <button label="Refresh image" id="btnRefresh" />
+                        <button label="Cancel" id="btnCancel" />
+                        <button class="btn-primary" label="Next >" id="btnNext" />
+                    </div>
                     <listbox id="lAttributes" width="97%" height="300px" multiple="true" checkmark="true">
                     </listbox>
                 </vbox>

@@ -1,10 +1,15 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
-<?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
+<?page contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
     <window id="alocprogress" title="Points sample analysis intersection download" border="normal"
     use="au.org.ala.spatial.composer.output.SamplingAnalysisDownloadController"
             apply="au.org.ala.spatial.composer.output.SamplingAnalysisDownloadController"
-            closable="false" mode="embedded" width="320px">
-        <button id="btnDownload" label="Download" />
+            closable="false" mode="embedded" width="320px"
+            style="overflow:visible"
+            >
+            <caption id="cTitle"
+            <div class="btn-group">
+                <button class="btn-primary" id="btnDownload" label="Download" />
+            </div>
     </window>
 </zk>

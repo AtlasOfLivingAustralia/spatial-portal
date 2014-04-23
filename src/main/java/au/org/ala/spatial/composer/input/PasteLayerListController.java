@@ -2,7 +2,6 @@ package au.org.ala.spatial.composer.input;
 
 import au.org.ala.spatial.composer.tool.ToolComposer;
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Textbox;
 
@@ -11,7 +10,6 @@ import org.zkoss.zul.Textbox;
  */
 public class PasteLayerListController extends UtilityComposer {
 
-    SettingsSupplementary settingsSupplementary;
     Textbox layerList;
 
     @Override

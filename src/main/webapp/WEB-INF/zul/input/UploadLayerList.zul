@@ -2,7 +2,7 @@
 <?component name="uploadSpecies" macro-uri="/WEB-INF/zul/input/UploadSpecies.zul"?>
 <zk>
      <window id="uploadlayerlist" use="au.org.ala.spatial.composer.input.UploadLayerListController"
-    apply="au.org.ala.spatial.composer.input.UploadLayerListController" width="300px" height="150px" xmlns:n="http://www.zkoss.org/2005/zk/native">
+    apply="au.org.ala.spatial.composer.input.UploadLayerListController" width="300px" style="overflow:visible" xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -15,15 +15,12 @@
         <n:a class="fancybox-help" n:onClick="loadHelp('species-add-to-map')" style="display: inline" />
         <caption label="Import a layer list" sclass="caption" />
         <separator height="20px"/>
-        <label style="margin-left:20px" value="Import a previously downloaded layer list." />
+        <label value="Import a previously downloaded layer list." />
         <separator height="40px"/>
-        <div sclass="wButtons wizButtonContainer">
-            <hbox>
-                <button sclass="goButton" id="btnCancel" label="Cancel"/>
-                <!--button sclass="goButton" label="Next" id="btnOk"/-->
-                <fileupload sclass="fUploadButton" id="fileUpload" label="Next" upload="true" />
-                <!-- <button sclass="goButton" id="fileUpload" label="Next" upload="true" /> -->
-            </hbox>
+        <div class="btn-group">
+                <button  id="btnCancel" label="Cancel"/>
+                <fileupload  class="btn btn-primary"  id="fileUpload" label="Next" upload="true" />
+
         </div>
         <separator />
     </window>
