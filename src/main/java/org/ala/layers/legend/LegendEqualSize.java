@@ -8,7 +8,7 @@ package org.ala.layers.legend;
 /**
  * generates legend using equal size of unique values in
  * each catagory.
- * 
+ *
  * @author Adam
  */
 public class LegendEqualSize extends Legend {
@@ -16,7 +16,7 @@ public class LegendEqualSize extends Legend {
     @Override
     public void generate(float[] d, int divisions) {
         init(d, divisions);
-        if(Float.isNaN(max)) {
+        if (Float.isNaN(max)) {
             return;
         }
         cutoffs = new float[divisions];
@@ -27,32 +27,32 @@ public class LegendEqualSize extends Legend {
         int uniqueCount = 0;
         int uniqueSum = 0;
         int pos = 0;
-        for(int i=0;i<lastValue;i++){
-            if(uniqueCount >= step) {
+        for (int i = 0; i < lastValue; i++) {
+            if (uniqueCount >= step) {
                 uniqueSum += uniqueCount;
                 uniqueCount = 0;
 
-                while(i+1<lastValue && d[i] == d[i+1]) {
+                while (i + 1 < lastValue && d[i] == d[i + 1]) {
                     i++;
                 }
-                if(i < lastValue) {
+                if (i < lastValue) {
                     cutoffs[pos] = d[i - 1];
                 } else {
-                    while(pos < cutoffs.length) {
+                    while (pos < cutoffs.length) {
                         cutoffs[pos] = max;
-                        pos ++;
+                        pos++;
                     }
                     break;
                 }
 
-                pos ++;
+                pos++;
 
                 //update step based on remaining info
                 step = (int) Math.ceil((numberOfUniqueValues - uniqueSum) / (double) (divisions - pos));
             }
 
-            if(i == 0 || d[i-1] != d[i]) {
-                uniqueCount ++;
+            if (i == 0 || d[i - 1] != d[i]) {
+                uniqueCount++;
             }
         }
 

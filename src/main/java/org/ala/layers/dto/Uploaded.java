@@ -24,7 +24,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  */
 //@XmlRootElement(name="uploaded")
 //@XStreamAlias("uploaded")
-@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_DEFAULT)
 public class Uploaded {
     private String id;
     private String name;

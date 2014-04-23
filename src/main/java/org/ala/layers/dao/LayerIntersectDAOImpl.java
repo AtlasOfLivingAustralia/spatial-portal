@@ -15,6 +15,7 @@
 package org.ala.layers.dao;
 
 import au.com.bytecode.opencsv.CSVReader;
+
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -31,6 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.zip.GZIPInputStream;
 import javax.annotation.Resource;
+
 import org.ala.layers.dto.GridClass;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.dto.Layer;
@@ -53,7 +55,9 @@ import org.springframework.stereotype.Service;
 @Service("layerIntersectDao")
 public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger logger = Logger.getLogger(LayerIntersectDAOImpl.class);
     @Resource(name = "fieldDao")
     private FieldDAO fieldDao;
@@ -62,7 +66,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
     @Autowired
     private ApplicationContext appcontext;
-    
+
     IntersectConfig intersectConfig;
     LinkedBlockingQueue<GridCacheReader> gridReaders = null;
     int gridGroupCount = 0;
@@ -193,7 +197,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                         if (f != null && f.getClasses() != null) {
                             GridClass gc = f.getClasses().get((int) v[0]);
                             m.put("value", (gc == null ? "n/a" : gc.getName()));
-                            if (gc != null) {                                
+                            if (gc != null) {
                                 //TODO: re-enable intersection for type 'a' after correct implementation
                                 //TODO: of 'defaultField' fields table column
                                 g = new Grid(f.getFilePath() + File.separator + "polygons");
@@ -220,7 +224,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                     }
                 }
             } else {
-                String [] info = getConfig().getAnalysisLayerInfo(id);
+                String[] info = getConfig().getAnalysisLayerInfo(id);
 
                 if (info != null) {
                     String gid = info[0];
@@ -253,7 +257,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
     /**
      * Single coordinate sampling.
      *
-     * @param fieldIds comma separated field ids.
+     * @param fieldIds  comma separated field ids.
      * @param longitude
      * @param latitude
      * @return the intersection value for each input field id as a \n separated
@@ -355,8 +359,8 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                         }
                     }
                 }
-            } else {                
-                String [] info = getConfig().getAnalysisLayerInfo(fid);                
+            } else {
+                String[] info = getConfig().getAnalysisLayerInfo(fid);
 
                 if (info != null) {
                     String filename = info[1];
@@ -453,24 +457,24 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
                 logger.warn("failed to find layer for id '" + fieldIds[i] + "'");
             }
         }
-        if(callback == null)
+        if (callback == null)
             callback = new DummyCallback();
         return sampling(intersectionFiles, points, callback);
     }
 
     @Override
     public ArrayList<String> sampling(String[] fieldIds, double[][] points) {
-       return sampling(fieldIds, points, new DummyCallback());
+        return sampling(fieldIds, points, new DummyCallback());
     }
 
     @Override
     public ArrayList<String> sampling(IntersectionFile[] intersectionFiles, double[][] points) {
-       return sampling(intersectionFiles, points, new DummyCallback());
+        return sampling(intersectionFiles, points, new DummyCallback());
     }
 
     ArrayList<String> sampling(IntersectionFile[] intersectionFiles, double[][] points, IntersectCallback callback) {
         init();
-        if(callback == null)
+        if (callback == null)
             callback = new DummyCallback();
         if (intersectConfig.isLocalSampling()) {
             return localSampling(intersectionFiles, points, callback);
@@ -608,6 +612,7 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
 
     /**
      * Clean up and just return an int for LAYER object
+     *
      * @param id
      * @return
      */
@@ -642,10 +647,17 @@ public class LayerIntersectDAOImpl implements LayerIntersectDAO {
      * A dummy callback for convenience.
      */
     class DummyCallback implements IntersectCallback {
-        public void setLayersToSample(IntersectionFile[] layersToSample) {}
-        public void setCurrentLayer(IntersectionFile layer) {}
-        public void setCurrentLayerIdx(Integer layer) {}
-        public void progressMessage(String message) {}
+        public void setLayersToSample(IntersectionFile[] layersToSample) {
+        }
+
+        public void setCurrentLayer(IntersectionFile layer) {
+        }
+
+        public void setCurrentLayerIdx(Integer layer) {
+        }
+
+        public void progressMessage(String message) {
+        }
     }
 }
 

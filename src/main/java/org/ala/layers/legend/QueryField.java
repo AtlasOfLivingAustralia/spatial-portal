@@ -47,9 +47,9 @@ public class QueryField implements Serializable {
         TAXONOMIC("Taxonomic", 1),
         GEOSPATIAL("Geospatial", 2),
         TEMPORAL("Temporal", 3),
-        RECORD_DETAILS("Record Details", 4),
+        RECORD_DETAILS("Record details", 4),
         ATTRIBUTION("Attribution", 5),
-        RECORD_ASSERTIONS("Record Assertions", 6),
+        RECORD_ASSERTIONS("Record assertions", 6),
         CUSTOM("Custom", 0);
         private static final Map<String, GroupType> nameLookup = new HashMap<String, GroupType>();
 
@@ -102,7 +102,7 @@ public class QueryField implements Serializable {
     LegendObject legend;
 
 
-    public QueryField () {
+    public QueryField() {
         //for json deserializer
     }
 
@@ -427,7 +427,7 @@ public class QueryField implements Serializable {
             case FLOAT:
                 return legend.getColour(Float.isNaN(floatData[i]) ? Float.NaN : floatData[i]);
             case DOUBLE:
-                return legend.getColour((float)doubleData[i]);
+                return legend.getColour((float) doubleData[i]);
             case STRING:
                 return legend.getColour(stringData[intData[i]]);
             default:

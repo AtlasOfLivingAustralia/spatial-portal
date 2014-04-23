@@ -20,11 +20,12 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+
 import org.ala.layers.util.SpatialUtil;
 
 /**
  * This class generates bbox and area_km attributes for entries in the objects table.
- * 
+ *
  * @author jac24n
  */
 public class ObjectsStatsGenerator {

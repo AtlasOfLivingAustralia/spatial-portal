@@ -11,7 +11,7 @@
     <context:component-scan base-package="org.ala.layers" />
 
     <!-- Imports the configurations of the different infrastructure systems of the application -->
-    <import resource="data-config.xml" />
+    <import resource="file:/data/layers-store/config/layers-store-data-config.xml" />
     <!-- <import resource="mvc-config.xml" /> -->
 
 </beans>

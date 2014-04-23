@@ -19,21 +19,22 @@ import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Map;
+
 import org.ala.layers.intersect.Grid;
 
 /**
- *
  * @author Adam
  */
 public class Envelope {
 
     /**
      * Get a grid envelope as WKT.
-     *
+     * <p/>
      * Envelope one or more 'grid file name,minimum,maximum'.
      *
      * @param params comma separated grid file name,min,max,field.id2,min,max
@@ -91,7 +92,7 @@ public class Envelope {
 
     /**
      * Get a grid envelope as MultiPolygon.
-     *
+     * <p/>
      * Envelope one or more 'grid file name,minimum,maximum'.
      *
      * @param params comma separated grid file name,min,max,field.id2,min,max
@@ -144,7 +145,7 @@ public class Envelope {
 
     /**
      * Stream a grid envelope as WKT.
-     *
+     * <p/>
      * Envelope one or more 'grid file name,minimum,maximum'.
      *
      * @param params comma separated grid file name,min,max,field.id2,min,max
@@ -199,13 +200,12 @@ public class Envelope {
 
     /**
      * Get a grid envelope as WKT with index.
-     *
+     * <p/>
      * Only one envelope 'grid file name,minimum,maximum'.
      *
-     *
      * @param params comma separated grid file name,min,max,field.id2,min,max
-     * @param map whole grid layer mapping to individual polygons.
-     * Accumulative on the same layer with min and max values that do no overlap
+     * @param map    whole grid layer mapping to individual polygons.
+     *               Accumulative on the same layer with min and max values that do no overlap
      * @return Map containing "wkt" as String, "map" with updated input map,
      * "index" as csv with records
      * 'map value','wkt polygon character start position'.

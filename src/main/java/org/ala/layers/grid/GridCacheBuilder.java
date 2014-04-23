@@ -22,10 +22,10 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+
 import org.ala.layers.intersect.Grid;
 
 /**
- *
  * @author Adam
  */
 public class GridCacheBuilder {
@@ -125,7 +125,7 @@ public class GridCacheBuilder {
 
     private static void writeGroupGRD(File file, ArrayList<Grid> group) {
         Grid g = group.get(0);
-        g.writeHeader(file.getPath(), g.xmin, g.ymin,g.xmin + g.xres * g.nrows, g.ymin + g.yres * g.ncols, g.xres, g.yres, g.nrows, g.ncols, g.minval, g.maxval);
+        g.writeHeader(file.getPath(), g.xmin, g.ymin, g.xmin + g.xres * g.nrows, g.ymin + g.yres * g.ncols, g.xres, g.yres, g.nrows, g.ncols, g.minval, g.maxval);
     }
 
     private static void writeGroupGRI(File file, ArrayList<Grid> group) throws FileNotFoundException, IOException {

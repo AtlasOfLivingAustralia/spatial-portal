@@ -22,10 +22,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import org.ala.layers.intersect.IniReader;
 
 /**
- *
  * @author Adam
  */
 public class GridGroup {
@@ -154,7 +154,7 @@ public class GridGroup {
         }
     }
 
-//    /**
+    //    /**
 //     * buffering on top of RandomAccessFile
 //     *
 //     * @param afile

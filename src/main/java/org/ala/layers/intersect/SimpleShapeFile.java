@@ -31,10 +31,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * SimpleShapeFile is a representation of a Shape File for
  * intersections with points
- *
+ * <p/>
  * .shp MULTIPOLYGON only
  * .dbf can read values from String and Number columns only
- *
+ * <p/>
  * TODO: finish serialization
  *
  * @author Adam Collins
@@ -160,9 +160,8 @@ public class SimpleShapeFile extends Object implements Serializable {
      * at a column number, zero base.
      *
      * @param column integer representing column whose set of values
-     * is to be returned.  see <code>listColumns()</code> for listing
-     * column names.
-     *
+     *               is to be returned.  see <code>listColumns()</code> for listing
+     *               column names.
      * @return set of values in the column as String [] sorted
      */
     public String[] getColumnLookup(int column) {
@@ -188,15 +187,15 @@ public class SimpleShapeFile extends Object implements Serializable {
 
     /**
      * use when created from a shape file
-     *
+     * <p/>
      * identifies the index within a lookup list provided
      * for each provided point, or -1 for not found.
      *
      * @param points double [n][2]
-     * where
-     * 	n is number of points
-     *  [][0] is longitude
-     *  [][1] is latitude
+     *               where
+     *               n is number of points
+     *               [][0] is longitude
+     *               [][1] is latitude
      * @param lookup String [], same as output from <code>getColumnLookup(column)</code>
      * @param column .dbf column value to use
      * @return index within a lookup list provided
@@ -293,7 +292,7 @@ public class SimpleShapeFile extends Object implements Serializable {
     public int intersectInt(double longitude, double latitude) {
         if (singleColumn != null) {
             int v = shapesreference.intersection(longitude, latitude);
-            if(v >= 0) {
+            if (v >= 0) {
                 return singleColumn[v];
             } else {
                 return -1;
@@ -305,6 +304,7 @@ public class SimpleShapeFile extends Object implements Serializable {
 
     /**
      * gets shape header as String
+     *
      * @return String
      */
     public String getHeaderString() {
@@ -321,7 +321,7 @@ public class SimpleShapeFile extends Object implements Serializable {
 
     /**
      * defines a region by a points string, POLYGON only
-     *
+     * <p/>
      * TODO: define better format for parsing, including BOUNDING_BOX and CIRCLE
      *
      * @param pointsString points separated by ',' with longitude and latitude separated by ':'
@@ -436,7 +436,7 @@ class ShapeHeader extends Object implements Serializable {
     /**
      * constructor takes shapefile file path, appends .shp itself,
      * and reads in the shape file header values.
-     *
+     * <p/>
      * TODO: any validation
      *
      * @param fileprefix
@@ -445,7 +445,7 @@ class ShapeHeader extends Object implements Serializable {
         try {
             FileInputStream fis = new FileInputStream(fileprefix + ".shp");
             FileChannel fc = fis.getChannel();
-            ByteBuffer buffer = ByteBuffer.allocate(1024);		//header will be smaller
+            ByteBuffer buffer = ByteBuffer.allocate(1024);        //header will be smaller
 
             fc.read(buffer);
             buffer.flip();
@@ -487,6 +487,7 @@ class ShapeHeader extends Object implements Serializable {
 
     /**
      * format .shp header contents
+     *
      * @return
      */
     @Override
@@ -548,7 +549,6 @@ class ShapeHeader extends Object implements Serializable {
  * collection of shape file records
  *
  * @author adam
- *
  */
 class ShapeRecords extends Object implements Serializable {
 
@@ -562,7 +562,7 @@ class ShapeRecords extends Object implements Serializable {
     /**
      * constructor creates the shape file from filepath
      * with specified shape type (only 5, MULTIPOLYGON for now)
-     *
+     * <p/>
      * TODO: static
      * TODO: validation
      *
@@ -576,7 +576,7 @@ class ShapeRecords extends Object implements Serializable {
             FileChannel fc = fis.getChannel();
             ByteBuffer buffer = ByteBuffer.allocate((int) fc.size() - 100);
 
-            fc.read(buffer, 100);				//records header starts at 100
+            fc.read(buffer, 100);                //records header starts at 100
             buffer.flip();
             buffer.order(ByteOrder.BIG_ENDIAN);
 
@@ -642,7 +642,6 @@ class ShapeRecords extends Object implements Serializable {
  * collection of shape file records
  *
  * @author adam
- *
  */
 class ShapeRecord extends Object implements Serializable {
 
@@ -670,6 +669,7 @@ class ShapeRecord extends Object implements Serializable {
 
     /**
      * format .shp record summary
+     *
      * @return String
      */
     @Override
@@ -688,7 +688,7 @@ class ShapeRecord extends Object implements Serializable {
      * @param part index of shape part
      * @return points as double[]
      * where
-     * 	[] is longitude,latitude
+     * [] is longitude,latitude
      */
     public double[] getPoints(int part) {
         return shape.getPoints(part);
@@ -706,11 +706,10 @@ class ShapeRecord extends Object implements Serializable {
 
 /**
  * empty shape template
- *
+ * <p/>
  * TODO: abstract
  *
  * @author adam
- *
  */
 class Shape extends Object implements Serializable {
 
@@ -718,7 +717,6 @@ class Shape extends Object implements Serializable {
 
     /**
      * default constructor
-     *
      */
     public Shape() {
     }
@@ -727,10 +725,9 @@ class Shape extends Object implements Serializable {
      * returns a list of points for the numbered shape part.
      *
      * @param part index of part to return
-     *
      * @return double[] containing longitude and latitude
      * pairs where
-     * 	[] is longitude,latitude
+     * [] is longitude,latitude
      */
     public double[] getPoints(int part) {
         return null;
@@ -750,7 +747,6 @@ class Shape extends Object implements Serializable {
  * object for shape file POLYGON
  *
  * @author adam
- *
  */
 class Polygon extends Shape {
 
@@ -766,11 +762,11 @@ class Polygon extends Shape {
 
     /**
      * creates a shape file POLYGON from a ByteBuffer
-     *
+     * <p/>
      * TODO: static
      *
      * @param bb ByteBuffer containing record bytes
-     * from a shape file POLYGON record
+     *           from a shape file POLYGON record
      */
     public Polygon(ByteBuffer bb) {
         int i;
@@ -792,7 +788,7 @@ class Polygon extends Shape {
             parts[i] = bb.getInt();
         }
 
-        points = new double[numpoints * 2];			//x,y pairs
+        points = new double[numpoints * 2];            //x,y pairs
         for (i = 0; i < numpoints * 2; i++) {
             points[i] = bb.getDouble();
         }
@@ -800,6 +796,7 @@ class Polygon extends Shape {
 
     /**
      * output .shp POLYGON summary
+     *
      * @return String
      */
     @Override
@@ -826,7 +823,7 @@ class Polygon extends Shape {
 
     /**
      * returns number of parts in this shape
-     *
+     * <p/>
      * one part == one polygon
      *
      * @return number of parts as int
@@ -840,15 +837,14 @@ class Polygon extends Shape {
      * returns a list of points for the numbered shape part.
      *
      * @param part index of part to return
-     *
      * @return double[] containing longitude and latitude
      * pairs where
-     * 	[] is longitude, latitude
+     * [] is longitude, latitude
      */
     @Override
     public double[] getPoints(int part) {
-        double[] output;				//data to return
-        int start = parts[part];		//first index of this part
+        double[] output;                //data to return
+        int start = parts[part];        //first index of this part
 
         /* last index of this part */
         int end = numpoints;
@@ -871,7 +867,6 @@ class Polygon extends Shape {
  * object for shape file POLYGON
  *
  * @author adam
- *
  */
 class PolygonZ extends Shape {
 
@@ -887,11 +882,11 @@ class PolygonZ extends Shape {
 
     /**
      * creates a shape file POLYGONZ from a ByteBuffer
-     *
+     * <p/>
      * TODO: static
      *
      * @param bb ByteBuffer containing record bytes
-     * from a shape file POLYGONZ record
+     *           from a shape file POLYGONZ record
      */
     public PolygonZ(ByteBuffer bb, int contentlength) {
         int i;
@@ -913,7 +908,7 @@ class PolygonZ extends Shape {
             parts[i] = bb.getInt();
         }
 
-        points = new double[numpoints * 2];			//x,y pairs
+        points = new double[numpoints * 2];            //x,y pairs
         for (i = 0; i < numpoints * 2; i++) {
             points[i] = bb.getDouble();
         }
@@ -935,6 +930,7 @@ class PolygonZ extends Shape {
 
     /**
      * output .shp POLYGON summary
+     *
      * @return String
      */
     @Override
@@ -961,7 +957,7 @@ class PolygonZ extends Shape {
 
     /**
      * returns number of parts in this shape
-     *
+     * <p/>
      * one part == one polygon
      *
      * @return number of parts as int
@@ -975,15 +971,14 @@ class PolygonZ extends Shape {
      * returns a list of points for the numbered shape part.
      *
      * @param part index of part to return
-     *
      * @return double[] containing longitude and latitude
      * pairs where
-     * 	[] is longitude, latitude
+     * [] is longitude, latitude
      */
     @Override
     public double[] getPoints(int part) {
-        double[] output;				//data to return
-        int start = parts[part];		//first index of this part
+        double[] output;                //data to return
+        int start = parts[part];        //first index of this part
 
         /* last index of this part */
         int end = numpoints;
@@ -1006,7 +1001,6 @@ class PolygonZ extends Shape {
  * .dbf file object
  *
  * @author adam
- *
  */
 class DBF extends Object implements Serializable {
 
@@ -1026,6 +1020,7 @@ class DBF extends Object implements Serializable {
 
     /**
      * constructor for new DBF from .dbf filename
+     *
      * @param filename path and file name of .dbf file
      */
     public DBF(String filename) {
@@ -1058,7 +1053,7 @@ class DBF extends Object implements Serializable {
      *
      * @param column_name column name as String
      * @return index of column_name as int
-     * 	-1 for none
+     * -1 for none
      */
     public int getColumnIdx(String column_name) {
         return dbfheader.getColumnIdx(column_name);
@@ -1075,7 +1070,8 @@ class DBF extends Object implements Serializable {
 
     /**
      * gets the value at a row and column
-     * @param row row index as int
+     *
+     * @param row    row index as int
      * @param column column index as int
      * @return value as String
      */
@@ -1143,7 +1139,6 @@ class DBF extends Object implements Serializable {
  * .dbf header object
  *
  * @author adam
- *
  */
 class DBFHeader extends Object implements Serializable {
 
@@ -1167,6 +1162,7 @@ class DBFHeader extends Object implements Serializable {
 
     /**
      * constructor for DBFHeader from  a .dbf filename
+     *
      * @param filename filename of .dbf file as String
      */
     public DBFHeader(String filename) {
@@ -1180,7 +1176,7 @@ class DBFHeader extends Object implements Serializable {
             FileChannel fc = fis.getChannel();
             ByteBuffer buffer = ByteBuffer.allocate((int) fc.size());
             fc.read(buffer);
-            buffer.flip();						//ready to read
+            buffer.flip();                        //ready to read
             buffer.order(ByteOrder.BIG_ENDIAN);
 
             filetype = (0xFF & buffer.get());
@@ -1196,7 +1192,8 @@ class DBFHeader extends Object implements Serializable {
                 buffer.get();
             }
             tableflags = (0xFF & buffer.get());
-            /* codepagemark = */ buffer.get();
+            /* codepagemark = */
+            buffer.get();
             buffer.get();
             buffer.get();
 
@@ -1218,6 +1215,7 @@ class DBFHeader extends Object implements Serializable {
 
     /**
      * gets field list
+     *
      * @return all fields as ArrayList<DBFField>
      */
     public ArrayList<DBFField> getFields() {
@@ -1235,6 +1233,7 @@ class DBFHeader extends Object implements Serializable {
 
     /**
      * gets the number of records in the .dbf
+     *
      * @return number of records as int
      */
     public int getNumberOfRecords() {
@@ -1256,12 +1255,12 @@ class DBFHeader extends Object implements Serializable {
 
     /**
      * gets the index of a column from a column name
-     *
+     * <p/>
      * case insensitive
      *
      * @param column_name column name as String
      * @return index of column name
-     *  -1 for not found
+     * -1 for not found
      */
     public int getColumnIdx(String column_name) {
         for (int i = 0; i < fields.size(); i++) {
@@ -1275,6 +1274,7 @@ class DBFHeader extends Object implements Serializable {
 
     /**
      * format .dbf header summary
+     *
      * @return String
      */
     @Override
@@ -1316,7 +1316,6 @@ class DBFHeader extends Object implements Serializable {
  * .dbf header field object
  *
  * @author adam
- *
  */
 class DBFField extends Object implements Serializable {
 
@@ -1330,8 +1329,8 @@ class DBFField extends Object implements Serializable {
     int length;
     int decimals;
     int flags;
-    byte[] data;		//placeholder for reading byte blocks
-	/* don't care autoinc */
+    byte[] data;        //placeholder for reading byte blocks
+    /* don't care autoinc */
 
     void test() {
     }
@@ -1339,11 +1338,11 @@ class DBFField extends Object implements Serializable {
     /**
      * constructor for DBFField with first byte separated from
      * rest of the data structure
-     *
+     * <p/>
      * TODO: static and more cleaner
      *
-     * @param firstbyte	first byte of .dbf field record as byte
-     * @param buffer remaining byes of .dbf field record as ByteBuffer
+     * @param firstbyte first byte of .dbf field record as byte
+     * @param buffer    remaining byes of .dbf field record as ByteBuffer
      */
     public DBFField(byte firstbyte, ByteBuffer buffer) {
         int i;
@@ -1385,6 +1384,7 @@ class DBFField extends Object implements Serializable {
 
     /**
      * gets field name
+     *
      * @return field name as String
      */
     public String getName() {
@@ -1393,6 +1393,7 @@ class DBFField extends Object implements Serializable {
 
     /**
      * gets field type
+     *
      * @return field type as char
      */
     public char getType() {
@@ -1401,7 +1402,7 @@ class DBFField extends Object implements Serializable {
 
     /**
      * gets data block
-     *
+     * <p/>
      * for use in .read(getDataBlock()) like functions
      * when reading records
      *
@@ -1413,6 +1414,7 @@ class DBFField extends Object implements Serializable {
 
     /**
      * format Field summary
+     *
      * @return String
      */
     @Override
@@ -1425,7 +1427,6 @@ class DBFField extends Object implements Serializable {
  * collection of .dbf records
  *
  * @author adam
- *
  */
 class DBFRecords extends Object implements Serializable {
 
@@ -1440,8 +1441,9 @@ class DBFRecords extends Object implements Serializable {
     /**
      * constructor for collection of DBFRecord from a DBFHeader and
      * .dbf filename
+     *
      * @param filename .dbf file as String
-     * @param header dbf header from filename as DBFHeader
+     * @param header   dbf header from filename as DBFHeader
      */
     public DBFRecords(String filename, DBFHeader header) {
         /* init */
@@ -1454,7 +1456,7 @@ class DBFRecords extends Object implements Serializable {
             FileChannel fc = fis.getChannel();
             ByteBuffer buffer = ByteBuffer.allocate((int) fc.size() - header.getRecordsOffset());
             fc.read(buffer, header.getRecordsOffset());
-            buffer.flip();			//prepare for reading
+            buffer.flip();            //prepare for reading
 
 
 
@@ -1486,7 +1488,7 @@ class DBFRecords extends Object implements Serializable {
             FileChannel fc = fis.getChannel();
             ByteBuffer buffer = ByteBuffer.allocate((int) fc.size() - header.getRecordsOffset());
             fc.read(buffer, header.getRecordsOffset());
-            buffer.flip();			//prepare for reading
+            buffer.flip();            //prepare for reading
 
 
 
@@ -1509,7 +1511,8 @@ class DBFRecords extends Object implements Serializable {
 
     /**
      * gets a value at a row and column
-     * @param row row number as int
+     *
+     * @param row    row number as int
      * @param column column number as int
      * @return value as String or "" if invalid input or column format
      */
@@ -1522,6 +1525,7 @@ class DBFRecords extends Object implements Serializable {
 
     /**
      * format all Records
+     *
      * @return String
      */
     @Override
@@ -1539,7 +1543,6 @@ class DBFRecords extends Object implements Serializable {
  * .dbf record object
  *
  * @author adam
- *
  */
 class DBFRecord extends Object implements Serializable {
 
@@ -1550,7 +1553,7 @@ class DBFRecord extends Object implements Serializable {
     String[] record;
     /**
      * deletion flag
-     *
+     * <p/>
      * TODO: make use of this
      */
     int deletionflag;
@@ -1561,7 +1564,7 @@ class DBFRecord extends Object implements Serializable {
 
     /**
      * constructs new DBFRecord from bytebuffer and list of fields
-     *
+     * <p/>
      * TODO: implement more than C and N types
      *
      * @param buffer byte buffer for reading fields as ByteBuffer
@@ -1574,14 +1577,14 @@ class DBFRecord extends Object implements Serializable {
         /* iterate through each record to fill */
         for (int i = 0; i < record.length; i++) {
             DBFField f = fields.get(i);
-            byte[] data = f.getDataBlock();		//get pre-built byte[]
+            byte[] data = f.getDataBlock();        //get pre-built byte[]
             buffer.get(data);
             try {
                 switch (f.getType()) {
-                    case 'C':			//string
+                    case 'C':            //string
                         record[i] = (new String(data, "US-ASCII")).trim();
                         break;
-                    case 'N':			//number as string
+                    case 'N':            //number as string
                         record[i] = (new String(data, "US-ASCII")).trim();
                         break;
                 }
@@ -1599,15 +1602,15 @@ class DBFRecord extends Object implements Serializable {
         /* iterate through each record to fill */
         for (int i = 0; i < fields.size(); i++) {
             DBFField f = fields.get(i);
-            byte[] data = f.getDataBlock();		//get pre-built byte[]
+            byte[] data = f.getDataBlock();        //get pre-built byte[]
             buffer.get(data);
 
             try {
                 switch (f.getType()) {
-                    case 'C':			//string
+                    case 'C':            //string
                         fieldValues[i] = (new String(data, "US-ASCII")).trim();
                         break;
-                    case 'N':			//number as string
+                    case 'N':            //number as string
                         fieldValues[i] = (new String(data, "US-ASCII")).trim();
                         break;
                 }
@@ -1628,6 +1631,7 @@ class DBFRecord extends Object implements Serializable {
 
     /**
      * gets the value in this record at a column
+     *
      * @param column column index for value to return
      * @return value as String
      */
@@ -1641,6 +1645,7 @@ class DBFRecord extends Object implements Serializable {
 
     /**
      * format this record
+     *
      * @return String
      */
     @Override
@@ -1656,13 +1661,12 @@ class DBFRecord extends Object implements Serializable {
 
 /**
  * for balancing shape files with large numbers of shapes.
- *
+ * <p/>
  * creates a grid with each cell listing shapes that overlap with it.
- *
+ * <p/>
  * TODO: not square dimensions
  *
  * @author adam
- *
  */
 class ShapesReference extends Object implements Serializable {
 
@@ -1755,7 +1759,7 @@ class ShapesReference extends Object implements Serializable {
      * performs intersection on one point
      *
      * @param longitude longitude of point to intersect as double
-     * @param latitude latitude of point to intersect as double
+     * @param latitude  latitude of point to intersect as double
      * @return shape index if intersection found, or -1 for no intersection
      */
     public int intersection(double longitude, double latitude) {

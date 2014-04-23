@@ -16,15 +16,18 @@
 package org.ala.layers.dao;
 
 import java.util.List;
+
 import org.ala.layers.dto.Field;
 
 /**
  * DAO for the Field object
- * 
+ *
  * @author ajay
  */
 public interface FieldDAO {
     public List<Field> getFields();
+
     public Field getFieldById(String id);
+
     public List<Field> getFieldsByDB();
 }

@@ -1,6 +1,7 @@
 package org.ala.spatial.analysis.layers;
 
 import au.com.bytecode.opencsv.CSVReader;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,10 +15,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.zip.GZIPInputStream;
+
 import org.ala.layers.intersect.SimpleRegion;
 
 /**
- *
  * @author Adam
  */
 public class Records {
@@ -31,6 +32,7 @@ public class Records {
     public Records(String biocache_service_url, String q, double[] bbox, String filename, SimpleRegion region) throws IOException {
         init(biocache_service_url, q, bbox, filename, region, "names_and_lsid");
     }
+
     public Records(String biocache_service_url, String q, double[] bbox, String filename, SimpleRegion region, String facetField) throws IOException {
         init(biocache_service_url, q, bbox, filename, region, facetField);
     }
@@ -40,7 +42,12 @@ public class Records {
         int recordsEstimate = 26000000;
         int pageSize = 1000000;
 
-        String bboxTerm = String.format("longitude:%%5B%f%%20TO%%20%f%%5D%%20AND%%20latitude:%%5B%f%%20TO%%20%f%%5D", bbox[0], bbox[2], bbox[1], bbox[3]);
+        String bboxTerm = null;
+        if (bbox != null) {
+            bboxTerm = String.format("&fq=longitude:%%5B%f%%20TO%%20%f%%5D%%20AND%%20latitude:%%5B%f%%20TO%%20%f%%5D", bbox[0], bbox[2], bbox[1], bbox[3]);
+        } else {
+            bboxTerm = "";
+        }
 
         points = new ArrayList<Double>(recordsEstimate);
         lsidIdx = new ArrayList<Integer>(recordsEstimate);
@@ -55,7 +62,7 @@ public class Records {
         }
 
         while (true && start < 300000000) {
-            String url = biocache_service_url + "/webportal/occurrences.gz?q=" + q.replace(" ", "%20") + "&fq=" + bboxTerm + "&pageSize=" + pageSize + "&start=" + start + "&fl=longitude,latitude," + facetField + ",year";
+            String url = biocache_service_url + "/webportal/occurrences.gz?q=" + q.replace(" ", "%20") + bboxTerm + "&pageSize=" + pageSize + "&start=" + start + "&fl=longitude,latitude," + facetField + ",year";
 
             int tryCount = 0;
             InputStream is = null;
@@ -344,7 +351,7 @@ public class Records {
                     try {
                         double longitude = Double.parseDouble(line[header[1]]);
                         double latitude = Double.parseDouble(line[header[2]]);
-                        if(region != null && !region.isWithin(longitude, latitude)) {
+                        if (region != null && !region.isWithin(longitude, latitude)) {
                             continue;
                         }
                         points.add(longitude);
@@ -416,6 +423,7 @@ public class Records {
         speciesSize = lsids.length;
         lsids = null;
     }
+
     Integer[] sortOrder;
     int[] sortOrderRowStarts;
     double soMinLat;

@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+
 import org.ala.layers.util.SpatialUtil;
 
 /**
- *
  * @author Adam
  */
 public class DistributionGenerator {
@@ -51,7 +51,7 @@ public class DistributionGenerator {
 
     static public void main(String[] args) {
         System.out.println("Calculates and fills empty area_km in table distributionshapes.\n\nargs[0] = threadcount, args[1] = db connection string,\n args[2] = db username,\n args[3] = password\n");
-        if(args.length >= 4) {
+        if (args.length >= 4) {
             CONCURRENT_THREADS = Integer.parseInt(args[0]);
             db_url = args[1];
             db_usr = args[2];
@@ -69,7 +69,7 @@ public class DistributionGenerator {
             conn = getConnection();
             String sql = "SELECT id, ST_AsText(the_geom) as wkt FROM distributionshapes WHERE area_km is null"
                     + " limit 100";
-            if(conn == null) {
+            if (conn == null) {
                 System.out.println("connection is null");
             } else {
                 System.out.println("connection is not null");
@@ -112,7 +112,7 @@ public class DistributionGenerator {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if(conn != null) {
+            if (conn != null) {
                 try {
                     conn.close();
                 } catch (Exception e) {

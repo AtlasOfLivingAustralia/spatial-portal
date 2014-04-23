@@ -16,10 +16,10 @@ package org.ala.layers.intersect;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import org.apache.log4j.Logger;
 
 /**
- *
  * @author Adam
  */
 public class SimpleShapeFileCache {

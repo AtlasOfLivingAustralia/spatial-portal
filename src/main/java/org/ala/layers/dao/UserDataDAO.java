@@ -30,17 +30,17 @@ public interface UserDataDAO {
 
     public Ud_header get(Long ud_header_id);
 
-    public String [] getStringArray(String  header_id, String ref);
+    public String[] getStringArray(String header_id, String ref);
 
-    public boolean [] getBooleanArray(String header_id, String ref);
+    public boolean[] getBooleanArray(String header_id, String ref);
 
-    public double [][] getDoublesArray(String  header_id, String ref);
+    public double[][] getDoublesArray(String header_id, String ref);
 
-    public boolean setStringArray(String  header_id, String ref, String [] data);
+    public boolean setStringArray(String header_id, String ref, String[] data);
 
     public boolean setBooleanArray(String header_id, String ref, boolean[] data);
 
-    public boolean setDoublesArray(String  header_id, String ref, double [][] data);
+    public boolean setDoublesArray(String header_id, String ref, double[][] data);
 
     public List<Ud_header> list(String user_id);
 
@@ -48,7 +48,7 @@ public interface UserDataDAO {
 
     public boolean setQueryField(String ud_header_id, String ref, QueryField qf);
 
-    public double [] getDoubleArray(String ud_header_id, String ref);
+    public double[] getDoubleArray(String ud_header_id, String ref);
 
     public QueryField getQueryField(String ud_header_id, String ref);
 

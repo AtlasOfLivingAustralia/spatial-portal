@@ -22,11 +22,12 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+
 import org.apache.log4j.Logger;
 
 /**
  * Provides read only access to an ini file.
- * 
+ * <p/>
  * File format expected is:
  * <code>
  * [section_name]
@@ -34,10 +35,10 @@ import org.apache.log4j.Logger;
  * </code>
  * where key_values are able to be returned when a
  * section_name and key_name are provided.
- * 
+ * <p/>
  * Errors and absences result in default values returned
  * from get functions.
- * 
+ *
  * @author Adam Collins
  */
 public class IniReader {
@@ -56,6 +57,7 @@ public class IniReader {
     /**
      * Constructor loads ini file into the document object.
      * Any errors or failure will log an error only.
+     *
      * @param filename ini file to load
      */
     public IniReader(String filename) {
@@ -65,6 +67,7 @@ public class IniReader {
 
     /**
      * errors result in a log of the error only
+     *
      * @param filename file to load into document object
      */
     private void loadFile(String filename) {
@@ -104,16 +107,15 @@ public class IniReader {
             }
             in.close();
         } catch (Exception e) {
-            logger.error("error opening ini file",e);
+            logger.error("error opening ini file", e);
         }
     }
 
     /**
-     *
      * @param section section name as String
-     * @param key key name as String
+     * @param key     key name as String
      * @return value of key as String
-     * 	empty string when key is not found
+     * empty string when key is not found
      */
     public String getStringValue(String section, String key) {
         String ret = document.get(section + "\\" + key);
@@ -124,11 +126,10 @@ public class IniReader {
     }
 
     /**
-     *
      * @param section section name as String
-     * @param key key name as String
+     * @param key     key name as String
      * @return value of key as int
-     * 	0 when key is not found
+     * 0 when key is not found
      */
     public int getIntegerValue(String section, String key) {
         String str = document.get(section + "\\" + key);
@@ -142,11 +143,10 @@ public class IniReader {
     }
 
     /**
-     *
      * @param section section name as String
-     * @param key key name as String
+     * @param key     key name as String
      * @return value of key as double
-     * 	0 when key is not found
+     * 0 when key is not found
      */
     public double getDoubleValue(String section, String key) {
         String str = document.get(section + "\\" + key);
@@ -163,7 +163,7 @@ public class IniReader {
      * @param section
      * @param key
      * @return true if value was loaded from the ini file
-     * 	false if the value was not loaded from the ini file
+     * false if the value was not loaded from the ini file
      */
     public boolean valueExists(String section, String key) {
         return document.get(section + "\\" + key) != null;

@@ -19,7 +19,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * This class serves as a model object for the "distributions" table
- * 
+ *
  * @author ajay
  */
 
@@ -337,7 +337,7 @@ public class Distribution {
     public void setGroup_name(String group_name) {
         this.group_name = group_name;
     }
-    
+
 
     public String getBounding_box() {
         return bounding_box;

@@ -16,12 +16,12 @@
 package org.ala.layers.tabulation;
 
 import java.io.IOException;
+
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
 import org.ala.spatial.analysis.layers.Records;
 
 /**
- *
  * @author Adam
  */
 public class TabulationUtil {
@@ -31,7 +31,7 @@ public class TabulationUtil {
         int result = records.getRecordsSize();
         return result;
     }
-    
+
     static public int calculateSpecies(String pathToRecords, String wkt) throws IOException {
         SimpleRegion region = SimpleShapeFile.parseWKT(wkt);
         Records records = new Records(pathToRecords, region);

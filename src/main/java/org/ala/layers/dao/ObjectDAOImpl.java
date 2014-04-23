@@ -64,7 +64,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
 /**
- * 
  * @author ajay
  */
 @Service("objectDao")
@@ -77,7 +76,9 @@ public class ObjectDAOImpl implements ObjectDAO {
     private static final String SUB_MIN = "*min*";
     private static final String SUB_MAX = "*max*";
     private static final String SUB_MAX_PLUS_ONE = "*max_plus_one*";
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger logger = Logger.getLogger(ObjectDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
     @Resource(name = "layerIntersectDao")
@@ -185,19 +186,20 @@ public class ObjectDAOImpl implements ObjectDAO {
                             // br.close();
                             RandomAccessFile raf = new RandomAccessFile(f.getFilePath() + File.separator + c.getKey() + ".wkt.index.dat", "r");
                             long len = raf.length() / (4 + 4 + 4 * 4 + 4); // group
-                                                                           // number,
-                                                                           // character
-                                                                           // offset,
-                                                                           // minx,
-                                                                           // miny,
-                                                                           // maxx,
-                                                                           // maxy,
-                                                                           // area
-                                                                           // sq
-                                                                           // km
+                            // number,
+                            // character
+                            // offset,
+                            // minx,
+                            // miny,
+                            // maxx,
+                            // maxy,
+                            // area
+                            // sq
+                            // km
                             for (int i = 0; i < len; i++) {
                                 int n = raf.readInt();
-                                /* int charoffset = */raf.readInt();
+                                /* int charoffset = */
+                                raf.readInt();
                                 float minx = raf.readFloat();
                                 float miny = raf.readFloat();
                                 float maxx = raf.readFloat();
@@ -311,7 +313,7 @@ public class ObjectDAOImpl implements ObjectDAO {
 
                                         HashMap<String, Object> map = getGridIndexEntry(f.getFilePath() + File.separator + s[1], s[2]);
 
-                                        cells = new String[] { s[2], String.valueOf(map.get("charoffset")) };
+                                        cells = new String[]{s[2], String.valueOf(map.get("charoffset"))};
                                         if (cells != null) {
                                             // get polygon wkt string
                                             File file = new File(f.getFilePath() + File.separator + s[1] + ".wkt");
@@ -450,7 +452,7 @@ public class ObjectDAOImpl implements ObjectDAO {
         String sql = MessageFormat
                 .format("select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km from search_objects_by_geometry_intersect(?, ST_GeomFromText(''POINT({0} {1})'', 4326)) o, fields f WHERE o.fid = f.id",
                         lng, lat);
-        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] { fid });
+        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[]{fid});
         updateObjectWms(l);
         if (l == null || l.isEmpty()) {
             // get grid classes intersection
@@ -473,10 +475,10 @@ public class ObjectDAOImpl implements ObjectDAO {
                         o.setArea_km(gc.getArea_km());
                         o.setWmsurl(getGridClassWms(f.getLayerName(), gc));
                         l.add(o);
-                    } else if(f.getType().equals("b")) {//polygon pid
+                    } else if (f.getType().equals("b")) {//polygon pid
                         Grid g = new Grid(f.getFilePath() + File.separator + "polygons");
                         if (g != null) {
-                            float[] vs = g.getValues(new double[][] { { lng, lat } });
+                            float[] vs = g.getValues(new double[][]{{lng, lat}});
                             String pid = f.getLayerPid() + ":" + gc.getId() + ":" + ((int) vs[0]);
                             l.add(getObjectByPid(pid));
                         }
@@ -507,7 +509,7 @@ public class ObjectDAOImpl implements ObjectDAO {
     public List<Objects> getObjectByFidAndName(String fid, String name) {
         logger.info("Getting object info for fid = " + fid + " and name: (" + name + ") ");
         String sql = "select o.pid, o.id, o.name, o.desc as description, o.fid as fid, f.name as fieldname, o.bbox, o.area_km, ST_AsText(the_geom) as geometry from objects o, fields f where o.fid = ? and o.name like ? and o.fid = f.id";
-        List<Objects> objects = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] { fid, name });
+        List<Objects> objects = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[]{fid, name});
         updateObjectWms(objects);
         return objects;
     }
@@ -521,7 +523,7 @@ public class ObjectDAOImpl implements ObjectDAO {
         return layerIntersectDao.getConfig().getGeoserverUrl()
                 + gridPolygonWmsUrl.replace(SUB_LAYERNAME, layername)
                 + formatSld(gridClassSld, layername, String.valueOf(gc.getMinShapeIdx() - 1), String.valueOf(gc.getMinShapeIdx()), String.valueOf(gc.getMaxShapeIdx()),
-                        String.valueOf(gc.getMaxShapeIdx() + 1));
+                String.valueOf(gc.getMaxShapeIdx() + 1));
     }
 
     private String formatSld(String sld, String layername, String min_minus_one, String min, String max, String max_plus_one) {
@@ -597,7 +599,7 @@ public class ObjectDAOImpl implements ObjectDAO {
         }
 
         // sampling
-        ArrayList<String> sample = layerIntersectDao.sampling(new String[] { layerFilter.getLayername() }, points);
+        ArrayList<String> sample = layerIntersectDao.sampling(new String[]{layerFilter.getLayername()}, points);
 
         // filter
         List<Objects> matched = new ArrayList<Objects>();

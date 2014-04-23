@@ -16,6 +16,7 @@
 package org.ala.layers.dao;
 
 import java.util.List;
+
 import org.ala.layers.dto.LayerPid;
 
 /**
@@ -25,7 +26,9 @@ import org.ala.layers.dto.LayerPid;
  */
 public interface LayerPidDAO {
     public List<LayerPid> getLayers();
+
     public LayerPid getLayerById(String id);
+
     public LayerPid getLayerByPid(String pid);
 
 }

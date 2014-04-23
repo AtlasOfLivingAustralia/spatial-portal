@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Comparator;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -29,10 +30,10 @@ import org.apache.log4j.Logger;
  * Created on June 24, 2005, 4:12 PM
  *
  * @author Robert Hijmans, rhijmans@berkeley.edu
- *
- * Updated 15/2/2010, Adam
- *
- * Interface for .gri/.grd files for now
+ *         <p/>
+ *         Updated 15/2/2010, Adam
+ *         <p/>
+ *         Interface for .gri/.grd files for now
  */
 public class Grid { //  implements Serializable
 
@@ -60,8 +61,9 @@ public class Grid { //  implements Serializable
 
     /**
      * loads grd for gri file reference
+     *
      * @param fname full path and file name without file extension
-     * of .gri and .grd files to open
+     *              of .gri and .grd files to open
      */
     public Grid(String fname) { // construct Grid from file
         filename = fname;
@@ -182,7 +184,7 @@ public class Grid { //  implements Serializable
         }
     }
 
-//transform to file position
+    //transform to file position
     public int getcellnumber(double x, double y) {
         if (x < xmin || x > xmax || y < ymin || y > ymax) //handle invalid inputs
         {
@@ -340,12 +342,12 @@ public class Grid { //  implements Serializable
                 afile = new RandomAccessFile(filename + ".GRI", "r");
             }
 
-            byte[] b = new byte[(int)Math.min(afile.length(),maxArrayLength)];
+            byte[] b = new byte[(int) Math.min(afile.length(), maxArrayLength)];
 
             int i = 0;
             int max = 0;
             int len;
-            while((len = afile.read(b)) > 0) {
+            while ((len = afile.read(b)) > 0) {
                 ByteBuffer bb = ByteBuffer.wrap(b);
 
                 if (byteorderLSB) {
@@ -355,7 +357,7 @@ public class Grid { //  implements Serializable
                 if (datatype.equalsIgnoreCase("UBYTE")) {
                     max += len;
                     max = Math.min(max, ret.length);
-                    for (;i < max; i++) {
+                    for (; i < max; i++) {
                         ret[i] = bb.get();
                         if (ret[i] < 0) {
                             ret[i] += 256;
@@ -368,44 +370,44 @@ public class Grid { //  implements Serializable
                         ret[i] = bb.get();
                     }
                 } else if (datatype.equalsIgnoreCase("SHORT")) {
-                    max += len/2;
+                    max += len / 2;
                     max = Math.min(max, ret.length);
                     for (; i < max; i++) {
                         ret[i] = bb.getShort();
                     }
                 } else if (datatype.equalsIgnoreCase("INT")) {
-                    max += len/4;
+                    max += len / 4;
                     max = Math.min(max, ret.length);
                     for (; i < max; i++) {
                         ret[i] = bb.getInt();
                     }
                 } else if (datatype.equalsIgnoreCase("LONG")) {
-                    max += len/8;
+                    max += len / 8;
                     max = Math.min(max, ret.length);
                     for (; i < max; i++) {
                         ret[i] = bb.getLong();
                     }
                 } else if (datatype.equalsIgnoreCase("FLOAT")) {
-                    max += len/4;
+                    max += len / 4;
                     max = Math.min(max, ret.length);
                     for (; i < max; i++) {
                         ret[i] = bb.getFloat();
                     }
                 } else if (datatype.equalsIgnoreCase("DOUBLE")) {
-                   max += len/8;
-                   max = Math.min(max, ret.length);
+                    max += len / 8;
+                    max = Math.min(max, ret.length);
                     for (; i < max; i++) {
                         ret[i] = (float) bb.getDouble();
                     }
                 } else {
                     // / should not happen; catch anyway...
-                    max += len/4;
+                    max += len / 4;
                     for (; i < max; i++) {
                         ret[i] = Float.NaN;
                     }
                 }
             }
-            
+
             //replace not a number
             for (i = 0; i < length; i++) {
                 if ((float) ret[i] == (float) nodatavalue) {
@@ -415,7 +417,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error("An error has occurred - probably a file error",e);
+            logger.error("An error has occurred - probably a file error", e);
         }
         grid_data = ret;
         return ret;
@@ -423,9 +425,9 @@ public class Grid { //  implements Serializable
 
     /**
      * for DomainGenerator
-     *
+     * <p/>
      * writes out a list of double (same as getGrid() returns) to a file
-     *
+     * <p/>
      * byteorderlsb
      * data type, FLOAT
      *
@@ -459,7 +461,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error("error writing grid file",e);
+            logger.error("error writing grid file", e);
         }
 
 
@@ -469,9 +471,9 @@ public class Grid { //  implements Serializable
 
     /**
      * for grid cutter
-     *
+     * <p/>
      * writes out a list of double (same as getGrid() returns) to a file
-     *
+     * <p/>
      * byteorderlsb
      * data type, FLOAT
      *
@@ -515,7 +517,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error("error writing grid file",e);
+            logger.error("error writing grid file", e);
         }
 
         writeHeader(newfilename, xmin, ymin, xmin + xres * ncols, ymin + yres * nrows, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
@@ -558,7 +560,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error("error writing grid file",e);
+            logger.error("error writing grid file", e);
         }
 
         writeHeader(newfilename, xmin, ymin, xmin + xres * ncols, ymin + yres * nrows, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
@@ -596,14 +598,14 @@ public class Grid { //  implements Serializable
             fw.flush();
             fw.close();
         } catch (Exception e) {
-            logger.error("error writing grid file header",e);
+            logger.error("error writing grid file header", e);
 
         }
     }
 
     /**
      * do get values of grid for provided points.
-     *
+     * <p/>
      * loads whole grid file as double[] in process
      *
      * @param points
@@ -773,7 +775,7 @@ public class Grid { //  implements Serializable
                 }
             }
         } catch (Exception e) {
-            logger.error("GRID: " + e.toString(),e);
+            logger.error("GRID: " + e.toString(), e);
         }
         grid_data = ret;
         return ret;
@@ -803,11 +805,10 @@ public class Grid { //  implements Serializable
     }
 
     /**
-     *
      * @param points input array for longitude and latitude
-     *                  double[number_of_points][2]
+     *               double[number_of_points][2]
      * @return array of .gri file values corresponding to the
-     *          points provided
+     * points provided
      */
     public float[] getValues(double[][] points) {
 
@@ -977,17 +978,16 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error("error getting grid file values",e);
+            logger.error("error getting grid file values", e);
         }
         return ret;
     }
 
     /**
-     *
      * @param points input array for longitude and latitude
-     *                  double[number_of_points][2] and sorted latitude then longitude
+     *               double[number_of_points][2] and sorted latitude then longitude
      * @return array of .gri file values corresponding to the
-     *          points provided
+     * points provided
      */
     public float[] getValues3(double[][] points, int bufferSize) {
         //confirm inputs since they come from somewhere else
@@ -1029,7 +1029,7 @@ public class Grid { //  implements Serializable
             //get cell numbers
             int[][] cells = new int[points.length][2];
             for (int j = 0; j < points.length; j++) {
-                if(Double.isNaN(points[j][0]) || Double.isNaN(points[j][1])) {
+                if (Double.isNaN(points[j][0]) || Double.isNaN(points[j][1])) {
                     cells[j][0] = -1;
                     cells[j][1] = j;
                 } else {
@@ -1175,7 +1175,7 @@ public class Grid { //  implements Serializable
                         continue;
                     }
                     if (cells[i][0] >= 0) {
-                        getBytes(afile, buffer, bufferOffset, cells[i][0] *  (long) size, b);
+                        getBytes(afile, buffer, bufferOffset, cells[i][0] * (long) size, b);
                         ByteBuffer bb = ByteBuffer.wrap(b);
                         if (byteorderLSB) {
                             bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -1205,7 +1205,7 @@ public class Grid { //  implements Serializable
 
             return ret;
         } catch (Exception e) {
-            logger.error("error getting grid file values",e);
+            logger.error("error getting grid file values", e);
         }
         return null;
     }
@@ -1312,7 +1312,7 @@ public class Grid { //  implements Serializable
             afile.write(bb.array());
             afile.close();
         } catch (Exception e) {
-            logger.error("error getting grid file values",e);
+            logger.error("error getting grid file values", e);
         }
     }
 
@@ -1346,32 +1346,31 @@ public class Grid { //  implements Serializable
     private Long getBytes(RandomAccessFile raf, byte[] buffer, Long bufferOffset, long seekTo, byte[] dest) throws IOException {
         long relativePos = seekTo - bufferOffset;
         if (relativePos < 0) {
-            if(seekTo < 0) {
+            if (seekTo < 0) {
                 seekTo = 0;
             }
             raf.seek(seekTo);
             bufferOffset = seekTo;
             raf.read(buffer);
-            System.arraycopy(buffer,0,dest,0,dest.length);
+            System.arraycopy(buffer, 0, dest, 0, dest.length);
         } else if (relativePos >= 0 && relativePos < buffer.length) {
-            System.arraycopy(buffer,(int) relativePos,dest,0,dest.length);
+            System.arraycopy(buffer, (int) relativePos, dest, 0, dest.length);
         } else if (relativePos - buffer.length < buffer.length) {
             bufferOffset += buffer.length;
             raf.read(buffer);
             int offset = (int) (relativePos - buffer.length);
-            System.arraycopy(buffer,offset,dest,0,dest.length);
+            System.arraycopy(buffer, offset, dest, 0, dest.length);
         } else {
             raf.seek(seekTo);
             bufferOffset = seekTo;
             raf.read(buffer);
-            System.arraycopy(buffer,0,dest,0,dest.length);
+            System.arraycopy(buffer, 0, dest, 0, dest.length);
         }
 
         return bufferOffset;
     }
 
-     /**
-     *
+    /**
      * @return calculated min and max values of a grid file as float [] where [0] is min and [1] is max.
      */
     public float[] calculatetMinMax() {
@@ -1401,7 +1400,7 @@ public class Grid { //  implements Serializable
                 b = new byte[size];
                 for (i = 0; i < length; i++) {
                     f = afile.readByte();
-                    if(f != (float) nodatavalue) {
+                    if (f != (float) nodatavalue) {
                         ret[0] = Math.min(f, ret[0]);
                         ret[1] = Math.max(f, ret[1]);
                     }
@@ -1414,7 +1413,7 @@ public class Grid { //  implements Serializable
                     if (f < 0) {
                         f += 256;
                     }
-                    if(f != (float) nodatavalue) {
+                    if (f != (float) nodatavalue) {
                         ret[0] = Math.min(f, ret[0]);
                         ret[1] = Math.max(f, ret[1]);
                     }
@@ -1429,7 +1428,7 @@ public class Grid { //  implements Serializable
                     } else {
                         f = (short) (((0xFF & b[0]) << 8) | (b[1] & 0xFF));
                     }
-                    if(f != (float) nodatavalue) {
+                    if (f != (float) nodatavalue) {
                         ret[0] = Math.min(f, ret[0]);
                         ret[1] = Math.max(f, ret[1]);
                     }
@@ -1444,7 +1443,7 @@ public class Grid { //  implements Serializable
                     } else {
                         f = ((0xFF & b[0]) << 24) | ((0xFF & b[1]) << 16) + ((0xFF & b[2]) << 8) + ((0xFF & b[3]) & 0xFF);
                     }
-                    if(f != (float) nodatavalue) {
+                    if (f != (float) nodatavalue) {
                         ret[0] = Math.min(f, ret[0]);
                         ret[1] = Math.max(f, ret[1]);
                     }
@@ -1453,7 +1452,7 @@ public class Grid { //  implements Serializable
                 size = 8;
                 b = new byte[size];
                 for (i = 0; i < length; i++) {
-                        afile.read(b);
+                    afile.read(b);
                     if (byteorderLSB) {
                         f = ((long) (0xFF & b[7]) << 56) + ((long) (0xFF & b[6]) << 48)
                                 + ((long) (0xFF & b[5]) << 40) + ((long) (0xFF & b[4]) << 32)
@@ -1465,7 +1464,7 @@ public class Grid { //  implements Serializable
                                 + ((long) (0xFF & b[4]) << 24) + ((long) (0xFF & b[5]) << 16)
                                 + ((long) (0xFF & b[6]) << 8) + (0xFF & b[7]);
                     }
-                    if(f != (float) nodatavalue) {
+                    if (f != (float) nodatavalue) {
                         ret[0] = Math.min(f, ret[0]);
                         ret[1] = Math.max(f, ret[1]);
                     }
@@ -1480,7 +1479,7 @@ public class Grid { //  implements Serializable
                         bb.order(ByteOrder.LITTLE_ENDIAN);
                     }
                     f = bb.getFloat();
-                    if(f != (float) nodatavalue) {
+                    if (f != (float) nodatavalue) {
                         ret[0] = Math.min(f, ret[0]);
                         ret[1] = Math.max(f, ret[1]);
                     }
@@ -1495,7 +1494,7 @@ public class Grid { //  implements Serializable
                         bb.order(ByteOrder.LITTLE_ENDIAN);
                     }
                     f = (float) bb.getDouble();
-                    if(f != (float) nodatavalue) {
+                    if (f != (float) nodatavalue) {
                         ret[0] = Math.min(f, ret[0]);
                         ret[1] = Math.max(f, ret[1]);
                     }
@@ -1506,7 +1505,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            logger.error("error calculating min/max of a grid file",e);
+            logger.error("error calculating min/max of a grid file", e);
         }
         return ret;
     }

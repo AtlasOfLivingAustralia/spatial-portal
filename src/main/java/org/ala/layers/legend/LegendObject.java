@@ -72,6 +72,11 @@ public class LegendObject implements Serializable {
      * CSV
      * (header) name, red, green, blue, count CR
      * (records) string, 0-255, 0-255, 0-255, integer CR
+     * <p/>
+     * "string" is the class name, or in the case of
+     * numerical legends, the facet query component,
+     * i.e. field_name:[from TO to] where 'from' and 'to'
+     * are numbers or '*'
      *
      * @return
      */
@@ -102,8 +107,18 @@ public class LegendObject implements Serializable {
                     for (int i = 0; i < cutoffs.length; i++) {
                         if (i == 0 || cutoffs[i - 1] < cutoffs[i]) {
                             String rgb = getRGB(numericLegend.getColour(cutoffs[i]));
-                            sb.append("\n>= ").append(String.format(format, cutoffMins[i])).append(" and ");
-                            sb.append("<= ").append(String.format(format, cutoffs[i])).append(",").append(rgb).append(",").append(numericLegend.groupSizesArea[i]);
+                            //sb.append("\n>= ").append(String.format(format, cutoffMins[i])).append(" and ");
+                            //sb.append("<= ").append(String.format(format, cutoffs[i])).append(",").append(rgb).append(",").append(numericLegend.groupSizesArea[i]);
+                            String start = String.valueOf(cutoffMins[i]);
+                            String end = String.valueOf(cutoffs[i]);
+                            if (i == 0) {
+                                start = "*";
+                            }
+                            if (i == cutoffs.length - 1) {
+                                end = "*";
+                            }
+                            sb.append("\nname:[").append(start).append(" TO ").append(end).append("]");
+                            sb.append(",").append(rgb).append(",").append(numericLegend.groupSizesArea[i]);
                         }
                     }
                 }
@@ -179,7 +194,7 @@ public class LegendObject implements Serializable {
         return categoryNameOrder;
     }
 
-    public void setCategoryNameOrder(String [] cno) {
+    public void setCategoryNameOrder(String[] cno) {
         this.categoryNameOrder = cno;
     }
 
@@ -202,6 +217,7 @@ public class LegendObject implements Serializable {
     public FieldType getFieldType() {
         return fieldType;
     }
+
     public void setFieldType(FieldType ft) {
         this.fieldType = ft;
     }
@@ -218,7 +234,7 @@ public class LegendObject implements Serializable {
 
     }
 
-    public void setMinMax(float [] minmax) {
+    public void setMinMax(float[] minmax) {
 
     }
 }

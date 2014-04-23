@@ -18,6 +18,7 @@ package org.ala.layers.dao;
 import java.util.List;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+
 import org.ala.layers.dto.LayerPid;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
@@ -25,13 +26,14 @@ import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- *
  * @author ajay
  */
 @Service("layerPidDao")
 public class LayerPidDAOImpl implements LayerPidDAO {
 
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger logger = Logger.getLogger(LayerPidDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
 

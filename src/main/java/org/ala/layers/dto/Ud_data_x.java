@@ -24,25 +24,25 @@ import java.util.Date;
 
 @Entity
 @Table(name = "ud_data_x")
-@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_DEFAULT)
 public class Ud_data_x {
     @Column(name = "ud_header_id")
     private Long ud_header_id;
 
-    @Column(name="ref")
+    @Column(name = "ref")
     private String ref;
 
-    @Column(name="data")
+    @Column(name = "data")
     private Blob data;
 
-    @Column(name="data_type")
+    @Column(name = "data_type")
     private String data_type;
 
     public Ud_data_x() {
     }
 
     public Ud_data_x(Long ud_header_id, String ref, Blob data) {
-         this.ud_header_id = ud_header_id;
+        this.ud_header_id = ud_header_id;
         this.ref = ref;
         this.data = data;
     }

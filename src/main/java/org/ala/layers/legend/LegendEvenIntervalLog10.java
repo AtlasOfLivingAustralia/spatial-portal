@@ -15,12 +15,12 @@ public class LegendEvenIntervalLog10 extends Legend {
     @Override
     public void generate(float[] d, int divisions) {
         init(d, divisions);
-        if(Float.isNaN(max)) {
+        if (Float.isNaN(max)) {
             return;
         }
 
         //prevent negative number assignment
-        float offset = (min<1)?1 - min:0;
+        float offset = (min < 1) ? 1 - min : 0;
         float tmax = max + offset;
         float tmin = min + offset;
         double lmin = Math.log10(tmin);
@@ -29,7 +29,7 @@ public class LegendEvenIntervalLog10 extends Legend {
 
         cutoffs = new float[divisions];
 
-        for(int i=0;i<divisions;i++){
+        for (int i = 0; i < divisions; i++) {
             cutoffs[i] = (float) Math.pow(10, lmin + lrange * ((i + 1) / (double) (divisions)))
                     - offset;
         }

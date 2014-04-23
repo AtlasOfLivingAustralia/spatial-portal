@@ -19,6 +19,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.MultiPolygon;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,10 +32,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.geotools.geometry.jts.JTSFactoryFinder;
 
 /**
- *
  * @author Adam
  */
 public class Grid2Shape {
@@ -147,14 +148,14 @@ public class Grid2Shape {
                 grid.set(i);
             }
         }
-        
+
         //get next start key from the map
         if (map == null) {
             map = new int[nrows * ncols];
         }
         int startKey = getArrayMax(map) + 1;
 
-        HashMap m = grid2WktIndexed(grid, rows, cols, minx + bbox[0]*resx, miny + (nrows- bbox[3] -1)*resy, resx, resy, startKey);
+        HashMap m = grid2WktIndexed(grid, rows, cols, minx + bbox[0] * resx, miny + (nrows - bbox[3] - 1) * resy, resx, resy, startKey);
 
         //merge maps        
         int[] partial = (int[]) m.get("map");
@@ -219,16 +220,16 @@ public class Grid2Shape {
         if (isWkt) {
             if (os != null) {
                 try {
-                    streamGrid2Wkt(os, grid, rows, cols, minx + bbox[0]*resx, miny + (nrows- bbox[3]-1)*resy, resx, resy);
+                    streamGrid2Wkt(os, grid, rows, cols, minx + bbox[0] * resx, miny + (nrows - bbox[3] - 1) * resy, resx, resy);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return null;
             } else {
-                return grid2Wkt(grid, rows, cols, minx + bbox[0]*resx, miny + (nrows- bbox[3]-1)*resy, resx, resy);
+                return grid2Wkt(grid, rows, cols, minx + bbox[0] * resx, miny + (nrows - bbox[3] - 1) * resy, resx, resy);
             }
         } else {
-            return grid2Multipolygon(grid, rows, cols, minx + bbox[0]*resx, miny + (nrows- bbox[3]-1)*resy, resx, resy);
+            return grid2Multipolygon(grid, rows, cols, minx + bbox[0] * resx, miny + (nrows - bbox[3] - 1) * resy, resx, resy);
         }
     }
 
@@ -494,14 +495,14 @@ public class Grid2Shape {
         java.util.Collections.sort(keys);
 
         //follow edges
-        if(keys == null || keys.isEmpty()) {
+        if (keys == null || keys.isEmpty()) {
             System.out.println("no polygons for this key value");
             return characterPos;
         }
         int thisKey = keys.get(0);
         int startKey = thisKey;
-        int [] sequentialKeys = new int[keys.get(keys.size()-1) + 1 - startKey];
-        for (int i=0;i<keys.size();i++) {
+        int[] sequentialKeys = new int[keys.get(keys.size() - 1) + 1 - startKey];
+        for (int i = 0; i < keys.size(); i++) {
             int key = keys.get(i);
             sequentialKeys[key - startKey] = thisKey;
             if (polygons.get(key) == null) {
@@ -534,11 +535,11 @@ public class Grid2Shape {
 
             os.write(")".getBytes());
             characterPos++;
-        }   
+        }
 
         //update image with sequential keys
-        for(int k=0;k<image.length;k++) {
-            if(image[k] > 0) {
+        for (int k = 0; k < image.length; k++) {
+            if (image[k] > 0) {
                 image[k] = sequentialKeys[image[k] - startKey];
             }
         }

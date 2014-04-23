@@ -15,6 +15,7 @@
 package org.ala.layers.dao;
 
 import net.sf.json.JSONObject;
+import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.dto.Objects;
 import org.ala.layers.dto.Ud_data_x;
 import org.ala.layers.dto.Ud_header;
@@ -47,7 +48,9 @@ import java.util.zip.ZipOutputStream;
 @Service("userDataDao")
 public class UserDataDAOImpl implements UserDataDAO {
 
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger logger = Logger.getLogger(UserDataDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
 
@@ -62,12 +65,12 @@ public class UserDataDAOImpl implements UserDataDAO {
     @Override
     public Ud_header put(String user_id, String record_type, String description, String metadata, String data_path, String analysis_id) {
         String sql_insert = "INSERT INTO ud_header (user_id,record_type,description,metadata,data_path,analysis_id,upload_dt) "
-               + " VALUES (?,?,?,?,?,?,?);";
+                + " VALUES (?,?,?,?,?,?,?);";
 
         Date upload_dt = new Date(System.currentTimeMillis());
         int rows = jdbcTemplate.update(
                 sql_insert,
-                new Object[]{user_id,record_type,description,metadata,data_path,analysis_id,upload_dt});
+                new Object[]{user_id, record_type, description, metadata, data_path, analysis_id, upload_dt});
 
 
         if (rows > 0) {
@@ -76,7 +79,7 @@ public class UserDataDAOImpl implements UserDataDAO {
             Ud_header ud_header = (Ud_header) jdbcTemplate.queryForObject(
                     sql_select,
                     new BeanPropertyRowMapper(Ud_header.class),
-                    new Object[]{user_id,upload_dt});
+                    new Object[]{user_id, upload_dt});
 
             return ud_header;
         }
@@ -96,9 +99,9 @@ public class UserDataDAOImpl implements UserDataDAO {
     }
 
     @Override
-    public String[] getStringArray(String  header_id, String ref) {
+    public String[] getStringArray(String header_id, String ref) {
         try {
-            return (String []) get(header_id, ref, "StringArray");
+            return (String[]) get(header_id, ref, "StringArray");
         } catch (Exception e) {
             logger.error("failed to get StringArray", e);
         }
@@ -106,9 +109,9 @@ public class UserDataDAOImpl implements UserDataDAO {
     }
 
     @Override
-    public boolean [] getBooleanArray(String header_id, String ref) {
+    public boolean[] getBooleanArray(String header_id, String ref) {
         try {
-            return (boolean []) get(header_id, ref, "BooleanArray");
+            return (boolean[]) get(header_id, ref, "BooleanArray");
         } catch (Exception e) {
             logger.error("failed to get BooleanArray", e);
         }
@@ -118,7 +121,7 @@ public class UserDataDAOImpl implements UserDataDAO {
     @Override
     public double[][] getDoublesArray(String header_id, String ref) {
         try {
-            return (double [] []) get(header_id, ref, "DoublesArray");
+            return (double[][]) get(header_id, ref, "DoublesArray");
         } catch (Exception e) {
             logger.error("failed to get DoublesArray", e);
         }
@@ -128,12 +131,12 @@ public class UserDataDAOImpl implements UserDataDAO {
     Object get(String header_id, String ref, String data_type) {
 
         Long id = Long.parseLong(header_id.split(":")[0]);
-        String facet_id = (header_id.contains(":")) ? " " + header_id.split(":")[1]:"";
+        String facet_id = (header_id.contains(":")) ? " " + header_id.split(":")[1] : "";
 
         String sql = "SELECT * FROM ud_data_x WHERE ud_header_id = ? AND ref = ? AND data_type = ?;";
 
         try {
-            Map<String, Object> o = jdbcTemplate.queryForMap(sql,new Object[]{id, ref + facet_id, data_type});
+            Map<String, Object> o = jdbcTemplate.queryForMap(sql, new Object[]{id, ref + facet_id, data_type});
 
             if (o != null) {
                 try {
@@ -141,7 +144,7 @@ public class UserDataDAOImpl implements UserDataDAO {
                     ObjectInputStream obj = new ObjectInputStream(bytes);
                     return obj.readObject();
                 } catch (Exception e) {
-                    logger.error("failed to get " + data_type + " for " + header_id + ", " + ref,e );
+                    logger.error("failed to get " + data_type + " for " + header_id + ", " + ref, e);
                 }
             }
         } catch (EmptyResultDataAccessException e) {
@@ -151,23 +154,23 @@ public class UserDataDAOImpl implements UserDataDAO {
     }
 
     @Override
-    public boolean setStringArray(String  header_id, String ref, String [] data) {
+    public boolean setStringArray(String header_id, String ref, String[] data) {
         return set(header_id, ref, "StringArray", data);
     }
 
     @Override
-    public boolean setBooleanArray(String  header_id, String ref, boolean [] data) {
+    public boolean setBooleanArray(String header_id, String ref, boolean[] data) {
         return set(header_id, ref, "BooleanArray", data);
     }
 
     @Override
-    public boolean setDoublesArray(String  header_id, String ref, double [][] data) {
+    public boolean setDoublesArray(String header_id, String ref, double[][] data) {
         return set(header_id, ref, "DoublesArray", data);
     }
 
     private boolean set(String header_id, String ref, String data_type, Object o) {
         Long id = Long.parseLong(header_id.split(":")[0]);
-        String facet_id = (header_id.contains(":")) ? " " + header_id.split(":")[1]:"";
+        String facet_id = (header_id.contains(":")) ? " " + header_id.split(":")[1] : "";
 
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -178,21 +181,21 @@ public class UserDataDAOImpl implements UserDataDAO {
             try {
                 String sql_delete = "DELETE FROM ud_data_x WHERE ud_header_id = ? AND ref = ? AND data_type = ?;";
 
-                int deleted = jdbcTemplate.update(sql_delete, new Object[] {id, ref + facet_id, data_type});
+                int deleted = jdbcTemplate.update(sql_delete, new Object[]{id, ref + facet_id, data_type});
 
                 String sql_insert = "INSERT INTO ud_data_x (ud_header_id,ref,data_type, data) "
                         + " VALUES ( ?, ?, ?, ?);";
 
                 int inserted = jdbcTemplate.update(sql_insert,
-                        new Object[] {
-                                id,ref + facet_id,data_type,bytes.toByteArray()});
+                        new Object[]{
+                                id, ref + facet_id, data_type, bytes.toByteArray()});
 
                 return inserted > 0;
             } catch (Exception e) {
-                logger.error("failed to set ud_data_x for " + header_id + ", " + ref,e);
+                logger.error("failed to set ud_data_x for " + header_id + ", " + ref, e);
             }
         } catch (Exception e) {
-            logger.error("failed to write bytes for: " + header_id + ", " + ref,e);
+            logger.error("failed to write bytes for: " + header_id + ", " + ref, e);
         }
 
         return false;
@@ -213,12 +216,12 @@ public class UserDataDAOImpl implements UserDataDAO {
 
     @Override
     public boolean setDoubleArray(String header_id, String ref, double[] data) {
-        return set(header_id, ref, "DoubleArray",data);
+        return set(header_id, ref, "DoubleArray", data);
     }
 
     @Override
     public boolean setQueryField(String ud_header_id, String ref, QueryField qf) {
-        return set(ud_header_id,ref,"QueryField",qf);
+        return set(ud_header_id, ref, "QueryField", qf);
     }
 
     @Override
@@ -226,25 +229,25 @@ public class UserDataDAOImpl implements UserDataDAO {
         try {
             if (header_id.contains(":")) {
                 //facet
-                boolean [] valid = getBooleanArray(header_id.split(":")[0],header_id.split(":")[1]);
+                boolean[] valid = getBooleanArray(header_id.split(":")[0], header_id.split(":")[1]);
                 int count_valid = 0;
-                for(boolean b : valid) {
+                for (boolean b : valid) {
                     if (b) {
-                        count_valid ++;
+                        count_valid++;
                     }
                 }
-                double [] allpoints = (double []) get(header_id.split(":")[0], ref, "DoubleArray");
-                double [] points = new double[count_valid*2];
-                for(int i=0,pos=0;i<allpoints.length;i+=2) {
-                    if (valid[i/2]) {
+                double[] allpoints = (double[]) get(header_id.split(":")[0], ref, "DoubleArray");
+                double[] points = new double[count_valid * 2];
+                for (int i = 0, pos = 0; i < allpoints.length; i += 2) {
+                    if (valid[i / 2]) {
                         points[pos] = allpoints[i];
-                        points[pos+1] = allpoints[i+1];
+                        points[pos + 1] = allpoints[i + 1];
                         pos += 2;
                     }
                 }
                 return points;
             } else {
-                return (double []) get(header_id, ref, "DoubleArray");
+                return (double[]) get(header_id, ref, "DoubleArray");
             }
         } catch (Exception e) {
             logger.error("failed to get DoubleArray", e);
@@ -255,7 +258,7 @@ public class UserDataDAOImpl implements UserDataDAO {
     @Override
     public QueryField getQueryField(String header_id, String ref) {
         String id = header_id.split(":")[0];
-        String facet = (header_id.contains(":"))?header_id.split(":")[1]:"";
+        String facet = (header_id.contains(":")) ? header_id.split(":")[1] : "";
 
         QueryField qf = null;
         try {
@@ -265,25 +268,57 @@ public class UserDataDAOImpl implements UserDataDAO {
         }
 
         if (qf == null) {
-            //build qf
-            double [] flatPoints = getDoubleArray(header_id,"points");
+            //if this is a facet, get the data from the parent
+            if (facet.length() > 0) {
 
-            double [][] points = new double[flatPoints.length/2] [2];
-            int pos = 0;
-            for(int i=0;i<points.length;i++) {
-                points[pos][0] = flatPoints[i*2];
-                points[pos][1] = flatPoints[i*2+1];
-                pos++;
-            }
-            List<String> s = layerIntersectDao.sampling(new String [] {ref}, points);
-            String [] a = s.get(0).split("\n");
-            qf = new QueryField(ref);
-            for(int i=0;i<a.length;i++) {
-                qf.add(a[i]);
-            }
-            qf.store();
+                //facet
+                boolean[] valid = getBooleanArray(header_id.split(":")[0], header_id.split(":")[1]);
 
-            setQueryField(header_id,ref,qf);
+                QueryField qfSource = getQueryField(id, ref);
+                QueryField qfFacet = new QueryField();
+
+                try {
+                    for (int i = 0; i < valid.length; i++) {
+                        if (valid[i]) {
+                            qfFacet.add(qfSource.getAsString(i));
+                        }
+                    }
+                } catch (Exception e) {
+                    //likely that ref does not actually exist for intersection
+                    logger.error("invalid QueryField for id: " + header_id + " ref: " + ref + " does the ref exist for intersection?", e);
+                }
+                qfFacet.store();
+
+                //TODO: do we need to add this to the database for faster retrieval?
+
+                return qfFacet;
+            } else {
+
+                //build qf
+                double[] flatPoints = getDoubleArray(header_id, "points");
+
+                double[][] points = new double[flatPoints.length / 2][2];
+                int pos = 0;
+                for (int i = 0; i < points.length; i++) {
+                    points[pos][0] = flatPoints[i * 2];
+                    points[pos][1] = flatPoints[i * 2 + 1];
+                    pos++;
+                }
+                List<String> s = layerIntersectDao.sampling(new String[]{ref}, points);
+                String[] a = s.get(0).split("\n");
+                qf = new QueryField(ref);
+                for (int i = 0; i < a.length; i++) {
+                    qf.add(a[i]);
+                }
+                qf.store();
+
+                //can we get a better display name?
+                IntersectionFile f = layerIntersectDao.getConfig().getIntersectionFile(ref);
+                if (f != null) {
+                    qf.setDisplayName(f.getFieldName());
+                }
+                setQueryField(header_id, ref, qf);
+            }
         }
 
         return qf;
@@ -306,7 +341,7 @@ public class UserDataDAOImpl implements UserDataDAO {
         try {
             return om.readValue(get(header_id).getMetadata(), Map.class);
         } catch (IOException e) {
-            logger.error("error getting metadata for header_id: " + header_id,e);
+            logger.error("error getting metadata for header_id: " + header_id, e);
         }
         return null;
     }
@@ -314,7 +349,7 @@ public class UserDataDAOImpl implements UserDataDAO {
     @Override
     public List<String> listData(String ud_header_id, String data_type) {
         Long id = Long.parseLong(ud_header_id.split(":")[0]);
-        String facet_id = (ud_header_id.contains(":")) ? ud_header_id.split(":")[1]:"";
+        String facet_id = (ud_header_id.contains(":")) ? ud_header_id.split(":")[1] : "";
 
         String sql;
         List<Map<String, Object>> l;
@@ -328,8 +363,8 @@ public class UserDataDAOImpl implements UserDataDAO {
         }
 
         ArrayList<String> refs = new ArrayList<String>();
-        for(Map<String, Object> m : l) {
-            refs.add((String)m.get("ref"));
+        for (Map<String, Object> m : l) {
+            refs.add((String) m.get("ref"));
         }
         return refs;
     }
@@ -338,14 +373,14 @@ public class UserDataDAOImpl implements UserDataDAO {
     public Ud_header facet(String id, List<String> new_facets, String new_wkt) {
 
         SimpleRegion sr = null;
-        double [] points = null;
+        double[] points = null;
 
         String ud_header_id = id.split(":")[0];
-        String existing_facet = id.contains(":")?id.split(":")[0]:null;
+        String existing_facet = id.contains(":") ? id.split(":")[0] : null;
 
         //setup
         ArrayList<Facet> facets = new ArrayList<Facet>();
-        for(int i=0;i<new_facets.size();i++) {
+        for (int i = 0; i < new_facets.size(); i++) {
             facets.add(Facet.parseFacet(new_facets.get(i)));
         }
         ArrayList<List<QueryField>> facetFields = new ArrayList<List<QueryField>>();
@@ -354,17 +389,17 @@ public class UserDataDAOImpl implements UserDataDAO {
             String[] fields = f.getFields();
             List<QueryField> qf = new ArrayList<QueryField>();
             for (int j = 0; j < fields.length; j++) {
-                qf.add(getQueryField(ud_header_id,fields[j]));
+                qf.add(getQueryField(ud_header_id, fields[j]));
             }
             facetFields.add(qf);
         }
-        if(new_wkt != null) {
+        if (new_wkt != null) {
             sr = SimpleShapeFile.parseWKT(new_wkt);
         }
-        points = getDoubleArray(ud_header_id,"points");
-        boolean [] existing_valid = null;
+        points = getDoubleArray(ud_header_id, "points");
+        boolean[] existing_valid = null;
         if (existing_facet != null) {
-            existing_valid = getBooleanArray(ud_header_id,existing_facet);
+            existing_valid = getBooleanArray(ud_header_id, existing_facet);
         }
 
         //per record test
@@ -378,12 +413,13 @@ public class UserDataDAOImpl implements UserDataDAO {
                 if (facets.get(j).isValid(facetFields.get(j), i)) {
                     sum++;
                 }
+
             }
 
-            valid_sr = (sr == null || sr.isWithin(points[i*2], points[i*2+1]));
+            valid_sr = (sr == null || sr.isWithin(points[i * 2], points[i * 2 + 1]));
             valid_existing = (existing_valid == null || existing_valid[i]);
 
-                    valid[i] = (sum == facets.size()) && valid_sr && valid_existing;
+            valid[i] = (sum == facets.size()) && valid_sr && valid_existing;
             if (valid[i]) {
                 count++;
             }
@@ -397,6 +433,12 @@ public class UserDataDAOImpl implements UserDataDAO {
         Ud_header ret = get(Long.valueOf(ud_header_id));
         ret.setFacet_id(next_facet_id);
 
+        //add facet count to metadata so it is returned
+        String metadata = ret.getMetadata();
+        JSONObject jo = JSONObject.fromObject(metadata);
+        jo.put("number_of_records", count);
+        ret.setMetadata(jo.toString());
+
         return ret;
     }
 
@@ -406,39 +448,58 @@ public class UserDataDAOImpl implements UserDataDAO {
         ArrayList<QueryField> qfs = new ArrayList<QueryField>();
 
         //add everything + fields
-        List<String> in = listData(id,"QueryField");
-        String [] fs = fields.split(",");
-        for(String f : in) {
-            qfs.add(getQueryField(id,f));
+        List<String> in = listData(id, "QueryField");
+
+        if (in != null) {
+            for (String f : in) {
+                qfs.add(getQueryField(id, f));
+            }
         }
-        for(String f : fs) {
-            if(!in.contains(f)) {
-                getQueryField(id,f);
+        if (fields != null) {
+            String[] fs = fields.split(",");
+            for (String f : fs) {
+                if (!in.contains(f)) {
+                    qfs.add(getQueryField(id, f));
+                }
             }
         }
 
         //make csv
         StringBuilder sb = new StringBuilder();
         //header
-        for(QueryField q : qfs) {
+        sb.append("id,longitude,latitude");
+        for (QueryField q : qfs) {
             sb.append(",").append(q.getDisplayName());
         }
         //rows
-        double [] points = getDoubleArray(id,"points");
-        int size = points.length/2;
-        for(int i=0;i<size;i++) {
+        double[] points = getDoubleArray(id, "points");
+        int size = points.length / 2;
+        for (int i = 0; i < size; i++) {
             sb.append("\r\n");
 
             sb.append(i);
-            for(QueryField q : qfs) {
-                sb.append(",\"").append(qfs.get(i)).append("\"");
+            sb.append(",");
+            sb.append(points[i * 2]);
+            sb.append(",");
+            sb.append(points[i * 2 + 1]);
+            for (int j = 0; j < qfs.size(); j++) {
+                QueryField q = qfs.get(j);
+
+                //if an intersection fails or a supplied field is invalid, return empty values
+                String s = "";
+                try {
+                    s = q.getAsString(i);
+                } catch (Exception e) {
+                }
+
+                if (s != null) {
+                    sb.append(",\"").append(s.replace("\"", "\"\"")).append("\"");
+                }
             }
         }
 
-        System.out.println(sb.toString());
-
         return sb.toString();
-     }
+    }
 
 
 }

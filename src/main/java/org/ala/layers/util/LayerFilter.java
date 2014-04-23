@@ -4,12 +4,11 @@ import java.io.Serializable;
 
 /**
  * container for layer filter;
- * 
+ * <p/>
  * - includes minimum and maximum for environmental layers
  * - includes catagory names and indexes of selected for contextual layers
- * 
- * @author adam
  *
+ * @author adam
  */
 public class LayerFilter extends Object implements Serializable {
 
@@ -20,13 +19,13 @@ public class LayerFilter extends Object implements Serializable {
     String layername = "";
     /**
      * for environmental layers
-     *
+     * <p/>
      * filter minimum
      */
     double minimum_value = 0;
     /**
      * for environmental layers
-     *
+     * <p/>
      * filter maximum
      */
     double maximum_value = 0;
@@ -39,6 +38,7 @@ public class LayerFilter extends Object implements Serializable {
 
     /**
      * gets layer name
+     *
      * @return String
      */
     public String getLayername() {
@@ -47,8 +47,9 @@ public class LayerFilter extends Object implements Serializable {
 
     /**
      * for environmental
-     *
+     * <p/>
      * gets minimum applied
+     *
      * @return
      */
     public double getMinimum_value() {
@@ -57,8 +58,9 @@ public class LayerFilter extends Object implements Serializable {
 
     /**
      * for environmental
-     *
+     * <p/>
      * gets maximum applied
+     *
      * @return
      */
     public double getMaximum_value() {
@@ -73,7 +75,7 @@ public class LayerFilter extends Object implements Serializable {
         if (s.toUpperCase().startsWith("ENVELOPE(")) {
             s = s.substring("ENVELOPE(".length(), s.length() - 1); //remove 'envelope(..)' wrapper
         }
-        
+
         String[] terms = s.split(":");
 
         LayerFilter[] lf = new LayerFilter[terms.length];
@@ -92,7 +94,7 @@ public class LayerFilter extends Object implements Serializable {
         if (s.toUpperCase().startsWith("ENVELOPE(")) {
             s = s.substring("ENVELOPE(".length(), s.length() - 1); //remove 'envelope(..)' wrapper
         }
-        
+
         String[] tokens = s.split(",");
 
         return new LayerFilter(tokens[0], Double.parseDouble(tokens[1]), Double.parseDouble(tokens[2]));

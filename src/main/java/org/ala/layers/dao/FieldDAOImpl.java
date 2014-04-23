@@ -17,6 +17,7 @@ package org.ala.layers.dao;
 import java.util.List;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+
 import org.ala.layers.dto.Field;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
@@ -24,13 +25,14 @@ import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- *
  * @author ajay
  */
 @Service("fieldDao")
 public class FieldDAOImpl implements FieldDAO {
 
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger logger = Logger.getLogger(FieldDAOImpl.class);
 
     private SimpleJdbcTemplate jdbcTemplate;
@@ -58,13 +60,13 @@ public class FieldDAOImpl implements FieldDAO {
         if (l.size() > 0) {
             return l.get(0);
         } else {
-            return null; 
+            return null;
         }
     }
 
     @Override
     public List<Field> getFieldsByDB() {
-        if(layerIntersectDao.getConfig().getLayerIndexUrl() != null) {
+        if (layerIntersectDao.getConfig().getLayerIndexUrl() != null) {
             return layerIntersectDao.getConfig().getFieldsByDB();
         } else {
             //return hibernateTemplate.find("from Field where enabled=true and indb=true");

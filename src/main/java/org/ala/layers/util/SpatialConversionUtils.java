@@ -54,13 +54,14 @@ import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * Utilities for converting spatial data between formats
- * 
+ *
  * @author ChrisF
- * 
  */
 public class SpatialConversionUtils {
 
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger logger = Logger.getLogger(SpatialConversionUtils.class);
 
     public static List<String> getGeometryCollectionParts(String wkt) {
@@ -397,7 +398,7 @@ public class SpatialConversionUtils {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName("ActiveArea");
         builder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate reference
-                                                    // system
+        // system
 
         // add attributes in order
         if ("GEOMETRYCOLLECTION".equalsIgnoreCase(type)) {
@@ -406,10 +407,10 @@ public class SpatialConversionUtils {
             builder.add("area", Polygon.class);
         }
         builder.length(50).add("name", String.class); // <- 50 chars width for
-                                                      // name field
+        // name field
         builder.length(100).add("desc", String.class); // 100 chars width
-                                                       // for description
-                                                       // field
+        // for description
+        // field
 
         // build the type
         final SimpleFeatureType ActiveArea = builder.buildFeatureType();
@@ -455,7 +456,7 @@ public class SpatialConversionUtils {
         double x = (lng * (Math.PI / 180.0) + Math.atan2(b * e * Math.sin(c), d - f * g)) / (Math.PI / 180.0);
         double y = Math.asin(g) / (Math.PI / 180.0);
 
-        double[] pt = { x, y };
+        double[] pt = {x, y};
 
         return pt;
     }

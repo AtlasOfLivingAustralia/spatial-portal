@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.Serializable;
 import javax.imageio.ImageIO;
+
 import org.ala.layers.intersect.Grid;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonSubTypes;
@@ -19,7 +20,6 @@ import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 /**
- *
  * @author Adam
  */
 @JsonTypeInfo(
@@ -34,7 +34,7 @@ import org.codehaus.jackson.map.annotate.JsonDeserialize;
         @JsonSubTypes.Type(value = LegendEvenIntervalLog.class, name = "Even Interval Log"),
         @JsonSubTypes.Type(value = LegendEvenIntervalLog10.class, name = "Even Interval Log 10"),
 })
-@JsonIgnoreProperties({"minMax","cutoffs"})
+@JsonIgnoreProperties({"minMax", "cutoffs"})
 public abstract class Legend implements Serializable {
 
     final static String LEGEND_KEY = "/legend_key.png";
@@ -101,7 +101,7 @@ public abstract class Legend implements Serializable {
 
     /**
      * generate the legend cutoff points.
-     *
+     * <p/>
      * default number of cutoffs = 10
      *
      * @param d asc sorted float []
@@ -113,7 +113,7 @@ public abstract class Legend implements Serializable {
     /**
      * generate the legend cutoff points.
      *
-     * @param d asc sorted float []
+     * @param d         asc sorted float []
      * @param divisions number of cut points
      */
     abstract public void generate(float[] d, int divisions);
@@ -129,7 +129,7 @@ public abstract class Legend implements Serializable {
     /**
      * some common values
      *
-     * @param d as sorted float []
+     * @param d         as sorted float []
      * @param divisions number of cutpoints
      */
     void init(float[] d, int divisions) {
@@ -201,7 +201,7 @@ public abstract class Legend implements Serializable {
 
     /**
      * range better on features
-     *
+     * <p/>
      * lower is better
      *
      * @param d
@@ -256,7 +256,7 @@ public abstract class Legend implements Serializable {
 
     /**
      * range better on area
-     *
+     * <p/>
      * lower is better
      *
      * @param d
@@ -286,11 +286,11 @@ public abstract class Legend implements Serializable {
 
     /**
      * save to a file as a type (filename extension).
-     *
+     * <p/>
      * Option to scale down image size by discarding values/pixels
-     * 
-     * @param d float [] of raster data to have legend applied
-     * @param width row width
+     *
+     * @param d        float [] of raster data to have legend applied
+     * @param width    row width
      * @param filename output filename
      */
     public void exportImage(float[] d, int width, String filename, int scaleDownBy, boolean minValueTransparent) {
@@ -399,11 +399,11 @@ public abstract class Legend implements Serializable {
     /**
      * colourize input between provided ranges.
      *
-     * @param d value to colourize as float
+     * @param d   value to colourize as float
      * @param min minimum of range as float
      * @param max maximum of range as float
      * @return colour of d scaled between min and max as int ARGB with A == 0xFF.
-     *  Defaults to black.
+     * Defaults to black.
      */
     public static int getColour(double d, double min, double max) {
         if (Double.isNaN(d) || d < min || d > max) {
@@ -446,7 +446,7 @@ public abstract class Legend implements Serializable {
 
     /**
      * get cutoff values as String
-     *
+     * <p/>
      * includes group sizes if calculated
      *
      * @return String of cutoff values
@@ -482,6 +482,7 @@ public abstract class Legend implements Serializable {
 
     /**
      * get cutoff's
+     *
      * @return cutoff upper segment values as float[] (missing min value)
      */
     public float[] getCutoffFloats() {
@@ -489,8 +490,7 @@ public abstract class Legend implements Serializable {
     }
 
     /**
-     * 
-     * @return float[] of [min, max] 
+     * @return float[] of [min, max]
      */
     public float[] getMinMax() {
         float[] f = {min, max};
@@ -702,11 +702,11 @@ public abstract class Legend implements Serializable {
         this.divisions = divisions;
     }
 
-    public void setCutoffFloats(float [] cutoffs) {
+    public void setCutoffFloats(float[] cutoffs) {
         this.cutoffs = cutoffs;
     }
 
-    public void setCutoffMinFloats(float [] cutoffMins) {
+    public void setCutoffMinFloats(float[] cutoffMins) {
         this.cutoffMins = cutoffMins;
     }
 

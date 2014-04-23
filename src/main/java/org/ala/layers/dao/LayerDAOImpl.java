@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+
 import org.ala.layers.dto.Layer;
 import org.ala.layers.intersect.IntersectConfig;
 import org.apache.log4j.Logger;
@@ -29,13 +30,14 @@ import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- *
  * @author ajay
  */
 @Service("layerDao")
 public class LayerDAOImpl implements LayerDAO {
 
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger logger = Logger.getLogger(LayerDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
     private SimpleJdbcInsert insertLayer;
@@ -238,7 +240,7 @@ public class LayerDAOImpl implements LayerDAO {
 
         for (Layer layer : layers) {
             if (layer.getDisplaypath() != null) {
-                if(!layer.getDisplaypath().startsWith("/")) {
+                if (!layer.getDisplaypath().startsWith("/")) {
                     layer.setDisplaypath(layer.getDisplaypath().replace(IntersectConfig.GEOSERVER_URL_PLACEHOLDER, IntersectConfig.getGeoserverUrl()));
                 } else {
                     layer.setDisplaypath(IntersectConfig.getGeoserverUrl() + IntersectConfig.getGeoserverUrl());
@@ -254,7 +256,7 @@ public class LayerDAOImpl implements LayerDAO {
 
         for (Layer layer : layers) {
             if (layer.getMetadatapath() != null) {
-                if(!layer.getMetadatapath().startsWith("/")) {
+                if (!layer.getMetadatapath().startsWith("/")) {
                     layer.setMetadatapath(layer.getMetadatapath().replace(IntersectConfig.GEONETWORK_URL_PLACEHOLDER, IntersectConfig.getGeonetworkUrl()));
                 } else {
                     layer.setMetadatapath(IntersectConfig.getGeonetworkUrl() + layer.getMetadatapath());

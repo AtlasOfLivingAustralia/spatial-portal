@@ -17,6 +17,7 @@ package org.ala.layers.dao;
 import java.util.List;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+
 import org.ala.layers.dto.AnalysisLayer;
 import org.ala.layers.intersect.SimpleRegion;
 import org.apache.log4j.Logger;
@@ -24,13 +25,14 @@ import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- *
  * @author ajay
  */
 @Service("analysislayerDao")
 public class AnalysisLayerDAOImpl implements AnalysisLayerDAO {
 
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger logger = Logger.getLogger(AnalysisLayerDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
     @Resource(name = "layerIntersectDao")

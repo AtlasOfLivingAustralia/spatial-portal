@@ -24,7 +24,7 @@ import javax.imageio.ImageIO;
 /**
  * SimpleRegion enables point to shape intersections, where the shape
  * is stored within SimpleRegion as a circle, bounding box or polygon.
- *
+ * <p/>
  * Other utilities include shape presence on a defined grid;
  * fully present, partially present, absent.
  *
@@ -52,7 +52,7 @@ public class SimpleRegion extends Object implements Serializable {
     public static final int POLYGON = 3;
     /**
      * UNDEFINED state for grid intersection output
-     *
+     * <p/>
      * can be considered ABSENCE
      */
     public static final int GI_UNDEFINED = 0;
@@ -81,18 +81,17 @@ public class SimpleRegion extends Object implements Serializable {
     double[] points;
     /**
      * bounding box for types BOUNDING_BOX and POLYGON
-     *
+     * <p/>
      * bounding_box = double [2][2]
      * where
-     * 	[0][0] = minimum longitude
-     *  [0][1] = minimum latitude
-     *  [1][0] = maximum longitude
-     *  [1][1] = maximum latitude
+     * [0][0] = minimum longitude
+     * [0][1] = minimum latitude
+     * [1][0] = maximum longitude
+     * [1][1] = maximum latitude
      */
     double[][] bounding_box; //for polygons
     /**
      * radius for type CIRCLE in m
-     *
      */
     double radius;
 
@@ -105,7 +104,7 @@ public class SimpleRegion extends Object implements Serializable {
 
     /**
      * gets number of points for type POLYGON
-     *
+     * <p/>
      * note: first point = last point
      *
      * @return number of points as int
@@ -136,10 +135,10 @@ public class SimpleRegion extends Object implements Serializable {
     public void setBox(double longitude1, double latitude1, double longitude2, double latitude2) {
         type = BOUNDING_BOX;
         points = new double[4];
-        points[0] =  Math.min(longitude1, longitude2);
-        points[1] =  Math.min(latitude1, latitude2);
-        points[2] =  Math.max(longitude1, longitude2);
-        points[3] =  Math.max(latitude1, latitude2);
+        points[0] = Math.min(longitude1, longitude2);
+        points[1] = Math.min(latitude1, latitude2);
+        points[2] = Math.max(longitude1, longitude2);
+        points[3] = Math.max(latitude1, latitude2);
 
         for (int i = 0; i < points.length; i += 2) {
             //fix at -180 and 180
@@ -176,13 +175,13 @@ public class SimpleRegion extends Object implements Serializable {
      *
      * @param longitude
      * @param latitude
-     * @param radius_ radius of the circle in m
+     * @param radius_   radius of the circle in m
      */
     public void setCircle(double longitude, double latitude, double radius_) {
         type = CIRCLE;
         points = new double[2];
         points[0] = longitude;
-        points[1] =  latitude;
+        points[1] = latitude;
         radius = radius_;
     }
 
@@ -190,14 +189,14 @@ public class SimpleRegion extends Object implements Serializable {
      * defines the SimpleRegion as type POLYGON
      *
      * @param points_ array of points as longitude and latiude
-     * in double [n][2] where n is the number of points
+     *                in double [n][2] where n is the number of points
      */
     public void setPolygon(double[] points_) {
         if (points_ != null && points_.length > 1) {
             type = POLYGON;
             int i;
 
-            for (i = 0; i < points_.length; i+=2) {
+            for (i = 0; i < points_.length; i += 2) {
                 //fix at -180 and 180
                 if (points_[i] < -180) {
                     points_[i] = -180;
@@ -205,27 +204,27 @@ public class SimpleRegion extends Object implements Serializable {
                 if (points_[i] > 180) {
                     points_[i] = 180;
                 }
-                while (points_[i+1] < -90) {
-                    points_[i+1] = -90;
+                while (points_[i + 1] < -90) {
+                    points_[i + 1] = -90;
                 }
-                while (points_[i+1] > 90) {
-                    points_[i+1] = 90;
+                while (points_[i + 1] > 90) {
+                    points_[i + 1] = 90;
                 }
             }
 
             /* copy and ensure last point == first point */
             int len = points_.length - 2;
-            if (points_[0] != points_[len] || points_[1] != points_[len+1]) {
+            if (points_[0] != points_[len] || points_[1] != points_[len + 1]) {
                 points = new double[points_.length + 2];
                 for (i = 0; i < points_.length; i++) {
                     points[i] = points_[i];
                 }
-                points[points_.length] =  points_[0];
-                points[points_.length + 1] =  points_[1];
+                points[points_.length] = points_[0];
+                points[points_.length + 1] = points_[1];
             } else {
                 points = new double[points_.length];
                 for (i = 0; i < points_.length; i++) {
-                    points[i] =  points_[i];
+                    points[i] = points_[i];
                 }
             }
 
@@ -254,7 +253,7 @@ public class SimpleRegion extends Object implements Serializable {
 
     /**
      * returns true when the point provided is within the SimpleRegion
-     *
+     * <p/>
      * note: type UNDEFINED implies no boundary, always returns true.
      *
      * @param longitude
@@ -305,20 +304,20 @@ public class SimpleRegion extends Object implements Serializable {
 
     /**
      * returns true when point is within the polygon
-     *
+     * <p/>
      * method:
      * treat as segments with target long in the middle:
-     *
-     *
-     *	              __-1__|___1_
-     *			    |
-     *
-     *
+     * <p/>
+     * <p/>
+     * __-1__|___1_
+     * |
+     * <p/>
+     * <p/>
      * iterate through points and count number of latitude axis crossing where
      * crossing is > latitude.
-     *
+     * <p/>
      * point is inside of area when number of crossings is odd;
-     *
+     * <p/>
      * point is on a polygon edge return true
      *
      * @param longitude
@@ -397,26 +396,26 @@ public class SimpleRegion extends Object implements Serializable {
             }
             return (score % 2 != 0);
         }
-        return false;		//not within bounding box
+        return false;        //not within bounding box
     }
 
     /**
      * determines overlap with a grid
-     *
+     * <p/>
      * for type POLYGON
      * when <code>three_state_map</code> is not null populate it with one of:
-     * 	GI_UNDEFINED
-     * 	GI_PARTIALLY_PRESENT
-     * 	GI_FULLY_PRESENT
-     * 	GI_ABSENCE
+     * GI_UNDEFINED
+     * GI_PARTIALLY_PRESENT
+     * GI_FULLY_PRESENT
+     * GI_ABSENCE
      *
      * @param longitude1
      * @param latitude1
      * @param longitude2
      * @param latitude2
-     * @param xres number of longitude segements as int
-     * @param yres number of latitude segments as int
-     * @return (x,y) as double [][2] for each grid cell at least partially falling
+     * @param xres       number of longitude segements as int
+     * @param yres       number of latitude segments as int
+     * @return (x, y) as double [][2] for each grid cell at least partially falling
      * within the specified region of the specified resolution beginning at 0,0
      * for minimum longitude and latitude through to xres,yres for maximums
      */
@@ -474,16 +473,16 @@ public class SimpleRegion extends Object implements Serializable {
      * @param latitude1
      * @param longitude2
      * @param latitude2
-     * @param xres number of longitude segements as int
-     * @param yres number of latitude segments as int
-     * @param bb bounding box as double[2][2] with [][0] as longitude, [][1] as latitude,
-     * [0][] as minimum values, [1][] as maximum values
-     * @return (x,y) as double [][2] for each grid cell at least partially falling
+     * @param xres       number of longitude segements as int
+     * @param yres       number of latitude segments as int
+     * @param bb         bounding box as double[2][2] with [][0] as longitude, [][1] as latitude,
+     *                   [0][] as minimum values, [1][] as maximum values
+     * @return (x, y) as double [][2] for each grid cell at least partially falling
      * within the specified region of the specified resolution beginning at 0,0
      * for minimum longitude and latitude through to xres,yres for maximums
      */
     public int[][] getOverlapGridCells_Box(double longitude1, double latitude1,
-            double longitude2, double latitude2, int width, int height, double[][] bb, byte[][] three_state_map, boolean noCellsReturned) {
+                                           double longitude2, double latitude2, int width, int height, double[][] bb, byte[][] three_state_map, boolean noCellsReturned) {
 
         double xstep = Math.abs(longitude2 - longitude1) / (double) width;
         double ystep = Math.abs(latitude2 - latitude1) / (double) height;
@@ -586,7 +585,7 @@ public class SimpleRegion extends Object implements Serializable {
 
     /**
      * defines a region by a points string, POLYGON only
-     *
+     * <p/>
      * TODO: define better format for parsing, including BOUNDING_BOX and CIRCLE
      *
      * @param pointsString points separated by ',' with longitude and latitude separated by ':'
@@ -602,7 +601,7 @@ public class SimpleRegion extends Object implements Serializable {
 
         int pos;
         int lastpos = 0;
-        while((pos = Math.min(pointsString.indexOf(',', lastpos), pointsString.indexOf(' ', lastpos))) > 0) {
+        while ((pos = Math.min(pointsString.indexOf(',', lastpos), pointsString.indexOf(' ', lastpos))) > 0) {
             try {
                 points.add(Double.parseDouble(pointsString.substring(lastpos, pos)));
             } catch (Exception e) {
@@ -634,27 +633,27 @@ public class SimpleRegion extends Object implements Serializable {
 
             //get min/max long/lat
             double minlong = 0, minlat = 0, maxlong = 0, maxlat = 0;
-            for (int i = 0; i < points.size(); i+=2) {
+            for (int i = 0; i < points.size(); i += 2) {
                 if (i == 0 || minlong > points.get(i)) {
                     minlong = points.get(i);
                 }
                 if (i == 0 || maxlong < points.get(i)) {
                     maxlong = points.get(i);
                 }
-                if (i == 0 || minlat > points.get(i+1)) {
-                    minlat = points.get(i+1);
+                if (i == 0 || minlat > points.get(i + 1)) {
+                    minlat = points.get(i + 1);
                 }
-                if (i == 0 || maxlat < points.get(i+1)) {
-                    maxlat = points.get(i+1);
+                if (i == 0 || maxlat < points.get(i + 1)) {
+                    maxlat = points.get(i + 1);
                 }
             }
 
             //  each point has only one identical lat or long to previous point
             int prev_idx = 6;
             int i = 0;
-            for (i = 0; i < 8; i+=2) {
+            for (i = 0; i < 8; i += 2) {
                 if ((points.get(i) == points.get(prev_idx))
-                        == (points.get(i+1) == points.get(prev_idx+1))) {
+                        == (points.get(i + 1) == points.get(prev_idx + 1))) {
                     break;
                 }
                 prev_idx = i;
@@ -666,8 +665,8 @@ public class SimpleRegion extends Object implements Serializable {
             }
         }
 
-        double [] pointsArray = new double[points.size()];
-        for(int i=0;i<points.size();i++) {
+        double[] pointsArray = new double[points.size()];
+        for (int i = 0; i < points.size(); i++) {
             pointsArray[i] = points.get(i);
         }
         simpleregion.setPolygon(pointsArray);
@@ -710,15 +709,15 @@ public class SimpleRegion extends Object implements Serializable {
 
     /**
      * determines overlap with a grid for POLYGON
-     *
+     * <p/>
      * when <code>three_state_map</code> is not null populate it with one of:
-     * 	GI_UNDEFINED
-     * 	GI_PARTIALLY_PRESENT
-     * 	GI_FULLY_PRESENT
-     * 	GI_ABSENCE
-     *
+     * GI_UNDEFINED
+     * GI_PARTIALLY_PRESENT
+     * GI_FULLY_PRESENT
+     * GI_ABSENCE
+     * <p/>
      * 1. Get 3state mask and fill edge passes as 'partial'.
-     *  then
+     * then
      * 3. Test 0,0 then progress across vert raster until finding cells[][] entry
      * 4. Repeat from (3).
      *
@@ -726,9 +725,9 @@ public class SimpleRegion extends Object implements Serializable {
      * @param latitude1
      * @param longitude2
      * @param latitude2
-     * @param xres number of longitude segements as int
-     * @param yres number of latitude segments as int
-     * @return (x,y) as double [][2] for each grid cell at least partially falling
+     * @param xres       number of longitude segements as int
+     * @param yres       number of latitude segments as int
+     * @return (x, y) as double [][2] for each grid cell at least partially falling
      * within the specified region of the specified resolution beginning at 0,0
      * for minimum longitude and latitude through to xres,yres for maximums
      */
@@ -1541,6 +1540,7 @@ public class SimpleRegion extends Object implements Serializable {
         }
         return data;
     }
+
     private int map_offset = 268435456; // half the Earth's circumference at zoom level 21
     private double map_radius = map_offset / Math.PI;
 

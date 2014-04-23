@@ -23,8 +23,8 @@ import java.nio.channels.FileChannel;
 public class Bil2diva {
 
     public static void main(String[] args) {
-        args = new String[] {"/data/bio1-9_30s_bil/bio_1","/data/bio_1","degrees C"};
-        
+        args = new String[]{"/data/bio1-9_30s_bil/bio_1", "/data/bio_1", "degrees C"};
+
         if (args.length < 3) {
             System.out.println("hdr bil to diva.  Must be: \n"
                     + "- single band\n"
@@ -205,7 +205,7 @@ public class Bil2diva {
             ByteBuffer byteBuffer;
 
 
-            while(channel.position() < channel.size()) {
+            while (channel.position() < channel.size()) {
                 long bytesLeft = channel.size() - channel.position();
                 if (bytesLeft < 1024) {
                     byteBuffer = ByteBuffer.allocate((int) bytesLeft);
@@ -218,29 +218,29 @@ public class Bil2diva {
                 byteBuffer.order(byteOrder);
                 byteBuffer.position(0);
 
-                while(byteBuffer.hasRemaining()) {
+                while (byteBuffer.hasRemaining()) {
                     if (datatype.equalsIgnoreCase("UBYTE")
                             || datatype.equalsIgnoreCase("INT1U")) {
 
-                            double ret = byteBuffer.get();
-                            if (ret < 0) {
-                                ret += 256;
-                            }
-                            updateMinMax(minmax, ret, missingValue);
+                        double ret = byteBuffer.get();
+                        if (ret < 0) {
+                            ret += 256;
+                        }
+                        updateMinMax(minmax, ret, missingValue);
 
                     } else if (datatype.equalsIgnoreCase("BYTE")
                             || datatype.equalsIgnoreCase("INT1BYTE")
                             || datatype.equalsIgnoreCase("INT1B")) {
 
 
-                            updateMinMax(minmax, (double) byteBuffer.get(), missingValue);
+                        updateMinMax(minmax, (double) byteBuffer.get(), missingValue);
                     } else if (nbits == 16 /*datatype.equalsIgnoreCase("SHORT")
                     || datatype.equalsIgnoreCase("INT2BYTES")
                     || datatype.equalsIgnoreCase("INT2B")
                     || datatype.equalsIgnoreCase("INT16")
                     || datatype.equalsIgnoreCase("INT2S")*/) {
 
-                            updateMinMax(minmax, (double) byteBuffer.getShort(), missingValue);
+                        updateMinMax(minmax, (double) byteBuffer.getShort(), missingValue);
 
                     } else if (datatype.equalsIgnoreCase("INT")
                             || datatype.equalsIgnoreCase("INTEGER")
@@ -249,14 +249,14 @@ public class Bil2diva {
                             || datatype.equalsIgnoreCase("INT32")
                             || datatype.equalsIgnoreCase("SMALLINT")) {
 
-                            updateMinMax(minmax, (double) byteBuffer.getInt(), missingValue);
+                        updateMinMax(minmax, (double) byteBuffer.getInt(), missingValue);
 
                     } else if (datatype.equalsIgnoreCase("LONG")
                             || datatype.equalsIgnoreCase("INT8BYTES")
                             || datatype.equalsIgnoreCase("INT8B")
                             || datatype.equalsIgnoreCase("INT64")) {
 
-                            updateMinMax(minmax, (double) byteBuffer.getLong(), missingValue);
+                        updateMinMax(minmax, (double) byteBuffer.getLong(), missingValue);
 
                     } else if (datatype.equalsIgnoreCase("FLOAT")
                             || datatype.equalsIgnoreCase("FLT4BYTES")
@@ -266,7 +266,7 @@ public class Bil2diva {
                             || datatype.equalsIgnoreCase("REAL")
                             || datatype.equalsIgnoreCase("SINGLE")) {
 
-                            updateMinMax(minmax, (double) byteBuffer.getFloat(), missingValue);
+                        updateMinMax(minmax, (double) byteBuffer.getFloat(), missingValue);
 
                     } else if (datatype.equalsIgnoreCase("DOUBLE")
                             || datatype.equalsIgnoreCase("FLT8BYTES")
@@ -274,7 +274,7 @@ public class Bil2diva {
                             || datatype.equalsIgnoreCase("FLOAT64")
                             || datatype.equalsIgnoreCase("FLT8S")) {
 
-                            updateMinMax(minmax, byteBuffer.getDouble(), missingValue);
+                        updateMinMax(minmax, byteBuffer.getDouble(), missingValue);
 
                     } else {
                         System.out.println("UNKNOWN TYPE: " + datatype);

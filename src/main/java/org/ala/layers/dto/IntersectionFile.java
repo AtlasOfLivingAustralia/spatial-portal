@@ -17,7 +17,6 @@ package org.ala.layers.dto;
 import java.util.HashMap;
 
 /**
- *
  * @author Adam
  */
 public class IntersectionFile {

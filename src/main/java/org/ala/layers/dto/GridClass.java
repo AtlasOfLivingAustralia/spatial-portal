@@ -15,7 +15,6 @@
 package org.ala.layers.dto;
 
 /**
- *
  * @author Adam
  */
 public class GridClass {
@@ -66,7 +65,7 @@ public class GridClass {
     public Integer getMinShapeIdx() {
         return minShapeIdx;
     }
-    
+
     public void setMaxShapeIdx(Integer maxShapeIdx) {
         this.maxShapeIdx = maxShapeIdx;
     }

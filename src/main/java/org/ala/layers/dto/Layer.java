@@ -26,6 +26,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
@@ -39,130 +40,130 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 @Table(name = "layers")
 //@XmlRootElement(name="layer")
 //@XStreamAlias("layer")
-@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_DEFAULT)
 public class Layer {
     @Id
-    @GeneratedValue ( strategy = GenerationType.SEQUENCE, generator="layers_id_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "layers_id_seq")
     @SequenceGenerator(name = "layers_id_seq", sequenceName = "layers_id_seq")
     @Column(name = "id", insertable = false, updatable = false)
     private Long id;
 
-    @Column(name="uid")
+    @Column(name = "uid")
     private String uid;
 
-    @Column(name="name")
+    @Column(name = "name")
     private String name;
 
-    @Column(name="displayname")
+    @Column(name = "displayname")
     private String displayname;
 
-    @Column(name="description")
+    @Column(name = "description")
     private String description;
 
-    @Column(name="type")
+    @Column(name = "type")
     private String type;
 
-    @Column(name="source")
+    @Column(name = "source")
     private String source;
 
-    @Column(name="path")
+    @Column(name = "path")
     private String path;
 
-    @Column(name="displaypath")
+    @Column(name = "displaypath")
     private String displaypath;
 
-    @Column(name="scale")
+    @Column(name = "scale")
     private String scale;
 
-    @Column(name="extents")
+    @Column(name = "extents")
     private String extent;
 
-    @Column(name="minlatitude")
+    @Column(name = "minlatitude")
     private Double minlatitude;
 
-    @Column(name="minlongitude")
+    @Column(name = "minlongitude")
     private Double minlongitude;
 
-    @Column(name="maxlatitude")
+    @Column(name = "maxlatitude")
     private Double maxlatitude;
 
-    @Column(name="maxlongitude")
+    @Column(name = "maxlongitude")
     private Double maxlongitude;
 
-    @Column(name="notes")
+    @Column(name = "notes")
     private String notes;
 
-    @Column(name="enabled")
+    @Column(name = "enabled")
     private Boolean enabled;
 
-    @Column(name="environmentalvaluemin")
+    @Column(name = "environmentalvaluemin")
     private String environmentalvaluemin;
 
-    @Column(name="environmentalvaluemax")
+    @Column(name = "environmentalvaluemax")
     private String environmentalvaluemax;
 
-    @Column(name="environmentalvalueunits")
+    @Column(name = "environmentalvalueunits")
     private String environmentalvalueunits;
 
-    @Column(name="lookuptablepath")
+    @Column(name = "lookuptablepath")
     private String lookuptablepath;
 
-    @Column(name="metadatapath")
+    @Column(name = "metadatapath")
     private String metadatapath;
 
-    @Column(name="classification1")
+    @Column(name = "classification1")
     private String classification1;
 
-    @Column(name="classification2")
+    @Column(name = "classification2")
     private String classification2;
 
-    @Column(name="mddatest")
+    @Column(name = "mddatest")
     private String mddatest;
 
-    @Column(name="citation_date")
+    @Column(name = "citation_date")
     private String citation_date;
 
-    @Column(name="datalang")
+    @Column(name = "datalang")
     private String datalang;
 
-    @Column(name="mdhrlv")
+    @Column(name = "mdhrlv")
     private String mdhrlv;
 
-    @Column(name="respparty_role")
+    @Column(name = "respparty_role")
     private String respparty_role;
 
-    @Column(name="licence_level")
+    @Column(name = "licence_level")
     private String licence_level;
 
-    @Column(name="licence_link")
+    @Column(name = "licence_link")
     private String licence_link;
 
-    @Column(name="licence_notes")
+    @Column(name = "licence_notes")
     private String licence_notes;
 
-    @Column(name="source_link")
+    @Column(name = "source_link")
     private String source_link;
 
-    @Column(name="keywords")
+    @Column(name = "keywords")
     private String keywords;
 
-    @Column(name="path_orig")
+    @Column(name = "path_orig")
     private String path_orig;
 
-    @Column(name="path_1km")
+    @Column(name = "path_1km")
     private String path_1km;
 
-    @Column(name="path_250m")
+    @Column(name = "path_250m")
     private String path_250m;
 
-    @Column(name="domain")
+    @Column(name = "domain")
     private String domain;
 
-    @Column(name="pid")
-    private String pid; 
+    @Column(name = "pid")
+    private String pid;
 
 
-//    @GeneratedValue
+    //    @GeneratedValue
 //    private String capabilities;
 //
 //    @GeneratedValue
@@ -603,7 +604,7 @@ public class Layer {
         return lyr;
     }
 
-    public Map<String,Object> toMap() {
+    public Map<String, Object> toMap() {
         Map<String, Object> m = new HashMap<String, Object>();
 
         m.put("citation_date", citation_date);
@@ -613,38 +614,38 @@ public class Layer {
         m.put("description", description);
         m.put("displayname", displayname);
         m.put("displaypath", displaypath);
-        m.put("enabled",enabled);
-        m.put("domain",domain);
+        m.put("enabled", enabled);
+        m.put("domain", domain);
         m.put("environmentalvaluemax", environmentalvaluemax);
-        m.put("environmentalvaluemin",environmentalvaluemin);
-        m.put("environmentalvalueunits",environmentalvalueunits);
-        m.put("extents",extent);
-        m.put("keywords",keywords);
-        m.put("licence_link",licence_link);
-        m.put("licence_notes",licence_notes);
-        m.put("licence_level",licence_level);
-        m.put("lookuptablepath",lookuptablepath);
-        m.put("maxlatitude",maxlatitude);
-        m.put("maxlongitude",maxlongitude);
-        m.put("mddatest",mddatest);
-        m.put("mdhrlv",mdhrlv);
-        m.put("metadatapath",metadatapath);
-        m.put("minlatitude",minlatitude);
-        m.put("minlongitude",minlongitude);
-        m.put("name",name);
-        m.put("notes",notes);
-        m.put("path",path);
-        m.put("path_1km",path_1km);
-        m.put("path_250m",path_250m);
-        m.put("path_orig",path_orig);
-        m.put("pid",pid);
-        m.put("respparty_role",respparty_role);
-        m.put("scale",scale);
-        m.put("source",source);
-        m.put("source_link",source_link);
-        m.put("type",type);
-        m.put("uid",uid);
-        m.put("id",id);
+        m.put("environmentalvaluemin", environmentalvaluemin);
+        m.put("environmentalvalueunits", environmentalvalueunits);
+        m.put("extents", extent);
+        m.put("keywords", keywords);
+        m.put("licence_link", licence_link);
+        m.put("licence_notes", licence_notes);
+        m.put("licence_level", licence_level);
+        m.put("lookuptablepath", lookuptablepath);
+        m.put("maxlatitude", maxlatitude);
+        m.put("maxlongitude", maxlongitude);
+        m.put("mddatest", mddatest);
+        m.put("mdhrlv", mdhrlv);
+        m.put("metadatapath", metadatapath);
+        m.put("minlatitude", minlatitude);
+        m.put("minlongitude", minlongitude);
+        m.put("name", name);
+        m.put("notes", notes);
+        m.put("path", path);
+        m.put("path_1km", path_1km);
+        m.put("path_250m", path_250m);
+        m.put("path_orig", path_orig);
+        m.put("pid", pid);
+        m.put("respparty_role", respparty_role);
+        m.put("scale", scale);
+        m.put("source", source);
+        m.put("source_link", source_link);
+        m.put("type", type);
+        m.put("uid", uid);
+        m.put("id", id);
 
         return m;
     }

@@ -46,8 +46,8 @@ public class LegendBuilder {
     public static LegendObject legendFromDoubles(double[] d, QueryField qf) {
         java.util.Arrays.sort(d);
         //to floats
-        float [] f = new float[d.length];
-        for(int i=0;i<d.length;i++) {
+        float[] f = new float[d.length];
+        for (int i = 0; i < d.length; i++) {
             f[i] = (float) d[i];
         }
         Legend legend = new LegendEqualArea();
@@ -64,8 +64,8 @@ public class LegendBuilder {
         java.util.Arrays.sort(d);
 
         //to floats
-        float [] f = new float[d.length];
-        for(int i=0;i<d.length;i++) {
+        float[] f = new float[d.length];
+        for (int i = 0; i < d.length; i++) {
             f[i] = (float) d[i];
         }
         legend.generate(f);

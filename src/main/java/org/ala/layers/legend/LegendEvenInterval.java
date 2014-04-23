@@ -15,13 +15,13 @@ public class LegendEvenInterval extends Legend {
     @Override
     public void generate(float[] d, int divisions) {
         init(d, divisions);
-        if(Float.isNaN(max)) {
+        if (Float.isNaN(max)) {
             return;
         }
 
         cutoffs = new float[divisions];
 
-        for(int i=0;i<divisions;i++){
+        for (int i = 0; i < divisions; i++) {
             cutoffs[i] = min + (max - min) * ((i + 1) / (float) (divisions));
         }
 

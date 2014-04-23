@@ -21,11 +21,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.ala.layers.client.Client;
 import org.ala.layers.dto.Field;
 
 /**
- *
  * @author Adam
  */
 public class IntersectUtil {
@@ -65,15 +65,15 @@ public class IntersectUtil {
 
     /**
      * write sample output into a stream.
-     *
+     * <p/>
      * Output is a csv.  First two columns are latitude, longitude.  Remaining
      * columns are the fields.
      *
      * @param fields field ids as String [].
      * @param points array of latitude,longitude pairs.
-     * [even]=latitude, [odd]=longitude.  As String[].
+     *               [even]=latitude, [odd]=longitude.  As String[].
      * @param sample sampling output from LayerIntersectDAO, as ArrayList<String>.
-     * @param os OutputStream.
+     * @param os     OutputStream.
      * @throws IOException
      */
     public static void writeSampleToStream(String[] fields, String[] points, ArrayList<String> sample, OutputStream os) throws IOException {
@@ -105,7 +105,7 @@ public class IntersectUtil {
                 if (nextPos == -1) {
                     nextPos = sample.get(j).length();
                 }
-                if(curPos[j] <= nextPos) {
+                if (curPos[j] <= nextPos) {
                     String s = sample.get(j).substring(curPos[j], nextPos);
                     curPos[j] = nextPos + 1;
 

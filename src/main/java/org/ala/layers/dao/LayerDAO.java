@@ -16,6 +16,7 @@
 package org.ala.layers.dao;
 
 import java.util.List;
+
 import org.ala.layers.dto.Layer;
 
 /**
@@ -25,17 +26,26 @@ import org.ala.layers.dto.Layer;
  */
 public interface LayerDAO {
     public List<Layer> getLayers();
+
     public List<Layer> getLayersByEnvironment();
+
     public List<Layer> getLayersByContextual();
+
     public List<Layer> getLayersByCriteria(String keywords);
+
     public Layer getLayerById(int id);
+
     public Layer getLayerByName(String name);
+
     public Layer getLayerByDisplayName(String name);
 
     public List<Layer> getLayersForAdmin();
+
     public Layer getLayerByIdForAdmin(int id);
+
     public Layer getLayerByNameForAdmin(String name);
 
     public void addLayer(Layer layer);
+
     public void updateLayer(Layer layer);
 }

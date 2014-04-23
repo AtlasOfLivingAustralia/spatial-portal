@@ -48,7 +48,7 @@ public class Facet implements Serializable {
      * (12) <field>:[* TO *] AND <field>:[* TO *]
      * (13) (-<field>:[<min> TO <max>] OR -<field>:[<min> TO <max>]) AND <field>:[* TO *] AND <field>:[* TO *]
      *
-     * @param fq        facet to parse as String
+     * @param fq facet to parse as String
      * @return
      */
     public static Facet parseFacet(String fq) {
@@ -182,7 +182,16 @@ public class Facet implements Serializable {
         this.includeRange = includeRange;
 
         if (field.equals("occurrence_year")) {
-            this.value = "[" + strMin + "-01-01T00:00:00Z TO " + strMax + "-12-31T00:00:00Z]";
+            if (!strMin.equals("*")) {
+                this.value = "[" + strMin + "-01-01T00:00:00Z TO ";
+            } else {
+                this.value = "[" + strMin + " TO ";
+            }
+            if (!strMax.equals("*")) {
+                this.value += strMax + "-12-31T00:00:00Z]";
+            } else {
+                this.value += strMax + "]";
+            }
         } else {
             this.value = "[" + strMin + " TO " + strMax + "]";
         }
@@ -212,12 +221,21 @@ public class Facet implements Serializable {
                 try {
                     facet = (includeRange ? "" : "-") + field + ":\"" + (value) + "\"";
                 } catch (Exception e) {
-                    (Logger.getLogger(Facet.class)).error("failed to encode to UTF-8: " + value,e);
+                    (Logger.getLogger(Facet.class)).error("failed to encode to UTF-8: " + value, e);
                 }
             }
 
             if (field.equals("occurrence_year")) {
-                facet = facet.replace(" TO ", "-01-01T00:00:00Z TO ").replace("]", "-12-31T00:00:00Z]");
+                if (facet.contains("* TO *")) {
+                    //dont' need to change anything
+                } else if (facet.contains("* TO ")) {
+                    facet = facet.replace("]", "-12-31T00:00:00Z]");
+                } else if (facet.contains(" TO *")) {
+                    facet = facet.replace(" TO ", "-01-01T00:00:00Z TO ");
+                } else {
+                    facet = facet.replace(" TO ", "-01-01T00:00:00Z TO ").replace("]", "-12-31T00:00:00Z]");
+                }
+
             } else if (field.equals("occurrence_year_decade") || field.equals("decade")) {
                 if (value.contains("before")) {
                     facet = (includeRange ? "" : "-") + field + ":[* TO 1849-12-31T00:00:00Z]";
@@ -235,7 +253,15 @@ public class Facet implements Serializable {
                     && !facet.contains("-12-31T00:00:00Z")
                     && facet.contains("occurrence_year")) {
                 if (field.equals("occurrence_year")) {
-                    parameter = parameter.replace(" TO ", "-01-01T00:00:00Z TO ").replace("]", "-12-31T00:00:00Z]");
+                    if (parameter.contains("* TO *")) {
+                        //dont' need to change anything
+                    } else if (parameter.contains("* TO ")) {
+                        parameter = parameter.replace("]", "-12-31T00:00:00Z]");
+                    } else if (parameter.contains(" TO *")) {
+                        parameter = parameter.replace(" TO ", "-01-01T00:00:00Z TO ");
+                    } else {
+                        parameter = parameter.replace(" TO ", "-01-01T00:00:00Z TO ").replace("]", "-12-31T00:00:00Z]");
+                    }
                 } else if (field.equals("occurrence_year_decade") || field.equals("decade")) {
                     //TODO: make this work
                 }

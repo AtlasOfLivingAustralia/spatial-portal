@@ -5,7 +5,6 @@
 package org.ala.layers.dto;
 
 /**
- *
  * @author Adam
  */
 public class AnalysisLayer {

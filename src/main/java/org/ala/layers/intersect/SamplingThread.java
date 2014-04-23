@@ -25,12 +25,13 @@ import org.ala.layers.dto.IntersectionFile;
 import org.apache.log4j.Logger;
 
 /**
- *
  * @author Adam
  */
 public class SamplingThread extends Thread {
 
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger logger = Logger.getLogger(SamplingThread.class);
     LinkedBlockingQueue<Integer> lbq;
     CountDownLatch cdl;
@@ -68,12 +69,12 @@ public class SamplingThread extends Thread {
                     this.callback.setCurrentLayer(intersectionFiles[pos]);
                     output.set(pos, sb.toString());
                 } catch (Exception e) {
-                    logger.error(e.getMessage(),e);
+                    logger.error(e.getMessage(), e);
                 }
                 cdl.countDown();
             }
         } catch (Exception e) {
-            logger.trace(e.getMessage(),e);
+            logger.trace(e.getMessage(), e);
         }
     }
 
@@ -100,7 +101,7 @@ public class SamplingThread extends Thread {
         logger.info("Finished sampling " + points.length + " points in " + name + ":"
                 + fileName + " in " + (System.currentTimeMillis() - start) + "ms");
 
-        callback.progressMessage("Finished sampling layer:" + intersectionFile.getLayerName()+". Points processed:" + points.length);
+        callback.progressMessage("Finished sampling layer:" + intersectionFile.getLayerName() + ". Points processed:" + points.length);
     }
 
     public void intersectGrid(String filename, double[][] points, StringBuilder sb) {
@@ -129,7 +130,7 @@ public class SamplingThread extends Thread {
             }
         } catch (Exception e) {
             logger.error("Error with grid: " + filename, e);
-            logger.error(e.getMessage(),e);
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -147,7 +148,7 @@ public class SamplingThread extends Thread {
                     if (i > 0) {
                         sb.append("\n");
                     }
-                    gc = classes.get((int)values[i]);
+                    gc = classes.get((int) values[i]);
                     if (gc != null) {
                         sb.append(gc.getName());
                     } else {
@@ -161,7 +162,7 @@ public class SamplingThread extends Thread {
             }
         } catch (Exception e) {
             logger.error("Error with grid: " + filename, e);
-            logger.error(e.getMessage(),e);
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -201,7 +202,7 @@ public class SamplingThread extends Thread {
             }
         } catch (Exception e) {
             logger.error("Error with shapefile: " + filename, e);
-            logger.error(e.getMessage(),e);
+            logger.error(e.getMessage(), e);
         }
     }
 }

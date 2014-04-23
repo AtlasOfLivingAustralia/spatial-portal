@@ -6,19 +6,19 @@ package org.ala.layers.legend;
 
 import java.io.File;
 import java.io.FileWriter;
+
 import org.ala.layers.intersect.Grid;
 
 /**
  * Produces legend cutoff values for environmental layers
- * 
+ *
  * @author Adam
  */
 public class GridFileLegends {
 
     /**
-     *
-     * @param filename grid file name.  must reside in
-     *  tabulation settings <environmental_data_path> as String
+     * @param filename    grid file name.  must reside in
+     *                    tabulation settings <environmental_data_path> as String
      * @param output_name Base output file path and name as String
      */
     public GridFileLegends(String filename, String output_name, boolean useAreaEvaluation, String[] legendNames, FileWriter cutpointFile) {

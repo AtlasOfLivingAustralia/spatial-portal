@@ -15,7 +15,6 @@
 package org.ala.layers.dto;
 
 /**
- *
  * @author Adam
  */
 public class Tabulation {
@@ -94,6 +93,7 @@ public class Tabulation {
     public String getGeometry() {
         return geometry;
     }
+
     public void setOccurrences(int occurrences) {
         this.occurrences = occurrences;
     }
@@ -101,11 +101,11 @@ public class Tabulation {
     public int getOccurrences() {
         return occurrences;
     }
-    
+
     public void setSpecies(int species) {
         this.species = species;
     }
-    
+
     public int getSpecies() {
         return species;
     }

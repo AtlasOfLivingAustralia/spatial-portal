@@ -16,6 +16,7 @@ package org.ala.layers.util;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,6 +28,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.ala.layers.client.Client;
 import org.ala.layers.dao.FieldDAO;
 import org.ala.layers.dao.LayerDAO;
@@ -54,7 +56,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 /**
- *
  * @author Adam
  */
 public class AnalysisLayerUtil {
@@ -62,18 +63,18 @@ public class AnalysisLayerUtil {
     public static void main(String[] args) {
         System.out.println(
                 "prepare one grid file for analysis.\n"
-                + "args[0] = source diva grid filename (without .gri or .grd)\n"
-                + "args[1] = output diva grid filename (without .gri or .grd)\n"
-                + "args[2] = resolution in decimal degrees, e.g. 0.01\n"
-                + "args[3] = path to gdal\n\n"
-                + "prepare all grid files for analysis.\n"
-                + "args[0] = 'all', prepare all layers for analysis\n\n"
-                + "prepare all shape or grid files for analysis.\n"
-                + "args[0] = 'all', operate on all layers\n"
-                + "args[1] = 'shapes' or 'grids' to operate on only grids or shapes\n\n");
+                        + "args[0] = source diva grid filename (without .gri or .grd)\n"
+                        + "args[1] = output diva grid filename (without .gri or .grd)\n"
+                        + "args[2] = resolution in decimal degrees, e.g. 0.01\n"
+                        + "args[3] = path to gdal\n\n"
+                        + "prepare all grid files for analysis.\n"
+                        + "args[0] = 'all', prepare all layers for analysis\n\n"
+                        + "prepare all shape or grid files for analysis.\n"
+                        + "args[0] = 'all', operate on all layers\n"
+                        + "args[1] = 'shapes' or 'grids' to operate on only grids or shapes\n\n");
 
-        if(args == null || args.length == 0) {
-            args = new String[]{"all","grids"};
+        if (args == null || args.length == 0) {
+            args = new String[]{"all", "grids"};
         }
 
         if (args.length == 1 && (args[0].equals("auto") || args[0].equals("all"))) {
@@ -109,8 +110,8 @@ public class AnalysisLayerUtil {
                 double miny = (g.ymin == ((int) (g.ymin / resolution)) * resolution) ? g.ymin : ((int) (g.ymin / resolution)) * resolution + resolution;
                 double maxy = (g.ymax == ((int) (g.ymax / resolution)) * resolution) ? g.ymax : ((int) (g.ymax / resolution)) * resolution;
 
-                if(maxx < minx + 2*resolution) maxx = minx + 2*resolution;
-                if(maxy < miny + 2*resolution) maxy = miny + 2*resolution;
+                if (maxx < minx + 2 * resolution) maxx = minx + 2 * resolution;
+                if (maxy < miny + 2 * resolution) maxy = miny + 2 * resolution;
 
                 new File(new File(dstFilepath).getParent()).mkdirs();
 
@@ -123,18 +124,18 @@ public class AnalysisLayerUtil {
                 } else {
                     //diva 2 bil
                     File tmpBil = File.createTempFile("tmpbil", "");
-                    if(!Diva2bil.diva2bil(srcFilepath, tmpBil.getPath())) {
+                    if (!Diva2bil.diva2bil(srcFilepath, tmpBil.getPath())) {
                         return false;
                     }
 
                     //gdalwarp bil to target resolution
                     File tmpxBil = File.createTempFile("tmpxbil", "");
-                    if(!gdal_warp(gdalPath, tmpBil.getPath() + ".bil", tmpxBil.getPath() + ".bil", resolution, minx, miny, maxx, maxy, g.nodatavalue)) {
+                    if (!gdal_warp(gdalPath, tmpBil.getPath() + ".bil", tmpxBil.getPath() + ".bil", resolution, minx, miny, maxx, maxy, g.nodatavalue)) {
                         return false;
                     }
 
                     //bil 2 diva
-                    if(!Bil2diva.bil2diva(tmpxBil.getPath(), dstFilepath, "")) {
+                    if (!Bil2diva.bil2diva(tmpxBil.getPath(), dstFilepath, "")) {
                         return false;
                     }
 
@@ -142,7 +143,7 @@ public class AnalysisLayerUtil {
                     //tmpbil, tmpbil + .bil, tmpbil + .hdr
                     //tmpxbil, tmpxbil + .bil, tmpxbil + .hdr
                     deleteFiles(new String[]{tmpBil.getPath(), tmpBil.getPath() + ".bil", tmpBil.getPath() + ".hdr",
-                                tmpxBil.getPath(), tmpxBil.getPath() + ".bil", tmpxBil.getPath() + ".hdr", tmpxBil.getPath() + ".bil.aux.xml"});
+                            tmpxBil.getPath(), tmpxBil.getPath() + ".bil", tmpxBil.getPath() + ".hdr", tmpxBil.getPath() + ".bil.aux.xml"});
                 }
             }
 
@@ -234,19 +235,19 @@ public class AnalysisLayerUtil {
 
         List<Double> resolutions = liDao.getConfig().getAnalysisResolutions();
         List<Field> fields = fieldDao.getFields();
-        
+
         for (Field f : fields) {
             try {
                 if (f.isAnalysis() && f.getType().equals("c")) {
                     System.out.println("processing: " + f.getId());
-                    
+
                     Layer l = layerDao.getLayerById(Integer.parseInt(f.getSpid()));
 
                     //create tmp shape file and lookup file name
                     File tmpShp = File.createTempFile("tmpshp", "");
-                   
+
                     for (Double d : resolutions) {
-                        if(shp2Analysis(liDao.getConfig().getLayerFilesPath() + l.getPath_orig(),
+                        if (shp2Analysis(liDao.getConfig().getLayerFilesPath() + l.getPath_orig(),
                                 tmpShp.getPath(),
                                 f.getId(),
                                 liDao.getConfig().getAnalysisLayerFilesPath() + d + File.separator + f.getId(),
@@ -270,9 +271,9 @@ public class AnalysisLayerUtil {
                 e.printStackTrace();
             }
         }
-        
+
     }
-    
+
     private static void processGridFiles() {
         LayerIntersectDAO liDao = Client.getLayerIntersectDao();
         LayerDAO layerDao = Client.getLayerDao();
@@ -294,12 +295,12 @@ public class AnalysisLayerUtil {
                         if (resolutions.get(i) == minRes) {
                             break;
                         } else if (resolutions.get(i) > minRes) {
-                            if(i > 0) i--;
+                            if (i > 0) i--;
                             break;
                         }
                     }
                     while (i < resolutions.size()) {
-                        if(resolutions.get(i) >= minRes) {
+                        if (resolutions.get(i) >= minRes) {
                             System.out.println("processing: " + l.getPath_orig());
                             if (diva2Analysis(liDao.getConfig().getLayerFilesPath() + l.getPath_orig(),
                                     liDao.getConfig().getAnalysisLayerFilesPath() + resolutions.get(i) + File.separator + f.getId(),
@@ -308,7 +309,7 @@ public class AnalysisLayerUtil {
                                     false)) {
 
                                 //copy the contextual value lookup if required
-                                if(f.getType().equals("a") || f.getType().equals("b")) {
+                                if (f.getType().equals("a") || f.getType().equals("b")) {
                                     copyFile(liDao.getConfig().getLayerFilesPath() + l.getPath_orig() + ".txt",
                                             liDao.getConfig().getAnalysisLayerFilesPath() + resolutions.get(i) + File.separator + f.getId() + ".txt");
                                 }
@@ -340,10 +341,10 @@ public class AnalysisLayerUtil {
                 new File(new File(dstFilepath).getParent()).mkdirs();
 
                 //create tmp shape file if it does not exist
-                if(!tmpShp.exists()) {
-                     if(!fieldToShapeFile(fieldId, srcFilepath)) {
-                         return false;
-                     }
+                if (!tmpShp.exists()) {
+                    if (!fieldToShapeFile(fieldId, srcFilepath)) {
+                        return false;
+                    }
                 }
 
                 //determine the appropriate extents
@@ -354,17 +355,17 @@ public class AnalysisLayerUtil {
                 double miny = (re.getMinY() == ((int) (re.getMinY() / resolution)) * resolution) ? re.getMinY() : ((int) (re.getMinY() / resolution)) * resolution + resolution;
                 double maxy = (re.getMaxY() == ((int) (re.getMaxY() / resolution)) * resolution) ? re.getMaxY() : ((int) (re.getMaxY() / resolution)) * resolution;
 
-                if(maxx < minx + 2*resolution) maxx = minx + 2*resolution;
-                if(maxy < miny + 2*resolution) maxy = miny + 2*resolution;
+                if (maxx < minx + 2 * resolution) maxx = minx + 2 * resolution;
+                if (maxy < miny + 2 * resolution) maxy = miny + 2 * resolution;
 
                 //shp 2 bil
                 File tmpBil = File.createTempFile("tmpbil", "");
-                if(!gdal_rasterize(gdalPath, tmpShp.getPath(), tmpBil.getPath() + ".bil", resolution, minx, miny, maxx, maxy)) {
+                if (!gdal_rasterize(gdalPath, tmpShp.getPath(), tmpBil.getPath() + ".bil", resolution, minx, miny, maxx, maxy)) {
                     return false;
                 }
 
                 //bil 2 diva
-                if(!Bil2diva.bil2diva(tmpBil.getPath(), dstFilepath, "")) {
+                if (!Bil2diva.bil2diva(tmpBil.getPath(), dstFilepath, "")) {
                     return false;
                 }
 
@@ -373,7 +374,7 @@ public class AnalysisLayerUtil {
 
                 //cleanup
                 //tmpbil, tmpbil + .bil, tmpbil + .hdr
-                deleteFiles(new String[]{tmpBil.getPath(), tmpBil.getPath() + ".bil", tmpBil.getPath() + ".hdr"});  
+                deleteFiles(new String[]{tmpBil.getPath(), tmpBil.getPath() + ".bil", tmpBil.getPath() + ".hdr"});
             }
             return true;
         } catch (Exception e) {
@@ -435,7 +436,7 @@ public class AnalysisLayerUtil {
     private static boolean fieldToShapeFile(String fid, String path) {
         boolean ret = true;
         try {
-            final SimpleFeatureType TYPE = DataUtilities.createType("tmpshp","the_geom:MultiPolygon,id:int");
+            final SimpleFeatureType TYPE = DataUtilities.createType("tmpshp", "the_geom:MultiPolygon,id:int");
 
             ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
             Map<String, Serializable> params = new HashMap<String, Serializable>();
@@ -453,10 +454,10 @@ public class AnalysisLayerUtil {
 
             FileWriter fw = null;
             try {
-                fw = new FileWriter(path + ".txt");                
+                fw = new FileWriter(path + ".txt");
                 int count = 1;
                 ObjectDAO objectDao = Client.getObjectDao();
-                for(Objects o : objectDao.getObjectsById(fid)) {
+                for (Objects o : objectDao.getObjectsById(fid)) {
                     //get WKT
                     String wkt = objectDao.getObjectsGeometryById(o.getPid(), "wkt");
                     WKTReader r = new WKTReader();
@@ -470,20 +471,20 @@ public class AnalysisLayerUtil {
                     collection.add(f);
 
                     //write for lookup file
-                    if(count > 1) {
+                    if (count > 1) {
                         fw.write("\n");
                     }
                     fw.write(count + "=" + o.getId());
-                    count ++;
+                    count++;
                 }
                 featureStore.addFeatures(collection);
                 transaction.commit();
                 transaction.close();
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 ret = false;
             } finally {
-                if(fw != null) {
+                if (fw != null) {
                     try {
                         fw.close();
                     } catch (Exception e) {
@@ -506,10 +507,10 @@ public class AnalysisLayerUtil {
         try {
             br = new BufferedReader(new FileReader(src));
             fw = new FileWriter(dst);
-            char [] buffer = new char[1024];
+            char[] buffer = new char[1024];
             int n;
-            while((n = br.read(buffer)) > 0) {
-                fw.write(buffer,0,n);
+            while ((n = br.read(buffer)) > 0) {
+                fw.write(buffer, 0, n);
             }
             br.close();
             fw.close();
@@ -518,14 +519,14 @@ public class AnalysisLayerUtil {
             e.printStackTrace();
         } finally {
             try {
-                if(br != null) {
+                if (br != null) {
                     br.close();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
             try {
-                if(fw != null) {
+                if (fw != null) {
                     fw.close();
                 }
             } catch (Exception e) {

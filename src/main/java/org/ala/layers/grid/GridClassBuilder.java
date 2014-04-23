@@ -17,6 +17,7 @@ package org.ala.layers.grid;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.io.WKTReader;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
 import org.ala.layers.dto.GridClass;
 import org.ala.layers.intersect.Grid;
 import org.ala.layers.util.SpatialUtil;
@@ -57,7 +59,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 /**
- *
  * @author Adam
  */
 public class GridClassBuilder {
@@ -163,24 +164,24 @@ public class GridClassBuilder {
                 String[] index = ((String) wktIndexed.get("index")).split("\n");
                 int len = ((String) wktIndexed.get("wkt")).length();
                 WKTReader r = new WKTReader();
-                
+
                 int minPolygonNumber = 0;
                 int maxPolygonNumber = 0;
-                
+
                 for (int i = 0; i < index.length; i++) {
                     if (index[i].length() > 1) {
                         String[] cells = index[i].split(",");
-                        int polygonNumber = Integer.parseInt(cells[0]);   
+                        int polygonNumber = Integer.parseInt(cells[0]);
                         raf.writeInt(polygonNumber);   //polygon number
                         int polygonStart = Integer.parseInt(cells[1]);
                         raf.writeInt(polygonStart);   //character offset
-                        
+
                         if (i == 0) {
                             minPolygonNumber = polygonNumber;
                         } else if (i == index.length - 1) {
                             maxPolygonNumber = polygonNumber;
                         }
-                        
+
                         int polygonEnd = len;
                         if (i + 1 < index.length) {
                             polygonEnd = Integer.parseInt(index[i + 1].split(",")[1]) - 1; //-1 for comma
@@ -196,7 +197,7 @@ public class GridClassBuilder {
                 }
                 raf.close();
                 wktIndexed = null;
-                
+
                 //for SLD
                 maxValues.add(gc.getMaxShapeIdx());
                 labels.add(name.replace("\"", "'"));
@@ -390,8 +391,8 @@ public class GridClassBuilder {
             BufferedReader br = new BufferedReader(new FileReader(src));
             FileWriter fw = new FileWriter(dst);
             String line;
-            while((line = br.readLine()) != null) {
-                if(line.startsWith("DataType=")) {
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("DataType=")) {
                     fw.write("DataType=INT\n");
                 } else {
                     fw.write(line);

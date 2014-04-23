@@ -31,7 +31,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- *
  * @author Adam
  */
 public class GridCacheReader {
@@ -43,7 +42,7 @@ public class GridCacheReader {
 
         if (directory != null) {
             File dir = new File(directory);
-            if(dir != null && dir.exists() && dir.isDirectory()) {
+            if (dir != null && dir.exists() && dir.isDirectory()) {
                 for (File f : dir.listFiles()) {
                     try {
                         if (f.getName().endsWith(".txt")) {
@@ -97,7 +96,7 @@ public class GridCacheReader {
 
     }
 
-    static long largerTest(int size,String diva_cache_path) {
+    static long largerTest(int size, String diva_cache_path) {
         try {
             ArrayList<Double> points = new ArrayList<Double>(2000);
             Random r = new Random(System.currentTimeMillis());

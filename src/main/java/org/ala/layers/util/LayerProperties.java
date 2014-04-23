@@ -9,11 +9,11 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- *
  * @author Adam
  */
 public class LayerProperties {
     static Properties properties;
+
     static {
         properties = new Properties();
         try {
@@ -130,7 +130,7 @@ public class LayerProperties {
 
     public static String getAnalysisMaxentCmd() {
         return properties.getProperty("maxent.cmd");
-    } 
+    }
 
     public static String getGeoserverUrl() {
         return properties.getProperty("geoserver.url");

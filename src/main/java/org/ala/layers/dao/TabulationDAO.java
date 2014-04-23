@@ -16,11 +16,12 @@
 package org.ala.layers.dao;
 
 import java.util.List;
+
 import org.ala.layers.dto.Tabulation;
 
 /**
  * DAO for the Field object
- * 
+ *
  * @author ajay
  */
 public interface TabulationDAO {
@@ -30,6 +31,6 @@ public interface TabulationDAO {
     public List<Tabulation> getTabulationSingle(String fid, String wkt);
 
     public List<Tabulation> listTabulations();
-    
+
 
 }

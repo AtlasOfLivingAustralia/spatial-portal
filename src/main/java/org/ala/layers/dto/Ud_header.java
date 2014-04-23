@@ -16,47 +16,48 @@
 package org.ala.layers.dto;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+
 import javax.persistence.*;
 import java.util.*;
 
 @Entity
 @Table(name = "ud_header")
-@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_DEFAULT)
 public class Ud_header {
     @Id
-    @GeneratedValue ( strategy = GenerationType.SEQUENCE, generator="ud_header_id_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ud_header_id_seq")
     @SequenceGenerator(name = "layers_id_seq", sequenceName = "ud_header_id_seq")
     @Column(name = "ud_header_id", insertable = false, updatable = false)
     private Long ud_header_id;
 
-    @Column(name="upload_dt")
+    @Column(name = "upload_dt")
     private String upload_dt;
 
-    @Column(name="lastuse_dt")
+    @Column(name = "lastuse_dt")
     private Date lastuse_dt;
 
-    @Column(name="user_id")
+    @Column(name = "user_id")
     private String user_id;
 
-    @Column(name="analysis_id")
+    @Column(name = "analysis_id")
     private String analysis_id;
 
-    @Column(name="metadata")
+    @Column(name = "metadata")
     private String metadata;
 
-    @Column(name="description")
+    @Column(name = "description")
     private String description;
 
-    @Column(name="data_size")
+    @Column(name = "data_size")
     private Integer data_size;
 
-    @Column(name="record_type")
+    @Column(name = "record_type")
     private String record_type;
 
-    @Column(name="mark_for_deletion_dt")
+    @Column(name = "mark_for_deletion_dt")
     private Date mark_for_deletion_dt;
 
-    @Column(name="data_path")
+    @Column(name = "data_path")
     private String data_path;
 
     private String facet_id;
@@ -66,7 +67,7 @@ public class Ud_header {
     public Ud_header() {
     }
 
-    public Ud_header(String user_id, String analysis_id, String description, String metadata, String record_type,String data_path) {
+    public Ud_header(String user_id, String analysis_id, String description, String metadata, String record_type, String data_path) {
         this.user_id = user_id;
         this.analysis_id = analysis_id;
         this.description = description;

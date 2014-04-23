@@ -15,6 +15,7 @@
 package org.ala.layers.intersect;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.layers.dao.FieldDAO;
@@ -40,7 +42,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
 /**
- *
  * @author Adam
  */
 public class IntersectConfig {
@@ -48,7 +49,9 @@ public class IntersectConfig {
     public static final String GEOSERVER_URL_PLACEHOLDER = "<COMMON_GEOSERVER_URL>";
     public static final String GEONETWORK_URL_PLACEHOLDER = "<COMMON_GEONETWORK_URL>";
 
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger logger = Logger.getLogger(IntersectConfig.class);
     static final String ALASPATIAL_OUTPUT_PATH = "ALASPATIAL_OUTPUT_PATH";
     static final String LAYER_FILES_PATH = "LAYER_FILES_PATH";
@@ -96,11 +99,12 @@ public class IntersectConfig {
     static String uploadedShapesFieldId;
     static String apiKeyCheckUrlTemplate;
     static String spatialPortalAppName;
-    
+
     static {
         Properties properties = new Properties();
+        InputStream is = null;
         try {
-            InputStream is = IntersectConfig.class.getResourceAsStream("/" + LAYER_PROPERTIES);
+            is = new FileInputStream("/data/layers-store/config/layers-store-config.properties");
             if (is != null) {
                 properties.load(is);
             } else {
@@ -109,6 +113,14 @@ public class IntersectConfig {
             }
         } catch (IOException ex) {
             logger.error(null, ex);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    logger.error("failed to close layers-store-config.properties", e);
+                }
+            }
         }
 
         layerFilesPath = getProperty(LAYER_FILES_PATH, properties, null);
@@ -137,6 +149,10 @@ public class IntersectConfig {
         this.layerDao = layerDao;
 
         load();
+    }
+
+    public static void setPreloadedShapeFiles(String preloadedShapeFiles) {
+        IntersectConfig.preloadedShapeFiles = preloadedShapeFiles;
     }
 
     public void load() {
@@ -253,36 +269,36 @@ public class IntersectConfig {
 
                 intersectionFiles.put(jo.getString("id"),
                         new IntersectionFile(jo.getString("name"),
-                        layerFilesPath + layerPathOrig.get(spid),
-                        (jo.containsKey("sname") ? jo.getString("sname") : null),
-                        layerName.get(spid),
-                        jo.getString("id"),
-                        jo.getString("name"),
-                        layerPid.get(spid),
-                        jo.getString("type"),
-                        gridClasses));
+                                layerFilesPath + layerPathOrig.get(spid),
+                                (jo.containsKey("sname") ? jo.getString("sname") : null),
+                                layerName.get(spid),
+                                jo.getString("id"),
+                                jo.getString("name"),
+                                layerPid.get(spid),
+                                jo.getString("type"),
+                                gridClasses));
                 //also register it under the layer name
                 intersectionFiles.put(layerName.get(spid),
                         new IntersectionFile(jo.getString("name"),
-                        layerFilesPath + layerPathOrig.get(spid),
-                        (jo.containsKey("sname") ? jo.getString("sname") : null),
-                        layerName.get(jo.getString("spid")),
-                        jo.getString("id"),
-                        jo.getString("name"),
-                        layerPid.get(spid),
-                        jo.getString("type"),
-                        gridClasses));
+                                layerFilesPath + layerPathOrig.get(spid),
+                                (jo.containsKey("sname") ? jo.getString("sname") : null),
+                                layerName.get(jo.getString("spid")),
+                                jo.getString("id"),
+                                jo.getString("name"),
+                                layerPid.get(spid),
+                                jo.getString("type"),
+                                gridClasses));
                 //also register it under the layer pid
                 intersectionFiles.put(layerPid.get(spid),
                         new IntersectionFile(jo.getString("name"),
-                        layerFilesPath + layerPathOrig.get(spid),
-                        (jo.containsKey("sname") ? jo.getString("sname") : null),
-                        layerName.get(jo.getString("spid")),
-                        jo.getString("id"),
-                        jo.getString("name"),
-                        layerPid.get(spid),
-                        jo.getString("type"),
-                        gridClasses));
+                                layerFilesPath + layerPathOrig.get(spid),
+                                (jo.containsKey("sname") ? jo.getString("sname") : null),
+                                layerName.get(jo.getString("spid")),
+                                jo.getString("id"),
+                                jo.getString("name"),
+                                layerPid.get(spid),
+                                jo.getString("type"),
+                                gridClasses));
                 classGrids.put(jo.getString("id"), gridClasses);
             }
         } else {
@@ -296,36 +312,36 @@ public class IntersectConfig {
                     HashMap<Integer, GridClass> gridClasses = getGridClasses(getLayerFilesPath() + layer.getPath_orig(), layer.getType());
                     intersectionFiles.put(f.getId(),
                             new IntersectionFile(f.getName(),
-                            getLayerFilesPath() + layer.getPath_orig(),
-                            f.getSname(),
-                            layer.getName(),
-                            f.getId(),
-                            f.getName(),
-                            String.valueOf(layer.getId()),
-                            f.getType(),
-                            gridClasses));
+                                    getLayerFilesPath() + layer.getPath_orig(),
+                                    f.getSname(),
+                                    layer.getName(),
+                                    f.getId(),
+                                    f.getName(),
+                                    String.valueOf(layer.getId()),
+                                    f.getType(),
+                                    gridClasses));
                     //also register it under the layer name
                     intersectionFiles.put(layer.getName(),
                             new IntersectionFile(f.getName(),
-                            getLayerFilesPath() + layer.getPath_orig(),
-                            f.getSname(),
-                            layer.getName(),
-                            f.getId(),
-                            f.getName(),
-                            String.valueOf(layer.getId()),
-                            f.getType(),
-                            gridClasses));
+                                    getLayerFilesPath() + layer.getPath_orig(),
+                                    f.getSname(),
+                                    layer.getName(),
+                                    f.getId(),
+                                    f.getName(),
+                                    String.valueOf(layer.getId()),
+                                    f.getType(),
+                                    gridClasses));
                     //also register it under the layer pid
                     intersectionFiles.put(String.valueOf(layer.getId()),
                             new IntersectionFile(f.getName(),
-                            getLayerFilesPath() + layer.getPath_orig(),
-                            f.getSname(),
-                            layer.getName(),
-                            f.getId(),
-                            f.getName(),
-                            String.valueOf(layer.getId()),
-                            f.getType(),
-                            gridClasses));
+                                    getLayerFilesPath() + layer.getPath_orig(),
+                                    f.getSname(),
+                                    layer.getName(),
+                                    f.getId(),
+                                    f.getName(),
+                                    String.valueOf(layer.getId()),
+                                    f.getType(),
+                                    gridClasses));
                     classGrids.put(f.getId(), gridClasses);
                 }
             }
@@ -348,7 +364,7 @@ public class IntersectConfig {
         return "";
     }
 
-    void updateShapeFileCache() {
+    public void updateShapeFileCache() {
         if (preloadedShapeFiles == null) {
             return;
         }
@@ -542,18 +558,18 @@ public class IntersectConfig {
     static public String getOccurrenceSpeciesRecordsFilename() {
         return occurrenceSpeciesRecordsFilename;
     }
-    
+
     static public String getUploadedShapesFieldId() {
         return uploadedShapesFieldId;
     }
-    
+
     static public String getApiKeyCheckUrlTemplate() {
         return apiKeyCheckUrlTemplate;
     }
-    
+
     static public String getSpatialPortalAppName() {
         return spatialPortalAppName;
-    }    
+    }
 
     public Map<String, IntersectionFile> getIntersectionFiles() {
         return intersectionFiles;
@@ -561,6 +577,7 @@ public class IntersectConfig {
 
     /**
      * get info on an analysis layer
+     *
      * @param id layer id as String
      * @return String [] with [0] = analysis id, [1] = path to grid file, [2] = analysis type
      */
@@ -597,7 +614,7 @@ public class IntersectConfig {
             gid = id.substring(0, id.length() - "_srichness".length());
             filename = getAlaspatialOutputPath() + File.separator + "sitesbyspecies" + File.separator + gid + File.separator + "species_richness";
             name = "Species Richness";
-        }else if (id.startsWith("envelope_")) {
+        } else if (id.startsWith("envelope_")) {
             //envelope layer
             gid = id.substring("envelope_".length());
             filename = getAlaspatialOutputPath() + File.separator + "envelope" + File.separator + gid + File.separator + "envelope";
@@ -606,7 +623,7 @@ public class IntersectConfig {
             //gdm layer
             int pos1 = id.indexOf("_");
             int pos2 = id.lastIndexOf("_");
-            String[] gdmparts = new String [] {id.substring(0,pos1), id.substring(pos1+1, pos2), id.substring(pos2+1) };
+            String[] gdmparts = new String[]{id.substring(0, pos1), id.substring(pos1 + 1, pos2), id.substring(pos2 + 1)};
             gid = gdmparts[2];
             filename = getAlaspatialOutputPath() + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1];
             //Layer tmpLayer = layerDao.getLayerByName(gdmparts[1].replaceAll("Tran", ""));
@@ -615,7 +632,7 @@ public class IntersectConfig {
         } else if (id.contains("_")) {
             //2nd form of gdm layer name, why?
             int pos = id.indexOf("_");
-            String[] gdmparts = new String [] {id.substring(0,pos), id.substring(pos+1) };
+            String[] gdmparts = new String[]{id.substring(0, pos), id.substring(pos + 1)};
             gid = gdmparts[0];
             filename = getAlaspatialOutputPath() + File.separator + "gdm" + File.separator + gid + File.separator + gdmparts[1] + "Tran";
             logger.debug("id: " + id);
@@ -627,7 +644,7 @@ public class IntersectConfig {
         }
 
         if (gid != null) {
-            return new String[] {gid, filename, name};
+            return new String[]{gid, filename, name};
         } else {
             return null;
         }

@@ -9,13 +9,12 @@ import org.ala.layers.intersect.Grid;
 public class GridLegend {
 
     /**
-     *
-     * @param filename grid file name.  must reside in
-     *  tabulation settings <environmental_data_path> as String
+     * @param filename    grid file name.  must reside in
+     *                    tabulation settings <environmental_data_path> as String
      * @param output_name Base output file path and name as String
      */
     public GridLegend(String filename, String output_name, boolean useAreaEvaluation, String[] legendNames, FileWriter cutpointFile, int scaleDown, boolean minAsTransparent) {
-        Grid g =  new Grid(filename);
+        Grid g = new Grid(filename);
         float[] d = g.getGrid();
 
         if (legendNames != null) {
@@ -126,16 +125,16 @@ public class GridLegend {
             scaleDown = Integer.parseInt(args[2]);
         }
         boolean minAsTransparent = false;
-        if(args.length >= 4) {
+        if (args.length >= 4) {
             minAsTransparent = args[3].equals("1");
         }
 
         generateGridLegend(gridfilename, outputfilename, scaleDown, minAsTransparent);
     }
-    
+
     public static boolean generateGridLegend(String gridfilename, String outputfilename, int scaleDown, boolean minAsTransparent) {
         boolean ret = true;
-        
+
         String[] legendTypes = {"Equal Area"};
         //String [] legendTypes = {"Even Interval","Even Interval Log 10","Equal Size","Equal Area"};
 
@@ -153,7 +152,7 @@ public class GridLegend {
             e.printStackTrace();
             ret = false;
         }
-        
+
         return ret;
     }
 }

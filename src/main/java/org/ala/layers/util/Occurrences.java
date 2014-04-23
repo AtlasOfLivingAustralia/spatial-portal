@@ -32,45 +32,45 @@ public class Occurrences {
      * @return
      */
     public static String getOccurrences(String q, String server, String fields) throws IOException {
-            int pageSize = 1000000;
+        int pageSize = 1000000;
 
-            int start = 0;
+        int start = 0;
 
-            StringBuilder output = new StringBuilder();
+        StringBuilder output = new StringBuilder();
 
-            while (true && start < 300000000) {
-                String url = server + "/webportal/occurrences.gz?q=" + q + "&pageSize=" + pageSize + "&start=" + start + "&fl=" + fields;
-
-                int tryCount = 0;
-                InputStream is = null;
-                String csv = null;
-                int maxTrys = 4;
-                while (tryCount < maxTrys && csv == null) {
-                    tryCount++;
-                    try {
-                        is = getUrlStream(url);
-                        csv = IOUtils.toString(new GZIPInputStream(is));
-                    } catch (Exception e) {
-                        logger.warn("failed try " + tryCount + " of " + maxTrys + ": " + url, e);
-                    }
-                }
-
-                if (csv == null) {
-                    throw new IOException("failed to get records from biocache.");
-                }
-
-                output.append(csv);
-
-                int currentCount = 0;
-                int i = -1;
-                while ((i = csv.indexOf("\n",i+1)) > 0){
-                    currentCount++;
-                }
-
-                if (currentCount == 0 || currentCount < pageSize) {
-                    break;
+        while (true && start < 300000000) {
+            String url = server + "/webportal/occurrences.gz?q=" + q + "&pageSize=" + pageSize + "&start=" + start + "&fl=" + fields;
+            logger.info("retrieving from biocache : " + url);
+            int tryCount = 0;
+            InputStream is = null;
+            String csv = null;
+            int maxTrys = 4;
+            while (tryCount < maxTrys && csv == null) {
+                tryCount++;
+                try {
+                    is = getUrlStream(url);
+                    csv = IOUtils.toString(new GZIPInputStream(is));
+                } catch (Exception e) {
+                    logger.warn("failed try " + tryCount + " of " + maxTrys + ": " + url, e);
                 }
             }
+
+            if (csv == null) {
+                throw new IOException("failed to get records from biocache.");
+            }
+
+            output.append(csv);
+
+            int currentCount = 0;
+            int i = -1;
+            while ((i = csv.indexOf("\n", i + 1)) > 0) {
+                currentCount++;
+            }
+
+            if (currentCount == 0 || currentCount < pageSize) {
+                break;
+            }
+        }
 
         return output.toString();
     }

@@ -19,11 +19,11 @@ import java.util.ArrayList;
 
 /**
  * ComplexRegion is a collection of SimpleRegion, expect POLYGONs for now.
- * 
+ * <p/>
  * treat as a shape file, overlapping regions cancel out presence.
- * 
+ * <p/>
  * TODO: clockwise/anticlockwise identification
- * 
+ *
  * @author Adam Collins
  */
 public class ComplexRegion extends SimpleRegion {
@@ -39,6 +39,7 @@ public class ComplexRegion extends SimpleRegion {
 
         return cr;
     }
+
     /**
      * list of SimpleRegion members
      */
@@ -92,6 +93,7 @@ public class ComplexRegion extends SimpleRegion {
 
     /**
      * sets integer value stored
+     *
      * @param value_ as int
      */
     public void setValue(int value_) {
@@ -100,6 +102,7 @@ public class ComplexRegion extends SimpleRegion {
 
     /**
      * gets integer value stored
+     *
      * @return int
      */
     public int getValue() {
@@ -118,13 +121,14 @@ public class ComplexRegion extends SimpleRegion {
 
     /**
      * adds a new polygon
-     *
+     * <p/>
      * note: if a mask is in use must call <code>useMask</code> again
+     *
      * @param points_ points = double[n][2]
-     * where
-     * 	n is number of points
-     *  [][0] is longitude
-     *  [][1] is latitude
+     *                where
+     *                n is number of points
+     *                [][0] is longitude
+     *                [][1] is latitude
      */
     public void addPolygon(SimpleRegion sr) {
         simpleregions.add(sr);
@@ -149,9 +153,9 @@ public class ComplexRegion extends SimpleRegion {
 
     /**
      * returns true when the point provided is within the ComplexRegion
-     *
+     * <p/>
      * uses <code>mask</code> when available
-     *
+     * <p/>
      * note: type UNDEFINED implies no boundary, always returns true.
      *
      * @param longitude
@@ -168,7 +172,7 @@ public class ComplexRegion extends SimpleRegion {
             return false;
         }
 
-        short[] countsIn = new short[polygons.get(polygons.size()-1) + 1];
+        short[] countsIn = new short[polygons.get(polygons.size() - 1) + 1];
         //int count_in = 0;       //count of regions overlapping the point
         if (mask != null) {
             /* use mask if exists */
@@ -203,7 +207,7 @@ public class ComplexRegion extends SimpleRegion {
                     }
                 }
             }
-            
+
         }
 
         /* check for all SimpleRegions */
@@ -224,9 +228,9 @@ public class ComplexRegion extends SimpleRegion {
 
     /**
      * builds a grid (mask) to speed up isWithin.
-     *
+     * <p/>
      * TODO: split out shapes with large numbers of points in GI_PARTIALLY_PRESENT grid cells.
-     *
+     * <p/>
      * TODO: automatic(best) height/width specification
      *
      * @param width
@@ -260,7 +264,7 @@ public class ComplexRegion extends SimpleRegion {
         if (depthThreashold == -1) {
             depthThreashold = 100;
         }
-        if(width < 3 || height < 3) {
+        if (width < 3 || height < 3) {
             return;
         }
 
@@ -289,7 +293,7 @@ public class ComplexRegion extends SimpleRegion {
         byte[][] shapemaskregion = new byte[height][width];
 
         int k = 0;
-        while(k < simpleregions.size()) {
+        while (k < simpleregions.size()) {
             int p = k;
             for (; k < simpleregions.size()
                     && (p == k || polygons.get(k - 1) == polygons.get(k)); k++) {
@@ -301,19 +305,19 @@ public class ComplexRegion extends SimpleRegion {
                 for (i = 0; i < height; i++) {
                     for (j = 0; j < width; j++) {
                         if (shapemaskregion[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT
-                                || shapemask[i][j] ==SimpleRegion.GI_PARTIALLY_PRESENT) {
-                            shapemask[i][j] = SimpleRegion.GI_PARTIALLY_PRESENT;				//partially inside
+                                || shapemask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT) {
+                            shapemask[i][j] = SimpleRegion.GI_PARTIALLY_PRESENT;                //partially inside
                             if (md != null) {
                                 if (md[i][j] == null) {
                                     md[i][j] = new ArrayList<Integer>();
                                 }
                                 md[i][j].add(k);
                             }
-                        } else if (shapemaskregion[i][j] == SimpleRegion.GI_FULLY_PRESENT ) {
-                            if (shapemask[i][j] == SimpleRegion.GI_FULLY_PRESENT ) {
+                        } else if (shapemaskregion[i][j] == SimpleRegion.GI_FULLY_PRESENT) {
+                            if (shapemask[i][j] == SimpleRegion.GI_FULLY_PRESENT) {
                                 shapemask[i][j] = SimpleRegion.GI_ABSENCE;      //completely inside
                             } else {
-                                shapemask[i][j] = SimpleRegion.GI_FULLY_PRESENT ;//completely outside (inside of a cutout region)
+                                shapemask[i][j] = SimpleRegion.GI_FULLY_PRESENT;//completely outside (inside of a cutout region)
                             }
                             if (md != null) {
                                 if (md[i][j] == null) {
@@ -334,7 +338,7 @@ public class ComplexRegion extends SimpleRegion {
                 for (j = 0; j < width; j++) {
                     if (shapemask[i][j] == SimpleRegion.GI_FULLY_PRESENT
                             || mask[i][j] == SimpleRegion.GI_FULLY_PRESENT) {
-                        mask[i][j] = SimpleRegion.GI_FULLY_PRESENT;				//partially inside
+                        mask[i][j] = SimpleRegion.GI_FULLY_PRESENT;                //partially inside
                     } else if (shapemask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT) {
                         mask[i][j] = SimpleRegion.GI_PARTIALLY_PRESENT;
                     }
@@ -350,7 +354,7 @@ public class ComplexRegion extends SimpleRegion {
             maskDepth = new Object[md.length][md[0].length];
             for (i = 0; i < height; i++) {
                 for (j = 0; j < width; j++) {
-                    if (md[i][j] != null && mask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT ) {
+                    if (md[i][j] != null && mask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT) {
                         int[] d = new int[md[i][j].size()];
                         for (k = 0; k < d.length; k++) {
                             d[k] = md[i][j].get(k);
@@ -364,27 +368,27 @@ public class ComplexRegion extends SimpleRegion {
 
     /**
      * determines overlap with a grid
-     *
+     * <p/>
      * for type POLYGON
      * when <code>three_state_map</code> is not null populate it with one of:
-     * 	GI_UNDEFINED
-     * 	GI_PARTIALLY_PRESENT
-     * 	GI_FULLY_PRESENT
-     * 	GI_ABSENCE
+     * GI_UNDEFINED
+     * GI_PARTIALLY_PRESENT
+     * GI_FULLY_PRESENT
+     * GI_ABSENCE
      *
      * @param longitude1
      * @param latitude1
      * @param longitude2
      * @param latitude2
-     * @param xres number of longitude segements as int
-     * @param yres number of latitude segments as int
-     * @return (x,y) as double [][2] for each grid cell at least partially falling
+     * @param xres       number of longitude segements as int
+     * @param yres       number of latitude segments as int
+     * @return (x, y) as double [][2] for each grid cell at least partially falling
      * within the specified region of the specified resolution beginning at 0,0
      * for minimum longitude and latitude through to xres,yres for maximums     *
      */
     @Override
     public int[][] getOverlapGridCells(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map, boolean noCellsReturned) {
-        int i,j;
+        int i, j;
         // if no threestate map exists, create one
         if (three_state_map == null) {
             three_state_map = new byte[height][width];
@@ -393,7 +397,7 @@ public class ComplexRegion extends SimpleRegion {
         byte[][] tmpMask = new byte[height][width];
 
         int k = 0;
-        while(k < simpleregions.size()) {
+        while (k < simpleregions.size()) {
             int p = k;
             for (; k < simpleregions.size()
                     && (p == k || polygons.get(k - 1).equals(polygons.get(k))); k++) {
@@ -402,14 +406,14 @@ public class ComplexRegion extends SimpleRegion {
                 sr.getOverlapGridCells_Acc(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask);
             }
 
-            fillAccMask(p, k-1, longitude1, latitude1, longitude2, latitude2, width, height, tmpMask, true);
+            fillAccMask(p, k - 1, longitude1, latitude1, longitude2, latitude2, width, height, tmpMask, true);
 
             //tmpMask into mask
             for (i = 0; i < height; i++) {
                 for (j = 0; j < width; j++) {
-                    if(tmpMask[i][j] == 2 || three_state_map[i][j] == 2) {
+                    if (tmpMask[i][j] == 2 || three_state_map[i][j] == 2) {
                         three_state_map[i][j] = 2;
-                    } else if(tmpMask[i][j] == 1) {
+                    } else if (tmpMask[i][j] == 1) {
                         three_state_map[i][j] = 1;
                     }
 
@@ -421,10 +425,10 @@ public class ComplexRegion extends SimpleRegion {
 
         boolean cellsReturned = !noCellsReturned;
         if (cellsReturned) {
-            int [][] data = new int[width * height][2];
+            int[][] data = new int[width * height][2];
             int p = 0;
-            for(i=0;i<height;i++) {
-                for(j=0;j<width;j++) {
+            for (i = 0; i < height; i++) {
+                for (j = 0; j < width; j++) {
                     if (three_state_map[i][j] != GI_UNDEFINED) {   //undefined == absence
                         data[p][0] = j;
                         data[p][1] = i;
@@ -441,7 +445,7 @@ public class ComplexRegion extends SimpleRegion {
 
     @Override
     public boolean isWithin_EPSG900913(double longitude, double latitude) {
-        short[] countsIn = new short[polygons.get(polygons.size()-1) + 1];
+        short[] countsIn = new short[polygons.get(polygons.size() - 1) + 1];
          /* check for all SimpleRegions */
         for (int i = 0; i < simpleregions.size(); i++) {
             if (simpleregions.get(i).isWithin_EPSG900913(longitude, latitude)) {
@@ -475,7 +479,7 @@ public class ComplexRegion extends SimpleRegion {
         byte[][] tmpMask = new byte[height][width];
 
         int k = 0;
-        while(k < simpleregions.size()) {
+        while (k < simpleregions.size()) {
             int p = k;
             for (; k < simpleregions.size()
                     && (p == k || polygons.get(k - 1).equals(polygons.get(k))); k++) {
@@ -484,14 +488,14 @@ public class ComplexRegion extends SimpleRegion {
                 sr.getOverlapGridCells_Acc_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, tmpMask);
             }
 
-            fillAccMask_EPSG900913(k, p-1, longitude1, latitude1, longitude2, latitude2, width, height, tmpMask, true);
+            fillAccMask_EPSG900913(k, p - 1, longitude1, latitude1, longitude2, latitude2, width, height, tmpMask, true);
 
             //tmpMask into mask
             for (i = 0; i < height; i++) {
                 for (j = 0; j < width; j++) {
-                    if(tmpMask[i][j] == 2 || mask[i][j] == 2) {
+                    if (tmpMask[i][j] == 2 || mask[i][j] == 2) {
                         mask[i][j] = 2;
-                    } else if(tmpMask[i][j] == 1) {
+                    } else if (tmpMask[i][j] == 1) {
                         mask[i][j] = 1;
                     }
 
@@ -503,10 +507,10 @@ public class ComplexRegion extends SimpleRegion {
 
         boolean cellsReturned = !noCellsReturned;
         if (cellsReturned) {
-            int [][] data = new int[width * height][2];
+            int[][] data = new int[width * height][2];
             int p = 0;
-            for(i=0;i<height;i++) {
-                for(j=0;j<width;j++) {
+            for (i = 0; i < height; i++) {
+                for (j = 0; j < width; j++) {
                     if (mask[i][j] != GI_UNDEFINED) {   //undefined == absence
                         data[p][0] = j;
                         data[p][1] = i;
@@ -554,10 +558,10 @@ public class ComplexRegion extends SimpleRegion {
                         three_state_map[i][j] = three_state_map[i - 1][j];
                     } else {
                         int count = 0;
-                        for(int k=startPolygon;k<=endPolygon;k++) {
-                            count += isWithin(j * divx + divx / 2 + longitude1, i * divy + divy / 2 + latitude1)?1:0;
+                        for (int k = startPolygon; k <= endPolygon; k++) {
+                            count += isWithin(j * divx + divx / 2 + longitude1, i * divy + divy / 2 + latitude1) ? 1 : 0;
                         }
-                        if(count % 2 == 1) {
+                        if (count % 2 == 1) {
                             //if the previous was partially present, test
                             three_state_map[i][j] = GI_FULLY_PRESENT;
                         } //else absent
@@ -606,10 +610,10 @@ public class ComplexRegion extends SimpleRegion {
                         three_state_map[i][j] = three_state_map[i - 1][j];
                     } else {
                         int count = 0;
-                        for(int k=startPolygon;k<=endPolygon;k++) {
-                            count += isWithin_EPSG900913(j * divx + divx / 2 + longitude1, i * divy + divy / 2 + latitude1)?1:0;
+                        for (int k = startPolygon; k <= endPolygon; k++) {
+                            count += isWithin_EPSG900913(j * divx + divx / 2 + longitude1, i * divy + divy / 2 + latitude1) ? 1 : 0;
                         }
-                        if(count % 2 == 1) {
+                        if (count % 2 == 1) {
                             //if the previous was partially present, test
                             three_state_map[i][j] = GI_FULLY_PRESENT;
                         } //else absent

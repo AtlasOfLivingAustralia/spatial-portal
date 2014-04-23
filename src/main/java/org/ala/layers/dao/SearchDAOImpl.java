@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+
 import org.ala.layers.dto.GridClass;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.dto.SearchObject;
@@ -27,16 +28,17 @@ import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- *
  * @author ajay
  */
 @Service("searchDao")
 public class SearchDAOImpl implements SearchDAO {
 
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger logger = Logger.getLogger(SearchDAOImpl.class);
     private SimpleJdbcTemplate jdbcTemplate;
-//    private SimpleJdbcCall procSearchObject;
+    //    private SimpleJdbcCall procSearchObject;
     @Resource(name = "layerIntersectDao")
     private LayerIntersectDAO layerIntersectDao;
 

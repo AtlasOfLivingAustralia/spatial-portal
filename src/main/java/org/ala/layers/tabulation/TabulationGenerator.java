@@ -48,7 +48,6 @@ import org.ala.layers.util.SpatialUtil;
 import org.ala.spatial.analysis.layers.Records;
 
 /**
- * 
  * @author Adam
  */
 public class TabulationGenerator {
@@ -309,7 +308,7 @@ public class TabulationGenerator {
         Double resolution = resolutions.get(0);
 
         // check if resolution needs changing
-        resolution = Double.parseDouble(confirmResolution(new String[] { fieldId1, fieldId2 }, String.valueOf(resolution)));
+        resolution = Double.parseDouble(confirmResolution(new String[]{fieldId1, fieldId2}, String.valueOf(resolution)));
         System.out.println("RESOLUTION: " + resolution);
 
         // get extents for all layers
@@ -374,8 +373,8 @@ public class TabulationGenerator {
         if (records != null) {
             for (int i = 0; i < records.getRecordsSize(); i++) {
                 // get v1 & v2
-                int v1 = (int) grid1.getValues2(new double[][] { { records.getLongitude(i), records.getLatitude(i) } })[0];
-                int v2 = (int) grid2.getValues2(new double[][] { { records.getLongitude(i), records.getLatitude(i) } })[0];
+                int v1 = (int) grid1.getValues2(new double[][]{{records.getLongitude(i), records.getLatitude(i)}})[0];
+                int v2 = (int) grid2.getValues2(new double[][]{{records.getLongitude(i), records.getLatitude(i)}})[0];
                 String key = v1 + " " + v2;
                 Pair p = map.get(key);
                 if (p == null) {
@@ -391,8 +390,8 @@ public class TabulationGenerator {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 // area
-                int v1 = (int) grid1.getValues2(new double[][] { { extents[0][0] + resolution * i, extents[0][1] + resolution * j } })[0];
-                int v2 = (int) grid2.getValues2(new double[][] { { extents[0][0] + resolution * i, extents[0][1] + resolution * j } })[0];
+                int v1 = (int) grid1.getValues2(new double[][]{{extents[0][0] + resolution * i, extents[0][1] + resolution * j}})[0];
+                int v2 = (int) grid2.getValues2(new double[][]{{extents[0][0] + resolution * i, extents[0][1] + resolution * j}})[0];
                 String key = v1 + " " + v2;
                 Pair p = map.get(key);
                 if (p == null) {
@@ -400,9 +399,9 @@ public class TabulationGenerator {
                     map.put(key, p);
                 }
                 p.area += SpatialUtil.cellArea(resolution, extents[0][1] + resolution * j) * 1000000; // convert
-                                                                                                      // sqkm
-                                                                                                      // to
-                                                                                                      // sqm
+                // sqkm
+                // to
+                // sqm
             }
         }
 
@@ -428,11 +427,9 @@ public class TabulationGenerator {
 
     /**
      * Determine the grid resolution that will be in use.
-     * 
-     * @param layers
-     *            list of layers to be used as String []
-     * @param resolution
-     *            target resolution as String
+     *
+     * @param layers     list of layers to be used as String []
+     * @param resolution target resolution as String
      * @return resolution that will be used
      */
     private static String confirmResolution(String[] layers, String resolution) {
@@ -637,7 +634,7 @@ public class TabulationGenerator {
 
             ConcurrentLinkedQueue<String[]> data = new ConcurrentLinkedQueue<String[]>();
             while (rs1.next()) {
-                data.add(new String[] { rs1.getString("pid1"), rs1.getString("pid2"), rs1.getString("wkt") });
+                data.add(new String[]{rs1.getString("pid1"), rs1.getString("pid2"), rs1.getString("wkt")});
             }
 
             System.out.println("next " + data.size());

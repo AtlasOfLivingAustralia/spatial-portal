@@ -5,10 +5,10 @@
 package org.ala.layers.util;
 
 import java.io.File;
+
 import org.ala.layers.intersect.Grid;
 
 /**
- *
  * @author Adam
  */
 public class FixGridMinMax {

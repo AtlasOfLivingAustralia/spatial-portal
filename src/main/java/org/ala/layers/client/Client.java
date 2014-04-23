@@ -24,7 +24,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Main CLI class to hook into layers-store
- * 
+ *
  * @author ajay
  */
 public class Client {
