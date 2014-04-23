@@ -61,7 +61,6 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 /**
- * 
  * @author Adam
  */
 @Controller
@@ -215,7 +214,7 @@ public class ShapesService {
     public Map<String, Object> updateWithGeoJSON(@RequestBody String json, @PathVariable("pid") int pid) throws Exception {
         return processGeoJSONRequest(json, pid);
     }
-    
+
     private Map<String, Object> processWKTRequest(String json, Integer pid) {
         Map<String, Object> retMap = new HashMap<String, Object>();
 
@@ -285,7 +284,7 @@ public class ShapesService {
     @RequestMapping(value = "/shape/upload/shp", method = RequestMethod.POST)
     @ResponseBody
     public Map<Object, Object> uploadShapeFile(HttpServletRequest req, HttpServletResponse resp, @RequestParam(value = "user_id", required = false) String userId,
-            @RequestParam(value = "api_key", required = false) String apiKey) throws Exception {
+                                               @RequestParam(value = "api_key", required = false) String apiKey) throws Exception {
         // Use linked hash map to maintain key ordering
         Map<Object, Object> retMap = new LinkedHashMap<Object, Object>();
 
@@ -438,7 +437,7 @@ public class ShapesService {
     @RequestMapping(value = "/shape/upload/shp/{objectPid}/{shapeId}/{featureIndex}", method = RequestMethod.POST)
     @ResponseBody
     public Map<String, Object> updateFromShapeFileFeature(@RequestBody String json, @PathVariable("objectPid") int objectPid, @PathVariable("shapeId") String shapeId,
-            @PathVariable("featureIndex") int featureIndex) throws Exception {
+                                                          @PathVariable("featureIndex") int featureIndex) throws Exception {
         return processShapeFileFeatureRequest(json, objectPid, shapeId, featureIndex);
     }
 
@@ -448,7 +447,7 @@ public class ShapesService {
             throws Exception {
         return processPointRadiusRequest(json, null, latitude, longitude, radius);
     }
-    
+
     @RequestMapping(value = "/shape/upload/pointradius/{objectPid}/{latitude}/{longitude}/{radius}", method = RequestMethod.POST)
     @ResponseBody
     public Map<String, Object> updateWithPointRadius(@RequestBody String json, @PathVariable("latitude") double latitude, @PathVariable("longitude") double longitude, @PathVariable("radius") double radius, @PathVariable("objectPid") int objectPid)
@@ -600,7 +599,7 @@ public class ShapesService {
     @RequestMapping(value = "/poi/{id}", method = RequestMethod.DELETE)
     @ResponseBody
     public Map<String, Object> deletePointOfInterest(@PathVariable("id") int id, @RequestParam(value = "user_id", required = true, defaultValue = "") String userId,
-            @RequestParam(value = "api_key", required = true, defaultValue = "") String apiKey) {
+                                                     @RequestParam(value = "api_key", required = true, defaultValue = "") String apiKey) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         if (!checkAPIKey(apiKey, userId)) {
             retMap.put("error", "Invalid user ID or API key");

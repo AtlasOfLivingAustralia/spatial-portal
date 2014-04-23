@@ -9,9 +9,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * Utility class for parsing JSON maps provided to webservice handling methods.
- * 
+ *
  * @author ChrisF
- * 
  */
 public class JSONRequestBodyParser {
 
@@ -59,8 +58,8 @@ public class JSONRequestBodyParser {
 
         try {
             Map<String, Object> parsedJSON = mapper.readValue(json, Map.class);
-            
-            for (String parameterName: _parameterNames) {
+
+            for (String parameterName : _parameterNames) {
                 if (parsedJSON.containsKey(parameterName)) {
                     Object parsedParameterValue = parsedJSON.get(parameterName);
                     if (_parameterClasses.get(parameterName).isInstance(parsedParameterValue)) {
@@ -81,11 +80,11 @@ public class JSONRequestBodyParser {
 
         return parseSuccessful;
     }
-    
+
     public List<String> getErrorMessages() {
         return _errorMessages;
     }
-    
+
     public Object getParsedValue(String parameterName) {
         return _parsedParameterValues.get(parameterName);
     }

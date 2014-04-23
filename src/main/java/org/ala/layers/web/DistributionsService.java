@@ -45,7 +45,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- * 
  * @author Adam
  */
 @Controller
@@ -63,7 +62,9 @@ public class DistributionsService {
     private final String WS_DISTRIBUTION_OUTLIERS = "/distribution/outliers/{lsid:.+}";
     private final String WS_ATTRIBUTION_CACHE = "/attribution/clearCache";
 
-    /** Log4j instance */
+    /**
+     * Log4j instance
+     */
     protected Logger logger = Logger.getLogger(this.getClass());
 
     @Resource(name = "distributionDao")
@@ -77,18 +78,19 @@ public class DistributionsService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = WS_DISTRIBUTIONS, method = { RequestMethod.GET, RequestMethod.POST })
-    public @ResponseBody
+    @RequestMapping(value = WS_DISTRIBUTIONS, method = {RequestMethod.GET, RequestMethod.POST})
+    public
+    @ResponseBody
     List<Distribution> listDistributionsGet(@RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            @RequestParam(value = "min_depth", required = false, defaultValue = "-1") Double min_depth, @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth,
-            @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids, @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx,
-            @RequestParam(value = "fid", required = false) String fid, @RequestParam(value = "objectName", required = false) String objectName,
-            @RequestParam(value = "pelagic", required = false) Boolean pelagic, @RequestParam(value = "coastal", required = false) Boolean coastal,
-            @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
-            @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
-            @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids,
-            HttpServletResponse response) {
+                                            @RequestParam(value = "min_depth", required = false, defaultValue = "-1") Double min_depth, @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth,
+                                            @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids, @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx,
+                                            @RequestParam(value = "fid", required = false) String fid, @RequestParam(value = "objectName", required = false) String objectName,
+                                            @RequestParam(value = "pelagic", required = false) Boolean pelagic, @RequestParam(value = "coastal", required = false) Boolean coastal,
+                                            @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
+                                            @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
+                                            @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
+                                            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids,
+                                            HttpServletResponse response) {
 
         if (StringUtils.isEmpty(wkt) && fid != null && objectName != null) {
             List<Objects> objects = objectDao.getObjectByFidAndName(fid, objectName);
@@ -115,7 +117,7 @@ public class DistributionsService {
                 distributionsSet.addAll(distributionDao.queryDistributions(part, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids,
                         genera, generaLsids, Distribution.EXPERT_DISTRIBUTION, dataResourceUids));
             }
-            
+
             return new ArrayList<Distribution>(distributionsSet);
         } else {
             return distributionDao.queryDistributions(wkt, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids, genera, generaLsids,
@@ -126,18 +128,19 @@ public class DistributionsService {
     /*
      * list distribution table records, GET
      */
-    @RequestMapping(value = WS_DISTRIBUTIONS_COUNTS, method = { RequestMethod.GET, RequestMethod.POST })
-    public @ResponseBody
+    @RequestMapping(value = WS_DISTRIBUTIONS_COUNTS, method = {RequestMethod.GET, RequestMethod.POST})
+    public
+    @ResponseBody
     List<Facet> listDistributionsGetCounts(@RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            @RequestParam(value = "min_depth", required = false, defaultValue = "-1") Double min_depth, @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth,
-            @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids, @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx,
-            @RequestParam(value = "fid", required = false) String fid, @RequestParam(value = "objectName", required = false) String objectName,
-            @RequestParam(value = "pelagic", required = false) Boolean pelagic, @RequestParam(value = "coastal", required = false) Boolean coastal,
-            @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
-            @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
-            @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids,
-            HttpServletResponse response) {
+                                           @RequestParam(value = "min_depth", required = false, defaultValue = "-1") Double min_depth, @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth,
+                                           @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids, @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx,
+                                           @RequestParam(value = "fid", required = false) String fid, @RequestParam(value = "objectName", required = false) String objectName,
+                                           @RequestParam(value = "pelagic", required = false) Boolean pelagic, @RequestParam(value = "coastal", required = false) Boolean coastal,
+                                           @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
+                                           @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
+                                           @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
+                                           @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids,
+                                           HttpServletResponse response) {
 
         if (StringUtils.isEmpty(wkt) && fid != null && objectName != null) {
             List<Objects> objects = objectDao.getObjectByFidAndName(fid, objectName);
@@ -158,32 +161,34 @@ public class DistributionsService {
                 generaLsids, Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
     }
 
-    @RequestMapping(value = WS_DISTRIBUTIONS_RADIUS, method = { RequestMethod.GET, RequestMethod.POST })
-    public @ResponseBody
+    @RequestMapping(value = WS_DISTRIBUTIONS_RADIUS, method = {RequestMethod.GET, RequestMethod.POST})
+    public
+    @ResponseBody
     List<Distribution> listDistributionsForRadiusGet(@RequestParam(value = "min_depth", required = false, defaultValue = "-1") Double min_depth,
-            @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth, @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids,
-            @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx, @RequestParam(value = "lon", required = true) Float longitude,
-            @RequestParam(value = "lat", required = true) Float latitude, @RequestParam(value = "radius", required = true) Float radius,
-            @RequestParam(value = "pelagic", required = false) Boolean pelagic, @RequestParam(value = "coastal", required = false) Boolean coastal,
-            @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
-            @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
-            @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids) {
+                                                     @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth, @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids,
+                                                     @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx, @RequestParam(value = "lon", required = true) Float longitude,
+                                                     @RequestParam(value = "lat", required = true) Float latitude, @RequestParam(value = "radius", required = true) Float radius,
+                                                     @RequestParam(value = "pelagic", required = false) Boolean pelagic, @RequestParam(value = "coastal", required = false) Boolean coastal,
+                                                     @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
+                                                     @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
+                                                     @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
+                                                     @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids) {
         return distributionDao.queryDistributionsByRadius(longitude, latitude, radius, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families, familyLsids,
                 genera, generaLsids, Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
     }
 
-    @RequestMapping(value = WS_DISTRIBUTIONS_RADIUS_COUNTS, method = { RequestMethod.GET, RequestMethod.POST })
-    public @ResponseBody
+    @RequestMapping(value = WS_DISTRIBUTIONS_RADIUS_COUNTS, method = {RequestMethod.GET, RequestMethod.POST})
+    public
+    @ResponseBody
     List<Facet> listDistributionCountsForRadiusGet(@RequestParam(value = "min_depth", required = false, defaultValue = "-1") Double min_depth,
-            @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth, @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids,
-            @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx, @RequestParam(value = "lon", required = true) Float longitude,
-            @RequestParam(value = "lat", required = true) Float latitude, @RequestParam(value = "radius", required = true) Float radius,
-            @RequestParam(value = "pelagic", required = false) Boolean pelagic, @RequestParam(value = "coastal", required = false) Boolean coastal,
-            @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
-            @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
-            @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
-            @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids) {
+                                                   @RequestParam(value = "max_depth", required = false, defaultValue = "-1") Double max_depth, @RequestParam(value = "lsids", required = false, defaultValue = "") String lsids,
+                                                   @RequestParam(value = "geom_idx", required = false, defaultValue = "-1") Integer geom_idx, @RequestParam(value = "lon", required = true) Float longitude,
+                                                   @RequestParam(value = "lat", required = true) Float latitude, @RequestParam(value = "radius", required = true) Float radius,
+                                                   @RequestParam(value = "pelagic", required = false) Boolean pelagic, @RequestParam(value = "coastal", required = false) Boolean coastal,
+                                                   @RequestParam(value = "estuarine", required = false) Boolean estuarine, @RequestParam(value = "desmersal", required = false) Boolean desmersal,
+                                                   @RequestParam(value = "groupName", required = false) String groupName, @RequestParam(value = "family", required = false) String[] families,
+                                                   @RequestParam(value = "familyLsid", required = false) String[] familyLsids, @RequestParam(value = "genus", required = false) String[] genera,
+                                                   @RequestParam(value = "genusLsid", required = false) String[] generaLsids, @RequestParam(value = "dataResourceUid", required = false) String[] dataResourceUids) {
         return distributionDao.queryDistributionsByRadiusFamilyCounts(longitude, latitude, radius, min_depth, max_depth, pelagic, coastal, estuarine, desmersal, groupName, geom_idx, lsids, families,
                 familyLsids, genera, generaLsids, Distribution.EXPERT_DISTRIBUTION, dataResourceUids);
     }
@@ -192,7 +197,8 @@ public class DistributionsService {
      * get distribution by id
      */
     @RequestMapping(value = WS_DISTRIBUTION_ID, method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     Distribution getDistribution(@PathVariable Long spcode) {
         return distributionDao.getDistributionBySpcode(spcode, Distribution.EXPERT_DISTRIBUTION);
     }
@@ -201,9 +207,10 @@ public class DistributionsService {
      * get distribution by id
      */
     @RequestMapping(value = WS_DISTRIBUTION_LSID, method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     Distribution getDistribution(@PathVariable String lsid, HttpServletResponse response) throws Exception {
-        List<Distribution> distributions = distributionDao.getDistributionByLSID(new String[] { lsid });
+        List<Distribution> distributions = distributionDao.getDistributionByLSID(new String[]{lsid});
         if (distributions != null && !distributions.isEmpty()) {
             return distributions.get(0);
         } else {
@@ -216,9 +223,10 @@ public class DistributionsService {
      * get distribution by id
      */
     @RequestMapping(value = WS_DISTRIBUTION_OVERVIEWMAP, method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     MapDTO getDistributionOverviewMap(@PathVariable String lsid, @RequestParam(value = "height", required = false, defaultValue = "504") Integer height,
-            @RequestParam(value = "width", required = false, defaultValue = "512") Integer width, HttpServletResponse response) throws Exception {
+                                      @RequestParam(value = "width", required = false, defaultValue = "512") Integer width, HttpServletResponse response) throws Exception {
         Distribution distribution = distributionDao.findDistributionByLSIDOrName(lsid);
         if (distribution != null) {
             MapDTO m = new MapDTO();
@@ -288,26 +296,23 @@ public class DistributionsService {
     /**
      * For a given set of points and an lsid, identify the points which do not
      * fall within the expert distribution associated with the lsid.
-     * 
-     * @param lsid
-     *            the lsid associated with the expert distribution
-     * @param pointsJson
-     *            the points to test in JSON format. This must be a map whose
-     *            keys are point ids (strings - typically these will be
-     *            occurrence record ids). The values are maps containing the
-     *            point's decimal latitude (with key "decimalLatitude") and
-     *            decimal longitude (with key "decimalLongitude"). The decimal
-     *            latitude and longitude values must be numbers.
-     * @param response
-     *            the http response
+     *
+     * @param lsid       the lsid associated with the expert distribution
+     * @param pointsJson the points to test in JSON format. This must be a map whose
+     *                   keys are point ids (strings - typically these will be
+     *                   occurrence record ids). The values are maps containing the
+     *                   point's decimal latitude (with key "decimalLatitude") and
+     *                   decimal longitude (with key "decimalLongitude"). The decimal
+     *                   latitude and longitude values must be numbers.
+     * @param response   the http response
      * @return A map containing the distance outside the expert distribution for
-     *         each point which falls outside the area defined by the
-     *         distribution. Keys are point ids, values are the distances
-     * 
+     * each point which falls outside the area defined by the
+     * distribution. Keys are point ids, values are the distances
      * @throws Exception
      */
     @RequestMapping(value = WS_DISTRIBUTION_OUTLIERS, method = RequestMethod.POST)
-    public @ResponseBody
+    public
+    @ResponseBody
     Map<String, Double> getDistributionOutliers(@PathVariable String lsid, @RequestParam(value = "pointsJson", required = true) String pointsJson, HttpServletResponse response) throws Exception {
         JSONParser parser = new JSONParser();
         try {

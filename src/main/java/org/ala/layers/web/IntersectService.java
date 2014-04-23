@@ -30,6 +30,7 @@ import java.util.Vector;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.ala.layers.dao.FieldDAO;
 import org.ala.layers.dao.LayerDAO;
 import org.ala.layers.dao.LayerIntersectDAO;
@@ -53,7 +54,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- * 
  * @author ajay
  */
 @Controller
@@ -83,14 +83,15 @@ public class IntersectService {
      */
     // @ResponseBody String
     @RequestMapping(value = WS_INTERSECT_SINGLE, method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     Object single(@PathVariable("ids") String ids, @PathVariable("lat") Double lat, @PathVariable("lng") Double lng, HttpServletRequest req) {
         return layerIntersectDao.samplingFull(ids, lng, lat);
     }
 
     /**
      * Clean up and just return an int for LAYER object
-     * 
+     *
      * @param id
      * @return
      */
@@ -109,10 +110,10 @@ public class IntersectService {
         return -1;
     }
 
-    @RequestMapping(value = WS_INTERSECT_BATCH, method = { RequestMethod.GET, RequestMethod.POST })
+    @RequestMapping(value = WS_INTERSECT_BATCH, method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
     public Map batch(@RequestParam(value = "fids", required = false, defaultValue = "") String fids, @RequestParam(value = "points", required = false, defaultValue = "") String pointsString,
-            HttpServletRequest request, HttpServletResponse response) {
+                     HttpServletRequest request, HttpServletResponse response) {
 
         Map map = new HashMap();
         String batchId = null;
@@ -262,14 +263,14 @@ public class IntersectService {
         return objectDao.getPointsOfInterestWithinRadius(lat, lng, radiusKm);
     }
 
-    
+
     // WKT geometry intersect
     @RequestMapping(value = "/intersect/poi/wkt", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
     public List<Map<String, Object>> wktPoiIntersectGet(@RequestParam(value = "wkt", required = true, defaultValue = "") String wkt) throws Exception {
         return objectDao.pointsOfInterestGeometryIntersect(wkt);
-    }    
-    
+    }
+
     // geojson geometry intersect
     @RequestMapping(value = "/intersect/poi/geojson", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody

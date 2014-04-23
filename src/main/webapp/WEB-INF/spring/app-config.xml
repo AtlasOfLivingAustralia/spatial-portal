@@ -7,7 +7,7 @@
 	<task:executor id="myExecutor" pool-size="5"/>
 	
     <!-- Imports the configurations of the different infrastructure systems of the application -->
-    <import resource="data-config.xml" />
+    <import resource="file:/data/layers-service/data-config.xml" />
     <import resource="mvc-config.xml" />
     
 

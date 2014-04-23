@@ -20,6 +20,7 @@ import java.util.TreeMap;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.ala.layers.dao.FieldDAO;
 import org.ala.layers.dao.TabulationDAO;
 import org.ala.layers.dto.Field;
@@ -31,7 +32,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 /**
- *
  * @author Adam
  */
 @Controller
@@ -81,8 +81,8 @@ public class TabulationService {
      */
     @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/{fid2}/tabulation.html", method = {RequestMethod.GET, RequestMethod.POST})
     public ModelAndView displayTabulation(@PathVariable("func1") String func1, @PathVariable("func2") String func2, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+                                          @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+                                          HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String func = func1 + func2;
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
         return generateTabulation(tabulations, func, fid1, fid2, wkt);
@@ -90,14 +90,14 @@ public class TabulationService {
 
     @RequestMapping(value = "/tabulation/{func1}/{fid1}/{fid2}/tabulation.html", method = {RequestMethod.GET, RequestMethod.POST})
     public ModelAndView displayTabulation(@PathVariable("func1") String func1, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+                                          @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+                                          HttpServletRequest req, HttpServletResponse resp) throws IOException {
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
         return generateTabulation(tabulations, func1, fid1, fid2, wkt);
     }
 
     public ModelAndView generateTabulation(List<Tabulation> tabulations, String func, String fid1, String fid2,
-            String wkt) throws IOException {
+                                           String wkt) throws IOException {
 
         ModelMap m = new ModelMap();
 
@@ -140,7 +140,6 @@ public class TabulationService {
         for (int j = 1; j < grid[0].length; j++) {
             TotalPercentage += sumOfRowsGridPercentage[j - 1];
         }
-
 
 
         double[] AveragePercentageOverRows = new double[grid[0].length - 1];
@@ -511,8 +510,8 @@ public class TabulationService {
      */
     @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/{fid2}/tabulation.{type}", method = {RequestMethod.GET, RequestMethod.POST})
     public void displayTabulationCSVHTML(@PathVariable("func1") String func1, @PathVariable("func2") String func2, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+                                         @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+                                         HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String func = func1 + func2;
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
         generateTabulationCSVHTML(tabulations, resp, func, fid1, fid2, wkt, type);
@@ -520,14 +519,14 @@ public class TabulationService {
 
     @RequestMapping(value = "/tabulation/{func1}/{fid1}/{fid2}/tabulation.{type}", method = {RequestMethod.GET, RequestMethod.POST})
     public void displayTabulationCSVHTML(@PathVariable("func1") String func1, @PathVariable("fid1") String fid1, @PathVariable("fid2") String fid2, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+                                         @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+                                         HttpServletRequest req, HttpServletResponse resp) throws IOException {
         List<Tabulation> tabulations = tabulationDao.getTabulation(fid1, fid2, wkt);
         generateTabulationCSVHTML(tabulations, resp, func1, fid1, fid2, wkt, type);
     }
 
     public void generateTabulationCSVHTML(List<Tabulation> tabulations, HttpServletResponse resp, String func, String fid1, String fid2,
-            String wkt, String type) throws IOException {
+                                          String wkt, String type) throws IOException {
         String[][] grid = tabulationGridGenerator(tabulations, fid1, fid2, wkt, func);
         double[] sumOfColumns = tabulationSumOfColumnsGenerator(grid, func);
         double[] sumOfRows = tabulationSumOfRowsGenerator(grid, func);
@@ -820,8 +819,8 @@ public class TabulationService {
      */
     @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/tabulation.html", method = {RequestMethod.GET, RequestMethod.POST})
     public ModelAndView displayTabulationSingle(@PathVariable("func1") String func1, @PathVariable("func2") String func2, @PathVariable("fid1") String fid1,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+                                                @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+                                                HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String func = func1 + func2;
         List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1, wkt);
         return generateTabulation(tabulations, func, fid1, null, wkt);
@@ -829,8 +828,8 @@ public class TabulationService {
 
     @RequestMapping(value = "/tabulation/{func1}/{fid1}/tabulation.html", method = {RequestMethod.GET, RequestMethod.POST})
     public ModelAndView displayTabulationSingle(@PathVariable("func1") String func1, @PathVariable("fid1") String fid1,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+                                                @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+                                                HttpServletRequest req, HttpServletResponse resp) throws IOException {
         List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1, wkt);
         return generateTabulation(tabulations, func1, fid1, null, wkt);
     }
@@ -840,8 +839,8 @@ public class TabulationService {
 
     @RequestMapping(value = "/tabulation/{func1}/{func2}/{fid1}/tabulation.{type}", method = {RequestMethod.GET, RequestMethod.POST})
     public void displayTabulationSingleCSVHTML(@PathVariable("func1") String func1, @PathVariable("func2") String func2, @PathVariable("fid1") String fid1, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+                                               @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+                                               HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String func = func1 + func2;
         List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1, wkt);
         generateTabulationCSVHTML(tabulations, resp, func, fid1, null, wkt, type);
@@ -849,8 +848,8 @@ public class TabulationService {
 
     @RequestMapping(value = "/tabulation/{func1}/{fid1}/tabulation.{type}", method = {RequestMethod.GET, RequestMethod.POST})
     public void displayTabulationSingleCSVHTML(@PathVariable("func1") String func1, @PathVariable("fid1") String fid1, @PathVariable("type") String type,
-            @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
-            HttpServletRequest req, HttpServletResponse resp) throws IOException {
+                                               @RequestParam(value = "wkt", required = false, defaultValue = "") String wkt,
+                                               HttpServletRequest req, HttpServletResponse resp) throws IOException {
         List<Tabulation> tabulations = tabulationDao.getTabulationSingle(fid1, wkt);
         generateTabulationCSVHTML(tabulations, resp, func1, fid1, null, wkt, type);
     }

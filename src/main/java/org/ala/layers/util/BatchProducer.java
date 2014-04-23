@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- *
  * @author Adam
  */
 public class BatchProducer {
@@ -35,9 +34,9 @@ public class BatchProducer {
             writeToFile(dir + "request.txt", requestInfo);
             writeToFile(dir + "fids.txt", fids);
             writeToFile(dir + "points.txt", points);
-            
+
             BatchConsumer.addBatch(dir);
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -54,8 +53,8 @@ public class BatchProducer {
         BufferedReader br = new BufferedReader(new FileReader(filename));
         StringBuilder sb = new StringBuilder();
         String line;
-        while((line = br.readLine()) != null) {
-            if(sb.length() > 0) {
+        while ((line = br.readLine()) != null) {
+            if (sb.length() > 0) {
                 sb.append("\n");
             }
             sb.append(line);
@@ -65,12 +64,12 @@ public class BatchProducer {
 
     public static String getStatus(String batchPath, String batchId) throws IOException {
         String dir = batchPath + File.separator + batchId + File.separator;
-        if(new File(dir).exists()) {
-            if(new File(dir + "error.txt").exists()) {
+        if (new File(dir).exists()) {
+            if (new File(dir + "error.txt").exists()) {
                 return readFile(dir + "error.txt");
-            } else if(new File(dir + "finished.txt").exists()) {
+            } else if (new File(dir + "finished.txt").exists()) {
                 return readFile(dir + "finished.txt");
-            } else if(new File(dir + "started.txt").exists()) {
+            } else if (new File(dir + "started.txt").exists()) {
                 return readFile(dir + "started.txt");
             }
         }
@@ -80,31 +79,31 @@ public class BatchProducer {
 
     public static void addInfoToMap(String batchPath, String batchId, Map map) throws IOException {
         String dir = batchPath + File.separator + batchId + File.separator;
-        if(new File(dir).exists()) {
+        if (new File(dir).exists()) {
             int count = 0;
-            
-            if(new File(dir + "started.txt").exists()) {
+
+            if (new File(dir + "started.txt").exists()) {
                 count++;
-                map.put("started",readFile(dir + "started.txt"));
-                map.put("status","started");
+                map.put("started", readFile(dir + "started.txt"));
+                map.put("status", "started");
             }
-            if(new File(dir + "error.txt").exists()) {
+            if (new File(dir + "error.txt").exists()) {
                 count++;
-                map.put("error",readFile(dir + "error.txt"));
-                map.put("status","error");
-            }            
-            if(new File(dir + "finished.txt").exists()) {
+                map.put("error", readFile(dir + "error.txt"));
+                map.put("status", "error");
+            }
+            if (new File(dir + "finished.txt").exists()) {
                 count++;
-                map.put("finished",readFile(dir + "finished.txt"));
-                map.put("status","finished");
+                map.put("finished", readFile(dir + "finished.txt"));
+                map.put("status", "finished");
             }
 
-            if(count == 0) {
-                map.put("waiting","In queue");
-                map.put("status","waiting");
+            if (count == 0) {
+                map.put("waiting", "In queue");
+                map.put("status", "waiting");
             }
         } else {
-            map.put("error","unknown batchId: " + batchId);
+            map.put("error", "unknown batchId: " + batchId);
         }
     }
 }

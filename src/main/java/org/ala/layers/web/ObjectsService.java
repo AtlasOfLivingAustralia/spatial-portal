@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- *
  * @author jac24n
  */
 @Controller
@@ -52,11 +51,12 @@ public class ObjectsService {
     @Resource(name = "objectDao")
     private ObjectDAO objectDao;
 
-    /**This method returns all objects associated with a field
-     * 
+    /**
+     * This method returns all objects associated with a field
+     *
      * @param id
      * @param req
-     * @return 
+     * @return
      */
     @RequestMapping(value = "/objects/{id}", method = RequestMethod.GET)
     public
@@ -65,10 +65,11 @@ public class ObjectsService {
         return objectDao.getObjectsById(id);
     }
 
-    /**This method returns a single object, provided a UUID
-     * 
+    /**
+     * This method returns a single object, provided a UUID
+     *
      * @param req
-     * @return 
+     * @return
      */
     @RequestMapping(value = "/object/{pid}", method = RequestMethod.GET)
     public
@@ -80,7 +81,8 @@ public class ObjectsService {
         return objectDao.getObjectByPid(pid);
     }
 
-    /**This method returns all objects associated with a field
+    /**
+     * This method returns all objects associated with a field
      *
      * @param id
      * @param req
@@ -90,13 +92,14 @@ public class ObjectsService {
     public
     @ResponseBody
     List<Objects> fieldObjects(@PathVariable("id") String id,
-            @PathVariable("lat") Double lat, @PathVariable("lng") Double lng,
-            @RequestParam(value = "limit", required = false, defaultValue = "40") Integer limit,
-            HttpServletRequest req) {
+                               @PathVariable("lat") Double lat, @PathVariable("lng") Double lng,
+                               @RequestParam(value = "limit", required = false, defaultValue = "40") Integer limit,
+                               HttpServletRequest req) {
         return objectDao.getNearestObjectByIdAndLocation(id, limit, lng, lat);
     }
 
-    /**This method returns all objects associated with a field
+    /**
+     * This method returns all objects associated with a field
      *
      * @param id
      * @param req
@@ -106,8 +109,8 @@ public class ObjectsService {
     public
     @ResponseBody
     List<Objects> fieldObjects(@PathVariable("id") String id,
-            @RequestParam(value = "limit", required = false, defaultValue = "40") Integer limit,
-            HttpServletRequest req) throws UnsupportedEncodingException {
+                               @RequestParam(value = "limit", required = false, defaultValue = "40") Integer limit,
+                               HttpServletRequest req) throws UnsupportedEncodingException {
         String wkt = URLDecoder.decode(req.getParameter("wkt"), "UTF-8");
         if (wkt.startsWith("ENVELOPE(")) {
             //get results of each filter
@@ -150,7 +153,7 @@ public class ObjectsService {
             for (String part : collectionParts) {
                 objectsSet.addAll(objectDao.getObjectsByIdAndArea(id, limit, part));
             }
-            
+
             return new ArrayList<Objects>(objectsSet);
         } else {
             return objectDao.getObjectsByIdAndArea(id, limit, wkt);

@@ -16,6 +16,7 @@ package org.ala.layers.web;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
 import org.ala.layers.dao.LayerIntersectDAO;
 import org.ala.layers.dto.IntersectionFile;
 import org.ala.layers.grid.Envelope;
@@ -27,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- *
  * @author Adam
  */
 @Controller
@@ -49,19 +49,19 @@ public class EnvelopeService {
     @ResponseBody
     Object wkt(@PathVariable("params") String params, HttpServletRequest req) {
         StringBuilder sb = new StringBuilder();
-        String [] p = params.split(",");
-        for(int i=0;i<p.length;i+=3) {
+        String[] p = params.split(",");
+        for (int i = 0; i < p.length; i += 3) {
             IntersectionFile f = layerIntersectDao.getConfig().getIntersectionFile(p[i]);
-            if(f != null) {
-                if(sb.length() > 0) {
+            if (f != null) {
+                if (sb.length() > 0) {
                     sb.append(",");
                 }
                 sb.append(f.getFilePath())
-                        .append(",").append(p[i+1])
-                        .append(",").append(p[i+2]);
+                        .append(",").append(p[i + 1])
+                        .append(",").append(p[i + 2]);
             }
         }
-        if(sb.length() > 0) {
+        if (sb.length() > 0) {
             return Envelope.getGridEnvelopeAsWkt(sb.toString());
         } else {
             return "";

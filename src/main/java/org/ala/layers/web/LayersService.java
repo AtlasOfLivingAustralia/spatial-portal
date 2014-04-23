@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * 
  * @author jac24n
  */
 @Controller
@@ -52,12 +51,13 @@ public class LayersService {
 
     /**
      * This method returns all layers
-     * 
+     *
      * @param req
      * @return
      */
     @RequestMapping(value = "/layers", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     List<Layer> layerObjects(HttpServletRequest req) {
         logger.info("Retriving enabled layers");
         return layerDao.getLayers();
@@ -65,12 +65,13 @@ public class LayersService {
 
     /**
      * This method returns a single layer, provided an id
-     * 
+     *
      * @param req
      * @return
      */
     @RequestMapping(value = "/layer/{id}", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     Layer layerObject(@PathVariable("id") String id, HttpServletRequest req) {
         Layer l = null;
         try {
@@ -86,19 +87,21 @@ public class LayersService {
 
     /**
      * This method returns all layers
-     * 
+     *
      * @param req
      * @return
      */
     @RequestMapping(value = "/layers/search", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     List<Layer> layerObjects(@RequestParam("q") String q, HttpServletRequest req) {
         logger.info("search enabled layers for " + q);
         return layerDao.getLayersByCriteria(q);
     }
 
     @RequestMapping(value = "/layers/grids", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     List<Layer> gridsLayerObjects(HttpServletRequest req) {
         // String query =
         // "SELECT * FROM layers WHERE enabled='TRUE' and type='Environmental';";
@@ -108,7 +111,8 @@ public class LayersService {
     }
 
     @RequestMapping(value = "/layers/shapes", method = RequestMethod.GET)
-    public @ResponseBody
+    public
+    @ResponseBody
     List<Layer> shapesLayerObjects(HttpServletRequest req) {
         // String query =
         // "SELECT * FROM layers WHERE enabled='TRUE' and type='Contextual';";
@@ -120,6 +124,7 @@ public class LayersService {
 
     /**
      * Return layers list if RIF-CS XML format
+     *
      * @param req
      * @param res
      * @throws Exception
@@ -132,7 +137,7 @@ public class LayersService {
         StringBuilder sb = new StringBuilder();
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
         sb.append("<registryObjects xmlns=\"http://ands.org.au/standards/rif-cs/registryObjects\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd\">");
-        for (Layer layer: layerDao.getLayers()) {
+        for (Layer layer : layerDao.getLayers()) {
             sb.append("<registryObject group=\"Atlas of Living Australia\">");
             sb.append("<key>ala.org.au/uid_" + layer.getUid() + "</key>");
             sb.append("<originatingSource><![CDATA[" + layer.getMetadatapath() + "]]></originatingSource>");
@@ -182,13 +187,13 @@ public class LayersService {
             sb.append("<![CDATA[" + layer.getLicence_notes() + "]]></licence>");
             sb.append("</rights>");
             sb.append("<coverage>");
-            sb.append("<spatial type=\"iso19139dcmiBox\">northlimit=" + layer.getMaxlatitude() + "; southlimit=" + layer.getMinlatitude() + "; westlimit=" + layer.getMinlongitude() + "; eastLimit=" + layer.getMaxlongitude()+ "; projection=WGS84</spatial>");
+            sb.append("<spatial type=\"iso19139dcmiBox\">northlimit=" + layer.getMaxlatitude() + "; southlimit=" + layer.getMinlatitude() + "; westlimit=" + layer.getMinlongitude() + "; eastLimit=" + layer.getMaxlongitude() + "; projection=WGS84</spatial>");
             sb.append("</coverage>");
             sb.append("</collection>");
             sb.append("</registryObject>");
         }
         sb.append("</registryObjects>");
-        
+
         res.getWriter().append(sb.toString());
         res.getWriter().flush();
         res.getWriter().close();

@@ -8,6 +8,7 @@ package org.ala.layers.web;
 import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
 import org.ala.layers.dao.LayerPidDAO;
 import org.ala.layers.dto.LayerPid;
 import org.apache.log4j.Logger;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- *
  * @author ajay
  */
 @Controller
@@ -28,11 +28,13 @@ public class LayerPidService {
      */
     protected Logger logger = Logger.getLogger(this.getClass());
 
-    @Resource(name="layerPidDao")
+    @Resource(name = "layerPidDao")
     private LayerPidDAO layerPidDao;
 
     @RequestMapping(value = "/layerpids", method = RequestMethod.GET)
-    public @ResponseBody List<LayerPid> listLayerPids(HttpServletRequest req) {
+    public
+    @ResponseBody
+    List<LayerPid> listLayerPids(HttpServletRequest req) {
         return layerPidDao.getLayers();
 
     }

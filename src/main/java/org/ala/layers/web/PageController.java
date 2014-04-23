@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * Basic page serving Controller
- * 
+ *
  * @author ajay
  */
 @Controller
@@ -36,7 +36,7 @@ public class PageController {
 
     @RequestMapping(value = INDEX)
     public String index() {
-        return "index"; 
+        return "index";
     }
 
     @RequestMapping(value = WMS)

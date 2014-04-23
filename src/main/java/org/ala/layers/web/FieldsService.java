@@ -17,6 +17,7 @@ package org.ala.layers.web;
 import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
 import org.ala.layers.dao.FieldDAO;
 import org.ala.layers.dao.ObjectDAO;
 import org.ala.layers.dto.Field;
@@ -29,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- *
  * @author Adam
  */
 @Controller
@@ -43,17 +43,19 @@ public class FieldsService {
      */
     protected Logger logger = Logger.getLogger(this.getClass());
 
-    @Resource(name="fieldDao")
+    @Resource(name = "fieldDao")
     private FieldDAO fieldDao;
 
-    @Resource(name="objectDao")
+    @Resource(name = "objectDao")
     private ObjectDAO objectDao;
 
     /*
      * list fields table
      */
     @RequestMapping(value = WS_FIELDS, method = RequestMethod.GET)
-    public @ResponseBody List<Field> listFields(HttpServletRequest req) {
+    public
+    @ResponseBody
+    List<Field> listFields(HttpServletRequest req) {
 
 //        String query = "SELECT * FROM fields WHERE enabled=TRUE;";
 //        ResultSet r = DBConnection.query(query);
@@ -66,7 +68,9 @@ public class FieldsService {
      * list fields table with db only records
      */
     @RequestMapping(value = WS_FIELDS_DB, method = RequestMethod.GET)
-    public @ResponseBody List<Field> listFieldsDBOnly(HttpServletRequest req) {
+    public
+    @ResponseBody
+    List<Field> listFieldsDBOnly(HttpServletRequest req) {
 
 //        String query = "SELECT * FROM fields WHERE enabled=TRUE AND indb=TRUE;";
 //        ResultSet r = DBConnection.query(query);
@@ -79,7 +83,9 @@ public class FieldsService {
      * one fields table record
      */
     @RequestMapping(value = WS_FIELD_ID, method = RequestMethod.GET)
-    public @ResponseBody Field oneField(@PathVariable("id") String id, HttpServletRequest req) {
+    public
+    @ResponseBody
+    Field oneField(@PathVariable("id") String id, HttpServletRequest req) {
         logger.info("calling /field/" + id);
         //test field id value
         int len = Math.min(6, id.length());

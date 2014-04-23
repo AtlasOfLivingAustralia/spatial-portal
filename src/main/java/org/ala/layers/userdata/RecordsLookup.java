@@ -98,17 +98,17 @@ public class RecordsLookup {
         }
 
         //stored in postgres not a local file
-        Object [] output = new Object[6];
+        Object[] output = new Object[6];
 
         output[0] = String.valueOf(key);
 
-        double [] points = userDataDao.getDoubleArray(key,"points");
+        double[] points = userDataDao.getDoubleArray(key, "points");
 
         output[1] = points;
 
         ArrayList<QueryField> fields = new ArrayList<QueryField>();
-        for(String ref : userDataDao.listData(key,"QueryField")) {
-            fields.add(userDataDao.getQueryField(header_id,ref));
+        for (String ref : userDataDao.listData(key, "QueryField")) {
+            fields.add(userDataDao.getQueryField(header_id, ref));
         }
         output[2] = fields;
 
@@ -119,13 +119,13 @@ public class RecordsLookup {
         double maxX = points[0];
         double minY = points[1];
         double maxY = points[1];
-        for(int i=0;i<points.length;i+=2) {
+        for (int i = 0; i < points.length; i += 2) {
             if (minX > points[i]) minX = points[i];
             if (maxX < points[i]) maxX = points[i];
-            if (minY > points[i+1]) minY = points[i+1];
-            if (maxY < points[i+1]) maxY = points[i+1];
+            if (minY > points[i + 1]) minY = points[i + 1];
+            if (maxY < points[i + 1]) maxY = points[i + 1];
         }
-        output[4] = new double[] {minX, minY, maxX, maxY};
+        output[4] = new double[]{minX, minY, maxX, maxY};
 
         addData(key, output);
 
@@ -142,7 +142,7 @@ public class RecordsLookup {
 
         if (o != null) {
             o[0] = Long.valueOf(System.currentTimeMillis());
-            Object v = ((ArrayList<QueryField>)((Object[])o[1])[2]).add(qf);
+            Object v = ((ArrayList<QueryField>) ((Object[]) o[1])[2]).add(qf);
         }
     }
 }

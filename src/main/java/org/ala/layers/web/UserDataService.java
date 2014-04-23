@@ -49,7 +49,6 @@ import java.util.*;
 import java.util.List;
 
 /**
- *
  * @author Adam
  */
 @Controller
@@ -85,9 +84,9 @@ public class UserDataService {
         String csv = req.getParameter("csv");
         String user_id = req.getParameter("user_id");
 
-        Ud_header ud_header =  userDataDao.put(user_id, "Imported CSV", name, description, null, null);
+        Ud_header ud_header = userDataDao.put(user_id, "Imported CSV", name, description, null, null);
 
-        if(importCSV(name, String.valueOf(ud_header.getUd_header_id()), csv)) {
+        if (importCSV(name, String.valueOf(ud_header.getUd_header_id()), csv)) {
             return ud_header;
         }
 
@@ -176,49 +175,49 @@ public class UserDataService {
                     counter++;
                 }
                 if (!Double.isNaN(points[i * 2])) {
-                    if (points[i*2] < minx) {
-                        minx = points[i*2];
+                    if (points[i * 2] < minx) {
+                        minx = points[i * 2];
                     }
-                    if (points[i*2] > maxx) {
-                        maxx = points[i*2];
+                    if (points[i * 2] > maxx) {
+                        maxx = points[i * 2];
                     }
                 }
-                if (!Double.isNaN(points[i * 2+1])) {
-                    if (points[i*2+1] < miny) {
-                        miny = points[i*2+1];
+                if (!Double.isNaN(points[i * 2 + 1])) {
+                    if (points[i * 2 + 1] < miny) {
+                        miny = points[i * 2 + 1];
                     }
-                    if (points[i*2+1] > maxy) {
-                        maxy = points[i*2+1];
+                    if (points[i * 2 + 1] > maxy) {
+                        maxy = points[i * 2 + 1];
                     }
                 }
             }
 
             //store data
-            userDataDao.setDoubleArray(ud_header_id,"points", points);
+            userDataDao.setDoubleArray(ud_header_id, "points", points);
 
             HashMap<String, LegendObject> field_details = new HashMap<String, LegendObject>();
             for (int i = 0; i < fields.size(); i++) {
                 fields.get(i).store();  //finalize qf
-                userDataDao.setQueryField(ud_header_id,fields.get(i).getName(), fields.get(i));
+                userDataDao.setQueryField(ud_header_id, fields.get(i).getName(), fields.get(i));
                 field_details.put(fields.get(i).getName() + "\r\n" + fields.get(i).getDisplayName(), fields.get(i).getLegend());
             }
 
-            HashMap<String, Object> metadata = new HashMap<String,Object>();
-            metadata.put("title","User uploaded points");
-            metadata.put("name",name);
-            metadata.put("date",System.currentTimeMillis());
-            metadata.put("number_of_records",points.length);
+            HashMap<String, Object> metadata = new HashMap<String, Object>();
+            metadata.put("title", "User uploaded points");
+            metadata.put("name", name);
+            metadata.put("date", System.currentTimeMillis());
+            metadata.put("number_of_records", points.length / 2);
             metadata.put("bbox", minx + "," + miny + "," + maxx + "," + maxy);
             //metadata.put("user_fields",field_details);
 
-            userDataDao.setMetadata(Long.parseLong(ud_header_id),metadata);
+            userDataDao.setMetadata(Long.parseLong(ud_header_id), metadata);
 
             // close the reader and data streams
             reader.close();
 
             return true;
         } catch (Exception e) {
-            logger.error("failed to import user csv",e);
+            logger.error("failed to import user csv", e);
         }
 
         return false;
@@ -441,10 +440,10 @@ public class UserDataService {
                 listHighlight = new ArrayList<QueryField>();
             }
 
-            boolean [] valid = null;
+            boolean[] valid = null;
             if (lsid != null) {
                 Object[] data = (Object[]) RecordsLookup.getData(lsid);
-                    points = (double[]) data[1];
+                points = (double[]) data[1];
                 pointsBB = (double[]) data[4];
 
                 if (points == null || points.length == 0
@@ -491,7 +490,7 @@ public class UserDataService {
                 double grid_height_mult = (height / (pbbox[1] - pbbox[3])) / (256 / divs);
                 int[][] gridCounts = new int[divs][divs];
                 for (i = 0; i < points.length; i += 2) {
-                    if (valid != null && !valid[i/2]) {
+                    if (valid != null && !valid[i / 2]) {
                         continue;
                     }
                     x = (int) ((SpatialUtils.convertLngToPixel(points[i]) - pbbox[0]) * grid_width_mult);
@@ -520,7 +519,7 @@ public class UserDataService {
                 if (name.equals("circle")) {
                     if (colours == null) {
                         for (i = 0; i < points.length; i += 2) {
-                            if (valid != null && !valid[i/2]) {
+                            if (valid != null && !valid[i / 2]) {
                                 continue;
                             }
                             if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
@@ -534,7 +533,7 @@ public class UserDataService {
                         int prevColour = -1;    //!= colours[0]
                         g.setColor(new Color(prevColour));
                         for (i = 0; i < points.length; i += 2) {
-                            if (valid != null && !valid[i/2]) {
+                            if (valid != null && !valid[i / 2]) {
                                 continue;
                             }
                             if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
@@ -558,7 +557,7 @@ public class UserDataService {
                     int sz = size + HIGHLIGHT_RADIUS;
                     int w = sz * 2 + 1;
                     for (i = 0; i < points.length; i += 2) {
-                        if (valid != null && !valid[i/2]) {
+                        if (valid != null && !valid[i / 2]) {
                             continue;
                         }
                         if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
@@ -633,7 +632,7 @@ public class UserDataService {
 
         ArrayList<String> new_facets = new ArrayList<String>();
         int i = 0;
-        while(req.getParameter("facet" + i) != null) {
+        while (req.getParameter("facet" + i) != null) {
             new_facets.add(req.getParameter("facet" + i));
             i++;
         }
@@ -668,7 +667,7 @@ public class UserDataService {
         String id = req.getParameter("id");
         String field = req.getParameter("field");
 
-        QueryField qf = userDataDao.getQueryField(id,field);
+        QueryField qf = userDataDao.getQueryField(id, field);
 
         //Because RecordsLookup does not requery what it has already loaded, add it to the in mem list of QueryFields
         RecordsLookup.addQf(id, qf);
@@ -686,6 +685,6 @@ public class UserDataService {
         String id = req.getParameter("id");
         String fields = req.getParameter("fl");
 
-        return userDataDao.getSampleZip(id,fields);
+        return userDataDao.getSampleZip(id, fields);
     }
 }

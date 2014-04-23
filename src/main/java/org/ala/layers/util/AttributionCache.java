@@ -14,15 +14,16 @@ import java.util.Map;
  */
 public class AttributionCache {
 
-    private AttributionCache(){}
+    private AttributionCache() {
+    }
 
     private static AttributionCache attributionCache;
 
-    private Map<String,AttributionDTO> cache = new HashMap<String,AttributionDTO>();
+    private Map<String, AttributionDTO> cache = new HashMap<String, AttributionDTO>();
 
     public AttributionDTO getAttributionFor(String dataResourceUid) throws Exception {
         AttributionDTO a = cache.get(dataResourceUid);
-        if(a == null){
+        if (a == null) {
             ObjectMapper om = new ObjectMapper();
             om.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             a = om.readValue(new URL("http://collections.ala.org.au/ws/dataResource/" + dataResourceUid), AttributionDTO.class);
@@ -31,13 +32,13 @@ public class AttributionCache {
         return a;
     }
 
-    public static AttributionCache getCache(){
-        if(attributionCache == null)
+    public static AttributionCache getCache() {
+        if (attributionCache == null)
             attributionCache = new AttributionCache();
         return attributionCache;
     }
 
-    public void clear(){
-       cache.clear();
+    public void clear() {
+        cache.clear();
     }
 }

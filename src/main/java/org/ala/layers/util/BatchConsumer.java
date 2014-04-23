@@ -25,10 +25,10 @@ import java.util.Date;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
 import org.ala.layers.dao.LayerIntersectDAO;
 
 /**
- *
  * @author Adam
  */
 public class BatchConsumer {
@@ -37,7 +37,7 @@ public class BatchConsumer {
     static LayerIntersectDAO layerIntersectDao;
 
     public static void start(LayerIntersectDAO layerIntersectDao) {
-        if(thread == null) {
+        if (thread == null) {
             layerIntersectDao = layerIntersectDao;
             waitingBatchDirs = new LinkedBlockingQueue<String>();
             thread = new BatchConsumerThread(waitingBatchDirs, layerIntersectDao);
@@ -65,7 +65,7 @@ class BatchConsumerThread extends Thread {
 
     @Override
     public void run() {
-        while(true) {
+        while (true) {
             String currentBatch = null;
             try {
 //                //get next batch to process
@@ -90,10 +90,10 @@ class BatchConsumerThread extends Thread {
 //                }
 
                 currentBatch = waitingBatchDirs.take();
-                
+
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy hh:mm:ss:SSS");
-                writeToFile(currentBatch + "status.txt","started at " + sdf.format(new Date()), true);
-                writeToFile(currentBatch + "started.txt",sdf.format(new Date()), true);
+                writeToFile(currentBatch + "status.txt", "started at " + sdf.format(new Date()), true);
+                writeToFile(currentBatch + "started.txt", sdf.format(new Date()), true);
 
                 String fids = readFile(currentBatch + "fids.txt");
                 String points = readFile(currentBatch + "points.txt");
@@ -112,12 +112,12 @@ class BatchConsumerThread extends Thread {
                 zip.close();
                 fos.close();
 
-                writeToFile(currentBatch + "status.txt","finished at " + sdf.format(new Date()), true);
-                writeToFile(currentBatch + "finished.txt",sdf.format(new Date()), true);
-                
+                writeToFile(currentBatch + "status.txt", "finished at " + sdf.format(new Date()), true);
+                writeToFile(currentBatch + "finished.txt", sdf.format(new Date()), true);
+
                 currentBatch = null;
             } catch (Exception e) {
-                if(currentBatch != null) {
+                if (currentBatch != null) {
                     try {
                         writeToFile(currentBatch + "status.txt", "error " + e.getMessage(), true);
                         writeToFile(currentBatch + "error.txt", e.getMessage(), true);
@@ -140,8 +140,8 @@ class BatchConsumerThread extends Thread {
         BufferedReader br = new BufferedReader(new FileReader(filename));
         StringBuilder sb = new StringBuilder();
         String line;
-        while((line = br.readLine()) != null) {
-            if(sb.length() > 0) {
+        while ((line = br.readLine()) != null) {
+            if (sb.length() > 0) {
                 sb.append("\n");
             }
             sb.append(line);
