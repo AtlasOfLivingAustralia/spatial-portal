@@ -76,21 +76,21 @@ public class ActiveLayerRenderer implements ListitemRenderer {
          * show the legend graphic when the user hovers over the palette icon
          */
         if (layer.isRemoveable()) {
-            Image remove = new Image(languagePack.getLang("layer_remove_icon"));
+            Html remove = new Html(languagePack.getLang("layer_remove_icon_html");
             remove.addEventListener("onClick", new ActiveLayersRemoveEventListener());
             remove.setParent(listcell);
             remove.setStyle("float:right;");
             remove.setTooltiptext("remove layer");
         }
 
-        Image info = new Image(languagePack.getLang("layer_info_icon"));
+        Html info = new Html(languagePack.getLang("layer_info_icon_html"));
         info.setParent(listcell);
         info.setStyle("float:right;");
         info.setTooltiptext("metadata");
         info.addEventListener("onClick", new ActiveLayersInfoEventListener());
 
         if (layer.getType() != LayerUtilities.MAP) {
-            Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
+            Html zoomextent = new Html(languagePack.getLang("layer_zoomextent_icon_html");
             zoomextent.setParent(listcell);
             zoomextent.setStyle("float:right");
             zoomextent.setTooltiptext("zoom to extent");
@@ -112,7 +112,6 @@ public class ActiveLayerRenderer implements ListitemRenderer {
             legend = new Image(languagePack.getLang("layer_legend_icon"));
         }
 
-        //todo: support analysis layers (languagePack.getLang("icon_analysis"))
         legend.setStyle("float:left;");
         legend.setParent(listcell);
         legend.setTooltiptext("View/edit the legend");

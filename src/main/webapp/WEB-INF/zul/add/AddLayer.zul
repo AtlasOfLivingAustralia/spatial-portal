@@ -28,17 +28,10 @@
                         <column />
                     </columns>
                     <rows>
-                       
                         <row>
                             <label id="lblStep1" style="font-weight:bold" value="1. Select layers"/>
-                            <image id="imgCompletedStep1" visible="true" src="img/accept.png"/>
+                            <html id="imgCompletedStep1" visible="true" ><![CDATA[<i class="icon-ok"></i>]]></html>
                         </row>
-                        <!--<row>
-                            <label id="lblStep2" value="2. Add layers to map"/>
-                            <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
-
-                        </row>-->
-                      
                     </rows>
         
                 </grid>
@@ -51,9 +44,9 @@
                 </div>
 
             </vbox>
-            <vbox  >
+            <vbox>
                 
-                <div id="atstep1" visible="true" zclass="last optional" sclass="atstep"  width="670px" height="600px">
+                <div id="atstep1" visible="true" zclass="last optional" sclass="atstep"  width="670px" height="500px">
                     <hbox>
                         <label id="atstep1_desc" value="Select one or more layers." class="h3"/>
                         <label id="atstep1_label" value="" />
@@ -61,16 +54,23 @@
                         <label value="The layer sets use layer 'short name': see " />
                         <a href="http://spatial.ala.org.au/layers" target="_blank" label="layers"/>
                     </hbox>
+
                     <separator />
+
+                    <div>
                     <hbox>
                         <label value="Add set a of layers:"/>
                         <combobox id="selectedLayersCombobox" use="au.org.ala.spatial.composer.layer.SelectedLayersCombobox" width="320px" readonly="true"/>
-                        
                     </hbox>
+                    </div>
+
+                    <div style="padding-top:8px;padding-bottom:8px;">
                     <hbox>
                         <label value="Add from search:"/>
                         <combobox id="cbLayer" use="au.org.ala.spatial.composer.layer.EnvLayersCombobox" autodrop="true" width="350px" />
                     </hbox>
+                    </div>
+
                     <vbox  width="620px" >
                         <label value="" />
                         
@@ -85,18 +85,16 @@
                             <listheader label=" " width="25px" />
                         </listhead>
                         </listbox>
-
                         <hbox>
-                        <div class="btn-group" style="float:left">
-                            <button id="btnClearSelection"  class="btn-small" label="Clear selection"  />
-                            <button id="bLayerListDownload1" class="btn-small" label="Export set"  />
-
-                        </div>
-                        <vbox>
-                                                        <separator height="2px" />
-                                                        <label id="lLayersSelected" value="0 layers selected" class="h3" style="padding-left: 10px;"/>
-                                                    </vbox>
-                                                    </hbox>
+                            <div class="btn-group" style="float:left">
+                                <button id="btnClearSelection"  class="btn-small" label="Clear selection"  />
+                                <button id="bLayerListDownload1" class="btn-small" label="Export set"  />
+                            </div>
+                            <vbox>
+                                <separator height="2px" />
+                                <label id="lLayersSelected" value="0 layers selected" class="h3" style="padding-left: 10px;"/>
+                            </vbox>
+                        </hbox>
                     </vbox>
                 </div>
                 <textbox id="tToolName" visible="false"/>

@@ -156,7 +156,7 @@ public class GDMComposer extends ToolComposer {
             sbenvsel = getSelectedLayers();
 
             if (!isAssemblage || vSp.size() < 2) {
-                getMapComposer().showMessage("An assembalge of species with multiple occurrences for each species is required by GDM.", this);
+                getMapComposer().showMessage("An list of species with multiple occurrences for each species is required by GDM.", this);
                 return false;
             }
 

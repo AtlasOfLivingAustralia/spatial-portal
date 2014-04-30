@@ -3,7 +3,7 @@
     <window id="popup_results"
         apply="au.org.ala.spatial.composer.results.AreaReportController"
         use="au.org.ala.spatial.composer.results.AreaReportController"
-        width="550px"
+        width="650px"
         style="overflow:visible"
         xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
@@ -17,29 +17,25 @@
         <a sclass="fancybox-close" onClick="popup_results.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp()" style="display: inline" />
         <caption id="cTitle" />
-        <separator/>
-        <vbox >
-        
+        <vbox>
             <div id="divWorldNote" visible="false">
                 <label value="* World area includes records without coordinates" />
             </div>
                    
-        <grid id="facetsValues" width="520px" height="400px">
-        <!-- set up the columns widths -->
-            <columns visible="false"><!-- make it invisible -->
-                <column width="150px"/>
-                <column width="100px"/>
-                <column width="150px"/>
-                <column width="100px"/>
-            </columns>
-        </grid>
-        <separator />
+            <grid id="facetsValues" width="650px;" height="400px;">
+            <!-- set up the columns widths -->
+                <columns visible="false"><!-- make it invisible -->
+                    <column width="250px"/>
+                    <column width="100px"/>
+                    <column width="150px"/>
+                    <column width="100px"/>
+                </columns>
+            </grid>
+            <separator />
 
-        <div class="btn-group">
-
+            <div class="btn-group">
                 <button label="Close" id="btnCancel"/>
-
-        </div>
+            </div>
         </vbox>
     </window>
 </zk>

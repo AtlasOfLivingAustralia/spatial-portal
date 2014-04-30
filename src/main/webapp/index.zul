@@ -368,7 +368,7 @@
                 font-size: 14px;
                 color: rgb(172, 172, 172);;
                 padding: 3px 3px 3px 3px;">
-                                        <label id="lblSelectedLayer" value="No layers added" sclass="selectedLayer" />
+                                       <label id="lblSelectedLayer" value="No layers added" sclass="selectedLayer" />
                                     </div>
                                     <separator />
                                     <div  id="layerControls"/>

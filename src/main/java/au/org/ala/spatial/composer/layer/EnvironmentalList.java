@@ -125,8 +125,7 @@ public class EnvironmentalList extends Listbox {
                         li.setDisabled(true);
                     }
 
-                    Image img = new Image();
-                    img.setSrc("/img/information.png");
+                    Html img = new Html(lang"<i class='icon-info-sign'></i>");
 
                     img.addEventListener("onClick", new EventListener() {
 

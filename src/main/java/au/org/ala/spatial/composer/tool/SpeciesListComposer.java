@@ -67,7 +67,6 @@ public class SpeciesListComposer extends ToolComposer {
         } catch (Exception e) {
             logger.error("error opening analysisspecieslistresults.zul", e);
         }
-
         detach();
     }
 

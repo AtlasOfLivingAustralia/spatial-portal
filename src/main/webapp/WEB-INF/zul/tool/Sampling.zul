@@ -15,34 +15,28 @@
         <a sclass="fancybox-close" onClick="addtoolwindow.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('sampling-tools')" style="display: inline" />
 <caption id="cTitle" />
-        <separator />
+<separator />
 <hbox>
          <vbox >
             <grid width="150px">
-<columns>
- <column width="120px"/>
-        <column />
-</columns>
-    <rows>
-            <row>
-
-                <label id="lblStep1" style="font-weight:bold" value="1. Apply to an area"/>
-                <image id="imgCompletedStep1" visible="false" src="img/accept.png"/>
-            </row>
-            <row>
-
-                <label id="lblStep2" value="2. Select species"/>
-                <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
-            </row>
-            <row>
-
-                <label id="lblStep3" value="3. Select layers"/>
-                <image id="imgCompletedStep3" visible="false" src="img/accept.png"/>
-
-           </row>
-          
-</rows>
-
+                <columns>
+                 <column width="120px"/>
+                    <column />
+                </columns>
+                <rows>
+                    <row>
+                        <label id="lblStep1" style="font-weight:bold" value="1. Apply to an area"/>
+                        <html id="imgCompletedStep1" visible="false"><![CDATA[<i class="icon-ok"></i>]]></html>
+                    </row>
+                    <row>
+                        <label id="lblStep2" value="2. Select species"/>
+                        <html id="imgCompletedStep2" visible="false"><![CDATA[<i class="icon-ok"></i>]]></html>
+                    </row>
+                    <row>
+                        <label id="lblStep3" value="3. Select layers"/>
+                        <html id="imgCompletedStep3" visible="false"><![CDATA[<i class="icon-ok"></i>]]></html>
+                   </row>
+                </rows>
              </grid>
              <div id="tlinfo" visible="false">
                     <separator spacing="100px" />
@@ -51,8 +45,7 @@
                     <label value="Note: The correlations are currently based on full layer spatial extents and not any selected sub-area." />
                 </div>
         </vbox>
-        <vbox  >
-
+        <vbox >
             <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
                 <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                 <label id="atstep1_label" value="" />
@@ -147,7 +140,6 @@
                 <hbox>
                     <label value="Add set a of layers:" />
                     <combobox id="selectedLayersCombobox" use="au.org.ala.spatial.composer.layer.SelectedLayersCombobox" width="320px" readonly="true"/>
-
                 </hbox>
                 <separator />
                 <hbox>
@@ -161,10 +153,10 @@
                     checkmark="true" onOK="addtoolwindow.onClick$btnOk(null)">
                         <listhead>
                             <listheader label=" " width="48px"  />
-                                                        <listheader label="category" hflex="1"/>
-                                                        <listheader label="name"  hflex="1"/>
-                                                        <listheader label=" "  width="25px"/>
-                                                        <listheader label=" " width="25px" />
+                            <listheader label="category" hflex="1"/>
+                            <listheader label="name"  hflex="1"/>
+                            <listheader label=" "  width="25px"/>
+                            <listheader label=" " width="25px" />
                         </listhead>
                     </listbox>
                     <hbox>
@@ -185,12 +177,10 @@
         </vbox>       
         </hbox>
          <div class="btn-group" style="position:absolute;right:10px;bottom:10px">
-
-                        <button label="Cancel" id="btnCancel" />
-                        <button label="&lt; Back" id="btnBack" disabled="true" />
-                        <fileupload class="btn-primary" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
-<button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self" />
-
-                </div>
+            <button label="Cancel" id="btnCancel" />
+            <button label="&lt; Back" id="btnBack" disabled="true" />
+            <fileupload class="btn-primary" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+            <button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self" />
+        </div>
     </window>
 </zk>

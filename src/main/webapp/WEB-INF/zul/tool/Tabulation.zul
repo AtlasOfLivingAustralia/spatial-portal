@@ -26,13 +26,12 @@
                     <rows>
                         <row>
                             <label id="lblStep1" style="font-weight:bold" value="1. Select layers for tabulation"/>
-                            <image id="imgCompletedStep1" visible="false" src="img/accept.png"/>
+                            <html id="imgCompletedStep1" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
                         </row>
                     </rows>
-        
                 </grid>
             </vbox>
-            <vbox  >
+            <vbox>
                 <div id="atstep1" visible="true" zclass="first last optional" sclass="atstep">
                     <label id="atstep1_desc" value="Select layers for tabulation" sclass="wSubLabel"/>
                     <label id="atstep1_label" value="" />
@@ -64,12 +63,10 @@
             </vbox>
         </hbox>
          <div class="btn-group" style="position:absolute;right:10px;bottom:10px">
-
-                        <button label="Cancel" id="btnCancel" />
-                        <button label="&lt; Back" id="btnBack" disabled="true" />
-                        <button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self" />
-                        <fileupload class="btn-primary" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
-
-                </div>
+            <button label="Cancel" id="btnCancel" />
+            <button label="&lt; Back" id="btnBack" disabled="true" />
+            <button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self" />
+            <fileupload class="btn-primary" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+        </div>
     </window>
 </zk>

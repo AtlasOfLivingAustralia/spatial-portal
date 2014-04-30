@@ -46,7 +46,6 @@ public class SpeciesListResults extends UtilityComposer {
         geospatialKosher = (boolean[]) Executions.getCurrent().getArg().get("geospatialKosher");
         chooseEndemic = (Boolean) Executions.getCurrent().getArg().get("chooseEndemic");
         extraParams = (String) Executions.getCurrent().getArg().get("extraParams");
-
         populateList();
     }
 

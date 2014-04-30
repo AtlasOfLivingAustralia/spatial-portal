@@ -192,8 +192,8 @@ public class ContextualLayerListComposer extends UtilityComposer {
                 displayname = (displayname.contains(">")) ? displayname.split(">")[1] : displayname;
                 Treecell tcName = new Treecell();
                 if (!joLayer.getString("type").equals("node")) {
-                    Image img = new Image();
-                    img.setSrc("/img/information.png");
+                    Html img = new Html("<i class='icon-info-sign'></i>");
+//                    img.setSrc("/img/information.png");
                     img.addEventListener("onClick", new EventListener() {
 
                         @Override
@@ -212,23 +212,8 @@ public class ContextualLayerListComposer extends UtilityComposer {
                 Label lbl = new Label(displayname);
                 lbl.setParent(tcName);
 
-                Treecell tcAdd = new Treecell();
-                Treecell tcInfo = new Treecell();
-
                 if (!joLayer.getString("type").equals("node")) {
-
-                    // add the "add" button
-                    tcAdd.setImage("/img/add.png");
-
-                    // add the "info" button
-                    tcInfo.setImage("/img/information.png");
-
-                    // set the layer data for the row
                     tr.setAttribute("lyr", joLayer);
-                }
-
-                if (joLayer.getString("type").equals("class")) {
-                    tcAdd.setImage("/img/add.png");
                 }
 
                 // Attach onclick events:
@@ -265,21 +250,6 @@ public class ContextualLayerListComposer extends UtilityComposer {
                         }
                     });
 
-                    tcInfo.addEventListener("onClick", new EventListener() {
-
-                        @Override
-                        public void onEvent(Event event) throws Exception {
-
-                            Object o = event.getTarget().getId();
-                            Treecell tc = (Treecell) event.getTarget();
-                            JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
-
-                            String metadata = CommonData.layersServer + "/layers/view/more/" + joLayer.getString("id");
-
-                            getMapComposer().activateLink(metadata, "Metadata", false);
-
-                        }
-                    });
                 }
 
                 tcName.setParent(tr);

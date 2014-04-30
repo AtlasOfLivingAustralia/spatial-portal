@@ -895,7 +895,7 @@ public class AddFacetController extends UtilityComposer {
                 currentDiv.setVisible(false);
                 nextDiv.setVisible(true);
 
-                Image previousStepCompletedImg = (Image) getFellowIfAny("imgCompletedStep" + (currentStep));
+                Html previousStepCompletedImg = (Html) getFellowIfAny("imgCompletedStep" + (currentStep));
                 previousStepCompletedImg.setVisible(true);
 
                 Label previousStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep));
@@ -969,7 +969,7 @@ public class AddFacetController extends UtilityComposer {
             currentDiv.setVisible(false);
             previousDiv.setVisible(true);
 
-            Image currentStepCompletedImg = (Image) getFellowIfAny("imgCompletedStep" + (currentStep - 1));
+            Html currentStepCompletedImg = (Html) getFellowIfAny("imgCompletedStep" + (currentStep - 1));
             currentStepCompletedImg.setVisible(false);
 
             Label nextStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep));

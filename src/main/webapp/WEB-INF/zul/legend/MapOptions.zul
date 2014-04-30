@@ -16,25 +16,33 @@
                             <listcell>
                                 <radio value="outline" onCheck='Clients.evalJavaScript("window.mapFrame.baseLayerSwitchStatus=1;changeBaseLayer(\"outline\");")' label="Outline" />
                             </listcell>
-                            <listcell image="/img/information.png" onClick='mapPortalPage.activateLink("http://www.naturalearthdata.com/about/terms-of-use", "Metadata", false);'></listcell>
+                            <listcell onClick='mapPortalPage.activateLink("http://www.naturalearthdata.com/about/terms-of-use", "Metadata", false);'>
+                                <html><![CDATA[<i class="icon-info-sign"></i>]]></html>
+                            </listcell>
                         </listitem>
                         <listitem>
                             <listcell>
                                 <radio value="minimal" onCheck='Clients.evalJavaScript("window.mapFrame.baseLayerSwitchStatus=1;changeBaseLayer(\"minimal\");")' label="Minimal" />
                             </listcell>
-                            <listcell image="/img/information.png" onClick='mapPortalPage.activateLink("openstreetmap_metadata.html", "Metadata", false);'></listcell>
+                            <listcell onClick='mapPortalPage.activateLink("openstreetmap_metadata.html", "Metadata", false);'>
+                               <html><![CDATA[<i class="icon-info-sign"></i>]]></html>
+                            </listcell>
                         </listitem>
                         <listitem>
                             <listcell>
                                 <radio value="normal" onCheck='Clients.evalJavaScript("window.mapFrame.baseLayerSwitchStatus=0;changeBaseLayer(\"normal\");window.mapFrame.autoSwitchBaseMap();")' label="Normal" />
                             </listcell>
-                            <listcell image="/img/information.png" onClick='mapPortalPage.activateLink("http://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'></listcell>
+                            <listcell onClick='mapPortalPage.activateLink("http://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'>
+                                <html><![CDATA[<i class="icon-info-sign"></i>]]></html>
+                            </listcell>
                         </listitem>
                         <listitem>
                             <listcell>
                                 <radio value="hybrid" onCheck='Clients.evalJavaScript("window.mapFrame.baseLayerSwitchStatus=1;changeBaseLayer(\"hybrid\");")' label="Satellite" />
                             </listcell>
-                            <listcell image="/img/information.png" onClick='mapPortalPage.activateLink("http://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'></listcell>
+                            <listcell onClick='mapPortalPage.activateLink("http://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'>
+                                <html><![CDATA[<i class="icon-info-sign"></i>]]></html>
+                            </listcell>
                         </listitem>
                     </listbox>
                 </radiogroup>

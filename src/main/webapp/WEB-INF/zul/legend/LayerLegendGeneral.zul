@@ -152,19 +152,21 @@
                     </div>
                 </div>
                 <!-- opacity-->
-                <vbox>
-                    <hbox>
-                        <div style="padding-top:3px" width="65px">
-                            <label value="Opacity" sclass="h3" />
-                        </div>
-                        <div  width="210px">
-                            <slider id="opacitySlider" width="95%" />
-                        </div>
-                        <div align="right" style="padding-top:3px">
-                            <label id="opacityLabel" />
-                        </div>
-                    </hbox>
-                </vbox>
+                <div id="opacityChooser" style="margin-top:8px; margin-bottom:8px;">
+                    <vbox>
+                        <hbox>
+                            <div width="65px" style="padding-top:5px;">
+                                <label value="Opacity" sclass="h3" />
+                            </div>
+                            <div width="210px">
+                                <slider id="opacitySlider" width="95%" />
+                            </div>
+                            <div align="right" style="padding-top:3px">
+                                <label id="opacityLabel" />
+                            </div>
+                        </hbox>
+                    </vbox>
+                </div>
                 <div id="sizeChooser" visible="false" width="100%">
                     <hbox>
                         <div style="padding-top:3px" width="65px">
@@ -240,10 +242,11 @@
                                         </combobox>
                                     </div>
                                     <div style="padding-top:3px; margin-left:15px;" width="75px">
-                                        <label value="Frame rate (s)" sclass="h3"/>
+                                        <label value="Frame rate" sclass="h3"/>
                                     </div>
                                     <div>
                                        <doublebox id="dblAnimationSeconds" width="30px" value="3"/>
+                                       <label value="(s)" sclass="h3"/>
                                     </div>
                                 </hbox>
                                 <hbox id="dAnimationStep" visible="false">
@@ -262,9 +265,9 @@
                                         <label value="Year range" sclass="h3"/>
                                     </div>
                                     <div>
-                                      <intbox id="intAnimationYearStart" width="50px" value="10"/>
+                                      <intbox id="intAnimationYearStart" format="####" width="45px" value="10"/>
                                       to
-                                      <intbox id="intAnimationYearEnd" width="50px" value="10"/>
+                                      <intbox id="intAnimationYearEnd" format="####" width="45px" value="10"/>
                                     </div>
 
                                     <div class="btn-group">

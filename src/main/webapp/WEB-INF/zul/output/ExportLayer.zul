@@ -27,11 +27,11 @@
                     <rows>
                         <row>
                             <label id="lblStep1" style="font-weight:bold" value="1. Apply to an area"/>
-                            <image id="imgCompletedStep1" visible="false" src="img/accept.png"/>
+                            <html id="imgCompletedStep1" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
                         </row>
                         <row>
                             <label id="lblStep2" value="2. Select export type"/>
-                            <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
+                            <html id="imgCompletedStep2" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
                         </row>
                     </rows>
                 </grid>

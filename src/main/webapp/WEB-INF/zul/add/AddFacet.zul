@@ -5,8 +5,8 @@
     apply="au.org.ala.spatial.composer.add.AddFacetController" style="overflow:visible;"
     xmlns:n="http://www.zkoss.org/2005/zk/native"
     width="700px"
-    height="700px"
->
+    height="700px">
+
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -30,11 +30,11 @@
                     <rows>                       
                         <row>
                             <label id="lblStep1" style="font-weight:bold" value="1. Apply to an area"/>
-                            <image id="imgCompletedStep1" visible="false" src="img/accept.png"/>
+                            <html id="imgCompletedStep1" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
                         </row>
                         <row>
                             <label id="lblStep2" value="2. Select facet"/>
-                            <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
+                            <html id="imgCompletedStep2" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
                         </row>                      
                     </rows>        
                 </grid>

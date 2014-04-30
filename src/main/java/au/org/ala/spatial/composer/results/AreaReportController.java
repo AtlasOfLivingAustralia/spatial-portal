@@ -225,7 +225,7 @@ public class AreaReportController extends UtilityComposer {
                             switch (type) {
                                 case LIST: {
                                     Button b = new Button("List");
-
+                                    b.setZclass("btn btn-mini");
                                     b.addEventListener("onClick", new EventListener() {
 
                                         @Override
@@ -246,13 +246,12 @@ public class AreaReportController extends UtilityComposer {
                                         }
 
                                     });
-
-
                                     newDiv.appendChild(b);
                                     break;
                                 }
                                 case SAMPLE: {
                                     Button b = new Button("Sample");
+                                    b.setZclass("btn btn-mini");
                                     final SamplingEvent sle = new SamplingEvent(getMapComposer(), null, areaName, null, 2, gk);
                                     b.addEventListener("onClick", new EventListener() {
 
@@ -270,6 +269,7 @@ public class AreaReportController extends UtilityComposer {
                                 case MAP_ALL: {
                                     //set up the map button                                  
                                     Button b = new Button("Map all");
+                                    b.setZclass("btn btn-mini");
                                     b.addEventListener("onClick", new EventListener() {
 
                                         @Override
@@ -332,9 +332,7 @@ public class AreaReportController extends UtilityComposer {
 
         });
 
-
         divWorldNote.setVisible(worldAreaSelected);
-
 
         Callable occurrenceCount = new Callable<Map<String, Object>>() {
             @Override
