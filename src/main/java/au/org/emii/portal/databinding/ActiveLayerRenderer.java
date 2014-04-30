@@ -76,7 +76,7 @@ public class ActiveLayerRenderer implements ListitemRenderer {
          * show the legend graphic when the user hovers over the palette icon
          */
         if (layer.isRemoveable()) {
-            Html remove = new Html(languagePack.getLang("layer_remove_icon_html");
+            Html remove = new Html(languagePack.getLang("layer_remove_icon_html"));
             remove.addEventListener("onClick", new ActiveLayersRemoveEventListener());
             remove.setParent(listcell);
             remove.setStyle("float:right;");
@@ -90,7 +90,7 @@ public class ActiveLayerRenderer implements ListitemRenderer {
         info.addEventListener("onClick", new ActiveLayersInfoEventListener());
 
         if (layer.getType() != LayerUtilities.MAP) {
-            Html zoomextent = new Html(languagePack.getLang("layer_zoomextent_icon_html");
+            Html zoomextent = new Html(languagePack.getLang("layer_zoomextent_icon_html"));
             zoomextent.setParent(listcell);
             zoomextent.setStyle("float:right");
             zoomextent.setTooltiptext("zoom to extent");
