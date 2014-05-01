@@ -124,9 +124,13 @@ public class IntersectConfig {
         }
 
         layerFilesPath = getProperty(LAYER_FILES_PATH, properties, null);
+        isValidPath(layerFilesPath, LAYER_FILES_PATH);
         analysisLayerFilesPath = getProperty(ANALYSIS_LAYER_FILES_PATH, properties, null);
+        isValidPath(analysisLayerFilesPath, ANALYSIS_LAYER_FILES_PATH);
         alaspatialOutputPath = getProperty(ALASPATIAL_OUTPUT_PATH, properties, null);
+        isValidPath(analysisLayerFilesPath, ALASPATIAL_OUTPUT_PATH);
         layerIndexUrl = getProperty(LAYER_INDEX_URL, properties, null);
+        isValidUrl(analysisLayerFilesPath, LAYER_INDEX_URL);
         batchThreadCount = (int) getPositiveLongProperty(BATCH_THREAD_COUNT, properties, 1);
         configReloadWait = getPositiveLongProperty(CONFIG_RELOAD_WAIT, properties, 3600000);
         preloadedShapeFiles = getProperty(PRELOADED_SHAPE_FILES, properties, null);
@@ -135,13 +139,68 @@ public class IntersectConfig {
         gridCacheReaderCount = (int) getPositiveLongProperty(GRID_CACHE_READER_COUNT, properties, 10);
         localSampling = getProperty(LOCAL_SAMPLING, properties, "true").toLowerCase().equals("true");
         geoserverUrl = getProperty(GEOSERVER_URL, properties, null);
+        isValidUrl(analysisLayerFilesPath, GEOSERVER_URL);
         geonetworkUrl = getProperty(GEONETWORK_URL, properties, null);
+        isValidUrl(geonetworkUrl, GEONETWORK_URL);
         gdalPath = getProperty(GDAL_PATH, properties, null);
+        isValidPathGDAL(gdalPath, GDAL_PATH);
         analysisResolutions = getDoublesFrom(getProperty(ANALYSIS_RESOLUTIONS, properties, "0.5"));
         occurrenceSpeciesRecordsFilename = getProperty(OCCURRENCE_SPECIES_RECORDS_FILENAME, properties, null);
         uploadedShapesFieldId = getProperty(UPLOADED_SHAPES_FIELD_ID, properties, null);
         apiKeyCheckUrlTemplate = getProperty(API_KEY_CHECK_URL_TEMPLATE, properties, null);
+        isValidUrl(apiKeyCheckUrlTemplate, API_KEY_CHECK_URL_TEMPLATE);
         spatialPortalAppName = getProperty(SPATIAL_PORTAL_APP_NAME, properties, null);
+    }
+
+    private static void isValidPath(String path, String desc) {
+        File f = new File(path);
+
+        if(!f.exists()) {
+            logger.error("Config error. Property \"" + desc + "\" with value \"" + path + "\"  is not a valid local file path.  It does not exist.");
+        } else if(!f.isDirectory()) {
+            logger.error("Config error. Property \"" + desc + "\" with value \"" + path + "\"  is not a valid local file path.  It is not a directory.");
+        } else if (!f.canRead()) {
+            logger.error("Config error. Property \"" + desc + "\" with value \"" + path + "\"  is not a valid local file path.  Not permitted to READ.");
+        } else if (!f.canWrite()) {
+            logger.error("Config error. Property \"" + desc + "\" with value \"" + path + "\"  is not a valid local file path.  Not permitted to WRITE.");
+        }
+
+    }
+
+    private static void isValidPathGDAL(String path, String desc) {
+        File f = new File(path);
+
+        if(!f.exists()) {
+            logger.error("Config error. Property \"" + desc + "\" with value \"" + path + "\" is not a valid local file path.  It does not exist.");
+        } else if(!f.isDirectory()) {
+            logger.error("Config error. Property \"" + desc + "\" with value \"" + path + "\"  is not a valid local file path.  It is not a directory.");
+        } else if (!f.canRead()) {
+            logger.error("Config error. Property \"" + desc + "\" with value \"" + path + "\"  is not a valid local file path.  Not permitted to READ.");
+        }
+
+        //look for GDAL file "gdalwarp"
+        File g = new File(path + File.separator + "gdalwarp");
+        if(!f.exists()) {
+            logger.error("Config error. Property \"" + desc + "\" with value \"" + path + "\"  is not a valid local file path.  gdalwarp does not exist.");
+        } else if(!g.canExecute()) {
+            logger.error("Config error. Property \"" + desc + "\" with value \"" + path + "\"  is not a valid local file path.  gdalwarp not permitted to EXECUTE.");
+        }
+    }
+
+    private static void isValidUrl(String url, String desc) {
+        HttpClient client = new HttpClient();
+        GetMethod get = new GetMethod(url);
+
+        try {
+            int result = client.executeMethod(get);
+
+            if(result != 200) {
+                logger.error("Config error. Property \"" + desc + "\" with value \"" + url + "\"  is not a valid URL.  Error executing GET request, response=" + result);
+            }
+        } catch (Exception e) {
+            logger.error("Config error. Property \"" + desc + "\" with value \"" + url + "\"  is not a valid URL.  Error executing GET request.");
+        }
+
     }
 
     public IntersectConfig(FieldDAO fieldDao, LayerDAO layerDao) {

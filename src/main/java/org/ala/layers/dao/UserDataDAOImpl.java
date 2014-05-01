@@ -276,6 +276,8 @@ public class UserDataDAOImpl implements UserDataDAO {
 
                 QueryField qfSource = getQueryField(id, ref);
                 QueryField qfFacet = new QueryField();
+                qfFacet.setDisplayName(qfSource.getDisplayName());
+                qfFacet.setName(qfSource.getName());
 
                 try {
                     for (int i = 0; i < valid.length; i++) {
@@ -289,7 +291,7 @@ public class UserDataDAOImpl implements UserDataDAO {
                 }
                 qfFacet.store();
 
-                //TODO: do we need to add this to the database for faster retrieval?
+                setQueryField(header_id, ref, qf);
 
                 return qfFacet;
             } else {
@@ -364,7 +366,8 @@ public class UserDataDAOImpl implements UserDataDAO {
 
         ArrayList<String> refs = new ArrayList<String>();
         for (Map<String, Object> m : l) {
-            refs.add((String) m.get("ref"));
+            //remove facet_id from ref values
+            refs.add(((String) m.get("ref")).replace(" " + facet_id, ""));
         }
         return refs;
     }
@@ -429,6 +432,12 @@ public class UserDataDAOImpl implements UserDataDAO {
         String next_facet_id = String.valueOf(System.currentTimeMillis());
         setBooleanArray(ud_header_id, next_facet_id, valid);
 
+        //store derived facets
+        List<String> refs = listData(ud_header_id, "QueryField");
+        for(int i=0;i<refs.size();i++) {
+            getQueryField(id + ":" + next_facet_id, refs.get(i));
+        }
+
         //return it
         Ud_header ret = get(Long.valueOf(ud_header_id));
         ret.setFacet_id(next_facet_id);
@@ -451,15 +460,15 @@ public class UserDataDAOImpl implements UserDataDAO {
         List<String> in = listData(id, "QueryField");
 
         if (in != null) {
-            for (String f : in) {
-                qfs.add(getQueryField(id, f));
+            for(int i=0;i<in.size();i++) {
+                qfs.add(getQueryField(id, in.get(i)));
             }
         }
         if (fields != null) {
             String[] fs = fields.split(",");
-            for (String f : fs) {
-                if (!in.contains(f)) {
-                    qfs.add(getQueryField(id, f));
+            for(int i=0;i<fs.length;i++) {
+                if (!in.contains(fs[i])) {
+                    qfs.add(getQueryField(id, fs[i]));
                 }
             }
         }
@@ -467,21 +476,17 @@ public class UserDataDAOImpl implements UserDataDAO {
         //make csv
         StringBuilder sb = new StringBuilder();
         //header
-        sb.append("id,longitude,latitude");
-        for (QueryField q : qfs) {
-            sb.append(",").append(q.getDisplayName());
+        for(int i=0;i<qfs.size();i++) {
+            if(sb.length() > 0) {
+                sb.append(",");
+            }
+            sb.append(qfs.get(i).getDisplayName());
         }
         //rows
         double[] points = getDoubleArray(id, "points");
         int size = points.length / 2;
         for (int i = 0; i < size; i++) {
             sb.append("\r\n");
-
-            sb.append(i);
-            sb.append(",");
-            sb.append(points[i * 2]);
-            sb.append(",");
-            sb.append(points[i * 2 + 1]);
             for (int j = 0; j < qfs.size(); j++) {
                 QueryField q = qfs.get(j);
 
@@ -492,8 +497,12 @@ public class UserDataDAOImpl implements UserDataDAO {
                 } catch (Exception e) {
                 }
 
+                if(j > 0) {
+                    sb.append(",");
+                }
+
                 if (s != null) {
-                    sb.append(",\"").append(s.replace("\"", "\"\"")).append("\"");
+                    sb.append("\"").append(s.replace("\"", "\"\"")).append("\"");
                 }
             }
         }
