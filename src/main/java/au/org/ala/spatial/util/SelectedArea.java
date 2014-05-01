@@ -20,6 +20,8 @@ public class SelectedArea implements Serializable {
     String wkt;
     String area;
 
+    String reducedWkt = null;
+
     public SelectedArea(MapLayer mapLayer, String wkt) {
         this.mapLayer = mapLayer;
         this.wkt = wkt;
@@ -31,6 +33,13 @@ public class SelectedArea implements Serializable {
         } else {
             return wkt;
         }
+    }
+
+    public String getReducedWkt() {
+        if(reducedWkt == null) {
+            reducedWkt = Util.reduceWKT(getWkt());
+        }
+        return reducedWkt;
     }
 
     public MapLayer getMapLayer() {

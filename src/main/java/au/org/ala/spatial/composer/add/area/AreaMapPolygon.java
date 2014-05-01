@@ -185,19 +185,8 @@ public class AreaMapPolygon extends AreaToolComposer {
                         //***
 
                         //add feature to the map as a new layer
-                        //TODO: why is "cl" needed for grid class layers?  fix layers-store/layers-service
                         JSONObject obj;
-                        if (feature.get("pid").contains(":")) {
-                            //TODO: as with "cl", this is not needed after layers-store/layers-service fix
-                            String pid = feature.get("pid");
-                            if (pid.indexOf(":") != pid.lastIndexOf(":")) {
-                                pid = pid.substring(0, pid.lastIndexOf(":"));
-                                feature.put("pid", pid);
-                            }
-                            obj = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + "cl" + feature.get("pid")));
-                        } else {
-                            obj = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
-                        }
+                        obj = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
 
                         searchComplete = true;
                         displayGeom.setValue("layer: " + jo.getString("displayname") + "\r\n"
@@ -220,8 +209,9 @@ public class AreaMapPolygon extends AreaToolComposer {
                         mapLayer.setPolygonLayer(true);
 
                         JSONObject objJson = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
+                        JSONObject fieldJson = JSONObject.fromObject(readUrl(CommonData.layersServer + "/field/" + objJson.get("fid")));
 
-                        Facet facet = Util.getFacetForObject(objJson, feature.get("value"));
+                        Facet facet = Util.getFacetForObject(feature.get("value"), fieldJson);
 
                         if (facet != null) {
                             ArrayList<Facet> facets = new ArrayList<Facet>();

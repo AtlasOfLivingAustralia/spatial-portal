@@ -4,20 +4,23 @@
  */
 package au.org.ala.spatial.composer.tool;
 
-import au.org.ala.spatial.composer.output.SamplingAnalysisDownloadWCController;
+import au.org.ala.spatial.composer.output.SamplingAnalysisDownloadController;
 import au.org.ala.spatial.data.BiocacheQuery;
 import au.org.ala.spatial.data.Query;
 import au.org.ala.spatial.data.QueryUtil;
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.ListEntry;
 import au.org.ala.spatial.util.SelectedArea;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Filedownload;
+import org.zkoss.zul.Listitem;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -118,7 +121,7 @@ public class SamplingComposer extends ToolComposer {
                     aOutBiocache.toArray(outBiocache);
                     getMapComposer().downloadSecondQuery = query;
                     getMapComposer().downloadSecondLayers = outBiocache;
-                    SamplingAnalysisDownloadWCController c = (SamplingAnalysisDownloadWCController) Executions.createComponents("/WEB-INF/zul/output/SamplingAnalysisDownload.zul", getMapComposer(), null);
+                    SamplingAnalysisDownloadController c = (SamplingAnalysisDownloadController) Executions.createComponents("/WEB-INF/zul/output/SamplingAnalysisDownload.zul", getMapComposer(), null);
                     c.doModal();
                 } else {
                     getMapComposer().downloadSecondQuery = null;
@@ -176,6 +179,16 @@ public class SamplingComposer extends ToolComposer {
                 break;
             case 3:
                 lbListLayers.setFocus(true);
+
+                //tick and disable all 'DEFAULT' sampled layers
+                //
+                //
+                if(getSelectedSpecies() != null) {
+                    Query q = getSelectedSpecies();
+                    String [] default_fields = q.getDefaultDownloadFields();
+
+                    lbListLayers.selectLayersAndDisable(default_fields);
+                }
                 break;
         }
     }

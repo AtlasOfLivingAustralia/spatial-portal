@@ -7,7 +7,7 @@
             closable="false" mode="embedded" width="320px"
             style="overflow:visible"
             >
-            <caption id="cTitle"
+            <caption id="cTitle" />
             <div class="btn-group">
                 <button class="btn-primary" id="btnDownload" label="Download" />
             </div>

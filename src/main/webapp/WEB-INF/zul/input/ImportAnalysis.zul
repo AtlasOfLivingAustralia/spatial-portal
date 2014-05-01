@@ -23,7 +23,7 @@
         </div>
         <separator/>
         <separator/>
-        <div id="divPriorAnalysis" visible="false">
+        <div id="divPriorAnalysis" visible="false" height="500px">
             <vbox>
                 <label value="Select prior analysis" />
 

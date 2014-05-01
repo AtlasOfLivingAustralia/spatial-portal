@@ -219,4 +219,6 @@ public interface Query {
     public String getAutoComplete(String facet, String value, int limit);
 
     public String getBS();
+
+    String[] getDefaultDownloadFields();
 }

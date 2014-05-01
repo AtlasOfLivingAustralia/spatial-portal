@@ -41,7 +41,7 @@ public class UserDataQuery implements Query {
 
     static final String SAMPLING_SERVICE_CSV_GZIP = "/userdata/occurrences.gz?";
     static final String SAMPLING_SERVICE = "/userdata/occurrences?";
-    static final String DOWNLOAD_URL = "/userdata/download?";
+    static final String DOWNLOAD_URL = "/userdata/sample?";
     static final String LEGEND_SERVICE_CSV = "/userdata/legend?";
 
     static final Pattern queryParamsPattern = Pattern.compile("&([a-zA-Z0-9_\\-]+)=");
@@ -539,11 +539,27 @@ public class UserDataQuery implements Query {
 
     @Override
     public String getDownloadUrl(String[] extraFields) {
+        //this default behaviour of excluding default fields from the download URL may change
+        ArrayList<String> fieldsAlreadyIncluded = new ArrayList<String>();
+        for(String s : getDefaultDownloadFields()) {
+            fieldsAlreadyIncluded.add(s);
+        }
+
         StringBuilder sb = new StringBuilder();
-        sb.append("&extra=").append(CommonData.extraDownloadFields);
-        if (extraFields != null && extraFields.length > 0) {
-            for (int i = 0; i < extraFields.length; i++) {
-                sb.append(",").append(extraFields[i]);
+        if(extraFields != null && extraFields.length > 0) {
+
+            if (extraFields != null && extraFields.length > 0) {
+
+                for (int i = 0; i < extraFields.length; i++) {
+                    if (!fieldsAlreadyIncluded.contains(extraFields[i])) {
+                        if (sb.length() > 0) {
+                            sb.append(",");
+                        } else {
+                            sb.append("&fl=");
+                        }
+                        sb.append(extraFields[i]);
+                    }
+                }
             }
         }
         return layersServiceServer + DOWNLOAD_URL + "q=" + getQ() + sb.toString();
@@ -647,5 +663,24 @@ public class UserDataQuery implements Query {
     @Override
     public String getBS() {
         return CommonData.layersServer;
+    }
+
+    @Override
+    public String[] getDefaultDownloadFields() {
+        //if a default field has the same name as a field(column) uploaded it will be excluded
+        String [] fields = null;
+        try {
+            ObjectMapper om = new ObjectMapper();
+            List ja = om.readValue(new URL(CommonData.layersServer + "/userdata/list?id=" + ud_header_id), List.class);
+
+            fields = new String[ja.size()];
+            for (int i = 0; i < ja.size(); i++) {
+                fields[i] = (String) ja.get(i);
+            }
+        } catch (Exception e) {
+            logger.error("failed to get list of default fields", e);
+        }
+
+        return fields;
     }
 }

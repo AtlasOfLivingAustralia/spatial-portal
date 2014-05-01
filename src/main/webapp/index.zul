@@ -104,7 +104,7 @@
             <n:div n:class="navbar-inner">
                                         <n:ul n:class="nav">
                                             <n:li n:class="dropdown" >
-                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" >Add to Map  <n:b n:class="caret" /></n:a>
+                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" n:onClick="doNothing();" >Add to Map  <n:b n:class="caret" /></n:a>
                                                 <n:ul n:class="dropdown-menu">
                                                     <n:li>
                                                         <n:a href="#" n:onClick="addSpeciesAction();">Species</n:a>
@@ -124,7 +124,7 @@
                                                 </n:ul>
                                             </n:li>
                                             <n:li n:class="dropdown">
-                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" >Tools <n:b n:class="caret" /></n:a>
+                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown"  n:onClick="doNothing();" >Tools <n:b n:class="caret" /></n:a>
                                                 <n:ul n:class="dropdown-menu">
                                                     <n:li>
                                                         <n:a href="#" n:onClick="runAreaReport();">Area Report</n:a>
@@ -159,7 +159,7 @@
                                                 </n:ul>
                                             </n:li>
                                             <n:li n:class="dropdown">
-                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown">Import <n:b n:class="caret" /></n:a>
+                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" n:onClick="doNothing();" >Import <n:b n:class="caret" /></n:a>
                                                 <n:ul n:class="dropdown-menu">
                                                     <n:li>
                                                         <n:a href="#" n:onClick="runImportSpecies('points');">Points</n:a>
@@ -176,7 +176,7 @@
                                                 </n:ul>
                                             </n:li>
                                             <n:li n:class="dropdown">
-                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" >Export <n:b n:class="caret" /></n:a>
+                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" n:onClick="doNothing();"  >Export <n:b n:class="caret" /></n:a>
                                                 <n:ul n:class="dropdown-menu">
                                                     <n:li>
                                                         <n:a href="#" n:onClick='printHack();'>Map</n:a>
@@ -193,7 +193,7 @@
                                                 </n:ul>
                                             </n:li>
                                             <n:li n:class="dropdown">
-                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" >Help <n:b n:class="caret" /></n:a>
+                                                <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown"  n:onClick="doNothing();" >Help <n:b n:class="caret" /></n:a>
                                                 <n:ul class="dropdown-menu" n:style="margin-left:-100px">
                                                     <n:li>
                                                         <n:a href="#" n:onClick="loadHelp('getting-started');">Getting Started</n:a>
@@ -265,11 +265,11 @@
                 ]]>
                 </html>
             </north>
-            <west title=" " size="${settingsSupplementary.values.menu_default_width}"
+            <west title=" "
                    id="menus" collapsible="true"
                    splittable="false" width="400px">
                 <div id="westChild" vflex="1">
-                    <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >
+                    <div id="westMinimised" visible="false" class="westMinimised" >
                         <div zclass="closebox" zindex="500" left="2px" top="2px">
                             <toolbarbutton
                             id="showLeftMenu"
@@ -285,74 +285,7 @@
                         <borderlayout style="position:absolute;top:0px;left:0px">
                             <north height="189px">
                             <div width="400px">
-                                    <!-- top level menu
-                                      <menupopup id="m_addtomap">
-                                              	<menuitem label="Species" id="btnAddSpecies" />
-                                                	<menuitem label="Areas" id="btnAddArea" />
-                                                	<menuitem label="Layers" id="btnAddLayer" />
-                                                	<menuitem label="Facets" id="btnAddFacet"/>
-                                                	<menuitem label="WMS Layer" id="btnAddWMSLayer"/>
-                                                </menupopup>
 
-                                                <menupopup id="m_tools">
-                                                	<menuitem label="Area Report" id="btnAreaReport" />
-                                                	<menuitem label="Nearest Locality" onClick="mapPortalPage.runNearestLocalityAction(null)"/>
-                                                	<menuitem label="Scatterplot" id="btnAddScatterplot"/>
-                                                	<menuitem label="Scatterplot List" id="btnAddScatterplotList" />
-                                                	<menuitem label="Tabulate" onClick="mapPortalPage.runTabulation(null)"/>
-                                                	<menuitem label="Points to Grid" id="btnSitesBySpecies" />
-                                                	<menuitem label="Classify" id="btnAddAloc" />
-                                                	<menuitem label="Predict" id="btnAddMaxent" />
-                                                	<menuitem label="GDM" id="btnAddGDM"/>
-                                                	<menuitem label="Restore Prior Analysis" onClick="mapPortalPage.importAnalysis(null);"/>
-                                                </menupopup>
-
-                                                <menupopup id="m_import">
-                                                	<menuitem label="Points" onClick="mapPortalPage.importSpecies('points')"/>
-                                                	<menuitem label="Species List" id="btnSpeciesList" />
-                                                	<menuitem label="Areas" onClick="mapPortalPage.importAreas(null);"/>
-                                                	<menuitem label="Restore Prior Analysis" onClick="mapPortalPage.importAnalysis(null);"/>
-                                                </menupopup>
-
-                                                <menupopup id="m_export">
-                                                	<menuitem label="Map" onClick="printHack();"/>
-                                                	<menuitem label="Checklist" onClick="runSpeciesList();"/>
-                                                	<menuitem label="Point Sample" id="btnAddSampling"/>
-                                                	<menuitem label="Areas" onClick="mapPortalPage.exportAreas(null)"/>
-                                                </menupopup>
-
-                                                <menupopup id="m_help">
-                                                	<menuitem label="Getting Started" onClick="loadHelp('getting-started');"/>
-                                                	<menuitem label="Add to Map" onClick="loadHelp('add-to-map');"/>
-                                                	<menuitem label="Tools" onClick="loadHelp('tools');"/>
-                                                	<menuitem label="Import" onClick="loadHelp('import');"/>
-                                                	<menuitem label="Export" onClick="loadHelp('export');"/>
-                                                </menupopup>
-
-                                                        <div class="btn-group" width="400px">
-                                                        	<button class="btn-default dropdown-toggle"
-                                                        		popup="m_addtomap, after_start" iconSclass="caret" width="120px">
-                                                        		Add to Map
-                                                        	</button>
-                                                        	<button class="btn-default dropdown-toggle"
-                                                                popup="m_tools, after_start" iconSclass="caret" width="70px">
-                                                                Tools
-                                                            </button>
-                                                            <button class="btn-default dropdown-toggle"
-                                                                popup="m_import, after_start" iconSclass="caret" width="70px">
-                                                                Import
-                                                            </button>
-                                                            <button class="btn-default dropdown-toggle"
-                                                                popup="m_export, after_start" iconSclass="caret" width="70px">
-                                                                Export
-                                                            </button>
-                                                            <button class="btn-default dropdown-toggle"
-                                                                popup="m_help, after_start" iconSclass="caret" width="70px">
-                                                                Help
-                                                            </button>
-                                                        </div>
-
-                                                        -->
                                                         <div height="38px" />
                                     <div id="activeLayersHolder" width="400px" style="overflow: auto;background:#FFFEF7" height="160px">
                                         <listbox id="activeLayersList" width="100%"/>
@@ -618,16 +551,27 @@ console.log(currentbaselayertxt);
         <textbox id="baseMap" visible="false" />
         <textbox id="currentLayerExtent" visible="false" />
         
-        <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
-        <label id="geoserver_url" value="${settingsSupplementary.values.geoserver_url}" visible="false" />
-        <label id="layers_url" value="${settingsSupplementary.values.layers_url}" visible="false" />
-        <label id="biocache_service_url" value="${settingsSupplementary.values.biocache_service_url}" visible="false" />
-        <label id="biocache_webapp_url" value="${settingsSupplementary.values.biocache_webapp_url}" visible="false" />
-        <label id="bie_url" value="${settingsSupplementary.values.bie_url}" visible="false" />
-        <label id="print_server_url" value="${settingsSupplementary.values.print_server_url}" visible="false" />
-        <label id="webportal_url" value="${settingsSupplementary.values.webportal_url}" visible="false" />
-        <label id="help_url" value="${settingsSupplementary.values.help_url}" visible="false" />
+        <label id="sat_url" visible="false" />
+        <label id="geoserver_url" visible="false" />
+        <label id="layers_url" visible="false" />
+        <label id="biocache_service_url" visible="false" />
+        <label id="biocache_webapp_url" visible="false" />
+        <label id="bie_url" visible="false" />
+        <label id="print_server_url" visible="false" />
+        <label id="webportal_url" visible="false" />
+        <label id="help_url" visible="false" />
         
+<zscript>
+sat_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("sat_url"));
+geoserver_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("geoserver_url"));
+layers_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("layers_url"));
+biocache_service_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("biocache_service_url"));
+biocache_webapp_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("biocache_webapp_url"));
+bie_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("bie_url"));
+print_server_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("print_server_url"));
+webportal_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("webportal_url"));
+help_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("help_url"));
+</zscript>
 
           <!--script defer="false" type="text/javascript"><![CDATA[
             

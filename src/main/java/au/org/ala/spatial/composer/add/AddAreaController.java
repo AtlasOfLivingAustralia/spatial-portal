@@ -105,7 +105,7 @@ public class AddAreaController extends UtilityComposer {
         } else if (cbAreaSelection.getSelectedItem() == ciWKT) {
             windowName = "WEB-INF/zul/add/area/AreaWKT.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciMergeAreas) {
-            windowName = "WEB-INF/zul/add/area/AreaUploadKML.zul";
+            windowName = "WEB-INF/zul/add/area/AreaMerge.zul";
             overlapped = false;
         }
         if (!windowName.contentEquals("")) {

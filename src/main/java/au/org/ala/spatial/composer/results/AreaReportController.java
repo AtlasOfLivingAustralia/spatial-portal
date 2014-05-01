@@ -105,6 +105,8 @@ public class AreaReportController extends UtilityComposer {
 
     public void setReportArea(SelectedArea sa, String name, String displayname, String areaSqKm, double[] boundingBox, boolean includeEndemic) {
         this.selectedArea = sa;
+        sa.getReducedWkt();     //initialize reduced area
+
         this.areaName = name;
         this.areaDisplayName = displayname;
         this.areaSqKm = areaSqKm;
@@ -121,7 +123,7 @@ public class AreaReportController extends UtilityComposer {
             String extras = "";
             extras += "areaSqKm: " + areaSqKm;
             extras += ";boundingBox: " + boundingBox;
-            remoteLogger.logMapAnalysis(displayname, "Tool - Area Report", areaName + "__" + sa.getWkt(), "", "", pid, extras, "0");
+            remoteLogger.logMapAnalysis(displayname, "Tool - Area Report", areaName + "__"  + sa.getReducedWkt(), "", "", pid, extras, "0");
         } catch (Exception e) {
             //logger.error("error logging", e);
         }
@@ -861,7 +863,7 @@ public class AreaReportController extends UtilityComposer {
     public Map<String, Integer> intersectWithSpeciesDistributions(AreaReportItemDTO model) {
         Map<String, Integer> speciesDistributions = new HashMap<String, Integer>();
         try {
-            String wkt = selectedArea.getWkt();
+            String wkt = selectedArea.getReducedWkt();
             if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
@@ -893,7 +895,7 @@ public class AreaReportController extends UtilityComposer {
     public Map<String, String> intersectWithSpeciesChecklists(AreaReportItemDTO areaModel, AreaReportItemDTO spModel) {
         Map<String, String> checklistsCounts = new HashMap<String, String>();
         try {
-            String wkt = selectedArea.getWkt();
+            String wkt = selectedArea.getReducedWkt();
             if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
@@ -934,7 +936,7 @@ public class AreaReportController extends UtilityComposer {
     public Map<String, String> countGazPoints(AreaReportItemDTO model) {
         Map<String, String> gazPointsCounts = new HashMap<String, String>();
         try {
-            String wkt = selectedArea.getWkt();
+            String wkt = selectedArea.getReducedWkt();
             if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
@@ -967,7 +969,7 @@ public class AreaReportController extends UtilityComposer {
     public Map<String, String> countPointsOfInterest(AreaReportItemDTO model) {
         Map<String, String> poiCounts = new HashMap<String, String>();
         try {
-            String wkt = selectedArea.getWkt();
+            String wkt = selectedArea.getReducedWkt();
             if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();

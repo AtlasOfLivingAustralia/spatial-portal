@@ -1,0 +1,45 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="areamergewindow" use="au.org.ala.spatial.composer.add.area.AreaMerge"
+            apply="au.org.ala.spatial.composer.add.area.AreaMerge"
+              style="position:absolute;left:10px;top:10px;overflow:visible"
+              xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="areamergewindow.onClick$btnCancel(null)" style="display: inline" />
+        
+        <caption label="Add Merged Area" />
+        <vbox width="90%">
+        <separator/>
+
+            <hbox width="100%">
+                <div width="90px">
+                    <label value="Area name" sclass="h3" />
+                </div>
+                <div class="input-group">
+                <textbox class="form-control"  id="txtLayerName" width="250px"/>
+                </div>
+            </hbox>
+            <separator />
+
+            <label value="Select areas to merge" />
+            <vbox id="vboxAreas">
+                <checkbox id="cbAreaCurrent" label="Current extent" onCheck="doChecked()" />
+                <checkbox id="cbAreaAustralia" label="Australia" onCheck="doChecked()" />
+            </vbox>
+
+            <div class="btn-group" style="float:right;">
+                <button label="Cancel" id="btnCancel" />
+                <button class="btn-primary" label="Next >" id="btnOk" />
+            </div>
+        </vbox>
+
+    </window>
+</zk>
+

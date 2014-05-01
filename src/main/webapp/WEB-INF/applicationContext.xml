@@ -102,4 +102,7 @@
     <bean id="portalSessionCloner" class="au.org.emii.portal.util.PortalSessionCloner">
         <property name="portalSessionUtilities" ref="portalSessionUtilities"/>
     </bean>
+
+    <bean id="remoteLogger" class="au.org.ala.spatial.logger.RemoteLogger">
+    </bean>
 </beans>

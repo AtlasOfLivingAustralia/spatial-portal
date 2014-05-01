@@ -58,7 +58,7 @@
                                     padding: 1px 2px 0px 0px;
                                 }
                             </style>
-                            <grid id="cpGrid" width="280px" zclass="noborder" style="padding-left:2px;margin-left:65px;" >
+                            <grid id="cpGrid" width="280px" zclass="noborder" style="padding-left:2px;" >
                                 <rows>
                                     <row >
                                         <div style="background-color:#8b0000" height="12px" onClick="layerlegend.selectColour(self)" />
@@ -104,8 +104,20 @@
                                     </row>
                                 </rows>
                             </grid>
+                            <div style="padding-top:15px;">
+                                <label style="color:blue;text-decoration:underline;padding-left:15px;" id="lblColourSliders" value="more"
+                                    onClick='vboxColourSliders.setVisible(!vboxColourSliders.isVisible());
+                                    if(vboxColourSliders.isVisible()) lblColourSliders.setValue("less");
+                                    else lblColourSliders.setValue("more");' />
+                            </div>
+                            <div>
+                                <div width="100%" style="padding-left:10px; float:right; margin-top:-3px">
+                                    <image id="legendImg" width="30px" height="30px" />
+                                </div>
+                            </div>
                         </hbox>
-                        <vbox>
+
+                        <vbox id="vboxColourSliders" visible="false">
                             <hbox>
                                 <div style="padding-top:10px">
                                     <hbox>
@@ -142,11 +154,7 @@
                                         </div>
                                     </hbox>
                                 </div>
-                                <div>
-                                    <div width="100%" style="padding-top:8px; padding-left:15px; float:right;">
-                                        <image id="legendImg" width="60px" height="60px" />
-                                    </div>
-                                </div>
+
                             </hbox>
                         </vbox>
                     </div>
@@ -228,7 +236,12 @@
                 <separator />
                 <div id="divAnimation" visible="false">
                     <label value="Animation" sclass="h2" style="padding-top:0px;" />
-                    <hbox>
+                    <label style="color:blue;padding-left:15px;padding-right:3px;text-decoration:underline" value="show" id="lblAnimationShow"
+                    onClick='hboxAnimation.setVisible(!hboxAnimation.isVisible());
+                    if(hboxAnimation.isVisible()) lblAnimationShow.setValue("hide");
+                    else lblAnimationShow.setValue("show");' />
+                    <separator />
+                    <hbox id="hboxAnimation" visible="false">
                         <div width="315px">
                             <vbox>
                                 <hbox>

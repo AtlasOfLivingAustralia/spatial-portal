@@ -6,7 +6,10 @@ package au.org.ala.spatial.util;
 
 import au.org.ala.spatial.data.BiocacheQuery;
 import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
+import com.vividsolutions.jts.operation.valid.IsValidOp;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.ala.layers.legend.Facet;
@@ -535,31 +538,28 @@ public class Util {
         return content.toString();
     }
 
-    public static Facet getFacetForObject(JSONObject jo, String name) {
-        //get field.id.
-        //JSONObject jo = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + pid));
-        String fieldId = jo.getString("fid");
+    public static Facet getFacetForObject(String value, JSONObject field) {
+        //can get the facet if value is a unique name in field and there are biocache records a
 
-        //get field objects.
-        String objects = Util.readUrl(CommonData.layersServer + "/field/" + fieldId);
-        String lookFor = "\"name\":\"" + name + "\"";
-
-        //create facet if name is unique.
-        int p1 = objects.indexOf(lookFor);
-        if (p1 > 0) {
-            int p2 = objects.indexOf(lookFor, p1 + 1);
-            if (p2 < 0) {
-                /* TODO: use correct replacement in 'name' for " characters */
-                /* this function is also in AreaRegionSelection */
-                Facet f = new Facet(fieldId, "\"" + name + "\"", true);
-
-                //test if this facet is in solr
-                ArrayList<Facet> facets = new ArrayList<Facet>();
-                facets.add(f);
-                if (new BiocacheQuery(null, null, null, facets, false, null).getOccurrenceCount() > 0) {
-                    return f;
-                }
+        int count = 0;
+        for(Object o : field.getJSONArray("objects")) {
+            if(((JSONObject)o).getString("name") != null && ((JSONObject)o).getString("name").equals(value)) {
+                count++;
             }
+        }
+
+        if(count != 1) {
+            return null;
+        }
+
+        //test facet
+        Facet f = new Facet(field.getString("id"), "\"" + value + "\"", true);
+
+        //test if this facet is in biocache with some matches
+        ArrayList<Facet> facets = new ArrayList<Facet>();
+        facets.add(f);
+        if (new BiocacheQuery(null, null, null, facets, false, null).getOccurrenceCount() > 0) {
+            return f;
         }
 
         return null;
@@ -642,5 +642,55 @@ public class Util {
         } else {
             return true;
         }
+    }
+
+    public static String reduceWKT(String wkt) {
+        if (wkt == null) {
+            return wkt;
+        }
+        try {
+            WKTReader wktReader = null;
+            com.vividsolutions.jts.geom.Geometry g = null;
+
+            //reduction attempts, 3 decimal places, 2, 1, .2 increments, .5 increments,
+            // and finally, convert to 1/1.001 increments (expected to be larger) then back to 1 decimal place (hopefully smaller)
+            // to make the WKT string shorter.
+            double [] reductionValues = {1000,100,10,5,2,1.001,2};
+            int attempt = 0;
+            while (wkt.length() > Integer.parseInt(CommonData.settings.getProperty("max_q_wkt_length")) && attempt < reductionValues.length) {
+                if(g == null) {
+                    wktReader = new WKTReader();
+                    g = wktReader.read(wkt);
+                }
+
+                int start_length = wkt.length();
+
+                g = com.vividsolutions.jts.precision.GeometryPrecisionReducer.reduce(g, new PrecisionModel(reductionValues[attempt])); //reduce to 1 decimal place
+
+                //stop if something is wrong and use previous iteration WKT
+                if(g == null)  {
+                    break;
+                }
+                String newwkt = g.toString();
+                if(newwkt == null || newwkt.length() < 100) {
+                    break;
+                }
+                IsValidOp op = new IsValidOp(g);
+                if(!op.isValid()) {
+                    break;
+                }
+
+                wkt = newwkt;
+                logger.info("reduced WKT from string length " + start_length + " to " + wkt.length());
+
+                attempt++;
+
+            }
+            logger.info("user WKT of length: " + wkt.length());
+        } catch (Exception e) {
+            logger.error("failed to reduce WKT size", e);
+        }
+
+        return wkt;
     }
 }

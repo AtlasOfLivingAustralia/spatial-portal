@@ -370,6 +370,27 @@ public class EnvironmentalList extends Listbox {
         updateDistances();
     }
 
+    public void selectLayersAndDisable(String[] layers) {
+        this.setMultiple(true);
+
+        String[] firstDomain = getFirstDomain();
+
+        for (int i = 0; i < listEntries.size(); i++) {
+            for (int j = 0; j < layers.length; j++) {
+                if (listEntries.get(i).displayname.equalsIgnoreCase(layers[j])
+                        || listEntries.get(i).name.equalsIgnoreCase(layers[j])) {
+                    if (!getItemAtIndex(i).isSelected() && (!singleDomain || isSameDomain(firstDomain, getDomain(listEntries.get(i).layerObject)))) {
+                        toggleItemSelection(getItemAtIndex(i));
+                        getItemAtIndex(i).setDisabled(true);
+                    }
+                    break;
+                }
+            }
+        }
+
+        updateDistances();
+    }
+
     @Override
     public void clearSelection() {
         updateDistances();

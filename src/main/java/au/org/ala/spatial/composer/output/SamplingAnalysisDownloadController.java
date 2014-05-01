@@ -10,7 +10,7 @@ import org.zkoss.zk.ui.event.Event;
 /**
  * @author ajay
  */
-public class SamplingAnalysisDownloadWCController extends UtilityComposer {
+public class SamplingAnalysisDownloadController extends UtilityComposer {
 
     public void onClick$btnDownload(Event event) {
         getMapComposer().downloadSecond(event);

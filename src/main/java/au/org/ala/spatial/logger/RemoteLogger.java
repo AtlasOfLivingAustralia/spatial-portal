@@ -196,10 +196,10 @@ public class RemoteLogger {
         try {
 
             if (Util.isLoggedIn()) {
-                String url = logger_service + "/log/view.json?"
-                        + "id=" + logId;
+                String url = logger_service + "/app/view/"
+                         + logId + ".json"
                 //+ "&email=" + URLEncoder.encode(Util.getUserEmail(), "UTF-8")
-                //+ "&appid=" + URLEncoder.encode(appid,"UTF-8");
+                        + "?appid=" + URLEncoder.encode(appid,"UTF-8");
 
 
                 HttpClient client = new HttpClient();

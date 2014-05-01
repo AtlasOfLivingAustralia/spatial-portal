@@ -65,6 +65,7 @@
 
     <system-config>
         <id-generator-class>zk.extra.IdGeneratorImpl</id-generator-class>
+        <max-upload-size>-1</max-upload-size>
     </system-config>
 
     <language-config>

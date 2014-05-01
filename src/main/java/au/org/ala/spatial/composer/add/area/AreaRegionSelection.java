@@ -110,16 +110,16 @@ public class AreaRegionSelection extends AreaToolComposer {
         }
 
         String fid = obj.getString("fid");
-        String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
+        JSONObject field = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + fid));
 
         MapLayerMetadata md = mapLayer.getMapLayerMetadata();
         md.setBbox(dbb);
 
-        md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
+        md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + field.getString("spid"));
 
         Facet facet = null;
         if (!point && mapLayer.getFacets() == null) {
-            facet = Util.getFacetForObject(jo, label);
+            facet = Util.getFacetForObject(label, field);
             if (facet != null) {
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(facet);

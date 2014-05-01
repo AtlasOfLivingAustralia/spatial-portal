@@ -164,7 +164,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void zoomToExtent(MapLayer selectedLayer) {
-        if (selectedLayer != null && selectedLayer.isDisplayed()) {
+        if (selectedLayer != null) {
             logger.debug("zooming to extent " + selectedLayer.getId());
             if (selectedLayer.getType() == LayerUtilities.GEOJSON
                     || selectedLayer.getType() == LayerUtilities.WKT
@@ -177,7 +177,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void applyChange(MapLayer selectedLayer) {
-        if (selectedLayer != null && selectedLayer.isDisplayed()) {
+        if (selectedLayer != null) {
             /*
              * different path for each type layer 1. symbol 2. classification
              * legend 3. prediction legend 4. other (wms)
@@ -244,7 +244,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         }
                     }
 
-                    reloadMapLayerNowAndIndexes(selectedLayer);
+                    if(selectedLayer.isDisplayed()) reloadMapLayerNowAndIndexes(selectedLayer);
                 }
             } else if (selectedLayer.getSelectedStyle() != null) {
                 /*
@@ -262,11 +262,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             null, LayerUtilities.ALOC);  //bbox is null, not required for redraw
                 } else {
                     //redraw
-                    reloadMapLayerNowAndIndexes(selectedLayer);
+                    if(selectedLayer.isDisplayed()) reloadMapLayerNowAndIndexes(selectedLayer);
                 }
             } else {// if (selectedLayer.getCurrentLegendUri() != null) {
                 //redraw wms layer if opacity changed
-                reloadMapLayerNowAndIndexes(selectedLayer);
+                if(selectedLayer.isDisplayed()) reloadMapLayerNowAndIndexes(selectedLayer);
             }
         }
     }
@@ -862,7 +862,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
             String bbox = obj.getString("bbox");
             String fid = obj.getString("fid");
-            String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
+
+            JSONObject field = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + fid));
+
+            String spid = field.getString("spid");
 
             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
 
@@ -879,7 +882,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
 
-            Facet facet = Util.getFacetForObject(obj, areaName);
+            Facet facet = Util.getFacetForObject(areaName, field);
             if (facet != null) {
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(facet);
@@ -2118,7 +2121,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             Facet facet = null;
             if (jo.containsKey("pid") && jo.containsKey("area_name")) {
-                facet = Util.getFacetForObject(jo, jo.getString("area_name"));
+                JSONObject object = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + jo.containsKey("pid")));
+                JSONObject field = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + object.get("fid")));
+
+                facet = Util.getFacetForObject(jo.getString("area_name"), field);
             }
             if (facet != null) {
                 ArrayList<Facet> facets = new ArrayList<Facet>();
@@ -2128,7 +2134,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
 
             try {
-                double[][] bb = SimpleShapeFile.parseWKT(jo.getString("geometry")).getBoundingBox();
+                double[][] bb = null;
+
+                if (jo.containsKey("bounding_box")){
+                    bb = SimpleShapeFile.parseWKT(jo.getString("bounding_box")).getBoundingBox();
+                } else {
+                    bb = SimpleShapeFile.parseWKT(jo.getString("geometry")).getBoundingBox();
+                }
                 ArrayList<Double> bbox = new ArrayList<Double>();
                 bbox.add(bb[0][0]);
                 bbox.add(bb[0][1]);

@@ -3,6 +3,8 @@ package au.org.ala.spatial.composer.input;
 import au.org.ala.spatial.composer.progress.ProgressController;
 import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.ListEntry;
+import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
@@ -15,9 +17,11 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.*;
 
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -39,6 +43,7 @@ public class ImportAnalysisController extends UtilityComposer {
     boolean sxsOccurrenceDensity = false;
     boolean sxsSpeciesDensity = false;
     String[] gdmEnvlist;
+    Div divPriorAnalysis;
 
     Listbox lbLog;
 
@@ -47,8 +52,6 @@ public class ImportAnalysisController extends UtilityComposer {
         super.afterCompose();
 
         try {
-
-            remoteLogger = new RemoteLogger();
             JSONObject jo = remoteLogger.getLogCSV();
 
 
@@ -58,29 +61,128 @@ public class ImportAnalysisController extends UtilityComposer {
                 for (Object o : jo.getJSONArray("abe")) {
                     JSONObject j = (JSONObject) o;
 
-                    String[] r = new String[4];
+                    String[] r = new String[5];
                     r[0] = j.containsKey("id") ? j.getString("id") : "";
-                    r[1] = j.containsKey("time") ? String.format("dd/mm/yyyy hh:MM:ss", new Date(j.getLong("time"))) : "";
-                    r[2] = j.containsKey("category2") ? j.getString("category2") : "";
-                    r[3] = j.containsKey("service") ? j.getJSONObject("service").toString() : "";
+                    r[1] = j.containsKey("category2") ? j.getString("category2") : "";
+                    r[2] = j.containsKey("time") ? new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(new Date(j.getLong("time"))) : "";
+                    r[3] = "";
+                    r[4] = "";
 
-                    logEntries.add(r);
+                    if(r[1].equalsIgnoreCase("Classification")
+                            || r[1].equalsIgnoreCase("GDM")
+                            || r[1].equalsIgnoreCase("Prediction")
+                            || r[1].equalsIgnoreCase("Species to Grid")) {
+
+
+                        JSONObject ji = remoteLogger.getLogItem(r[0]);
+
+                        try {
+                            r[4] = ji.getJSONObject("action").getJSONObject("service").getString("processid");
+                            r[3] = "true";
+                            refNum.setValue(r[4]);
+
+                            pid = r[4];
+
+                            if (getJobStatus().contains("job does not exist")) {
+                                logEntries.add(r);
+                            }
+
+                        } catch (Exception e) {
+                            r[4] = "unavailable";
+                            r[3] = "false";
+                        }
+                    }
                 }
 
-                lbLog.setModel(new SimpleListModel(logEntries));
+                if(logEntries.size() > 0) {
+                    divPriorAnalysis.setVisible(true);
+
+                    lbLog.setModel(new SimpleListModel(logEntries));
+
+                    setRenderer();
+                }
+
             }
         } catch (Exception e) {
             logger.error("getting log did not work", e);
         }
     }
 
+    void setRenderer() {
+        lbLog.setItemRenderer(new ListitemRenderer() {
+
+            @Override
+            public void render(Listitem li, Object data, int item_idx) {
+                String[] d = (String[]) data;
+
+                li.setValue(d);
+
+                Listcell n = new Listcell(d[1]);
+                n.setParent(li);
+
+                n = new Listcell(d[2]);
+                n.setParent(li);
+
+                n = new Listcell();
+                Image img = new Image();
+                img.setSrc("/img/information.png");
+
+                img.addEventListener("onClick", new EventListener() {
+
+                    @Override
+                    public void onEvent(Event event) throws Exception {
+
+                        String[] s = (String[]) ((Listitem) event.getTarget().getParent().getParent()).getValue();
+
+                        String metadata = null;
+                        Event ev = null;
+                        if(s[1].equalsIgnoreCase("Classification")) {
+                            metadata = CommonData.settings.getProperty("sat_url") + "/output/aloc/" + refNum.getValue() + "/classification.html";
+                        } else if(s[1].equalsIgnoreCase("Prediction")) {
+                            metadata = CommonData.settings.getProperty("sat_url") + "/output/maxent/" + refNum.getValue() + "/species.html";
+                        } else if(s[1].equalsIgnoreCase("GDM")) {
+                            metadata = CommonData.settings.getProperty("sat_url") + "/output/gdm/" +refNum.getValue() + "/gdm.html";
+                        } else if(s[1].equalsIgnoreCase("Species to Grid")) {
+
+                            String link1 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/sxs_metadata.html";
+                            //and or
+                            String link2 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/odensity_metadata.html";
+                            //and or
+                            String link3 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/srichness_metadata.html";
+
+                            String html = "<html><body>";
+                            if (Util.readUrl(link1).length() > 0) {
+                                html += "<a target='_blank' href='" + link1 + "' >Points to Grid (opens in a new tab)</a><br>";
+                            }
+                            if (Util.readUrl(link2).length() > 0) {
+                                html += "<a target='_blank' href='" + link2 + "' >Occurrence Density (opens in a new tab)</a><br>";
+                            }
+                            if (Util.readUrl(link3).length() > 0) {
+                                html += "<a target='_blank' href='" + link3 + "' >Species Richness (opens in a new tab)</a><br>";
+                            }
+                            html += "</body></html>";
+
+                            ev = new Event("onClick", null, "Points to Grid\n" + html);
+                        }
+                        logger.debug("metadata: " + metadata);
+
+                        if(metadata != null) {
+                            getMapComposer().activateLink(metadata, "Metadata", false);
+                        } else if(ev != null) {
+                            getMapComposer().openHTML(ev);
+                        }
+                    }
+                });
+                img.setParent(n);
+                n.setParent(li);
+            }
+        });
+    }
+
     public void onSelect$lbLog(Event event) {
-        Listitem li = (Listitem) event.getTarget();
-        String[] r = (String[]) li.getValue();
-
-        JSONObject jo = remoteLogger.getLogItem(r[0]);
-
-        refNum.setValue(jo.getJSONObject("service").getString("processid"));
+        Listitem li = lbLog.getSelectedItem();
+        String[] s = (String[]) li.getValue();
+        refNum.setValue(s[4]);
     }
 
     public void onClick$btnOk(Event event) {
@@ -276,6 +378,27 @@ public class ImportAnalysisController extends UtilityComposer {
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
             logger.debug(slist);
+            return slist;
+        } catch (Exception e) {
+            logger.error("error getting job type for job pid=" + pid, e);
+        }
+        return "";
+    }
+
+    String getJobStatus() {
+        try {
+            StringBuilder sbProcessUrl = new StringBuilder();
+            sbProcessUrl.append(CommonData.satServer).append("/ws/job").append("?pid=").append(pid);
+
+            logger.debug(sbProcessUrl.toString());
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            get.addRequestHeader("Accept", "application/json");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            //logger.debug(slist);
             return slist;
         } catch (Exception e) {
             logger.error("error getting job type for job pid=" + pid, e);
