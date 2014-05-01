@@ -47,6 +47,8 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author Adam
@@ -135,7 +137,7 @@ public class UserDataService {
                 } else if (upHeader.length > 2 && i < 3) {
                     header = defaultHeader[i];
                 }
-                fields.add(new QueryField("f" + String.valueOf(i), header, QueryField.FieldType.AUTO));
+                fields.add(new QueryField("__f" + String.valueOf(i), header, QueryField.FieldType.AUTO));
                 fields.get(fields.size() - 1).ensureCapacity(sizeToCheck);
             }
 
@@ -263,9 +265,11 @@ public class UserDataService {
                             && points[i + 1] >= lat1 && points[i + 1] <= lat2) {
                         if (count == start) {
                             StringBuilder sb = new StringBuilder();
+                            sb.append("{\"totalRecords\":<totalCount>,\"occurrences\":[{");
+                            int start_length = sb.length();
                             for (QueryField qf : fields) {
-                                if (sb.length() == 0) {
-                                    sb.append("{\"totalRecords\":<totalCount>,\"occurrences\":[{");
+                                if (sb.length() == start_length) {
+                                    //
                                 } else {
                                     sb.append(",");
                                 }
@@ -679,12 +683,31 @@ public class UserDataService {
     @RequestMapping(value = WS_USERDATA_SAMPLE, method = {RequestMethod.POST, RequestMethod.GET})
     public
     @ResponseBody
-    String samplezip(HttpServletRequest req) {
+    void samplezip(HttpServletRequest req, HttpServletResponse resp) {
         RecordsLookup.setUserDataDao(userDataDao);
 
-        String id = req.getParameter("id");
+        String id = req.getParameter("q");
         String fields = req.getParameter("fl");
 
-        return userDataDao.getSampleZip(id, fields);
+        String sample = userDataDao.getSampleZip(id, fields);
+
+        try {
+            // Create the ZIP file
+            ZipOutputStream out = new ZipOutputStream(resp.getOutputStream());
+
+            //put entry
+            out.putNextEntry(new ZipEntry("sample.csv"));
+            out.write(sample.getBytes());
+            out.closeEntry();
+
+            resp.setContentType("application/zip");
+            resp.setHeader("Content-Disposition", "attachment; filename=\"sample.zip\"");
+
+            // Complete the ZIP file
+            out.close();
+        } catch (Exception e) {
+            logger.error("failed to zip sampling",e);
+        }
+
     }
 }
