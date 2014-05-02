@@ -50,13 +50,8 @@ public class AreaRegionSelection extends AreaToolComposer {
         }
 
         JSONObject jo = ci.getValue();
-        //TODO: why is "cl" needed for grid class layers?  fix layers-store/layers-service
-        JSONObject obj;
-        if (jo.getString("pid").contains(":")) {
-            obj = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + "cl" + jo.getString("pid")));
-        } else {
-            obj = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
-        }
+        JSONObject obj = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
+
         String label = ci.getLabel();
 
         //add feature to the map as a new layer
@@ -110,22 +105,34 @@ public class AreaRegionSelection extends AreaToolComposer {
         }
 
         String fid = obj.getString("fid");
-        JSONObject field = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + fid));
 
         MapLayerMetadata md = mapLayer.getMapLayerMetadata();
         md.setBbox(dbb);
 
-        md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + field.getString("spid"));
 
         Facet facet = null;
         if (!point && mapLayer.getFacets() == null) {
-            facet = Util.getFacetForObject(label, field);
+            //only get field data if it is an intersected layer (to exclude layers containing points)
+            if(CommonData.getLayer(fid) != null) {
+                JSONObject fieldJson = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + fid));
+
+                md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + fieldJson.getString("spid"));
+
+                facet = Util.getFacetForObject(label, fieldJson);
+            }
+
             if (facet != null) {
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(facet);
                 mapLayer.setFacets(facets);
             }
         }
+
+        mapLayer.setRedVal(255);
+        mapLayer.setGreenVal(0);
+        mapLayer.setBlueVal(0);
+        mapLayer.setDynamicStyle(true);
+        getMapComposer().updateLayerControls();
 
         ok = true;
 

@@ -205,13 +205,21 @@ public class AreaMapPolygon extends AreaToolComposer {
                         ml.setRedVal(255);
                         ml.setGreenVal(0);
                         ml.setBlueVal(0);
+                        ml.setDynamicStyle(true);
+                        getMapComposer().updateLayerControls();
 
                         mapLayer.setPolygonLayer(true);
 
                         JSONObject objJson = JSONObject.fromObject(readUrl(CommonData.layersServer + "/object/" + feature.get("pid")));
-                        JSONObject fieldJson = JSONObject.fromObject(readUrl(CommonData.layersServer + "/field/" + objJson.get("fid")));
 
-                        Facet facet = Util.getFacetForObject(feature.get("value"), fieldJson);
+
+                        Facet facet = null;
+                        //only get field data if it is an intersected layer (to exclude layers containing points)
+                        if(CommonData.getLayer((String) objJson.get("fid")) != null) {
+                            JSONObject fieldJson = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + objJson.get("fid")));
+
+                            facet = Util.getFacetForObject(feature.get("value"), fieldJson);
+                        }
 
                         if (facet != null) {
                             ArrayList<Facet> facets = new ArrayList<Facet>();

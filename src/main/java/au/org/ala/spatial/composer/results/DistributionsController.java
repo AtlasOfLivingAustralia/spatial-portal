@@ -434,18 +434,8 @@ public class DistributionsController extends UtilityComposer {
             try {
                 if (jo != null && jo.containsKey("pid") && jo.containsKey("area_name")) {
                     String fid;
-                    //TODO: fix requirement for "cl" with grid class layers
-                    if (jo.getString("pid").contains(":")) {
-                        //TODO: as with "cl", this is not needed after layers-store/layers-service fix
-                        String pid = jo.getString("pid");
-                        if (pid.indexOf(":") != pid.lastIndexOf(":")) {
-                            pid = pid.substring(0, pid.lastIndexOf(":"));
-                            jo.put("pid", pid);
-                        }
-                        fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/cl" + jo.getString("pid")));
-                    } else {
-                        fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
-                    }
+                    fid = Util.getStringValue(null, "fid", Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
+
                     String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.layersServer + "/fields"));
                     if (spid != null) {
                         String layerInfoUrl = CommonData.layersServer + "/layers/view/more/" + spid;

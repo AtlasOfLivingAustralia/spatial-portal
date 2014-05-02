@@ -863,11 +863,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String bbox = obj.getString("bbox");
             String fid = obj.getString("fid");
 
-            JSONObject field = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + fid));
-
-            String spid = field.getString("spid");
-
             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+
+            Facet facet = null;
+            if(CommonData.getLayer(fid) != null) {
+                JSONObject field = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + fid));
+
+                String spid = field.getString("spid");
+                md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
+
+                facet = Util.getFacetForObject(areaName, field);
+            }
 
             try {
                 double[][] bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
@@ -880,9 +886,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } catch (Exception e) {
                 logger.debug("failed to parse: " + bbox, e);
             }
-            md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
 
-            Facet facet = Util.getFacetForObject(areaName, field);
+
             if (facet != null) {
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(facet);
@@ -892,6 +897,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 //not in biocache, so add as WKT
                 mapLayer.setWKT(Util.readUrl(CommonData.layersServer + "/shape/wkt/" + pid));
             }
+
+            mapLayer.setRedVal(255);
+            mapLayer.setGreenVal(0);
+            mapLayer.setBlueVal(0);
+            mapLayer.setDynamicStyle(true);
+            getMapComposer().updateLayerControls();
         }
 
         return mapLayer;
@@ -2122,9 +2133,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Facet facet = null;
             if (jo.containsKey("pid") && jo.containsKey("area_name")) {
                 JSONObject object = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + jo.containsKey("pid")));
-                JSONObject field = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + object.get("fid")));
 
-                facet = Util.getFacetForObject(jo.getString("area_name"), field);
+                //only get field data if it is an intersected layer (to exclude layers containing points)
+                if(CommonData.getLayer((String) object.get("fid")) != null) {
+                    JSONObject field = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + object.get("fid")));
+
+                    facet = Util.getFacetForObject(jo.getString("area_name"), field);
+                }
             }
             if (facet != null) {
                 ArrayList<Facet> facets = new ArrayList<Facet>();
@@ -2155,6 +2170,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             mapLayer.setRedVal(255);
             mapLayer.setGreenVal(0);
             mapLayer.setBlueVal(0);
+            mapLayer.setDynamicStyle(true);
 
         } catch (Exception e) {
             logger.error("error setting up distributions map layer", e);

@@ -478,6 +478,9 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             ml.setRedVal(255);
             ml.setGreenVal(0);
             ml.setBlueVal(0);
+            ml.setDynamicStyle(true);
+            ml.setPolygonLayer(true);
+            getMapComposer().updateLayerControls();
 
             //make the metadata?
             StringBuilder sb = new StringBuilder();

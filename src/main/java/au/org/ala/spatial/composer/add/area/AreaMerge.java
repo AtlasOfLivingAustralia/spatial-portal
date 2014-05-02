@@ -125,7 +125,7 @@ public class AreaMerge extends AreaToolComposer {
     }
 
     void mergeAreas() {
-//        ArrayList<Facet> facets = new ArrayList<Facet>();
+        ArrayList<Facet> facets = new ArrayList<Facet>();
         ArrayList<Geometry> wkt = new ArrayList<Geometry>();
         WKTReader wktReader = new WKTReader();
 
@@ -141,9 +141,10 @@ public class AreaMerge extends AreaToolComposer {
                 layer_display_names += ml.getDisplayName();
 
                 if(ml != null) {
-//                    if (ml.getFacets() != null) {
-//                        facets.addAll(ml.getFacets());
-//                    } else {
+                    if (ml.getFacets() != null) {
+                        facets.addAll(ml.getFacets());
+                    }
+//                  else {
                         try {
                             //get actual WKT when 'envelope' is specified
                             String w = ml.getWKT();
@@ -193,13 +194,25 @@ public class AreaMerge extends AreaToolComposer {
         }
 
         String finalWkt = (geometry == null)?null:geometry.toString();
-        finalWkt = Util.reduceWKT(finalWkt);
+        //finalWkt = Util.reduceWKT(finalWkt);
 
         MapComposer mc = getMapComposer();
 
         String layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
         MapLayer mapLayer = mc.addWKTLayer(finalWkt, layerName, txtLayerName.getValue());
 
+        //if possible, use facets instead of WKT with biocache
+        if(wkt.size() == facets.size()) {
+            //change to a single OR facet.
+            //Because all facet areas are single or multiple, ORs just need to OR for joining.
+            String fq = facets.get(0).toString();
+            for(int i=1;i<facets.size();i++) {
+                fq += " OR " + facets.get(i).toString();
+            }
+            ArrayList<Facet> array = new ArrayList<Facet>();
+            array.add(Facet.parseFacet(fq));
+            mapLayer.setFacets(array);
+        }
         DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         java.util.Calendar calendar = java.util.Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());

@@ -33,7 +33,7 @@
             </grid>
             <separator />
 
-            <div class="btn-group">
+            <div class="btn-group" style="padding-right:20px">
                 <button label="Close" id="btnCancel"/>
             </div>
         </vbox>

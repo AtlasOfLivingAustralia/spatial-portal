@@ -326,8 +326,10 @@ public class Util {
                 double shapearea = 0;
 
                 for (String area : areas) {
-                    area = StringUtils.replace(area, "MULTIPOLYGON((", "");
-                    area = StringUtils.replace(area, "POLYGON(", "");
+                    area = StringUtils.replace(area, " (", "");
+                    area = StringUtils.replace(area, ", ", ",");
+                    area = StringUtils.replace(area, "MULTIPOLYGON", "");
+                    area = StringUtils.replace(area, "POLYGON", "");
                     area = StringUtils.replace(area, ")", "");
                     area = StringUtils.replace(area, "(", "");
 
@@ -633,6 +635,10 @@ public class Util {
             System.out.println("No user available");
         }
 
+        if (useremail == null) {
+            return "guest@ala.org.au";
+        }
+
         return useremail;
     }
 
@@ -691,6 +697,6 @@ public class Util {
             logger.error("failed to reduce WKT size", e);
         }
 
-        return wkt;
+        return wkt.replace(" (","(").replace(", ",",");
     }
 }

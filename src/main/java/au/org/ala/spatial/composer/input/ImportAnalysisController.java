@@ -6,6 +6,7 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.ListEntry;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 
@@ -32,6 +33,7 @@ public class ImportAnalysisController extends UtilityComposer {
 
     private static Logger logger = Logger.getLogger(ImportAnalysisController.class);
 
+    private LanguagePack languagePack = null;
     RemoteLogger remoteLogger;
     Textbox refNum;
     String pid;
@@ -66,25 +68,29 @@ public class ImportAnalysisController extends UtilityComposer {
                     r[1] = j.containsKey("category2") ? j.getString("category2") : "";
                     r[2] = j.containsKey("time") ? new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(new Date(j.getLong("time"))) : "";
                     r[3] = "";
-                    r[4] = "";
+                    r[4] = j.containsKey("service") && j.getJSONObject("service").containsKey("processid")? j.getJSONObject("service").getString("processid") : "";
 
-                    if(r[1].equalsIgnoreCase("Classification")
+                    if(r[4].length() > 0 && !r[4].equals("-1") &&
+                            (r[1].equalsIgnoreCase("Classification")
                             || r[1].equalsIgnoreCase("GDM")
                             || r[1].equalsIgnoreCase("Prediction")
-                            || r[1].equalsIgnoreCase("Species to Grid")) {
-
-
-                        JSONObject ji = remoteLogger.getLogItem(r[0]);
+                            || r[1].equalsIgnoreCase("Species to Grid"))) {
 
                         try {
-                            r[4] = ji.getJSONObject("action").getJSONObject("service").getString("processid");
                             r[3] = "true";
                             refNum.setValue(r[4]);
 
                             pid = r[4];
 
-                            if (getJobStatus().contains("job does not exist")) {
-                                logEntries.add(r);
+                            if (!getJobStatus().contains("job does not exist")) {
+                                //not sure why, but sometimes data is missing even when the job exists
+                                if( hasValidMetadata(r) ) {
+                                    logEntries.add(r);
+                                }
+                            } else {
+                                //(getLogCSV orders with most recent first)
+                                // older jobs don't exist, stop checking
+                                break;
                             }
 
                         } catch (Exception e) {
@@ -106,6 +112,8 @@ public class ImportAnalysisController extends UtilityComposer {
         } catch (Exception e) {
             logger.error("getting log did not work", e);
         }
+
+        refNum.setValue("");
     }
 
     void setRenderer() {
@@ -124,10 +132,9 @@ public class ImportAnalysisController extends UtilityComposer {
                 n.setParent(li);
 
                 n = new Listcell();
-                Image img = new Image();
-                img.setSrc("/img/information.png");
+                Html info = new Html(languagePack.getLang("layer_info_icon_html"));
 
-                img.addEventListener("onClick", new EventListener() {
+                info.addEventListener("onClick", new EventListener() {
 
                     @Override
                     public void onEvent(Event event) throws Exception {
@@ -173,10 +180,46 @@ public class ImportAnalysisController extends UtilityComposer {
                         }
                     }
                 });
-                img.setParent(n);
+                info.setParent(n);
                 n.setParent(li);
             }
         });
+    }
+
+    boolean hasValidMetadata(String [] s) {
+        String metadata = null;
+        Event ev = null;
+        if(s[1].equalsIgnoreCase("Classification")) {
+            metadata = CommonData.settings.getProperty("sat_url") + "/output/aloc/" + refNum.getValue() + "/classification.html";
+        } else if(s[1].equalsIgnoreCase("Prediction")) {
+            metadata = CommonData.settings.getProperty("sat_url") + "/output/maxent/" + refNum.getValue() + "/species.html";
+        } else if(s[1].equalsIgnoreCase("GDM")) {
+            metadata = CommonData.settings.getProperty("sat_url") + "/output/gdm/" +refNum.getValue() + "/gdm.html";
+        } else if(s[1].equalsIgnoreCase("Species to Grid")) {
+
+            String link1 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/sxs_metadata.html";
+            //and or
+            String link2 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/odensity_metadata.html";
+            //and or
+            String link3 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/srichness_metadata.html";
+
+            if (Util.readUrl(link1).length() > 0) {
+                return true;
+            }
+            if (Util.readUrl(link2).length() > 0) {
+                return true;
+            }
+            if (Util.readUrl(link3).length() > 0) {
+                return true;
+            }
+        }
+
+        if(metadata != null) {
+            return Util.readUrl(metadata).length() > 0;
+        }
+
+
+        return false;
     }
 
     public void onSelect$lbLog(Event event) {
