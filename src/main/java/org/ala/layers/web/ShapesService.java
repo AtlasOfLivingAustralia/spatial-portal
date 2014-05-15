@@ -215,7 +215,7 @@ public class ShapesService {
         return processGeoJSONRequest(json, pid);
     }
 
-    private Map<String, Object> processWKTRequest(String json, Integer pid) {
+    private Map<String, Object> processWKTRequest(String json, Integer pid, boolean namesearch) {
         Map<String, Object> retMap = new HashMap<String, Object>();
 
         JSONRequestBodyParser reqBodyParser = new JSONRequestBodyParser();
@@ -248,7 +248,7 @@ public class ShapesService {
                     objectDao.updateObjectNames();
                     retMap.put("updated", true);
                 } else {
-                    String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, user_id);
+                    String generatedPid = objectDao.createUserUploadedObject(wkt, name, description, user_id, namesearch);
                     objectDao.updateObjectNames();
                     retMap.put("id", Integer.parseInt(generatedPid));
                 }
@@ -269,15 +269,19 @@ public class ShapesService {
     // Create from WKT
     @RequestMapping(value = "/shape/upload/wkt", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> uploadWKT(@RequestBody String json) throws Exception {
-        return processWKTRequest(json, null);
+    public Map<String, Object> uploadWKT(@RequestBody String json
+            , @RequestParam(value = "namesearch", required = false, defaultValue = "true") Boolean namesearch
+            ) throws Exception {
+        return processWKTRequest(json, null, namesearch);
     }
 
     // Create from WKT
     @RequestMapping(value = "/shape/upload/wkt/{pid}", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> updateWithWKT(@RequestBody String json, @PathVariable("pid") int pid) throws Exception {
-        return processWKTRequest(json, pid);
+    public Map<String, Object> updateWithWKT(@RequestBody String json, @PathVariable("pid") int pid
+            , @RequestParam(value = "namesearch", required = false, defaultValue = "true") Boolean namesearch
+            ) throws Exception {
+        return processWKTRequest(json, pid, namesearch);
     }
 
     // UploadShapeFile
