@@ -4,12 +4,12 @@
 	<groupId>ala</groupId>
 	<artifactId>layers-service</artifactId>
 	<packaging>war</packaging>
-	<version>1.0</version>
+	<version>1.1-SNAPSHOT</version>
 	<name>ALA Spatial Layers Service</name>
 	<url>http://www.ala.org.au</url>
         
         <scm>
-            <developerConnection>scm:svn:https://alageospatialportal.googlecode.com/svn/tags/layers-service-1.0</developerConnection>
+            <developerConnection>scm:svn:https://alageospatialportal.googlecode.com/svn/trunk/layers-service/</developerConnection>
         </scm>
         
         <distributionManagement>
