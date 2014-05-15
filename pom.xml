@@ -4,9 +4,22 @@
     <groupId>au.org.emii</groupId>
     <artifactId>webportal</artifactId>
     <packaging>war</packaging>
-    <version>2.0.0</version>
+    <version>2.0.0-SNAPSHOT</version>
 
-
+<!-- AN SCM entry that points to the SVN directory that contains the pom file for the project  -->
+    <scm>
+        <developerConnection>scm:svn:https://alageospatialportal.googlecode.com/svn/trunk/webportal/</developerConnection>
+    </scm>
+    
+        <distributionManagement>
+                <downloadUrl>https://maven.ala.org.au/repository</downloadUrl>
+                <repository>
+                        <uniqueVersion>false</uniqueVersion>
+                        <id>ala-repository</id>
+                        <url>${ala.repository.url}</url>
+                </repository>
+        </distributionManagement>
+        
     <name>ALA Spatial Portal</name>
     <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
     <url>http://www.ala.org.au</url>
@@ -437,9 +450,7 @@
             </roles>
         </developer>
     </developers>
-    <scm>
-        <url>http://code.google.com/p/alageospatialportal/source/checkout</url>
-    </scm>
+    
     <organization>
         <name>ALA</name>
         <url>http://www.ala.org.au</url>
@@ -485,6 +496,11 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.5</version>
+            </plugin>
         </plugins>
     </build>
     <repositories>         
