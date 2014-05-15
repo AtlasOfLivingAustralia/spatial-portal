@@ -18,7 +18,7 @@ package org.ala.layers.dto;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
- * SearchObject DTO
+ * SearchObject dto
  *
  * @author ajay
  */

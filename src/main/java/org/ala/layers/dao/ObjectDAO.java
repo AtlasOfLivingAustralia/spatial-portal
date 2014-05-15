@@ -54,6 +54,8 @@ public interface ObjectDAO {
 
     public String createUserUploadedObject(String wkt, String name, String description, String userid);
 
+    public String createUserUploadedObject(String wkt, String name, String description, String userid, boolean namesearch);
+
     public boolean updateUserUploadedObject(int pid, String wkt, String name, String description, String userid);
 
     public boolean deleteUserUploadedObject(int pid);

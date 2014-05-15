@@ -243,7 +243,7 @@ public class LayerDAOImpl implements LayerDAO {
                 if (!layer.getDisplaypath().startsWith("/")) {
                     layer.setDisplaypath(layer.getDisplaypath().replace(IntersectConfig.GEOSERVER_URL_PLACEHOLDER, IntersectConfig.getGeoserverUrl()));
                 } else {
-                    layer.setDisplaypath(IntersectConfig.getGeoserverUrl() + IntersectConfig.getGeoserverUrl());
+                    layer.setDisplaypath(IntersectConfig.getGeoserverUrl() + layer.getDisplaypath());
                 }
             }
         }

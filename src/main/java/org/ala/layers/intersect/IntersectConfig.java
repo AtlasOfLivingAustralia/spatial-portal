@@ -104,7 +104,9 @@ public class IntersectConfig {
         Properties properties = new Properties();
         InputStream is = null;
         try {
-            is = new FileInputStream("/data/layers-store/config/layers-store-config.properties");
+            String pth = "/data/layers-store/config/layers-store-config.properties";
+            logger.debug("config path: " + pth);
+            is = new FileInputStream(pth);
             if (is != null) {
                 properties.load(is);
             } else {
@@ -128,9 +130,9 @@ public class IntersectConfig {
         analysisLayerFilesPath = getProperty(ANALYSIS_LAYER_FILES_PATH, properties, null);
         isValidPath(analysisLayerFilesPath, ANALYSIS_LAYER_FILES_PATH);
         alaspatialOutputPath = getProperty(ALASPATIAL_OUTPUT_PATH, properties, null);
-        isValidPath(analysisLayerFilesPath, ALASPATIAL_OUTPUT_PATH);
+        isValidPath(alaspatialOutputPath, ALASPATIAL_OUTPUT_PATH);
         layerIndexUrl = getProperty(LAYER_INDEX_URL, properties, null);
-        isValidUrl(analysisLayerFilesPath, LAYER_INDEX_URL);
+        isValidUrl(layerIndexUrl, LAYER_INDEX_URL);
         batchThreadCount = (int) getPositiveLongProperty(BATCH_THREAD_COUNT, properties, 1);
         configReloadWait = getPositiveLongProperty(CONFIG_RELOAD_WAIT, properties, 3600000);
         preloadedShapeFiles = getProperty(PRELOADED_SHAPE_FILES, properties, null);
@@ -139,7 +141,7 @@ public class IntersectConfig {
         gridCacheReaderCount = (int) getPositiveLongProperty(GRID_CACHE_READER_COUNT, properties, 10);
         localSampling = getProperty(LOCAL_SAMPLING, properties, "true").toLowerCase().equals("true");
         geoserverUrl = getProperty(GEOSERVER_URL, properties, null);
-        isValidUrl(analysisLayerFilesPath, GEOSERVER_URL);
+        isValidUrl(geoserverUrl, GEOSERVER_URL);
         geonetworkUrl = getProperty(GEONETWORK_URL, properties, null);
         isValidUrl(geonetworkUrl, GEONETWORK_URL);
         gdalPath = getProperty(GDAL_PATH, properties, null);
@@ -526,24 +528,28 @@ public class IntersectConfig {
 
     static private HashMap<Integer, GridClass> getGridClasses(String filePath, String type) throws IOException {
         HashMap<Integer, GridClass> classes = null;
-        if (type.equals("Contextual")
-                && new File(filePath + ".gri").exists()
+        if (type.equals("Contextual")) {
+            if(new File(filePath + ".gri").exists()
                 && new File(filePath + ".grd").exists()
                 && new File(filePath + ".txt").exists()) {
-            File gridClassesFile = new File(filePath + ".classes.json");
-            if (gridClassesFile.exists()) {
-                classes = mapper.readValue(gridClassesFile, new TypeReference<Map<Integer, GridClass>>() {
-                });
-                logger.info("found grid classes for " + gridClassesFile.getPath());
-            } else {
-                logger.error("classes unavailable for " + gridClassesFile.getPath() + ", build classes offline");
-//                logger.info("building " + gridClassesFile.getPath());
-//                long start = System.currentTimeMillis();
-//                classes = GridClassBuilder.buildFromGrid(filePath);
-//                logger.info("finished building " + gridClassesFile.getPath() + " in " + (System.currentTimeMillis() - start) + " ms");
+                File gridClassesFile = new File(filePath + ".classes.json");
+                if (gridClassesFile.exists()) {
+                    classes = mapper.readValue(gridClassesFile, new TypeReference<Map<Integer, GridClass>>() {
+                    });
+                    logger.info("found grid classes for " + gridClassesFile.getPath());
+                } else {
+                    logger.error("classes unavailable for " + gridClassesFile.getPath() + ", build classes offline");
+    //                logger.info("building " + gridClassesFile.getPath());
+    //                long start = System.currentTimeMillis();
+    //                classes = GridClassBuilder.buildFromGrid(filePath);
+    //                logger.info("finished building " + gridClassesFile.getPath() + " in " + (System.currentTimeMillis() - start) + " ms");
+                }
+            } else if(new File(filePath + ".gri").exists()
+                    && new File(filePath + ".grd").exists()) {
+                logger.error("missing grid classes for " + filePath);
             }
         } else {
-            logger.info("no grid classes for " + filePath);
+
         }
         return classes;
     }

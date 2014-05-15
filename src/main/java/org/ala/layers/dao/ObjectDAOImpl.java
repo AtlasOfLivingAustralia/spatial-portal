@@ -76,6 +76,32 @@ public class ObjectDAOImpl implements ObjectDAO {
     private static final String SUB_MIN = "*min*";
     private static final String SUB_MAX = "*max*";
     private static final String SUB_MAX_PLUS_ONE = "*max_plus_one*";
+    private static final String KML_HEADER = 
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        +"<kml xmlns=\"http://earth.google.com/kml/2.2\">"
+        +"<Document>"
+        +"  <name></name>"
+        +"  <description></description>"
+        +"  <Style id=\"style1\">"
+        +"    <LineStyle>"
+        +"      <color>40000000</color>"
+        +"      <width>3</width>"
+        +"    </LineStyle>"
+        +"    <PolyStyle>"
+        +"      <color>73FF0000</color>"
+        +"      <fill>1</fill>"
+        +"      <outline>1</outline>"
+        +"    </PolyStyle>"
+        +"  </Style>"
+        +"  <Placemark>"
+        +"    <name></name>"
+        +"    <description></description>"
+        +"    <styleUrl>#style1</styleUrl>";
+    private static final String KML_FOOTER =
+        "</Placemark>"
+        +"</Document>"
+        +"</kml>";
+
     /**
      * log4j logger
      */
@@ -256,7 +282,7 @@ public class ObjectDAOImpl implements ObjectDAO {
         logger.info("Getting object info for id = " + id + " and geometry as " + geomtype);
         String sql = "";
         if ("kml".equals(geomtype)) {
-            sql = "SELECT ST_AsKml(the_geom) as geometry FROM objects WHERE pid=?;";
+            sql = "SELECT ST_AsKml(the_geom) as geometry, name, \"desc\" as description  FROM objects WHERE pid=?;";
         } else if ("wkt".equals(geomtype)) {
             sql = "SELECT ST_AsText(the_geom) as geometry FROM objects WHERE pid=?;";
         } else if ("geojson".equals(geomtype)) {
@@ -272,6 +298,13 @@ public class ObjectDAOImpl implements ObjectDAO {
                 String wkt = l.get(0).getGeometry();
                 File zippedShapeFile = SpatialConversionUtils.buildZippedShapeFile(wkt, id, l.get(0).getName(), l.get(0).getDescription());
                 FileUtils.copyFile(zippedShapeFile, os);
+            } else if("kml".equals(geomtype)){
+                os.write(KML_HEADER
+                        .replace("<name></name>","<name><![CDATA[" + l.get(0).getName() + "]]</name>")
+                        .replace("<description></description>","<description><![CDATA[" + l.get(0).getDescription() + "]]</description>").getBytes());
+
+                os.write(l.get(0).getGeometry().getBytes());
+                os.write(KML_FOOTER.getBytes());
             } else {
                 os.write(l.get(0).getGeometry().getBytes());
             }
@@ -340,9 +373,11 @@ public class ObjectDAOImpl implements ObjectDAO {
                                                 Geometry g = r.read(wkt);
 
                                                 if (geomtype.equals("kml")) {
+                                                    os.write(KML_HEADER.getBytes());
                                                     Encoder encoder = new Encoder(new KMLConfiguration());
                                                     encoder.setIndenting(true);
                                                     encoder.encode(g, KML.Geometry, os);
+                                                    os.write(KML_FOOTER.getBytes());
                                                 } else if (geomtype.equals("geojson")) {
                                                     FeatureJSON fjson = new FeatureJSON();
                                                     final SimpleFeatureType TYPE = DataUtilities.createType("class", "the_geom:MultiPolygon,name:String");
@@ -640,15 +675,20 @@ public class ObjectDAOImpl implements ObjectDAO {
         return objects;
     }
 
-    @Transactional
     @Override
     public String createUserUploadedObject(String wkt, String name, String description, String userid) {
+        return createUserUploadedObject(wkt,name,description,userid,true);
+    }
+
+    @Transactional
+    @Override
+    public String createUserUploadedObject(String wkt, String name, String description, String userid, boolean namesearch) {
 
         double area_km = SpatialUtil.calculateArea(wkt) / 1000.0 / 1000.0;
 
         try {
             // Insert shape into geometry table
-            String sql = "INSERT INTO objects (pid, id, name, \"desc\", fid, the_geom, namesearch, bbox, area_km) values (nextval('objects_id_seq'::regclass), nextval('uploaded_objects_metadata_id_seq'::regclass), ?, ?, ?, ST_GeomFromText(?, 4326), true, ST_AsText(Box2D(ST_GeomFromText(?, 4326))), ?)";
+            String sql = "INSERT INTO objects (pid, id, name, \"desc\", fid, the_geom, namesearch, bbox, area_km) values (nextval('objects_id_seq'::regclass), nextval('uploaded_objects_metadata_id_seq'::regclass), ?, ?, ?, ST_GeomFromText(?, 4326), namesearch, ST_AsText(Box2D(ST_GeomFromText(?, 4326))), ?)";
             jdbcTemplate.update(sql, name, description, IntersectConfig.getUploadedShapesFieldId(), wkt, wkt, area_km);
 
             // Now write to metadata table
