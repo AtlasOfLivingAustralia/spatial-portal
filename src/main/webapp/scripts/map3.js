@@ -78,6 +78,8 @@ var shownPicture = false;
 var shownPicturePopup = false;
 var vectorLayer;
 
+var printConfigUrl = "http://localhost:8081/webportal/ws/pdf/info.json";
+
 
 function stopCheckingLibraryLoaded() {
     clearInterval(checkLibraryLoadedTimeout);

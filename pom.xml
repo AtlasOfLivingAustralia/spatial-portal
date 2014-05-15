@@ -616,6 +616,12 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.mapfish.print</groupId>
+            <artifactId>print-lib</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+
     </dependencies>
     <issueManagement>
         <system>Google Code</system>
@@ -782,11 +788,10 @@
         <zkVersion>7.0.1</zkVersion>
         <jerseyVersion>1.1.4.1</jerseyVersion>
         <aspectJVersion>1.6.8</aspectJVersion>
-        <geotools.version>2.7.3</geotools.version>
+        <geotools.version>11.0</geotools.version>
         <org.springframework.version>3.0.7.RELEASE</org.springframework.version>
         <zkspring.version>3.1.1</zkspring.version>
         <springsecurity.version>3.1.2.RELEASE</springsecurity.version>
-
         <zk.version>7.0.1</zk.version>
         <zkspring.version>3.1.1</zkspring.version>
         <spring.version>3.0.7.RELEASE</spring.version>

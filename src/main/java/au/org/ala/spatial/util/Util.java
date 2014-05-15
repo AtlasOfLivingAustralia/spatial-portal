@@ -659,7 +659,7 @@ public class Util {
             com.vividsolutions.jts.geom.Geometry g = null;
 
             //reduction attempts, 3 decimal places, 2, 1, .2 increments, .5 increments,
-            // and finally, convert to 1/1.001 increments (expected to be larger) then back to 1 decimal place (hopefully smaller)
+            // and finally, convert to 1/1.001 increments (expected to be larger) then back to .5 increments (expected to be smaller)
             // to make the WKT string shorter.
             double [] reductionValues = {1000,100,10,5,2,1.001,2};
             int attempt = 0;
@@ -697,6 +697,7 @@ public class Util {
             logger.error("failed to reduce WKT size", e);
         }
 
+        //webportal (for some reason) does not like these spaces in WKT
         return wkt.replace(" (","(").replace(", ",",");
     }
 }

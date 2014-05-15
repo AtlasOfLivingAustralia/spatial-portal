@@ -1,7 +1,7 @@
-package au.org.ala.spatial.data;
+package au.org.ala.spatial.dto;
 
 /**
- * A DTO that represents a legend item
+ * A dto that represents a legend item
  *
  * @author Natasha Quimby (natasha.quimby@csiro.au)
  */

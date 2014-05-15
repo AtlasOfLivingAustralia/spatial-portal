@@ -5,6 +5,7 @@
 package au.org.emii.portal.javascript;
 
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.value.BoundingBox;
 
 import java.util.List;
@@ -260,4 +261,5 @@ public interface OpenLayersJavascript {
 
     public String setBaseLayer(String baseLayer);
 
+    LayerUtilities getLayerUtilities();
 }

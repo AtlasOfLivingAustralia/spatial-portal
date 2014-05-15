@@ -6,7 +6,7 @@ import au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent;
 import au.org.ala.spatial.composer.species.SpeciesListListbox;
 import au.org.ala.spatial.data.BiocacheQuery;
 import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.SpeciesListItemDTO;
+import au.org.ala.spatial.dto.SpeciesListItemDTO;
 import au.org.ala.spatial.data.SpeciesListUtil;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;

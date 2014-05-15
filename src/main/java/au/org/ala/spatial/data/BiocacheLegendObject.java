@@ -6,6 +6,7 @@ package au.org.ala.spatial.data;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.data.SpeciesListUtil.IgnoreUnknownPropsStrategyWrapper;
+import au.org.ala.spatial.dto.LegendItemDTO;
 import net.sf.json.JSONArray;
 import net.sf.json.JsonConfig;
 import net.sf.json.util.PropertySetStrategy;
@@ -118,9 +119,6 @@ public class BiocacheLegendObject extends LegendObject {
                 colour = item.getRed() + "," + item.getGreen() + "," + item.getBlue();
                 line = "\"" + item.getName().replace("\"", "\"\"") + "\"," + colour + "," + item.getCount();
 
-                if (item.getName().startsWith("Camponotus")) {
-                    line = line;
-                }
                 sb.append(line);
             }
             previous = item;

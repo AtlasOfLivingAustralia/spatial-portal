@@ -9,10 +9,7 @@ import au.org.ala.spatial.composer.results.DistributionsController;
 import au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent;
 import au.org.ala.spatial.data.*;
 import au.org.ala.spatial.logger.RemoteLogger;
-import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.SelectedArea;
-import au.org.ala.spatial.util.UserData;
-import au.org.ala.spatial.util.Util;
+import au.org.ala.spatial.util.*;
 import au.org.emii.portal.composer.legend.HasMapLayer;
 import au.org.emii.portal.composer.legend.LayerLegendGeneralComposer;
 import au.org.emii.portal.databinding.ActiveLayerRenderer;
@@ -1363,6 +1360,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Double radius = null;
             String colourBy = null;
             String savedsession = "";
+            String s = null;
             boolean[] geospatialKosher = null;
             boolean supportDynamic = false;
             if (userParams != null) {
@@ -1377,52 +1375,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     if (key.equals("species_lsid")) {
                         sb.append("lsid:").append(value);
                         count++;
-                    } else if (key.equals("q") || key.equals("fq")) {
-                        if (value.equals("*:*")) {
-                            allTermFound = true;
-                            continue;
-                        }
-                        if (sb.length() > 0) {
-                            sb.append(" AND ");
-                        }
-                        //wrap value in " when appropriate
-                        //Not key:[..
-                        //Not key:*
-                        //Not key:"...
-                        //Not key:... AND key:....
-                        //Not key:... OR key:...
-                        //Not key:.."..
-                        int p = value.indexOf(':');
-                        if (p > 0 && p + 1 < value.length()
-                                && value.charAt(p + 1) != '['
-                                && value.charAt(p + 1) != '*'
-                                && value.charAt(p + 1) != '"'
-                                && !value.contains(" AND ")
-                                && !value.contains(" OR ")
-                                && !value.contains("\"")
-                                && !value.startsWith("lsid")
-                                && !value.startsWith("(")) {
-                            value = value.substring(0, p + 1) + "\""
-                                    + value.substring(p + 1) + "\"";
-                        }
+                    } else if (key.equals("q")) {
+                        s = value; //relies on spitonparams (biocachequery)
+                    } else if(key.equals("fq")) {
 
                         //flag geospatialKosher filters separately
                         boolean[] gk = null;
                         if ((gk = BiocacheQuery.parseGeospatialKosher(value)) != null) {
                             geospatialKosher = gk;
                         } else {
-                            //TODO: remove this when biocache is working
-                            if (value.contains("species_guid:")) {
-                                value = value.replace("\"", "");
-                            }
-
-                            count++;
-                            //can't put extra brackets around "not" operators this will prevent SOLR from returning results
-                            if (value.startsWith("-")) {
-                                sb.append(value);
-                            } else {
-                                sb.append("(").append(value).append(")");
-                            }
+                            //use as-is
+                            sb.append("&" + key + "=" + value); //spitonparams (biocachequery) splits these
                         }
                     } else if (key.equals("qc")) {
                         qc = "&qc=" + URLEncoder.encode(value, "UTF-8");
@@ -1461,15 +1424,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     wkt = Util.createCircleJs(lon, lat, radius * 1000); //m to km
                 }
 
-                if (count == 1) {
-                    //remove brackets
-                    String s = sb.toString();
-                    sb = new StringBuilder();
-                    sb.append(s.substring(1, s.length() - 1));
-                } else if (count == 0 && allTermFound) {
-                    sb.append("*:*");
-                }
-
                 if (StringUtils.isNotBlank(savedsession)) {
                     loadUserSession(savedsession);
                 } else {
@@ -1477,9 +1431,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
 
                 logger.debug("url query: " + sb.toString());
-                if (sb.toString().length() > 0) {
+                if (sb.toString().length() > 0 || (s!=null && s.length() > 0)) {
 
-                    BiocacheQuery q = new BiocacheQuery(null, wkt, sb.toString(), null, true, geospatialKosher, bs, ws, supportDynamic);
+                    if(s != null) {
+                        s += sb.toString();
+                    } else {
+                        s = sb.toString();
+                    }
+                    BiocacheQuery q = new BiocacheQuery(null, wkt, s, null, true, geospatialKosher, bs, ws, supportDynamic);
 
                     if (qc != null) {
                         q.setQc(qc);
@@ -2033,7 +1992,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                             MapLayer ml = getMapComposer().addWMSLayer(layerName, displayName, mapping[1], 0.6f, html, null, LayerUtilities.WKT, null, null);
                             ml.setSPCode(row[0]);
-                            MapComposer.setupMapLayerAsDistributionArea(ml);
+                            setupMapLayerAsDistributionArea(ml);
                         }
                     } catch (Exception e) {
                         logger.error("error opening checklist species", e);
@@ -2109,7 +2068,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public static void setupMapLayerAsDistributionArea(MapLayer mapLayer) {
+    public void setupMapLayerAsDistributionArea(MapLayer mapLayer) {
         try {
             //identify the spcode from the url     
             String spcode = mapLayer.getSPCode();
@@ -2172,8 +2131,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             mapLayer.setBlueVal(0);
             mapLayer.setDynamicStyle(true);
 
+            warnForLargeWKT(mapLayer);
+
         } catch (Exception e) {
             logger.error("error setting up distributions map layer", e);
+        }
+    }
+
+    public void warnForLargeWKT(MapLayer ml) {
+        //display warning for large wkt that does not have a facet
+        if (ml.getFacets() == null
+                && ml.getWKT().length() > Integer.parseInt(CommonData.settings.getProperty("max_q_wkt_length"))) {
+            getMapComposer().showMessage("WARNING: The polygon created in this step has reduced spatial resolution when used in analysis due to size limitations.  ");
         }
     }
 
@@ -2485,6 +2454,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         showMessage("Error generating export");
 
         return null;
+/*
+        double [] extents = new double[4];
+        extents[0] = Double.parseDouble(ps[2]);
+        extents[1] = Double.parseDouble(ps[3]);
+        extents[2] = Double.parseDouble(ps[4]);
+        extents[3] = Double.parseDouble(ps[5]);
+
+        if (format.equalsIgnoreCase("png")) {
+            Filedownload.save(new Print(this, extents, header, "png").get(), "image/png", "map_export.png");
+        } else if (format.equalsIgnoreCase("pdf")) {
+            Filedownload.save(new Print(this, extents, header, "png").get(), "application/pdf", "map_export.png");
+        } else {
+            Filedownload.save(new Print(this, extents, header, "jpg").get(), "image/jpeg", "map_export.jpg");
+        }
+
+        return null;*/
     }
 
     /*
@@ -3254,7 +3239,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             //showMessage("Session saved. Please use the following link to share: \n <a href=''>"+sessionurl+"</a>" + sessionurl);
 
             //sbMessage.append("Your session is available at <br />");
-            activateLink("*" + "<p>Your session has been saved and now available to share at <br />" + "<a href='" + sessionurl + "'>" + sessionurl + "</a>" + "<br />(Right-click on the link and to copy the link to clipboard)" + "</p>" + "<p>" + "Alternatively, click <a href='" + sessiondownload + "'>here</a> to download a direct link to this session" + "</p>", "Saved session", false, "");
+            activateLink("*" + "<p>Your session has been saved and now available to share at <br />"
+                    + "<a href='" + sessionurl + "'>" + sessionurl + "</a>"
+                    + "<br />(Right-click on the link and to copy the link to clipboard)" + "</p>"
+                    /*
+                    + "<p>"
+                    + "Alternatively, click <a href='" + sessiondownload + "'>here</a> to download a direct link to this session"
+                    + "</p>"*/
+                    , "Saved session", false, "");
         } catch (IOException ex) {
             logger.error("Unable to save session data: ", ex);
         } finally {
@@ -3354,6 +3346,32 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onClick$downloadFeaturesCSV(Event event) {
         if (featuresCSV != null) {
             Filedownload.save(featuresCSV, "application/csv", "pointFeatures.csv");
+        }
+    }
+
+    public void replaceWKTwithWMS(MapLayer ml) {
+        //don't replace if it has a facet or is mapped with WMS or is WKT ENVELOPE
+        if(ml.getFacets() != null
+                || ml.getWKT() == null
+                || ml.getWKT().startsWith("ENVELOPE")
+                || ml.getUri() != null) {
+            return;
+        }
+
+        //only replace if WKT upload is successful
+        String pid = UserShapes.upload(ml.getWKT(), ml.getDisplayName(), ml.getDescription(), Util.getUserEmail(), CommonData.settings.getProperty("api_key"));
+        if(pid != null) {
+            //1. create new layer
+            MapLayer newml = addObjectByPid(pid);
+            newml.setDisplayName(ml.getDisplayName());
+            newml.setMapLayerMetadata(ml.getMapLayerMetadata());
+            newml.setAreaSqKm(ml.getAreaSqKm());
+            newml.setUserDefinedLayer(ml.isUserDefinedLayer());
+            newml.setDescription(ml.getDescription());
+            newml.setWKT(ml.getWKT());
+
+            //2. remove old layer
+            removeLayer(ml.getName());
         }
     }
 }

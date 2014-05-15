@@ -1,6 +1,7 @@
 package au.org.ala.spatial.data;
 
-
+import au.org.ala.spatial.dto.SpeciesListDTO;
+import au.org.ala.spatial.dto.SpeciesListItemDTO;
 import au.org.ala.spatial.util.CommonData;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;

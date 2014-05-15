@@ -1,9 +1,9 @@
-package au.org.ala.spatial.data;
+package au.org.ala.spatial.dto;
 
 import java.util.Map;
 
 /**
- * A DTO for the information that is necessary to display an item of the Area
+ * A dto for the information that is necessary to display an item of the Area
  * Report.
  *
  * @author Natasha Carter (natasha.carter@csiro.au)

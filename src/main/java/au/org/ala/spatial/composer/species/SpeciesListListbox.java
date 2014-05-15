@@ -1,8 +1,8 @@
 package au.org.ala.spatial.composer.species;
 
 import au.org.ala.spatial.data.BiocacheQuery;
-import au.org.ala.spatial.data.SpeciesListDTO;
-import au.org.ala.spatial.data.SpeciesListItemDTO;
+import au.org.ala.spatial.dto.SpeciesListDTO;
+import au.org.ala.spatial.dto.SpeciesListItemDTO;
 import au.org.ala.spatial.data.SpeciesListUtil;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;

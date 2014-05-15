@@ -1,4 +1,4 @@
-package au.org.ala.spatial.data;
+package au.org.ala.spatial.dto;
 
 /**
  * The Data Transfer Object that represents a species list item

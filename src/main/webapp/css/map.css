@@ -824,7 +824,7 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
 }
 
 .z-apply-loading-icon, .z-loading-icon, .z-renderdefer {
-    background: url("/webportal/zkau/web/da1ccf7c/zk/img/progress4.gif") no-repeat scroll center center transparent;
+    /*background: url("/webportal/zkau/web/da1ccf7c/zk/img/progress2.gif") no-repeat scroll center center transparent;*/
     height: 16px;
     width: 16px;
     display: inline-block;

@@ -3,8 +3,8 @@ package au.org.ala.spatial.composer.results;
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.composer.quicklinks.SamplingEvent;
 import au.org.ala.spatial.composer.quicklinks.SpeciesListEvent;
-import au.org.ala.spatial.data.AreaReportItemDTO;
-import au.org.ala.spatial.data.AreaReportItemDTO.ListType;
+import au.org.ala.spatial.dto.AreaReportItemDTO;
+import au.org.ala.spatial.dto.AreaReportItemDTO.ListType;
 import au.org.ala.spatial.data.Query;
 import au.org.ala.spatial.data.QueryUtil;
 import au.org.ala.spatial.data.SpeciesListUtil;
@@ -47,7 +47,7 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static au.org.ala.spatial.data.AreaReportItemDTO.ExtraInfoEnum;
+import static au.org.ala.spatial.dto.AreaReportItemDTO.ExtraInfoEnum;
 
 /**
  * This class supports the Area Report in the spatial portal.

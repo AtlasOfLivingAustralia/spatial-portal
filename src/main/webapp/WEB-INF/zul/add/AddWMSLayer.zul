@@ -61,7 +61,12 @@
                 <n:br />
                 <n:a n:target="_blank" n:href="http://imos2.ersa.edu.au/geo2/wms?request=getCapabilities" style="display: inline">
                     <label sclass="wCaption" value='http://imos2.ersa.edu.au/geo2/wms?request=getCapabilities' />
-                </n:a>        
+                </n:a>
+                 <n:br />
+                  <n:a n:target="_blank" n:href="http://www.ga.gov.au/gis/services/earth_science/GA_Surface_Geology_of_Australia/MapServer/WMSServer?request=GetCapabilities&service=WMS" style="display: inline">
+                      <label sclass="wCaption" value='http://www.ga.gov.au/gis/services/earth_science/GA_Surface_Geology_of_Australia/MapServer/WMSServer?request=GetCapabilities&service=WMS' />
+                  </n:a>
+
 	
 
         <!--  version -->

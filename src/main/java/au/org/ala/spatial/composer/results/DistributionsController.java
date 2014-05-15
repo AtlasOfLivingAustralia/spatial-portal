@@ -183,7 +183,7 @@ public class DistributionsController extends UtilityComposer {
                                         }
                                         MapLayer ml = getMapComposer().addWMSLayer(layerName, displayName, mapping[1], 0.6f, html, null, LayerUtilities.WKT, null, null);
                                         ml.setSPCode(row[0]);
-                                        MapComposer.setupMapLayerAsDistributionArea(ml);
+                                        getMapComposer().setupMapLayerAsDistributionArea(ml);
                                         getMapComposer().updateLayerControls();
 
                                         // disable this button

@@ -156,8 +156,9 @@ public class AreaToolComposer extends UtilityComposer {
                 }
             }
         } else {
-            if (ok && getMapComposer().getMapLayer(layerName) != null) {
-                String displayName = getMapComposer().getMapLayer(layerName).getDisplayName();
+            MapLayer ml = getMapComposer().getMapLayer(layerName);
+            if (ok && ml != null) {
+                String displayName = ml.getDisplayName();
                 String fromLayer = (String) getMapComposer().getAttribute("mappolygonlayer");
                 String activeLayerName = (String) getMapComposer().getAttribute("activeLayerName");
                 if (fromLayer == null) {
@@ -171,9 +172,15 @@ public class AreaToolComposer extends UtilityComposer {
                     getMapComposer().removeAttribute("activeLayerName");
                 }
                 try {
-                    remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, getMapComposer().getMapLayer(layerName).getWKT(), activeLayerName, fromLayer);
+                    remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, ml.getWKT(), activeLayerName, fromLayer);
                 } catch (Exception e) {
                 }
+
+                //warn user when reduced WKT may be used for analysis
+                getMapComposer().warnForLargeWKT(ml);
+
+                //upload this area and replace with WMS
+                getMapComposer().replaceWKTwithWMS(ml);
             }
         }
     }

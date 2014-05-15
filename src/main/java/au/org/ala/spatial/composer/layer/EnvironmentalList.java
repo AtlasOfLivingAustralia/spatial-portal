@@ -376,13 +376,14 @@ public class EnvironmentalList extends Listbox {
         String[] firstDomain = getFirstDomain();
 
         for (int i = 0; i < listEntries.size(); i++) {
+            String f = CommonData.getLayerFacetName(listEntries.get(i).name);
+
             for (int j = 0; j < layers.length; j++) {
-                if (listEntries.get(i).displayname.equalsIgnoreCase(layers[j])
-                        || listEntries.get(i).name.equalsIgnoreCase(layers[j])) {
-                    if (!getItemAtIndex(i).isSelected() && (!singleDomain || isSameDomain(firstDomain, getDomain(listEntries.get(i).layerObject)))) {
-                        toggleItemSelection(getItemAtIndex(i));
-                        getItemAtIndex(i).setDisabled(true);
-                    }
+                if (f != null && f.equalsIgnoreCase(layers[j])) {
+                    toggleItemSelection(getItemAtIndex(i));
+                    getItemAtIndex(i).setDisabled(true);
+
+                    getItemAtIndex(i).setCheckable(false);
                     break;
                 }
             }

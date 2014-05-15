@@ -181,14 +181,15 @@ public class SamplingComposer extends ToolComposer {
                 lbListLayers.setFocus(true);
 
                 //tick and disable all 'DEFAULT' sampled layers
-                //
-                //
                 if(getSelectedSpecies() != null) {
                     Query q = getSelectedSpecies();
                     String [] default_fields = q.getDefaultDownloadFields();
 
                     lbListLayers.selectLayersAndDisable(default_fields);
                 }
+
+                updateLayerSelectionCount();
+
                 break;
         }
     }
