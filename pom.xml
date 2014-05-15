@@ -3,11 +3,11 @@
     <groupId>au.org.emii</groupId>
     <artifactId>webportal</artifactId>
     <packaging>war</packaging>
-    <version>2.0.0</version>
+    <version>2.0.1-SNAPSHOT</version>
 
 <!-- AN SCM entry that points to the SVN directory that contains the pom file for the project  -->
     <scm>
-        <developerConnection>scm:svn:https://alageospatialportal.googlecode.com/svn/tags/webportal-2.0.0</developerConnection>
+        <developerConnection>scm:svn:https://alageospatialportal.googlecode.com/svn/trunk/webportal/</developerConnection>
     </scm>
     
         <distributionManagement>
