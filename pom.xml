@@ -4,13 +4,13 @@
 	<groupId>ala</groupId>
 	<artifactId>ala-spatial</artifactId>
 	<packaging>war</packaging>
-	<version>3.0</version>
+	<version>3.1-SNAPSHOT</version>
 	<name>ALA Spatial Analysis</name>
 	<description>This is the ALA Spatial Portal providing access to the core ALA Portal mapping and analyses of occurrence and specimen records from collections in Australia.</description>
 	<url>http://www.ala.org.au</url>
         
         <scm>
-            <developerConnection>scm:svn:https://alageospatialportal.googlecode.com/svn/tags/alaspatial-3.0</developerConnection>
+            <developerConnection>scm:svn:https://alageospatialportal.googlecode.com/svn/trunk/alaspatial/</developerConnection>
         </scm>
         
         <distributionManagement>
@@ -117,7 +117,7 @@
 		<dependency>
 			<groupId>au.org.ala</groupId>
 			<artifactId>ala-header-and-tails</artifactId>
-			<version>2.0</version>
+			<version>1.0</version>
 		</dependency>
 
 		<!-- zk -->
