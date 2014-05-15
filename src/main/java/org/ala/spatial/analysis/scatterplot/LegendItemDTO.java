@@ -1,7 +1,7 @@
 package org.ala.spatial.analysis.scatterplot;
 
 /**
- * A DTO that represents a legend item
+ * A dto that represents a legend item
  *
  * @author Natasha Quimby (natasha.quimby@csiro.au)
  */

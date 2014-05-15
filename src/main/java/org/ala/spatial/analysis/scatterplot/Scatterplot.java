@@ -67,7 +67,7 @@ public class Scatterplot {
     private static final String NUMBER_SERIES = "Number series";
     private static final String ACTIVE_AREA_SERIES = "In Active Area";
 
-    private static final String[][] facetNameExceptions = {{"cl959", "places"}, {"cl22", "state"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
+    private static final String[][] facetNameExceptions = {{"cl22", "state"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
 
     JFreeChart jChart;
     XYPlot plot;
