@@ -1,0 +1,573 @@
+label {
+    display: inherit;
+}
+
+input[type="radio"], input[type="checkbox"] {
+    margin-right:7px;
+    margin-left:3px;
+    margin-bottom:3px;
+    margin-top:3px;
+}
+
+a[rel="external"], a.external {
+    padding-right: 15px;
+    background: url(../img/extlink.gif) no-repeat 100% 50%;
+    zoom: 1;
+}
+
+.required {
+    white-space: nowrap;
+    padding-left: 12px;
+    background: url(../img/required.png) no-repeat 0% 50%;
+}
+
+#specialoverlapped-tl {
+    margin-right: 30px;
+}
+
+#ft  /* area with the copyright info */
+  {
+    display: block;
+    margin: 5px 30px;
+    text-align: center;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;;
+}
+
+#ft * {
+    font-size: 10px;
+    color: teal;
+}
+
+#ft a {
+    color: blue;
+}
+
+#ft a:hover {
+    color: white;
+}
+
+
+.helpButton {
+    color: #EEEEEE;
+    /*background:transparent url('/img/help.png') no-repeat left top;*/
+    padding: 2px;
+}
+
+.helpButtonMain {
+    position: absolute;
+    right: 30px;
+    padding: 3px 10px;
+    line-height: 1.6em;
+
+}
+
+closebox a.helpButtonMain {
+    text-decoration: none;
+    color: teal;
+}
+
+.helpButtonMain:hover {
+    background-color: #DEF4FF; /*#EFFBFF;*/
+}
+
+closebox a.helpButtonMain:hover {
+    font-weight: bold;
+}
+
+.exampleText {
+    color: #AAA;
+}
+
+.z-loading {
+    top: 50% !important;
+    left: 45% !important;
+    align: center;
+    vertical-align: middle;
+}
+
+/*******************************/
+/* scatterplot start           */
+/*******************************/
+.chartDiv {
+    float: left;
+    width: 320px;
+    height: 320px;
+    padding: 0;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    -moz-user-select: none;
+    cursor: crosshair;
+    border: 0;
+    margin: 0;
+}
+
+#rband {
+    position: absolute;
+    display: none;
+    width: 0px;
+    height: 0px;
+    padding: 0;
+    cursor: crosshair;
+    border: 2px solid red;
+    background-color: white;
+    opacity: 0.50;
+    filter: alpha(opacity=50);
+}
+
+/*******************************/
+/* scatterplot end             */
+/*******************************/
+
+
+/*******************************/
+/* modal window styles end     */
+/*******************************/
+
+
+.embedWindows {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 400px;
+    height: 100%;
+}
+
+.embedWindowsContent {
+    padding: 10px;
+    width: 100%;
+}
+
+.embedWindowsButtons {
+    float: right;
+    margin-right: 5px;
+}
+
+.fancybox-bg {
+    position: absolute;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    width: 20px;
+    height: 20px;
+    z-index: 1001;
+}
+
+#fancybox-bg-n {
+    top: -20px;
+    left: 0;
+    width: 100%;
+    background-image: url('../img/fancybox-x.png');
+}
+
+#fancybox-bg-ne {
+    top: -20px;
+    right: -20px;
+    background-image: url('../img/fancybox.png');
+    background-position: -40px -162px;
+}
+
+#fancybox-bg-e {
+    top: 0;
+    right: -20px;
+    height: 100%;
+    background-image: url('../img/fancybox-y.png');
+    background-position: -20px 0px;
+}
+
+#fancybox-bg-se {
+    bottom: -20px;
+    right: -20px;
+    background-image: url('../img/fancybox.png');
+    background-position: -40px -182px;
+}
+
+#fancybox-bg-s {
+    bottom: -20px;
+    left: 0;
+    width: 100%;
+    background-image: url('../img/fancybox-x.png');
+    background-position: 0px -20px;
+}
+
+#fancybox-bg-sw {
+    bottom: -20px;
+    left: -20px;
+    background-image: url('../img/fancybox.png');
+    background-position: -40px -142px;
+}
+
+#fancybox-bg-w {
+    top: 0;
+    left: -20px;
+    height: 100%;
+    background-image: url('../img/fancybox-y.png');
+}
+
+#fancybox-bg-nw {
+    top: -20px;
+    left: -20px;
+    background-image: url('../img/fancybox.png');
+    background-position: -40px -122px;
+}
+
+.fancybox-close {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 30px;
+    height: 30px;
+    background: transparent url('../img/fancybox.png') -40px 0px;
+    cursor: pointer;
+    z-index: 1103;
+}
+
+.fancybox-help {
+    position: absolute;
+    top: -15px;
+    right: 15px;
+    width: 30px;
+    height: 50px;
+    background: transparent url('../img/fancybox_help.png');
+    background-repeat: no-repeat;
+    cursor: pointer;
+    z-index: 1103;
+}
+
+
+.xRemove {
+    text-decoration: underline;
+}
+
+.notFoundSciname div.z-listcell-cnt {
+    color: red;
+}
+
+.notFoundFamily div.z-listcell-cnt {
+    color: red;
+    text-decoration: underline;
+}
+
+.underline {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.z-west-header {
+    display: none;
+}
+
+/* species info table start */
+.md_heading {
+    font-family: "Arial Narrow", Arial, Helvetica, sans-serif;
+    font-size: 22.1px;
+    /* color:#718804; */
+    padding: 5px;
+    margin: 0px;
+}
+
+.md_th {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    font-style: normal;
+    color: #000000;
+    text-transform: none;
+    text-decoration: none;
+    letter-spacing: normal;
+    word-spacing: 0;
+    line-height: 20.8px;
+    text-align: left;
+    vertical-align: top;
+    direction: ltr;
+}
+
+.md_th, .md_td, .md_spacer {
+    padding: 0.5em 5px;
+}
+
+.md_spacer {
+    width: 20px;
+}
+
+.md_table {
+    border-collapse: collapse;
+    border-spacing: 0px;
+    padding-left: 15px;
+    width: 100%;
+}
+
+.md_value {
+    text-align: left;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    line-height: 20.8px;
+    padding: 5px;
+    width: 80%;
+}
+
+.md_grey-bg {
+    background-color: #F0F0F0;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.z-north, .z-south, .z-west, .z-center, .z-east {
+    border: 0px
+
+}
+
+/* Page font */
+.z-a, .z-label, .z-radio-content, .z-checkbox-content, body, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content, .z-textbox, .z-decimalbox, .z-intbox, .z-longbox, .z-doublebox, .z-combobox-input, .z-bandbox-input, .z-datebox-input, .z-timebox-input, .z-spinner-input, .z-doublespinner-input, .z-caption, .z-caption-content, .z-row:hover > .z-row-inner > .z-row-content, .z-row, .z-row-inner, .z-row-content, .z-combobox-popup, .z-bandbox-popup, .z-datebox-popup, .z-timebox-popup {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+/* padding
+body, .z-window-content, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content, .z-textbox, .z-decimalbox, .z-intbox, .z-longbox, .z-doublebox, .z-combobox-input, .z-bandbox-input, .z-datebox-input, .z-timebox-input, .z-spinner-input, .z-doublespinner-input, .z-caption, .z-caption-content, .z-row:hover > .z-row-inner > .z-row-content, .z-combobox-popup, .z-bandbox-popup, .z-datebox-popup, .z-timebox-popup {
+    padding: 0px;
+} */
+
+.z-textbox, .z-decimalbox, .z-intbox, .z-longbox, .z-doublebox, .z-combobox-input, .z-bandbox-input, .z-datebox-input, .z-timebox-input, .z-spinner-input, .z-doublespinner-input, .z-caption, .z-caption-content, .z-combobox-popup, .z-bandbox-popup, .z-datebox-popup, .z-timebox-popup, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content {
+    line-height: 20px;
+    min-height: 20px;
+}
+
+.z-window-overlapped {
+    overflow: visible;
+}
+
+.z-textbox, .z-decimalbox, .z-intbox, .z-longbox, .z-doublebox {
+    min-height: 0px;
+}
+
+.z-listheader-content {
+    line-height: 20px;
+}
+
+.z-combobox-icon, .z-bandbox-icon, .z-datebox-icon, .z-timebox-icon, .z-spinner-icon, .z-doublespinner-icon {
+   /width: 22px;
+    line-height: 20px;
+}
+
+.z-combobox-button, .z-bandbox-button, .z-datebox-button, .z-timebox-button, .z-spinner-button, .z-doublespinner-button,
+.z-slider-horizontal {
+    width: 22px;
+    height: 22px;
+}
+
+.z-slider-horizontal {
+    padding: 4px;
+}
+
+.z-row:first-child .z-row-content, .z-row:first-child .z-group-content {
+    padding: 0px;
+}
+
+.z-row {
+    padding-top: 1px;
+    padding-bottom: 2px;
+}
+
+.z-caption {
+    float: right;
+}
+
+.z-caption-content {
+    font-size: 20px;
+}
+
+.ctxbox a {
+    font-size: 11px;
+    padding: 3px;
+    color: white;
+}
+
+.ctxbox li {
+    line-height: 16px;
+}
+
+.wizButtonContainer {
+    float: right;
+}
+
+.z-row:hover > .z-row-inner > .z-row-content {
+    color: #50a0b0
+}
+
+.z-row:hover > .z-row-inner, .z-row:hover > .z-cell {
+    background: white;
+    padding: 0px;
+}
+
+.selectedLayer {
+    font-size: 18px;
+    color: black;
+}
+
+.z-toolbarbutton {
+    float: right;
+}
+
+.lcWhite {
+    background: #ffffff;
+}
+
+.lcRed {
+    background: #bb2222;
+}
+
+.lcYellow {
+    background: #ffff22;
+}
+
+.lcGreen {
+    background: #22aa22;
+}
+
+.lblRed {
+    color: red;
+}
+
+.lcRed > .z-listcell-content {
+    background: #bb2222;
+}
+
+.lcGreen > .z-listcell-content {
+    background: #22aa22;
+}
+
+.lcYellow > .z-listcell-content {
+    background: #ffff22;
+}
+/*
+.z-listcell-content {
+    padding: 1px;
+}*/
+
+/*
+.z-comboitem-inner, .z-comboitem-content {
+    color: #555;
+    font-size: 10px;
+    padding-left: 15px;
+    line-height: 24px;
+}*/
+
+.envlist .z-listheader-checkable {
+    display: none;
+}
+
+#zk_download {
+    display: none;
+}
+/*
+z-listbox-autopaging .z-listcell-cnt {
+    height: 24px;
+    overflow: hidden;
+}*/
+
+.z-listheader-content, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content {
+    padding: 0px;
+}
+
+.z-listcell-content img {
+    padding-top: 2px;
+    padding-right: 2px;
+}
+
+.navbar {
+    margin-bottom: 0px;
+    min-height: 38px;
+    border: 0px;
+    z-index: 200;
+}
+
+#nav-site .navbar-inner {
+    margin-bottom: 0px;
+    border-radius:0px;
+}
+
+.z-window-overlapped .z-window-content, .z-window-modal .z-window-content {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+}
+
+.btn-group {
+    float:right;
+}
+
+.z-combobox-input {
+    float: left !important;
+    height: 24px !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.z-combobox-button {
+    height: 24px !important;
+}
+
+.z-icon-caret-down {
+    line-height: 12px !important;
+}
+
+.contextualDiv {
+    margin:0;
+    padding:0px;
+    position:absolute;
+    left:5px;
+    bottom:45px;
+    display: block;
+    opacity: 0.5;
+    z-index: 410;
+    overflow: auto;
+    background-color: #3C668D;
+    color: #FFF;
+    cursor: pointer;
+    font-family: Arial;
+    font-size: x-small;
+}
+
+.contextualDiv:hover {
+    opacity: 0.9;
+}
+
+.z-listitem.z-listitem-selected>.z-listcell>.z-listcell-content {
+    color: black;
+    background-color: darkgray;
+    font-weight: bold;
+}
+
+.z-listitem.z-listitem:hover>.z-listcell>.z-listcell-content {
+    color: white;
+    background-color: #DF4A21;
+}
+
+.z-window-shadow {
+    background-color: #3D464C;
+}
+.z-caption {
+    background-color: #3D464C;
+    color: white;
+    padding-left:10px;
+}
+
+.z-toolbar-content {
+    color: white;
+    text-shadow: 0 0px;
+}
+
+.z-borderlayout-icon {
+    color: black;
+}
+
+.z-grid-body {
+    padding:3px;
+}
+
+.z-listheader-content {
+    padding-left:5px;
+    padding-right:5px;
+}

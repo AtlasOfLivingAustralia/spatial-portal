@@ -1,0 +1,58 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="mapoptionswindow" xmlns:n="http://www.zkoss.org/2005/zk/native"
+            use="au.org.emii.portal.composer.legend.MapOptions"
+            apply="au.org.emii.portal.composer.legend.MapOptions" style="margin-left: 3px;
+           " >
+        <vbox width="100%" style="padding-top:1px;">
+            <vbox width="100%">
+                <radiogroup id="rgBaseMap">
+                    <listbox>
+                        <listhead>
+                            <listheader label="Base map" width="300px" />
+                            <listheader label=" "  />
+                        </listhead>
+                        <listitem>
+                            <listcell>
+                                <radio value="outline" onCheck='Clients.evalJavaScript("window.mapFrame.baseLayerSwitchStatus=1;changeBaseLayer(\"outline\");")' label="Outline" />
+                            </listcell>
+                            <listcell onClick='mapPortalPage.activateLink("http://www.naturalearthdata.com/about/terms-of-use", "Metadata", false);'>
+                                <html><![CDATA[<i class="icon-info-sign"></i>]]></html>
+                            </listcell>
+                        </listitem>
+                        <listitem>
+                            <listcell>
+                                <radio value="minimal" onCheck='Clients.evalJavaScript("window.mapFrame.baseLayerSwitchStatus=1;changeBaseLayer(\"minimal\");")' label="Minimal" />
+                            </listcell>
+                            <listcell onClick='mapPortalPage.activateLink("openstreetmap_metadata.html", "Metadata", false);'>
+                               <html><![CDATA[<i class="icon-info-sign"></i>]]></html>
+                            </listcell>
+                        </listitem>
+                        <listitem>
+                            <listcell>
+                                <radio value="normal" onCheck='Clients.evalJavaScript("window.mapFrame.baseLayerSwitchStatus=0;changeBaseLayer(\"normal\");window.mapFrame.autoSwitchBaseMap();")' label="Normal" />
+                            </listcell>
+                            <listcell onClick='mapPortalPage.activateLink("http://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'>
+                                <html><![CDATA[<i class="icon-info-sign"></i>]]></html>
+                            </listcell>
+                        </listitem>
+                        <listitem>
+                            <listcell>
+                                <radio value="hybrid" onCheck='Clients.evalJavaScript("window.mapFrame.baseLayerSwitchStatus=1;changeBaseLayer(\"hybrid\");")' label="Satellite" />
+                            </listcell>
+                            <listcell onClick='mapPortalPage.activateLink("http://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'>
+                                <html><![CDATA[<i class="icon-info-sign"></i>]]></html>
+                            </listcell>
+                        </listitem>
+                    </listbox>
+                </radiogroup>
+                <separator />
+                <div class="btn-group" style="padding-left:50px;padding-right:3px">
+                    <button class="btn-small" label="Add WMS Layer" onClick='Clients.evalJavaScript("addWMSLayerAction();")' />
+                    <button class="btn-small" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
+                    <button class="btn-small" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
+                </div>
+            </vbox>
+        </vbox>
+    </window>
+</zk>

@@ -1,0 +1,50 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window
+     border="none"
+     apply="au.org.emii.portal.composer.legend.ClassificationLegend"
+     use="au.org.emii.portal.composer.legend.ClassificationLegend" mode="embedded" width="98%" >
+        <style>
+            .legendlist div.z-listitem-cnt {
+                font-size: 10px;
+                border: 2px solid red;
+             }
+        </style>
+        <div id="divContinous" visible="false" >
+                            <separator height="10px" />
+                           <label id="dlabel" width="350px" />
+                            <!--rangeslider id="dslider" width="350px" /-->
+                            <hbox>
+                                <doublebox id="dmin" width="60px"/>
+
+                                    <label value=" TO " style="" />
+                                <doublebox id="dmax" width="60px"/>
+                                <checkbox id="dunknown" label="Select Unknown" checked="true" />
+                                <div class="btn-group">
+                                    <button class="btn-small" id="dbutton" label="Select" />
+                                </div>
+                            </hbox>
+
+                         </div>
+
+            <listbox sclass="legendlist" id="legend" width="380px" vflex="true" mold="paging">
+                <listhead>
+                    <listheader label="   " width="20px" id="lhFirstColumn"  style="font-size:12px"/>
+                    <listheader label="class" width="240px" id="lhSecondColumn" style="font-size:12px"/>
+                    <listheader label="colour" width="50px" id="lhThirdColumn" style="font-size:12px"/>
+                    <listheader label="count" width="65px" align="right" id="lhFourthColumn" style="font-size:12px"/>
+                </listhead>
+            </listbox>
+
+            <vbox width="380px">
+                        <div class="btn-group" id="dCreateButtons" >
+                            <button class="btn-small" id="selectAll" label="Select all"  />
+                            <button class="btn-small"  id="clearSelection" label="Clear selection"  visible="true" />
+                            <button class="btn-small btn-primary"  id="createInGroup" label="Create layer" visible="true" />
+                        </div>
+
+
+            </vbox>
+
+    </window>
+</zk>
