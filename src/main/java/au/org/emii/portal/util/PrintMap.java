@@ -3,7 +3,6 @@ package au.org.emii.portal.util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.value.BoundingBox;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import org.ala.layers.util.SpatialUtil;
 import org.apache.log4j.Logger;
 import org.geotools.data.ows.Layer;
@@ -23,10 +22,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
@@ -134,7 +130,7 @@ public class PrintMap {
             }
         }
 
-        ByteOutputStream bos = new ByteOutputStream();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         try {
             ImageIO.write(map, "png", bos);
@@ -143,7 +139,7 @@ public class PrintMap {
             logger.error("failed output image", e);
         }
 
-        return bos.getBytes();
+        return bos.toByteArray();
     }
 
     WMSLayer getWMSLayer(MapLayer layer) {

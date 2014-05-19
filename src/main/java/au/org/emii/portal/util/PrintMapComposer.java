@@ -3,7 +3,6 @@ package au.org.emii.portal.util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.value.BoundingBox;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import org.ala.layers.util.SpatialUtil;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
@@ -117,7 +116,7 @@ public class PrintMapComposer {
             }
         }
 
-        ByteOutputStream bos = new ByteOutputStream();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         try {
             ImageIO.write(map, "png", bos);
@@ -126,7 +125,7 @@ public class PrintMapComposer {
             logger.error("failed output image", e);
         }
 
-        return bos.getBytes();
+        return bos.toByteArray();
     }
 
     void drawLayer(Graphics2D g, MapLayer layer) {

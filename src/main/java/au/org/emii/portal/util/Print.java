@@ -4,7 +4,6 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.value.BoundingBox;
 import com.lowagie.text.DocumentException;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import org.ala.layers.util.SpatialUtil;
 import org.apache.log4j.Logger;
 import org.mapfish.print.MapPrinter;
@@ -211,7 +210,7 @@ public class Print {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Referer",mc.getSettingsSupplementary().getProperty("webportal_url"));
 
-        ByteOutputStream out = new ByteOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         try {
             mapPrinter.print(specJson, out, headers);
@@ -219,7 +218,7 @@ public class Print {
             logger.error("failed to print map: " + spec, e);
         }
 
-        return out.getBytes();
+        return out.toByteArray();
     }
 
     MapPrinter getMapPrinter() {
