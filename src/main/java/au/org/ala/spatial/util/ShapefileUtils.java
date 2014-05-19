@@ -12,6 +12,7 @@ import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
@@ -135,7 +136,7 @@ public class ShapefileUtils {
             }
             final SimpleFeatureType TYPE = createFeatureType(wkttype);
 
-            FeatureCollection collection = FeatureCollections.newCollection();
+            DefaultFeatureCollection collection = new DefaultFeatureCollection();
             SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(TYPE);
 
             WKTReader wkt = new WKTReader();
