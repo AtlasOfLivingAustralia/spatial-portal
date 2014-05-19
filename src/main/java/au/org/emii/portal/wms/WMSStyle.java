@@ -1,18 +1,16 @@
 package au.org.emii.portal.wms;
 
-import au.org.emii.portal.menu.MapLayer;
 import java.io.Serializable;
 
 /**
  * Representation of WMS style information.
- * 
+ * <p/>
  * IMPORTANT - PLEASE READ!
- * If you add/change any fields in this class, you MUST update the 
+ * If you add/change any fields in this class, you MUST update the
  * deepCopy method or you will get 'mysterious failures' when you
  * come to use the class.
- * 
- * @author geoff
  *
+ * @author geoff
  */
 public class WMSStyle implements Cloneable, Serializable {
 

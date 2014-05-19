@@ -4,17 +4,18 @@
  */
 package au.org.emii.portal.test.authentication;
 
-import java.io.PrintStream;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.core.Container;
 
+import java.io.PrintStream;
+
 /**
  * Password change mock service - used for restting forgotten passwords with a
  * change key
+ *
  * @author geoff
  */
 public class MockGeoNetworkXmlPasswordChangeService implements Container {

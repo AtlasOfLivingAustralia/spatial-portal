@@ -5,26 +5,25 @@
 package au.org.emii.portal.util;
 
 import au.org.emii.portal.net.HttpConnection;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLConnection;
-import java.util.HashMap;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
+import java.util.HashMap;
+
 /**
- *
  * @author brendon
- * the feature checking comes from Nicholas Bergson-Shilcock, The Open Planning Project
- * and the GeoJSONParser code he wrote for GeoTOOLS
- *
+ *         the feature checking comes from Nicholas Bergson-Shilcock, The Open Planning Project
+ *         and the GeoJSONParser code he wrote for GeoTOOLS
  */
 public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
 
     private static HashMap typeMap;
-    protected Logger logger = Logger.getLogger(this.getClass());
+    private static Logger logger = Logger.getLogger(GeoJSONUtilitiesImpl.class);
     private HttpConnection httpConnection = null;
 
     @Override
@@ -47,14 +46,14 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
         try {
 
             connection = httpConnection.configureSlowURLConnection(url);
-            connection.addRequestProperty("accept", "application/json, text/javascript, */*"); 
+            connection.addRequestProperty("accept", "application/json, text/javascript, */*");
             in = connection.getInputStream();
             json = IOUtils.toString(in);
             //json = cleanUpJson(json);
             return json;
         } catch (IOException iox) {
             logger.debug(iox.toString());
-            
+
         }
         return "fail";
 
@@ -133,8 +132,8 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
                         } catch (Exception e) {
                             oprop = o.getJSONArray("properties").getJSONObject(0);
                         }
-                        
-                        //System.out.println("key value: " + oprop.getString(key));
+
+                        //logger.debug("key value: " + oprop.getString(key));
                         if (oprop.containsKey(key)) {
                             value = oprop.getString(key);
                             if (!value.trim().equalsIgnoreCase("")) {
@@ -154,7 +153,7 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
                 logger.debug("Object must be feature or feature collection");
         }
 
-        System.out.println("geojson.value: " + value); 
+        logger.debug("geojson.value: " + value);
 
         return value;
     }
@@ -162,16 +161,16 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
     public int type(String type) {
         if (typeMap == null) {
             typeMap = new HashMap();
-            typeMap.put("feature", Integer.valueOf(FEATURE));
-            typeMap.put("featurecollection", Integer.valueOf(FEATURECOLLECTION));
-            typeMap.put("point", Integer.valueOf(POINT));
-            typeMap.put("linestring", Integer.valueOf(LINESTRING));
-            typeMap.put("polygon", Integer.valueOf(POLYGON));
-            typeMap.put("multipoint", Integer.valueOf(MULTIPOINT));
-            typeMap.put("multilinestring", Integer.valueOf(MULTILINESTRING));
-            typeMap.put("multipolygon", Integer.valueOf(MULTIPOLYGON));
+            typeMap.put("feature", FEATURE);
+            typeMap.put("featurecollection", FEATURECOLLECTION);
+            typeMap.put("point", POINT);
+            typeMap.put("linestring", LINESTRING);
+            typeMap.put("polygon", POLYGON);
+            typeMap.put("multipoint", MULTIPOINT);
+            typeMap.put("multilinestring", MULTILINESTRING);
+            typeMap.put("multipolygon", MULTIPOLYGON);
             typeMap.put("geometrycollection",
-                    Integer.valueOf(GEOMETRYCOLLECTION));
+                    GEOMETRYCOLLECTION);
         }
 
         Integer val = (Integer) typeMap.get(type.toLowerCase());
@@ -180,6 +179,6 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
             logger.debug("Unknown object type '" + type + "'");
         }
 
-        return val.intValue();
+        return val;
     }
 }

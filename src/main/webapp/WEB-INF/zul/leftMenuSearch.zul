@@ -1,5 +1,4 @@
-<?page id="MESTsearchPage" title="map" cacheable="false"
-	language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"?>
+<?page id="MESTsearchPage" title="map" cacheable="false" contentType="text/html;charset=UTF-8"?>
 <zk>
     <window id="leftSearch"
 		use="au.org.emii.portal.composer.LeftMenuSearchComposer">

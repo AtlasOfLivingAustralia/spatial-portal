@@ -1,467 +1,538 @@
 <html>
 
 <head>
-<meta http-equiv=Content-Type content="text/html; charset=macintosh">
-<meta name=ProgId content=Excel.Sheet>
-<meta name=Generator content="Microsoft Excel 14">
-<link rel=File-List href="FacetFields_files/filelist.xml">
-<style>
-<!--table
-	{mso-displayed-decimal-separator:"\.";
-	mso-displayed-thousand-separator:"\,";}
-@page
-	{margin:1.0in .75in 1.0in .75in;
-	mso-header-margin:.5in;
-	mso-footer-margin:.5in;
-	mso-page-orientation:landscape;}
-.style54
-	{color:blue;
-	font-size:10.0pt;
-	font-weight:400;
-	font-style:normal;
-	text-decoration:underline;
-	text-underline-style:single;
-	font-family:Arial, sans-serif;
-	mso-font-charset:0;
-	mso-style-name:Hyperlink;
-	mso-style-id:8;}
-a:link
-	{color:blue;
-	font-size:10.0pt;
-	font-weight:400;
-	font-style:normal;
-	text-decoration:underline;
-	text-underline-style:single;
-	font-family:Arial, sans-serif;
-	mso-font-charset:0;}
-a:visited
-	{color:purple;
-	font-size:10.0pt;
-	font-weight:400;
-	font-style:normal;
-	text-decoration:underline;
-	text-underline-style:single;
-	font-family:Arial, sans-serif;
-	mso-font-charset:0;}
-.style0
-	{mso-number-format:General;
-	text-align:general;
-	vertical-align:middle;
-	white-space:nowrap;
-	mso-rotate:0;
-	mso-background-source:auto;
-	mso-pattern:auto;
-	color:windowtext;
-	font-size:10.0pt;
-	font-weight:400;
-	font-style:normal;
-	text-decoration:none;
-	font-family:Arial, sans-serif;
-	mso-font-charset:0;
-	border:none;
-	mso-protection:locked visible;
-	mso-style-name:Normal;
-	mso-style-id:0;}
-td
-	{mso-style-parent:style0;
-	padding-top:1px;
-	padding-right:1px;
-	padding-left:1px;
-	mso-ignore:padding;
-	color:windowtext;
-	font-size:10.0pt;
-	font-weight:400;
-	font-style:normal;
-	text-decoration:none;
-	font-family:Arial, sans-serif;
-	mso-font-charset:0;
-	mso-number-format:General;
-	text-align:general;
-	vertical-align:middle;
-	border:none;
-	mso-background-source:auto;
-	mso-pattern:auto;
-	mso-protection:locked visible;
-	white-space:nowrap;
-	mso-rotate:0;}
-.xl65
-	{mso-style-parent:style0;
-	color:white;
-	vertical-align:bottom;
-	background:#38761D;
-	mso-pattern:black none;
-	white-space:normal;}
-.xl66
-	{mso-style-parent:style0;
-	vertical-align:bottom;
-	white-space:normal;}
-.xl67
-	{mso-style-parent:style54;
-	color:blue;
-	text-decoration:underline;
-	text-underline-style:single;
-	font-family:Arial;
-	mso-generic-font-family:auto;
-	mso-font-charset:0;
-	vertical-align:bottom;
-	white-space:normal;}
-.xl68
-	{mso-style-parent:style0;
-	color:blue;
-	font-family:Arial;
-	mso-generic-font-family:auto;
-	mso-font-charset:0;}
-.xl69
-	{mso-style-parent:style0;
-	color:white;
-	font-family:Arial;
-	mso-generic-font-family:auto;
-	mso-font-charset:0;
-	text-align:left;
-	vertical-align:bottom;
-	background:#38761D;
-	mso-pattern:black none;
-	white-space:normal;}
--->
-</style>
+    <meta http-equiv=Content-Type content="text/html; charset=macintosh">
+    <meta name=ProgId content=Excel.Sheet>
+    <meta name=Generator content="Microsoft Excel 14">
+    <link rel=File-List href="FacetFields_files/filelist.xml">
+    <style>
+        <!--
+        table {
+            mso-displayed-decimal-separator: "\.";
+            mso-displayed-thousand-separator: "\,";
+        }
+
+        @page {
+            margin: 1.0in .75in 1.0in .75in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-page-orientation: landscape;
+        }
+
+        .style54 {
+            color: blue;
+            font-size: 10.0pt;
+            font-weight: 400;
+            font-style: normal;
+            text-decoration: underline;
+            text-underline-style: single;
+            font-family: Arial, sans-serif;
+            mso-font-charset: 0;
+            mso-style-name: Hyperlink;
+            mso-style-id: 8;
+        }
+
+        a:link {
+            color: blue;
+            font-size: 10.0pt;
+            font-weight: 400;
+            font-style: normal;
+            text-decoration: underline;
+            text-underline-style: single;
+            font-family: Arial, sans-serif;
+            mso-font-charset: 0;
+        }
+
+        a:visited {
+            color: purple;
+            font-size: 10.0pt;
+            font-weight: 400;
+            font-style: normal;
+            text-decoration: underline;
+            text-underline-style: single;
+            font-family: Arial, sans-serif;
+            mso-font-charset: 0;
+        }
+
+        .style0 {
+            mso-number-format: General;
+            text-align: general;
+            vertical-align: middle;
+            white-space: nowrap;
+            mso-rotate: 0;
+            mso-background-source: auto;
+            mso-pattern: auto;
+            color: windowtext;
+            font-size: 10.0pt;
+            font-weight: 400;
+            font-style: normal;
+            text-decoration: none;
+            font-family: Arial, sans-serif;
+            mso-font-charset: 0;
+            border: none;
+            mso-protection: locked visible;
+            mso-style-name: Normal;
+            mso-style-id: 0;
+        }
+
+        td {
+            mso-style-parent: style0;
+            padding-top: 1px;
+            padding-right: 1px;
+            padding-left: 1px;
+            mso-ignore: padding;
+            color: windowtext;
+            font-size: 10.0pt;
+            font-weight: 400;
+            font-style: normal;
+            text-decoration: none;
+            font-family: Arial, sans-serif;
+            mso-font-charset: 0;
+            mso-number-format: General;
+            text-align: general;
+            vertical-align: middle;
+            border: none;
+            mso-background-source: auto;
+            mso-pattern: auto;
+            mso-protection: locked visible;
+            white-space: nowrap;
+            mso-rotate: 0;
+        }
+
+        .xl65 {
+            mso-style-parent: style0;
+            color: white;
+            vertical-align: bottom;
+            background: #38761D;
+            mso-pattern: black none;
+            white-space: normal;
+        }
+
+        .xl66 {
+            mso-style-parent: style0;
+            vertical-align: bottom;
+            white-space: normal;
+        }
+
+        .xl67 {
+            mso-style-parent: style54;
+            color: blue;
+            text-decoration: underline;
+            text-underline-style: single;
+            font-family: Arial;
+            mso-generic-font-family: auto;
+            mso-font-charset: 0;
+            vertical-align: bottom;
+            white-space: normal;
+        }
+
+        .xl68 {
+            mso-style-parent: style0;
+            color: blue;
+            font-family: Arial;
+            mso-generic-font-family: auto;
+            mso-font-charset: 0;
+        }
+
+        .xl69 {
+            mso-style-parent: style0;
+            color: white;
+            font-family: Arial;
+            mso-generic-font-family: auto;
+            mso-font-charset: 0;
+            text-align: left;
+            vertical-align: bottom;
+            background: #38761D;
+            mso-pattern: black none;
+            white-space: normal;
+        }
+
+        -->
+    </style>
 </head>
 
 <body link=blue vlink=purple>
 
 <table border=0 cellpadding=0 cellspacing=0 width=1173 style='border-collapse:
  collapse;table-layout:fixed;width:1173pt'>
- <col width=73 style='mso-width-source:userset;mso-width-alt:3114;width:73pt'>
- <col width=163 style='mso-width-source:userset;mso-width-alt:6954;width:163pt'>
- <col width=427 style='mso-width-source:userset;mso-width-alt:18218;width:427pt'>
- <col class=xl68 width=255 style='mso-width-source:userset;mso-width-alt:10880;
+<col width=73 style='mso-width-source:userset;mso-width-alt:3114;width:73pt'>
+<col width=163 style='mso-width-source:userset;mso-width-alt:6954;width:163pt'>
+<col width=427 style='mso-width-source:userset;mso-width-alt:18218;width:427pt'>
+<col class=xl68 width=255 style='mso-width-source:userset;mso-width-alt:10880;
  width:255pt'>
- <col width=255 style='mso-width-source:userset;mso-width-alt:10880;width:255pt'>
- <col width=103 span=15 style='mso-width-source:userset;mso-width-alt:4394;
+<col width=255 style='mso-width-source:userset;mso-width-alt:10880;width:255pt'>
+<col width=103 span=15 style='mso-width-source:userset;mso-width-alt:4394;
  width:103pt'>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 class=xl65 width=73 style='height:12.0pt;width:73pt'>Theme</td>
-  <td class=xl65 width=163 style='width:163pt'>Facet name</td>
-  <td class=xl65 width=427 style='width:427pt'>Description</td>
-  <td class=xl69 width=255 style='width:255pt'>Darwin Core Term or link to
-  additional information</td>
-  <td class=xl65 width=255 style='width:255pt'>Index field</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 class=xl66 width=73 style='height:12.0pt;width:73pt'>Taxonomic</td>
-  <td class=xl66 width=163 style='width:163pt'>Scientific Name</td>
-  <td class=xl66 width=427 style='width:427pt'>The scientific name that ALA has
-  matched this record to in the NSL.</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#scientificName"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#scientificName</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>taxon_name</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Scientific Name (unprocessed)</td>
-  <td class=xl66 width=427 style='width:427pt'>Original scientific name
-  supplied with the record</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#scientificName"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#scientificName</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>raw_taxon_name</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Subspecies</td>
-  <td class=xl66 width=427 style='width:427pt'>The subspecies the ALA has
-  matched this record to in the NSL</td>
-  <td class=xl68></td>
-  <td class=xl66 width=255 style='width:255pt'>subspecies_name</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Genus</td>
-  <td class=xl66 width=427 style='width:427pt'>The genus the ALA has matched
-  this record to in the NSL</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#genus"><span style='color:blue;
+<tr height=12 style='height:12.0pt'>
+    <td height=12 class=xl65 width=73 style='height:12.0pt;width:73pt'>Theme</td>
+    <td class=xl65 width=163 style='width:163pt'>Facet name</td>
+    <td class=xl65 width=427 style='width:427pt'>Description</td>
+    <td class=xl69 width=255 style='width:255pt'>Darwin Core Term or link to
+        additional information
+    </td>
+    <td class=xl65 width=255 style='width:255pt'>Index field</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 class=xl66 width=73 style='height:12.0pt;width:73pt'>Taxonomic</td>
+    <td class=xl66 width=163 style='width:163pt'>Scientific Name</td>
+    <td class=xl66 width=427 style='width:427pt'>The scientific name that ALA has
+        matched this record to in the NSL.
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#scientificName"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#scientificName</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>taxon_name</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Scientific Name (unprocessed)</td>
+    <td class=xl66 width=427 style='width:427pt'>Original scientific name
+        supplied with the record
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#scientificName"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#scientificName</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>raw_taxon_name</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Subspecies</td>
+    <td class=xl66 width=427 style='width:427pt'>The subspecies the ALA has
+        matched this record to in the NSL
+    </td>
+    <td class=xl68></td>
+    <td class=xl66 width=255 style='width:255pt'>subspecies_name</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Genus</td>
+    <td class=xl66 width=427 style='width:427pt'>The genus the ALA has matched
+        this record to in the NSL
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#genus"><span style='color:blue;
   font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#genus</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>genus_guid</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Family</td>
-  <td class=xl66 width=427 style='width:427pt'>The family the ALA has matched
-  this record to in the NSL</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#family"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#family</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>family</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Order</td>
-  <td class=xl66 width=427 style='width:427pt'>The order the ALA has matched
-  this record to in the NSL</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#order"><span style='color:blue;
+    <td class=xl66 width=255 style='width:255pt'>genus_guid</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Family</td>
+    <td class=xl66 width=427 style='width:427pt'>The family the ALA has matched
+        this record to in the NSL
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#family"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#family</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>family</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Order</td>
+    <td class=xl66 width=427 style='width:427pt'>The order the ALA has matched
+        this record to in the NSL
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#order"><span style='color:blue;
   font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#order</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>order</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Class</td>
-  <td class=xl66 width=427 style='width:427pt'>The class the ALA has matched
-  this record to in the NSL</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#class"><span style='color:blue;
+    <td class=xl66 width=255 style='width:255pt'>order</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Class</td>
+    <td class=xl66 width=427 style='width:427pt'>The class the ALA has matched
+        this record to in the NSL
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#class"><span style='color:blue;
   font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#class</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>class</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Phylum</td>
-  <td class=xl66 width=427 style='width:427pt'>The phylum the ALA has matched
-  this record to in the NSL</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#phylum"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#phylum</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>phylum</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Kingdom</td>
-  <td class=xl66 width=427 style='width:427pt'>The kingdom the ALA has matched
-  this record to in the NSL</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#kingdom"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#kingdom</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>kingdom</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Lifeform</td>
-  <td class=xl66 width=427 style='width:427pt'>User friendly taxonomic groups
-  to which this record belongs. Eg Animal, Bird</td>
-  <td class=xl68></td>
-  <td class=xl66 width=255 style='width:255pt'>species_group</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Identified to rank</td>
-  <td class=xl66 width=427 style='width:427pt'>The taxonomic rank the ALA has
-  matched this record to in the NSL</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#taxonRank"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#taxonRank</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>rank</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Species Interaction</td>
-  <td class=xl66 width=427 style='width:427pt'>How this species interacts with
-  another species.</td>
-  <td class=xl68></td>
-  <td class=xl66 width=255 style='width:255pt'>interaction</td>
- </tr>
- <tr height=24 style='height:24.0pt'>
-  <td height=24 class=xl66 width=73 style='height:24.0pt;width:73pt'>Geospatial</td>
-  <td class=xl66 width=163 style='width:163pt'>Spatial Uncertainty (m)</td>
-  <td class=xl66 width=427 style='width:427pt'>Estimated error radius around
-  the occurrence location</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#coordinateUncertaintyInMeters"><span
-  style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
+    <td class=xl66 width=255 style='width:255pt'>class</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Phylum</td>
+    <td class=xl66 width=427 style='width:427pt'>The phylum the ALA has matched
+        this record to in the NSL
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#phylum"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#phylum</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>phylum</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Kingdom</td>
+    <td class=xl66 width=427 style='width:427pt'>The kingdom the ALA has matched
+        this record to in the NSL
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#kingdom"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#kingdom</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>kingdom</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Lifeform</td>
+    <td class=xl66 width=427 style='width:427pt'>User friendly taxonomic groups
+        to which this record belongs. Eg Animal, Bird
+    </td>
+    <td class=xl68></td>
+    <td class=xl66 width=255 style='width:255pt'>species_group</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Identified to rank</td>
+    <td class=xl66 width=427 style='width:427pt'>The taxonomic rank the ALA has
+        matched this record to in the NSL
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#taxonRank"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#taxonRank</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>rank</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Species Interaction</td>
+    <td class=xl66 width=427 style='width:427pt'>How this species interacts with
+        another species.
+    </td>
+    <td class=xl68></td>
+    <td class=xl66 width=255 style='width:255pt'>interaction</td>
+</tr>
+<tr height=24 style='height:24.0pt'>
+    <td height=24 class=xl66 width=73 style='height:24.0pt;width:73pt'>Geospatial</td>
+    <td class=xl66 width=163 style='width:163pt'>Spatial Uncertainty (m)</td>
+    <td class=xl66 width=427 style='width:427pt'>Estimated error radius around
+        the occurrence location
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#coordinateUncertaintyInMeters"><span
+            style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
   0'>http://rs.tdwg.org/dwc/terms/#coordinateUncertaintyInMeters</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>uncertainty</td>
- </tr>
- <tr height=24 style='height:24.0pt'>
-  <td height=24 style='height:24.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>State Conservation (unprocessed)</td>
-  <td class=xl66 width=427 style='width:427pt'>The state conservation status
-  for the matched species using the State's conservation vocabulary.</td>
-  <td class=xl68></td>
-  <td class=xl66 width=255 style='width:255pt'>raw_state_conservation</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>LGA Boundaries</td>
-  <td class=xl66 width=427 style='width:427pt'>The local government area
-  matching the supplied coordinates</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/locality"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/locality</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>places</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Australian States and
-  Territories<span style="mso-spacerun:yes">&nbsp;</span></td>
-  <td class=xl66 width=427 style='width:427pt'>The state or territory matching
-  the supplied coordinates</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/stateProvince"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/stateProvince</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>state</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Country Boundaries<span
-  style="mso-spacerun:yes">&nbsp;</span></td>
-  <td class=xl66 width=427 style='width:427pt'>The country where the specimen
-  was collected or observation was made</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#country"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#country</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>country</td>
- </tr>
- <tr height=24 style='height:24.0pt'>
-  <td height=24 style='height:24.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>IBRA Regions</td>
-  <td class=xl66 width=427 style='width:427pt'>The IBRA region matching the
-  supplied coordinates</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://www.environment.gov.au/parks/nrs/science/bioregion-framework/ibra/index.html"><span
-  style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
+    <td class=xl66 width=255 style='width:255pt'>uncertainty</td>
+</tr>
+<tr height=24 style='height:24.0pt'>
+    <td height=24 style='height:24.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>State Conservation (unprocessed)</td>
+    <td class=xl66 width=427 style='width:427pt'>The state conservation status
+        for the matched species using the State's conservation vocabulary.
+    </td>
+    <td class=xl68></td>
+    <td class=xl66 width=255 style='width:255pt'>raw_state_conservation</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>LGA Boundaries</td>
+    <td class=xl66 width=427 style='width:427pt'>The local government area
+        matching the supplied coordinates
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/locality"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/locality</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>places</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Australian States and
+        Territories<span style="mso-spacerun:yes">&nbsp;</span></td>
+    <td class=xl66 width=427 style='width:427pt'>The state or territory matching
+        the supplied coordinates
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/stateProvince"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/stateProvince</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>state</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Country Boundaries<span
+            style="mso-spacerun:yes">&nbsp;</span></td>
+    <td class=xl66 width=427 style='width:427pt'>The country where the specimen
+        was collected or observation was made
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#country"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#country</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>country</td>
+</tr>
+<tr height=24 style='height:24.0pt'>
+    <td height=24 style='height:24.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>IBRA Regions</td>
+    <td class=xl66 width=427 style='width:427pt'>The IBRA region matching the
+        supplied coordinates
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://www.environment.gov.au/parks/nrs/science/bioregion-framework/ibra/index.html"><span
+            style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
   0'>http://www.environment.gov.au/parks/nrs/science/bioregion-framework/ibra/index.html</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>ibra</td>
- </tr>
- <tr height=24 style='height:24.0pt'>
-  <td height=24 style='height:24.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>IMCRA Regions</td>
-  <td class=xl66 width=427 style='width:427pt'>The IMCRA region matching the
-  supplied coordinates</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://www.environment.gov.au/coasts/mbp/imcra/index.html"><span
-  style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
+    <td class=xl66 width=255 style='width:255pt'>ibra</td>
+</tr>
+<tr height=24 style='height:24.0pt'>
+    <td height=24 style='height:24.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>IMCRA Regions</td>
+    <td class=xl66 width=427 style='width:427pt'>The IMCRA region matching the
+        supplied coordinates
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://www.environment.gov.au/coasts/mbp/imcra/index.html"><span
+            style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
   0'>http://www.environment.gov.au/coasts/mbp/imcra/index.html</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>imcra</td>
- </tr>
- <tr height=24 style='height:24.0pt'>
-  <td height=24 style='height:24.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Dynamic Land Cover</td>
-  <td class=xl66 width=427 style='width:427pt'>Land cover classes estimated
-  from 250m MODIS satellite data</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://adl.brs.gov.au/data/warehouse/dlcdd9abll078/dlccd9abll0781011a/DLCDv1Overview_1.0.0.pdf"><span
-  style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
+    <td class=xl66 width=255 style='width:255pt'>imcra</td>
+</tr>
+<tr height=24 style='height:24.0pt'>
+    <td height=24 style='height:24.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Dynamic Land Cover</td>
+    <td class=xl66 width=427 style='width:427pt'>Land cover classes estimated
+        from 250m MODIS satellite data
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://adl.brs.gov.au/data/warehouse/dlcdd9abll078/dlccd9abll0781011a/DLCDv1Overview_1.0.0.pdf"><span
+            style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
   0'>http://adl.brs.gov.au/data/warehouse/dlcdd9abll078/dlccd9abll0781011a/DLCDv1Overview_1.0.0.pdf</span></a></td>
-  <td></td>
- </tr>
- <tr height=24 style='height:24.0pt'>
-  <td height=24 style='height:24.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Vegetation types - native</td>
-  <td class=xl66 width=427 style='width:427pt'>Estimated pre-European
-  vegetation groups</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://www.anra.gov.au/topics/vegetation/pubs/native_vegetation/nat_veg_preeuropean.html"><span
-  style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
+    <td></td>
+</tr>
+<tr height=24 style='height:24.0pt'>
+    <td height=24 style='height:24.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Vegetation types - native</td>
+    <td class=xl66 width=427 style='width:427pt'>Estimated pre-European
+        vegetation groups
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://www.anra.gov.au/topics/vegetation/pubs/native_vegetation/nat_veg_preeuropean.html"><span
+            style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
   0'>http://www.anra.gov.au/topics/vegetation/pubs/native_vegetation/nat_veg_preeuropean.html</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>cl617</td>
- </tr>
- <tr height=24 style='height:24.0pt'>
-  <td height=24 style='height:24.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Vegetation types - present</td>
-  <td class=xl66 width=427 style='width:427pt'>Current major vegetation groups</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://www.anra.gov.au/topics/vegetation/pubs/native_vegetation/nat_veg_veggroups.html"><span
-  style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
+    <td class=xl66 width=255 style='width:255pt'>cl617</td>
+</tr>
+<tr height=24 style='height:24.0pt'>
+    <td height=24 style='height:24.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Vegetation types - present</td>
+    <td class=xl66 width=427 style='width:427pt'>Current major vegetation groups</td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://www.anra.gov.au/topics/vegetation/pubs/native_vegetation/nat_veg_veggroups.html"><span
+            style='color:blue;font-family:Arial;mso-generic-font-family:auto;mso-font-charset:
   0'>http://www.anra.gov.au/topics/vegetation/pubs/native_vegetation/nat_veg_veggroups.html</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>cl620</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 class=xl66 width=73 style='height:12.0pt;width:73pt'>Temporal</td>
-  <td class=xl66 width=163 style='width:163pt'>Month</td>
-  <td class=xl66 width=427 style='width:427pt'>Month of observation, specimen
-  collection date.</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#month"><span style='color:blue;
+    <td class=xl66 width=255 style='width:255pt'>cl620</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 class=xl66 width=73 style='height:12.0pt;width:73pt'>Temporal</td>
+    <td class=xl66 width=163 style='width:163pt'>Month</td>
+    <td class=xl66 width=427 style='width:427pt'>Month of observation, specimen
+        collection date.
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#month"><span style='color:blue;
   font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#month</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>month</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Year</td>
-  <td class=xl66 width=427 style='width:427pt'>Year of observation, specimen
-  collection date.</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#year"><span style='color:blue;font-family:
+    <td class=xl66 width=255 style='width:255pt'>month</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Year</td>
+    <td class=xl66 width=427 style='width:427pt'>Year of observation, specimen
+        collection date.
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#year"><span style='color:blue;font-family:
   Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#year</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>year</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 class=xl66 width=73 style='height:12.0pt;width:73pt'>Record
-  Details</td>
-  <td class=xl66 width=163 style='width:163pt'>Record Type</td>
-  <td class=xl66 width=427 style='width:427pt'>The basis of record e.g.
-  Specimen, Observation</td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/#basisOfRecord"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#basisOfRecord</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>basis_of_record</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Specimen Type</td>
-  <td class=xl66 width=427 style='width:427pt'></td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/typeStatus"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/typeStatus</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>type_status</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Collector</td>
-  <td></td>
-  <td class=xl67 width=255 style='width:255pt'><a
-  href="http://rs.tdwg.org/dwc/terms/recordedBy"><span style='color:blue;
-  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/recordedBy</span></a></td>
-  <td class=xl66 width=255 style='width:255pt'>collector</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 class=xl66 width=73 style='height:12.0pt;width:73pt'>Attribution</td>
-  <td class=xl66 width=163 style='width:163pt'>Dataset</td>
-  <td class=xl66 width=427 style='width:427pt'>The data resource to which this
-  record belongs</td>
-  <td class=xl68></td>
-  <td class=xl66 width=255 style='width:255pt'>data_resource_uid</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 style='height:12.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Data Provider</td>
-  <td class=xl66 width=427 style='width:427pt'>The data provider to which this
-  record belongs</td>
-  <td class=xl68></td>
-  <td class=xl66 width=255 style='width:255pt'>data_provider_uid</td>
- </tr>
- <tr height=24 style='height:24.0pt'>
-  <td height=24 style='height:24.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Collection</td>
-  <td class=xl66 width=427 style='width:427pt'>The collection name for this
-  record. This will be populated if the data has come from a museum or herbaria</td>
-  <td class=xl66 width=255 style='width:255pt'>No DwC term applicable - our
-  UIDs should NOT be considered global identifiers for the collections</td>
-  <td class=xl66 width=255 style='width:255pt'>collection_uid</td>
- </tr>
- <tr height=24 style='height:24.0pt'>
-  <td height=24 style='height:24.0pt'></td>
-  <td class=xl66 width=163 style='width:163pt'>Institution</td>
-  <td class=xl66 width=427 style='width:427pt'>The institution name for this
-  record. This will be populated if the data has come from a museum or herbaria</td>
-  <td class=xl66 width=255 style='width:255pt'>No DwC term applicable - our
-  UIDs should NOT be considered global identifiers for the institution</td>
-  <td class=xl66 width=255 style='width:255pt'>institution_uid</td>
- </tr>
- <tr height=12 style='height:12.0pt'>
-  <td height=12 colspan=3 style='height:12.0pt;mso-ignore:colspan'></td>
-  <td></td>
-  <td class=xl66 width=255 style='width:255pt'>provenance</td>
- </tr>
- <tr height=24 style='height:24.0pt'>
-  <td height=24 class=xl66 width=73 style='height:24.0pt;width:73pt'>Record
-  Assertions</td>
-  <td class=xl66 width=163 style='width:163pt'>Record Issues</td>
-  <td class=xl66 width=427 style='width:427pt'>Potential issues with the record
-  that were identified by ALA.</td>
-  <td class=xl66 width=255 style='width:255pt'>No DwC term applicable</td>
-  <td class=xl66 width=255 style='width:255pt'>assertions</td>
- </tr>
+    <td class=xl66 width=255 style='width:255pt'>year</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 class=xl66 width=73 style='height:12.0pt;width:73pt'>Record
+        Details
+    </td>
+    <td class=xl66 width=163 style='width:163pt'>Record Type</td>
+    <td class=xl66 width=427 style='width:427pt'>The basis of record e.g.
+        Specimen, Observation
+    </td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/#basisOfRecord"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/#basisOfRecord</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>basis_of_record</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Specimen Type</td>
+    <td class=xl66 width=427 style='width:427pt'></td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/typeStatus"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/typeStatus</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>type_status</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Collector</td>
+    <td></td>
+    <td class=xl67 width=255 style='width:255pt'><a
+            href="http://rs.tdwg.org/dwc/terms/recordedBy"><span style='color:blue;
+  font-family:Arial;mso-generic-font-family:auto;mso-font-charset:0'>http://rs.tdwg.org/dwc/terms/recordedBy</span></a>
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>collector</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 class=xl66 width=73 style='height:12.0pt;width:73pt'>Attribution</td>
+    <td class=xl66 width=163 style='width:163pt'>Dataset</td>
+    <td class=xl66 width=427 style='width:427pt'>The data resource to which this
+        record belongs
+    </td>
+    <td class=xl68></td>
+    <td class=xl66 width=255 style='width:255pt'>data_resource_uid</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 style='height:12.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Data Provider</td>
+    <td class=xl66 width=427 style='width:427pt'>The data provider to which this
+        record belongs
+    </td>
+    <td class=xl68></td>
+    <td class=xl66 width=255 style='width:255pt'>data_provider_uid</td>
+</tr>
+<tr height=24 style='height:24.0pt'>
+    <td height=24 style='height:24.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Collection</td>
+    <td class=xl66 width=427 style='width:427pt'>The collection name for this
+        record. This will be populated if the data has come from a museum or herbaria
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>No DwC term applicable - our
+        UIDs should NOT be considered global identifiers for the collections
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>collection_uid</td>
+</tr>
+<tr height=24 style='height:24.0pt'>
+    <td height=24 style='height:24.0pt'></td>
+    <td class=xl66 width=163 style='width:163pt'>Institution</td>
+    <td class=xl66 width=427 style='width:427pt'>The institution name for this
+        record. This will be populated if the data has come from a museum or herbaria
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>No DwC term applicable - our
+        UIDs should NOT be considered global identifiers for the institution
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>institution_uid</td>
+</tr>
+<tr height=12 style='height:12.0pt'>
+    <td height=12 colspan=3 style='height:12.0pt;mso-ignore:colspan'></td>
+    <td></td>
+    <td class=xl66 width=255 style='width:255pt'>provenance</td>
+</tr>
+<tr height=24 style='height:24.0pt'>
+    <td height=24 class=xl66 width=73 style='height:24.0pt;width:73pt'>Record
+        Assertions
+    </td>
+    <td class=xl66 width=163 style='width:163pt'>Record Issues</td>
+    <td class=xl66 width=427 style='width:427pt'>Potential issues with the record
+        that were identified by ALA.
+    </td>
+    <td class=xl66 width=255 style='width:255pt'>No DwC term applicable</td>
+    <td class=xl66 width=255 style='width:255pt'>assertions</td>
+</tr>
 </table>
 
 </body>

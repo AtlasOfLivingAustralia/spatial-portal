@@ -1,14 +1,13 @@
 package au.org.emii.portal.servlet;
 
-import java.io.IOException;
+import org.apache.log4j.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
+import java.io.IOException;
 
 /**
  * Servlet implementation class ErrorHandlerServlet
@@ -26,7 +25,8 @@ public class ErrorHandlerServlet extends HttpServlet {
     }
 
     /**
-     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+     * response)
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -44,10 +44,9 @@ public class ErrorHandlerServlet extends HttpServlet {
         // jsp error page
         Logger logger = Logger.getLogger(this.getClass());
         logger.fatal(
-                "UNHANDLED EXCEPTION: HTTP ERROR " + statusCode + " Message: " + message +
-                " URI: " + request_uri + " REASON " +
-                exception.getMessage());
-
+                "UNHANDLED EXCEPTION: HTTP ERROR " + statusCode + " Message: " + message
+                        + " URI: " + request_uri + " REASON "
+                        + exception.getMessage());
 
         // now we just display a static-ish JSP to the user - we don't use a
         // ZK page because it could well be problems with ZK that have sent
@@ -59,7 +58,8 @@ public class ErrorHandlerServlet extends HttpServlet {
     }
 
     /**
-     * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+     * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+     * response)
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

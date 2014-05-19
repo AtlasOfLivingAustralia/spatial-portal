@@ -1,0 +1,64 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="arearadiusmanualselectionwindow" use="au.org.ala.spatial.composer.add.area.AreaRadiusManual"
+            apply="au.org.ala.spatial.composer.add.area.AreaRadiusManual" width="500px"  xmlns:n="http://www.zkoss.org/2005/zk/native"
+            style="position:absolute;left:10px;top:10px;overflow:visible"
+            >
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="arearadiusmanualselectionwindow.onClick$btnCancel(null)" style="display: inline" />
+
+
+
+
+        <caption label="Create circle from longitude, latitude and radius" />
+        <vbox width="90%">
+<div class="input-group" >
+        <separator/>
+
+            <hbox width="90%">
+                <div width="160px">
+                    <label value="Area name" sclass="h3" />
+                </div>
+                <textbox  class="form-control input-lg" id="txtLayerName" width="250px"/>
+            </hbox>
+            <separator />
+            <hbox width="90%">
+                <div width="160px">
+                    <label value="Longitude (decimal degree)" sclass="h3" />
+                </div>
+                <doublebox  class="form-control input-lg" id="dLongitude" width="100px" constraint="no empty"/>
+            </hbox>
+            <separator />
+            <hbox width="90%">
+                <div width="160px">
+                    <label value="Latitude (decimal degree)" sclass="h3" />
+                </div>
+                <doublebox  class="form-control input-lg" id="dLatitude" width="100px" constraint="no empty"/>
+            </hbox>
+            <separator />
+            <hbox width="90%">
+                <div width="160px">
+                    <label value="Radius (km)" sclass="h3" />
+                </div>
+                <doublebox  class="form-control input-lg" id="dRadius" width="100px" constraint="no negative,no empty" value="1.0"/>
+            </hbox>
+            <separator />
+
+            <div class="btn-group" >
+                                            <button label="Cancel" id="btnCancel" />
+                                            <button class="btn-primary" label="Next >" id="btnOk" />
+                                    </div>
+</div>
+        </vbox>
+
+
+    </window>
+</zk>
+

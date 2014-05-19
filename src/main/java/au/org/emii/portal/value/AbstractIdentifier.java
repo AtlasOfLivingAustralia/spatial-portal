@@ -6,7 +6,6 @@
 package au.org.emii.portal.value;
 
 /**
- *
  * @author geoff
  */
 public interface AbstractIdentifier {
@@ -14,6 +13,7 @@ public interface AbstractIdentifier {
     /**
      * Return a human readable dump of this object.  Skips the description
      * because it could be long and mess up the output
+     *
      * @return
      */
     public String dump();

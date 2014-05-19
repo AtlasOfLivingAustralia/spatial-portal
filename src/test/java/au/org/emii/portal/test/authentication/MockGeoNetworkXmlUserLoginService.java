@@ -5,16 +5,18 @@
 
 package au.org.emii.portal.test.authentication;
 
-import java.io.IOException;
-import java.io.PrintStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.core.Container;
 
+import java.io.IOException;
+import java.io.PrintStream;
+
 /**
  * Use simple framework embedded http server to create simulated http responses
+ *
  * @author geoff
  */
 public class MockGeoNetworkXmlUserLoginService implements Container {
@@ -42,13 +44,14 @@ public class MockGeoNetworkXmlUserLoginService implements Container {
 
     /**
      * Fake long function
+     *
      * @param username
      * @param password
      * @return
      */
     private boolean login(String username, String password) {
         return username != null && username.equals(GOOD_USER) &&
-               password != null && password.equals(GOOD_PASSWORD);
+                password != null && password.equals(GOOD_PASSWORD);
     }
 
     @Override
@@ -73,5 +76,5 @@ public class MockGeoNetworkXmlUserLoginService implements Container {
 
     }
 
-    
+
 }

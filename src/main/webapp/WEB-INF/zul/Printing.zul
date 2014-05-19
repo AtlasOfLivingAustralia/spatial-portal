@@ -3,7 +3,9 @@
     <window id="printingwindow"
             use="au.org.emii.portal.composer.PrintingComposer"
             apply="au.org.emii.portal.composer.PrintingComposer"
-            width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native">
+            width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native"
+            style="overflow:visible"
+            >
             <n:div class="fancybox-bg" id="fancybox-bg-ne" />
             <n:div class="fancybox-bg" id="fancybox-bg-se" />
             <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -18,7 +20,7 @@
 
             <separator />
             
-            <vbox style="margin-left:30px">
+            <vbox width="100%">
 
             <hbox width="100%">
                 <div width="150px"><label value="Map caption" width="150px"/></div>
@@ -52,9 +54,10 @@
             </hbox>
 <separator />
 
-            <hbox width="100%">
-                <div style="float:right"><button label="Preview" id="btnPreview" visible="false" /><button label="Download" id="btnExport" /></div>
-            </hbox>
+            <div class="btn-group">
+               <button label="Preview" id="btnPreview" visible="false" />
+               <button class="btn-primary" label="Download" id="btnExport" />
+            </div>
 
             </vbox>
     </window>

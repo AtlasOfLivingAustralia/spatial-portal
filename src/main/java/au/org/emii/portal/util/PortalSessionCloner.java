@@ -5,18 +5,17 @@
 
 package au.org.emii.portal.util;
 
-import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.session.PortalSession;
+import au.org.emii.portal.value.BoundingBox;
 import org.apache.log4j.Logger;
 
 /**
- *
  * @author geoff
  */
 public class PortalSessionCloner {
     private PortalSessionUtilities portalSessionUtilities = null;
-    private Logger logger = Logger.getLogger(getClass());
+    private static Logger logger = Logger.getLogger(PortalSessionCloner.class);
 
     public PortalSessionUtilities getPortalSessionUtilities() {
         return portalSessionUtilities;
@@ -74,7 +73,7 @@ public class PortalSessionCloner {
          * during stage 2 because otherwise we would have to bother cloning everything
          */
 
-         logger.debug("Session cloned as: " + portalSessionUtilities.dump(portalSession));
-         return portalSession;
+        logger.debug("Session cloned");
+        return portalSession;
     }
 }

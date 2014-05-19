@@ -5,11 +5,11 @@
 
 package au.org.emii.portal.test;
 
-import java.net.URL;
 import org.apache.log4j.Logger;
 
+import java.net.URL;
+
 /**
- *
  * @author geoff
  */
 public class FilenameResolver {
@@ -26,7 +26,7 @@ public class FilenameResolver {
     }
 
     public String resolveResource(String filename) {
-        String fqFilename= null;
+        String fqFilename = null;
         URL url = getClass().getResource(filename);
         if (url == null) {
             logger.error("file not found on classpath: " + filename);

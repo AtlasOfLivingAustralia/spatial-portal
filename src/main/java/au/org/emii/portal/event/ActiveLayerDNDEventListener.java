@@ -8,7 +8,6 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Listitem;
 
 /**
- * 
  * @author geoff
  */
 public class ActiveLayerDNDEventListener extends PortalEvent implements EventListener {
@@ -27,13 +26,11 @@ public class ActiveLayerDNDEventListener extends PortalEvent implements EventLis
                 Component eventType = dragEvent.getDragged();
                 if (eventType instanceof Listitem) {
                     reorderList(mapComposer, dragEvent);
+                } else {
+                    logger.debug("unsupported dnd event " + eventType.getClass().getName());
                 }
-                else {
-                    logger.info("unsupported dnd event " + eventType.getClass().getName());
-                }
-            }
-            else {
-                logger.info("event is not a DropEvent instance: " + event.getClass().getName());
+            } else {
+                logger.debug("event is not a DropEvent instance: " + event.getClass().getName());
             }
         }
     }
@@ -42,6 +39,5 @@ public class ActiveLayerDNDEventListener extends PortalEvent implements EventLis
         Listitem dragged = (Listitem) dropEvent.getDragged();
         Listitem dropped = (Listitem) dropEvent.getTarget();
         mapComposer.reorderList(dragged, dropped);
-//        mapComposer.updateLayerControls();
     }
 }

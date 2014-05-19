@@ -1,0 +1,94 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="areaenvironmentalenvelopewindow" use="au.org.ala.spatial.composer.add.area.AreaEnvironmentalEnvelope"
+            apply="au.org.ala.spatial.composer.add.area.AreaEnvironmentalEnvelope" 
+            width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native"
+            style="position:absolute;left:10px;top:10px;overflow:visible" draggable="false">
+        <n:div class="left-cover" />
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="areaenvironmentalenvelopewindow.onClick$btnCancel(null)" style="display: inline" />
+
+        <caption label="Environmental Envelope" />
+
+        <vbox height="600px">
+        <separator />
+            <div>
+                <hbox width="100%">
+                    <label value="Area name" sclass="h3" />
+                    <textbox id="txtLayerName" width="250px"/>
+                </hbox>
+            </div>
+            <label value="Search for a layer to add" />
+            <combobox id="cbEnvLayers" use="au.org.ala.spatial.composer.layer.EnvLayersCombobox" autodrop="true" width="350px" >
+                <comboitem label=""/>
+            </combobox>
+            <label sclass="exampleText">e.g. Annual Mean Temperature</label>
+
+            <separator />
+
+
+            <listbox id="lbSelLayers" multiple="false" checkmark="false" height="300px" >
+                <listhead>
+                    <listheader  width="40%" align="center"  >
+                        <label value="Layer"/></listheader>
+                    <listheader align="center"   >
+                        <label value="Envelope extent" width="40%"  ></label>
+                    </listheader>
+                    <listheader width="20%" align="center" >
+                        <label style="white-space:normal" value="Species Count" />
+                    </listheader>
+                </listhead>
+            </listbox>
+            <div class="btn-group" style="float:left">
+            <button class="btn-small" id="btnClearSelection" label="Clear layers"  />
+            </div>
+
+            <div id="popup_continous" visible="false" width="100%" >
+
+                                        <label sclass="word-wrap"
+                                                   style="white-space: normal; font-weight:bold"
+                                                   value="edit envelope for this layer" id="label_continous"
+                                                   multiline="true"/>
+
+                                        <vbox width="100%">
+                                            <hbox>
+                                                <label value="Full layer extent"/>
+                                                <label id="popup_range"/>
+                                            </hbox>
+                                            <hbox>
+                                                <slider id="popup_slider_min" slidingtext="">
+                                                </slider>
+                                                <doublebox id="popup_minimum" width="80px"></doublebox>
+                                            </hbox>
+
+                                            <hbox>
+                                                <slider id="popup_slider_max" slidingtext="">
+                                                </slider>
+                                                <doublebox id="popup_maximum" width="80px"></doublebox>
+                                                <textbox id="popup_idx" visible="false"></textbox>
+                                            </hbox>
+                                            <div class="btn-group">
+                                                <button class="btn-small" label="Update species count" id="apply_continous"  autodisable="self"/>
+                                                <button class="btn-small" label="Remove" id="remove_continous" />
+                                            </div>
+                                        </vbox>
+                                    </div>
+            <separator />
+            <separator />
+        </vbox>
+
+        <div class="btn-group" style="float:right;">
+                                        <button label="Cancel" id="btnCancel" />
+                                        <button class="btn-primary" label="Next >" id="filter_done" disabled="false" autodisable="self" />
+                                </div>
+
+    </window>
+</zk>
+
