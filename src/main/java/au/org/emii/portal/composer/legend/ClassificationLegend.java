@@ -724,7 +724,7 @@ public class ClassificationLegend extends UtilityComposer {
 
                     String range, strFacet;
                     if (ss.length > 1) {
-                        String yr = ss[1].substring(0, ss[1].length() - 1);
+                        String yr = ss[1].substring(0, ss[1].length() - 2);
 
                         range = String.format("%s0s", yr);
                         strFacet = "occurrence_year:[" + yr + "0-01-01T00:00:00Z TO " + yr + "9-12-31T00:00:00Z]";
