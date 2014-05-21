@@ -35,6 +35,8 @@
         var safeToLoadMapId = null;
         var registerLayer = null;
         var tmpvars;
+
+        setTimeout(window.zkmx,2000); //fix for page not loading
     </script>
 
     <style>
@@ -70,7 +72,7 @@
             style="overflow:hidden;">
         <script defer="false" type="text/javascript">
 
-            <!-- Set up the google analytics
+            <!-- Set up the google analytics -->
             var _gaq = _gaq || [];
             _gaq.push(['_setAccount', 'UA-4355440-1']);
             _gaq.push(['_setDomainName', 'ala.org.au']);
@@ -80,7 +82,7 @@
                 var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
                 ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
                 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-            })(); -->
+            })();
         </script>
         <script defer="true" type="text/JavaScript" src="scripts/index.js" />
 
@@ -451,7 +453,6 @@
                             window.frames["mapFrame"].document.getElementById('controlPanZoom').style.display = "none";
                         }
 
-console.log(currentbaselayertxt);
                         if(h2.length > 7 && currentbaselayertxt != h2[7]) {
                         console.log(h2[7]);
                             changeBaseLayer(h2[7]);
@@ -573,17 +574,6 @@ webportal_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("web
 help_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("help_url"));
 </zscript>
 
-          <!--script defer="false" type="text/javascript"><![CDATA[
-            
-       var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-       document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js'<http://google-analytics.com/ga.js'> type='text/javascript'%3E%3C/script%3E"));
-        ]]></script>
-        <script defer="true" type="text/javascript"><![CDATA[
-       var pageTracker = _gat._getTracker("UA-4355440-1");
-       pageTracker._initData();
-       pageTracker._trackPageview();
-       ]]>
-        </script-->
 
         <script><![CDATA[
 

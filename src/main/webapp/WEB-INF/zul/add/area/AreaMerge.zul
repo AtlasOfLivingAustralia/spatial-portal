@@ -30,8 +30,6 @@
 
             <label value="Select areas to merge" />
             <vbox id="vboxAreas">
-                <checkbox id="cbAreaCurrent" label="Current extent" onCheck="doChecked()" />
-                <checkbox id="cbAreaAustralia" label="Australia" onCheck="doChecked()" />
             </vbox>
 
             <div class="btn-group" style="float:right;">
