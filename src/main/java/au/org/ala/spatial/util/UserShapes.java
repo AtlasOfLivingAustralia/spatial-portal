@@ -7,7 +7,9 @@ import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import au.org.ala.spatial.dto.ShapeObjectDTO;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.log4j.Logger;
+import org.apache.commons.httpclient.NameValuePair;
 
 import java.util.ArrayList;
 
@@ -28,11 +30,11 @@ public class UserShapes {
             HttpClient client = new HttpClient();
             PostMethod post = new PostMethod(url);
 
-            post.setRequestBody(jo.toString());
             post.setParameter("namesearch","false");
-            post.setParameter("api_key",api_key);
+            post.setRequestBody(jo.toString());
 
-            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            post.setRequestHeader("Content-Type", "application/json");
+
             int result = client.executeMethod(post);
             if (result == 200) {
                 JSONObject ja = JSONObject.fromObject(post.getResponseBodyAsString());
@@ -41,6 +43,8 @@ public class UserShapes {
                 if (ja.containsKey("id")) {
                     return ja.getString("id");
                 }
+            } else {
+                logger.debug(post.getResponseBodyAsString());
             }
         } catch (Exception e) {
             logger.error("error uploading shape: " + url);

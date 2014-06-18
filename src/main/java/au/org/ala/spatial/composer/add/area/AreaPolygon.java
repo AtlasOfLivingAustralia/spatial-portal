@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
@@ -30,7 +31,7 @@ public class AreaPolygon extends AreaToolComposer {
     public void afterCompose() {
         super.afterCompose();
 
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
     }
 
     public void onClick$btnNext(Event event) {
@@ -96,7 +97,7 @@ public class AreaPolygon extends AreaToolComposer {
             if (wkt.length() > 0) {
                 layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
                 MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
-                mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadataForWKT("User drawn polygon", wkt));
+                mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadataForWKT(CommonData.lang("metadata_polygon"), wkt));
 
                 if (!validWKT(wkt)) {
                     btnNext.setDisabled(true);
@@ -128,7 +129,7 @@ public class AreaPolygon extends AreaToolComposer {
             //logger.debug("GEOMETRY TYPE: " + g.getGeometryType());
             IsValidOp op = new IsValidOp(g);
             if (!op.isValid()) {
-                invalidWKT.setValue("WKT is invalid. " + op.getValidationError().getMessage());
+                invalidWKT.setValue(CommonData.lang("error_wkt_invalid") + " " + op.getValidationError().getMessage());
                 logger.warn("WKT is invalid." + op.getValidationError().getMessage());
                 //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
             } else if (g.isRectangle()) {
@@ -144,7 +145,7 @@ public class AreaPolygon extends AreaToolComposer {
                         + envelope.getMinX() + " " + envelope.getMinY() + "))";
                 if (!wkt.equals(wkt2)) {
                     logger.debug("NEW WKT for Rectangle: " + wkt);
-                    invalidWKT.setValue("WKT for Rectangle is in incorrect order. We have automatically fixed this. Press next to accept this value.");
+                    invalidWKT.setValue(CommonData.lang("error_wkt_rectangle_wrong_order"));
                     displayGeom.setValue(wkt2);
                     return false;
                 }
@@ -152,7 +153,7 @@ public class AreaPolygon extends AreaToolComposer {
             }
             return op.isValid();
         } catch (ParseException parseException) {
-            invalidWKT.setValue("WKT is Invalid. " + parseException.getMessage());
+            invalidWKT.setValue(CommonData.lang("error_wkt_invalid") + " " + parseException.getMessage());
             return false;
         }
     }

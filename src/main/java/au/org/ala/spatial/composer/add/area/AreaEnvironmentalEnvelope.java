@@ -78,7 +78,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         selectedLayers = new Vector<JSONObject>();
         selectedSPLFilterLayers = new Hashtable<String, SPLFilter>();
 
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
 
         cbEnvLayers.setIncludeLayers("environmental");
     }
@@ -575,7 +575,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             return;
         }
 
-        Clients.showBusy("Updating count...");
+        Clients.showBusy(CommonData.lang("updating_count"));
         Events.echoEvent("onLater", this, null);
     }
 
@@ -606,7 +606,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
         String strCount = speciescount + "";
         if (isDirtyCount) {
-            Clients.showBusy("Updating species count....");
+            Clients.showBusy(CommonData.lang("updating_count"));
             strCount = getSpeciesCount() + "";
             Clients.clearBusy();
         }

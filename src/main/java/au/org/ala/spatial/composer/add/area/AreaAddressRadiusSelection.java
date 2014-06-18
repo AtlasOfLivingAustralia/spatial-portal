@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
@@ -38,7 +39,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
         super.afterCompose();
         dRadius.setDisabled(true);
         btnOk.setDisabled(true);
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
     }
 
     public void onClick$btnOk(Event event) {
@@ -125,7 +126,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
 
         double radius = dRadius.getValue();
         if (radius <= 0) {
-            sb.append("\nRadius must be greater than 0.");
+            sb.append("\n" + CommonData.lang("error_msg_radius_0"));
         }
 
         if (sb.length() > 0) {

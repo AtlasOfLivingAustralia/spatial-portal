@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
@@ -28,7 +29,7 @@ public class AreaRadiusManual extends AreaToolComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
         BoundingBox bb = getMapComposer().getLeftmenuSearchComposer().getViewportBoundingBox();
         dLongitude.setValue(Math.round((bb.getMinLongitude() + (bb.getMaxLongitude() - bb.getMinLongitude()) / 2) * 100) / 100.0);
         dLatitude.setValue(Math.round((bb.getMinLatitude() + (bb.getMaxLatitude() - bb.getMinLatitude()) / 2) * 100) / 100.0);
@@ -72,17 +73,17 @@ public class AreaRadiusManual extends AreaToolComposer {
         //test longitude
         double longitude = dLongitude.getValue();
         if (longitude < -180 || longitude > 360) {
-            sb.append("\nLongitude must be between -180 and 180.");
+            sb.append("\n" + CommonData.lang("error_invalid_longitude"));
         }
 
         double latitude = dLatitude.getValue();
         if (latitude < -90 || latitude > 90) {
-            sb.append("\nLatitude must be between -90 and 90.");
+            sb.append("\n" + CommonData.lang("error_invalid_latitude"));
         }
 
         double radius = dRadius.getValue();
         if (radius <= 0) {
-            sb.append("\nRadius must be greater than 0.");
+            sb.append("\n" + CommonData.lang("error_invalid_radius"));
         }
 
         if (sb.length() > 0) {

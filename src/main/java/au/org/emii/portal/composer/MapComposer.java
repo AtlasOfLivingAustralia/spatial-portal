@@ -842,17 +842,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      *
      * @param pid
      */
-    public MapLayer addObjectByPid(String pid) {
+    public MapLayer addObjectByPid(String pid, String displayName) {
 
         JSONObject obj = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + pid));
         //add feature to the map as a new layer
         String areaName = obj.getString("name"); //retrieve from service
-        MapLayer mapLayer = getMapComposer().addWMSLayer(areaName, areaName, obj.getString("wmsurl"), 0.6f, null, null, LayerUtilities.WKT, null, null);
+        MapLayer mapLayer = getMapComposer().addWMSLayer("PID:" + pid, displayName == null?areaName:displayName, obj.getString("wmsurl"), 0.6f, null, null, LayerUtilities.WKT, null, null);
         if (mapLayer == null) {
             return null;
         }
-        mapLayer.setName("PID:" + pid);
-        mapLayer.setDisplayName(areaName);
         mapLayer.setPolygonLayer(true);
 
         //if the layer is a point create a radius
@@ -889,7 +887,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 ArrayList<Facet> facets = new ArrayList<Facet>();
                 facets.add(facet);
                 mapLayer.setFacets(facets);
-                mapLayer.setWKT("ENVELOPE(" + fid + "," + pid + ")");
+                //mapLayer.setWKT("ENVELOPE(" + fid + "," + pid + ")");
+                mapLayer.setWKT(Util.readUrl(CommonData.layersServer + "/shape/wkt/" + pid));
             } else {
                 //not in biocache, so add as WKT
                 mapLayer.setWKT(Util.readUrl(CommonData.layersServer + "/shape/wkt/" + pid));
@@ -1305,7 +1304,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             for (String pid : pids) {
                 if (names.get("PID:" + pid) == null) {
-                    MapLayer mapLayer = getMapComposer().addObjectByPid(pid);
+                    MapLayer mapLayer = getMapComposer().addObjectByPid(pid, null);
                     if (pids.length == 1) {
                         //zoom to this region
                         getMapComposer().zoomToExtent(mapLayer);
@@ -2142,7 +2141,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //display warning for large wkt that does not have a facet
         if (ml.getFacets() == null
                 && ml.getWKT().length() > Integer.parseInt(CommonData.settings.getProperty("max_q_wkt_length"))) {
-            getMapComposer().showMessage("WARNING: The polygon created in this step has reduced spatial resolution when used in analysis due to size limitations.  ");
+            getMapComposer().showMessage("WARNING: The polygon displayed has reduced resolution to enable subsequent analyses.");
         }
     }
 
@@ -2377,7 +2376,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String p = tbxPrintHack;
         logger.debug("tbxPrintHack:" + p);
         String[] ps = p.split(",");
-
+/*
         String server;
         server = getSettingsSupplementary().getProperty("print_server_url");
 
@@ -2454,22 +2453,26 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         showMessage("Error generating export");
 
         return null;
-/*
+*/
         double [] extents = new double[4];
         extents[0] = Double.parseDouble(ps[2]);
         extents[1] = Double.parseDouble(ps[3]);
         extents[2] = Double.parseDouble(ps[4]);
         extents[3] = Double.parseDouble(ps[5]);
 
+        int [] windowSize = new int[2];
+        windowSize[0] = Integer.parseInt(ps[0]);
+        windowSize[1] = Integer.parseInt(ps[1]);
+
         if (format.equalsIgnoreCase("png")) {
-            Filedownload.save(new Print(this, extents, header, "png").get(), "image/png", "map_export.png");
+            Filedownload.save(new PrintMapComposer(this, extents, windowSize, header, "png").get(), "image/png", "map_export.png");
         } else if (format.equalsIgnoreCase("pdf")) {
-            Filedownload.save(new Print(this, extents, header, "png").get(), "application/pdf", "map_export.png");
+            Filedownload.save(new PrintMapComposer(this, extents, windowSize, header, "pdf").get(), "application/pdf", "map_export.pdf");
         } else {
-            Filedownload.save(new Print(this, extents, header, "jpg").get(), "image/jpeg", "map_export.jpg");
+            Filedownload.save(new PrintMapComposer(this, extents, windowSize, header, "jpg").get(), "image/jpeg", "map_export.jpg");
         }
 
-        return null;*/
+        return null;
     }
 
     /*
@@ -3361,17 +3364,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //only replace if WKT upload is successful
         String pid = UserShapes.upload(ml.getWKT(), ml.getDisplayName(), ml.getDescription(), Util.getUserEmail(), CommonData.settings.getProperty("api_key"));
         if(pid != null) {
+            //2. remove old layer
+            //removeLayer(ml.getName());
+            deactiveLayer(ml, true, false);
+
             //1. create new layer
-            MapLayer newml = addObjectByPid(pid);
-            newml.setDisplayName(ml.getDisplayName());
+            MapLayer newml = addObjectByPid(pid, ml.getDisplayName());
+            //newml.setDisplayName(ml.getDisplayName() + "_");
             newml.setMapLayerMetadata(ml.getMapLayerMetadata());
             newml.setAreaSqKm(ml.getAreaSqKm());
             newml.setUserDefinedLayer(ml.isUserDefinedLayer());
             newml.setDescription(ml.getDescription());
             newml.setWKT(ml.getWKT());
-
-            //2. remove old layer
-            removeLayer(ml.getName());
         }
     }
 }

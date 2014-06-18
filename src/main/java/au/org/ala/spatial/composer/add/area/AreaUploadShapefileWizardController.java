@@ -108,7 +108,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             loadShape(file);
         } else {
             logger.debug("Unknown file type. ");
-            getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, \nKML or Shapefile. ");
+            getMapComposer().showMessage(CommonData.lang("error_unknown_file_type"));
         }
     }
 
@@ -364,7 +364,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 IsValidOp op = new IsValidOp(g);
                 if (!op.isValid()) {
                     invalid = true;
-                    logger.warn("WKT is invalid." + op.getValidationError().getMessage());
+                    logger.warn(CommonData.lang("error_wkt_invalid") + " " + op.getValidationError().getMessage());
                     msg = op.getValidationError().getMessage();
                     //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
                 } else if (g.isRectangle()) {
@@ -380,7 +380,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                             + envelope.getMinX() + " " + envelope.getMinY() + "))";
                     if (!wkt.equals(wkt2)) {
                         logger.debug("NEW WKT for Rectangle: " + wkt);
-                        msg = "Shape is not in the correct order (anti-clockwise)";
+                        msg = CommonData.lang("error_wkt_anticlockwise");
                         invalid = true;
                     }
                 }
@@ -392,7 +392,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             }
 
             if (invalid) {
-                getMapComposer().showMessage("Shape is invalid: " + msg);
+                getMapComposer().showMessage(CommonData.lang("error_wkt_invalid") + " " + msg);
             } else {
 
                 MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layername, layername);

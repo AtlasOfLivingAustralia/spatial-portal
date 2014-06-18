@@ -44,7 +44,7 @@ public class AreaMapPolygon extends AreaToolComposer {
     public void afterCompose() {
         super.afterCompose();
         loadLayerSelection();
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
         btnOk.setDisabled(true);
         btnClear.setDisabled(true);
         Clients.evalJavaScript("mapFrame.toggleClickHandler(false);");
@@ -226,7 +226,8 @@ public class AreaMapPolygon extends AreaToolComposer {
                             facets.add(facet);
                             mapLayer.setFacets(facets);
 
-                            mapLayer.setWKT("ENVELOPE(" + objJson.getString("fid") + "," + feature.get("pid") + ")");
+                            //mapLayer.setWKT("ENVELOPE(" + objJson.getString("fid") + "," + feature.get("pid") + ")");
+                            mapLayer.setWKT(readUrl(CommonData.layersServer + "/shape/wkt/" + feature.get("pid")));
                         } else {
                             //no facet = not in Biocache, must use WKT
                             mapLayer.setWKT(readUrl(CommonData.layersServer + "/shape/wkt/" + feature.get("pid")));

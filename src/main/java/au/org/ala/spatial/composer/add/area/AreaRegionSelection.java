@@ -101,7 +101,8 @@ public class AreaRegionSelection extends AreaToolComposer {
             dbb.add(bb[1][0]);
             dbb.add(bb[1][1]);
         } else {
-            mapLayer.setWKT("ENVELOPE(" + obj.getString("fid") + "," + obj.getString("pid") + ")");
+            mapLayer.setWKT(Util.readUrl(CommonData.layersServer + "/shape/wkt/" + obj.getString("pid")));
+            //mapLayer.setWKT("ENVELOPE(" + obj.getString("fid") + "," + obj.getString("pid") + ")");
         }
 
         String fid = obj.getString("fid");
@@ -193,7 +194,7 @@ public class AreaRegionSelection extends AreaToolComposer {
 
         double radius = dRadius.getValue();
         if (radius <= 0) {
-            sb.append("\nRadius must be greater than 0.");
+            sb.append("\n" + CommonData.lang("error_invalid_radius"));
         }
 
         if (sb.length() > 0) {

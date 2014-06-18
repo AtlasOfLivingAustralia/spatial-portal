@@ -174,7 +174,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                         && results_count_occurrences <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
 
                     String activeAreaLayerName = getSelectedAreaDisplayName();
-                    String layerName = "Occurrences in " + activeAreaLayerName;
+                    String layerName = CommonData.lang("occurrences_in_area_prefix") + " " + activeAreaLayerName;
 
                     if (multipleSpeciesUploadName != null) {
                         layerName = multipleSpeciesUploadName;
@@ -183,17 +183,17 @@ public class AddSpeciesInArea extends UtilityComposer {
                             String lsids = ((BiocacheQuery) q).getLsids();
                             if (lsids != null && lsids.length() > 0
                                     && lsids.split(",").length > 1) {
-                                layerName = "Species assemblage";
+                                layerName = CommonData.lang("species_assemblage_layer_name");
                             }
                         }
                     }
                     ml = getMapComposer().mapSpecies(q, layerName, "species", results_count_occurrences, LayerUtilities.SPECIES, sa.getWkt(), -1,
                             MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
                 } else {
-                    getMapComposer().showMessage(results_count_occurrences
-                            + " occurrences in this area.\r\nSelect an area with fewer than "
-                            + CommonData.settings.getProperty("max_record_count_map")
-                            + " occurrences");
+                    getMapComposer().showMessage(
+                            CommonData.lang("error_too_many_occurrences_for_mapping")
+                                    .replace("<counted_occurrences>", results_count_occurrences + "")
+                                    .replace("<max_occurrences>", CommonData.settings.getProperty("max_record_count_map")));
                 }
 
                 setupMetadata = false;

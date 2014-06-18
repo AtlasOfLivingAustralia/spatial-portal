@@ -595,7 +595,7 @@ help_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("help_url
 
             //console.log("downloadUrl = " + downloadUrl);
             //alert("downloadUrl = " + downloadUrl);
-            window.location.href = downloadUrl;
+            window.open(downloadUrl,"Download");
             zk.Widget.$(jq('$externalContentWindow')).detach();
             return false;
         }

@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
@@ -26,7 +27,7 @@ public class AreaPointAndRadius extends AreaToolComposer {
     public void afterCompose() {
         super.afterCompose();
 
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
     }
 
     public void onClick$btnNext(Event event) {
@@ -92,7 +93,7 @@ public class AreaPointAndRadius extends AreaToolComposer {
                 layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
                 MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
 
-                mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadataForWKT("User drawn point and radius", wkt));
+                mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadataForWKT(CommonData.lang("metadata_point_and_radius"), wkt));
             }
 
             btnNext.setDisabled(false);

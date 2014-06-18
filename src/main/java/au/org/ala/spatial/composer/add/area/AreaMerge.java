@@ -44,7 +44,7 @@ public class AreaMerge extends AreaToolComposer {
         super.afterCompose();
         btnOk.setDisabled(false);
 
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
 
         List<MapLayer> layers = getMapComposer().getPolygonLayers();
         for (int i = 0; i < layers.size(); i++) {
@@ -98,7 +98,7 @@ public class AreaMerge extends AreaToolComposer {
 
     public void onClick$btnOk(Event event) {
         if (!validate()) {
-            getMapComposer().showMessage("Select 2 or more areas to join.");
+            getMapComposer().showMessage(CommonData.lang("error_not_enough_areas_for_merging"));
             return;
         }
 

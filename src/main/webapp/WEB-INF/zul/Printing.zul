@@ -29,7 +29,7 @@
 
             <separator />
 
-            <hbox>
+            <hbox visible="false">
                 <div width="150px"><label value="Show longitude/latitude grid" width="150px"/></div>
                 <checkbox id="chkGrid" />
             </hbox>
@@ -45,7 +45,7 @@
                 </combobox>
             </hbox>
 
-            <hbox>
+            <hbox visible="false">
                 <div width="150px"><label value="Image resolution" width="150px"/></div>
                 <combobox id="cbResolution" autodrop="true">
                     <comboitem label="screen"/>

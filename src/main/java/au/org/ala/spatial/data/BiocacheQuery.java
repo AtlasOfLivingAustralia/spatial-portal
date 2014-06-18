@@ -588,11 +588,13 @@ public class BiocacheQuery implements Query, Serializable {
             int result = client.executeMethod(get);
             String response = get.getResponseBodyAsString();
 
-            String start = "\"count\":";
-            String end = ",";
-            int startPos = response.indexOf(start) + start.length();
-
-            speciesCount = Integer.parseInt(response.substring(startPos, response.indexOf(end, startPos)));
+            JSONArray ja = JSONArray.fromObject(response);
+            if(ja.size() > 0) {
+                JSONObject jo = ja.getJSONObject(0);
+                if (jo.containsKey("count")) {
+                    speciesCount = Integer.parseInt(jo.getString("count"));
+                }
+            }
         } catch (Exception e) {
             logger.error("error getting records count: " + url, e);
         }
@@ -1035,7 +1037,7 @@ public class BiocacheQuery implements Query, Serializable {
             logger.error("error getting scientific name:" + snUrl, e);
         }
 
-        return null;
+        return "occurrences";
     }
 
     private String decompressGz(InputStream gzipped) throws IOException {

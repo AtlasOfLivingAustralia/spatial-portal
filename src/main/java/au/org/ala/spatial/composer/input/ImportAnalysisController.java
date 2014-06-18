@@ -249,7 +249,7 @@ public class ImportAnalysisController extends UtilityComposer {
             openProgressBarGdm();
             remoteLogger.logMapAnalysis("Import GDM", "Tool - Restore", "", "", "", pid, "gdm", "IMPORTED");
         } else {
-            getMapComposer().showMessage("Invalid reference number.");
+            getMapComposer().showMessage(CommonData.lang("error_importing_analysis"));
         }
     }
 

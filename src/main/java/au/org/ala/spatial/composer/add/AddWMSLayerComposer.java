@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.composer.add;
 
+import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayer;
@@ -276,7 +277,7 @@ public class AddWMSLayerComposer extends UtilityComposer {
                     addDiscoveredLayerButton.setVisible(true);
                 } else {
                     // there was an error somewhere..
-                    getMapComposer().showMessage("error adding the layer");
+                    getMapComposer().showMessage(CommonData.lang("error_adding_layer"));
                 }
             } catch (Exception e) {
                 logger.error("map request", e);
@@ -384,7 +385,8 @@ public class AddWMSLayerComposer extends UtilityComposer {
                 updateAvailableLayers();
             } else {
 
-                getMapComposer().showMessage("Unable to select layer: '" + discoveredLayerId + "'");
+                getMapComposer().showMessage(CommonData.lang("error_selecting_layer")
+                        +": '" + discoveredLayerId + "'");
             }
         }
     }

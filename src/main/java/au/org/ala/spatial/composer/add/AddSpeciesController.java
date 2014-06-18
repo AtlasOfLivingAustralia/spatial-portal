@@ -80,7 +80,7 @@ public class AddSpeciesController extends UtilityComposer {
             rMultiple.setDisabled(false);
         } else {
             rMultiple.setDisabled(true);
-            rMultiple.setLabel(rMultiple.getLabel() + " (log in required)");
+            rMultiple.setLabel(rMultiple.getLabel() + " " + CommonData.lang("msg_login_required"));
         }
         speciesListListbox.addEventListener("onSlCheckBoxChanged", new EventListener() {
             @Override
@@ -135,7 +135,7 @@ public class AddSpeciesController extends UtilityComposer {
                 //extract all the items for selected species lists
                 query = speciesListListbox.extractQueryFromSelectedLists(getGeospatialKosher());
                 window.setSpeciesParams(query, rank, taxon);
-                window.setMultipleSpeciesUploadName("Species List Items");
+                window.setMultipleSpeciesUploadName(CommonData.lang("uploaded_species_list_layer_name"));
                 window.loadAreaLayers();
                 try {
                     window.doModal();
@@ -219,11 +219,11 @@ public class AddSpeciesController extends UtilityComposer {
             UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/input/UploadSpecies.zul", getMapComposer(), null);
 
             if (rUploadCoordinates.isSelected()) {
-                usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
+                usc.setTbInstructions(CommonData.lang("instruction_upload_species_csv"));
             } else if (rUploadLSIDs.isSelected()) {
-                usc.setTbInstructions("3. Select file (text file, one LSID or name per line)");
+                usc.setTbInstructions(CommonData.lang("instruction_upload_species_lsids"));
             } else {
-                usc.setTbInstructions("3. Select file");
+                usc.setTbInstructions(CommonData.lang("instruction_upload_species_other"));
             }
             usc.addToMap = true;
             usc.setDefineArea(chkArea.isChecked());
@@ -352,7 +352,7 @@ public class AddSpeciesController extends UtilityComposer {
             }
         }
         if (notFound.size() > 0) {
-            getMapComposer().showMessage("The following list of scientific names could not be located. A free text search on the raw name will be performed:\n" + notFoundSb.toString(), this);
+            getMapComposer().showMessage(CommonData.lang("names_not_found_continuing") + ":\n" + notFoundSb.toString(), this);
         }
     }
 
@@ -423,7 +423,7 @@ public class AddSpeciesController extends UtilityComposer {
         }
 
         if (notFound.size() > 0) {
-            getMapComposer().showMessage("Cannot identify these scientific names:\n" + notFoundSb.toString(), this);
+            getMapComposer().showMessage(CommonData.lang("names_not_found_end") + ":\n" + notFoundSb.toString(), this);
         }
 
         refreshBtnOkDisabled();
@@ -725,7 +725,7 @@ public class AddSpeciesController extends UtilityComposer {
                     logger.debug("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
                     //last one, report error
-                    getMapComposer().showMessage("Unable to load your file. Please try again.");
+                    getMapComposer().showMessage(CommonData.lang("error_upload_failed"));
                     //logger.debug("unable to load user points: ");
                     //e.printStackTrace();
                     logger.error("unable to load user points", e);

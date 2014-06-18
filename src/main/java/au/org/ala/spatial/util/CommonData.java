@@ -5,7 +5,10 @@
 package au.org.ala.spatial.util;
 
 import au.org.ala.spatial.data.LsidCounts;
+import au.org.emii.portal.lang.LanguagePack;
+import au.org.emii.portal.lang.LanguagePackImpl;
 import au.org.emii.portal.util.LayerSelection;
+import com.sun.imageio.plugins.common.I18N;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.layers.legend.QueryField;
@@ -15,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -56,6 +60,9 @@ public class CommonData {
     static final String AREA_REPORT_FACETS = "area_report_facets";
     //NC 20131017 - the default facets supplied by the biocache WS that are ignored.
     static final String IGNORED_FACETS = "default_facets_ignored";
+    static final String I18N_URL = "i18nURL";
+    static final String I18N_IGNORE_THESE_PREFIXES = "i18nIgnoreThesePrefixes";
+
     //(2) for EnvironmentalList
     static JSONObject distances;
     static HashMap<String, HashMap<String, Double>> distances_map;
@@ -116,6 +123,8 @@ public class CommonData {
     static public String[] customFacets;
     static public List<String> ignoredFacets;
     static public String[] areaReportFacets;
+    static public String i18nURL;
+    static public List<String> i18nIgnoredPrefixes;
 
     /*
      * initialize common data from geoserver and satserver
@@ -160,6 +169,14 @@ public class CommonData {
             displayPointsOfInterest = false;
         }
 
+        i18nURL = settings.getProperty(I18N_URL);
+        String tmp = settings.getProperty(I18N_IGNORE_THESE_PREFIXES);
+        if(tmp != null) {
+            i18nIgnoredPrefixes = java.util.Arrays.asList(tmp.split(" "));
+        } else {
+            i18nIgnoredPrefixes = new ArrayList<String>();
+        }
+
         setupAnalysisLayerSets();
 
         initLayerDistances();
@@ -193,6 +210,9 @@ public class CommonData {
 
         //keep a list of biocache field names to know what is available for queries
         initBiocacheLayerList();
+
+        //init language pack (but not everywhere)
+        initLanguagePack();
 
         //(2) for EnvironmentalList
         if (copy_distances != null) {
@@ -233,6 +253,8 @@ public class CommonData {
         if (copy_species_wms_layers_by_spcode != null) {
             checklistspecies_wms_layers_by_spcode = copy_checklistspecies_wms_layers_by_spcode;
         }
+
+
     }
 
     static public JSONArray getDownloadReasons() {
@@ -751,11 +773,11 @@ public class CommonData {
 
         try {
             Properties p = new Properties();
-            p.load(CommonData.class.getResourceAsStream("/messages.properties"));
+            p.load(new URL(i18nURL).openStream());
 
             i18nProperites = p;
         } catch (Exception e) {
-            logger.error("error loading /messages.properties file", e);
+            logger.error("error loading properties file URL: " + i18nURL, e);
         }
     }
 
@@ -765,10 +787,14 @@ public class CommonData {
 
     static public ArrayList<String> getI18nPropertiesList(String key) {
         ArrayList<String> list = new ArrayList<String>();
-        String startsWith = key + ".";
-        for (String k : i18nProperites.stringPropertyNames()) {
-            if (k.startsWith(startsWith)) {
-                list.add(k);
+
+        //don't look up anything if it is an ignored key
+        if(!i18nIgnoredPrefixes.contains(key)) {
+            String startsWith = key + ".";
+            for (String k : i18nProperites.stringPropertyNames()) {
+                if (k.startsWith(startsWith)) {
+                    list.add(k);
+                }
             }
         }
         return list;
@@ -938,4 +964,13 @@ public class CommonData {
     public static boolean hasProxyAuthTicket(String pgt_iou) {
         return proxyAuthTickets.get(pgt_iou) != null;
     }
+
+    static LanguagePack languagePack = null;
+    public static String lang(String key) {
+        return languagePack.getLang(key);
+    }
+    static void initLanguagePack() {
+        languagePack = new LanguagePackImpl();
+    }
+
 }

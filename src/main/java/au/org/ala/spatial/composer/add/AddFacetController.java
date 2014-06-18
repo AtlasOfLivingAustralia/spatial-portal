@@ -941,7 +941,7 @@ public class AddFacetController extends UtilityComposer {
                 Facet f = Facet.parseFacet(getSelectionFacet());
                 Query querynew = query.newFacet(f, true);
                 if (querynew.getOccurrenceCount() <= 0) {
-                    getMapComposer().showMessage("no occurrences in this selection");
+                    getMapComposer().showMessage(CommonData.lang("no_occurrences_selected"));
                 } else {
                     getMapComposer().mapSpecies(querynew,
                             "My facet", "species", -1, LayerUtilities.SPECIES, null, 0, MapComposer.DEFAULT_POINT_SIZE,
@@ -1102,11 +1102,11 @@ public class AddFacetController extends UtilityComposer {
             }
 
             if (!layers.isEmpty() && count_not_envelopes > 1) {
-                Radio rAr = new Radio("All area layers"
+               /*Radio rAr = new Radio("All area layers"
                         + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
                 rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
                 rAr.setParent(rgArealocal);
-                rgArealocal.insertBefore(rAr, rAreaCurrent);
+                rgArealocal.insertBefore(rAr, rAreaCurrent);*/
             }
 
             if (selectedAreaName != null && !selectedAreaName.equals("")) {
@@ -1184,11 +1184,11 @@ public class AddFacetController extends UtilityComposer {
             }
 
             if (!layers.isEmpty() && count_not_envelopes > 1) {
-                Radio rAr = new Radio("All area layers"
+                /*Radio rAr = new Radio("All area layers"
                         + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
                 rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
                 rAr.setParent(rgArealocal);
-                rgArealocal.insertBefore(rAr, rAreaCurrentHighlight);
+                rgArealocal.insertBefore(rAr, rAreaCurrentHighlight);*/
             }
 
             if (selectedAreaName != null && !selectedAreaName.equals("")) {
@@ -1351,9 +1351,9 @@ public class AddFacetController extends UtilityComposer {
         }
 
         if (!cbContinousRange.isChecked()) {
-            dlabel.setValue("list selection underway, range selection disabled");
+            dlabel.setValue(CommonData.lang("msg_list_selection_enabled"));
         } else {
-            dlabel.setValue("range selection underway, list selection disabled");
+            dlabel.setValue(CommonData.lang("msg_range_selection_enabled"));
         }
     }
 }

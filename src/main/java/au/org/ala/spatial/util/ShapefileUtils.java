@@ -8,8 +8,10 @@ import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import org.apache.log4j.Logger;
 import org.geotools.data.*;
+import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -18,13 +20,16 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.jts.GeometryBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -136,7 +141,7 @@ public class ShapefileUtils {
             }
             final SimpleFeatureType TYPE = createFeatureType(wkttype);
 
-            DefaultFeatureCollection collection = new DefaultFeatureCollection();
+            List<SimpleFeature> features = new ArrayList<SimpleFeature>();
             SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(TYPE);
 
             WKTReader wkt = new WKTReader();
@@ -145,16 +150,25 @@ public class ShapefileUtils {
             if (geom instanceof GeometryCollection) {
                 GeometryCollection gc = (GeometryCollection) geom;
                 for (int i = 0; i < gc.getNumGeometries(); i++) {
-                    featureBuilder.add(gc.getGeometryN(i));
+                    Geometry g = gc.getGeometryN(i);
+                    if(g instanceof Polygon) {
+                        g = new GeometryBuilder().multiPolygon((Polygon)g);
+                    }
+                    featureBuilder.add(g);
 
                     SimpleFeature feature = featureBuilder.buildFeature(null);
-                    collection.add(feature);
+                    features.add(feature);
                 }
             } else {
-                featureBuilder.add(geom);
+                Geometry g = geom;
+                if(g instanceof Polygon) {
+                    g = new GeometryBuilder().multiPolygon((Polygon)g);
+                }
+
+                featureBuilder.add(g);
 
                 SimpleFeature feature = featureBuilder.buildFeature(null);
-                collection.add(feature);
+                features.add(feature);
             }
 
             ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
@@ -176,6 +190,8 @@ public class ShapefileUtils {
             if (featureSource instanceof SimpleFeatureStore) {
                 SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
 
+                DefaultFeatureCollection collection = new DefaultFeatureCollection();
+                collection.addAll(features);
                 featureStore.setTransaction(transaction);
                 try {
                     featureStore.addFeatures(collection);
@@ -205,13 +221,16 @@ public class ShapefileUtils {
         builder.setName("ActiveArea");
         builder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate reference system
 
+        org.opengis.filter.expression.Function f;
+
         // add attributes in order
-        if ("GEOMETRYCOLLECTION".equalsIgnoreCase(type)) {
-            builder.add("area", MultiPolygon.class);
-        } else {
-            builder.add("area", Polygon.class);
-        }
-        builder.length(15).add("name", String.class); // <- 15 chars width for name field
+        //if ("GEOMETRYCOLLECTION".equalsIgnoreCase(type)) {
+            builder.add("the_geom", MultiPolygon.class);
+        //builder.length(15).add("Name", String.class); // <- 15 chars width for name field
+        //} else {
+        //    builder.add("area", Polygon.class);
+        //}
+        //builder.length(15).add("name", String.class); // <- 15 chars width for name field
 
         // build the type
         final SimpleFeatureType ActiveArea = builder.buildFeatureType();

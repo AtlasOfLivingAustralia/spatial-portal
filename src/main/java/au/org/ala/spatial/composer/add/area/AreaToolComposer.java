@@ -42,7 +42,7 @@ public class AreaToolComposer extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        //txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+        //txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
 
         Component parent = this.getParent();
         //      logger.debug("Parent: " + parent.getId() + " - " + parent.getWidgetClass());
@@ -202,13 +202,13 @@ public class AreaToolComposer extends UtilityComposer {
             //test limit
             if (results_count_occurrences > 0 && results_count_occurrences <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
                 String activeAreaLayerName = layers.get(0).getDisplayName();
-                getMapComposer().mapSpecies(sq, "Occurrences in " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, wkt,
+                getMapComposer().mapSpecies(sq, CommonData.lang("occurrences_in_area_prefix") + " " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, wkt,
                         -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
             } else {
-                getMapComposer().showMessage(results_count_occurrences
-                        + " occurrences in this area.\r\nSelect an area with fewer than "
-                        + CommonData.settings.getProperty("max_record_count_map")
-                        + " occurrences");
+                getMapComposer().showMessage(
+                        CommonData.lang("error_too_many_occurrences_for_mapping")
+                            .replace("<counted_occurrences>", results_count_occurrences + "")
+                            .replace("<max_occurrences>", CommonData.settings.getProperty("max_record_count_map")));
             }
         } catch (Exception e) {
             logger.error("error mapping species in an area", e);

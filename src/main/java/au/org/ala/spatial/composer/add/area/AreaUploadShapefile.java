@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.ShapefileUtils;
 import au.org.ala.spatial.util.UserData;
 import au.org.ala.spatial.util.Zipper;
@@ -43,7 +44,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
         fileUpload.addEventListener("onUpload", new EventListener() {
 
             public void onEvent(Event event) throws Exception {
@@ -129,7 +130,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                             IsValidOp op = new IsValidOp(g);
                             if (!op.isValid()) {
                                 invalid = true;
-                                logger.warn("WKT is invalid." + op.getValidationError().getMessage());
+                                logger.warn(CommonData.lang("error_wkt_invalid") + " " + op.getValidationError().getMessage());
                                 msg = op.getValidationError().getMessage();
                                 //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
                             } else if (g.isRectangle()) {
@@ -145,7 +146,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                                         + envelope.getMinX() + " " + envelope.getMinY() + "))";
                                 if (!wkt.equals(wkt2)) {
                                     logger.debug("NEW WKT for Rectangle: " + wkt);
-                                    msg = "Shape is not in the correct order (anti-clockwise)";
+                                    msg = CommonData.lang("error_wkt_anticlockwise");
                                     invalid = true;
                                 }
                             }
@@ -158,7 +159,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
 
                         if (invalid) {
                             ok = false;
-                            getMapComposer().showMessage("Shape is invalid: " + msg);
+                            getMapComposer().showMessage(CommonData.lang("error_wkt_invalid") + " " + msg);
                         } else {
 
                             layerName = txtLayerName.getValue();
@@ -179,14 +180,14 @@ public class AreaUploadShapefile extends AreaToolComposer {
                     }
                 } else {
                     logger.debug("Unknown file type. ");
-                    getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, \nKML or Shapefile. ");
+                    getMapComposer().showMessage(CommonData.lang("error_unknown_file_type"));
                 }
             } else {
                 logger.debug("Unknown file type. ");
-                getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, \nKML or Shapefile. ");
+                getMapComposer().showMessage(CommonData.lang("error_unknown_file_type"));
             }
         } catch (Exception ex) {
-            getMapComposer().showMessage("Unable to load file. Please try again. ");
+            getMapComposer().showMessage(CommonData.lang("error_upload_failed"));
             logger.error("unable to load user area file: ", ex);
         }
     }
@@ -264,7 +265,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
             loadUserLayerKML(name, kmlData.getBytes(), ud);
 
         } catch (Exception e) {
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
+            getMapComposer().showMessage(CommonData.lang("error_upload_failed"));
 
             logger.debug("unable to load user kml: ", e);
         }
@@ -297,7 +298,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 IsValidOp op = new IsValidOp(g);
                 if (!op.isValid()) {
                     invalid = true;
-                    logger.warn("WKT is invalid." + op.getValidationError().getMessage());
+                    logger.warn(CommonData.lang("error_wkt_invalid") + " "  + op.getValidationError().getMessage());
                     msg = op.getValidationError().getMessage();
                     //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
                 } else if (g.isRectangle()) {
@@ -313,7 +314,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                             + envelope.getMinX() + " " + envelope.getMinY() + "))";
                     if (!wkt.equals(wkt2)) {
                         logger.debug("NEW WKT for Rectangle: " + wkt);
-                        msg = "Shape is not in the correct order (anti-clockwise)";
+                        msg = CommonData.lang("error_wkt_anticlockwise");
                         invalid = true;
                     }
                 }
@@ -321,12 +322,12 @@ public class AreaUploadShapefile extends AreaToolComposer {
                     invalid = !op.isValid();
                 }
             } catch (ParseException parseException) {
-                logger.error("error testing validity of uploaded shape file wkt", parseException);
+                logger.error(CommonData.lang("error_wkt_invalid"), parseException);
             }
 
             if (invalid) {
                 ok = false;
-                getMapComposer().showMessage("Shape is invalid: " + msg);
+                getMapComposer().showMessage(CommonData.lang("error_wkt_invalid") + " "  + msg);
             } else {
                 MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
 
@@ -351,7 +352,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
             }
         } catch (Exception e) {
 
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
+            getMapComposer().showMessage(CommonData.lang("error_upload_failed"));
 
             logger.debug("unable to load user kml: ", e);
         }

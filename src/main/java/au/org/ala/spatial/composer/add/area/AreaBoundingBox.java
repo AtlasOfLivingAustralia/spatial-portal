@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
@@ -23,7 +24,7 @@ public class AreaBoundingBox extends AreaToolComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
     }
 
     public void onClick$btnNext(Event event) {
@@ -71,7 +72,7 @@ public class AreaBoundingBox extends AreaToolComposer {
             //add feature to the map as a new layer
             layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
             MapLayer mapLayer = mc.addWKTLayer(boxGeom, layerName, txtLayerName.getValue());
-            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadataForWKT("User drawn bounding box", boxGeom));
+            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadataForWKT(CommonData.lang("metadata_user_bounding_box"), boxGeom));
 
             btnNext.setDisabled(false);
             btnClear.setDisabled(false);

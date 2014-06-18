@@ -2,6 +2,7 @@ package au.org.ala.spatial.composer.input;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.composer.tool.ToolComposer;
+import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.UtilityComposer;
 import org.apache.log4j.Logger;
 import org.zkoss.util.media.Media;
@@ -85,7 +86,7 @@ public class UploadLayerListController extends UtilityComposer {
                     logger.debug("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
                     //last one, report error
-                    getMapComposer().showMessage("Unable to load your file.");
+                    getMapComposer().showMessage(CommonData.lang("error_uploading_file"));
                     logger.error("unable to load user layer list: ", e);
                 }
             }

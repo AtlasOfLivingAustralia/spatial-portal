@@ -86,21 +86,21 @@ public class AddAreaController extends UtilityComposer {
             windowName = "WEB-INF/zul/add/area/AreaEnvironmentalEnvelope.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {
             String wkt = CommonData.AUSTRALIA_WKT;
-            String layerName = mc.getNextAreaLayerName("Australia Bounding Box");
+            String layerName = mc.getNextAreaLayerName(CommonData.lang("australia_bounding_box"));
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
-            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata("Australia " + wkt));
+            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata(CommonData.lang("australia_bounding_box") + " " + wkt));
             remoteLogger.logMapArea(layerName, "Area - BoxAustralia", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
             String wkt = CommonData.WORLD_WKT;
-            String layerName = mc.getNextAreaLayerName("World Bounding Box");
+            String layerName = mc.getNextAreaLayerName(CommonData.lang("world_bounding_box"));
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
-            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata("World " + wkt));
+            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata(CommonData.lang("world_bounding_box") + " " + wkt));
             remoteLogger.logMapArea(layerName, "Area - BoxWorld", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxCurrentView) {
             String wkt = mc.getMapComposer().getViewArea();
-            String layerName = mc.getNextAreaLayerName("View Area");
+            String layerName = mc.getNextAreaLayerName(CommonData.lang("current_view_area"));
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
-            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata("Current view " + wkt));
+            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata(CommonData.lang("current_view_area") + " " + wkt));
             remoteLogger.logMapArea(layerName, "Area - BoxCurrentView", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciWKT) {
             windowName = "WEB-INF/zul/add/area/AreaWKT.zul";

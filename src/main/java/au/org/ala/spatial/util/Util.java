@@ -5,6 +5,7 @@
 package au.org.ala.spatial.util;
 
 import au.org.ala.spatial.data.BiocacheQuery;
+import au.org.emii.portal.lang.LanguagePack;
 import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
