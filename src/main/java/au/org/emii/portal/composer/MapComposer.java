@@ -864,10 +864,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             if(CommonData.getLayer(fid) != null) {
                 JSONObject field = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + fid));
 
-                String spid = field.getString("spid");
-                md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
+                if(field.containsKey("indb") && field.getString("indb").equalsIgnoreCase("true")) {
+                    String spid = field.getString("spid");
+                    md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + spid);
 
-                facet = Util.getFacetForObject(areaName, field);
+                    facet = Util.getFacetForObject(areaName, field);
+                }
             }
 
             try {
