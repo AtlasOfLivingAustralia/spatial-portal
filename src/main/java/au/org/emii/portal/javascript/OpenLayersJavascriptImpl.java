@@ -477,7 +477,6 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             associativeArray = "baseLayers";
         } else {
             associativeArray = "mapLayers";
-            gutter = CommonData.settings.getProperty("openlayers_tile_gutter");
         }
         if (!Validate.empty(layer.getCql())) {
             params = "CQL_FILTER: '" + layer.getCqlJS() + "' ";

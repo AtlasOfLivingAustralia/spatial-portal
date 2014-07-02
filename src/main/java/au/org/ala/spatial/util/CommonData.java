@@ -111,10 +111,6 @@ public class CommonData {
     static public LsidCounts lsidCounts;
     static public String biocacheQc;
     static public ArrayList<LayerSelection> analysisLayerSets;
-    static public String wkhtmltoimage_cmd;
-    static public String convert_cmd;
-    static public String print_output_path;
-    static public String print_output_url;
     static public String[][] facetNameExceptions; //{{"cl22", "state"}, {"cl959", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
     static public Set<String> biocacheLayerList;
     static public int maxEndemicArea;
@@ -151,10 +147,6 @@ public class CommonData {
         if (biocacheQc == null) {
             biocacheQc = "";
         }
-        wkhtmltoimage_cmd = settings.getProperty("wkhtmltoimage_cmd");
-        convert_cmd = settings.getProperty("convert_cmd");
-        print_output_path = settings.getProperty("print_output_path");
-        print_output_url = settings.getProperty("print_output_url");
         facetNameExceptions = parseFacetNameExceptions(settings.getProperty("facet_name_exceptions"));
         customFacets = settings.containsKey(CUSTOM_FACETS) ? settings.getProperty(CUSTOM_FACETS).split(",") : new String[]{};
         ignoredFacets = Arrays.asList(settings.containsKey(IGNORED_FACETS) ? settings.getProperty(IGNORED_FACETS).split(",") : new String[]{});

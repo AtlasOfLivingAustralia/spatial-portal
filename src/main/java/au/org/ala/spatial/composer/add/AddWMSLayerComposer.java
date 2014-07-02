@@ -12,12 +12,14 @@ import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.Validate;
 import au.org.emii.portal.wms.RemoteMap;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.geotools.data.ows.CRSEnvelope;
 import org.geotools.data.ows.Layer;
 import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.wms.WebMapServer;
 import org.geotools.data.wms.request.GetMapRequest;
+import org.geotools.data.wms.xml.MetadataURL;
 import org.zkoss.zul.*;
 
 import java.net.URL;
@@ -92,6 +94,8 @@ public class AddWMSLayerComposer extends UtilityComposer {
     private LanguagePack languagePack = null;
     private LayerUtilities layerUtilities = null;
     private RemoteMap remoteMap = null;
+
+    Label linkall1, linkall2, linkall3, linkall4, linksingle1;
 
     public void onCheck$nameAutomatically() {
         logger.debug("onNameAutomaticallyChanged()");
@@ -347,7 +351,7 @@ public class AddWMSLayerComposer extends UtilityComposer {
                     bbox.set(3, e.getMaxY());
                     MapLayerMetadata md = new MapLayerMetadata();
                     md.setBbox(bbox);
-                    md.setMoreInfo(makeMetadataHtml(targetLayer));
+                    md.setMoreInfo(targetLayer.getName() + "\n" + makeMetadataHtml(targetLayer));
                     mapLayer.setMapLayerMetadata(md);
                 }
 
@@ -536,13 +540,25 @@ public class AddWMSLayerComposer extends UtilityComposer {
         StringBuilder sb = new StringBuilder();
 
         sb.append("<html>");
-        sb.append("name: ").append(layer.getName());
+        sb.append("<br>name: ").append(layer.getName());
         sb.append("<br>");
         sb.append("title: ").append(layer.getTitle());
         sb.append("<br>");
         sb.append("abstract: ").append(layer.get_abstract());
         sb.append("<br>");
-        sb.append("keywords: ").append(layer.getKeywords());
+        sb.append("keywords: ");
+        if(layer.getKeywords() != null) {
+            for(String s : layer.getKeywords()) {
+                sb.append(s).append(", ");
+            }
+        }
+        if (layer.getMetadataURL() != null && layer.getMetadataURL().size() > 0) {
+            sb.append("<br>");
+            sb.append("metadata URL: ");
+            for (MetadataURL url : layer.getMetadataURL()) {
+                sb.append("<a target='_blank' href='" + url.getUrl().toString().replace("'","''") + "'>" + StringEscapeUtils.escapeHtml(url.getUrl().toString()) + "</a>, ");
+            }
+        }
         sb.append("<br>");
         String bbox = layer.getLatLonBoundingBox().getMinX() + " " + layer.getLatLonBoundingBox().getMinY()
                 + "," + layer.getLatLonBoundingBox().getMaxX() + " " + layer.getLatLonBoundingBox().getMaxY();
@@ -550,5 +566,25 @@ public class AddWMSLayerComposer extends UtilityComposer {
 
         sb.append("</html>");
         return sb.toString();
+    }
+
+    public void onClick$useAllLink1() {
+        uri.setText(linkall1.getValue());
+    }
+
+    public void onClick$useAllLink2() {
+        uri.setText(linkall2.getValue());
+    }
+
+    public void onClick$useAllLink3() {
+        uri.setText(linkall3.getValue());
+    }
+
+    public void onClick$useAllLink4() {
+        uri.setText(linkall4.getValue());
+    }
+
+    public void onClick$useSingleLink1() {
+        getMapUri.setText(linksingle1.getValue());
     }
 }

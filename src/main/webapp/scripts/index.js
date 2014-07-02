@@ -14,7 +14,11 @@ if (readCookie('ALA-Auth')) {
     //$(".login-bubble").show().delay(8000).fadeOut(2000);
 
 
-    $(".login-bubble")[0].style.right  = ($(window).width() - $(".login-button").offset().left - $(".login-button").width()) + "px";
+    try {
+        $(".login-bubble")[0].style.right  = ($(window).width() - $(".login-button").offset().left - $(".login-button").width()) + "px";
+    } catch (e){
+
+    }
 }
 
 

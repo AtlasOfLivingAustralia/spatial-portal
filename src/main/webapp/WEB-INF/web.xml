@@ -14,9 +14,6 @@
   </servlet>
   <context-param>
     <param-name>contextConfigLocation</param-name>
-    <!--param-value>
-			/WEB-INF/applicationContext.xml,classpath:mapfish-spring-application-context.xml,classpath:*-mapfish-spring-application-context-override.xml
-		</param-value-->
       <param-value>
               /WEB-INF/applicationContext.xml
           </param-value>
@@ -48,10 +45,6 @@
         </description>
         <listener-class>au.org.emii.portal.web.ApplicationInit</listener-class>
     </listener>
-
-
-
-
   <servlet>
     <servlet-name>auEngine</servlet-name>
     <servlet-class>
@@ -70,7 +63,6 @@
     <servlet-name>auEngine</servlet-name>
     <url-pattern>/zkau/*</url-pattern>
   </servlet-mapping>
-
 
     <servlet>
         <description>Externalise a remote request so that squid can cache it</description>
@@ -109,20 +101,6 @@
         <url-pattern>/ws/*</url-pattern>
     </servlet-mapping>
 
-    <!--servlet>
-        <servlet-name>mapfish.print</servlet-name>
-        <servlet-class>org.mapfish.print.servlet.MapPrinterServlet</servlet-class>
-        <init-param>
-            <param-name>config</param-name>
-            <param-value>/data/webportal/config/mapfish-config.yaml</param-value>
-        </init-param>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>mapfish.print</servlet-name>
-        <url-pattern>/ws/pdf/*</url-pattern>
-    </servlet-mapping-->
-
-
     <welcome-file-list>
         <welcome-file>index.zul</welcome-file>
     </welcome-file-list>
@@ -130,75 +108,6 @@
         <error-code>500</error-code>
         <location>/WEB-INF/jsp/Error.jsp</location>
     </error-page>
-
-    <!-- CAS Authentication related properties -->
-
-    <context-param>
-        <!-- Parameter used by CAS filters -->
-        <param-name>serverName</param-name>
-        <param-value>http://spatial-dev.ala.org.au</param-value>
-    </context-param>
-
-    <!-- CAS filter context path - for local development - there is no context for production deployment -->
-    <context-param>
-        <param-name>contextPath</param-name>
-        <param-value>/</param-value>
-    </context-param>
-
-    <context-param>
-        <param-name>casServerName</param-name>
-        <param-value>https://auth.ala.org.au/cas</param-value>
-    </context-param>
-
-    <context-param>
-        <param-name>authenticateOnlyIfLoggedInFilterPattern</param-name>
-        <param-value>.*, /zkau, /webportal/zkau, /ws/pgtCallback</param-value>
-    </context-param>
-
-    <filter>
-        <filter-name>CAS Validation Filter</filter-name>
-        <filter-class>au.org.ala.cas.client.UriFilter</filter-class>
-        <init-param>
-            <param-name>filterClass</param-name>
-            <param-value>org.jasig.cas.client.validation.Cas20ProxyReceivingTicketValidationFilter</param-value>
-        </init-param>
-        <init-param>
-            <param-name>casServerUrlPrefix</param-name>
-            <param-value>https://auth.ala.org.au/cas</param-value>
-        </init-param>
-        <!--init-param>
-            <param-name>proxyReceptorUrl</param-name>
-            <param-value>/ws/pgtCallback</param-value>
-        </init-param>
-        <init-param>
-            <param-name>proxyCallbackUrl</param-name>
-            <param-value>https://localhost:8444/webportal/ws/pgtCallback</param-value>
-        </init-param-->
-
-        <init-param>
-            <param-name>proxyGrantingTicketStorageClass</param-name>
-            <param-value>org.jasig.cas.client.proxy.ProxyGrantingTicketStorageImpl</param-value>
-        </init-param>
-
-    </filter>
-
-    <!-- CAS Authentication Service filters -->
-    <filter>
-        <filter-name>CAS Authentication Filter</filter-name>
-        <filter-class>au.org.ala.cas.client.UriFilter</filter-class>
-        <init-param>
-            <param-name>filterClass</param-name>
-            <param-value>org.jasig.cas.client.authentication.AuthenticationFilter</param-value>
-        </init-param>
-        <init-param>
-            <param-name>casServerLoginUrl</param-name>
-            <param-value>https://auth.ala.org.au/cas/login</param-value>
-        </init-param>
-        <init-param>
-            <param-name>gateway</param-name>
-            <param-value>false</param-value>
-        </init-param>
-    </filter>
 
     <filter>
         <filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
@@ -210,18 +119,15 @@
     </filter>
 
     <filter-mapping>
-        <filter-name>CAS Authentication Filter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <filter-mapping>
-        <filter-name>CAS Validation Filter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <filter-mapping>
         <filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+    <!--  Set up the default JNDI entry for the prepertiesFile -->
+    <env-entry>
+        <env-entry-name>configPropFile</env-entry-name>
+        <env-entry-value>/data/webportal/config/webportal-config.properties</env-entry-value>
+        <env-entry-type>java.lang.String</env-entry-type>
+    </env-entry>
 
 </web-app>

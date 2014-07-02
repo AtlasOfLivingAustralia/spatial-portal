@@ -52,22 +52,37 @@
                     <textbox sclass="inputspace" id="uri" width="80%"/>
 			
                     <label value="Server is invalid" visible="false" id="invalidUri" sclass="error" />
+                    <div class="btn-group" style="float:right">
+                        <button class="btn-small" id="selectLayersButton" label="Select Layers" />
+                        <button class="btn-small" id="addAllLayersButton" label="Add All" visible="false" />
+                    </div>
                 </div>
                 <label sclass="wCaption" value='For example:' /> 
                 <n:br />
+                <button class="btn-mini" id="useAllLink1" label="Use" />
+                <label id="linkall1" visible="false" value="http://data.auscover.org.au/geoserver/wms?request=getCapabilities" />
                 <n:a n:target="_blank" n:href="http://data.auscover.org.au/geoserver/wms?request=getCapabilities" style="display: inline">
                     <label sclass="wCaption" value='http://data.auscover.org.au/geoserver/wms?request=getCapabilities' />
                 </n:a>
                 <n:br />
-                <n:a n:target="_blank" n:href="http://imos2.ersa.edu.au/geo2/wms?request=getCapabilities" style="display: inline">
-                    <label sclass="wCaption" value='http://imos2.ersa.edu.au/geo2/wms?request=getCapabilities' />
+                <button class="btn-mini" id="useAllLink2" label="Use" />
+                <label id="linkall2" visible="false" value="http://geoserver.imos.org.au/geoserver/wms?REQUEST=GetCapabilities" />
+                <n:a n:target="_blank" n:href="http://geoserver.imos.org.au/geoserver/wms?REQUEST=GetCapabilities" style="display: inline">
+                    <label sclass="wCaption" value='http://geoserver.imos.org.au/geoserver/wms?REQUEST=GetCapabilities' />
                 </n:a>
                  <n:br />
+                  <button class="btn-mini" id="useAllLink3" label="Use" />
+                  <label id="linkall3" visible="false" value="http://www.ga.gov.au/gis/services/earth_science/GA_Surface_Geology_of_Australia/MapServer/WMSServer?request=GetCapabilities" />
                   <n:a n:target="_blank" n:href="http://www.ga.gov.au/gis/services/earth_science/GA_Surface_Geology_of_Australia/MapServer/WMSServer?request=GetCapabilities" style="display: inline">
                       <label sclass="wCaption" value='http://www.ga.gov.au/gis/services/earth_science/GA_Surface_Geology_of_Australia/MapServer/WMSServer?request=GetCapabilities' />
                   </n:a>
+                    <n:br />
+                  <button class="btn-mini" id="useAllLink4" label="Use" />
+                  <label id="linkall4" visible="false" value="http://geofabric.bom.gov.au/simplefeatures/ows?request=getcapabilities" />
+                  <n:a n:target="_blank" n:href="http://geofabric.bom.gov.au/simplefeatures/ows?request=getcapabilities" style="display: inline">
+                      <label sclass="wCaption" value='http://geofabric.bom.gov.au/simplefeatures/ows?request=getcapabilities' />
+                  </n:a>
 
-	
 
         <!--  version -->
                 <div  sclass="spaced">
@@ -79,15 +94,15 @@
                         <listitem label="1.1.0" value="1.1.0" />
                         <listitem label="1.0.0" value="1.0.0" />
                     </listbox> 
-                </div>   		
+                </div>
 
  		<!--  holder for opacity controls -->
-                <div id="discoveryAutomaticOpacity">
+                <div id="discoveryAutomaticOpacity" visible="false">
  			<!--  
 			this control gets moved around the page in MapComposer so it
 			can be shared with other components on this page
 			-->
-                    <div id="opacityControl" style="margin-bottom:10px">
+                    <div id="opacityControl" style="margin-bottom:10px" visible="false">
 				<!-- opacity -->
                         <div style="float:left;padding-top:4px" width="20%">
                             <label sclass="h3 inputlabel" value="Opacity"/>
@@ -100,11 +115,6 @@
                         </div>
                     </div>	
                 </div>
-
-                <div class="btn-group">
-                    <button class="btn-small" id="selectLayersButton" label="Select Layers" />
-                    <button class="btn-small" id="addAllLayersButton" label="Add All" visible="false" />
-                </div> 	
 	
 	   	<!--  Select layers -->
                 <div id="selectLayers" visible="false" sclass="spaced">
@@ -126,12 +136,14 @@
                     <label value="GetMap URL is invalid" visible="false" id="invalidGetMapUri" style="color: red; font-weight:bold" />
                 </div>
                 <label sclass="wCaption" value='For example:' />
+                <button class="btn-mini" id="useSingleLink1" label="Use" />
+                <label id="linksingle1" visible="false" value="http://data.auscover.org.au/geoserver/ows?SERVICE=WMS&amp;REQUEST=GetMap&amp;LAYERS=basemaps:NE1_50M_SR_W&amp;FORMAT=image/png&amp;SRS=epsg:3857&amp;TRANSPARENT=true&amp;VERSION=1.3.0&amp;CRS=EPSG:3857&amp;EXCEPTIONS=INIMAGE&amp;STYLES=" />
                 <n:a n:target="_blank" n:href="http://data.auscover.org.au/geoserver/ows?SERVICE=WMS&amp;REQUEST=GetMap&amp;LAYERS=basemaps:NE1_50M_SR_W&amp;FORMAT=image/png&amp;SRS=epsg:3857&amp;TRANSPARENT=true&amp;VERSION=1.3.0&amp;CRS=EPSG:3857&amp;EXCEPTIONS=INIMAGE&amp;STYLES=" style="display: inline">
                     <label sclass="wCaption" value='http://data.auscover.org.au/geoserver/ows?SERVICE=WMS&amp;REQUEST=GetMap&amp;LAYERS=basemaps:NE1_50M_SR_W&amp;FORMAT=image/png&amp;SRS=epsg:3857&amp;TRANSPARENT=true&amp;VERSION=1.3.0&amp;CRS=EPSG:3857&amp;EXCEPTIONS=INIMAGE&amp;STYLES=' />
                 </n:a>	
 
  		<!--  holder for opacity controls -->
-                <div id="discoveryManualOpacity"/>
+                <div id="discoveryManualOpacity" visible="false"/>
             </div>  
 		
 	<!--  result label -->

@@ -173,8 +173,6 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             source = dataStore.getFeatureSource(typenames[0]);
             features = source.getFeatures();
 
-            logger.debug("features.getID(): " + features.getID());
-
             Listhead lhd = new Listhead();
             SimpleFeatureType schema = features.getSchema();
             for (AttributeType at : schema.getTypes()) {

@@ -8,6 +8,7 @@ import au.org.ala.spatial.composer.results.AreaReportController;
 import au.org.ala.spatial.composer.results.DistributionsController;
 import au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent;
 import au.org.ala.spatial.data.*;
+import au.org.ala.spatial.dto.WKTReducedDTO;
 import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.*;
 import au.org.emii.portal.composer.legend.HasMapLayer;
@@ -1452,7 +1453,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                                     + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")"
                                     + ".transform("
                                     + "  new OpenLayers.Projection('EPSG:4326'),"
-                                    + "  map.getProjectionObject()), true);";
+                                    + "  map.getProjectionObject()));";
                             openLayersJavascript.setAdditionalScript(script);
                         }
                         //mappable attributes
@@ -2143,7 +2144,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //display warning for large wkt that does not have a facet
         if (ml.getFacets() == null
                 && ml.getWKT().length() > Integer.parseInt(CommonData.settings.getProperty("max_q_wkt_length"))) {
-            getMapComposer().showMessage("WARNING: The polygon displayed has reduced resolution to enable subsequent analyses.");
+            WKTReducedDTO reduced = Util.reduceWKT(ml.getWKT());
+            ml.setWKT(reduced.getReducedWKT());
+            getMapComposer().showMessage("WARNING: The polygon displayed has reduced resolution to enable subsequent analyses.\r\n"
+                    + reduced.getReducedBy());
         }
     }
 
@@ -2373,89 +2377,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return layerControls.isVisible();
     }
 
-    SessionPrint print(String header, double grid, String format, int resolution, boolean preview) {
+    void print(String header, double grid, String format, int resolution, boolean preview) {
         //tbxPrintHack is 'screen width, screen height, map extents'
         String p = tbxPrintHack;
         logger.debug("tbxPrintHack:" + p);
         String[] ps = p.split(",");
-/*
-        String server;
-        server = getSettingsSupplementary().getProperty("print_server_url");
 
-        String jsessionid = getCookieValue("JSESSIONID");
-        if (jsessionid == null) {
-            jsessionid = "";
-        }
-
-        //width
-        String width = "1024"; //default
-        if (ps.length > 1) {
-            width = ps[0];
-        }
-
-        //height
-        String height = "800"; //default
-        if (ps.length > 2) {
-            height = ps[1];
-        }
-
-        //zoom (minlong, minlat, maxlong, maxlat)
-        String zoom = "112,-44,154,-9"; //default
-        if (ps.length > 5) {
-            zoom = ps[2] + "," + ps[3] + "," + ps[4] + "," + ps[5];
-        }
-
-        //lhs panel width
-        //append to zoom for now > String lhsWidth = "0"; //default
-        if (ps.length > 6) {
-            zoom += "," + ps[6]; //lhsWidth = ps[6];
-        } else {
-            zoom += ",350"; //default
-        }
-        //base map type
-        if (ps.length > 7) {
-            zoom += "," + ps[7];
-        } else {
-            zoom += ",normal";
-        }
-
-        //unique id
-        String uid = String.valueOf(System.currentTimeMillis());
-
-        String pth = getSettingsSupplementary().getProperty("print_output_path");
-
-        String htmlpth = pth;
-        String htmlurl = getSettingsSupplementary().getProperty("print_output_url");
-
-        try {
-            SessionPrint pp = new SessionPrint(server, height, width, htmlpth, htmlurl, uid, jsessionid, zoom, header, grid, format, resolution);
-
-            if (!preview) {
-                pp.print();
-
-                File f = new File(pp.getImageFilename());
-                logger.debug("img (" + pp.getImageFilename() + ") exists: " + f.exists());
-
-                if (format.equalsIgnoreCase("png")) {
-                    Filedownload.save(new File(pp.getImageFilename()), "image/png");
-                } else if (format.equalsIgnoreCase("pdf")) {
-                    Filedownload.save(new File(pp.getImageFilename()), "application/pdf");
-                } else {
-                    Filedownload.save(new File(pp.getImageFilename()), "image/jpeg");
-                }
-            }
-
-            remoteLogger.logMapAnalysis(header, "Export - Map", zoom, "", "", "", "header: " + header + "|" + "grid: " + grid + "|" + "format: " + format + "|" + "resolution: " + resolution + "|" + "preview: " + preview + "|" + "downloadfile: " + pp.getImageFilename(), "PRINTED");
-
-            return pp;
-        } catch (Exception e) {
-            logger.error("error preparing printing", e);
-        }
-
-        showMessage("Error generating export");
-
-        return null;
-*/
         double [] extents = new double[4];
         extents[0] = Double.parseDouble(ps[2]);
         extents[1] = Double.parseDouble(ps[3]);
@@ -2473,8 +2400,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             Filedownload.save(new PrintMapComposer(this, extents, windowSize, header, "jpg").get(), "image/jpeg", "map_export.jpg");
         }
-
-        return null;
     }
 
     /*

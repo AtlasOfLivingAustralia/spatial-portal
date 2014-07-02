@@ -849,7 +849,7 @@ public class BiocacheQuery implements Query, Serializable {
         }
 
         //reduce wkt (may also need to validate WKT)
-        wkt = Util.reduceWKT(wkt);
+        wkt = Util.reduceWKT(wkt).getReducedWKT();
 
         HttpClient client = new HttpClient();
         String url = biocacheServer

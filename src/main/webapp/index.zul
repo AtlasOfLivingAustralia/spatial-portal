@@ -1,5 +1,5 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
-<?script type="text/javascript" src="index.js.dsp"?>
+<?script type="text/javascript" src="/scripts/html5.js"?>
 
 <?component name="leftMenuSearch" macro-uri="/WEB-INF/zul/leftMenuSearch.zul"?>
 <?component name="footer" macro-uri="/WEB-INF/zul/footer.zul"?>
@@ -7,7 +7,6 @@
 
 <?page id="MapZul" title="Spatial portal | Atlas of Living Australia" cacheable="false" contentType="text/html;charset=UTF-8"?>
 <?link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"?>
-<?meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" ?>
 
 <?style href="css/bootstrap.css" type="text/css" ?>
 <?style href="css/bootstrap-responsive.css" type="text/css" ?>
@@ -248,16 +247,16 @@
                     <!-- <li><a href="http://www.ala.org.au/my-profile/" title="My profile">My profile</a></li> -->
                     <li><a href="/actions/dashboard" title="Spatial Portal Dashboard">Dashboard</a></li>
                     <li><a href="javascript:saveSession();" title="Save current session">Save session</a></li>
-					<li class="last login-button"><a href="https://auth.ala.org.au/cas/login?service=http://spatial-dev.ala.org.au/webportal/">Log in</a></li>
+					<li class="last login-button"><a id="casLinkLogin" href="https://auth.ala.org.au/cas/login?service=http://spatial.ala.org.au" >Log in</a></li>
 				</ol>
 			</nav>
-			<nav class="logged_in">
+			<nav style="display:none;" class="logged_in">
 				<ol>
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
                     <!-- <li><a href="http://www.ala.org.au/my-profile/" title="My profile">My profile</a></li> -->
                     <li><a href="/actions/dashboard" title="Spatial Portal Dashboard">Dashboard</a></li>
                     <li><a href="javascript:saveSession();" title="Save current session">Save session</a></li>
-					<li class="last"><a href="https://auth.ala.org.au/cas/logout?service=http://spatial.ala.org.au/">Log out</a></li>
+					 <li class="last"><a id="casLinkLogout" href="https://auth.ala.org.au/cas/logout?service=http://spatial.ala.org.au">Log out</a></li>
 				</ol>
 			</nav>
 		</section>
@@ -343,182 +342,22 @@
         </borderlayout>
 
         <script defer="false" type="text/javascript"><![CDATA[
-                    var onIframeMapFullyLoaded = function() {
-            //update screen widths before map is loaded (hide header)
-            var h0 = window.location.href.split('?');
-            if(h0.length > 1){
-                var h1 = h0[1].split("&");
-                var i;
-                for(i=0;i<h1.length;i++){
-                    if(h1[i].substring(0,2) == "p="){
-                        h1[i] = h1[i].substring(2,h1[i].length);
-                        var h2 = h1[i].split(",");
-                        if(h2.length > 6) {
-                            //style adjustment
-                            document.getElementsByTagName("body")[0].style.margin = "0px";
-                            document.getElementsByTagName("html")[0].style.margin = "0px";
-
-                            //hide map buttons
-                            //var q = jq('$mapbuttons')[0];
-                            //q.style.display="none";
-
-                            //hide menu
-                            q = document.getElementById(zk.Widget.$(jq('$menudiv')[0]).uuid);
-                            q.style.display="none";
-
-                            //hide north
-                            q = document.getElementById(zk.Widget.$(jq('$header')[0]).uuid + "-real");
-                            q.style.height="0px";
-
-                            //set west
-                            var m = document.getElementById(zk.Widget.$(jq('$menus')[0]).uuid + "-real");
-
-                            var w = m.style.width;
-                            var diff = (w.substring(0,w.length-2))*1 - h2[6]*1 + 10;
-                            m.style.width = h2[6] + "px";
-
-                            var p = document.getElementById(zk.Widget.$(jq('$menus')[0]).uuid + "-split");
-                            p.style.width = h2[6] + "px";
-                            p.style.left = h2[6] + "px";
-                            p.style.display = "none";
-
-                            var n = document.getElementById(zk.Widget.$(jq('$center')[0]).uuid + "-real");
-                            w = n.style.width;
-                            var l = n.style.left;
-                            l = (l.substring(0,l.length-2)*1);
-                            var val = diff + w.substring(0,w.length-2)*1;
-                            n.style.width = val + "px";
-
-                            n.style.top = "0px";
-                            w = n.style.height;
-                            val2 = w.substring(0,w.length-2)*1;
-                            n.style.height = val2 + "px";
-
-                            w = n.style.left;
-                            val = w.substring(0,w.length-2)*1 - diff;
-                            n.style.left =  val + "px";
-
-                            var n = document.getElementById(zk.Widget.$(jq('$center')[0]).uuid + "-cave");
-                            w = n.style.width;
-                            var val = diff + w.substring(0,w.length-2)*1;
-                            n.style.width = val + "px";
-                            n.style.left =  val + "px";
-                            n.style.top = "0px";
-                            n.style.height = val2 + "px";
-
-                            mapFrame.document.getElementById("zoomtolocation").style.display="none";
-                            mapFrame.document.getElementById("addPanoramio").style.display="none";
-                            if(mapFrame.document.getElementById("hovertool") != null)
-                                mapFrame.document.getElementById("hoverTool").style.display="none";
-                            if(mapFrame.document.getElementById("nearestTool") != null)
-                                mapFrame.document.getElementById("nearestTool").style.display="none";
-                                if(mapFrame.document.getElementById("featureTool") != null)
-                                mapFrame.document.getElementById("featureTool").style.display="none";
-
-                            jQuery('.z-center')[0].style.border = "0px";
-                        }
-                    }
-                }
-            }
+         var onIframeMapFullyLoaded = function() {
 
             ${session.attributes.portalSession.onIframeMapFullyLoaded};
 
             map = window.mapFrame.map;
             mapFrame = window.mapFrame;
 
-            //update map extents
-            var printing = false;
-            var h0 = window.location.href.split('?');
-            if(h0.length > 1){
-                var h1 = h0[1].split("&");
-                var i;
-                for(i=0;i<h1.length;i++){
-                    if(h1[i].substring(0,2) == "p="){
-                        printing = true;
-                        h1[i] = h1[i].substring(2,h1[i].length);
-                        var h2 = h1[i].split(",");
-                        if(h2.length > 5){
-                            if(h2[2].substring(0,1) == 'n') {
-                                fixExtent4326(1*(h2[2].substring(1,h2[2].length)),1*h2[3],1*h2[4],1*h2[5]);
-                            } else {
-                                fixExtent(1*h2[2],1*h2[3],1*h2[4],1*h2[5]);
-                            }
-                            //map.zoomToExtent(new OpenLayers.Bounds(1*h2[2],1*h2[3],1*h2[4],1*h2[5]), true);
-
-                            while(map.controls.length > 0){
-                                map.controls[0].deactivate();
-                                map.removeControl(map.controls[0]);
-                            }
-
-                            window.frames["mapFrame"].document.getElementById('controlPanZoom').style.display = "none";
-                        }
-
-                        if(h2.length > 7 && currentbaselayertxt != h2[7]) {
-                        console.log(h2[7]);
-                            changeBaseLayer(h2[7]);
-                        }
-
-                        //draw grid
-                        if(h2.length > 8){
-                            if (h2[8] != '0' && h2[8] != '0.0') {
-                                var ctrl = new OpenLayers.Control.Graticule({
-                                    numPoints: 2,
-                                    labelled: true,
-                                    visible: true
-                                });
-                                ctrl.labelSymbolizer.fontColor = "white";
-                                if(h2.length > 9) {
-                                    ctrl.labelSymbolizer.fontSize = "15";
-                                    ctrl.labelSymbolizer.fontWeight = "bold";
-                                    ctrl.lineSymbolizer.strokeWidth = 2;
-
-                                    //resize scale text
-                                    mapFrame.document.getElementById("mapscale").style.fontSize = "15px"
-                                    mapFrame.document.getElementById("mapscale").style.fontWeight = "bold"
-
-                                } else {
-                                    ctrl.lineSymbolizer.strokeWidth = 1;
-                                }
-                                ctrl.lineSymbolizer.strokeColor = "white";
-                                ctrl.lineSymbolizer.strokeOpacity = 0.6;
-                                map.addControl(ctrl);
-                            }
-                        }
-
-                        //scale circles
-                        if(h2.length > 9){
-                            var scaleby = 1.0*(h2[9]);
-                            var vl = map.getLayersByClass("OpenLayers.Layer.Vector");
-                            for (var i = 0; i < vl.length; i++) {
-                                var f = vl[i].features;
-                                if(vl[i].style != undefined && vl[i].style.pointRadius != undefined) {
-                                    vl[i].style.pointRadius *= scaleby;
-                                }
-                                for(var j=0;j<f.length;j++){
-                                    if(f[j].geometry.toString().indexOf('POINT') == 0) {
-                                        if(f[j].style != undefined && f[j].style.pointRadius != undefined) {
-                                            f[j].style.pointRadius *= scaleby;
-                                        }
-                                    }
-                                }
-                                vl[i].redraw(true);
-                            }
-                        }
-
-                    //scale text?
-                    //...
-                    }
-                }
+            //use session state extents
+            window.mapFrame.loadBaseMap();
+            if (!readCookie('ALA-Auth')) {
+                $(".login-bubble").show().delay(8000).fadeOut(2000);
             }
+            document.getElementById('casLinkLogin').href = jq('$cas_login_url')[0].innerHTML + "?service=" + jq('$webportal_url')[0].innerHTML;
+            document.getElementById('casLinkLogout').href = jq('$cas_login_url')[0].innerHTML + "?service=" + jq('$webportal_url')[0].innerHTML;
 
-            //use session state extents for printing
-            if (!printing) {
-                window.mapFrame.loadBaseMap();
-                if (!readCookie('ALA-Auth')) {
-                    $(".login-bubble").show().delay(8000).fadeOut(2000);
-                }  
-                window.mapFrame.document.getElementById("layervalues").style.display= "block";
-            }
+            window.mapFrame.document.getElementById("layervalues").style.display= "block";
 
             map.signalLayerLoaded = function (layerName) {
                 zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onLayerLoaded', layerName));
@@ -558,10 +397,10 @@
         <label id="biocache_service_url" visible="false" />
         <label id="biocache_webapp_url" visible="false" />
         <label id="bie_url" visible="false" />
-        <label id="print_server_url" visible="false" />
         <label id="webportal_url" visible="false" />
         <label id="help_url" visible="false" />
-        
+        <label id="cas_login_url" visible="false" />
+
 <zscript>
 sat_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("sat_url"));
 geoserver_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("geoserver_url"));
@@ -569,9 +408,10 @@ layers_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("layers
 biocache_service_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("biocache_service_url"));
 biocache_webapp_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("biocache_webapp_url"));
 bie_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("bie_url"));
-print_server_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("print_server_url"));
 webportal_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("webportal_url"));
 help_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("help_url"));
+cas_login_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("casServerLoginUrl"));
+
 </zscript>
 
 

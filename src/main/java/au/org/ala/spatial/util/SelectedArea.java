@@ -37,7 +37,7 @@ public class SelectedArea implements Serializable {
 
     public String getReducedWkt() {
         if(reducedWkt == null) {
-            reducedWkt = Util.reduceWKT(getWkt());
+            reducedWkt = Util.reduceWKT(getWkt()).getReducedWKT();
         }
         return reducedWkt;
     }

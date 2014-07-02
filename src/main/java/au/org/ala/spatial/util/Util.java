@@ -5,6 +5,7 @@
 package au.org.ala.spatial.util;
 
 import au.org.ala.spatial.data.BiocacheQuery;
+import au.org.ala.spatial.dto.WKTReducedDTO;
 import au.org.emii.portal.lang.LanguagePack;
 import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.io.ParseException;
@@ -651,9 +652,11 @@ public class Util {
         }
     }
 
-    public static String reduceWKT(String wkt) {
+    public static WKTReducedDTO reduceWKT(String originalWKT) {
+        String wkt = originalWKT;
+        String reducedBy = "No reduction.";
         if (wkt == null) {
-            return wkt;
+            return new WKTReducedDTO(wkt,wkt,"Invalid WKT.");
         }
         try {
             WKTReader wktReader = null;
@@ -662,7 +665,7 @@ public class Util {
             //reduction attempts, 3 decimal places, 2, 1, .2 increments, .5 increments,
             // and finally, convert to 1/1.001 increments (expected to be larger) then back to .5 increments (expected to be smaller)
             // to make the WKT string shorter.
-            double [] reductionValues = {1000,100,10,5,2,1.001,2};
+            double [] reductionValues = {1000,100,10,5,2};
             int attempt = 0;
             while (wkt.length() > Integer.parseInt(CommonData.settings.getProperty("max_q_wkt_length")) && attempt < reductionValues.length) {
                 if(g == null) {
@@ -690,8 +693,9 @@ public class Util {
                 wkt = newwkt;
                 logger.info("reduced WKT from string length " + start_length + " to " + wkt.length());
 
-                attempt++;
+                reducedBy = String.format("Reduced to resolution %f decimal degrees. \r\nWKT character length " + start_length + " to " + wkt.length(), 1 / reductionValues[attempt]);
 
+                attempt++;
             }
             logger.info("user WKT of length: " + wkt.length());
         } catch (Exception e) {
@@ -699,6 +703,6 @@ public class Util {
         }
 
         //webportal (for some reason) does not like these spaces in WKT
-        return wkt.replace(" (","(").replace(", ",",");
+        return new WKTReducedDTO(originalWKT, wkt.replace(" (","(").replace(", ", ","), reducedBy);
     }
 }
