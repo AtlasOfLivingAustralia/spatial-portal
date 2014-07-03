@@ -572,6 +572,7 @@ public class CommonData {
             int pos = 0;
             for (String[] s : wmsurls) {
                 System.arraycopy(s, 0, wms, pos, s.length);
+                pos += s.length;
             }
         }
         return wms;
@@ -600,6 +601,7 @@ public class CommonData {
             int pos = 0;
             for (String[] s : wmsurls) {
                 System.arraycopy(s, 0, wms, pos, s.length);
+                pos += s.length;
             }
         }
         return wms;
@@ -628,6 +630,7 @@ public class CommonData {
             int pos = 0;
             for (String[] s : wmsurls) {
                 System.arraycopy(s, 0, wms, pos, s.length);
+                pos += s.length;
             }
         }
         return wms;

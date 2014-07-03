@@ -6,9 +6,7 @@ import au.org.ala.spatial.dto.SpeciesListItemDTO;
 import au.org.ala.spatial.data.SpeciesListUtil;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
-import au.org.emii.portal.composer.MapComposer;
 import org.apache.log4j.Logger;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -156,36 +154,6 @@ public class SpeciesListListbox extends Listbox {
         String[] unmatchedNames = names.size() > 0 ? names.toArray(new String[names.size()]) : null;
         String lsids = sb.length() > 0 ? sb.toString() : null;
         return new BiocacheQuery(lsids, unmatchedNames, null, null, null, false, geospatialKosher);
-    }
-
-    public List<List<String>> getSelectedListItems() {
-        ArrayList<String> guids = new ArrayList<String>();
-        ArrayList<String> names = new ArrayList<String>();
-        for (String list : selectedLists) {
-            //get the speciesListItems
-            Collection<SpeciesListItemDTO> items = SpeciesListUtil.getListItems(list);
-            if (items != null) {
-                for (SpeciesListItemDTO item : items) {
-                    if (item.getLsid() != null) {
-                        guids.add(item.getLsid());
-                    } else {
-                        names.add(item.getName());
-                    }
-
-                }
-            }
-        }
-        List<List<String>> retList = new ArrayList<List<String>>(2);
-        retList.add(guids);
-        retList.add(names);
-        return retList;
-    }
-
-    public static MapComposer getMapComposer() {
-        return (MapComposer) Executions.getCurrent()
-                .getDesktop()
-                .getPage("MapZul")
-                .getFellow("mapPortalPage");
     }
 
     /**

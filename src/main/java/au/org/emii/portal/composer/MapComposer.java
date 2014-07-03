@@ -1924,9 +1924,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             //add all
             for (int i = 0; i < wmsNames.length; i++) {
                 if (getMapLayerWMS(wmsNames[i]) == null) {
-                    String layerName = getNextAreaLayerName(taxon);
+                    //map this layer with its recorded scientific name
+                    String scientific = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/distribution/" + spcode[i])).getString("scientific");
+                    String layerName = getNextAreaLayerName(scientific);
                     String html = DistributionsController.getMetadataHtmlFor(spcode[i], null, layerName);
-                    ml = addWMSLayer(layerName, "Expert distribution: " + taxon, wmsNames[i], 0.35f, html, null, LayerUtilities.WKT, null, null);
+                    ml = addWMSLayer(layerName, getNextAreaLayerName("Expert distribution: " + scientific), wmsNames[i], 0.35f, html, null, LayerUtilities.WKT, null, null);
                     ml.setSPCode(spcode[i]);
                     setupMapLayerAsDistributionArea(ml);
                 }
@@ -1952,9 +1954,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
                     for (int i = 0; i < wmsNames.length; i++) {
                         if (getMapLayerWMS(wmsNames[i]) == null) {
-                            String layerName = getNextAreaLayerName(taxon + " area " + (i + 1));
+                            String scientific = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/distribution/" + spcode[i])).getString("scientific");
+                            String layerName = getNextAreaLayerName(scientific + " area " + (i + 1));
                             String html = DistributionsController.getMetadataHtmlFor(spcode[i], null, layerName);
-                            ml = addWMSLayer(layerName, "Expert distribution: " + taxon, found.get(i), 0.35f, html, null, LayerUtilities.WKT, null, null);
+                            ml = addWMSLayer(layerName, getNextAreaLayerName("Expert distribution: " + scientific), found.get(i), 0.35f, html, null, LayerUtilities.WKT, null, null);
                             ml.setSPCode(spcode[i]);
                             setupMapLayerAsDistributionArea(ml);
                         }
@@ -2154,16 +2157,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     MapLayer mapSpeciesFilter(Query q, String species, String rank, int count, int subType, String wkt, boolean grid, int size, float opacity, int colour) {
         String filter = q.getQ();
 
-        if (q instanceof BiocacheQuery) {
-            String lsids = ((BiocacheQuery) q).getLsids();
-            List<String> extraLsids = ((BiocacheQuery) q).getLsidFromExtraParams();
-            if (lsids != null && lsids.length() > 0) {
-                loadDistributionMap(lsids, species, wkt);
+        //just in case it fails
+        try {
+            if (q instanceof BiocacheQuery) {
+                String lsids = ((BiocacheQuery) q).getLsids();
+                List<String> extraLsids = ((BiocacheQuery) q).getLsidFromExtraParams();
+                if (lsids != null && lsids.length() > 0) {
+                    loadDistributionMap(lsids, species, wkt);
+                }
+                for (String extraLsid : extraLsids) {
+                    logger.debug("loading layer for: " + extraLsid);
+                    loadDistributionMap(extraLsid, species, wkt);
+                }
             }
-            for (String extraLsid : extraLsids) {
-                logger.debug("loading layer for: " + extraLsid);
-                loadDistributionMap(extraLsid, species, wkt);
-            }
+        } catch (Exception e) {
+            logger.error("failed to map species distribution areas", e);
         }
 
         MapLayer ml = mapSpeciesWMSByFilter(getNextAreaLayerName(species), filter, subType, q, grid, size, opacity, colour);

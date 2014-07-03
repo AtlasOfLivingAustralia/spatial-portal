@@ -170,7 +170,8 @@ public class RemoteLogger {
             if (Util.isLoggedIn()) {
                 String url = logger_service + "/app/types/tool.json?"
                         + "email=" + URLEncoder.encode(Util.getUserEmail(), "UTF-8")
-                        + "&appid=" + URLEncoder.encode(appid, "UTF-8");
+                        + "&appid=" + URLEncoder.encode(appid, "UTF-8")
+                        + "&api_key=" + URLEncoder.encode(CommonData.settings.getProperty("api_key"), "UTF-8");
 
                 HttpClient client = new HttpClient();
                 GetMethod get = new GetMethod(url);
@@ -198,8 +199,9 @@ public class RemoteLogger {
             if (Util.isLoggedIn()) {
                 String url = logger_service + "/app/view/"
                          + logId + ".json"
-                //+ "&email=" + URLEncoder.encode(Util.getUserEmail(), "UTF-8")
-                        + "?appid=" + URLEncoder.encode(appid,"UTF-8");
+                        + "?appid=" + URLEncoder.encode(appid,"UTF-8")
+                        + "&api_key=" + URLEncoder.encode(CommonData.settings.getProperty("api_key"), "UTF-8");
+
 
 
                 HttpClient client = new HttpClient();
