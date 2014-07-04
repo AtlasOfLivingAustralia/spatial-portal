@@ -32,13 +32,6 @@
   <listener>
     <listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
   </listener>
-	<context-param>
-		<param-name>log4jConfigLocation</param-name>
-		<param-value>file:/data/webportal/config/log4j.properties</param-value>
-	</context-param>
-	<listener>
-		<listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
-	</listener>
     <listener>
         <description>Load the application config file, then pass control to spring to merge config file keys into bean
             definitions and create application context
@@ -109,6 +102,37 @@
         <location>/WEB-INF/jsp/Error.jsp</location>
     </error-page>
 
+    <!-- CAS Authentication Service filters -->
+    <filter>
+        <filter-name>CAS Authentication Filter</filter-name>
+        <filter-class>au.org.ala.cas.client.UriFilter</filter-class>
+        <init-param>
+            <param-name>filterClass</param-name>
+            <param-value>org.jasig.cas.client.authentication.AuthenticationFilter</param-value>
+        </init-param>
+        <init-param>
+            <param-name>casServerLoginUrl</param-name>
+            <param-value>https://auth.ala.org.au/cas/login</param-value>
+        </init-param>
+        <init-param>
+            <param-name>gateway</param-name>
+            <param-value>false</param-value>
+        </init-param>
+    </filter>
+
+    <filter>
+        <filter-name>CAS Validation Filter</filter-name>
+        <filter-class>au.org.ala.cas.client.UriFilter</filter-class>
+        <init-param>
+            <param-name>filterClass</param-name>
+            <param-value>org.jasig.cas.client.validation.Cas20ProxyReceivingTicketValidationFilter</param-value>
+        </init-param>
+        <init-param>
+            <param-name>casServerUrlPrefix</param-name>
+            <param-value>https://auth.ala.org.au/cas</param-value>
+        </init-param>
+    </filter>
+
     <filter>
         <filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
         <filter-class>au.org.ala.cas.client.UriFilter</filter-class>
@@ -117,6 +141,16 @@
             <param-value>au.org.ala.cas.client.AlaHttpServletRequestWrapperFilter</param-value>
         </init-param>
     </filter>
+
+    <filter-mapping>
+        <filter-name>CAS Authentication Filter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>CAS Validation Filter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <filter-mapping>
         <filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
@@ -129,5 +163,14 @@
         <env-entry-value>/data/webportal/config/webportal-config.properties</env-entry-value>
         <env-entry-type>java.lang.String</env-entry-type>
     </env-entry>
+
+    <context-param>
+        <param-name>log4jConfigLocation</param-name>
+        <param-value>file:/data/webportal/config/log4j.properties</param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+    </listener>
 
 </web-app>
