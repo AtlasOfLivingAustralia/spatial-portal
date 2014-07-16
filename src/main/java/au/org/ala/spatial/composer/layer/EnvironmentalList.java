@@ -373,6 +373,10 @@ public class EnvironmentalList extends Listbox {
     public void selectLayersAndDisable(String[] layers) {
         this.setMultiple(true);
 
+        if (layers == null) {
+            return;
+        }
+
         String[] firstDomain = getFirstDomain();
 
         for (int i = 0; i < listEntries.size(); i++) {

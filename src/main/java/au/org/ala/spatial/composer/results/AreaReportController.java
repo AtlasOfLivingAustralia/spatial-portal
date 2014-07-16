@@ -789,7 +789,7 @@ public class AreaReportController extends UtilityComposer {
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);
             getMapComposer().mapSpecies(query, activeAreaLayerName, "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
-                    Util.nextColour());
+                    Util.nextColour(), false);
 
         } catch (Exception e) {
             logger.error("error mapping species in area", e);
@@ -809,7 +809,7 @@ public class AreaReportController extends UtilityComposer {
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName + " geospatial kosher");
             getMapComposer().mapSpecies(query, activeAreaLayerName, "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
-                    Util.nextColour());
+                    Util.nextColour(), false);
 
         } catch (Exception e) {
             logger.error("error mapping kosher species in area", e);

@@ -541,9 +541,9 @@ public class UserDataQuery implements Query {
     public String getDownloadUrl(String[] extraFields) {
         //this default behaviour of excluding default fields from the download URL may change
         ArrayList<String> fieldsAlreadyIncluded = new ArrayList<String>();
-        for(String s : getDefaultDownloadFields()) {
+        /*for(String s : getDefaultDownloadFields()) {
             fieldsAlreadyIncluded.add(s);
-        }
+        }*/
 
         StringBuilder sb = new StringBuilder();
         if(extraFields != null && extraFields.length > 0) {
@@ -667,6 +667,8 @@ public class UserDataQuery implements Query {
 
     @Override
     public String[] getDefaultDownloadFields() {
+        return null;
+        /*
         //if a default field has the same name as a field(column) uploaded it will be excluded
         String [] fields = null;
         try {
@@ -681,6 +683,6 @@ public class UserDataQuery implements Query {
             logger.error("failed to get list of default fields", e);
         }
 
-        return fields;
+        return fields;*/
     }
 }

@@ -18,21 +18,31 @@ import com.vividsolutions.jts.operation.valid.IsValidOp;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.data.DataStore;
+import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
+import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
 import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.map.FeatureLayer;
+import org.geotools.map.Layer;
+import org.geotools.map.MapContent;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.RendererUtilities;
+import org.geotools.renderer.lite.StreamingRenderer;
+import org.geotools.styling.*;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
+import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -43,8 +53,10 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.MouseEvent;
 import org.zkoss.zul.*;
+import org.zkoss.zul.Button;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -112,51 +124,57 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
         }
     }
 
-    private void executeShapeImageRenderer(String shapepath, String column, String filters) {
-        Runtime runtime = Runtime.getRuntime();
-        Process proc;
+    private void executeShapeImageRenderer(Filter filter) {
         try {
-            logger.debug("Generating image via Runtime");
-            String shapeimageexe = CommonData.settings.getProperty("shapeimagepath");
-            String shapeout = shapepath.substring(0, shapepath.lastIndexOf("/") + 1);
+            logger.debug("Generating image");
 
-            if (StringUtils.isBlank(column)) {
-                column = "none";
-            }
-            if (StringUtils.isBlank(filters)) {
-                filters = "none";
-            }
+            SimpleFeatureCollection features1;
 
-            String[] cmd = new String[5];
-            cmd[0] = shapeimageexe;
-            cmd[1] = shapepath;
-            cmd[2] = shapeout;
-            cmd[3] = column;
-            cmd[4] = filters;
-
-            proc = runtime.exec(cmd);
-
-            InputStreamReader isr = new InputStreamReader(proc.getInputStream());
-            BufferedReader br = new BufferedReader(isr);
-            String line;
-            String imagepath = "";
-
-            while ((line = br.readLine()) != null) {
-                logger.debug(line);
-                imagepath = line;
+            if(filter == null) {
+                features1 = source.getFeatures();
+            } else {
+                features1 = source.getFeatures(filter);
             }
 
-            int exitVal = proc.waitFor();
+            // Create a map content and add our shapefile to it
+            MapContent map = new MapContent();
 
-            if (exitVal != -1) {
-                logger.debug("Image generated at: " + imagepath);
+            org.geotools.styling.Style style = SLD.createSimpleStyle(source.getSchema());
+            Layer layer = new FeatureLayer(features1, style);
+            map.addLayer(layer);
 
-                File imgFile = new File(imagepath);
-                if (imgFile.exists()) {
-                    BufferedImage bi = ImageIO.read(imgFile);
-                    img.setContent(bi);
+            GTRenderer renderer = new StreamingRenderer();
+            renderer.setMapContent(map);
+
+            int imageWidth = 800;
+            int imageHeight = 300;
+
+            Rectangle imageBounds = null;
+            ReferencedEnvelope mapBounds = null;
+            try {
+                mapBounds = map.getMaxBounds();
+                double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
+                if (heightToWidth * imageWidth > imageHeight) {
+                    imageBounds = new Rectangle(
+                            0, 0, (int)Math.round(imageHeight / heightToWidth), imageHeight);
+                } else {
+                    imageBounds = new Rectangle(
+                            0, 0, imageWidth, (int) Math.round(imageWidth * heightToWidth));
                 }
+            } catch (Exception e) {
+                // failed to access map layers
+                throw new RuntimeException(e);
             }
+
+            BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height, BufferedImage.TYPE_INT_RGB);
+
+            Graphics2D gr = image.createGraphics();
+            gr.setPaint(Color.WHITE);
+            gr.fill(imageBounds);
+
+
+            renderer.paint(gr, imageBounds, mapBounds);
+            img.setContent(image);
 
         } catch (Exception e) {
             logger.debug("Unable to generate image for selected shapefile", e);
@@ -165,12 +183,12 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
 
     private void loadShape(String filename) {
 
-        final FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
+        //final FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
         String userFilter = "none";
         try {
-            DataStore dataStore = FileDataStoreFinder.getDataStore(new File(filename));
-            String[] typenames = dataStore.getTypeNames();
-            source = dataStore.getFeatureSource(typenames[0]);
+            FileDataStore store = FileDataStoreFinder.getDataStore(new File(filename));
+            source = store.getFeatureSource();
+
             features = source.getFeatures();
 
             Listhead lhd = new Listhead();
@@ -215,7 +233,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             // if so, then select it and map it automatically
             logger.debug("features.size(): " + features.size());
             if (features.size() > 1) {
-                executeShapeImageRenderer(file, "none", "none");
+                executeShapeImageRenderer(null);
             } else {
                 logger.debug("only a single feature, bypassing wizard...");
                 fi = features.features();
@@ -248,16 +266,17 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
         String filter = "";
 
         Iterator<Listitem> it = lAttributes.getSelectedItems().iterator();
+
+        FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
+
+        Set<FeatureId> fids = new HashSet<FeatureId>();
+
         while (it.hasNext()) {
             Listitem li = it.next();
-            filter += li.getValue();
-
-            if (it.hasNext()) {
-                filter += ",";
-            }
+            fids.add(ff.featureId(li.getValue().toString()));
         }
 
-        executeShapeImageRenderer(file, column, filter);
+        executeShapeImageRenderer(ff.id(fids));
     }
 
     public void onClick$btnNext(Event event) {
@@ -410,6 +429,8 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 metadata += "</ul>";
 
                 mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
+
+                getMapComposer().replaceWKTwithWMS(mapLayer);
             }
 
         } catch (IOException e) {

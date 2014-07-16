@@ -289,7 +289,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @param sa
      * @param geospatialKosher
      */
-    public void mapSpeciesFromAutocompleteComponent(SpeciesAutoCompleteComponent sacc, SelectedArea sa, boolean[] geospatialKosher) {
+    public void mapSpeciesFromAutocompleteComponent(SpeciesAutoCompleteComponent sacc, SelectedArea sa, boolean[] geospatialKosher, boolean mapExpertDistributions) {
         if (!sacc.hasValidAnnotatedItemSelected()) {
             return;
         }
@@ -300,7 +300,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Query query = sacc.getQuery(this, false, geospatialKosher);
             Query q = QueryUtil.queryFromSelectedArea(query, sa, false, geospatialKosher);
             String wkt = sa == null ? null : sa.getWkt();
-            mapSpecies(q, taxon, rank, 0, LayerUtilities.SPECIES, wkt, -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, Util.nextColour());
+            mapSpecies(q, taxon, rank, 0, LayerUtilities.SPECIES, wkt, -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, Util.nextColour(), mapExpertDistributions);
             logger.debug(">>>>> " + taxon + ", " + rank + " <<<<<");
         }
     }
@@ -1251,7 +1251,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 if (query != null && style != null && layerName != null) {
 
                     BiocacheQuery q = new BiocacheQuery(null, null, query, null, true, geospatialKosher, baseBiocacheUrl, baseWSBiocacheUrl, supportDynamic);
-                    mapSpecies(q, layerName, "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, 0, 4, 0.8f, Integer.decode(style));
+                    mapSpecies(q, layerName, "species", q.getOccurrenceCount(), LayerUtilities.SPECIES, null, 0, 4, 0.8f, Integer.decode(style), false);
                 }
             }
         }
@@ -1629,18 +1629,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Messagebox.show("Reset map to initial empty state, with no layers and default settings?", "Reset Map",
                     Messagebox.YES | Messagebox.NO, Messagebox.QUESTION, new EventListener() {
 
-                @Override
-                public void onEvent(Event event) throws Exception {
-                    if ((Integer) event.getData() != Messagebox.YES) {
-                        //no selected
-                        return;
-                    } else {
-                        //reset map
-                        reloadPortal();
-                        return;
-                    }
-                }
-            });
+                        @Override
+                        public void onEvent(Event event) throws Exception {
+                            if ((Integer) event.getData() != Messagebox.YES) {
+                                //no selected
+                                return;
+                            } else {
+                                //reset map
+                                reloadPortal();
+                                return;
+                            }
+                        }
+                    });
 
         } catch (Exception e) {
             logger.error("error reloading portal", e);
@@ -1810,11 +1810,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /**
      * gets a species map that doesn't have colourby set
      */
-    public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid, int size, float opacity, int colour) {
-        return mapSpecies(sq, species, rank, count, subType, wkt, setGrid, size, opacity, colour, null, false);
+    public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid, int size, float opacity, int colour, boolean mapExpertDistribution) {
+        return mapSpecies(sq, species, rank, count, subType, wkt, setGrid, size, opacity, colour, null, mapExpertDistribution);
     }
 
-    public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid, int size, float opacity, int colour, String colourBy, Boolean loadExpertLayer) {
+    public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid, int size, float opacity, int colour, String colourBy, boolean mapExpertDistribution) {
 
         if (species == null) {
             species = sq.getName();
@@ -1834,7 +1834,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             grid = sq.getOccurrenceCount() > Integer.parseInt(getSettingsSupplementary().getProperty("points_cluster_threshold"));
         }
-        MapLayer ml = mapSpeciesFilter(sq, species, rank, count, subType, wkt, grid, size, opacity, colour);
+        MapLayer ml = mapSpeciesFilter(sq, species, rank, count, subType, wkt, grid, size, opacity, colour, mapExpertDistribution);
 
         if (ml != null) {
             if (colourBy != null) {
@@ -2154,24 +2154,26 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    MapLayer mapSpeciesFilter(Query q, String species, String rank, int count, int subType, String wkt, boolean grid, int size, float opacity, int colour) {
+    MapLayer mapSpeciesFilter(Query q, String species, String rank, int count, int subType, String wkt, boolean grid, int size, float opacity, int colour, boolean mapExpertDistributions) {
         String filter = q.getQ();
 
         //just in case it fails
-        try {
-            if (q instanceof BiocacheQuery) {
-                String lsids = ((BiocacheQuery) q).getLsids();
-                List<String> extraLsids = ((BiocacheQuery) q).getLsidFromExtraParams();
-                if (lsids != null && lsids.length() > 0) {
-                    loadDistributionMap(lsids, species, wkt);
+        if (mapExpertDistributions) {
+            try {
+                if (q instanceof BiocacheQuery) {
+                    String lsids = ((BiocacheQuery) q).getLsids();
+                    List<String> extraLsids = ((BiocacheQuery) q).getLsidFromExtraParams();
+                    if (lsids != null && lsids.length() > 0) {
+                        loadDistributionMap(lsids, species, wkt);
+                    }
+                    for (String extraLsid : extraLsids) {
+                        logger.debug("loading layer for: " + extraLsid);
+                        loadDistributionMap(extraLsid, species, wkt);
+                    }
                 }
-                for (String extraLsid : extraLsids) {
-                    logger.debug("loading layer for: " + extraLsid);
-                    loadDistributionMap(extraLsid, species, wkt);
-                }
+            } catch (Exception e) {
+                logger.error("failed to map species distribution areas", e);
             }
-        } catch (Exception e) {
-            logger.error("failed to map species distribution areas", e);
         }
 
         MapLayer ml = mapSpeciesWMSByFilter(getNextAreaLayerName(species), filter, subType, q, grid, size, opacity, colour);
@@ -2511,7 +2513,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void loadScatterplot(ScatterplotData data, String lyrName) {
         MapLayer ml = mapSpecies(data.getQuery(), data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT, null,
-                0, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, Util.nextColour());
+                0, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, Util.nextColour(), false);
         ml.setDisplayName(lyrName);
         ml.setSubType(LayerUtilities.SCATTERPLOT);
         ml.setType(LayerUtilities.SCATTERPLOT);

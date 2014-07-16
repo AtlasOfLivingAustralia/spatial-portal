@@ -259,7 +259,7 @@ public class LayerLegendScatterplotController extends UtilityComposer implements
         layername = StringUtils.capitalize(layername);
 
         getMapComposer().mapSpecies(query, layername, "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE,
-                MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
+                MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
     }
 
     public void onClick$addNewLayers(Event event) {

@@ -642,9 +642,9 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             Query outGroup = query.newFlaggedRecords(false);
 
             getMapComposer().mapSpecies(inGroup, mapLayer.getDisplayName() + " in group", "species", -1, LayerUtilities.SPECIES, null, -1,
-                    MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
+                    MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
             getMapComposer().mapSpecies(outGroup, mapLayer.getDisplayName() + " out group", "species", -1, LayerUtilities.SPECIES, null, -1,
-                    MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
+                    MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
         }
     }
 

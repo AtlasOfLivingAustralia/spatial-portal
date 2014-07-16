@@ -52,6 +52,7 @@ public class AddSpeciesController extends UtilityComposer {
     Listbox lMultiple;
     Event event;
     Checkbox chkGeoKosherTrue, chkGeoKosherFalse;
+    Checkbox chkExpertDistributions;
     Query query;
     String rank;
     String taxon;
@@ -104,6 +105,7 @@ public class AddSpeciesController extends UtilityComposer {
         if (rAllSpecies.isSelected()) {
             AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/add/AddSpeciesInArea.zul", getMapComposer(), null);
             window.setGeospatialKosher(getGeospatialKosher());
+            window.setExpertDistributions(chkExpertDistributions.isChecked());
             window.setAllSpecies(true);
             window.loadAreaLayers();
             try {
@@ -147,7 +149,7 @@ public class AddSpeciesController extends UtilityComposer {
             }
         } else {
             if (rSearch.isSelected()) {
-                getMapComposer().mapSpeciesFromAutocompleteComponent(searchSpeciesACComponent, null, getGeospatialKosher());
+                getMapComposer().mapSpeciesFromAutocompleteComponent(searchSpeciesACComponent, null, getGeospatialKosher(), chkExpertDistributions.isChecked());
             } else if (rUploadLSIDs.isSelected()) {
                 //we need to populate the "create assemblage" with the values from the species list
                 loadedAssemblage = true;

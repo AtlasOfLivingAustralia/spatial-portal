@@ -269,7 +269,7 @@ public class UploadSpeciesController extends UtilityComposer {
                 mapFilterGrid(q, ud.getName(), ud.getFeatureCount(), q.getMetadataHtml());
             } else {
                 ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1,
-                        MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
+                        MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
             }
 
             if (ml != null) {

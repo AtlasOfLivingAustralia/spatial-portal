@@ -123,21 +123,21 @@ public class AreaToolComposer extends UtilityComposer {
                     MapLayer ml = getMapComposer().mapSpecies(
                             q, (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"),
                             (Integer) winProps.get("type"), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
-                            Util.nextColour());
+                            Util.nextColour(), false);
                     ml.getMapLayerMetadata().setMoreInfo((String) winProps.get("metadata"));
 
                 } else if (winProps.get("filterGrid") != null && (Boolean) winProps.get("filterGrid")) {
                     MapLayer ml = getMapComposer().mapSpecies(
                             q, (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"),
                             (Integer) winProps.get("type"), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
-                            Util.nextColour());
+                            Util.nextColour(), false);
                     ml.getMapLayerMetadata().setMoreInfo((String) winProps.get("metadata"));
 
                 } else if (winProps.get("byLsid") != null && (Boolean) winProps.get("byLsid")) {
                     MapLayer ml = getMapComposer().mapSpecies(
                             q, (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"),
                             (Integer) winProps.get("type"), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
-                            Util.nextColour());
+                            Util.nextColour(), false);
                     ml.getMapLayerMetadata().setMoreInfo((String) winProps.get("metadata"));
                 } else {
                     MapLayer ml = getMapComposer().mapSpecies(
@@ -145,7 +145,7 @@ public class AreaToolComposer extends UtilityComposer {
                             (String) winProps.get("taxon"),
                             (String) winProps.get("rank"),
                             0, LayerUtilities.SPECIES, wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
-                            Util.nextColour());
+                            Util.nextColour(), false);
                 }
                 if (getMapComposer().getMapLayer(layerName) != null) {
                     String displayName = getMapComposer().getMapLayer(layerName).getDisplayName();
@@ -203,12 +203,12 @@ public class AreaToolComposer extends UtilityComposer {
             if (results_count_occurrences > 0 && results_count_occurrences <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
                 String activeAreaLayerName = layers.get(0).getDisplayName();
                 getMapComposer().mapSpecies(sq, CommonData.lang("occurrences_in_area_prefix") + " " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, wkt,
-                        -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
+                        -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
             } else {
                 getMapComposer().showMessage(
                         CommonData.lang("error_too_many_occurrences_for_mapping")
-                            .replace("<counted_occurrences>", results_count_occurrences + "")
-                            .replace("<max_occurrences>", CommonData.settings.getProperty("max_record_count_map")));
+                                .replace("<counted_occurrences>", results_count_occurrences + "")
+                                .replace("<max_occurrences>", CommonData.settings.getProperty("max_record_count_map")));
             }
         } catch (Exception e) {
             logger.error("error mapping species in an area", e);

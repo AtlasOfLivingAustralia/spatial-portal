@@ -3,7 +3,8 @@
     <window id="areashapewizard" use="au.org.ala.spatial.composer.add.area.AreaUploadShapefileWizardController"
             apply="au.org.ala.spatial.composer.add.area.AreaUploadShapefile"  xmlns:n="http://www.zkoss.org/2005/zk/native"
             width="90%" sizable="true"
-            style="position:absolute;left:10px;top:10px;overflow:visible"
+            style="overflow:visible"
+            position="top,center"
             >
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -19,7 +20,7 @@
         <separator />
         <vbox>
             <div>
-                <imagemap id="img" />
+                <imagemap id="img" style="border:1;"/>
             </div>
             <div>
                 <vbox>

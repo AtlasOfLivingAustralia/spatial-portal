@@ -51,6 +51,7 @@ public class AddSpeciesInArea extends UtilityComposer {
     private boolean[] geospatialKosher = null;
     String multipleSpeciesUploadName = null;
     Radio rAreaCurrent;
+    private boolean expertDistributions;
 
     @Override
     public void afterCompose() {
@@ -154,17 +155,17 @@ public class AddSpeciesInArea extends UtilityComposer {
 
             if (byLsid) {
                 ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
-                        Util.nextColour());
+                        Util.nextColour(), expertDistributions);
             } else if (filter) {
                 ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
-                        Util.nextColour());
+                        Util.nextColour(), expertDistributions);
             } else if (filterGrid) {
                 ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
-                        Util.nextColour());
+                        Util.nextColour(), expertDistributions);
             } else if (rank != null && taxon != null && q != null) {
                 //String sptaxon = taxon+";"+lsid;
                 ml = getMapComposer().mapSpecies(q, taxon, rank, -1, LayerUtilities.SPECIES, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE,
-                        MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
+                        MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), expertDistributions);
                 setupMetadata = false;
             } else {
                 int results_count_occurrences = q.getOccurrenceCount();
@@ -188,7 +189,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                         }
                     }
                     ml = getMapComposer().mapSpecies(q, layerName, "species", results_count_occurrences, LayerUtilities.SPECIES, sa.getWkt(), -1,
-                            MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
+                            MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), expertDistributions);
                 } else {
                     getMapComposer().showMessage(
                             CommonData.lang("error_too_many_occurrences_for_mapping")
@@ -306,5 +307,9 @@ public class AddSpeciesInArea extends UtilityComposer {
 
     void setMultipleSpeciesUploadName(String multipleSpeciesUploadName) {
         this.multipleSpeciesUploadName = multipleSpeciesUploadName;
+    }
+
+    public void setExpertDistributions(boolean expertDistributions) {
+        this.expertDistributions = expertDistributions;
     }
 }

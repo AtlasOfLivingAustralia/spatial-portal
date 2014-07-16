@@ -373,7 +373,6 @@ function iterateSpeciesInfoQuery(curr) {
         }
     } catch (err) {
     }
-    console.log("testing");
     var url = query_url[pos] + "&start=" + curpos;
     //alert(url);
     $.getJSON(proxy_script + URLEncode(url), function (data) {
@@ -390,8 +389,6 @@ function iterateSpeciesInfoQuery(curr) {
             if (query_count_total == 1) {
                 heading = "<h2>Occurrence information (1 occurrence)</h2>";
             }
-            console.log("testing");
-            console.log(data);
             var infohtml = "<div id='sppopup2'> " +
                 heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
                 " Longitude: " + ulyr_occ_lng + " , Latitude: " + ulyr_occ_lat + " (<a href='javascript:goToLocation(" + ulyr_occ_lng + ", " + ulyr_occ_lat + ", 15);relocatePopup(" + ulyr_occ_lng + ", " + ulyr_occ_lat + ");'>zoom to</a>) <br/>" +
@@ -926,6 +923,14 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
     var rank = occinfo.taxonRank;
     var speciesname = occinfo.scientificName;
     var specieslsid = occinfo.taxonConceptID;
+    var ulyr_img_small = occinfo.thumbnailUrl;
+    var ulyr_img = occinfo.imageUrl;
+
+    var img = "";
+    if (ulyr_img_small != null) {
+        img = "<br/><a href='" + ulyr_img + "' target='_blank'><img src='" + ulyr_img_small + "' /></a>"
+    }
+
     species = (speciesname != null) ? speciesname : "";
     if (specieslsid != null) {
         species = '<a href="' + bie + '/species/' + specieslsid + '" target="_blank">' + species + '</a>';
@@ -969,6 +974,8 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
 
     var infohtml = "<div id='sppopup2'> " +
         heading +
+        "<div id=''>" + prevBtn + " &nbsp; &nbsp; &nbsp; &nbsp; " + nextBtn + "</div>" +
+        "<table><tr><td valign='top'>" +
         " Scientific name: " + species + " <br />" +
         " Kingdom: " + kingdom + " <br />" +
         " Family: " + family + " <br />" +
@@ -978,11 +985,17 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
         " Occurrence date: " + occurrencedate + " <br />" +
         "Full record: <a href='" + biocache + "/occurrences/" + occinfo.uuid + "' target='_blank'>View details</a> <br />" +
         fullQueryLink + " <br/>" +
-        "<input type='checkbox' " + checkstate + " onClick='parent.flagRecord(\"" + query_layer[pos].name + "\",\"" + occinfo.uuid + "\",this.checked)' />Assign record to <i>ad hoc</i> group<br/>" +
-        "<div id=''>" + prevBtn + " &nbsp; &nbsp; &nbsp; &nbsp; " + nextBtn + "</div>";
+         "<input type='checkbox' " + checkstate + " onClick='parent.flagRecord(\"" + query_layer[pos].name + "\",\"" + occinfo.uuid + "\",this.checked)' />Assign record to <i>ad hoc</i> group<br/>" +
+
+        "</td><td>" + img+ "</td></tr></table>";
 
     if (document.getElementById("sppopup") != null) {
         document.getElementById("sppopup").innerHTML = infohtml;
+    }
+    if (ulyr_img_small != null) {
+        popup.setSize(new OpenLayers.Size(500, 320));
+    } else {
+        popup.setSize(new OpenLayers.Size(300, 320));
     }
 }
 

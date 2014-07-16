@@ -73,7 +73,7 @@
                     </radiogroup>
                 </div>
 
-                <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep" width="550px" height="600px">
+                <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep" width="550px" height="600px" style="overflow-y:auto">
                     <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
                     <label id="atstep2_label" value="" />
                     <separator />

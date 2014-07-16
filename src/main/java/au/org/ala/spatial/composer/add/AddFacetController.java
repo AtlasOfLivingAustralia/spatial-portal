@@ -117,17 +117,11 @@ public class AddFacetController extends UtilityComposer {
     public void setParams(Map<String, Object> params) {
         // iterate thru' the passed params and load them into the
         // existing default params
-        if (params == null) {
-            setupDefaultParams();
+        if (this.params == null) {
+            this.params = new HashMap<String, Object>();
         }
-        if (params != null && params.keySet() != null && params.keySet().iterator() != null) {
-            Iterator<String> it = params.keySet().iterator();
-            while (it.hasNext()) {
-                String key = it.next();
-                this.params.put(key, params.get(key));
-            }
-        } else {
-            this.params = params;
+        if (params != null) {
+            this.params.putAll(params);
         }
     }
 
@@ -945,7 +939,7 @@ public class AddFacetController extends UtilityComposer {
                 } else {
                     getMapComposer().mapSpecies(querynew,
                             "My facet", "species", -1, LayerUtilities.SPECIES, null, 0, MapComposer.DEFAULT_POINT_SIZE,
-                            MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour());
+                            MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
                     this.detach();
                 }
             }

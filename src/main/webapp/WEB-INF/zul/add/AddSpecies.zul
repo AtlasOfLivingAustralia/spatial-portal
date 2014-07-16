@@ -19,7 +19,8 @@
             <vbox>
                 <checkbox id="chkGeoKosherTrue" checked="true" label="Include spatially-valid records" />
                 <checkbox id="chkGeoKosherFalse" checked="false" label="Include spatially-suspect records" />
-                
+                <separator />
+                <checkbox id="chkExpertDistributions" checked="true" label="Include Expert Distribution areas" />
             </vbox>
             <separator/>
             <radiogroup id="rgAddSpecies" onOK="addspecieswindow.onClick$btnOk(null)" >
