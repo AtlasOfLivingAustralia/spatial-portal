@@ -47,6 +47,7 @@ public class CommonData {
     static final String BIE_URL = "bie_url";
     static final String BIOCACHE_SERVICE_URL = "biocache_service_url";
     static final String BIOCACHE_WEBAPP_URL = "biocache_webapp_url";
+    public static final String PHYLOLIST_URL = "phylolist_url";
     static final String SPECIES_LIST_URL = "species_list_url";
     static final String COLLECTORY_URL = "collectory_url";
     static final String DEFAULT_UPLOAD_SAMPLING = "default_upload_sampling";
@@ -967,5 +968,4 @@ public class CommonData {
     static void initLanguagePack() {
         languagePack = new LanguagePackImpl();
     }
-
 }

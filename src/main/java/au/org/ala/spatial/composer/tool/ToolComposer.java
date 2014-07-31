@@ -415,6 +415,14 @@ public class ToolComposer extends UtilityComposer {
         }
     }
 
+    public void loadAreaLayers(boolean multiple) {
+        if(!multiple){
+            loadAreaLayers(null);
+        } else {
+            loadAreaLayersCheckboxes(null);
+        }
+    }
+
     public void loadAreaLayers() {
         loadAreaLayers(null);
     }
@@ -485,6 +493,26 @@ public class ToolComposer extends UtilityComposer {
 
             Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
 
+        } catch (Exception e) {
+            logger.error("Unable to load active area layers:", e);
+        }
+    }
+
+    public void loadAreaLayersCheckboxes(String selectedAreaName) {
+        try {
+
+            Checkbox cAreaCurrent = (Checkbox) getFellowIfAny("cAreaCurrent");
+            Vbox vboxArea = (Vbox) getFellowIfAny("vboxArea");
+
+            List<MapLayer> layers = getMapComposer().getPolygonLayers();
+            for (int i = 0; i < layers.size(); i++) {
+                MapLayer lyr = layers.get(i);
+                Checkbox rAr = new Checkbox(lyr.getDisplayName());
+                rAr.setValue(lyr.getWKT());
+
+                rAr.setParent(vboxArea);
+                vboxArea.insertBefore(rAr, cAreaCurrent);
+            }
         } catch (Exception e) {
             logger.error("Unable to load active area layers:", e);
         }

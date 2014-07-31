@@ -2650,6 +2650,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/tool/SitesBySpecies.zul", null, "addtoolwindow");
     }
 
+    public void onClick$btnPhylogeneticDiversity(Event event) {
+        openModal("WEB-INF/zul/tool/PhylogeneticDiversity.zul", null, "addtoolwindow");
+    }
+
     public Window openModal(String page, Hashtable<String, Object> params, String windowname) {
         //remove any existing window with the same name (bug somewhere?)
         if (windowname != null) {

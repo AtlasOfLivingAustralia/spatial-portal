@@ -1,0 +1,35 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+   
+    <window id="phylogeneticdiversityresultswindow" border="normal"
+    use="au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults"
+            apply="au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults"
+            width="400px"
+            style="overflow:visible"
+             xmlns:n="http://www.zkoss.org/2005/zk/native">
+            <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+            <n:div class="fancybox-bg" id="fancybox-bg-se" />
+            <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+            <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+            <n:div class="fancybox-bg" id="fancybox-bg-n" />
+            <n:div class="fancybox-bg" id="fancybox-bg-e" />
+            <n:div class="fancybox-bg" id="fancybox-bg-s" />
+            <n:div class="fancybox-bg" id="fancybox-bg-w" />
+            <a sclass="fancybox-close" onClick="phylogeneticdiversityresultswindow.detach()" style="display: inline" />
+<caption label="Phylogenetic Diversity Results Preview" />
+             <separator />
+            <label id="results_label" value=""/>
+            <separator />
+            <separator />
+            <listbox id="popup_listbox_results" height="200px">
+                            <listhead id="popup_listbox_header" sizable="true" >
+
+                            </listhead>
+                        </listbox>
+
+            <div class="btn-group">
+                    <button id="btnDownload" label="Download"  />
+                    <button label="Close" onClick="phylogeneticdiversityresultswindow.detach()" />
+           </div>
+    </window>
+</zk>

@@ -315,6 +315,10 @@ function runSitesBySpecies() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnSitesBySpecies', null));
 }
 
+function runPhylogeneticDiversity() {
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnPhylogeneticDiversity', null));
+}
+
 function runAreaReport() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAreaReport', null));
 }

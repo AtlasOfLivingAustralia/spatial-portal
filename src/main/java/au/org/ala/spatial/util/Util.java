@@ -16,6 +16,9 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.ala.layers.legend.Facet;
 import org.ala.layers.legend.LegendObject;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.JTS;
@@ -32,6 +35,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -704,5 +708,23 @@ public class Util {
 
         //webportal (for some reason) does not like these spaces in WKT
         return new WKTReducedDTO(originalWKT, wkt.replace(" (","(").replace(", ", ","), reducedBy);
+    }
+
+    public static String readUrlPost(String url, NameValuePair[] params) {
+        try {
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(url);
+
+            post.setRequestBody(params);
+
+            int result = client.executeMethod(post);
+
+            // Get the response
+            if (result == 200) {
+                return post.getResponseBodyAsString();
+            }
+        } catch (Exception e) {
+        }
+        return null;
     }
 }
