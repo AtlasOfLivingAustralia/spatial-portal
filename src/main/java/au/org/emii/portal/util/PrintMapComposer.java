@@ -61,6 +61,17 @@ public class PrintMapComposer {
         }
         this.aspect_ratio = windowSize[0] / (double) windowSize[1];
 
+        //if aspect ratio is odd, attempt to calc it from extents.
+        if (this.aspect_ratio > 10 || this.aspect_ratio < 0.1) {
+            //TODO: when an error occurs because of windowSize, make sure extents are not 'bad' as well
+            logger.error("bad aspect ratio, windowSize = " + windowSize[0] + ", " + windowSize[1] + ", extents = " + extents[0] + " " + extents[1] + " " + extents[2] + " " + extents[3]);
+
+            windowSize[0] = SpatialUtil.convertLngToPixel(bb.getMaxLongitude()) - SpatialUtil.convertLngToPixel(bb.getMinLongitude());
+            windowSize[1] = SpatialUtil.convertLatToPixel(bb.getMaxLatitude()) - SpatialUtil.convertLatToPixel(bb.getMinLatitude());
+
+            this.aspect_ratio = windowSize[0] / (double) windowSize[1];
+        }
+
         this.comment = comment;
         this.outputType = outputType;
 

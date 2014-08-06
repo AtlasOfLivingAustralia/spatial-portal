@@ -2590,7 +2590,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onClick$btnAddWMSLayer(Event event) {
-        openModal("WEB-INF/zul/add/AddWMSLayer.zul", null, "addLayerWindow");
+        openModal("WEB-INF/zul/add/AddWMSLayer.zul", null, "addwmslayerwindow");
     }
 
     public void toggleLayers(Event event) {

@@ -94,6 +94,12 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 Map args = new HashMap();
                 args.put("layername", txtLayerName.getValue());
                 args.put("media", m);
+
+                String windowname = "areashapewizard";
+                if (getFellowIfAny(windowname) != null) {
+                    getFellowIfAny(windowname).detach();
+                }
+
                 Window window = (Window) Executions.createComponents("WEB-INF/zul/add/area/AreaUploadShapefileWizard.zul", this.getParent(), args);
                 try {
                     window.doModal();
@@ -360,7 +366,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
 
     private static String getKMLPolygonAsWKT(String kmldata) {
         try {
-            Parser parser = new Parser(new KMLConfiguration());
+            Parser parser = new Parser(new org.geotools.kml.v22.KMLConfiguration());
             SimpleFeature f = (SimpleFeature) parser.parse(new StringReader(kmldata));
             Collection placemarks = (Collection) f.getAttribute("Feature");
 

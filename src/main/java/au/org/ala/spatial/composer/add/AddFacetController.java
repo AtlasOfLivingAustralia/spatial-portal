@@ -1074,7 +1074,7 @@ public class AddFacetController extends UtilityComposer {
                 Radio rAr = new Radio(lyr.getDisplayName());
                 rAr.setValue(lyr.getWKT());
 
-                if (!lyr.getWKT().contains("ENVELOPE")) {
+                if (lyr.getWKT() != null && !lyr.getWKT().contains("ENVELOPE")) {
                     if (count_not_envelopes > 0) {
                         allWKT.append(',');
                     }

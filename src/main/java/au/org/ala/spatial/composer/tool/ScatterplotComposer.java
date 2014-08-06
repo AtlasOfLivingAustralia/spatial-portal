@@ -133,11 +133,14 @@ public class ScatterplotComposer extends ToolComposer {
 
             int result = client.executeMethod(post);
 
-            JSONObject jsonObject = JSONObject.fromObject(post.getResponseBodyAsString());
+            String str = post.getResponseBodyAsString();
+            JSONObject jsonObject = JSONObject.fromObject(str);
 
             if (jsonObject != null && jsonObject.containsKey("id")) {
                 data.setId(jsonObject.getString("id"));
                 data.setMissingCount((jsonObject.getInt("missingCount")));
+            } else {
+                logger.error("error parsing scatterplot id from: " + str);
             }
 
         } catch (Exception e) {

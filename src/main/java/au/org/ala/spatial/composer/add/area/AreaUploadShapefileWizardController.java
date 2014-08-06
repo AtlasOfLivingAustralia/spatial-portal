@@ -193,11 +193,13 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
 
             Listhead lhd = new Listhead();
             SimpleFeatureType schema = features.getSchema();
+            Listheader lh = new Listheader("id");
+            lh.setParent(lhd);
             for (AttributeType at : schema.getTypes()) {
                 if (schema.getDescriptor(at.getName()) == null) {
                     continue;
                 }
-                Listheader lh = new Listheader(at.getName().toString());
+                lh = new Listheader(at.getName().toString());
                 lh.setParent(lhd);
             }
             lhd.setParent(lAttributes);
@@ -208,6 +210,10 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 Listitem li = new Listitem();
                 Listcell lc = null;
                 String value = "";
+
+                //add identifier
+                lc = new Listcell(f.getIdentifier().getID());
+                lc.setParent(li);
 
                 for (AttributeType at : schema.getTypes()) {
                     if (schema.getDescriptor(at.getName()) == null) {

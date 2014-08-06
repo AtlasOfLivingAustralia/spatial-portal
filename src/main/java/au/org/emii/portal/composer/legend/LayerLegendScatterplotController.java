@@ -268,6 +268,8 @@ public class LayerLegendScatterplotController extends UtilityComposer implements
     }
 
     public void onClick$scatterplotImageDownload(Event event) {
+        getScatterplotData();
+
         try {
             byte[] b = null;
             InputStream in = new URL(data.imagePath).openStream();
@@ -284,6 +286,7 @@ public class LayerLegendScatterplotController extends UtilityComposer implements
     }
 
     public void onClick$scatterplotDataDownload(Event event) {
+        getScatterplotData();
 
         try {
             ObjectMapper om = new ObjectMapper();
