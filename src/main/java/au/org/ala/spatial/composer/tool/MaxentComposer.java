@@ -218,7 +218,7 @@ public class MaxentComposer extends ToolComposer {
             sbProcessUrl.append("&taxonlsid=" + URLEncoder.encode(query.getQ(), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             sbProcessUrl.append("&speciesq=").append(URLEncoder.encode(QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher()).getQ(), "UTF-8"));
-            sbProcessUrl.append("&bs=" + URLEncoder.encode(((BiocacheQuery) query).getBS(), "UTF-8"));
+            sbProcessUrl.append("&bs=" + URLEncoder.encode(query.getBS(), "UTF-8"));
 
             if (chkJackknife.isChecked()) {
                 sbProcessUrl.append("&chkJackknife=on");

@@ -1569,6 +1569,11 @@ public class BiocacheQuery implements Query, Serializable {
         }
 
         StringBuilder sb = new StringBuilder();
+        try {
+            sb.append("&fields=").append(URLEncoder.encode(CommonData.settings.getProperty("biocache_download_fields"), "UTF-8"));
+        } catch (Exception e) {
+            logger.error("webportal-config.properties biocache_download_fields error while encoding to UTF-8",e);
+        }
         sb.append("&extra=").append(CommonData.extraDownloadFields);
         if (extraFields != null && extraFields.length > 0) {
             for (int i = 0; i < extraFields.length; i++) {
