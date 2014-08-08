@@ -56,12 +56,13 @@
                                     border-right: none;
                                     border-bottom: none;
                                     padding: 1px 2px 0px 0px;
+                                    cursor: pointer;
                                 }
                             </style>
                             <grid id="cpGrid" width="280px" zclass="noborder" style="padding-left:2px;" >
                                 <rows>
                                     <row >
-                                        <div style="background-color:#8b0000" height="12px" onClick="layerlegend.selectColour(self)" />
+                                        <div style="background-color:#8b0000" height="12px" onClick="layerlegend.selectColour(self)"  />
                                         <div style="background-color:#FF0000" height="12px" onClick="layerlegend.selectColour(self)"  />
                                         <div style="background-color:#CD5C5C" height="12px" onClick="layerlegend.selectColour(self)"  />
                                         <div style="background-color:#E9967A" height="12px" onClick="layerlegend.selectColour(self)"  />
@@ -105,8 +106,8 @@
                                 </rows>
                             </grid>
                             <div style="padding-top:15px;">
-                                <label style="color:blue;text-decoration:underline;padding-left:15px;" id="lblColourSliders" value="more"
-                                    onClick='vboxColourSliders.setVisible(!vboxColourSliders.isVisible());
+                                <label style="color:blue;text-decoration:underline;padding-left:15px;cursor:pointer" id="lblColourSliders" value="more"
+                                     onClick='vboxColourSliders.setVisible(!vboxColourSliders.isVisible());
                                     if(vboxColourSliders.isVisible()) lblColourSliders.setValue("less");
                                     else lblColourSliders.setValue("more");' />
                             </div>
@@ -236,7 +237,7 @@
                 <separator />
                 <div id="divAnimation" visible="false">
                     <label value="Animation" sclass="h2" style="padding-top:0px;" />
-                    <label style="color:blue;padding-left:15px;padding-right:3px;text-decoration:underline" value="show" id="lblAnimationShow"
+                    <label style="color:blue;padding-left:15px;padding-right:3px;text-decoration:underline;cursor:pointer" value="show" id="lblAnimationShow"
                     onClick='hboxAnimation.setVisible(!hboxAnimation.isVisible());
                     if(hboxAnimation.isVisible()) lblAnimationShow.setValue("hide");
                     else lblAnimationShow.setValue("show");' />

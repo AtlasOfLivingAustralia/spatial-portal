@@ -43,6 +43,7 @@
                                     border-right: none;
                                     border-bottom: none;
                                     padding: 1px 5px 0px 0px;
+                                    cursor: pointer;
                                 }
                             </style>
                             <grid id="cpGrid" width="280px" sclass="noborder">
