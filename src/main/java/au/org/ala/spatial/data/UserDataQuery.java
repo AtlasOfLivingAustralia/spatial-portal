@@ -337,7 +337,7 @@ public class UserDataQuery implements Query {
         StringBuilder sb = new StringBuilder();
         sb.append(metadata).append("\n");
 
-        if (wkt.length() > 0) {
+        if (wkt != null && wkt.length() > 0) {
             sb.append(wkt).append("\n");
         }
 
