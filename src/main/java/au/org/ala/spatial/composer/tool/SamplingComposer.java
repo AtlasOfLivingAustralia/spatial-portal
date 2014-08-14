@@ -185,7 +185,9 @@ public class SamplingComposer extends ToolComposer {
                     Query q = getSelectedSpecies();
                     String [] default_fields = q.getDefaultDownloadFields();
 
-                    lbListLayers.selectLayersAndDisable(default_fields);
+                    if (default_fields != null) {
+                        lbListLayers.selectLayersAndDisable(default_fields);
+                    }
                 }
 
                 updateLayerSelectionCount();

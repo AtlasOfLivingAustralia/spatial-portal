@@ -1564,8 +1564,11 @@ public class BiocacheQuery implements Query, Serializable {
     public String getDownloadUrl(String[] extraFields) {
         //this default behaviour of excluding default fields from the download URL may change
         ArrayList<String> fieldsAlreadyIncluded = new ArrayList<String>();
-        for(String s : getDefaultDownloadFields()) {
-            fieldsAlreadyIncluded.add(s);
+        String [] default_fields = getDefaultDownloadFields();
+        if (default_fields != null) {
+            for (String s : default_fields) {
+                fieldsAlreadyIncluded.add(s);
+            }
         }
 
         StringBuilder sb = new StringBuilder();
