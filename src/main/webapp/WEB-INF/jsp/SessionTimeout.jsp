@@ -65,8 +65,7 @@ page manually by SessionInit.init()
                             </div>
                         </div>
                     </div>
-                    <div id="z_5a_6!split" class="z-north-splt"
-                    ">
+                    <div id="z_5a_6!split" class="z-north-splt" />
                 </div>
             </div>
             <div id="z_5a_9" z.type="zkex.zul.borderlayout.LayoutRegion2">
@@ -121,12 +120,10 @@ page manually by SessionInit.init()
         </p>
 	</span></span></div>
                 </div>
-                <div id="z_5a_g!split" class="z-south-splt"
-                ">
+                <div id="z_5a_g!split" class="z-south-splt" />
             </div>
         </div>
     </div>
-</div>
 </div>
 <style type="text/css" id="z_5a_i">
     .z-center-body {
@@ -152,7 +149,6 @@ page manually by SessionInit.init()
     }
 </style>
 <link rel="stylesheet" type="text/css" href="/webportal/css/zkcomponents.css" id="z_5a_k"/>
-</div>
 
 <noscript>
     <div class="noscript"><p>Sorry, JavaScript must be enabled.<br/>Change your browser options, then <a href="">try

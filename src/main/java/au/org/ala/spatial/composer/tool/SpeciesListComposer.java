@@ -4,23 +4,21 @@
  */
 package au.org.ala.spatial.composer.tool;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.results.SpeciesListResults;
-import au.org.ala.spatial.util.SelectedArea;
+import au.org.emii.portal.menu.SelectedArea;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author ajay
  */
 public class SpeciesListComposer extends ToolComposer {
-    private static Logger logger = Logger.getLogger(SpeciesListComposer.class);
-    String selectedLayers = "";
-    int generation_count = 1;
-    String layerLabel = "";
-    String legendPath = "";
-    String extraParams;
+    private static final Logger LOGGER = Logger.getLogger(SpeciesListComposer.class);
+    private String extraParams;
 
     @Override
     public void afterCompose() {
@@ -31,12 +29,7 @@ public class SpeciesListComposer extends ToolComposer {
 
         this.loadAreaLayers();
         this.updateWindowTitle();
-        extraParams = (String) Executions.getCurrent().getArg().get("extraParams");
-    }
-
-    @Override
-    public void onLastPanel() {
-        super.onLastPanel();
+        extraParams = (String) Executions.getCurrent().getArg().get(StringConstants.EXTRAPARAMS);
     }
 
     @Override
@@ -45,7 +38,7 @@ public class SpeciesListComposer extends ToolComposer {
             onClick$btnDownload();
             return true;
         } catch (Exception e) {
-            logger.error("error attemping to download species list", e);
+            LOGGER.error("error attemping to download species list", e);
             getMapComposer().showMessage("Unknown error.", this);
         }
         return false;
@@ -53,19 +46,19 @@ public class SpeciesListComposer extends ToolComposer {
 
     public void onClick$btnDownload() {
         SelectedArea sa = getSelectedArea();
-        HashMap<String, Object> hm = new HashMap<String, Object>();
+        Map<String, Object> hm = new HashMap<String, Object>();
         hm.put("selectedarea", sa);
         hm.put("geospatialKosher", getGeospatialKosher());
-        hm.put("chooseEndemic", chkEndemicSpecies.isChecked());
+        hm.put(StringConstants.CHOOSEENDEMIC, chkEndemicSpecies.isChecked());
 
         if (extraParams != null) {
-            hm.put("extraParams", extraParams);
+            hm.put(StringConstants.EXTRAPARAMS, extraParams);
         }
         SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/results/AnalysisSpeciesListResults.zul", getMapComposer(), hm);
         try {
             window.doModal();
         } catch (Exception e) {
-            logger.error("error opening analysisspecieslistresults.zul", e);
+            LOGGER.error("error opening analysisspecieslistresults.zul", e);
         }
         detach();
     }

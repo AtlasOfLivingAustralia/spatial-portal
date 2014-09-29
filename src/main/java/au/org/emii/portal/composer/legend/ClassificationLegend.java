@@ -1,14 +1,15 @@
 package au.org.emii.portal.composer.legend;
 
 import au.com.bytecode.opencsv.CSVReader;
-import au.org.ala.spatial.data.BiocacheQuery;
-import au.org.ala.spatial.data.Query;
+import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.util.BiocacheQuery;
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.Query;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.ala.layers.legend.Facet;
 import org.ala.layers.legend.Legend;
 import org.ala.layers.legend.LegendObject;
@@ -19,59 +20,60 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.*;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ClassificationLegend extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(ClassificationLegend.class);
-
-    int SLIDER_MAX = 500;
-    Query query;
-    String pid;
-    String colourmode;
-    MapLayer mapLayer;
-    String imagePath = "";
-    public Listbox legend;
-    Button createInGroup;
-    Button clearSelection;
-    List<String[]> legend_lines;
-    boolean readonly = false;
-    boolean checkmarks = false;
-    Doublebox dmin;
-    Doublebox dmax;
-    double minValue;
-    double maxValue;
-    double gMinValue;
-    double gMaxValue;
-    Label dlabel;
-    Div divContinous;
-    Checkbox dunknown;
-    Button dbutton;
-    boolean intContinous = false;
-    boolean isMonth = false;
-    boolean isNumber = false;
-    boolean disableselection = false;
-    HashMap<String, String> legend_facets = null;
-    Facet facet;
-    Div dCreateButtons;
-    Listheader lhFirstColumn;
-    Listheader lhSecondColumn;
-    Listheader lhThirdColumn;
-    Listheader lhFourthColumn;
+    private static final Logger LOGGER = Logger.getLogger(ClassificationLegend.class);
+    private Listbox legend;
+    private int sliderMax = 500;
+    private Query query;
+    private String pid;
+    private String colourmode;
+    private MapLayer mapLayer;
+    private String imagePath = "";
+    private Button createInGroup;
+    private Button clearSelection;
+    private List<String[]> legendLines;
+    private boolean readonly = false;
+    private boolean checkmarks = false;
+    private Doublebox dmin;
+    private Doublebox dmax;
+    private double minValue;
+    private double maxValue;
+    private double gMinValue;
+    private double gMaxValue;
+    private Label dlabel;
+    private Div divContinous;
+    private Checkbox dunknown;
+    private Button dbutton;
+    private boolean intContinous = false;
+    private boolean isMonth = false;
+    private boolean isNumber = false;
+    private boolean disableselection = false;
+    private Map<String, String> legendFacets = null;
+    private Facet facet;
+    private Div dCreateButtons;
+    private Listheader lhFirstColumn;
+    private Listheader lhSecondColumn;
+    private Listheader lhThirdColumn;
+    private Listheader lhFourthColumn;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-        query = (Query) (Executions.getCurrent().getArg().get("query"));
-        logger.debug("Query q:" + query.getQ());
-        mapLayer = (MapLayer) (Executions.getCurrent().getArg().get("layer"));
+        query = (Query) (Executions.getCurrent().getArg().get(StringConstants.QUERY));
+        LOGGER.debug("Query q:" + query.getQ());
+        mapLayer = (MapLayer) (Executions.getCurrent().getArg().get(StringConstants.LAYER));
 
-        readonly = (Executions.getCurrent().getArg().get("readonly")) != null;
-        colourmode = (String) (Executions.getCurrent().getArg().get("colourmode"));
-        pid = (String) (Executions.getCurrent().getArg().get("pid"));
+        readonly = (Executions.getCurrent().getArg().get(StringConstants.READONLY)) != null;
+        colourmode = (String) (Executions.getCurrent().getArg().get(StringConstants.COLOURMODE));
+        pid = (String) (Executions.getCurrent().getArg().get(StringConstants.PID));
 
         checkmarks = (Executions.getCurrent().getArg().get("checkmarks")) != null;
 
@@ -91,7 +93,7 @@ public class ClassificationLegend extends UtilityComposer {
 
     public void onClick$createInGroup(Event e) {
         getMapComposer().mapSpecies(query.newFacet(facet, true),
-                "Facet of " + mapLayer.getDisplayName(), "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE,
+                "Facet of " + mapLayer.getDisplayName(), StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE,
                 MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
     }
 
@@ -99,11 +101,11 @@ public class ClassificationLegend extends UtilityComposer {
         int countChecked = 0;
         boolean unknownChecked = false;
         for (Listitem li : legend.getItems()) {
-            if (li.getFirstChild().getChildren().size() > 0
+            if (!li.getFirstChild().getChildren().isEmpty()
                     && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                 String v = ((Listcell) li.getChildren().get(1)).getLabel();
                 v = displayToActualLabel(v);
-                if (((query instanceof BiocacheQuery || divContinous.isVisible()) && v.equals("Unknown"))
+                if (((query instanceof BiocacheQuery || divContinous.isVisible()) && StringConstants.UNKNOWN.equals(v))
                         || v.length() == 0) {
                     unknownChecked = true;
                 } else {
@@ -136,34 +138,30 @@ public class ClassificationLegend extends UtilityComposer {
 
     void buildLegend() {
         try {
-            String slist = null;
+            StringBuilder slist = new StringBuilder();
 
             if (query != null) {
-                if (colourmode.equals("grid")) {
-                    slist = "name,red,green,blue,count";
+                if (StringConstants.GRID.equals(colourmode)) {
+                    slist.append("name,red,green,blue,count");
                     for (int i = 0; i < 600; i += 100) {
-                        if (i == 1) {
-                            slist += ">";
-                        } else {
-                            slist += ">";
-                        }
+                        slist.append(">");
 
-                        slist += "\n" + i + "," + LegendObject.getRGB(Legend.getLinearColour(i, 0, 500, 0xFFFFFF00, 0xFFFF0000)) + ",";
+                        slist.append("\n").append(i).append(",").append(LegendObject.getRGB(Legend.getLinearColour(i, 0, 500, 0xFFFFFF00, 0xFFFF0000))).append(",");
                     }
                 } else {
-                    slist = query.getLegend(colourmode).getTable();
+                    slist.append(query.getLegend(colourmode).getTable());
                 }
             } else {
                 return;
             }
 
             try {
-                legend_lines = new CSVReader(new StringReader(slist)).readAll();
-            } catch (Exception e) {
-                logger.error("failed to read legend list as csv", e);
+                legendLines = new CSVReader(new StringReader(slist.toString())).readAll();
+            } catch (IOException e) {
+                LOGGER.error("failed to read legend list as csv", e);
             }
-            String[] first_line = legend_lines.get(0);
-            legend_lines.remove(0);
+
+            legendLines.remove(0);
 
             String h = mapLayer.getHighlight();
             facet = Facet.parseFacet(h);
@@ -171,22 +169,22 @@ public class ClassificationLegend extends UtilityComposer {
             divContinous.setVisible(false);
 
             //test for range (user upload)
-            if (legend_lines.size() > 1) {
-                String first = legend_lines.get(0)[0];
-                if (first == null || first.length() == 0 || first.startsWith("Unknown")) {
-                    first = legend_lines.get(1)[0];
+            if (legendLines.size() > 1) {
+                String first = legendLines.get(0)[0];
+                if (first == null || first.length() == 0 || first.startsWith(StringConstants.UNKNOWN)) {
+                    first = legendLines.get(1)[0];
                 }
                 if (!checkmarks && query.getLegend(colourmode) != null
                         && query.getLegend(colourmode).getNumericLegend() != null) {
-                    setupForNumericalList(first, h);
+                    setupForNumericalList(h);
                     //test for manual range (solr query)
-                } else if (colourmode.equals("occurrence_year")) {
+                } else if (StringConstants.OCCURRENCE_YEAR.equals(colourmode)) {
                     setupForBiocacheNumber(h, colourmode, true);
-                } else if (colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
+                } else if (StringConstants.OCCURRENCE_YEAR_DECADE.equals(colourmode) || StringConstants.DECADE.equals(colourmode)) {
                     setupForBiocacheDecade();
-                } else if (colourmode.equals("coordinate_uncertainty") || colourmode.equals("uncertainty")) {
+                } else if (StringConstants.COORDINATE_UNCERTAINTY.equals(colourmode) || StringConstants.UNCERTAINTY.equals(colourmode)) {
                     setupForBiocacheNumber(h, colourmode, false);
-                } else if (colourmode.equals("month")) {
+                } else if (StringConstants.MONTH.equals(colourmode)) {
                     setupForBiocacheMonth();
                 }
             }
@@ -195,7 +193,7 @@ public class ClassificationLegend extends UtilityComposer {
             legend.setItemRenderer(new ListitemRenderer() {
 
                 @Override
-                public void render(Listitem li, Object data, int item_idx) {
+                public void render(Listitem li, Object data, int itemIdx) {
                     String[] ss = (String[]) data;
 
                     if (ss == null) {
@@ -238,7 +236,7 @@ public class ClassificationLegend extends UtilityComposer {
                         green = Integer.parseInt(ss[2]);
                         blue = Integer.parseInt(ss[3]);
                     } catch (Exception e) {
-                        logger.error("error parsing colours : " + ss[0], e);
+                        LOGGER.error("error parsing colours : " + ss[0], e);
                     }
 
                     lc = new Listcell("   ");
@@ -249,11 +247,12 @@ public class ClassificationLegend extends UtilityComposer {
 
                     //count
                     try {
-                        long count = Long.parseLong(ss[4]); //don't display if it is not a number
+                        //don't display if it is not a number
+                        Long.parseLong(ss[4]);
                         lhFourthColumn.setVisible(true);
                         lc = new Listcell(ss[4]);
                         lc.setParent(li);
-                    } catch (Exception e) {
+                    } catch (NumberFormatException e) {
                         lhFourthColumn.setVisible(false);
                         lhThirdColumn.setWidth("100%");
                         dCreateButtons.setVisible(!readonly);
@@ -262,7 +261,7 @@ public class ClassificationLegend extends UtilityComposer {
             });
 
 
-            legend.setModel(new SimpleListModel(legend_lines));
+            legend.setModel(new SimpleListModel(legendLines));
 
             createInGroup.setVisible(!disableselection && mapLayer.getHighlight() != null && mapLayer.getHighlight().length() > 0);
             clearSelection.setVisible(!disableselection && mapLayer.getHighlight() != null && mapLayer.getHighlight().length() > 0);
@@ -276,7 +275,7 @@ public class ClassificationLegend extends UtilityComposer {
                 }
             }
         } catch (Exception e) {
-            logger.error("error building classification legend, pid: " + pid, e);
+            LOGGER.error("error building classification legend, pid: " + pid, e);
         }
     }
 
@@ -285,24 +284,24 @@ public class ClassificationLegend extends UtilityComposer {
 
         boolean unknown = false;
         for (Listitem li : legend.getItems()) {
-            if (li.getFirstChild().getChildren().size() > 0
+            if (!li.getFirstChild().getChildren().isEmpty()
                     && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                 String v = ((Listcell) li.getChildren().get(1)).getLabel();
                 v = displayToActualLabel(v);
-                if (legend_facets != null) {
-                    if (v.equals("Unknown") || v.contains("occurrence_year") || v.contains("uncertainty") || v.contains("coordinate_uncertainty")) {
-                        //keep unchanged
-                    } else {
-                        v = legend_facets.get(v);
-                    }
+                if (legendFacets != null && !StringConstants.UNKNOWN.equals(v)
+                        && !v.contains(StringConstants.OCCURRENCE_YEAR)
+                        && !v.contains(StringConstants.UNCERTAINTY)
+                        && !v.contains(StringConstants.COORDINATE_UNCERTAINTY)) {
+
+                    v = legendFacets.get(v);
                 }
-                if (v.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && v.equals("Unknown"))) {
+                if (v.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && StringConstants.UNKNOWN.equals(v))) {
                     unknown = true;
                 } else {
                     if (values.length() > 0) {
                         values.append(" OR ");
                     }
-                    if (legend_facets != null) {
+                    if (legendFacets != null) {
                         values.append(v);
                     } else {
                         values.append(colourmode).append(":\"");
@@ -322,22 +321,19 @@ public class ClassificationLegend extends UtilityComposer {
             }
         }
 
-        if (values.length() == 0) {
-            if (minValue == gMinValue && maxValue == gMaxValue && dunknown.isChecked()) {
-                //no facet
-            } else {
-                if (dunknown.isChecked()) {
-                    if (intContinous) {
-                        values.append(String.format("-(%s:[* TO *] AND -%s:[%d TO %d])", colourmode, colourmode, (int) minValue, (int) maxValue));
-                    } else {
-                        values.append(String.format("-(%s:[* TO *] AND -%s:[%f TO %f])", colourmode, colourmode, minValue, maxValue));
-                    }
+        if (values.length() == 0
+                && (minValue != gMinValue || maxValue != gMaxValue || !dunknown.isChecked())) {
+            if (dunknown.isChecked()) {
+                if (intContinous) {
+                    values.append(String.format("-(%s:[* TO *] AND -%s:[%d TO %d])", colourmode, colourmode, (int) minValue, (int) maxValue));
                 } else {
-                    if (intContinous) {
-                        values.append(String.format("%s:[%d TO %d]", colourmode, (int) minValue, (int) maxValue));
-                    } else {
-                        values.append(String.format("%s:[%f TO %f]", colourmode, minValue, maxValue));
-                    }
+                    values.append(String.format("-(%s:[* TO *] AND -%s:[%f TO %f])", colourmode, colourmode, minValue, maxValue));
+                }
+            } else {
+                if (intContinous) {
+                    values.append(String.format("%s:[%d TO %d]", colourmode, (int) minValue, (int) maxValue));
+                } else {
+                    values.append(String.format("%s:[%f TO %f]", colourmode, minValue, maxValue));
                 }
             }
         }
@@ -351,11 +347,9 @@ public class ClassificationLegend extends UtilityComposer {
     }
 
     public void onScroll$dslider(Event event) {
-        if (!dmax.isDisabled()) {    //slider cannot be disabled
+        //slider cannot be disabled
+        if (!dmax.isDisabled()) {
             uncheckAll();
-            double range = gMaxValue - gMinValue;
-            // minValue = dslider.getCurpos() * range / (double) SLIDER_MAX + gMinValue;
-            //  maxValue = dslider.getCurmaxpos() * range / (double) SLIDER_MAX + gMinValue;
             updateD();
         }
     }
@@ -398,7 +392,7 @@ public class ClassificationLegend extends UtilityComposer {
 
     void uncheckAll() {
         for (Listitem li : legend.getItems()) {
-            if (li.getFirstChild().getChildren().size() > 0
+            if (!li.getFirstChild().getChildren().isEmpty()
                     && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                 ((Checkbox) li.getFirstChild().getFirstChild()).setChecked(false);
             }
@@ -409,13 +403,6 @@ public class ClassificationLegend extends UtilityComposer {
         if (!dmin.isDisabled()) {
             double range = gMaxValue - gMinValue;
             if (range > 0) {
-                if (intContinous) {
-                    minValue = (int) minValue;
-                    maxValue = (int) maxValue;
-                }
-                //   dslider.setCurpos((int) (((minValue - gMinValue) / range) * SLIDER_MAX));
-                //  dslider.setCurmaxpos((int) (((maxValue - gMinValue) / range) * SLIDER_MAX));
-                //  dslider.setCurpos((int) (((minValue - gMinValue) / range) * SLIDER_MAX));   //repeat instead of testing for correct setting order
                 dmin.setValue(minValue);
                 dmax.setValue(maxValue);
 
@@ -425,12 +412,12 @@ public class ClassificationLegend extends UtilityComposer {
                 if (f != null) {
                     occurrencesCount = query.newFacet(f, false).getOccurrenceCount();
                 }
-                String minText = (minValue == (int) minValue ? String.valueOf((int) minValue) : String.format("%f", minValue));
-                String maxText = (maxValue == (int) maxValue ? String.valueOf((int) maxValue) : String.format("%f", maxValue));
-                String unknownText = (dunknown.isChecked() ? " +Unknown" : " ");
+                String minText = minValue == (int) minValue ? String.valueOf((int) minValue) : String.format("%f", minValue);
+                String maxText = maxValue == (int) maxValue ? String.valueOf((int) maxValue) : String.format("%f", maxValue);
+                String unknownText = dunknown.isChecked() ? " +Unknown" : " ";
                 String selectedText;
                 if (occurrencesCount == query.getOccurrenceCount()) {
-                    selectedText = String.format(" (all of %d records selected)", occurrencesCount, query.getOccurrenceCount());
+                    selectedText = String.format(" (all of %d records selected)", occurrencesCount);
                 } else {
                     selectedText = String.format(" (%d of %d records selected)", occurrencesCount, query.getOccurrenceCount());
                 }
@@ -451,16 +438,16 @@ public class ClassificationLegend extends UtilityComposer {
         dmax.setDisabled(!enable);
         dmin.setDisabled(!enable);
         dbutton.setDisabled(!enable);
-        //dslider.setDisabled(!enable);
+
         if (!enable) {
             dlabel.setValue("list selection underway, range selection disabled");
         }
         dunknown.setDisabled(!enable);
     }
 
-    private void setupForNumericalList(String first, String facetString) {
+    private void setupForNumericalList(String facetString) {
         String h = facetString;
-        legend_facets = new HashMap<String, String>();
+        legendFacets = new HashMap<String, String>();
         try {
             divContinous.setVisible(!disableselection);
             LegendObject lo = mapLayer.getLegendObject();
@@ -472,10 +459,10 @@ public class ClassificationLegend extends UtilityComposer {
             gMinValue = minValue = lo.getMinMax()[0];
             gMaxValue = maxValue = lo.getMinMax()[1];
             double rng = gMaxValue - gMinValue;
-            if (intContinous && rng < SLIDER_MAX && rng > 0) {
-                SLIDER_MAX = (int) rng;
+            if (intContinous && rng < sliderMax && rng > 0) {
+                sliderMax = (int) rng;
             }
-            //dslider.setMaxpos(SLIDER_MAX);
+
             try {
                 if (facet != null) {
                     //count OR and test for null
@@ -496,17 +483,17 @@ public class ClassificationLegend extends UtilityComposer {
                     dunknown.setChecked(nulls);
                 }
             } catch (Exception e) {
-                logger.error("error setting up the numerical listing", e);
+                LOGGER.error("error setting up the numerical listing", e);
             }
-            for (int j = 0; j < legend_lines.size(); j++) {
-                String label = legend_lines.get(j)[0];
+            for (int j = 0; j < legendLines.size(); j++) {
+                String label = legendLines.get(j)[0];
                 if (label.charAt(0) == '-') {
-                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
-                    legend_lines.get(j)[0] = "Unknown";
+                    legendFacets.put(StringConstants.UNKNOWN, legendLines.get(j)[0]);
+                    legendLines.get(j)[0] = StringConstants.UNKNOWN;
                 } else {
-                    String s = legend_lines.get(j)[0];
+                    String s = legendLines.get(j)[0];
 
-                    String[] ss = s.substring(s.indexOf("[")).replace("[", "").replace("]", "").replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "").split(" TO ");
+                    String[] ss = s.substring(s.indexOf('[')).replace("[", "").replace("]", "").replace(StringConstants.DATE_TIME_END_OF_YEAR, "").replace(StringConstants.DATE_TIME_BEGINNING_OF_YEAR, "").split(" TO ");
 
                     float[] cutoffs = lo.getNumericLegend().getCutoffFloats();
                     float[] cutoffMins = lo.getNumericLegend().getCutoffMinFloats();
@@ -515,11 +502,11 @@ public class ClassificationLegend extends UtilityComposer {
                     double max;
                     double nextmin;
                     if (ss.length > 1) {
-                        if (ss[0].equals("*")) {
+                        if ("*".equals(ss[0])) {
                             min = cutoffMins[0];
                             max = cutoffs[0];
                             nextmin = cutoffMins.length > 1 ? cutoffMins[1] : cutoffMins[0];
-                        } else if (ss[1].equals("*")) {
+                        } else if ("*".equals(ss[1])) {
                             min = cutoffMins[cutoffMins.length - 1];
                             max = gMaxValue;
                             nextmin = gMaxValue;
@@ -557,15 +544,15 @@ public class ClassificationLegend extends UtilityComposer {
 
                             strFacet = colourmode + ":[" + min + " TO " + max + "]";
                         }
-                        legend_lines.get(j)[0] = range;
-                        legend_facets.put(range, strFacet);
+                        legendLines.get(j)[0] = range;
+                        legendFacets.put(range, strFacet);
                     }
                 }
             }
             checkmarks = true;
         } catch (Exception e) {
             divContinous.setVisible(false);
-            logger.error("error setting up continous legend listing", e);
+            LOGGER.error("error setting up continous legend listing", e);
         }
     }
 
@@ -573,9 +560,8 @@ public class ClassificationLegend extends UtilityComposer {
         String h = facetString;
         isNumber = true;
         intContinous = integer;
-        legend_facets = new HashMap<String, String>();
+        legendFacets = new HashMap<String, String>();
 
-        //checkmarks = false;
         LegendObject lo = mapLayer.getLegendObject();
         if (lo != null) {
             //enable sliders
@@ -583,11 +569,9 @@ public class ClassificationLegend extends UtilityComposer {
             gMinValue = minValue = lo.getMinMax()[0];
             gMaxValue = maxValue = lo.getMinMax()[1];
             if (intContinous) {
-                SLIDER_MAX = Math.min(SLIDER_MAX, (int) (gMaxValue - gMinValue));
+                sliderMax = Math.min(sliderMax, (int) (gMaxValue - gMinValue));
             }
-            if (SLIDER_MAX > 0) {
-                //dslider.setMaxpos(SLIDER_MAX);
-            }
+
             try {
                 if (facet != null) {
                     //count OR and test for null
@@ -606,35 +590,36 @@ public class ClassificationLegend extends UtilityComposer {
                     dunknown.setChecked(nulls);
                 }
             } catch (Exception e) {
-                logger.error("error seting up numerical listing", e);
+                LOGGER.error("error seting up numerical listing", e);
             }
 
             //update text in legend lines
-            for (int j = 0; j < legend_lines.size(); j++) {
-                String label = legend_lines.get(j)[0];
+            for (int j = 0; j < legendLines.size(); j++) {
+                String label = legendLines.get(j)[0];
                 if (label.charAt(0) == '-') {
-                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
-                    legend_lines.get(j)[0] = "Unknown";
+                    legendFacets.put(StringConstants.UNKNOWN, legendLines.get(j)[0]);
+                    legendLines.get(j)[0] = StringConstants.UNKNOWN;
                 } else {
-                    String s = legend_lines.get(j)[0];
+                    String s = legendLines.get(j)[0];
 
-                    String[] ss = s.substring(s.indexOf("[")).replace("[", "").replace("]", "").replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "").split(" TO ");
+                    String[] ss = s.substring(s.indexOf('[')).replace("[", "").replace("]", "").replace(StringConstants.DATE_TIME_END_OF_YEAR, "").replace(StringConstants.DATE_TIME_BEGINNING_OF_YEAR, "").split(" TO ");
 
                     float[] cutoffs = lo.getNumericLegend().getCutoffFloats();
                     float[] cutoffMins = lo.getNumericLegend().getCutoffMinFloats();
                     String range, strFacet;
                     if (ss.length > 1) {
-                        if (ss[0].equals("*")) {
-                            double v = Double.parseDouble(ss[1]);
+                        if ("*".equals(ss[0])) {
                             if (intContinous) {
                                 if (cutoffs.length > 1) {
                                     range = String.format(">= %d and < %d", (int) cutoffMins[0], (int) cutoffMins[1]);
                                 } else {
                                     range = String.format(">= %d and <= %d", (int) cutoffMins[0], (int) cutoffs[0]);
                                 }
-                                if (colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
+                                if (StringConstants.OCCURRENCE_YEAR.equals(colourmode) || StringConstants.OCCURRENCE_YEAR_DECADE.equals(colourmode) || StringConstants.DECADE.equals(colourmode)) {
                                     String minyear = String.valueOf((int) cutoffMins[0]);
-                                    while (minyear.length() < 4) minyear = "0" + minyear;
+                                    while (minyear.length() < 4) {
+                                        minyear = "0" + minyear;
+                                    }
                                     strFacet = "" + facetName + ":[" + minyear + "-01-01T00:00:00Z TO " + (int) cutoffs[0] + "-12-31T00:00:00Z]";
                                 } else {
                                     strFacet = "" + facetName + ":[" + (int) cutoffMins[0] + " TO " + (int) cutoffs[0] + "]";
@@ -647,20 +632,22 @@ public class ClassificationLegend extends UtilityComposer {
                                 }
                                 strFacet = "" + facetName + ":[" + cutoffMins[0] + " TO " + cutoffs[0] + "]";
                             }
-                        } else if (ss[1].equals("*")) {
+                        } else if ("*".equals(ss[1])) {
                             if (intContinous) {
-                                //range = String.format(">= %d and <= %d", (int) cutoffMins[cutoffMins.length - 1], (int) gMaxValue);
+
                                 range = String.format("<= %d", (int) gMaxValue);
 
-                                if (colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
+                                if (StringConstants.OCCURRENCE_YEAR.equals(colourmode) || StringConstants.OCCURRENCE_YEAR_DECADE.equals(colourmode) || StringConstants.DECADE.equals(colourmode)) {
                                     String minyear = String.valueOf((int) cutoffMins[cutoffMins.length - 1]);
-                                    while (minyear.length() < 4) minyear = "0" + minyear;
+                                    while (minyear.length() < 4) {
+                                        minyear = "0" + minyear;
+                                    }
                                     strFacet = "" + facetName + ":[" + minyear + "-01-01T00:00:00Z TO " + (int) gMaxValue + "-12-31T00:00:00Z]";
                                 } else {
                                     strFacet = "" + facetName + ":[" + (int) cutoffMins[cutoffMins.length - 1] + " TO " + (int) gMaxValue + "]";
                                 }
                             } else {
-                                //range = String.format(">= %.2f and <= %.2f", cutoffMins[cutoffMins.length - 1], gMaxValue);
+
                                 range = String.format("<= %.2f", gMaxValue);
                                 strFacet = "" + facetName + ":[" + cutoffMins[cutoffMins.length - 1] + " TO " + gMaxValue + "]";
                             }
@@ -674,12 +661,14 @@ public class ClassificationLegend extends UtilityComposer {
                                 if (pos + 1 < cutoffs.length) {
                                     range = String.format("< %d", (int) cutoffMins[pos + 1]);
                                 } else {
-                                    //range = String.format(">= %d and <= %d", (int) cutoffMins[pos], (int) cutoffs[pos]);
+
                                     range = String.format("<= %d", (int) cutoffs[pos]);
                                 }
-                                if (colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
+                                if (StringConstants.OCCURRENCE_YEAR.equals(colourmode) || StringConstants.OCCURRENCE_YEAR_DECADE.equals(colourmode) || StringConstants.DECADE.equals(colourmode)) {
                                     String minyear = String.valueOf((int) cutoffMins[pos]);
-                                    while (minyear.length() < 4) minyear = "0" + minyear;
+                                    while (minyear.length() < 4) {
+                                        minyear = "0" + minyear;
+                                    }
                                     strFacet = "" + facetName + ":[" + minyear + "-01-01T00:00:00Z TO " + (int) cutoffs[pos] + "-12-31T00:00:00Z]";
                                 } else {
                                     strFacet = "" + facetName + ":[" + (int) cutoffMins[pos] + " TO " + (int) cutoffs[pos] + "]";
@@ -693,8 +682,8 @@ public class ClassificationLegend extends UtilityComposer {
                                 strFacet = "" + facetName + ":[" + cutoffMins[pos] + " TO " + cutoffs[pos] + "]";
                             }
                         }
-                        legend_lines.get(j)[0] = range;
-                        legend_facets.put(range, strFacet);
+                        legendLines.get(j)[0] = range;
+                        legendFacets.put(range, strFacet);
                     }
                 }
             }
@@ -702,25 +691,20 @@ public class ClassificationLegend extends UtilityComposer {
     }
 
     private void setupForBiocacheDecade() {
-        String h = "occurrence_year";
         isNumber = false;
         intContinous = true;
-        legend_facets = new HashMap<String, String>();
+        legendFacets = new HashMap<String, String>();
 
-        //checkmarks = false;
         LegendObject lo = mapLayer.getLegendObject();
         if (lo != null) {
             //update text in legend lines
-            for (int j = 0; j < legend_lines.size(); j++) {
-                String label = legend_lines.get(j)[0];
+            for (int j = 0; j < legendLines.size(); j++) {
+                String label = legendLines.get(j)[0];
                 if (label.charAt(0) == '-') {
-                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
-                    legend_lines.get(j)[0] = "Unknown";
+                    legendFacets.put(StringConstants.UNKNOWN, legendLines.get(j)[0]);
+                    legendLines.get(j)[0] = StringConstants.UNKNOWN;
                 } else {
-                    //String[] ss = legend_lines.get(j);
-                    //s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
-                    //s = s.replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "");
-                    String[] ss = legend_lines.get(j)[0].split(" TO ");
+                    String[] ss = legendLines.get(j)[0].split(" TO ");
 
                     String range, strFacet;
                     if (ss.length > 1) {
@@ -729,8 +713,8 @@ public class ClassificationLegend extends UtilityComposer {
                         range = String.format("%s0s", yr);
                         strFacet = "occurrence_year:[" + yr + "0-01-01T00:00:00Z TO " + yr + "9-12-31T00:00:00Z]";
 
-                        legend_lines.get(j)[0] = range;
-                        legend_facets.put(range, strFacet);
+                        legendLines.get(j)[0] = range;
+                        legendFacets.put(range, strFacet);
                     }
                 }
             }
@@ -739,46 +723,46 @@ public class ClassificationLegend extends UtilityComposer {
 
     private void setupForBiocacheMonth() {
         isMonth = true;
-        legend_facets = new HashMap<String, String>();
+        legendFacets = new HashMap<String, String>();
         //update text in legend lines
-        for (int j = 0; j < legend_lines.size(); j++) {
-            String label = legend_lines.get(j)[0];
+        for (int j = 0; j < legendLines.size(); j++) {
+            String label = legendLines.get(j)[0];
             if (label.charAt(0) == '-') {
-                legend_facets.put("Unknown", legend_lines.get(j)[0]);
-                legend_lines.get(j)[0] = "Unknown";
+                legendFacets.put(StringConstants.UNKNOWN, legendLines.get(j)[0]);
+                legendLines.get(j)[0] = StringConstants.UNKNOWN;
             } else {
-                String s = legend_lines.get(j)[0];
+                String s = legendLines.get(j)[0];
                 s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
                 String[] ss = s.split(" TO ");
                 if (ss.length > 1) {
-                    if (ss[1].equals("01")) {
-                        s = "January";
-                    } else if (ss[1].equals("02")) {
-                        s = "February";
-                    } else if (ss[1].equals("03")) {
-                        s = "March";
-                    } else if (ss[1].equals("04")) {
-                        s = "April";
-                    } else if (ss[1].equals("05")) {
-                        s = "May";
-                    } else if (ss[1].equals("06")) {
-                        s = "June";
-                    } else if (ss[1].equals("07")) {
-                        s = "July";
-                    } else if (ss[1].equals("08")) {
-                        s = "August";
-                    } else if (ss[1].equals("09")) {
-                        s = "September";
-                    } else if (ss[1].equals("10")) {
-                        s = "October";
-                    } else if (ss[1].equals("11")) {
-                        s = "November";
-                    } else if (ss[1].equals("12")) {
-                        s = "December";
+                    if ("01".equals(ss[1])) {
+                        s = StringConstants.JANUARY;
+                    } else if ("02".equals(ss[1])) {
+                        s = StringConstants.FEBRUARY;
+                    } else if ("03".equals(ss[1])) {
+                        s = StringConstants.MARCH;
+                    } else if ("04".equals(ss[1])) {
+                        s = StringConstants.APRIL;
+                    } else if ("05".equals(ss[1])) {
+                        s = StringConstants.MAY;
+                    } else if ("06".equals(ss[1])) {
+                        s = StringConstants.JUNE;
+                    } else if ("07".equals(ss[1])) {
+                        s = StringConstants.JULY;
+                    } else if ("08".equals(ss[1])) {
+                        s = StringConstants.AUGUST;
+                    } else if ("09".equals(ss[1])) {
+                        s = StringConstants.SEPTEMBER;
+                    } else if ("10".equals(ss[1])) {
+                        s = StringConstants.OCTOBER;
+                    } else if ("11".equals(ss[1])) {
+                        s = StringConstants.NOVEMBER;
+                    } else if ("12".equals(ss[1])) {
+                        s = StringConstants.DECEMBER;
                     }
                 }
-                legend_facets.put(s, "month:[" + ss[1] + " TO " + ss[1] + "]");
-                legend_lines.get(j)[0] = s;
+                legendFacets.put(s, "month:[" + ss[1] + " TO " + ss[1] + "]");
+                legendLines.get(j)[0] = s;
             }
 
         }
@@ -830,61 +814,65 @@ public class ClassificationLegend extends UtilityComposer {
             if (isMonth) {
                 //convert this string to date number
                 boolean found = false;
-                if (value.startsWith("Unknown")) {
+                if (value.startsWith(StringConstants.UNKNOWN)) {
                     found = f.startsWith("-");
-                } else if (value.equals("January")) {
+                } else if (StringConstants.JANUARY.equals(value)) {
                     found = f.contains(" 01");
-                } else if (value.equals("February")) {
+                } else if (StringConstants.FEBRUARY.equals(value)) {
                     found = f.contains(" 02");
-                } else if (value.equals("March")) {
+                } else if (StringConstants.MARCH.equals(value)) {
                     found = f.contains(" 03");
-                } else if (value.equals("April")) {
+                } else if (StringConstants.APRIL.equals(value)) {
                     found = f.contains(" 04");
-                } else if (value.equals("May")) {
+                } else if (StringConstants.MAY.equals(value)) {
                     found = f.contains(" 05");
-                } else if (value.equals("June")) {
+                } else if (StringConstants.JUNE.equals(value)) {
                     found = f.contains(" 06");
-                } else if (value.equals("July")) {
+                } else if (StringConstants.JULY.equals(value)) {
                     found = f.contains(" 07");
-                } else if (value.equals("August")) {
+                } else if (StringConstants.AUGUST.equals(value)) {
                     found = f.contains(" 08");
-                } else if (value.equals("September")) {
+                } else if (StringConstants.SEPTEMBER.equals(value)) {
                     found = f.contains(" 09");
-                } else if (value.equals("October")) {
+                } else if (StringConstants.OCTOBER.equals(value)) {
                     found = f.contains(" 10");
-                } else if (value.equals("November")) {
+                } else if (StringConstants.NOVEMBER.equals(value)) {
                     found = f.contains(" 11");
-                } else if (value.equals("December")) {
+                } else if (StringConstants.DECEMBER.equals(value)) {
                     found = f.contains("11 TO *");
                 }
                 if (found) {
-                    cb.setChecked(found);
+                    cb.setChecked(true);
                 }
             } else if (!f.contains(":\"") && !f.contains(":*")) {
                 //must be a continous selection
                 try {
                     if (facet != null) {
-                        if (value == null || value.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && value.equals("Unknown"))) {
+                        if (value == null || value.length() == 0
+                                || ((query instanceof BiocacheQuery || divContinous.isVisible())
+                                && StringConstants.UNKNOWN.equals(value))) {
                             cb.setChecked(facet.isValid(""));
                         } else {
-                            cb.setChecked(f.contains(legend_facets.get(value)));
+                            cb.setChecked(f.contains(legendFacets.get(value)));
                         }
                     } else {
-                        logger.debug("Error parsing: " + mapLayer.getHighlight());
+                        LOGGER.debug("Error parsing: " + mapLayer.getHighlight());
                     }
                 } catch (Exception e) {
-                    logger.error("error with continous values", e);
+                    LOGGER.error("error with continous values", e);
                 }
             } else {
-                Facet facet = Facet.parseFacet(f);
-                if (facet != null) {
-                    if (value == null || value.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && value.equals("Unknown"))) {
-                        cb.setChecked(facet.isValid(""));
+                Facet fct = Facet.parseFacet(f);
+                if (fct != null) {
+                    if (value == null || value.length() == 0
+                            || ((query instanceof BiocacheQuery || divContinous.isVisible())
+                            && StringConstants.UNKNOWN.equals(value))) {
+                        cb.setChecked(fct.isValid(""));
                     } else {
-                        cb.setChecked(facet.isValid(value));
+                        cb.setChecked(fct.isValid(value));
                     }
                 } else {
-                    logger.debug("Error parsing: " + mapLayer.getHighlight());
+                    LOGGER.debug("Error parsing: " + mapLayer.getHighlight());
                 }
             }
         }
@@ -893,7 +881,7 @@ public class ClassificationLegend extends UtilityComposer {
     public void onClick$selectAll(Event event) {
         if (legend != null) {
             for (Listitem li : legend.getItems()) {
-                if (li.getFirstChild().getChildren().size() > 0
+                if (!li.getFirstChild().getChildren().isEmpty()
                         && !((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                     ((Checkbox) li.getFirstChild().getFirstChild()).setChecked(true);
                 }

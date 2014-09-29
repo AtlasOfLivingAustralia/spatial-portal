@@ -4,9 +4,12 @@
  */
 package au.org.ala.spatial.composer.tool;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults;
-import au.org.ala.spatial.util.*;
+import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.SelectedArea;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
@@ -25,11 +28,11 @@ import java.util.Map;
  * @author ajay
  */
 public class PhylogeneticDiversityComposer extends ToolComposer {
-    private static Logger logger = Logger.getLogger(PhylogeneticDiversityComposer.class);
+    private static final Logger LOGGER = Logger.getLogger(PhylogeneticDiversityComposer.class);
 
-    public Object[] trees; //HashMap<String, String>
-    ArrayList<String> header;
-    public Listbox treesList;
+    private Object[] trees;
+    private Listbox treesList;
+    private List<String> header;
 
     @Override
     public void afterCompose() {
@@ -45,22 +48,9 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
     }
 
     private void fillPDTreeList() {
-        JSONObject jo = null;
-        String url = CommonData.settings.getProperty(CommonData.PHYLOLIST_URL) + "/phylo/getExpertTrees?noTreeText=true";
-        //try n times
-        int t = 0;
-        int maxTry = 3;
-        while (t < maxTry && jo == null) {
-            t++;
-            try {
-                jo = JSONObject.fromObject(Util.readUrl(url));
-            } catch (Exception e) {
-                //so it fails, that's why trying again
-            }
-        }
-        if (t == maxTry) {
-            logger.error("failed to getExpertTrees from url: " + url);
-        }
+        JSONObject jo;
+        String url = CommonData.getSettings().getProperty(CommonData.PHYLOLIST_URL) + "/phylo/getExpertTrees?noTreeText=true";
+        jo = JSONObject.fromObject(Util.readUrl(url));
 
         JSONArray ja = jo.getJSONArray("expertTrees");
 
@@ -68,8 +58,8 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         header = new ArrayList<String>();
 
         //restrict header to what is in the zul
-        for(Component c : getFellow("treesHeader").getChildren()) {
-            header.add((String)((Listheader)c).getId().substring(3));
+        for (Component c : getFellow(StringConstants.TREES_HEADER).getChildren()) {
+            header.add(c.getId().substring(3));
         }
 
         int row = 0;
@@ -78,12 +68,8 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
             Map<String, String> pdrow = new HashMap<String, String>();
 
-            for(Object o : j.keySet()) {
+            for (Object o : j.keySet()) {
                 String key = (String) o;
-                //if (!header.contains(key)) {
-                //    header.add(key);
-                //}
-
                 pdrow.put(key, j.getString(key));
             }
 
@@ -91,14 +77,6 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
             row++;
         }
-
-        //write out header
-        /*Component c = getFellow("treesHeader");
-        for(int i = 0;i<header.size();i++) {
-            Listheader lh = new Listheader();
-            lh.setParent(c);
-            lh.setLabel(header.get(i));
-        }*/
 
         treesList.setModel(new
 
@@ -108,7 +86,7 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         treesList.setItemRenderer(
                 new ListitemRenderer() {
 
-                    public void render(Listitem li, Object data, int item_idx) {
+                    public void render(Listitem li, Object data, int itemIdx) {
                         Map<String, String> map = (Map<String, String>) data;
 
                         for (int i = 0; i < header.size(); i++) {
@@ -117,14 +95,14 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
                                 value = "";
                             }
 
-                            if (header.get(i).equalsIgnoreCase("treeViewUrl")) {
+                            if ("treeViewUrl".equalsIgnoreCase(header.get(i))) {
                                 Html img = new Html("<i class='icon-info-sign'></i>");
                                 img.setAttribute("link", value);
 
                                 Listcell lc = new Listcell();
                                 lc.setParent(li);
                                 img.setParent(lc);
-                                img.addEventListener("onClick", new EventListener() {
+                                img.addEventListener(StringConstants.ONCLICK, new EventListener() {
 
                                     @Override
                                     public void onEvent(Event event) throws Exception {
@@ -156,11 +134,11 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
     public boolean onFinish() {
 
         List<SelectedArea> sa = getSelectedAreas();
-        HashMap<String, Object> hm = new HashMap<String, Object>();
+        Map<String, Object> hm = new HashMap<String, Object>();
         hm.put("selectedareas", sa);
 
         List<Object> st = new ArrayList<Object>();
-        for(Object o : treesList.getSelectedItems()) {
+        for (Object o : treesList.getSelectedItems()) {
             st.add(trees[((Listitem) o).getIndex()]);
         }
 
@@ -170,23 +148,11 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         try {
             window.doModal();
         } catch (Exception e) {
-            logger.error("error opening PhylogeneticDiversityResults.zul", e);
+            LOGGER.error("error opening PhylogeneticDiversityResults.zul", e);
         }
 
         detach();
         return true;
-    }
-
-    @Override
-    void fixFocus() {
-        switch (currentStep) {
-            case 1:
-                //rgArea.setFocus(true);
-                break;
-            case 2:
-                //exportFormat.setFocus(true);
-                break;
-        }
     }
 
     public List<SelectedArea> getSelectedAreas() {
@@ -194,16 +160,16 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
         Vbox vboxArea = (Vbox) getFellowIfAny("vboxArea");
 
-        for(Component c : vboxArea.getChildren()){
-            if (((Checkbox)c).isChecked()) {
+        for (Component c : vboxArea.getChildren()) {
+            if (((Checkbox) c).isChecked()) {
                 SelectedArea sa = null;
-                String area = ((Checkbox)c).getValue();
+                String area = ((Checkbox) c).getValue();
                 try {
-                    if (area.equals("current")) {
+                    if (StringConstants.CURRENT.equals(area)) {
                         sa = new SelectedArea(null, getMapComposer().getViewArea());
-                    } else if (area.equals("australia")) {
+                    } else if (StringConstants.AUSTRALIA.equals(area)) {
                         sa = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
-                    } else if (area.equals("world")) {
+                    } else if (StringConstants.WORLD.equals(area)) {
                         sa = new SelectedArea(null, CommonData.WORLD_WKT);
                     } else {
                         List<MapLayer> layers = getMapComposer().getPolygonLayers();
@@ -216,9 +182,9 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
                     }
                 } catch (Exception e) {
-                    logger.warn("Unable to retrieve selected area", e);
+                    LOGGER.warn("Unable to retrieve selected area", e);
                 }
-                if(sa != null) {
+                if (sa != null) {
                     selectedAreas.add(sa);
                 }
             }
@@ -229,10 +195,10 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
     @Override
     public void onClick$btnOk(Event event) {
-        if (currentStep == 1 && getSelectedAreas().size() == 0) {
+        if (currentStep == 1 && getSelectedAreas().isEmpty()) {
             //must have 1 or more areas selected
             Messagebox.show("Select one or more areas.");
-        } else if (currentStep == 2 && treesList.getSelectedItems().size() == 0) {
+        } else if (currentStep == 2 && treesList.getSelectedItems().isEmpty()) {
             //must have 1 or more tree selected
             Messagebox.show("Select one or more Phylogenetic Trees.");
         } else {

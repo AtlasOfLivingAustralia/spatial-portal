@@ -14,6 +14,7 @@ import java.io.IOException;
  */
 public class ErrorHandlerServlet extends HttpServlet {
 
+    private static final Logger LOGGER = Logger.getLogger(ErrorHandlerServlet.class);
     private static final long serialVersionUID = 1L;
     private static final String ERROR_PAGE = "/WEB-INF/jsp/Error.jsp";
 
@@ -35,17 +36,16 @@ public class ErrorHandlerServlet extends HttpServlet {
         // already handled the error elsewhere
         Object statusCode = request.getAttribute("javax.servlet.error.status_code");
         Object message = request.getAttribute("javax.servlet.error.message");
-        //Object errorType = request.getAttribute("javax.servlet.error.exception_type");
         Throwable exception = (Throwable) request.getAttribute("javax.servlet.error.exception");
-        Object request_uri = request.getAttribute("javax.servlet.error.request_uri");
+        Object requestUri = request.getAttribute("javax.servlet.error.request_uri");
 
         // Exceptions are normally raised and logged during application or session init
         // if something has slipped through the net, log it, otherwise just display the
         // jsp error page
-        Logger logger = Logger.getLogger(this.getClass());
-        logger.fatal(
+
+        LOGGER.fatal(
                 "UNHANDLED EXCEPTION: HTTP ERROR " + statusCode + " Message: " + message
-                        + " URI: " + request_uri + " REASON "
+                        + " URI: " + requestUri + " REASON "
                         + exception.getMessage());
 
         // now we just display a static-ish JSP to the user - we don't use a

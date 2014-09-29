@@ -4,16 +4,13 @@
  */
 package au.org.ala.spatial.composer.tool;
 
-import au.org.ala.spatial.data.BiocacheQuery;
-import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.QueryUtil;
-import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.SelectedArea;
-import au.org.ala.spatial.util.Util;
+import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.util.*;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.menu.SelectedArea;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
@@ -24,37 +21,37 @@ import org.zkoss.zul.*;
 
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
-import java.util.Vector;
 
 /**
  * @author ajay
  */
 public class GDMComposer extends ToolComposer {
-    private static Logger logger = Logger.getLogger(GDMComposer.class);
-
-    Listbox lbenvlayers;
-    Button btnClearlbenvlayers;
-    Listbox cutpoint;
-    Radiogroup rgdistance;
-    Combobox weighting;
-    Checkbox useSubSample;
-    Textbox sitePairsSize;
-    Slider sitesslider;
-    Label sitesslidermin, sitesslidermax, sitessliderper, sitessliderdef;
-    Hbox sliderbox;
-    double MAX_SCROLL = 100;
-
-    SelectedArea sa = null;
-    Query query = null;
-    String sbenvsel = "";
-    String area = null;
+    private static final Logger LOGGER = Logger.getLogger(GDMComposer.class);
+    private Query query = null;
+    private String sbenvsel = "";
+    private String area = null;
+    private List<String> vSp = new ArrayList<String>();
+    boolean isAssemblage = false;
+    private Listbox lbenvlayers;
+    private Button btnClearlbenvlayers;
+    private Listbox cutpoint;
+    private Radiogroup rgdistance;
+    private Combobox weighting;
+    private Checkbox useSubSample;
+    private Textbox sitePairsSize;
+    private Slider sitesslider;
+    private Label sitesslidermin, sitesslidermax, sitessliderper, sitessliderdef;
+    private Hbox sliderbox;
+    private double maxScroll = 100;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-        this.selectedMethod = "GDM";
+        this.selectedMethod = StringConstants.GDM;
         this.totalSteps = 5;
 
         this.loadAreaLayers();
@@ -71,7 +68,7 @@ public class GDMComposer extends ToolComposer {
                     if (event instanceof ScrollEvent) {
                         ScrollEvent se = (ScrollEvent) event;
                         double a = se.getPos();
-                        double b = (a / MAX_SCROLL);
+                        double b = a / maxScroll;
                         long p = Math.round(b * 100);
                         sitesslider.setSlidingtext(Math.round(a) + " - " + p + "%");
                     }
@@ -79,8 +76,8 @@ public class GDMComposer extends ToolComposer {
             });
 
         } catch (Exception e) {
-            logger.debug("Error in slider");
-            logger.debug(e.getMessage());
+            LOGGER.debug("Error in slider");
+            LOGGER.debug(e.getMessage());
         }
 
     }
@@ -108,37 +105,24 @@ public class GDMComposer extends ToolComposer {
 
     @Override
     public boolean onFinish() {
-        //Query query = getSelectedSpecies();
+
         if (query == null) {
             getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
             return false;
         }
         if (searchSpeciesACComp.hasValidItemSelected()) {
             getMapComposer().mapSpeciesFromAutocompleteComponent(searchSpeciesACComp, getSelectedArea(), getGeospatialKosher(), false);
-        } else if (query != null && rgSpecies.getSelectedItem() != null && rgSpecies.getSelectedItem().getValue().equals("multiple")) {
-            getMapComposer().mapSpecies(query, "Species assemblage", "species", 0, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
+        } else if (rgSpecies.getSelectedItem() != null && StringConstants.MULTIPLE.equals(rgSpecies.getSelectedItem().getValue())) {
+            getMapComposer().mapSpecies(query, StringConstants.SPECIES_ASSEMBLAGE, StringConstants.SPECIES, 0, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
         }
 
         return rungdm();
     }
 
-    Vector<String> vSp = new Vector<String>();
-    boolean isAssemblage = false;
-
-    private int getSpLoc(String sp) {
-        if (vSp.indexOf(sp) == -1) {
-            vSp.add(sp);
-        } else {
-            isAssemblage = true;
-        }
-
-        return vSp.indexOf(sp);
-    }
-
     public void onClick$btnOk(Event event) {
-        logger.debug("Completing step " + currentStep + " for GDM");
+        LOGGER.debug("Completing step " + currentStep + " for GDM");
         if (currentStep == 3) {
-            logger.debug("checking with server for step 1");
+            LOGGER.debug("checking with server for step 1");
             boolean step1 = runGDMStep1();
             if (!step1) {
                 return;
@@ -151,7 +135,7 @@ public class GDMComposer extends ToolComposer {
 
     public boolean runGDMStep1() {
         try {
-            sa = getSelectedArea();
+            SelectedArea sa = getSelectedArea();
             query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
             sbenvsel = getSelectedLayers();
 
@@ -160,55 +144,38 @@ public class GDMComposer extends ToolComposer {
                 return false;
             }
 
-            StringBuilder sb = new StringBuilder();
-            sb.append((CommonData.satServer + "/ws/gdm/step1?") + "&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8") + "&taxacount=" + vSp.size());
-            sb.append("&speciesq=").append(URLEncoder.encode(QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher()).getQ(), "UTF-8"));
-            sb.append("&bs=" + URLEncoder.encode(((BiocacheQuery) query).getBS(), "UTF-8"));
-
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(sb.toString());
+            PostMethod get = new PostMethod(CommonData.getSatServer() + "/ws/gdm/step1?"
+                    + "envlist=" + URLEncoder.encode(sbenvsel, StringConstants.UTF_8)
+                    + "&taxacount=" + vSp.size()
+                    + "&speciesq=" + URLEncoder.encode(QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher()).getQ(), StringConstants.UTF_8)
+                    + "&bs=" + URLEncoder.encode(query.getBS(), StringConstants.UTF_8));
 
             if (sa.getMapLayer() != null && sa.getMapLayer().getEnvelope() != null) {
-                area = "ENVELOPE(" + (String) sa.getMapLayer().getEnvelope() + ")";
+                area = StringConstants.ENVELOPE + "(" + sa.getMapLayer().getEnvelope() + ")";
             } else {
                 area = sa.getWkt();
             }
             if (getSelectedArea() != null) {
-                get.addParameter("area", area);
+                get.addParameter(StringConstants.AREA, area);
             }
 
-//            //check for no data
-//            if (speciesData[0] == null) {
-//                if (speciesData[1] == null) {
-//                    getMapComposer().showMessage("No records available for Modelling", this);
-//                } else {
-//                    getMapComposer().showMessage("All species and records selected are marked as sensitive", this);
-//                }
-//                return false;
-//            }
-//            get.addParameter("speciesdata", speciesData[0]);
-//            if (speciesData[1] != null) {
-//                get.addParameter("removedspecies", speciesData[1]);
-//            }
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.TEXT_PLAIN);
 
-            get.addRequestHeader("Accept", "text/plain");
-
-            logger.debug("calling gdm ws step 1");
-            int result = client.executeMethod(get);
+            LOGGER.debug("calling gdm ws step 1");
+            client.executeMethod(get);
 
             String step1resp = get.getResponseBodyAsString();
-            logger.debug("==========step1resp==========");
-            logger.debug(step1resp);
-            logger.debug("==========step1resp==========");
+            LOGGER.debug(step1resp);
 
-            //Scanner s = new Scanner(new File("/Users/ajay/projects/ala/code/other/gdm/testdata/Cutpoint.csv"));
             Scanner s = new Scanner(step1resp);
 
-            pid = s.nextLine(); // pid
+            pid = s.nextLine();
 
-            s.nextLine(); // ignore the header
+            // ignore the header
+            s.nextLine();
 
-            if (cutpoint.getItems().size() > 0) {
+            if (!cutpoint.getItems().isEmpty()) {
                 cutpoint.getItems().clear();
 
                 Listitem li = new Listitem();
@@ -254,26 +221,26 @@ public class GDMComposer extends ToolComposer {
 
 
             // setup the range slider for the sub samples
-            double maxBytes = 524288000; // 500 * 1024 * 1024 bytes
+            // 500 * 1024 * 1024 bytes
+            double maxBytes = 524288000;
 
-            double maxScroll = maxBytes / ((lbListLayers.getSelectedCount() * 3) + 1) / 8;
-            double minScroll = (int) (maxScroll * 0.1);  // 10% of maxScroll
+            double maxS = maxBytes / ((lbListLayers.getSelectedCount() * 3) + 1) / 8;
+            // 10% of maxScroll
+            double minS = (int) (maxS * 0.1);
 
-            MAX_SCROLL = maxScroll;
+            this.maxScroll = maxS;
 
-            sitesslider.setCurpos((int) minScroll);
-            sitesslider.setMaxpos((int) maxScroll);
-            sitePairsSize.setValue(Long.toString(Math.round(minScroll)));
-            sitessliderdef.setValue(Long.toString(Math.round(minScroll)));
-            sitesslidermax.setValue(Long.toString(Math.round(maxScroll)));
+            sitesslider.setCurpos((int) minS);
+            sitesslider.setMaxpos((int) maxS);
+            sitePairsSize.setValue(Long.toString(Math.round(minS)));
+            sitessliderdef.setValue(Long.toString(Math.round(minS)));
+            sitesslidermax.setValue(Long.toString(Math.round(maxS)));
 
 
             return true;
-//        } catch (NoSpeciesFoundException e) {
-//            logger.error("GDM error: NoSpeciesFoundException", e);
-//            getMapComposer().showMessage("No species occurrences found in the current area. \nPlease select a larger area and re-run the analysis", this);
+
         } catch (Exception e) {
-            logger.error("GDM error: ", e);
+            LOGGER.error("GDM error: ", e);
             getMapComposer().showMessage("Unknown error.", this);
         }
 
@@ -282,7 +249,7 @@ public class GDMComposer extends ToolComposer {
 
     public void onScroll$sitesslider(Event event) {
         double a = sitesslider.getCurpos();
-        double b = a / MAX_SCROLL;
+        double b = a / maxScroll;
         long p = Math.round(b * 100);
         sitePairsSize.setValue(Integer.toString(sitesslider.getCurpos()));
         sitessliderper.setValue(p + "%");
@@ -311,22 +278,22 @@ public class GDMComposer extends ToolComposer {
     public boolean rungdm() {
         try {
             StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append(CommonData.satServer + "/ws/gdm/step2?");
-            sbProcessUrl.append("&pid=" + pid);
-            sbProcessUrl.append("&cutpoint=" + cutpoint.getSelectedItem().getValue());
-            sbProcessUrl.append("&useDistance=" + rgdistance.getSelectedItem().getValue());
-            sbProcessUrl.append("&weighting=" + weighting.getSelectedItem().getValue());
-            sbProcessUrl.append("&useSubSample=" + (useSubSample.isChecked() ? "1" : "0"));
-            sbProcessUrl.append("&sitePairsSize=" + sitePairsSize.getValue());
+            sbProcessUrl.append(CommonData.getSatServer()).append("/ws/gdm/step2?");
+            sbProcessUrl.append("&pid=").append(pid);
+            sbProcessUrl.append("&cutpoint=").append(cutpoint.getSelectedItem().getValue());
+            sbProcessUrl.append("&useDistance=").append(rgdistance.getSelectedItem().getValue());
+            sbProcessUrl.append("&weighting=").append(weighting.getSelectedItem().getValue());
+            sbProcessUrl.append("&useSubSample=").append(useSubSample.isChecked() ? "1" : "0");
+            sbProcessUrl.append("&sitePairsSize=").append(sitePairsSize.getValue());
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
 
 
-            get.addRequestHeader("Accept", "text/plain");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.TEXT_PLAIN);
 
-            logger.debug("calling gdm ws: " + sbProcessUrl.toString());
-            int result = client.executeMethod(get);
+            LOGGER.debug("calling gdm ws: " + sbProcessUrl.toString());
+            client.executeMethod(get);
 
             pid = get.getResponseBodyAsString();
 
@@ -334,8 +301,8 @@ public class GDMComposer extends ToolComposer {
 
             this.setVisible(false);
 
-            String fileUrl = CommonData.satServer + "/ws/download/" + pid;
-            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
+            String fileUrl = CommonData.getSatServer() + "/ws/download/" + pid;
+            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip");
 
             String options = "";
             options += "cutpoint: " + cutpoint.getSelectedItem().getValue();
@@ -346,14 +313,14 @@ public class GDMComposer extends ToolComposer {
             if (query instanceof BiocacheQuery) {
                 BiocacheQuery bq = (BiocacheQuery) query;
                 options = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + options;
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, bq.getLsids(), sbenvsel.toString(), pid, options, "STARTED");
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, bq.getLsids(), sbenvsel, pid, options, StringConstants.STARTED);
             } else {
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, query.getName() + "__" + query.getQ(), sbenvsel.toString(), pid, options, "STARTED");
+                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, query.getName() + "__" + query.getQ(), sbenvsel, pid, options, StringConstants.STARTED);
             }
 
             return true;
         } catch (Exception e) {
-            logger.error("error finalizing GDM", e);
+            LOGGER.error("error finalizing GDM", e);
         }
 
         return false;
@@ -364,157 +331,27 @@ public class GDMComposer extends ToolComposer {
         String[] envlist = getSelectedLayers().split(":");
 
         for (String env : envlist) {
-            String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:gdm_" + env + "Tran_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
+            String mapurl = CommonData.getGeoServer() + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:gdm_" + env + "Tran_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
 
-            String legendurl = CommonData.geoServer
+            String legendurl = CommonData.getGeoServer()
                     + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                     + "&LAYER=ALA:gdm_" + env + "Tran_" + pid
                     + "&STYLE=alastyles";
 
-            logger.debug(legendurl);
+            LOGGER.debug(legendurl);
 
             String layername = "Tranformed " + CommonData.getLayerDisplayName(env);
-            //logger.debug("Converting '" + env + "' to '" + layername.substring(10) + "' (" + CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(env)) + ")");
-            getMapComposer().addWMSLayer(pid + "_" + env, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.GDM, null, null);
+            getMapComposer().addWMSLayer(pid + "_" + env, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilitiesImpl.GDM, null, null);
             MapLayer ml = getMapComposer().getMapLayer(pid + "_" + env);
             ml.setPid(pid + "_" + env);
-            String infoUrl = CommonData.satServer + "/output/gdm/" + pid + "/gdm.html";
+            String infoUrl = CommonData.getSatServer() + "/output/gdm/" + pid + "/gdm.html";
             MapLayerMetadata md = ml.getMapLayerMetadata();
 
             md.setMoreInfo(infoUrl + "\nGDM Output\npid:" + pid);
             md.setId(Long.valueOf(pid));
         }
-
-        //this.detach();
-
-        //getMapComposer().showMessage("Reference number to retrieve results: " + pid);
-
-        //showInfoWindow("/output/maxent/" + pid + "/species.html");
     }
 
-//    /**
-//     * get CSV of speciesName, longitude, latitude in [0] and
-//     *
-//     * @param selectedSpecies
-//     * @param area
-//     * @return
-//     */
-//    private String[] getSpeciesData(Query query) throws NoSpeciesFoundException {
-//        if (query instanceof UploadQuery) {
-//            //no sensitive records in upload
-//            ArrayList<QueryField> fields = new ArrayList<QueryField>();
-//            String lsidFieldName = query.getSpeciesIdFieldName();
-//            QueryField qf = null;
-//            if (lsidFieldName != null) {
-//                qf = new QueryField(query.getSpeciesIdFieldName());
-//                qf.setStored(true);
-//                fields.add(qf);
-//            }
-//            double[] points = query.getPoints(fields);
-//            StringBuilder sb = null;
-//            if (points != null) {
-//                sb = new StringBuilder();
-//                for (int i = 0; i < points.length; i += 2) {
-//                    if (sb.length() == 0) {
-//                        //header
-//                        sb.append("species,longitude,latitude");
-//                    }
-//                    sb.append("\nspecies,").append(points[i]).append(",").append(points[i + 1]);
-//                }
-//            }
-//
-//            String[] out = {((sb == null) ? null : sb.toString()), null};
-//            return out;
-//        } else {
-//            //identify sensitive species records
-//            List<String[]> sensitiveSpecies = null;
-//            try {
-//                String sensitiveSpeciesRaw = new BiocacheQuery(null, null, "sensitive:[* TO *]", null, false, getGeospatialKosher()).speciesList();
-//                CSVReader csv = new CSVReader(new StringReader(sensitiveSpeciesRaw));
-//                sensitiveSpecies = csv.readAll();
-//                csv.close();
-//            } catch (Exception e) {
-//                logger.error("error getting sensitive species list", e);
-//            }
-//            HashSet<String> sensitiveSpeciesFound = new HashSet<String>();
-//            HashSet<String> sensitiveLsids = new HashSet<String>();
-//
-//            //add to 'identified' sensitive list
-//            try {
-//                CSVReader csv = new CSVReader(new StringReader(query.speciesList()));
-//                List<String[]> fullSpeciesList = csv.readAll();
-//                csv.close();
-//                for (int i = 0; i < fullSpeciesList.size(); i++) {
-//                    String[] sa = fullSpeciesList.get(i);
-//                    for (String[] ss : sensitiveSpecies) {
-//                        if (sa != null && sa.length > 4
-//                                && ss != null && ss.length > 4
-//                                && sa[4].equals(ss[4])) {
-//                            sensitiveSpeciesFound.add(ss[4] + "," + ss[1] + "," + ss[3]);
-//                            sensitiveLsids.add(ss[4]);
-//                            break;
-//                        }
-//                    }
-//                }
-//            } catch (Exception e) {
-//                logger.error("error identifying sensitive species", e);
-//            }
-//
-//            //remove sensitive records that will not be LSID matched
-//            Query maxentQuery = query.newFacet(new Facet("sensitive", "[* TO *]", false), false);
-//            ArrayList<QueryField> fields = new ArrayList<QueryField>();
-//            String lsidFieldName = maxentQuery.getSpeciesIdFieldName();
-//            QueryField qf = null;
-//            if (lsidFieldName != null) {
-//                qf = new QueryField(maxentQuery.getSpeciesIdFieldName());
-//                qf.setStored(true);
-//                fields.add(qf);
-//            }
-//            QueryField qf2 = new QueryField("taxon_name");
-//            qf2.setStored(true);
-//            fields.add(qf2);
-//            double[] points = maxentQuery.getPoints(fields);
-//            StringBuilder sb = null;
-//            if (points != null) {
-//                sb = new StringBuilder();
-//                for (int i = 0; i < points.length; i += 2) {
-//
-//                    boolean isSensitive = false;
-//                    String lsid = "species";
-//                    String spname = "";
-//                    if (qf != null) {
-//                        lsid = qf.getAsString(i / 2);
-//                        isSensitive = sensitiveLsids.contains(lsid);
-//                    }
-//                    String taxonname = "taxon_name";
-//                    if (qf2 != null) {
-//                        taxonname = qf2.getAsString(i / 2);
-//                    }
-//                    if (!isSensitive) {
-//                        if (sb.length() == 0) {
-//                            //header
-//                            sb.append("\"X\",\"Y\",\"Code\"");
-//                        }
-//                        //sb.append("\n").append(points[i]).append(",").append(points[i + 1]).append(",").append(getLsidIndex(lsid)).append("");
-//                        sb.append("\n").append(points[i]).append(",").append(points[i + 1]).append(",\"").append(getSpLoc(lsid)).append("\"");
-//                        //sb.append("\n").append(points[i]).append(",").append(points[i + 1]).append(",\"").append(lsid).append(",\"").append(taxonname).append("\"");
-//                    }
-//                }
-//                sb.append("\n");
-//            }
-//
-//            //collate sensitive species found, no header
-//            StringBuilder sen = new StringBuilder();
-//            for (String s : sensitiveSpeciesFound) {
-//                sen.append(s).append("\n");
-//            }
-//
-//            String[] out = {((sb == null) ? null : sb.toString()), (sen.length() == 0) ? null : sen.toString()};
-//            return out;
-//        }
-//    }
-//
-//    Vector<String> lsidList = new Vector<String>();
 
     @Override
     void fixFocus() {
@@ -533,11 +370,13 @@ public class GDMComposer extends ToolComposer {
                 lbListLayers.setFocus(true);
                 break;
             case 4:
-                //chkJackknife.setFocus(true);
+
                 break;
             case 5:
                 tToolName.setFocus(true);
                 break;
+            default:
+                LOGGER.error("invalid step for GDMComposer: " + currentStep);
         }
     }
 }

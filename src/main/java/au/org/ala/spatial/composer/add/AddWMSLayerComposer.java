@@ -4,14 +4,15 @@
  */
 package au.org.ala.spatial.composer.add;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.util.Validate;
-import au.org.emii.portal.wms.RemoteMap;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.geotools.data.ows.CRSEnvelope;
@@ -31,9 +32,9 @@ import java.util.List;
  */
 public class AddWMSLayerComposer extends UtilityComposer {
 
-    private Logger logger = Logger.getLogger(AddWMSLayerComposer.class);
-
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(AddWMSLayerComposer.class);
+    private Label linkall1, linkall2, linkall3, linkall4, linksingle1;
     /**
      * Cache a copy after discovering map layers so we don't need to do a
      * discovery twice if user selects a server, then does select layers and
@@ -44,9 +45,7 @@ public class AddWMSLayerComposer extends UtilityComposer {
      * List of available layer names for the current discoveredLayer
      */
     private List<String[]> availableLayers = null;
-
     private WebMapServer wmsServer = null;
-
     /*
      * Autowire components
      */
@@ -65,8 +64,6 @@ public class AddWMSLayerComposer extends UtilityComposer {
     // uri
     private Textbox uri;
     private Label invalidUri;
-    // version
-    private Listbox version;
     // select layers (hidden div)
     private Div selectLayers;
     // layer name
@@ -93,17 +90,14 @@ public class AddWMSLayerComposer extends UtilityComposer {
     private Button addDiscoveredLayerButton;
     private LanguagePack languagePack = null;
     private LayerUtilities layerUtilities = null;
-    private RemoteMap remoteMap = null;
-
-    Label linkall1, linkall2, linkall3, linkall4, linksingle1;
 
     public void onCheck$nameAutomatically() {
-        logger.debug("onNameAutomaticallyChanged()");
+        LOGGER.debug("onNameAutomaticallyChanged()");
         labelDiv.setVisible(!nameAutomatically.isChecked());
     }
 
     public void onCheck$manual() {
-        logger.debug("onManual()");
+        LOGGER.debug("onManual()");
         toggleAutomaticMode(false);
 
         // if the getMapUri field is empty and uri field isn't copy across any value
@@ -116,7 +110,7 @@ public class AddWMSLayerComposer extends UtilityComposer {
     }
 
     public void onCheck$automatic() {
-        logger.debug("onAutomatic()");
+        LOGGER.debug("onAutomatic()");
         toggleAutomaticMode(true);
 
         // if the getMapUri field is empty and getmapuri field isn't copy across any value
@@ -142,7 +136,7 @@ public class AddWMSLayerComposer extends UtilityComposer {
      * again (provided we are already showing them)
      */
     public void onChange$uri() {
-        logger.debug("onChange$uri()");
+        LOGGER.debug("onChange$uri()");
         if (selectLayers.isVisible()) {
             discoveredLayer = null;
             availableLayers = null;
@@ -156,24 +150,13 @@ public class AddWMSLayerComposer extends UtilityComposer {
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NS_DANGEROUS_NON_SHORT_CIRCUIT")
     public void onClick$addAllLayersButton() {
-        logger.debug("onClick$addAllLayersButton()");
+        LOGGER.debug("onClick$addAllLayersButton()");
 
         // hide (any) previous success message
         resultLabel.setVisible(false);
 
         // validate - DO NOT SHORT CURCUIT HERE!
         if (validateCommon() & validateAutomaticModeCommon()) {
-            /*if (getMapComposer().addWMSServer(
-                    (nameAutomatically.isChecked())
-                    ? null : Validate.escapeHtmlAndTrim(label.getValue()),
-                    uri.getValue(),
-                    (String) version.getSelectedItem().getValue(),
-                    getOpacity(),
-                    true)) {
-
-                // all sweet
-                updateResult("wms_server_added");
-            }*/
             try {
 
                 wmsServer = new WebMapServer(new URL(uri.getValue()));
@@ -181,9 +164,6 @@ public class AddWMSLayerComposer extends UtilityComposer {
                 discoveredLayer = wmsServer.getCapabilities();
                 MapLayer mapLayer = new MapLayer();
                 mapLayer.setName(Validate.escapeHtmlAndTrim(label.getValue()));
-
-                GetMapRequest mapRequest = wmsServer.createGetMapRequest();
-                logger.debug("****** WMS server *******");
 
                 String ur = uri.getValue();
                 mapLayer.setUri(ur);
@@ -214,37 +194,20 @@ public class AddWMSLayerComposer extends UtilityComposer {
                 String version = layerUtilities.getVersionValue(ur);
                 mapLayer.setType(layerUtilities.internalVersion(version));
 
-                // append the hostname...
-              /*  try {
-                    mapLayer.appendDescription(
-                            languagePack.getCompoundLang(
-                            "user_defined_layer_description",
-                            new Object[]{new URL(uri.getValue()).getHost()}),
-                            true);
-                } catch (MalformedURLException e) {
-                }*/
-
                 getMapComposer().addUserDefinedLayerToMenu(mapLayer, true);
 
                 updateResult("wms_server_added");
 
                 // addWMSServer handles showing any errors for us
             } catch (Exception e) {
-                logger.error("failed to get layer from url", e);
+                LOGGER.error("failed to get layer from url", e);
             }
         }
 
     }
 
-    public void onClick$hideExtLayersButton() {
-        //MapComposer mc = getMapComposer();
-        //mc.closeAddLayerDiv();
-
-        logger.debug("Do something with the onClick$hideExtLayersButton() function");
-    }
-
     public void onClick$selectLayersButton() {
-        logger.debug("onClick$selectLayersButton");
+        LOGGER.debug("onClick$selectLayersButton");
 
         /*
          * only check that the user has entered a uri to do getcaps on they can
@@ -253,14 +216,6 @@ public class AddWMSLayerComposer extends UtilityComposer {
 
 
         if (validateAutomaticModeCommon()) {
-            /*discoveredLayer =
-                    remoteMap.autoDiscover(
-                    (nameAutomatically.isChecked())
-                    ? null : Validate.escapeHtmlAndTrim(label.getValue()),
-                    getOpacity(),
-                    uri.getValue(),
-                    Validate.escapeHtmlAndTrim((String) version.getSelectedItem().getValue()));
-*/
 
             try {
                 wmsServer = new WebMapServer(new URL(uri.getValue()));
@@ -284,13 +239,13 @@ public class AddWMSLayerComposer extends UtilityComposer {
                     getMapComposer().showMessage(CommonData.lang("error_adding_layer"));
                 }
             } catch (Exception e) {
-                logger.error("map request", e);
+                LOGGER.error("map request", e);
             }
         }
     }
 
     private void updateAvailableLayers() {
-        if (availableLayers.size() > 0) {
+        if (!availableLayers.isEmpty()) {
             layerName.setModel(new ListModelList(availableLayers));
             layerName.setDisabled(false);
             layerName.setSelectedIndex(0);
@@ -309,13 +264,12 @@ public class AddWMSLayerComposer extends UtilityComposer {
      */
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NS_DANGEROUS_NON_SHORT_CIRCUIT")
     public void onClick$addDiscoveredLayerButton() {
-        logger.debug("onAddDiscoveredLayer()");
+        LOGGER.debug("onAddDiscoveredLayer()");
 
         //  DO NOT SHORT CURCUIT HERE!
         if (validateCommon() & validateAutomaticModeCommon() & validiateAutomaticModeSelectLayer()) {
 
             String discoveredLayerId = ((String[]) layerName.getSelectedItem().getValue())[0];
-            String discoveredLayerLabel = (String) layerName.getSelectedItem().getLabel();
 
             /*
              * we've already interogated the WMS server to find the available
@@ -330,19 +284,17 @@ public class AddWMSLayerComposer extends UtilityComposer {
 
                 GetMapRequest mapRequest = wmsServer.createGetMapRequest();
                 mapRequest.addLayer(targetLayer);
-                logger.debug("****** WMS server *******");
-                logger.debug(mapRequest.getFinalURL());
-                mapRequest.setFormat("image/png");
+                LOGGER.debug(mapRequest.getFinalURL());
+                mapRequest.setFormat(StringConstants.IMAGE_PNG);
 
-
-                String uri = (mapRequest.getFinalURL().toString());
-                mapLayer.setUri(uri);
+                String url = mapRequest.getFinalURL().toString();
+                mapLayer.setUri(url);
                 mapLayer.setLayer(targetLayer.getName());
                 mapLayer.setOpacity(opacitySlider.getCurpos() / 100.0f);
-                mapLayer.setImageFormat(layerUtilities.getImageFormat(uri));
+                mapLayer.setImageFormat(layerUtilities.getImageFormat(url));
 
                 /* attempt to retrieve bounding box */
-                List<Double> bbox = layerUtilities.getBBox(uri);
+                List<Double> bbox = layerUtilities.getBBox(url);
                 if (bbox != null) {
                     CRSEnvelope e = targetLayer.getLatLonBoundingBox();
                     bbox.set(0, e.getMinX());
@@ -361,27 +313,17 @@ public class AddWMSLayerComposer extends UtilityComposer {
                  */
                 String name = (nameAutomatically.isChecked())
                         ? targetLayer.getName() + ", " + targetLayer.getTitle() : Validate.escapeHtmlAndTrim(label.getValue());
-                mapLayer.setId(uri + name.replaceAll("\\s+", ""));
+                mapLayer.setId(url + name.replaceAll("\\s+", ""));
                 mapLayer.setDescription(name);
 
                 // wms version
-                String version = layerUtilities.getVersionValue(uri);
+                String version = layerUtilities.getVersionValue(url);
                 mapLayer.setType(layerUtilities.internalVersion(version));
-
-                // append the hostname...
-              /*  try {
-                    mapLayer.appendDescription(
-                            languagePack.getCompoundLang(
-                            "user_defined_layer_description",
-                            new Object[]{new URL(uri.getValue()).getHost()}),
-                            true);
-                } catch (MalformedURLException e) {
-                }*/
 
                 getMapComposer().addUserDefinedLayerToMenu(mapLayer, true);
 
                 // all sweet
-                updateResult("wms_layer_added");
+                updateResult(StringConstants.WMS_LAYER_ADDED);
 
                 // remove the layer from available layers to stop it being 
                 // added twice
@@ -390,7 +332,7 @@ public class AddWMSLayerComposer extends UtilityComposer {
             } else {
 
                 getMapComposer().showMessage(CommonData.lang("error_selecting_layer")
-                        +": '" + discoveredLayerId + "'");
+                        + ": '" + discoveredLayerId + "'");
             }
         }
     }
@@ -411,18 +353,18 @@ public class AddWMSLayerComposer extends UtilityComposer {
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NS_DANGEROUS_NON_SHORT_CIRCUIT")
     public void onClick$addManualLayerButton() {
-        logger.debug("onAddManualLayer()");
+        LOGGER.debug("onAddManualLayer()");
 
         // DO NOT SHORT CURCUIT HERE!
         if (validateCommon() & validateManualMode()) {
-            logger.debug("adding" + getMapUri.getValue());
+            LOGGER.debug("adding" + getMapUri.getValue());
 
             if (getMapComposer().addWMSLayer("wmslayer",
                     (nameAutomatically.isChecked())
                             ? layerUtilities.getLayers(getMapUri.getValue()) : Validate.escapeHtmlAndTrim(label.getValue()),
-                    getMapUri.getValue(), (float) 0.75, "", "", LayerUtilities.WMS_1_1_1, "", "") != null) {
+                    getMapUri.getValue(), (float) 0.75, "", "", LayerUtilitiesImpl.WMS_1_1_1, "", "") != null) {
                 // all sweet
-                updateResult("wms_layer_added");
+                updateResult(StringConstants.WMS_LAYER_ADDED);
             }
             // addWMSLayer takes care of displaying any error message
         }
@@ -435,16 +377,10 @@ public class AddWMSLayerComposer extends UtilityComposer {
     public void updateResult(String messageKey) {
         resultLabel.setVisible(true);
         resultLabel.setValue(languagePack.getLang(messageKey));
-
-        /*
-         * if we get to here it was all sweet - change selected tab on layers
-         * view to be 'user defined' so user can see their new layers
-         */
-        //getMapComposer().selectAndActivateTab(PortalSession.LAYER_USER_TAB);
     }
 
     public float getOpacity() {
-        return (float) ((float) opacitySlider.getCurpos()) / 100f;
+        return (float) opacitySlider.getCurpos() / 100f;
     }
 
     private boolean validateCommon() {
@@ -476,11 +412,7 @@ public class AddWMSLayerComposer extends UtilityComposer {
     private boolean validiateAutomaticModeSelectLayer() {
         // layer name
         boolean valid;
-        if (layerName.getSelectedItem() != null) {
-            valid = !Validate.empty(((String[]) layerName.getSelectedItem().getValue())[0]);
-        } else {
-            valid = false;
-        }
+        valid = layerName.getSelectedItem() != null && !Validate.empty(((String[]) layerName.getSelectedItem().getValue())[0]);
         invalidLayerName.setVisible(!valid);
         return valid;
     }
@@ -497,27 +429,6 @@ public class AddWMSLayerComposer extends UtilityComposer {
      */
     public void onScroll$opacitySlider() {
         opacityLabel.setValue(opacitySlider.getCurpos() + "%");
-    }
-
-    public void relist(MapLayer mapLayer) {
-        logger.debug("requested relisting for " + mapLayer.getLayer());
-        if (mapLayer != null) {
-            /*
-             * the original uri as entered by the user will have been changed
-             * during the auto discovery process. It should be safe to compare
-             * IDs though. To enfource uniqueness in IDs, they get concatenated
-             * with a colon and a sequence number for layers other than the root
-             * layer so we have to test for contains rather than equality here
-             */
-            if ((discoveredLayer != null)
-                    && (mapLayer.getLayer() != null)
-                    && (mapLayer.getId().contains(discoveredLayer.getLayer().getName() + ", " + discoveredLayer.getLayer().getTitle()))) {
-                logger.debug("relisting maplayer");
-                availableLayers.add(new String[]{mapLayer.getLayer(), mapLayer.getName()});
-                updateAvailableLayers();
-            }
-            // otherwise it's from a different discovery - do nothing
-        }
     }
 
     public LanguagePack getLanguagePack() {
@@ -547,16 +458,17 @@ public class AddWMSLayerComposer extends UtilityComposer {
         sb.append("abstract: ").append(layer.get_abstract());
         sb.append("<br>");
         sb.append("keywords: ");
-        if(layer.getKeywords() != null) {
-            for(String s : layer.getKeywords()) {
+        if (layer.getKeywords() != null) {
+            for (String s : layer.getKeywords()) {
                 sb.append(s).append(", ");
             }
         }
-        if (layer.getMetadataURL() != null && layer.getMetadataURL().size() > 0) {
+        if (layer.getMetadataURL() != null && !layer.getMetadataURL().isEmpty()) {
             sb.append("<br>");
             sb.append("metadata URL: ");
             for (MetadataURL url : layer.getMetadataURL()) {
-                sb.append("<a target='_blank' href='" + url.getUrl().toString().replace("'","''") + "'>" + StringEscapeUtils.escapeHtml(url.getUrl().toString()) + "</a>, ");
+                sb.append("<a target='_blank' href='").append(url.getUrl().toString().replace("'", "''"))
+                        .append("'>").append(StringEscapeUtils.escapeHtml(url.getUrl().toString())).append("</a>, ");
             }
         }
         sb.append("<br>");

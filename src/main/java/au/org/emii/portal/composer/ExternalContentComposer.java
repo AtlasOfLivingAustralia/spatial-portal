@@ -1,6 +1,6 @@
 package au.org.emii.portal.composer;
 
-import org.zkoss.zk.ui.SuspendNotAllowedException;
+import au.org.ala.spatial.StringConstants;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -10,27 +10,27 @@ import org.zkoss.zul.Window;
 public class ExternalContentComposer extends Window {
 
     private static final long serialVersionUID = 1L;
-    String src;
+    private String src;
 
     @Override
     public void doOverlapped() {
         super.doOverlapped();
 
-        this.getFellow("hide").addEventListener("onClick", new EventListener() {
+        this.getFellow("hide").addEventListener(StringConstants.ONCLICK, new EventListener() {
 
             public void onEvent(Event event) throws Exception {
                 close();
             }
         });
 
-        this.getFellow("reset").addEventListener("onClick", new EventListener() {
+        this.getFellow(StringConstants.RESET).addEventListener(StringConstants.ONCLICK, new EventListener() {
 
             public void onEvent(Event event) throws Exception {
-                Events.echoEvent("setSrc", event.getTarget().getParent().getParent(), null);
+                Events.echoEvent(StringConstants.SET_SRC, event.getTarget().getParent().getParent(), null);
             }
         });
 
-        this.getFellow("breakout").addEventListener("onClick", new EventListener() {
+        this.getFellow(StringConstants.BREAKOUT).addEventListener(StringConstants.ONCLICK, new EventListener() {
 
             public void onEvent(Event event) throws Exception {
                 close();
@@ -39,24 +39,24 @@ public class ExternalContentComposer extends Window {
     }
 
     @Override
-    public void doModal() throws SuspendNotAllowedException {
+    public void doModal() {
         super.doModal();
 
-        this.getFellow("hide").addEventListener("onClick", new EventListener() {
+        this.getFellow("hide").addEventListener(StringConstants.ONCLICK, new EventListener() {
 
             public void onEvent(Event event) throws Exception {
                 close();
             }
         });
 
-        this.getFellow("reset").addEventListener("onClick", new EventListener() {
+        this.getFellow(StringConstants.RESET).addEventListener(StringConstants.ONCLICK, new EventListener() {
 
             public void onEvent(Event event) throws Exception {
-                Events.echoEvent("setSrc", event.getTarget().getParent().getParent(), null);
+                Events.echoEvent(StringConstants.SET_SRC, event.getTarget().getParent().getParent(), null);
             }
         });
 
-        this.getFellow("breakout").addEventListener("onClick", new EventListener() {
+        this.getFellow(StringConstants.BREAKOUT).addEventListener(StringConstants.ONCLICK, new EventListener() {
 
             public void onEvent(Event event) throws Exception {
                 close();
@@ -67,7 +67,7 @@ public class ExternalContentComposer extends Window {
     public void setSrc(Event event) {
         if (event.getData() == null) {
             ((Iframe) getFellow("externalContentIframe")).setSrc("");
-            Events.echoEvent("setSrc", event.getTarget(), src);
+            Events.echoEvent(StringConstants.SET_SRC, event.getTarget(), src);
         } else {
             ((Iframe) getFellow("externalContentIframe")).setSrc(src);
         }
@@ -75,5 +75,9 @@ public class ExternalContentComposer extends Window {
 
     void close() {
         detach();
+    }
+
+    public void setSrc(String newUri) {
+        this.src = newUri;
     }
 }

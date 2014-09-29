@@ -4,8 +4,13 @@
  */
 package au.org.ala.spatial.composer.tool;
 
-import au.org.ala.spatial.util.*;
+import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.LayersUtil;
+import au.org.ala.spatial.util.ShapefileUtils;
+import au.org.ala.spatial.util.Zipper;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.SelectedArea;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.io.FileUtils;
@@ -20,20 +25,20 @@ import org.zkoss.zul.Div;
 import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Radiogroup;
 
-import java.io.*;
-import java.net.URL;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.List;
 
 /**
  * @author ajay
  */
 public class ExportLayerComposer extends ToolComposer {
-    private static Logger logger = Logger.getLogger(ExportLayerComposer.class);
+    private static final Logger LOGGER = Logger.getLogger(ExportLayerComposer.class);
 
 
-    Radiogroup exportFormat;
-    //Button btnExportCancel;
-    //Button btnExportOk;
+    private Radiogroup exportFormat;
 
     @Override
     public void afterCompose() {
@@ -50,7 +55,6 @@ public class ExportLayerComposer extends ToolComposer {
 
     //@Override
     public void loadAreaLayersChecks() {
-        String selectedLayerName = (String) params.get("polygonLayerName");
         Div areachks = (Div) getFellowIfAny("areachks");
 
         List<MapLayer> layers = getMapComposer().getPolygonLayers();
@@ -78,31 +82,28 @@ public class ExportLayerComposer extends ToolComposer {
 
     @Override
     void fixFocus() {
-        switch (currentStep) {
-            case 1:
-                rgArea.setFocus(true);
-                break;
-            case 2:
-                exportFormat.setFocus(true);
-                break;
+        if (currentStep == 1) {
+            rgArea.setFocus(true);
+        } else if (currentStep == 2) {
+            exportFormat.setFocus(true);
         }
     }
 
     public void exportAreaAs(String type, String name, SelectedArea sa) {
-        String EXPORT_BASE_DIR = CommonData.settings.getProperty("analysis_output_dir") + File.separator + "export" + File.separator;
+        String exportBaseDir = CommonData.getSettings().getProperty(StringConstants.ANALYSIS_OUTPUT_DIR) + File.separator + "export" + File.separator;
         try {
             String id = String.valueOf(System.currentTimeMillis());
 
-            File shpDir = new File(EXPORT_BASE_DIR + id + File.separator);
+            File shpDir = new File(exportBaseDir + id + File.separator);
             shpDir.mkdirs();
 
-            File shpfile = null;
+            File shpfile;
 
             String contentType = LayersUtil.LAYER_TYPE_ZIP;
-            //String outfile = ml.getDisplayName().replaceAll(" ", "_")+("shp".equals(type)?"Shapefile":type.toUpperCase())+".zip";
+
             String outfile = name.replaceAll(" ", "_");
             if ("shp".equals(type)) {
-                shpfile = new File(EXPORT_BASE_DIR + id + File.separator + outfile + "_Shapefile.shp");
+                shpfile = new File(exportBaseDir + id + File.separator + outfile + "_Shapefile.shp");
                 ShapefileUtils.saveShapefile(shpfile, sa.getWkt());
 
                 outfile += "_SHP.zip";
@@ -143,14 +144,14 @@ public class ExportLayerComposer extends ToolComposer {
                 sbKml.append("</Document>").append("\r");
                 sbKml.append("</kml>").append("\r");
 
-                shpfile = new File(EXPORT_BASE_DIR + id + File.separator + outfile + "_KML.kml");
+                shpfile = new File(exportBaseDir + id + File.separator + outfile + "_KML.kml");
                 BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
                 wout.write(sbKml.toString());
                 wout.close();
 
                 outfile += "_KML.zip";
-            } else if ("wkt".equals(type)) {
-                shpfile = new File(EXPORT_BASE_DIR + id + File.separator + outfile + "_WKT.txt");
+            } else if (StringConstants.WKT.equals(type)) {
+                shpfile = new File(exportBaseDir + id + File.separator + outfile + "_WKT.txt");
                 BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
                 wout.write(sa.getWkt());
                 wout.close();
@@ -159,33 +160,22 @@ public class ExportLayerComposer extends ToolComposer {
             }
 
             //zip shpfile
-            Zipper.zipDirectory(EXPORT_BASE_DIR + id + File.separator, EXPORT_BASE_DIR + id + ".zip");
-            FileInputStream fis = null;
+            Zipper.zipDirectory(exportBaseDir + id + File.separator, exportBaseDir + id + ".zip");
             try {
-
-                byte[] bytes = FileUtils.readFileToByteArray(new File(EXPORT_BASE_DIR + id + ".zip"));
+                byte[] bytes = FileUtils.readFileToByteArray(new File(exportBaseDir + id + ".zip"));
                 Filedownload.save(bytes, contentType, outfile);
             } catch (Exception e) {
-                logger.error("failed to download file : " + EXPORT_BASE_DIR + id + ".zip", e);
-            } finally {
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    } catch (Exception e) {
-                        logger.error("failed to close download file : " + EXPORT_BASE_DIR + id + ".zip", e);
-                    }
-                }
+                LOGGER.error("failed to download file : " + exportBaseDir + id + ".zip", e);
             }
-
 
             try {
                 remoteLogger.logMapAnalysis(name, "Export - " + StringUtils.capitalize(type) + " Area", sa.getWkt(), "", "", "", outfile, "download");
             } catch (Exception e) {
-                logger.error("remote logger error", e);
+                LOGGER.error("remote logger error", e);
             }
 
         } catch (Exception e) {
-            logger.error("Unable to export user area", e);
+            LOGGER.error("Unable to export user area", e);
         }
     }
 }

@@ -1,5 +1,6 @@
 package au.org.emii.portal.event;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.menu.MapLayer;
@@ -19,15 +20,15 @@ import org.zkoss.zul.Listitem;
  */
 public class VisibilityToggleEventListener implements EventListener {
 
-    private static Logger logger = Logger.getLogger(VisibilityToggleEventListener.class);
+    private static final Logger LOGGER = Logger.getLogger(VisibilityToggleEventListener.class);
 
     private OpenLayersJavascript openLayersJavascript = null;
 
     @Override
     public void onEvent(Event event) throws Exception {
-        logger.debug("VisibilityToggleEventListener.onEvent() fired ");
+        LOGGER.debug("VisibilityToggleEventListener.onEvent() fired ");
         Checkbox checkbox = (Checkbox) event.getTarget();
-        MapComposer mapComposer = (MapComposer) event.getPage().getFellow("mapPortalPage");
+        MapComposer mapComposer = (MapComposer) event.getPage().getFellow(StringConstants.MAPPORTALPAGE);
         if (mapComposer.safeToPerformMapAction()) {
             Listitem listitem = (Listitem) checkbox.getParent().getParent();
             MapLayer layer = listitem.getValue();
@@ -41,10 +42,10 @@ public class VisibilityToggleEventListener implements EventListener {
                 PortalSession portalSession = (PortalSession) Executions.getCurrent()
                         .getDesktop()
                         .getSession()
-                        .getAttribute("portalSession");
+                        .getAttribute(StringConstants.PORTAL_SESSION);
 
                 openLayersJavascript.execute(
-                        OpenLayersJavascript.iFrameReferences
+                        openLayersJavascript.getIFrameReferences()
                                 + openLayersJavascript.activateMapLayer(layer, false, true)
                                 + openLayersJavascript.updateMapLayerIndexes(
                                 portalSession.getActiveLayers()

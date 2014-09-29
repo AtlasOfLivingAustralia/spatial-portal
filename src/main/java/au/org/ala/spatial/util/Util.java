@@ -4,20 +4,21 @@
  */
 package au.org.ala.spatial.util;
 
-import au.org.ala.spatial.data.BiocacheQuery;
+import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.dto.WKTReducedDTO;
-import au.org.emii.portal.lang.LanguagePack;
 import com.vividsolutions.jts.geom.*;
-import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.operation.valid.IsValidOp;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.ala.layers.legend.Facet;
 import org.ala.layers.legend.LegendObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -29,51 +30,32 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.zkoss.zk.ui.Executions;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 
 /**
  * @author Adam
  */
-public class Util {
-    private static Logger logger = Logger.getLogger(Util.class);
+public final class Util {
+    private static final Logger LOGGER = Logger.getLogger(Util.class);
+    private static int currentColourIdx = 0;
 
-    /**
-     * get Active Area as WKT string, from a layer name and feature class
-     *
-     * @param layer name of layer as String
-     * @return
-     */
-    public static String getWktFromURI(String layer) {
-        String feature_text = null;//DEFAULT_AREA;
-
-        String json = readGeoJSON(layer);
-
-        return feature_text = wktFromJSON(json);
+    private Util() {
+        //to hide public constructor
     }
 
-    static public String createCircle(double x, double y, final double RADIUS) {
-        return createCircle(x, y, RADIUS, 50);
-
-    }
-
-    static public String createCircle(double x, double y, final double RADIUS, int sides) {
+    public static String createCircle(double x, double y, final double radius, int sides) {
 
         try {
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
-//            CoordinateReferenceSystem dataCRS = CRS.decode("EPSG:4326");
-//            CoordinateReferenceSystem googleCRS = CRS.decode("EPSG:900913");
             String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\","
                     + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
                     + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]],"
@@ -109,115 +91,32 @@ public class Util {
             Geometry geom = JTS.transform(point, transform);
             Point gPoint = geometryFactory.createPoint(new Coordinate(geom.getCoordinate()));
 
-            logger.debug("Google point:" + gPoint.getCoordinate().x + "," + gPoint.getCoordinate().y);
+            LOGGER.debug("Google point:" + gPoint.getCoordinate().x + "," + gPoint.getCoordinate().y);
 
             MathTransform reverseTransform = CRS.findMathTransform(googleCRS, wgsCRS);
-            final int SIDES = sides;
-            Coordinate coords[] = new Coordinate[SIDES + 1];
-            for (int i = 0; i < SIDES; i++) {
-                double angle = ((double) i / (double) SIDES) * Math.PI * 2.0;
-                double dx = Math.cos(angle) * RADIUS;
-                double dy = Math.sin(angle) * RADIUS;
+
+            Coordinate[] coords = new Coordinate[sides + 1];
+            for (int i = 0; i < sides; i++) {
+                double angle = ((double) i / (double) sides) * Math.PI * 2.0;
+                double dx = Math.cos(angle) * radius;
+                double dy = Math.sin(angle) * radius;
                 geom = JTS.transform(geometryFactory.createPoint(new Coordinate(gPoint.getCoordinate().x + dx, gPoint.getCoordinate().y + dy)), reverseTransform);
                 coords[i] = new Coordinate(geom.getCoordinate().y, geom.getCoordinate().x);
             }
-            coords[SIDES] = coords[0];
+            coords[sides] = coords[0];
 
             LinearRing ring = geometryFactory.createLinearRing(coords);
             Polygon polygon = geometryFactory.createPolygon(ring, null);
 
-
-            //Geometry polyGeom = JTS.transform(coords,reverseTransform);
             WKTWriter writer = new WKTWriter();
             String wkt = writer.write(polygon);
-            return wkt.replaceAll("POLYGON ", "POLYGON").replaceAll(", ", ",");
+            return wkt.replaceAll(StringConstants.POLYGON + " ", StringConstants.POLYGON).replaceAll(", ", ",");
 
         } catch (Exception e) {
-            logger.debug("Circle fail!");
-            return "none";
+            LOGGER.debug("Circle fail!");
+            return StringConstants.NONE;
         }
 
-    }
-
-    static public double[] transformBbox4326To900913(double minx, double miny, double maxx, double maxy) {
-        double[] bbox = new double[4];
-        try {
-            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
-
-//            CoordinateReferenceSystem dataCRS = CRS.decode("EPSG:4326");
-//            CoordinateReferenceSystem googleCRS = CRS.decode("EPSG:900913");
-            String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\","
-                    + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
-                    + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]],"
-                    + "  PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],"
-                    + "  UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]],"
-                    + "  AXIS[\"Lat\",NORTH]," + "  AXIS[\"Long\",EAST],"
-                    + "  AUTHORITY[\"EPSG\",\"4326\"]]";
-            String wkt900913 = "PROJCS[\"WGS84 / Google Mercator\", "
-                    + "  GEOGCS[\"WGS 84\", "
-                    + "   DATUM[\"World Geodetic System 1984\", "
-                    + "   SPHEROID[\"WGS 84\", 6378137.0, 298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], "
-                    + "  AUTHORITY[\"EPSG\",\"6326\"]], "
-                    + " PRIMEM[\"Greenwich\", 0.0, AUTHORITY[\"EPSG\",\"8901\"]], "
-                    + " UNIT[\"degree\", 0.017453292519943295], "
-                    + " AXIS[\"Longitude\", EAST], "
-                    + " AXIS[\"Latitude\", NORTH], "
-                    + " AUTHORITY[\"EPSG\",\"4326\"]], "
-                    + " PROJECTION[\"Mercator_1SP\"], "
-                    + " PARAMETER[\"semi_minor\", 6378137.0], "
-                    + " PARAMETER[\"latitude_of_origin\", 0.0],"
-                    + " PARAMETER[\"central_meridian\", 0.0], "
-                    + " PARAMETER[\"scale_factor\", 1.0], "
-                    + " PARAMETER[\"false_easting\", 0.0], "
-                    + " PARAMETER[\"false_northing\", 0.0], "
-                    + " UNIT[\"m\", 1.0], "
-                    + " AXIS[\"x\", EAST], "
-                    + " AXIS[\"y\", NORTH], "
-                    + " AUTHORITY[\"EPSG\",\"3857\"]] ";
-            CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
-            CoordinateReferenceSystem googleCRS = CRS.parseWKT(wkt900913);
-            MathTransform transform = CRS.findMathTransform(wgsCRS, googleCRS);
-
-            Point point = geometryFactory.createPoint(new Coordinate(miny, minx));
-            Geometry geom = JTS.transform(point, transform);
-            Point gPoint = geometryFactory.createPoint(new Coordinate(geom.getCoordinate()));
-            bbox[0] = gPoint.getCoordinate().x;
-            bbox[1] = gPoint.getCoordinate().y;
-
-            point = geometryFactory.createPoint(new Coordinate(maxy, maxx));
-            geom = JTS.transform(point, transform);
-            gPoint = geometryFactory.createPoint(new Coordinate(geom.getCoordinate()));
-            bbox[2] = gPoint.getCoordinate().x;
-            bbox[3] = gPoint.getCoordinate().y;
-
-        } catch (Exception e) {
-            logger.error("failed to convert: " + minx + "," + miny + "," + maxx + "," + maxy, e);
-            return null;
-        }
-        return bbox;
-    }
-
-    static private String readGeoJSON(String feature) {
-        StringBuilder content = new StringBuilder();
-
-        try {
-            // Construct data
-
-            // Send data
-            URL url = new URL(feature);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.connect();
-
-            // Get the response
-            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                content.append(line);
-            }
-            conn.disconnect();
-        } catch (Exception e) {
-        }
-        return content.toString();
     }
 
     /**
@@ -230,71 +129,68 @@ public class Util {
      * @param json
      * @return
      */
-    static public String wktFromJSON(String json) {
+    public static String wktFromJSON(String json) {
         try {
             StringBuilder sb = new StringBuilder();
             boolean isPolygon = json.contains("\"type\":\"Polygon\"");
             sb.append("MULTIPOLYGON(");
             if (isPolygon) {
-                sb.append("("); //for conversion Polygon to Multipolygon.
+                //for conversion Polygon to Multipolygon.
+                sb.append("(");
             }
-            int pos = json.indexOf("coordinates") + "coordinates".length() + 3;
-            int end = json.indexOf("}", pos);
+            int pos = json.indexOf(StringConstants.COORDINATES) + StringConstants.COORDINATES.length() + 3;
+            int end = json.indexOf('}', pos);
             char c = json.charAt(pos);
-            char prev_c = ' ';
-            char next_c;
+            char prevC = ' ';
+            char nextC;
             pos++;
             while (pos < end) {
-                next_c = json.charAt(pos);
+                nextC = json.charAt(pos);
                 //lbrace to lbracket, next character is not a number
                 if (c == '[') {
-                    if (next_c != '-' && (next_c < '0' || next_c > '9')) {
+                    if (nextC != '-' && (nextC < '0' || nextC > '9')) {
                         sb.append('(');
                     }
                     //rbrace to rbracket, prev character was not a number
                 } else if (c == ']') {
-                    if (prev_c < '0' || prev_c > '9') {
+                    if (prevC < '0' || prevC > '9') {
                         sb.append(')');
                     }
                     //comma to space, prev character was a number
-                } else if (c == ',' && prev_c >= '0' && prev_c <= '9') {
+                } else if (c == ',' && prevC >= '0' && prevC <= '9') {
                     sb.append(' ');
                     //keep the original value
                 } else {
                     sb.append(c);
                 }
-                prev_c = c;
-                c = next_c;
+                prevC = c;
+                c = nextC;
                 pos++;
             }
             sb.append(")");
             if (isPolygon) {
-                sb.append(")"); //for conversion Polygon to Multipolygon.
+                //for conversion Polygon to Multipolygon.
+                sb.append(")");
             }
             return sb.toString();
         } catch (JSONException e) {
-            return "none";
+            return StringConstants.NONE;
         }
     }
 
-    static public double convertPixelsToMeters(int pixels, double latitude, int zoom) {
-        return ((Math.cos(latitude * Math.PI / 180.0) * 2 * Math.PI * 6378137) / (256 * Math.pow(2, zoom))) * pixels;
-    }
-
-    static public double calculateArea(String wkt) {
+    public static double calculateArea(String wkt) {
         double sumarea = 0;
 
         //GEOMETRYCOLLECTION
         String areaWorking = wkt;
-        ArrayList<String> stringsList = new ArrayList<String>();
-        if (areaWorking.startsWith("GEOMETRYCOLLECTION")) {
+        List<String> stringsList = new ArrayList<String>();
+        if (areaWorking.startsWith(StringConstants.GEOMETRYCOLLECTION)) {
             //split out polygons and multipolygons
-            areaWorking = areaWorking.replace("GEOMETRYCOLLECTION", "");
+            areaWorking = areaWorking.replace(StringConstants.GEOMETRYCOLLECTION, "");
 
             int posStart, posEnd, p1, p2;
-            ;
-            p1 = areaWorking.indexOf("POLYGON", 0);
-            p2 = areaWorking.indexOf("MULTIPOLYGON", 0);
+            p1 = areaWorking.indexOf(StringConstants.POLYGON, 0);
+            p2 = areaWorking.indexOf(StringConstants.MULTIPOLYGON, 0);
             if (p1 < 0) {
                 posStart = p2;
             } else if (p2 < 0) {
@@ -302,8 +198,8 @@ public class Util {
             } else {
                 posStart = Math.min(p1, p2);
             }
-            p1 = areaWorking.indexOf("POLYGON", posStart + 10);
-            p2 = areaWorking.indexOf("MULTIPOLYGON", posStart + 10);
+            p1 = areaWorking.indexOf(StringConstants.POLYGON, posStart + 10);
+            p2 = areaWorking.indexOf(StringConstants.MULTIPOLYGON, posStart + 10);
             while (p1 > 0 || p2 > 0) {
                 if (p1 < 0) {
                     posEnd = p2;
@@ -315,8 +211,8 @@ public class Util {
 
                 stringsList.add(areaWorking.substring(posStart, posEnd - 1));
                 posStart = posEnd;
-                p1 = areaWorking.indexOf("POLYGON", posStart + 10);
-                p2 = areaWorking.indexOf("MULTIPOLYGON", posStart + 10);
+                p1 = areaWorking.indexOf(StringConstants.POLYGON, posStart + 10);
+                p2 = areaWorking.indexOf(StringConstants.MULTIPOLYGON, posStart + 10);
             }
             stringsList.add(areaWorking.substring(posStart, areaWorking.length()));
         } else {
@@ -324,7 +220,7 @@ public class Util {
         }
 
         for (String w : stringsList) {
-            if (w.contains("ENVELOPE")) {
+            if (w.contains(StringConstants.ENVELOPE)) {
                 continue;
             }
             try {
@@ -334,8 +230,8 @@ public class Util {
                 for (String area : areas) {
                     area = StringUtils.replace(area, " (", "");
                     area = StringUtils.replace(area, ", ", ",");
-                    area = StringUtils.replace(area, "MULTIPOLYGON", "");
-                    area = StringUtils.replace(area, "POLYGON", "");
+                    area = StringUtils.replace(area, StringConstants.MULTIPOLYGON, "");
+                    area = StringUtils.replace(area, StringConstants.POLYGON, "");
                     area = StringUtils.replace(area, ")", "");
                     area = StringUtils.replace(area, "(", "");
 
@@ -343,23 +239,20 @@ public class Util {
 
                     // check if it's the 'world' bbox
                     boolean isWorld = true;
-                    for (int i = 0; i < areaarr.length - 1; i++) {
+                    for (int i = 0; i < areaarr.length - 1 && isWorld; i++) {
                         String[] darea = areaarr[i].split(" ");
-                        if ((Double.parseDouble(darea[0]) < -174
+                        if (!((Double.parseDouble(darea[0]) < -174
                                 && Double.parseDouble(darea[1]) < -84)
                                 || (Double.parseDouble(darea[0]) < -174
                                 && Double.parseDouble(darea[1]) > 84)
                                 || (Double.parseDouble(darea[0]) > 174
                                 && Double.parseDouble(darea[1]) > 84)
                                 || (Double.parseDouble(darea[0]) > 174
-                                && Double.parseDouble(darea[1]) < -84)) {
-                            //return 510000000;
-                        } else {
+                                && Double.parseDouble(darea[1]) < -84))) {
                             isWorld = false;
-                            break;
                         }
                     }
-                    //if (isWorld) return (510000000 * 1000 * 1000 * 1L);
+                    //use world area
                     if (isWorld) {
                         return 510000000000000L;
                     }
@@ -367,7 +260,7 @@ public class Util {
                     double totalarea = 0.0;
                     String d = areaarr[0];
                     for (int f = 1; f < areaarr.length - 2; ++f) {
-                        totalarea += Mh(d, areaarr[f], areaarr[f + 1]);
+                        totalarea += mh(d, areaarr[f], areaarr[f + 1]);
                     }
 
                     shapearea += totalarea * 6378137 * 6378137;
@@ -376,21 +269,21 @@ public class Util {
                 sumarea += Math.abs(shapearea);
 
             } catch (Exception e) {
-                logger.error("Error in calculateArea", e);
+                LOGGER.error("Error in calculateArea", e);
             }
         }
 
         return sumarea;
     }
 
-    static private double Mh(String a, String b, String c) {
-        return Nh(a, b, c) * hi(a, b, c);
+    private static double mh(String a, String b, String c) {
+        return nh(a, b, c) * hi(a, b, c);
     }
 
-    static private double Nh(String a, String b, String c) {
+    private static double nh(String a, String b, String c) {
         String[] poly = {a, b, c, a};
         double[] area = new double[3];
-        int i = 0;
+        int i;
         double j = 0.0;
         for (i = 0; i < 3; ++i) {
             area[i] = vd(poly[i], poly[i + 1]);
@@ -404,18 +297,18 @@ public class Util {
         return 4 * Math.atan(Math.sqrt(Math.abs(f)));
     }
 
-    static private double hi(String a, String b, String c) {
+    private static double hi(String a, String b, String c) {
         String[] d = {a, b, c};
 
-        int i = 0;
+        int i;
         double[][] bb = new double[3][3];
         for (i = 0; i < 3; ++i) {
             String[] coords = d[i].split(" ");
             double lng = Double.parseDouble(coords[0]);
             double lat = Double.parseDouble(coords[1]);
 
-            double y = Uc(lat);
-            double x = Uc(lng);
+            double y = uc(lat);
+            double x = uc(lng);
 
             bb[i][0] = Math.cos(y) * Math.cos(x);
             bb[i][1] = Math.cos(y) * Math.sin(x);
@@ -425,7 +318,7 @@ public class Util {
         return (bb[0][0] * bb[1][1] * bb[2][2] + bb[1][0] * bb[2][1] * bb[0][2] + bb[2][0] * bb[0][1] * bb[1][2] - bb[0][0] * bb[2][1] * bb[1][2] - bb[1][0] * bb[0][1] * bb[2][2] - bb[2][0] * bb[1][1] * bb[0][2] > 0) ? 1 : -1;
     }
 
-    static private double vd(String a, String b) {
+    private static double vd(String a, String b) {
         String[] coords1 = a.split(" ");
         double lng1 = Double.parseDouble(coords1[0]);
         double lat1 = Double.parseDouble(coords1[1]);
@@ -434,17 +327,17 @@ public class Util {
         double lng2 = Double.parseDouble(coords2[0]);
         double lat2 = Double.parseDouble(coords2[1]);
 
-        double c = Uc(lat1);
-        double d = Uc(lat2);
+        double c = uc(lat1);
+        double d = uc(lat2);
 
-        return 2 * Math.asin(Math.sqrt(Math.pow(Math.sin((c - d) / 2), 2) + Math.cos(c) * Math.cos(d) * Math.pow(Math.sin((Uc(lng1) - Uc(lng2)) / 2), 2)));
+        return 2 * Math.asin(Math.sqrt(Math.pow(Math.sin((c - d) / 2), 2) + Math.cos(c) * Math.cos(d) * Math.pow(Math.sin((uc(lng1) - uc(lng2)) / 2), 2)));
     }
 
-    static private double Uc(double a) {
+    private static double uc(double a) {
         return a * (Math.PI / 180);
     }
 
-    static public String createCircleJs(double longitude, double latitude, double radius) {
+    public static String createCircleJs(double longitude, double latitude, double radius) {
         boolean belowMinus180 = false;
         double[][] points = new double[360][];
         for (int i = 0; i < 360; i++) {
@@ -458,12 +351,9 @@ public class Util {
         double dist = ((belowMinus180) ? 360 : 0) + longitude;
 
         StringBuilder s = new StringBuilder();
-        s.append("POLYGON((");
+        s.append(StringConstants.POLYGON).append("((");
         for (int i = 0; i < 360; i++) {
             s.append(points[i][0] + dist).append(" ").append(points[i][1]).append(",");
-            //if (i < 359) {
-            //    s.append(",");
-            //}
         }
         // append the first point to close the circle
         s.append(points[0][0] + dist).append(" ").append(points[0][1]);
@@ -485,9 +375,7 @@ public class Util {
         double x = (lng * (Math.PI / 180.0) + Math.atan2(b * e * Math.sin(c), d - f * g)) / (Math.PI / 180.0);
         double y = Math.asin(g) / (Math.PI / 180.0);
 
-        double[] pt = {x, y};
-
-        return pt;
+        return new double[]{x, y};
     }
 
     /**
@@ -500,7 +388,7 @@ public class Util {
     public static String breakString(String message, int length) {
         StringBuilder newMessage = new StringBuilder();
         //buffer of last word (used to split lines by whole word
-        StringBuffer lastWord = new StringBuffer();
+        StringBuilder lastWord = new StringBuilder();
         for (int i = 0; i < message.length(); i++) {
             if (i % length == 0 && i != 0) {
                 if (lastWord.length() > 0) {
@@ -508,14 +396,14 @@ public class Util {
                     newMessage.append("\n");
                     newMessage.append(lastWord);
                     newMessage.append(message.charAt(i));
-                    lastWord = new StringBuffer();
+                    lastWord = new StringBuilder();
                 } else {
                     newMessage.append("\n");
                 }
             } else {
                 //reset lastWord stringbuffer when in hits a space
                 if (message.charAt(i) == ' ') {
-                    lastWord = new StringBuffer();
+                    lastWord = new StringBuilder();
                 } else {
                     lastWord.append(message.charAt(i));
                 }
@@ -528,10 +416,11 @@ public class Util {
     public static String readUrl(String feature) {
         StringBuilder content = new StringBuilder();
 
+        HttpURLConnection conn = null;
         try {
             // Send data
             URL url = new URL(feature);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.connect();
 
             // Get the response
@@ -540,31 +429,27 @@ public class Util {
             while ((line = rd.readLine()) != null) {
                 content.append(line);
             }
-            conn.disconnect();
+
         } catch (Exception e) {
+            LOGGER.error("failed to read from: " + feature, e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.disconnect();
+                } catch (Exception e) {
+                    LOGGER.error("failed to close url: " + feature, e);
+                }
+            }
         }
         return content.toString();
     }
 
-    public static Facet getFacetForObject(String value, JSONObject field) {
-        //can get the facet if value is a unique name in field and there are biocache records a
-
-        int count = 0;
-        for(Object o : field.getJSONArray("objects")) {
-            if(((JSONObject)o).getString("name") != null && ((JSONObject)o).getString("name").equals(value)) {
-                count++;
-            }
-        }
-
-        if(count != 1) {
-            return null;
-        }
-
+    public static Facet getFacetForObject(String value, String id) {
         //test facet
-        Facet f = new Facet(field.getString("id"), "\"" + value + "\"", true);
+        Facet f = new Facet(id, "\"" + value + "\"", true);
 
         //test if this facet is in biocache with some matches
-        ArrayList<Facet> facets = new ArrayList<Facet>();
+        List<Facet> facets = new ArrayList<Facet>();
         facets.add(f);
         if (new BiocacheQuery(null, null, null, facets, false, null).getOccurrenceCount() > 0) {
             return f;
@@ -591,8 +476,6 @@ public class Util {
         return -1;
     }
 
-    static int currentColourIdx = 0;
-
     public static int nextColour() {
         int colour = LegendObject.colours[currentColourIdx % LegendObject.colours.length];
 
@@ -604,19 +487,19 @@ public class Util {
 
     public static List<Map.Entry<String, String>> getQueryParameters(String params) {
         if (params == null || params.length() == 0) {
-            return null;
+            return new ArrayList();
         }
 
-        ArrayList<Map.Entry<String, String>> list = new ArrayList<Map.Entry<String, String>>();
+        List<Map.Entry<String, String>> list = new ArrayList<Map.Entry<String, String>>();
         for (String s : params.split("&")) {
             String[] keyvalue = s.split("=");
             if (keyvalue.length >= 2) {
                 String key = keyvalue[0];
                 String value = keyvalue[1];
                 try {
-                    value = URLDecoder.decode(value, "UTF-8");
+                    value = URLDecoder.decode(value, StringConstants.UTF_8);
                 } catch (Exception e) {
-                    logger.error("error decoding to UTF-8: " + value, e);
+                    LOGGER.error("error decoding to UTF-8: " + value, e);
                 }
                 list.add(new HashMap.SimpleEntry<String, String>(key, value));
             }
@@ -638,7 +521,7 @@ public class Util {
                 }
             }
         } catch (Exception e) {
-            System.out.println("No user available");
+            LOGGER.error("no user available", e);
         }
 
         if (useremail == null) {
@@ -649,65 +532,55 @@ public class Util {
     }
 
     public static boolean isLoggedIn() {
-        if (getUserEmail() == null) {
-            return false;
-        } else {
-            return true;
-        }
+        return getUserEmail() != null;
     }
 
     public static WKTReducedDTO reduceWKT(String originalWKT) {
         String wkt = originalWKT;
         String reducedBy = "No reduction.";
         if (wkt == null) {
-            return new WKTReducedDTO(wkt,wkt,"Invalid WKT.");
+            return new WKTReducedDTO(null, null, "Invalid WKT.");
         }
         try {
-            WKTReader wktReader = null;
+            WKTReader wktReader;
             com.vividsolutions.jts.geom.Geometry g = null;
 
             //reduction attempts, 3 decimal places, 2, 1, .2 increments, .5 increments,
             // and finally, convert to 1/1.001 increments (expected to be larger) then back to .5 increments (expected to be smaller)
             // to make the WKT string shorter.
-            double [] reductionValues = {1000,100,10,5,2};
+            double[] reductionValues = {1000, 100, 10, 5, 2};
             int attempt = 0;
-            while (wkt.length() > Integer.parseInt(CommonData.settings.getProperty("max_q_wkt_length")) && attempt < reductionValues.length) {
-                if(g == null) {
+            while (wkt.length() > Integer.parseInt(CommonData.getSettings().getProperty("max_q_wkt_length")) && attempt < reductionValues.length) {
+                if (g == null) {
                     wktReader = new WKTReader();
                     g = wktReader.read(wkt);
                 }
 
-                int start_length = wkt.length();
+                int startLength = wkt.length();
 
-                g = com.vividsolutions.jts.precision.GeometryPrecisionReducer.reduce(g, new PrecisionModel(reductionValues[attempt])); //reduce to 1 decimal place
+                //reduce to decimal places
+                g = com.vividsolutions.jts.precision.GeometryPrecisionReducer.reduce(g, new PrecisionModel(reductionValues[attempt]));
 
                 //stop if something is wrong and use previous iteration WKT
-                if(g == null)  {
-                    break;
-                }
                 String newwkt = g.toString();
-                if(newwkt == null || newwkt.length() < 100) {
-                    break;
-                }
-                IsValidOp op = new IsValidOp(g);
-                if(!op.isValid()) {
+                if (g == null || newwkt == null || newwkt.length() < 100 || !(new IsValidOp(g).isValid())) {
                     break;
                 }
 
                 wkt = newwkt;
-                logger.info("reduced WKT from string length " + start_length + " to " + wkt.length());
+                LOGGER.info("reduced WKT from string length " + startLength + " to " + wkt.length());
 
-                reducedBy = String.format("Reduced to resolution %f decimal degrees. \r\nWKT character length " + start_length + " to " + wkt.length(), 1 / reductionValues[attempt]);
+                reducedBy = String.format("Reduced to resolution %f decimal degrees. \r\nWKT character length " + startLength + " to " + wkt.length(), 1 / reductionValues[attempt]);
 
                 attempt++;
             }
-            logger.info("user WKT of length: " + wkt.length());
+            LOGGER.info("user WKT of length: " + wkt.length());
         } catch (Exception e) {
-            logger.error("failed to reduce WKT size", e);
+            LOGGER.error("failed to reduce WKT size", e);
         }
 
         //webportal (for some reason) does not like these spaces in WKT
-        return new WKTReducedDTO(originalWKT, wkt.replace(" (","(").replace(", ", ","), reducedBy);
+        return new WKTReducedDTO(originalWKT, wkt.replace(" (", "(").replace(", ", ","), reducedBy);
     }
 
     public static String readUrlPost(String url, NameValuePair[] params) {
@@ -724,7 +597,373 @@ public class Util {
                 return post.getResponseBodyAsString();
             }
         } catch (Exception e) {
+            LOGGER.error("failed to read url: " + url, e);
         }
+        return null;
+    }
+
+    public static String[] getDistributionOrChecklist(String spcode) {
+        try {
+            StringBuilder sbProcessUrl = new StringBuilder();
+            sbProcessUrl.append("/distribution/").append(spcode);
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(CommonData.getLayersServer() + sbProcessUrl.toString());
+            LOGGER.debug(CommonData.getLayersServer() + sbProcessUrl.toString());
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
+            int result = client.executeMethod(get);
+            if (result == 200) {
+                String txt = get.getResponseBodyAsString();
+                JSONObject jo = JSONObject.fromObject(txt);
+                if (jo == null) {
+                    return new String[0];
+                } else {
+                    String[] output = new String[14];
+
+                    String scientific = jo.containsKey(StringConstants.SCIENTIFIC) ? jo.getString(StringConstants.SCIENTIFIC) : "";
+                    String auth = jo.containsKey(StringConstants.AUTHORITY) ? jo.getString(StringConstants.AUTHORITY) : "";
+                    String common = jo.containsKey(StringConstants.COMMON_NAM) ? jo.getString(StringConstants.COMMON_NAM) : "";
+                    String family = jo.containsKey(StringConstants.FAMILY) ? jo.getString(StringConstants.FAMILY) : "";
+                    String genus = jo.containsKey(StringConstants.GENUS) ? jo.getString(StringConstants.GENUS) : "";
+                    String name = jo.containsKey(StringConstants.SPECIFIC_N) ? jo.getString(StringConstants.SPECIFIC_N) : "";
+                    String min = jo.containsKey(StringConstants.MIN_DEPTH) ? jo.getString(StringConstants.MIN_DEPTH) : "";
+                    String max = jo.containsKey(StringConstants.MAX_DEPTH) ? jo.getString(StringConstants.MAX_DEPTH) : "";
+
+                    String md = jo.containsKey(StringConstants.METADATA_U) ? jo.getString(StringConstants.METADATA_U) : "";
+                    String lsid = jo.containsKey(StringConstants.LSID) ? jo.getString(StringConstants.LSID) : "";
+                    String areaName = jo.containsKey(StringConstants.AREA_NAME) ? jo.getString(StringConstants.AREA_NAME) : "";
+                    String areaKm = jo.containsKey(StringConstants.AREA_KM) ? jo.getString(StringConstants.AREA_KM) : "";
+                    String dataResourceId = jo.containsKey(StringConstants.DATA_RESOURCE_UID) ? jo.getString(StringConstants.DATA_RESOURCE_UID) : "";
+
+                    output[0] = spcode;
+                    output[1] = scientific;
+                    output[2] = auth;
+                    output[3] = common;
+                    output[4] = family;
+                    output[5] = genus;
+                    output[6] = name;
+                    output[7] = min;
+                    output[8] = max;
+                    output[9] = md;
+                    output[10] = lsid;
+                    output[11] = areaName;
+                    output[12] = areaKm;
+                    output[13] = dataResourceId;
+
+                    return output;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("error building distributions list", e);
+        }
+        return new String[0];
+    }
+
+    /**
+     * Generates data for rendering of distributions table.
+     *
+     * @param type
+     * @param wkt
+     * @param lsids
+     * @param geomIdx
+     * @return
+     */
+    public static String[] getDistributionsOrChecklists(String type, String wkt, String lsids, String geomIdx) {
+        try {
+            StringBuilder sbProcessUrl = new StringBuilder();
+            sbProcessUrl.append("/").append(type);
+
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(CommonData.getLayersServer() + sbProcessUrl.toString());
+            LOGGER.debug(CommonData.getLayersServer() + sbProcessUrl.toString());
+            if (wkt != null) {
+                post.addParameter(StringConstants.WKT, wkt);
+            }
+            if (lsids != null) {
+                post.addParameter(StringConstants.LSIDS, lsids);
+            }
+            if (geomIdx != null) {
+                post.addParameter(StringConstants.GEOM_IDX, geomIdx);
+            }
+            post.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
+            int result = client.executeMethod(post);
+            if (result == 200) {
+                String txt = post.getResponseBodyAsString();
+                JSONArray ja = JSONArray.fromObject(txt);
+                if (ja == null || ja.isEmpty()) {
+                    return new String[0];
+                } else {
+                    String[] lines = new String[ja.size() + 1];
+                    lines[0] = "SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,LSID,AREA_NAME,AREA_SQ_KM";
+                    for (int i = 0; i < ja.size(); i++) {
+                        JSONObject jo = ja.getJSONObject(i);
+                        String spcode = jo.containsKey(StringConstants.SPCODE) ? jo.getString(StringConstants.SPCODE) : "";
+                        String scientific = jo.containsKey(StringConstants.SCIENTIFIC) ? jo.getString(StringConstants.SCIENTIFIC) : "";
+                        String auth = jo.containsKey(StringConstants.AUTHORITY) ? jo.getString(StringConstants.AUTHORITY) : "";
+                        String common = jo.containsKey(StringConstants.COMMON_NAM) ? jo.getString(StringConstants.COMMON_NAM) : "";
+                        String family = jo.containsKey(StringConstants.FAMILY) ? jo.getString(StringConstants.FAMILY) : "";
+                        String genus = jo.containsKey(StringConstants.GENUS) ? jo.getString(StringConstants.GENUS) : "";
+                        String name = jo.containsKey(StringConstants.SPECIFIC_N) ? jo.getString(StringConstants.SPECIFIC_N) : "";
+                        String min = jo.containsKey(StringConstants.MIN_DEPTH) ? jo.getString(StringConstants.MIN_DEPTH) : "";
+                        String max = jo.containsKey(StringConstants.MAX_DEPTH) ? jo.getString(StringConstants.MAX_DEPTH) : "";
+
+                        String md = jo.containsKey(StringConstants.METADATA_U) ? jo.getString(StringConstants.METADATA_U) : "";
+                        String lsid = jo.containsKey(StringConstants.LSID) ? jo.getString(StringConstants.LSID) : "";
+                        String areaName = jo.containsKey(StringConstants.AREA_NAME) ? jo.getString(StringConstants.AREA_NAME) : "";
+                        String areaKm = jo.containsKey(StringConstants.AREA_KM) ? jo.getString(StringConstants.AREA_KM) : "";
+                        String dataResourceUid = jo.containsKey(StringConstants.DATA_RESOURCE_UID) ? jo.getString(StringConstants.DATA_RESOURCE_UID) : "";
+
+                        lines[i + 1] = spcode + "," + wrap(scientific) + "," + wrap(auth) + "," + wrap(common) + ","
+                                + wrap(family) + "," + wrap(genus) + "," + wrap(name) + "," + min + "," + max
+                                + "," + wrap(md) + "," + wrap(lsid) + "," + wrap(areaName) + "," + wrap(areaKm)
+                                + "," + wrap(dataResourceUid);
+                    }
+
+                    return lines;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("error building distribution or checklist csv", e);
+        }
+        return new String[0];
+    }
+
+    public static String wrap(String s) {
+        return "\"" + s.replace("\"", "\"\"") + "\"";
+    }
+
+    public static String[] getAreaChecklists(String[] records) {
+        String[] lines = null;
+        try {
+            if (records != null && records.length > 0) {
+                String[][] data = new String[records.length - 1][];
+                // header
+                for (int i = 1; i < records.length; i++) {
+                    CSVReader csv = new CSVReader(new StringReader(records[i]));
+                    data[i - 1] = csv.readNext();
+                    csv.close();
+                }
+                java.util.Arrays.sort(data, new Comparator<String[]>() {
+                    @Override
+                    public int compare(String[] o1, String[] o2) {
+                        // compare WMS urls
+                        return CommonData.getSpeciesChecklistWMSFromSpcode(o1[0])[1].compareTo(CommonData.getSpeciesChecklistWMSFromSpcode(o2[0])[1]);
+                    }
+                });
+
+                lines = new String[records.length];
+                lines[0] = lines[0] = "SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,LSID,AREA_NAME,AREA_SQ_KM,SPECIES_COUNT";
+                int len = 1;
+                int thisCount = 0;
+                for (int i = 0; i < data.length; i++) {
+                    thisCount++;
+                    if (i == data.length - 1 || !CommonData.getSpeciesChecklistWMSFromSpcode(data[i][0])[1].equals(CommonData.getSpeciesChecklistWMSFromSpcode(data[i + 1][0])[1])) {
+                        StringBuilder sb = new StringBuilder();
+                        for (int j = 0; j < data[i].length; j++) {
+                            if (j > 0) {
+                                sb.append(",");
+                            }
+                            if (j == 0 || (j >= 9 && j != 10)) {
+                                sb.append(Util.wrap(data[i][j]));
+                            }
+                        }
+                        sb.append(",").append(thisCount);
+                        lines[len] = sb.toString();
+                        len++;
+                        thisCount = 0;
+                    }
+                }
+                lines = java.util.Arrays.copyOf(lines, len);
+            }
+        } catch (Exception e) {
+            LOGGER.error("error building species checklist", e);
+            lines = null;
+        }
+        return lines;
+    }
+
+    public static String getMetadataHtmlForDistributionOrChecklist(String spcode, String[] row, String layerName) {
+        if (CommonData.getSpeciesDistributionWMSFromSpcode(spcode).length == 0) {
+            return getMetadataHtmlForExpertDistribution(Util.getDistributionOrChecklist(spcode));
+        } else {
+            return getMetadataHtmlForAreaChecklist(spcode, layerName);
+        }
+    }
+
+    public static String getMetadataHtmlForExpertDistribution(String[] row) {
+        if (row.length == 0) {
+            return null;
+        }
+
+        String scientificName = row[1];
+        String commonName = row[3];
+        String familyName = row[4];
+        String minDepth = row[7];
+        String maxDepth = row[8];
+        String metadataLink = row[9];
+        String lsid = row[10];
+        String area = row[12];
+        String dataResourceUid = row[13];
+
+        String[] distributionCollectoryDetails = getDistributionCollectoryDetails(dataResourceUid);
+        String websiteUrl = distributionCollectoryDetails[0];
+        String citation = distributionCollectoryDetails[1];
+        String logoUrl = distributionCollectoryDetails[2];
+
+        String speciesPageUrl = CommonData.getBieServer() + "/species/" + lsid;
+
+        String html = "Expert Distribution\n";
+        html += "<table class='md_table'>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Scientific name: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + speciesPageUrl + "'>" + scientificName
+                + "</a></td></tr>";
+        html += "<tr><td class='md_th'>Common name: </td><td class='md_spacer'/><td class='md_value'>" + commonName + "</td></tr>";
+        html += "<tr class='md_grey-bg'><td class='md_th'>Family name: </td><td class='md_spacer'/><td class='md_value'>" + familyName + "</td></tr>";
+        String lastClass = "";
+        if (row[7] != null && row[7].length() > 0) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Min depth: </td><td class='md_spacer'/><td class='md_value'>" + minDepth + "</td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+        }
+        if (row[8] != null && row[8].length() > 0) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Max depth: </td><td class='md_spacer'/><td class='md_value'>" + maxDepth + "</td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+        }
+        if (row[9] != null && row[9].length() > 0) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + metadataLink + "'>" + metadataLink
+                    + "</a></td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+        }
+        if (row[12] != null && row[12].length() > 0) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Area sq km: </td><td class='md_spacer'/><td class='md_value'>" + area + "</td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+        }
+        html += "<tr class='" + lastClass + "'><td class='md_th'>Source website: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + websiteUrl + "'>" + websiteUrl
+                + "</a></td></tr>";
+        lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+
+        if (citation != null) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'>Citation: </td><td class='md_spacer'/><td class='md_value'>" + citation + "</td></tr>";
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+        }
+
+        if (logoUrl != null) {
+            html += "<tr class='" + lastClass + "'><td class='md_th'></td><td class='md_spacer'/><td class='md_value'><img src=\"" + logoUrl + "\"/></td></tr>";
+        }
+
+        html += "</table>";
+
+        return html;
+    }
+
+    // Fetches the website url, citation and logo url from the data resource
+    // associated with an expert distribution.
+    public static String[] getDistributionCollectoryDetails(String dataResourceUid) {
+        try {
+            String url = CommonData.collectoryServer + "/dataResource/" + dataResourceUid;
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(url);
+            LOGGER.debug(url);
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
+            int result = client.executeMethod(get);
+            if (result == 200) {
+                String txt = get.getResponseBodyAsString();
+                JSONObject jo = JSONObject.fromObject(txt);
+                if (jo == null) {
+                    return new String[0];
+                } else {
+                    String[] output = new String[13];
+                    String websiteUrl = jo.containsKey("websiteUrl") ? jo.getString("websiteUrl") : "";
+                    String citation = (jo.containsKey("citation") && jo.containsValue("citation")) ? jo.getString("citation") : null;
+                    String logoUrl = null;
+
+                    if (jo.containsKey("logoRef")) {
+                        JSONObject logoObject = jo.getJSONObject("logoRef");
+                        if (logoObject.containsKey("uri")) {
+                            logoUrl = logoObject.getString("uri");
+                        }
+                    }
+
+                    output[0] = websiteUrl;
+                    output[1] = citation;
+                    output[2] = logoUrl;
+
+                    return output;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("error fetching collectory details for distributions area", e);
+        }
+        return new String[0];
+    }
+
+    public static String getMetadataHtmlForAreaChecklist(String spcode, String layerName) {
+        if (spcode == null) {
+            return null;
+        }
+
+        try {
+            int count = CommonData.getSpeciesChecklistCountByWMS(CommonData.getSpeciesChecklistWMSFromSpcode(spcode)[1]);
+
+            String url = CommonData.getLayersServer() + "/checklist/" + spcode;
+            String jsontxt = Util.readUrl(url);
+            if (jsontxt == null || jsontxt.length() == 0) {
+                return null;
+            }
+
+            JSONObject jo = JSONObject.fromObject(jsontxt);
+
+            String html = "Checklist area\n";
+            html += "<table class='md_table'>";
+
+            String lastClass = "";
+
+            if (layerName != null && jo.containsKey(StringConstants.GEOM_IDX)) {
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Number of scientific names: </td><td class='md_spacer'/><td class='md_value'><a href='#' onClick='openAreaChecklist(\""
+                        + jo.getString(StringConstants.GEOM_IDX) + "\")'>" + count + "</a></td></tr>";
+            } else {
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Number of scientific names: </td><td class='md_spacer'/><td class='md_value'>" + count + "</td></tr>";
+            }
+
+            lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+
+            if (jo != null && jo.containsKey(StringConstants.METADATA_U)) {
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + jo.getString(StringConstants.METADATA_U) + "'>"
+                        + jo.getString(StringConstants.METADATA_U) + "</a></td></tr>";
+                lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+            }
+            if (jo != null && jo.containsKey(StringConstants.AREA_NAME)) {
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Area name: </td><td class='md_spacer'/><td class='md_value'>" + jo.getString(StringConstants.AREA_NAME) + "</td></tr>";
+                lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+            }
+            if (jo != null && jo.containsKey(StringConstants.AREA_KM)) {
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Area sq km: </td><td class='md_spacer'/><td class='md_value'>" + jo.getString(StringConstants.AREA_KM) + "</td></tr>";
+                lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+            }
+
+            try {
+                if (jo != null && jo.containsKey(StringConstants.PID) && jo.containsKey(StringConstants.AREA_NAME)) {
+                    String fid;
+                    fid = Util.getStringValue(null, StringConstants.FID, Util.readUrl(CommonData.getLayersServer() + "/object/" + jo.getString(StringConstants.PID)));
+
+                    String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.getLayersServer() + "/fields"));
+                    if (spid != null) {
+                        String layerInfoUrl = CommonData.getLayersServer() + "/layers/view/more/" + spid;
+                        html += "<tr class='" + lastClass + "'><td class='md_th'>More about this area: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + layerInfoUrl
+                                + "'>" + layerInfoUrl + "</a></td></tr>";
+
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("error building metadata HTML", e);
+            }
+
+            html += "</table>";
+
+            return html;
+        } catch (Exception e) {
+            LOGGER.error("error building html metadata for distributions area spcode=" + spcode, e);
+        }
+
         return null;
     }
 }

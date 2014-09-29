@@ -131,6 +131,9 @@
                                                         <n:a href="#" n:onClick="runAreaReport();">Area Report</n:a>
                                                     </n:li>
                                                     <n:li>
+                                                        <n:a href="#" n:onClick="runAreaReportPDF();">Detailed Area Report (PDF)</n:a>
+                                                    </n:li>
+                                                    <n:li>
                                                         <n:a href="#" n:onClick="runNearestLocality();">Nearest locality</n:a>
                                                     </n:li>
                                                     <n:li>
@@ -144,6 +147,9 @@
                                                     </n:li>
                                                     <n:li>
                                                         <n:a href="#" n:onClick="runSitesBySpecies();">Points to Grid</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runGeneratePoints();">Generate Points</n:a>
                                                     </n:li>
                                                     <n:li id="phylogeneticdiversitytool" style="display:none">
                                                         <n:a href="#" n:onClick="runPhylogeneticDiversity();">Phylogenetic Diversity</n:a>
@@ -247,8 +253,7 @@
 			<nav class="not_logged_in">
 				<ol>
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
-                    <!-- <li><a href="http://www.ala.org.au/my-profile/" title="My profile">My profile</a></li> -->
-                    <li><a href="/actions/dashboard" title="Spatial Portal Dashboard">Dashboard</a></li>
+                    <li><a href="/actions/dashboard" target="_blank" title="Spatial Portal Dashboard">Dashboard</a></li>
                     <li><a href="javascript:saveSession();" title="Save current session">Save session</a></li>
 					<li class="last login-button"><a id="casLinkLogin" href="https://auth.ala.org.au/cas/login?service=http://spatial.ala.org.au" >Log in</a></li>
 				</ol>
@@ -256,10 +261,9 @@
 			<nav style="display:none;" class="logged_in">
 				<ol>
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
-                    <!-- <li><a href="http://www.ala.org.au/my-profile/" title="My profile">My profile</a></li> -->
-                    <li><a href="/actions/dashboard" title="Spatial Portal Dashboard">Dashboard</a></li>
+                    <li><a href="/actions/dashboard" target="_blank" title="Spatial Portal Dashboard">Dashboard</a></li>
                     <li><a href="javascript:saveSession();" title="Save current session">Save session</a></li>
-					 <li class="last"><a id="casLinkLogout" href="https://auth.ala.org.au/cas/logout?service=http://spatial.ala.org.au">Log out</a></li>
+					<li class="last"><a id="casLinkLogout" href="https://auth.ala.org.au/cas/logout?service=http://spatial.ala.org.au">Log out</a></li>
 				</ol>
 			</nav>
 		</section>
@@ -353,7 +357,6 @@
             mapFrame = window.mapFrame;
 
             //use session state extents
-            window.mapFrame.loadBaseMap();
             if (!readCookie('ALA-Auth')) {
                 $(".login-bubble").show().delay(8000).fadeOut(2000);
             }
@@ -429,7 +432,6 @@ setTimeout(function() {
 }, 2000);
 
     function downloadSubmitButtonClick() {
-        //e.preventDefault();
         if (validateForm()) {
             var downloadUrl = $("input#downloadUrl").val().replace(/\\ /g, " ");
             var fastDownloadUrl = $("input#fastDownloadUrl").val().replace(/\\ /g, " ");
@@ -444,8 +446,6 @@ setTimeout(function() {
                 downloadUrl = downloadUrl + "&type=&email="+$("#email").val()+ "&reasonTypeId="+$("#reasonTypeId").val()+"&reason="+encodeURIComponent(reason)+"&file="+$("#filename").val();
             }
 
-            //console.log("downloadUrl = " + downloadUrl);
-            //alert("downloadUrl = " + downloadUrl);
             window.open(downloadUrl,"Download");
             zk.Widget.$(jq('$externalContentWindow')).detach();
             return false;

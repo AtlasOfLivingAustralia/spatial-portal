@@ -1,7 +1,7 @@
 package au.org.ala.spatial.composer.gazetteer;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
-import au.org.emii.portal.util.GeoJSONUtilities;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
@@ -15,22 +15,10 @@ import java.util.Iterator;
 
 public class GazetteerAutoComplete extends Combobox {
 
-    private static Logger logger = Logger.getLogger(GazetteerAutoComplete.class);
-    private String gazServer = null;
-
-    private GeoJSONUtilities geoJSONUtilities = null;
+    private static final Logger LOGGER = Logger.getLogger(GazetteerAutoComplete.class);
 
     public GazetteerAutoComplete() {
-        refresh(""); //init the child comboitems
-    }
-
-    public GazetteerAutoComplete(String value) {
-        super(value); //it invokes setValue(), which inits the child comboitems
-    }
-
-    @Override
-    public void setValue(String value) {
-        super.setValue(value);
+        refresh("");
     }
 
     /**
@@ -50,13 +38,14 @@ public class GazetteerAutoComplete extends Combobox {
     private void refresh(String val) {
         String searchString = val.trim().replaceAll("\\s+", "+");
 
-        searchString = (searchString.equals("")) ? "a" : searchString;
+        searchString = (searchString.isEmpty()) ? "a" : searchString;
 
         try {
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.layersServer + "/search?limit=40&q=" + searchString);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
+            GetMethod get = new GetMethod(CommonData.getLayersServer() + "/search?limit=40&q=" + searchString);
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
+
+            client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
             JSONArray ja = JSONArray.fromObject(slist);
@@ -69,8 +58,8 @@ public class GazetteerAutoComplete extends Combobox {
 
             for (int i = 0; i < ja.size(); i++) {
                 JSONObject jo = ja.getJSONObject(i);
-                String itemString = jo.getString("name");
-                String description = (jo.containsKey("description") ? jo.getString("description") : "")
+                String itemString = jo.getString(StringConstants.NAME);
+                String description = (jo.containsKey(StringConstants.DESCRIPTION) ? jo.getString(StringConstants.DESCRIPTION) : "")
                         + " (" + jo.getString("fieldname") + ")";
 
                 if (it != null && it.hasNext()) {
@@ -94,7 +83,7 @@ public class GazetteerAutoComplete extends Combobox {
             }
 
         } catch (Exception e) {
-            logger.error("error selecting gaz autocomplete item", e);
+            LOGGER.error("error selecting gaz autocomplete item", e);
         }
     }
 

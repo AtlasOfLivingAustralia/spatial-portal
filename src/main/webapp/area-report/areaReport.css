@@ -1,0 +1,162 @@
+html * {
+	margin: 0px;
+}
+
+body {
+	line-height: 200%;
+	font-family: Arial;
+	font-size: 8px;
+}
+
+br { 
+	display: block;
+    margin: 1em 0; 
+}
+
+table {
+	width: 750px;
+	border: 0px;
+	border-spacing: 0px;
+	font-size: 11px;
+}
+
+tr {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+img {
+	width: 600px;
+	border: 2px solid black;
+	padding: 15px;
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+	margin-top: 15px;
+}
+
+#imgWithLegend {
+    float: left;
+    width: 550px;
+}
+
+#legend {
+    width: 150px;
+    border: 2px solid black;
+    padding: 0px;
+    display: block;
+    margin-top: 15px;
+    float: right;
+}
+
+#imgHeader {
+	width: 100%;
+	border: 0px;
+	padding: 0px;
+	margin-top: 0px;
+}
+
+#table tr:nth-child(even) {
+    background-color: #CCFFCC;
+    font-size: 8px;
+    text-align: center;
+    color: black;
+}
+
+#table {
+	margin-top: 15px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 70%;
+}
+
+#table tr {
+    margin-bottom: 0px;
+}
+
+#table tr:nth-child(odd) {
+    font-size: 8px;
+    text-align: center;
+    color: black;
+}
+
+#table tr td:first-child {
+    text-align: left;
+}
+
+#table tr:first-child td {
+    font-weight: bold;
+    font-size: 8px;
+    text-align: center;
+    color: black;
+    border-top: 2px solid darkgreen;
+    border-bottom: 2px solid darkgreen;	
+}
+
+#tablesmall {
+    margin-top: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 70%;
+}
+
+#tablesmall tr {
+    margin-bottom: 0px;
+}
+
+#tablesmall tr:nth-child(odd) {
+    font-size: 8px;
+    text-align: center;
+    color: black;
+}
+
+#tablesmall tr td:first-child {
+    text-align: left;
+}
+
+#dashboard {
+	margin-left: auto;
+    margin-right: auto;
+    width: 60%;
+}
+
+#dashboard tr td {
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 15px;
+	color: white;
+	background-color: #336666;
+	height: 100px;
+	width: 12%;
+	text-align: center;
+	border: 15px solid white;
+	padding: 20px;
+}
+
+#title {
+	color: blue;
+	font-size: 9px;
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+#figure {
+	text-align: center;
+}
+
+#tableNumber {
+	text-align: center;
+	margin-bottom: 5px;
+}
+
+#scientificName {
+	font-style: italic;
+}
+
+div {
+    page-break-inside: avoid;
+}
+
+p {
+    font-size: 11px;
+}

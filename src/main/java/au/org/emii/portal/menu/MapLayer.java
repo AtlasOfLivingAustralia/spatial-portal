@@ -1,10 +1,10 @@
 package au.org.emii.portal.menu;
 
-import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.ScatterplotData;
-import au.org.ala.spatial.util.SelectedArea;
+import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.dto.ScatterplotDataDTO;
+import au.org.ala.spatial.util.Query;
 import au.org.ala.spatial.util.Util;
-import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.value.AbstractIdentifierImpl;
 import au.org.emii.portal.wms.WMSStyle;
 import org.ala.layers.legend.Facet;
@@ -35,16 +35,93 @@ import java.util.List;
  */
 public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Serializable {
 
-    private static final long serialVersionUID = 1L;
     /**
      * Used as a value for selectedStyleIndex to indicate that the default
      * rendering style should be used
      */
-    public final static int STYLE_DEFAULT = 0;
+    public static final int STYLE_DEFAULT = 0;
+    /**
+     * Pointer to the element currently marked as selected in the styles list -
+     * STYLE_DEFAULT means ignore all style information and use server defaults
+     * until the user tells us otherwise
+     */
+    private int selectedStyleIndex = STYLE_DEFAULT;
     /**
      * Delimiter used when generating map layer ids
      */
-    protected final static String DELIM = "::";
+    private static final String DELIM = "::";
+    private static final long serialVersionUID = 1L;
+    /**
+     * URI to fetch WMS data from
+     */
+    private String uri = null;
+    /*
+     * geoserver Common Query Language
+     */
+    private String cql = null;
+    /**
+     * Opacity on map - range 0.0f (invisible) to 1.0f (opaque)
+     */
+    private float opacity = 0.0f;
+    /**
+     * MIME image format - should be defined in the WMS get capabilties
+     * document, only makes sense for WMS layers
+     */
+    private String imageFormat = null;
+    /**
+     * The type of map layer we are - mostly used when generating JavaScript in
+     * OpenLayersJavascript to specialcase the output
+     */
+    private int type = LayerUtilitiesImpl.UNSUPPORTED;
+    /**
+     * True if this is a baselayer (prevents anything from showing up in the
+     * active layers box and tree menu
+     */
+    private boolean baseLayer = false;
+    /**
+     * True if this layer is currently being displayed on the map - attempting
+     * to do this using clientside javascript will fail when items are removed
+     * from the active layers list, etc
+     */
+    private boolean displayed = false;
+    /**
+     * True if the uri for the default style has been set - set internally when
+     * the setDefaultStyleLegendUri method is called
+     */
+    private boolean defaultStyleLegendUriSet = false;
+    /*
+     * layer sub type. e.g. source
+     */
+    private int subType = LayerUtilitiesImpl.UNSUPPORTED;
+    private String geoJSON = null;
+    private String geometryWKT = null;
+    /**
+     * Supported rendering styles as advertised by the server are stored in this
+     * list (WMS only)
+     */
+    private List<WMSStyle> styles = new ArrayList<WMSStyle>();
+    /**
+     * Animation parameters for netcdf files (only)
+     */
+    private MapLayerMetadata mapLayerMetadata = null;
+    /**
+     * True if this map layer is currently being displayed on the map as an
+     * animation, otherwise false
+     */
+    private boolean currentlyAnimated = false;
+    /*
+     * Colour mode -1 = user defined 0 - 7 = scientific name to kingdom
+     */
+    private String colourMode = "-1";
+    /*
+     * alaspatial ref number for species record highlight flag
+     */
+    private String highlight = null;
+    /*
+     * display name
+     */
+    private String displayName = null;
+    private ScatterplotDataDTO scatterplotDataDTO;
     /**
      * Child map layers - infinite depth is supported
      */
@@ -56,83 +133,17 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
      * moment
      */
     private String layer = null;
-    /**
-     * URI to fetch WMS data from
-     */
-    protected String uri = null;
-
-    /*
-     * geoserver Common Query Language
-     */
-    protected String cql = null;
-    /**
-     * Opacity on map - range 0.0f (invisible) to 1.0f (opaque)
-     */
-    protected float opacity = 0.0f;
-    /**
-     * MIME image format - should be defined in the WMS get capabilties
-     * document, only makes sense for WMS layers
-     */
-    protected String imageFormat = null;
-    /**
-     * The type of map layer we are - mostly used when generating JavaScript in
-     * OpenLayersJavascript to specialcase the output
-     */
-    protected int type = LayerUtilities.UNSUPPORTED;
-    /**
-     * True if this is a baselayer (prevents anything from showing up in the
-     * active layers box and tree menu
-     */
-    protected boolean baseLayer = false;
-    /**
-     * True if this layer is currently being displayed on the map - attempting
-     * to do this using clientside javascript will fail when items are removed
-     * from the active layers list, etc
-     */
-    protected boolean displayed = false;
-    /**
-     * True if the uri for the default style has been set - set internally when
-     * the setDefaultStyleLegendUri method is called
-     */
-    protected boolean defaultStyleLegendUriSet = false;
-    /*
-     * Colour mode -1 = user defined 0 - 7 = scientific name to kingdom
-     */
-    String colourMode = "-1";
-    /*
-     * alaspatial ref number for species record highlight flag
-     */
-    String highlight = null;
-    /*
-     * display name
-     */
-    String displayName = null;
     /*
      * flag to determine if this is a polygon layer
      */
     private boolean polygonLayer = false;
-
     /*
      * Flag indicating if this layer is removeable
      */
     private boolean removeable = true;
-
-    /*
-     * Flag indicating if this layer is removeable
-     */
-    private boolean hasMetadata = true;
-
-    /*
-     * layer sub type. e.g. source
-     */
-    protected int subType = LayerUtilities.UNSUPPORTED;
-
-    protected String geoJSON = null;
-
-    protected String geometryWKT = null;
     private String areaSqKm;
     private Query speciesQuery;
-    private ArrayList<Facet> facets;
+    private List<Facet> facets;
     private String cache;
     private String envelope;
     private String spcode;
@@ -146,12 +157,54 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
     private Integer classificationGroupCount;
     private LegendObject legendObject;
     private String pid;
+    /**
+     * Layer Id added to enable Hibernate serialization Uses the Postgres Serial
+     * data type on the database side
+     */
+    private long mapLayerId = 0;
+    private long parentmaplayerid = 0;
+    private long userMapId;
+    private long maplayermetadataid;
+    /**
+     * The user's selection based on an AnimationParameters instance.
+     */
+    private boolean userDefinedLayer = false;
+    private int geometryType;
+    private boolean dynamicStyle = false;
+    //parameters for the dynamic styled layers
+    private int redVal;
+    private int blueVal;
+    private int greenVal;
+    private int sizeVal;
+    private boolean sizeUncertain;
+    private boolean clustered;
+    private String envColour;
+    private String envName;
+    private String envSize;
+    /**
+     * env params allow the user to dynamically style the Layer
+     */
+    private String envParams = null;
 
-    public void setDefaultStyleLegendUriSet(boolean defaultStyleLegendUriSet) {
-        this.defaultStyleLegendUriSet = defaultStyleLegendUriSet;
+    /**
+     * Constructor
+     * <p/>
+     * Creates a blank default style
+     */
+    public MapLayer() {
+        // create a default style
+        WMSStyle style = new WMSStyle();
+
+        style.setName(StringConstants.DEFAULT);
+        style.setDescription("Default style");
+        style.setTitle(StringConstants.DEFAULT);
+
+        styles.add(style);
+
+        setMapLayerMetadata(new MapLayerMetadata());
     }
 
-    public boolean DefaultStyleLegendUriSet() {
+    public boolean defaultStyleLegendUriSet() {
         return this.defaultStyleLegendUriSet;
     }
 
@@ -165,7 +218,7 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
 
     public String getWKT() {
         if (isPolygonLayer()
-                && getType() != LayerUtilities.WKT
+                && getType() != LayerUtilitiesImpl.WKT
                 && geometryWKT == null
                 && geoJSON == null) {
             //TODO: query for non-wkt layer geometry
@@ -182,41 +235,6 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         this.geometryWKT = wkt;
     }
 
-    /**
-     * Supported rendering styles as advertised by the server are stored in this
-     * list (WMS only)
-     */
-    protected List<WMSStyle> styles = new ArrayList<WMSStyle>();
-    /**
-     * Pointer to the element currently marked as selected in the styles list -
-     * STYLE_DEFAULT means ignore all style information and use server defaults
-     * until the user tells us otherwise
-     */
-    protected int selectedStyleIndex = STYLE_DEFAULT;
-    /**
-     * Animation parameters for netcdf files (only)
-     */
-    protected MapLayerMetadata mapLayerMetadata = null;
-    /**
-     * The user's selection based on an AnimationParameters instance.
-     */
-//    protected AnimationSelection animationSelection = null;
-    /**
-     * True if this map layer is currently being displayed on the map as an
-     * animation, otherwise false
-     */
-    protected boolean currentlyAnimated = false;
-    /**
-     * Layer Id added to enable Hibernate serialization Uses the Postgres Serial
-     * data type on the database side
-     */
-    private long mapLayerId = 0;
-    private long parentmaplayerid = 0;
-    private long userMapId;
-    private long maplayermetadataid;
-    private boolean userDefinedLayer = false;
-    private int geometryType;
-
     public int getGeometryType() {
         return geometryType;
     }
@@ -224,17 +242,6 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
     public void setGeometryType(int geometryType) {
         this.geometryType = geometryType;
     }
-
-    private boolean dynamicStyle = false;
-    //parameters for the dynamic styled layers
-    private int redVal;
-    private int blueVal;
-    private int greenVal;
-    private int sizeVal;
-    private boolean sizeUncertain;
-    private boolean clustered;
-
-    ScatterplotData scatterplotData;
 
     public int getBlueVal() {
         return blueVal;
@@ -284,10 +291,6 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         this.clustered = clustered;
     }
 
-    private String envColour;
-    private String envName;
-    private String envSize;
-
     public String getEnvColour() {
         return envColour;
     }
@@ -319,11 +322,6 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
     public void setDynamicStyle(boolean dynamicStyle) {
         this.dynamicStyle = dynamicStyle;
     }
-
-    /**
-     * env params allow the user to dynamically style the Layer
-     */
-    private String envParams = null;
 
     public String getEnvParams() {
         return envParams;
@@ -363,24 +361,6 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
 
     public void setUserMapId(long userMapId) {
         this.userMapId = userMapId;
-    }
-
-    /**
-     * Constructor
-     * <p/>
-     * Creates a blank default style
-     */
-    public MapLayer() {
-        // create a default style
-        WMSStyle style = new WMSStyle();
-
-        style.setName("Default");
-        style.setDescription("Default style");
-        style.setTitle("Default");
-
-        styles.add(style);
-
-        setMapLayerMetadata(new MapLayerMetadata());
     }
 
     /**
@@ -449,26 +429,26 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
      * @return
      */
     public String getCurrentLegendUri() {
-        String uri;
+        String u;
 
         //check if its a dynamically generated style
         //if so go and go build the uri
         if (isDynamicStyle()) {
-            uri = styles.get(selectedStyleIndex).getLegendUri();
+            u = styles.get(selectedStyleIndex).getLegendUri();
         } else {
             if (hasStyle()) {
                 // show the selected style or default style if one wasn't set
-                uri = styles.get(selectedStyleIndex).getLegendUri();
+                u = styles.get(selectedStyleIndex).getLegendUri();
             } else {
                 /*
                  * if no styles are defined, there is likely no legend
                  * available, so dont attempt to retrieve one
                  */
-                uri = null;
+                u = null;
             }
         }
 
-        return uri;
+        return u;
     }
 
     public int getSelectedStyleIndex() {
@@ -510,6 +490,10 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         return uri;
     }
 
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
     public String getCache() {
         return cache;
     }
@@ -518,16 +502,12 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         this.cache = cache;
     }
 
-    public void setUri(String uri) {
-        this.uri = uri;
+    public String getCql() {
+        return cql;
     }
 
     public void setCql(String cql) {
         this.cql = cql;
-    }
-
-    public String getCql() {
-        return cql;
     }
 
     /**
@@ -553,6 +533,10 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         return children;
     }
 
+    public void setChildren(List<MapLayer> children) {
+        this.children = children;
+    }
+
     public MapLayer getChild(int i) {
         return children.get(i);
     }
@@ -566,7 +550,7 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
     }
 
     public boolean hasChildren() {
-        return children.size() > 0;
+        return !children.isEmpty();
     }
 
     public void addChild(MapLayer c) {
@@ -604,7 +588,7 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
      * @return
      */
     public boolean hasStyles() {
-        return (styles.size() > 1);
+        return styles.size() > 1;
     }
 
     /**
@@ -614,7 +598,7 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
      * @return
      */
     public boolean hasStyle() {
-        return (styles.size() > 0);
+        return !styles.isEmpty();
     }
 
     public boolean isBaseLayer() {
@@ -637,8 +621,16 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         return styles;
     }
 
+    public void setStyles(List<WMSStyle> styles) {
+        this.styles = styles;
+    }
+
     public boolean isDefaultStyleLegendUriSet() {
         return defaultStyleLegendUriSet;
+    }
+
+    public void setDefaultStyleLegendUriSet(boolean defaultStyleLegendUriSet) {
+        this.defaultStyleLegendUriSet = defaultStyleLegendUriSet;
     }
 
     public boolean isRemoveable() {
@@ -669,7 +661,7 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         // copy any styles
         if (styles != null) {
             for (WMSStyle style : styles) {
-                mapLayer.addStyle((WMSStyle) style.clone());
+                mapLayer.addStyle((WMSStyle) style.copy());
             }
         }
 
@@ -753,14 +745,6 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         return StringEscapeUtils.escapeJavaScript(getSelectedStyleName());
     }
 
-    public void setChildren(List<MapLayer> children) {
-        this.children = children;
-    }
-
-    public void setStyles(List<WMSStyle> styles) {
-        this.styles = styles;
-    }
-
     public String getHighlight() {
         return highlight;
     }
@@ -769,12 +753,12 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         this.highlight = pid;
     }
 
-    public void setColourMode(String string) {
-        colourMode = string;
-    }
-
     public String getColourMode() {
         return colourMode;
+    }
+
+    public void setColourMode(String string) {
+        colourMode = string;
     }
 
     public String getDisplayName() {
@@ -791,16 +775,16 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         setDisplayName(name);
     }
 
+    public boolean isPolygonLayer() {
+        return polygonLayer || subType == LayerUtilitiesImpl.ENVIRONMENTAL_ENVELOPE;
+    }
+
     public void setPolygonLayer(boolean isPolygon) {
         polygonLayer = isPolygon;
     }
 
-    public boolean isPolygonLayer() {
-        return polygonLayer || subType == LayerUtilities.ENVIRONMENTAL_ENVELOPE;
-    }
-
     public boolean isSpeciesLayer() {
-        return (speciesQuery != null);
+        return speciesQuery != null;
     }
 
     public Query getSpeciesQuery() {
@@ -812,11 +796,11 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
     }
 
     public boolean isGridLayer() {
-        return subType == LayerUtilities.GRID;
+        return subType == LayerUtilitiesImpl.GRID;
     }
 
     public boolean isContextualLayer() {
-        return subType == LayerUtilities.CONTEXTUAL;
+        return subType == LayerUtilitiesImpl.CONTEXTUAL;
     }
 
     public int getSubType() {
@@ -841,19 +825,19 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         this.areaSqKm = areaSqKm;
     }
 
-    public ScatterplotData getScatterplotData() {
-        return scatterplotData;
+    public ScatterplotDataDTO getScatterplotDataDTO() {
+        return scatterplotDataDTO;
     }
 
-    public void setScatterplotData(ScatterplotData data) {
-        scatterplotData = data;
+    public void setScatterplotDataDTO(ScatterplotDataDTO data) {
+        scatterplotDataDTO = data;
     }
 
-    public ArrayList<Facet> getFacets() {
+    public List<Facet> getFacets() {
         return facets;
     }
 
-    public void setFacets(ArrayList<Facet> facets) {
+    public void setFacets(List<Facet> facets) {
         this.facets = facets;
     }
 
@@ -861,8 +845,16 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         return highlightState;
     }
 
+    public void setHighlightState(String state) {
+        this.highlightState = state;
+    }
+
     public String getPointsOfInterestWS() {
         return poi;
+    }
+
+    public void setPointsOfInterestWS(String poi) {
+        this.poi = poi;
     }
 
     public LegendObject getLegendObject() {
@@ -889,52 +881,44 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         this.classificationSelection = groupSelection;
     }
 
-    public void setAnimationStep(Integer step) {
-        this.animationStep = step;
-    }
-
-    public void setAnimationInterval(Double interval) {
-        this.animationInterval = interval;
+    public Integer getFirstYear() {
+        return firstYear;
     }
 
     public void setFirstYear(Integer firstYear) {
         this.firstYear = firstYear;
     }
 
-    public void setLastYear(Integer lastYear) {
-        this.lastYear = lastYear;
-    }
-
-    public Integer getFirstYear() {
-        return firstYear;
-    }
-
     public Integer getLastYear() {
         return lastYear;
+    }
+
+    public void setLastYear(Integer lastYear) {
+        this.lastYear = lastYear;
     }
 
     public Integer getAnimationStep() {
         return animationStep;
     }
 
+    public void setAnimationStep(Integer step) {
+        this.animationStep = step;
+    }
+
     public Double getAnimationInterval() {
         return animationInterval;
     }
 
-    public void setHighlightState(String state) {
-        this.highlightState = state;
-    }
-
-    public void setPointsOfInterestWS(String poi) {
-        this.poi = poi;
-    }
-
-    public void setSPCode(String spcode) {
-        this.spcode = spcode;
+    public void setAnimationInterval(Double interval) {
+        this.animationInterval = interval;
     }
 
     public String getSPCode() {
         return spcode;
+    }
+
+    public void setSPCode(String spcode) {
+        this.spcode = spcode;
     }
 
     public String getEnvelope() {
@@ -945,11 +929,11 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         this.envelope = envelope;
     }
 
-    public void setPid(String pid) {
-        this.pid = pid;
-    }
-
     public String getPid() {
         return pid;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
     }
 }

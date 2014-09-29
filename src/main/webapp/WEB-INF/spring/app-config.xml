@@ -26,10 +26,6 @@
         </property>
     </bean>
 
-
-    <bean id="facetCache" class="au.org.ala.spatial.data.FacetCacheImpl">
-    </bean>
-
     <!-- Configures Spring MVC -->
     <import resource="mvc-config.xml"/>
 

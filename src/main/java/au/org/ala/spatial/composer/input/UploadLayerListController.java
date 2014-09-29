@@ -1,12 +1,12 @@
 package au.org.ala.spatial.composer.input;
 
 import au.com.bytecode.opencsv.CSVReader;
-import au.org.ala.spatial.composer.tool.ToolComposer;
 import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.UtilityComposer;
 import org.apache.log4j.Logger;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
 
@@ -20,13 +20,8 @@ import java.io.StringReader;
  */
 public class UploadLayerListController extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(UploadLayerListController.class);
-    String layerList;
-
-    @Override
-    public void afterCompose() {
-        super.afterCompose();
-    }
+    private static final Logger LOGGER = Logger.getLogger(UploadLayerListController.class);
+    private EventListener callback;
 
     public void onClick$btnCancel(Event event) {
         this.detach();
@@ -45,10 +40,10 @@ public class UploadLayerListController extends UtilityComposer {
             ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
         }
         if (ue == null) {
-            logger.debug("unable to upload file");
+            LOGGER.debug("unable to upload file");
             return;
         } else {
-            logger.debug("fileUploaded()");
+            LOGGER.debug("fileUploaded()");
         }
         try {
             Media m = ue.getMedia();
@@ -57,41 +52,41 @@ public class UploadLayerListController extends UtilityComposer {
             try {
                 loadLayerList(m.getReaderData());
                 loaded = true;
-                logger.debug("read type " + m.getContentType() + " with getReaderData");
+                LOGGER.debug(m.getContentType() + " with getReaderData");
             } catch (Exception e) {
-                //e.printStackTrace();
+                //failed to read, will try another method
             }
             if (!loaded) {
                 try {
                     loadLayerList(new StringReader(new String(m.getByteData())));
                     loaded = true;
-                    logger.debug("read type " + m.getContentType() + " with getByteData");
+                    LOGGER.debug(m.getContentType() + " with getByteData");
                 } catch (Exception e) {
-                    //e.printStackTrace();
+                    //failed to read, will try another method
                 }
             }
             if (!loaded) {
                 try {
                     loadLayerList(new InputStreamReader(m.getStreamData()));
                     loaded = true;
-                    logger.debug("read type " + m.getContentType() + " with getStreamData");
+                    LOGGER.debug(m.getContentType() + " with getStreamData");
                 } catch (Exception e) {
-                    //e.printStackTrace();
+                    //failed to read, will try another method
                 }
             }
             if (!loaded) {
                 try {
                     loadLayerList(new StringReader(m.getStringData()));
-                    loaded = true;
-                    logger.debug("read type " + m.getContentType() + " with getStringData");
+
+                    LOGGER.debug(m.getContentType() + " with getStringData");
                 } catch (Exception e) {
                     //last one, report error
                     getMapComposer().showMessage(CommonData.lang("error_uploading_file"));
-                    logger.error("unable to load user layer list: ", e);
+                    LOGGER.error("unable to load user layer list: ", e);
                 }
             }
         } catch (Exception ex) {
-            logger.error("error reading uploaded file", ex);
+            LOGGER.error("error reading uploaded file", ex);
         }
     }
 
@@ -105,11 +100,19 @@ public class UploadLayerListController extends UtilityComposer {
             }
             sb.append(s);
         }
-        layerList = sb.toString();
+
         reader.close();
-        if (getParent() instanceof ToolComposer) {
-            ((ToolComposer) getParent()).selectLayerFromList(layerList);
-            ((ToolComposer) getParent()).updateLayerSelectionCount();
+
+        if (callback != null) {
+            try {
+                callback.onEvent(new ForwardEvent("", this, null, sb.toString()));
+            } catch (Exception e) {
+                LOGGER.error("failed when calling ToolComposer callback", e);
+            }
         }
+    }
+
+    public void setCallback(EventListener callback) {
+        this.callback = callback;
     }
 }

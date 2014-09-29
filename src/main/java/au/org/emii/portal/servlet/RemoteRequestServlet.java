@@ -1,15 +1,12 @@
 package au.org.emii.portal.servlet;
 
-import au.org.emii.portal.config.ConfigurationLoaderStage1Impl;
 import au.org.emii.portal.net.HttpConnection;
 import au.org.emii.portal.settings.Settings;
-import au.org.emii.portal.web.ApplicationInit;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.HttpRequestHandler;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -66,7 +63,7 @@ public class RemoteRequestServlet implements HttpRequestHandler {
     /**
      * Logger instance
      */
-    private static Logger logger = Logger.getLogger(RemoteRequestServlet.class);
+    private static final Logger LOGGER = Logger.getLogger(RemoteRequestServlet.class);
     private List<String> allowedHosts = new ArrayList<String>();
     private Date updatedOn = null;
 
@@ -88,10 +85,10 @@ public class RemoteRequestServlet implements HttpRequestHandler {
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         String queryString = request.getQueryString();
-        logger.debug("requested: " + queryString);
+        LOGGER.debug("requested: " + queryString);
         String targetUrl = request.getParameter("url");
         if (targetUrl == null) {
-            logger.debug("no url parameter supplied");
+            LOGGER.debug("no url parameter supplied");
             outputError(response);
         } else {
             try {
@@ -99,7 +96,7 @@ public class RemoteRequestServlet implements HttpRequestHandler {
                 String hostname = url.getHost();
 
                 // check hostname on whitelist
-                initAllowedHosts(request);
+                initAllowedHosts();
 
                 // proxying should have already been setup in the System
                 // class by ConfigurationLoader
@@ -109,17 +106,17 @@ public class RemoteRequestServlet implements HttpRequestHandler {
                     // them to the url
                     String target
                             = targetUrl
-                            + rebuildParameters(request.getParameterMap());//LayerUtilities.stripParameter(CACHE_PARAMETER, queryString);
+                            + rebuildParameters(request.getParameterMap());
 
-                    logger.debug("access granted to hostname : " + hostname);
+                    LOGGER.debug("access granted to hostname : " + hostname);
                     fetchAndOutputUrl(target, response);
                 } else {
                     outputError(response);
-                    logger.debug(
+                    LOGGER.debug(
                             "access to " + targetUrl + " denied - host is not allowed");
                 }
             } catch (MalformedURLException e) {
-                logger.debug("Url is malformed: " + targetUrl);
+                LOGGER.debug("Url is malformed: " + targetUrl);
                 outputError(response);
             }
         }
@@ -132,7 +129,7 @@ public class RemoteRequestServlet implements HttpRequestHandler {
         String delim = "?";
         for (Object key : params.keySet()) {
             // skip the url parameter - removal from the map is not allowed
-            if (!((String) key).equalsIgnoreCase("url")) {
+            if (!"url".equalsIgnoreCase((String) key)) {
                 String[] value = (String[]) params.get(key);
                 uri.append(delim).append(key).append("=").append(value[0]);
                 delim = "&";
@@ -142,10 +139,10 @@ public class RemoteRequestServlet implements HttpRequestHandler {
     }
 
     private void fetchAndOutputUrl(String url, HttpServletResponse response) {
-        URLConnection con = null;
+        URLConnection con;
         InputStream is = null;
         try {
-            logger.debug("will request '" + url + "' from remote server");
+            LOGGER.debug("will request '" + url + "' from remote server");
             con = httpConnection.configureSlowURLConnection(url);
 
             // restore the MIME type for correct handling
@@ -160,17 +157,17 @@ public class RemoteRequestServlet implements HttpRequestHandler {
             is = con.getInputStream();
             byte[] data = IOUtils.toByteArray(is);
 
-            // flush to client;
+            // flush to client
             response.getOutputStream().write(data);
 
         } catch (IOException e) {
-            logger.debug("IO error doing remote request: " + e.getMessage());
+            LOGGER.debug("IO error doing remote request: " + e.getMessage());
         } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    logger.error("Error closing stream to " + url, e);
+                    LOGGER.error("Error closing stream to " + url, e);
                 }
             }
         }
@@ -183,7 +180,7 @@ public class RemoteRequestServlet implements HttpRequestHandler {
      * @return true if we are allowed (it's whitelisted) otherwise false
      */
     private boolean allowed(String hostname) {
-        return (allowedHosts.contains(hostname));
+        return allowedHosts.contains(hostname);
 
     }
 
@@ -194,7 +191,7 @@ public class RemoteRequestServlet implements HttpRequestHandler {
         // now remove whitespace and store in the master list
         for (String string : allowedHostsRaw) {
             String trimmed = string.trim();
-            logger.debug("allowed host + " + trimmed);
+            LOGGER.debug("allowed host + " + trimmed);
             newAllowedHosts.add(trimmed);
         }
         allowedHosts = newAllowedHosts;
@@ -202,12 +199,8 @@ public class RemoteRequestServlet implements HttpRequestHandler {
 
     }
 
-    private void initAllowedHosts(HttpServletRequest request) {
-        ServletContext servletContext = request.getSession().getServletContext();
-        ConfigurationLoaderStage1Impl stage1
-                = (ConfigurationLoaderStage1Impl) servletContext.getAttribute(ApplicationInit.CONFIGURATION_LOADER_ATTRIBUTE);
-        Date portalLastReloaded = stage1.getLastReloaded();
-        if ((updatedOn == null || updatedOn.getTime() < portalLastReloaded.getTime())) {
+    private void initAllowedHosts() {
+        if (updatedOn == null) {
             loadList();
         }
     }
@@ -223,10 +216,6 @@ public class RemoteRequestServlet implements HttpRequestHandler {
     @Required
     public void setSettings(Settings settings) {
         this.settings = settings;
-    }
-
-    public HttpConnection getHttpConnection() {
-        return httpConnection;
     }
 
     @Required

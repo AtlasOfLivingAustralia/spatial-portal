@@ -151,21 +151,6 @@ function checkLibraryLoaded() {
 }
 
 var bLayer, bLayer2, bLayer3, bLayer4;
-function loadBaseMap() {
-    goToLocation(134, -25, 4);
-
-// Google.v3 uses EPSG:900913 as projection, so we have to
-// transform our coordinates
-//    map.setCenter(
-//        new OpenLayers.LonLat(134, -25).transform(
-//            new OpenLayers.Projection("EPSG:4326"),
-//            map.getProjectionObject()),
-//        4);
-
-//    $(window).resize(function() {
-//        setTimeout("map.pan(1,1);",500);
-//    });
-}
 
 function goToLocation(lon, lat, zoom) {
     // Google.v3 uses EPSG:900913 as projection, so we have to
@@ -193,7 +178,7 @@ function buildMap() {
     checkLibraryLoadedTimeout = setInterval('checkLibraryLoaded()', libraryCheckIntervalMs);
 }
 
-function buildMapReal() {
+function buildMapReal(west, south, east, north) {
 
     // fix IE7 errors due to being in an iframe
     document.getElementById('mapdiv').style.width = '100%';
@@ -235,6 +220,11 @@ function buildMapReal() {
         }),
         new OpenLayers.Control.Navigation()
     ];
+
+    var bounds = new OpenLayers.Bounds(west, south, east, north).transform(
+        new OpenLayers.Projection("EPSG:4326"),
+        new OpenLayers.Projection("EPSG:3857"));
+
     var mapOptions = {
         projection: new OpenLayers.Projection("EPSG:3857"),
         displayProjection: new OpenLayers.Projection("EPSG:4326"),
@@ -286,7 +276,6 @@ function buildMapReal() {
     parent.bLayer3 = bLayer3;
     parent.bLayer4 = bLayer4;
 
-    loadBaseMap();
     //loadPanoramio();
     // create a new event handler for single click query
     clickEventHandler = new OpenLayers.Handler.Click({
@@ -310,6 +299,9 @@ function buildMapReal() {
         clickEventHandler.activate();
         setVectorLayersSelectable();
     });
+
+    //zoom before registering moveend
+    map.zoomToExtent(bounds, false);
 
     map.events.register("moveend", map, function (e) {
         parent.setExtent();
@@ -374,7 +366,6 @@ function iterateSpeciesInfoQuery(curr) {
     } catch (err) {
     }
     var url = query_url[pos] + "&start=" + curpos;
-    //alert(url);
     $.getJSON(proxy_script + URLEncode(url), function (data) {
         if (!query_layer[pos].bs) {
             var ulyr = query_[pos];
@@ -535,7 +526,6 @@ function pointSpeciesSearch(e) {
     var webportal_url = parent.jq('$webportal_url')[0].innerHTML;
 
     //handles point click in mapComposer
-    //parent.setSpeciesSearchPoint(lonlat);
 
     query_count_total = 0;
     points_of_interest_total = 0
@@ -593,7 +583,6 @@ function pointSpeciesSearch(e) {
                                 size = layer.params.ENV.substring(p2 + 5, p3)
                             }
                         }
-                        //console.log("map layer: " + layer);
                         var data = null;
                         if (query != null) data = getOccurrence(layer, query, lonlat.lat, lonlat.lon, 0, pos, size);
                         if (userquery != null) data = getOccurrenceUploaded(layer, userquery, lonlat.lat, lonlat.lon, 0, pos, size);
@@ -661,7 +650,6 @@ function registerSpeciesClick() {
     map.addControl(mapClickControl);
     mapClickControl.activate();
     ///////////////////
-    //  setVectorLayersSelectable();
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";
@@ -1103,11 +1091,10 @@ function selected(evt) {
             popup = new OpenLayers.Popup.FramedCloud("featurePopup",
                 feature.geometry.getBounds().getCenterLonLat(),
                 new OpenLayers.Size(100, 170),
-                "<div id='sppopup'>Retrieving data... </div>" //  style='width: 350px; height: 250px;'
+                "<div id='sppopup'>Retrieving data... </div>"
                 ,
                 null, true, onPopupClose);
 
-            //parent.showInfoOne();
             parent.setSpeciesSearchPoint(feature.geometry.getBounds().getCenterLonLat());
 
         } else if (attrs["count"] != null) {
@@ -1156,7 +1143,7 @@ function selected(evt) {
 }
 
 function featureadd(evt) {
-    var max_map_bounds = new OpenLayers.Bounds(-180, -90, 180, 90);  // map.getMaxExtent();
+    var max_map_bounds = new OpenLayers.Bounds(-180, -90, 180, 90);
     var feature = evt.feature;
     var fgeomt = feature.geometry.transform(map.projection, map.displayProjection);
     var isContains = max_map_bounds.contains(this.getDataExtent().left, this.getDataExtent().top);
@@ -1167,7 +1154,7 @@ function featureadd(evt) {
      */
     if (!feature.isMirror) {
         if (!feature.onScreen()) {
-            if (!max_map_bounds.contains(this.getDataExtent().left, this.getDataExtent().top)) {//feature.geometry.x > 0 &&
+            if (!max_map_bounds.contains(this.getDataExtent().left, this.getDataExtent().top)) {
                 var featureMirror = new OpenLayers.Feature.Vector(
                     new OpenLayers.Geometry.Point((fgeomt.x - max_map_bounds.getWidth()), fgeomt.y),
                     feature.attributes,
@@ -1578,7 +1565,7 @@ function envLayerHover(e, displayFull) {
             return body;
         }
     } catch (err) {
-        //console.error("an error has occurred!");
+
     }
     return null;
 }
@@ -1630,7 +1617,6 @@ function envLayerNearest(e) {
                     + "</td><td>" + (Math.round(ret[i].distance / 100) / 10)
                     + "</td><td>" + (Math.round(ret[i].degrees * 10) / 10) + "</td></tr>";
 
-                //markers.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(lng,lat).transform(map.displayProjection, map.projection),markers_icon.clone()));
                 var c = new OpenLayers.LonLat(lng, lat).transform(map.displayProjection, map.projection)
                 var point = new OpenLayers.Geometry.Point(c.lon, c.lat);
                 var pointFeature = new OpenLayers.Feature.Vector(point);
@@ -1670,7 +1656,6 @@ function mapPoints(json) {
                 + "</td><td>" + lng + ",<br>" + lat
                 + "</td></tr>";
 
-            //markers.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(lng,lat).transform(map.displayProjection, map.projection),markers_icon.clone()));
             var c = new OpenLayers.LonLat(lng, lat).transform(map.displayProjection, map.projection)
             var point = new OpenLayers.Geometry.Point(c.lon, c.lat);
             var pointFeature = new OpenLayers.Feature.Vector(point);
@@ -1746,7 +1731,7 @@ function initHover() {
             if (data != null) {
                 if (displayFull) {
                     output.innerHTML = "<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>";
-                    //$('#hoverOutput').html("<table><tr><td colspan='5'><b>Point " + pt.lon.toPrecision(8) + ", " + pt.lat.toPrecision(8) + "</b></td></tr>" + data + "</table>"); 
+
                 } else {
                     $('div#lvalues').html(data);
                 }
@@ -1954,7 +1939,6 @@ function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {
         map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
     var lonSize = Math.abs(lon - lonlat.lon);
     var latSize = Math.abs(lat - lonlat.lat);
-    //console.log(layer);
     var url = layer.bs + "/occurrences/search?q=" + query
         + "&fq=longitude:[" + (lon - lonSize) + "%20TO%20" + (lon + lonSize) + "]"
         + "&fq=latitude:[" + (lat - latSize) + "%20TO%20" + (lat + latSize) + "]"
@@ -2137,7 +2121,6 @@ function loadPanoramio(pictureIndexFrom, pictureIndexTo) {
         html += "</a><br />";
         html += "<a href='" + feature.attributes.photo_url + "' target='_blank'><strong>" + feature.attributes.photo_title + "</strong></a><br />";
         html += "by <a href='" + feature.attributes.owner_url + "' target='_blank'>" + feature.attributes.owner_name + "</a><br />";
-        //var html = "<h2>"+feature.attributes.photo_title +"</h2> <p>" +" <a href='photo/"+feature.attributes.photo_id+"'><Img src ='http://mw2.google.com/mw-panoramio/photos/small/"+feature.attributes.photo_id + ".jpg ' border = '3' alt ='' /></a>";
         popup = new OpenLayers.Popup.FramedCloud("featurePopup",
             feature.geometry.getBounds().getCenterLonLat(),
             new OpenLayers.Size(400, 400),
@@ -2167,20 +2150,11 @@ function loadPanoramio(pictureIndexFrom, pictureIndexTo) {
             document.getElementById("sppopup").innerHTML = infoHtml;
         }
 
-        //popup2.setSize(500, 500);
-
-//        setTimeout(function(){
-//            console.log("setting and updating pop up size");
-//            //popup.setSize(500, 500);
-//            popup.updateSize();
-//        }, 5000);
-
         shownPicturePopup = true;
     }
 
     function closePopup(evt) {
         shownPicturePopup = false;
-        //onPopupClose(evt);
 
         try {
             map.removePopup(this.feature.popup);
@@ -2193,9 +2167,6 @@ function loadPanoramio(pictureIndexFrom, pictureIndexTo) {
     }
 
     function onFeatureUnselect(feature) {
-        //this.map.removePopup(feature.popup);
-        //feature.popup.destroy();
-        //feature.popup = null;
         closePopup();
     }
 }
@@ -2215,7 +2186,6 @@ function removePanoramio(clearPopups) {
 function registerPanoramio(vectorLayer) {
     vectorLayer.events.register('beforefeaturesadded', this, panoramioloadStart);
     vectorLayer.events.register('featuresadded', this, panoramioloadEnd);
-//vectorLayer.events.on({"loadstart":panoramioloadStart,"loadend":panoramioloadStart});
 }
 
 function panoramioloadStart() {
@@ -2236,7 +2206,7 @@ function panoramioLoadingImage(display) {
     var div = document.getElementById("loader");
     if (div != null) {
         if (display == "none") {
-            //jQuery("#panoramioLoader").hide(2000);
+
             jQuery("#loader").hide(2000);
         }
         else {
@@ -2247,7 +2217,6 @@ function panoramioLoadingImage(display) {
     }
 }
 
-//animateStart("Eucalyptus",2000,1760,2012,30,0)"
 function animateStop(layername) {
     var layers = map.getLayersByName(layername);
     if (layers.length == 0) return;
@@ -2354,11 +2323,8 @@ function animateLayered(layername, animateDenom, interval, start, end, step, pag
         layer.display(false);
 
         for (i = 0; i < page; i++) {
-//            layer.animated_layers[i].setOpacity(((i+1)/(2*page)));
-//            layer.animated_layers[i].display(true);
             layer.animated_layers[i].display(false);
         }
-        //layer.animated_layers[page].setOpacity(layer.opacity);
         layer.animated_layers[page].display(true);
         for (i = page + 1; i < layer.animated_layers.length; i++) {
             layer.animated_layers[i].display(false);

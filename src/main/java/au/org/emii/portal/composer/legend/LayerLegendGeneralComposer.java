@@ -4,18 +4,12 @@
  */
 package au.org.emii.portal.composer.legend;
 
-import au.org.ala.spatial.data.BiocacheQuery;
-import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.UserDataQuery;
-import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.LegendMaker;
-import au.org.ala.spatial.util.Util;
+import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.util.*;
 import au.org.emii.portal.composer.GenericAutowireAutoforwardComposer;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
-
-import au.org.emii.portal.util.GeoJSONUtilities;
-import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.ala.layers.legend.LegendObject;
 import org.ala.layers.legend.QueryField;
 import org.apache.commons.httpclient.HttpClient;
@@ -33,9 +27,9 @@ import org.zkoss.zul.Label;
 
 import java.awt.*;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,64 +37,117 @@ import java.util.Map;
  */
 public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardComposer {
 
-    private static Logger logger = Logger.getLogger(LayerLegendGeneralComposer.class);
-
-    Slider opacitySlider;
-    Label opacityLabel;
-    Slider redSlider;
-    Slider greenSlider;
-    Slider blueSlider;
-    Slider sizeSlider;
-    Checkbox chkUncertaintySize;
-    public Button btnPointsCluster;
-    Label lblFupload;
-    Label redLabel;
-    Label greenLabel;
-    Label blueLabel;
-    Label sizeLabel;
-    Listbox activeLayersList;
-    Div layerControls;
-    Div clusterpoints;
-    Div uncertainty;
-    Hbox uncertaintyLegend;
-    Div colourChooser;
-    Div sizeChooser;
-    Image legendImg;
-    Image legendImgUri;
-    Div legendHtml;
-    Label legendLabel;
-    Div divUserColours;
-    Hbox dAnimationStep;
-    public Combobox cbColour;
-    Comboitem ciColourUser; //User selected colour
-    Label layerName;
-    EventListener listener;
-    Query query;
-    public Radiogroup pointtype;
-    public Radio rPoint, rCluster, rGrid;
-    MapLayer mapLayer;
-    boolean inInit = false;
-    public Textbox txtLayerName;
-    String sLayerName;
-    Button btnLayerName;
-    Label lInGroupCount;
-    Button btnCreateGroupLayers;
-    Div dGroupBox;
-    Combobox cbClassificationGroup;
-    Div divClassificationPicker;
-    Div divAnimation;
-    Combobox cbAnimationDenomination;
-    Button btnAnimationStart;
-    Button btnAnimationStop;
-    Intbox intAnimationStep;
-    Intbox intAnimationYearStart;
-    Intbox intAnimationYearEnd;
-    Doublebox dblAnimationSeconds;
+    private static final Logger LOGGER = Logger.getLogger(LayerLegendGeneralComposer.class);
+    //sld substitution strings
+    private static final String SUB_LAYERNAME = "*layername*";
+    private static final String SUB_COLOUR = "0xff0000";
+    private static final String SUB_MIN_MINUS_ONE = "*min_minus_one*";
+    private static final String SUB_MIN = "*min*";
+    private static final String SUB_MAX_PLUS_ONE = "*max_plus_one*";
+    private static final String POLYGON_SLD =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\">"
+                    + "<NamedLayer><Name>ALA:" + SUB_LAYERNAME + "</Name>"
+                    + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
+                    + "<ColorMap>"
+                    + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"0\" quantity=\"" + SUB_MIN_MINUS_ONE + "\"/>"
+                    + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"1\" quantity=\"" + SUB_MIN + "\"/>"
+                    + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"0\" quantity=\"" + SUB_MAX_PLUS_ONE + "\"/>"
+                    + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
+    private Combobox cbColour;
+    private Radiogroup pointtype;
+    private Radio rPoint, rCluster, rGrid;
+    private Textbox txtLayerName;
+    private Slider opacitySlider;
+    private Label opacityLabel;
+    private Slider redSlider;
+    private Slider greenSlider;
+    private Slider blueSlider;
+    private Slider sizeSlider;
+    private Checkbox chkUncertaintySize;
+    private Label lblFupload;
+    private Label redLabel;
+    private Label greenLabel;
+    private Label blueLabel;
+    private Label sizeLabel;
+    private Listbox activeLayersList;
+    private Div layerControls;
+    private Div clusterpoints;
+    private Div uncertainty;
+    private Hbox uncertaintyLegend;
+    private Div colourChooser;
+    private Div sizeChooser;
+    private Image legendImg;
+    private Image legendImgUri;
+    private Div legendHtml;
+    private Label legendLabel;
+    private Div divUserColours;
+    private Hbox dAnimationStep;
+    private Comboitem ciColourUser;
+    private Label layerName;
+    private Query query;
+    private MapLayer mapLayer;
+    private boolean inInit = false;
+    private String sLayerName;
+    private Button btnLayerName;
+    private Label lInGroupCount;
+    private Button btnCreateGroupLayers;
+    private Div dGroupBox;
+    private Combobox cbClassificationGroup;
+    private Div divClassificationPicker;
+    private Div divAnimation;
+    private Combobox cbAnimationDenomination;
+    private Button btnAnimationStart;
+    private Button btnAnimationStop;
+    private Intbox intAnimationStep;
+    private Intbox intAnimationYearStart;
+    private Intbox intAnimationYearEnd;
+    private Doublebox dblAnimationSeconds;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
+
+        MapLayer llc2MapLayer = null;
+
+        Map m = Executions.getCurrent().getArg();
+        if (m != null) {
+            for (Object o : m.entrySet()) {
+                if (((Map.Entry) o).getKey() instanceof String
+                        && "map_layer".equals(((Map.Entry) o).getKey())) {
+                    llc2MapLayer = (MapLayer) ((Map.Entry) o).getValue();
+                }
+            }
+        }
+
         cbColour.setSelectedIndex(0);
+
+        getMapComposer().setFacetsOpenListener(new EventListener() {
+            @Override
+            public void onEvent(Event event) throws Exception {
+                cbColour.open();
+            }
+        });
+
+        getMapComposer().setLayerLegendNameRefresh(new EventListener() {
+
+            @Override
+            public void onEvent(Event event) throws Exception {
+                txtLayerName.setValue((String) event.getData());
+            }
+        });
+
+        init(
+                llc2MapLayer,
+                llc2MapLayer.getSpeciesQuery(),
+                llc2MapLayer.getRedVal(),
+                llc2MapLayer.getGreenVal(),
+                llc2MapLayer.getBlueVal(),
+                llc2MapLayer.getSizeVal(),
+                (int) (llc2MapLayer.getOpacity() * 100),
+                llc2MapLayer.getColourMode(),
+                (StringConstants.GRID.equals(llc2MapLayer.getColourMode())) ? 0 : ((llc2MapLayer.isClustered()) ? 1 : 2),
+                llc2MapLayer.getSizeUncertain());
+
     }
 
     public void onScroll$opacitySlider(Event e) {
@@ -161,10 +208,10 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     public void selectColour(Object obj) {
         Div div = (Div) obj;
         String style = div.getStyle();
-        String background_color = "background-color";
-        int a = style.indexOf(background_color);
+        String backgroundColor = "background-color";
+        int a = style.indexOf(backgroundColor);
         if (a >= 0) {
-            String colour = style.substring(a + background_color.length() + 2, a + background_color.length() + 8);
+            String colour = style.substring(a + backgroundColor.length() + 2, a + backgroundColor.length() + 8);
             int r = Integer.parseInt(colour.substring(0, 2), 16);
             int g = Integer.parseInt(colour.substring(2, 4), 16);
             int b = Integer.parseInt(colour.substring(4, 6), 16);
@@ -215,20 +262,20 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
     void showPointsColourModeLegend() {
         //remove all
-        while (legendHtml.getChildren().size() > 0) {
+        while (!legendHtml.getChildren().isEmpty()) {
             legendHtml.removeChild(legendHtml.getFirstChild());
         }
 
         //put any parameters into map
         Map map = new HashMap();
-        map.put("query", query);
-        map.put("layer", mapLayer);
-        map.put("readonly", "true");
+        map.put(StringConstants.QUERY, query);
+        map.put(StringConstants.LAYER, mapLayer);
+        map.put(StringConstants.READONLY, StringConstants.TRUE);
 
         String colourmode = cbColour.getSelectedItem().getValue();
-        if (!mapLayer.getColourMode().equals("grid")
+        if (!StringConstants.GRID.equals(mapLayer.getColourMode())
                 && query.getLegend(colourmode).getCategoryNameOrder() != null) {
-            map.put("checkmarks", "true");
+            map.put("checkmarks", StringConstants.TRUE);
         }
 
         try {
@@ -237,20 +284,20 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 mapLayer.setLegendObject(lo);
             }
         } catch (Exception e) {
-            logger.error("querying layer legend for: " + query.getFullQ(false), e);
+            LOGGER.error("querying layer legend for: " + query.getFullQ(false), e);
         }
 
-        map.put("colourmode", colourmode);
+        map.put(StringConstants.COLOURMODE, colourmode);
 
         try {
             Executions.createComponents(
                     "/WEB-INF/zul/legend/LayerLegendClassification.zul", legendHtml, map);
         } catch (Exception e) {
-            logger.error("attempting to open classification legend: " + legendHtml, e);
+            LOGGER.error("attempting to open classification legend: " + legendHtml, e);
         }
     }
 
-    public void init(MapLayer ml, Query query, int red, int green, int blue, int size, int opacity, String colourMode, int type, boolean uncertainty, EventListener listener) {
+    public void init(MapLayer ml, Query query, int red, int green, int blue, int size, int opacity, String colourMode, int type, boolean uncertainty) {
         mapLayer = ml;
         inInit = true;
 
@@ -280,9 +327,6 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 break;
             }
         }
-
-
-        this.listener = listener;
 
         if (type == 0) {
             pointtype.setSelectedItem(rGrid);
@@ -330,19 +374,46 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
     public String getColourMode() {
         if (pointtype.getSelectedItem() == rGrid) {
-            return "grid";
+            return StringConstants.GRID;
         } else {
             return (String) cbColour.getSelectedItem().getValue();
         }
     }
 
     public void onClick$btnApply(Event event) {
-        if (listener != null) {
-            try {
-                listener.onEvent(null);
-            } catch (Exception e) {
-                logger.error("scatterplot legend, error when clicking Apply", e);
-            }
+        MapComposer mc = getMapComposer();
+        MapLayer ml = mapLayer;
+
+        //layer on map settings
+        if (getRed() != ml.getRedVal()
+                || getGreen() != ml.getGreenVal()
+                || getBlue() != ml.getBlueVal()
+                || getSize() != ml.getSizeVal()
+                || getOpacity() != (int) (ml.getOpacity() * 100)
+                || (ml.getColourMode() != null && !ml.getColourMode().equals(getColourMode()))
+                || (ml.isClustered() && getPointType() != 1)
+                || ml.getSizeUncertain() != getUncertainty()) {
+
+            ml.setRedVal(getRed());
+            ml.setGreenVal(getGreen());
+            ml.setBlueVal(getBlue());
+            ml.setSizeVal(getSize());
+            ml.setOpacity(getOpacity() / 100.0f);
+            ml.setColourMode(getColourMode());
+            ml.setClustered(getPointType() == 0);
+            ml.setSizeUncertain(getUncertainty());
+
+            mc.applyChange(ml);
+        }
+
+        //layer in menu settings
+        if (!ml.getDisplayName().equals(getDisplayName())) {
+            ml.setDisplayName(getDisplayName());
+
+            //selection label
+            mc.setLabelSelectedLayer(getDisplayName());
+
+            mc.redrawLayersList();
         }
     }
 
@@ -352,27 +423,27 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
     private void showPointsColourModeLegend(MapLayer m) {
         //remove all
-        while (legendHtml.getChildren().size() > 0) {
+        while (!legendHtml.getChildren().isEmpty()) {
             legendHtml.removeChild(legendHtml.getFirstChild());
         }
 
         //1. register legend
         String colourMode = cbColour.getSelectedItem().getValue();
         if (pointtype.getSelectedItem() == rGrid) {
-            colourMode = "grid";
+            colourMode = StringConstants.GRID;
         }
 
         //put any parameters into map
         Map map = new HashMap();
-        map.put("query", m.getSpeciesQuery());
-        map.put("layer", m);
-        map.put("readonly", "true");
-        map.put("colourmode", colourMode);
+        map.put(StringConstants.QUERY, m.getSpeciesQuery());
+        map.put(StringConstants.LAYER, m);
+        map.put(StringConstants.READONLY, StringConstants.TRUE);
+        map.put(StringConstants.COLOURMODE, colourMode);
 
         String colourmode = cbColour.getSelectedItem().getValue();
-        if (!m.getColourMode().equals("grid")
+        if (!StringConstants.GRID.equals(m.getColourMode())
                 && query.getLegend(colourmode).getCategoryNameOrder() != null) {
-            map.put("checkmarks", "true");
+            map.put("checkmarks", StringConstants.TRUE);
         }
         try {
             LegendObject lo = m.getSpeciesQuery().getLegend(colourmode);
@@ -380,14 +451,14 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 m.setLegendObject(lo);
             }
         } catch (Exception e) {
-            logger.error("error getting legend for map layer: " + m.getName(), e);
+            LOGGER.error("error getting legend for map layer: " + m.getName(), e);
         }
 
         try {
             Executions.createComponents(
                     "/WEB-INF/zul/legend/LayerLegendClassification.zul", legendHtml, map);
         } catch (Exception e) {
-            logger.error("error opening classification legend: " + legendHtml, e);
+            LOGGER.error("error opening classification legend: " + legendHtml, e);
         }
     }
 
@@ -396,7 +467,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             return 0;
         } else if (pointtype.getSelectedItem() == rCluster) {
             return 1;
-        } else {//if(pointtype.getSelectedItem() == rPoint) {
+        } else {
             return 2;
         }
     }
@@ -411,13 +482,9 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     }
 
     public void onCheck$pointtype(Event event) {
-        Radio selectedItem = pointtype.getSelectedItem();
-        try {
-            selectedItem = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
-            pointtype.setSelectedItem(selectedItem);
-            mapLayer.setHighlight(null);
-        } catch (Exception e) {
-        }
+        Radio selectedItem = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+        pointtype.setSelectedItem(selectedItem);
+        mapLayer.setHighlight(null);
 
         refreshLayer();
 
@@ -425,13 +492,9 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     }
 
     void refreshLayer() {
-        sLayerName = txtLayerName.getValue();
-        if (listener != null && !inInit) {
-            try {
-                listener.onEvent(null);
-            } catch (Exception e) {
-                logger.error("error refreshing scatterplot legend layer", e);
-            }
+        if (!inInit) {
+            sLayerName = txtLayerName.getValue();
+            onClick$btnApply(null);
         }
     }
 
@@ -440,7 +503,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
         if (currentSelection != null) {
             if (currentSelection.isDynamicStyle()) {
-                if (m.getColourMode().equals("grid")) {
+                if (StringConstants.GRID.equals(m.getColourMode())) {
                     pointtype.setSelectedItem(rGrid);
                     uncertainty.setVisible(false);
                 } else {
@@ -458,14 +521,13 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
                 updateAdhocGroupContols(currentSelection);
 
-
-                if (currentSelection.getColourMode().equals("-1")) {
+                if ("-1".equals(currentSelection.getColourMode())) {
                     divUserColours.setVisible(true);
                 } else {
                     divUserColours.setVisible(false);
                 }
 
-                if (currentSelection.getGeometryType() != GeoJSONUtilities.POINT) {
+                if (currentSelection.getGeometryType() != LayerUtilitiesImpl.POINT) {
                     sizeChooser.setVisible(false);
                     uncertainty.setVisible(false);
                 } else {
@@ -499,25 +561,26 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 String legendUri = currentSelection.getSelectedStyle().getLegendUri();
                 if (legendUri != null && legendUri.contains(".zul")) {
                     //remove all
-                    while (legendHtml.getChildren().size() > 0) {
+                    while (!legendHtml.getChildren().isEmpty()) {
                         legendHtml.removeChild(legendHtml.getFirstChild());
                     }
 
                     //put any parameters into map
                     Map map = null;
-                    if (legendUri.indexOf("?") > 0) {
-                        String[] parameters = legendUri.substring(legendUri.indexOf("?") + 1,
+                    if (legendUri.indexOf('?') > 0) {
+                        String[] parameters = legendUri.substring(legendUri.indexOf('?') + 1,
                                 legendUri.length()).split("&");
                         if (parameters.length > 0) {
                             map = new HashMap();
-                        }
-                        for (String p : parameters) {
-                            String[] parameter = p.split("=");
-                            if (parameter.length == 2) {
-                                map.put(parameter[0], parameter[1]);
+
+                            for (String p : parameters) {
+                                String[] parameter = p.split("=");
+                                if (parameter.length == 2) {
+                                    map.put(parameter[0], parameter[1]);
+                                }
                             }
                         }
-                        legendUri = legendUri.substring(0, legendUri.indexOf("?"));
+                        legendUri = legendUri.substring(0, legendUri.indexOf('?'));
                     }
 
                     //open .zul with parameters
@@ -599,25 +662,24 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     }
 
     private void setupCBColour(MapLayer m) {
-        for (int i = 0; i < cbColour.getItemCount(); i++) {
+        for (int i = cbColour.getItemCount() - 1; i >= 0; i--) {
             if (cbColour.getItemAtIndex(i) != ciColourUser) {
                 cbColour.removeItemAt(i);
-                i--;
             }
         }
 
         Query q = m.getSpeciesQuery();
         if (q != null) {
-            ArrayList<QueryField> fields = q.getFacetFieldList();
+            List<QueryField> fields = q.getFacetFieldList();
             Collections.sort(fields, new QueryField.QueryFieldComparator());
-            Comboitem seperator = new Comboitem("seperator");
+
             String lastGroup = null;
 
 
             for (QueryField field : fields) {
                 String newGroup = field.getGroup().getName();
                 if (!newGroup.equals(lastGroup)) {
-                    Comboitem sep = new Comboitem("seperator");
+                    Comboitem sep = new Comboitem(StringConstants.SEPERATOR);
                     sep.setLabel("---------------" + StringUtils.center(newGroup, 19) + "---------------");
                     sep.setParent(cbColour);
                     sep.setDisabled(true);
@@ -633,17 +695,17 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     }
 
     public void onClick$btnCreateGroupLayers(Event event) {
-        Query query;
+        Query q;
         if (mapLayer != null
-                && (query = mapLayer.getSpeciesQuery()) != null
-                && query.flagRecordCount() != 0) {
+                && (q = mapLayer.getSpeciesQuery()) != null
+                && q.flagRecordCount() != 0) {
 
-            Query inGroup = query.newFlaggedRecords(true);
-            Query outGroup = query.newFlaggedRecords(false);
+            Query inGroup = q.newFlaggedRecords(true);
+            Query outGroup = q.newFlaggedRecords(false);
 
-            getMapComposer().mapSpecies(inGroup, mapLayer.getDisplayName() + " in group", "species", -1, LayerUtilities.SPECIES, null, -1,
+            getMapComposer().mapSpecies(inGroup, mapLayer.getDisplayName() + " in group", StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1,
                     MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
-            getMapComposer().mapSpecies(outGroup, mapLayer.getDisplayName() + " out group", "species", -1, LayerUtilities.SPECIES, null, -1,
+            getMapComposer().mapSpecies(outGroup, mapLayer.getDisplayName() + " out group", StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1,
                     MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
         }
     }
@@ -653,18 +715,18 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             dGroupBox.setVisible(false);
             return;
         }
-        Query query = m.getSpeciesQuery();
-        if (query == null || query.flagRecordCount() == 0) {
+        Query q = m.getSpeciesQuery();
+        if (q == null || q.flagRecordCount() == 0) {
             dGroupBox.setVisible(false);
         } else {
             dGroupBox.setVisible(true);
 
-            lInGroupCount.setValue(query.flagRecordCount() + (query.flagRecordCount() == 1 ? " record" : " records"));
+            lInGroupCount.setValue(q.flagRecordCount() + (q.flagRecordCount() == 1 ? " record" : " records"));
         }
     }
 
     private void setupForClassificationLayers() {
-        if (mapLayer != null && mapLayer.getSubType() == LayerUtilities.ALOC) {
+        if (mapLayer != null && mapLayer.getSubType() == LayerUtilitiesImpl.ALOC) {
             divClassificationPicker.setVisible(true);
 
             //reset content
@@ -676,7 +738,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             for (int i = cbClassificationGroup.getItemCount() - 1; i >= 0; i--) {
                 cbClassificationGroup.removeItemAt(i);
             }
-            Comboitem ci = new Comboitem("none");
+            Comboitem ci = new Comboitem(StringConstants.NONE);
             ci.setParent(cbClassificationGroup);
 
             for (int i = 1; i <= groupCount; i++) {
@@ -696,22 +758,6 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
         }
     }
 
-    //sld substitution strings
-    private static final String SUB_LAYERNAME = "*layername*";
-    private static final String SUB_COLOUR = "0xff0000"; //"*colour*";
-    private static final String SUB_MIN_MINUS_ONE = "*min_minus_one*";
-    private static final String SUB_MIN = "*min*";
-    private static final String SUB_MAX_PLUS_ONE = "*max_plus_one*";
-    String polygonSld =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\">"
-                    + "<NamedLayer><Name>ALA:" + SUB_LAYERNAME + "</Name>"
-                    + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
-                    + "<ColorMap>"
-                    + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"0\" quantity=\"" + SUB_MIN_MINUS_ONE + "\"/>"
-                    + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"1\" quantity=\"" + SUB_MIN + "\"/>"
-                    + "<ColorMapEntry color=\"" + SUB_COLOUR + "\" opacity=\"0\" quantity=\"" + SUB_MAX_PLUS_ONE + "\"/>"
-                    + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
-
     public void onChange$cbClassificationGroup(Event event) {
         if (mapLayer != null) {
             mapLayer.setClassificationSelection(cbClassificationGroup.getSelectedIndex());
@@ -725,10 +771,10 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             int n = cbClassificationGroup.getSelectedIndex();
             if (n > 0) {
                 try {
-                    String sldBodyParam = "&sld_body=" + formatSld(URLEncoder.encode(polygonSld, "UTF-8"), layername, String.valueOf(n - 1), String.valueOf(n), String.valueOf(n), String.valueOf(n + 1));
+                    String sldBodyParam = "&sld_body=" + formatSld(URLEncoder.encode(POLYGON_SLD, StringConstants.UTF_8), layername, String.valueOf(n - 1), String.valueOf(n), String.valueOf(n + 1));
                     mapLayer.setUri(baseUri + sldBodyParam);
                 } catch (Exception e) {
-                    logger.error("error encoding this to UTF-8: " + polygonSld, e);
+                    LOGGER.error("error encoding this to UTF-8: " + POLYGON_SLD, e);
                 }
             } else {
                 mapLayer.setUri(baseUri);
@@ -737,39 +783,40 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
         }
     }
 
-    private String formatSld(String sld, String layername, String min_minus_one, String min, String max, String max_plus_one) {
-        return sld.replace(SUB_LAYERNAME, layername).replace(SUB_MIN_MINUS_ONE, min_minus_one).replace(SUB_MIN, min).replace(SUB_MAX_PLUS_ONE, max_plus_one);
+    private String formatSld(String sld, String layername, String minMinusOne, String min, String maxPlusOne) {
+        return sld.replace(SUB_LAYERNAME, layername).replace(SUB_MIN_MINUS_ONE, minMinusOne).replace(SUB_MIN, min).replace(SUB_MAX_PLUS_ONE, maxPlusOne);
     }
 
     public Integer getClassificationGroupCount(String pid) {
         Integer i = 0;
-        String url = CommonData.satServer + "/output/aloc/" + pid + "/classification_means.csv";
+        String url = CommonData.getSatServer() + "/output/aloc/" + pid + "/classification_means.csv";
         try {
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(url);
 
-            get.addRequestHeader("Accept", "text/plain");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.TEXT_PLAIN);
 
-            int result = client.executeMethod(get);
+            client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
             String[] s = slist.split("\n");
             i = s.length - 1;
         } catch (Exception e) {
-            logger.error("error getting classification group counts:" + url, e);
+            LOGGER.error("error getting classification group counts:" + url, e);
         }
         return i;
     }
 
     public void onClick$btnAnimationStart(Event event) {
-        Integer monthOrYear = 0; //0=month, 1=year
+        //0=month, 1=year
+        Integer monthOrYear = 0;
 
         if ("1".equals(cbAnimationDenomination.getValue()) || "Year".equalsIgnoreCase(cbAnimationDenomination.getValue())) {
             monthOrYear = 1;
         }
 
-        logger.debug("Animation: " + monthOrYear);
+        LOGGER.debug("Animation: " + monthOrYear);
 
         Integer step = 1;
         if (monthOrYear != 0) {
@@ -797,7 +844,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 + start + ","
                 + end + ","
                 + step + ");";
-        logger.debug("Script: " + script);
+        LOGGER.debug("Script: " + script);
 
         getMapComposer().getOpenLayersJavascript().execute(script);
 
@@ -821,13 +868,13 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
         }
 
         Query q = mapLayer.getSpeciesQuery();
-        if (q != null && q instanceof BiocacheQuery) {
+        if (q instanceof BiocacheQuery) {
             Integer firstYear = mapLayer.getFirstYear();
             Integer lastYear = mapLayer.getLastYear();
             if (firstYear == null) {
                 try {
-                    LegendObject lo = q.getLegend("occurrence_year");
-                    if (lo != null && lo.getMinMax() != null) {
+                    LegendObject lo = q.getLegend(StringConstants.OCCURRENCE_YEAR);
+                    if (lo != null && lo.getMinMax().length > 0) {
                         firstYear = (int) lo.getMinMax()[0];
                         lastYear = (int) lo.getMinMax()[1];
                         mapLayer.setFirstYear(firstYear);
@@ -849,7 +896,6 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             }
 
             if (firstYear != null && firstYear < lastYear) {
-                //lblAnimationLabel.setValue("years " + firstYear + " to " + lastYear);
                 intAnimationYearStart.setValue(firstYear);
                 intAnimationYearEnd.setValue(lastYear);
                 divAnimation.setVisible(true);

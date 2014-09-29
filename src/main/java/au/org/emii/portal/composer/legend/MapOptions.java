@@ -9,7 +9,7 @@ import org.zkoss.zul.Radiogroup;
  */
 public class MapOptions extends UtilityComposer {
 
-    Radiogroup rgBaseMap;
+    private Radiogroup rgBaseMap;
 
     @Override
     public void afterCompose() {

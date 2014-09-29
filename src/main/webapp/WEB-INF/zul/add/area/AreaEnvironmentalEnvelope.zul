@@ -50,33 +50,33 @@
             <button class="btn-small" id="btnClearSelection" label="Clear layers"  />
             </div>
 
-            <div id="popup_continous" visible="false" width="100%" >
+            <div id="popupContinous" visible="false" width="100%" >
 
                                         <label sclass="word-wrap"
                                                    style="white-space: normal; font-weight:bold"
-                                                   value="edit envelope for this layer" id="label_continous"
+                                                   value="edit envelope for this layer" id="labelContinous"
                                                    multiline="true"/>
 
                                         <vbox width="100%">
                                             <hbox>
                                                 <label value="Full layer extent"/>
-                                                <label id="popup_range"/>
+                                                <label id="popupRange"/>
                                             </hbox>
                                             <hbox>
-                                                <slider id="popup_slider_min" slidingtext="">
+                                                <slider id="popupSliderMin" slidingtext="">
                                                 </slider>
-                                                <doublebox id="popup_minimum" width="80px"></doublebox>
+                                                <doublebox id="popupMinimum" width="80px"></doublebox>
                                             </hbox>
 
                                             <hbox>
-                                                <slider id="popup_slider_max" slidingtext="">
+                                                <slider id="popupSliderMax" slidingtext="">
                                                 </slider>
-                                                <doublebox id="popup_maximum" width="80px"></doublebox>
-                                                <textbox id="popup_idx" visible="false"></textbox>
+                                                <doublebox id="popupMaximum" width="80px"></doublebox>
+                                                <textbox id="popupIdx" visible="false"></textbox>
                                             </hbox>
                                             <div class="btn-group">
-                                                <button class="btn-small" label="Update species count" id="apply_continous"  autodisable="self"/>
-                                                <button class="btn-small" label="Remove" id="remove_continous" />
+                                                <button class="btn-small" label="Update species count" id="applyContinous"  autodisable="self"/>
+                                                <button class="btn-small" label="Remove" id="removeContinous" />
                                             </div>
                                         </vbox>
                                     </div>
@@ -86,7 +86,7 @@
 
         <div class="btn-group" style="float:right;">
                                         <button label="Cancel" id="btnCancel" />
-                                        <button class="btn-primary" label="Next >" id="filter_done" disabled="false" autodisable="self" />
+                                        <button class="btn-primary" label="Next >" id="filterDone" disabled="false" autodisable="self" />
                                 </div>
 
     </window>

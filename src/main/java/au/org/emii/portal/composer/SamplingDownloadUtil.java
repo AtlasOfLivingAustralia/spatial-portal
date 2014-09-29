@@ -7,9 +7,9 @@
 package au.org.emii.portal.composer;
 
 import au.com.bytecode.opencsv.CSVReader;
-import au.org.ala.spatial.data.Query;
 import au.org.ala.spatial.sampling.Sampling;
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.Query;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import org.ala.layers.legend.QueryField;
@@ -26,23 +26,25 @@ import java.util.zip.ZipOutputStream;
 /**
  * @author a
  */
-public class SamplingDownloadUtil {
-    private static Logger logger = Logger.getLogger(SamplingDownloadUtil.class);
+public final class SamplingDownloadUtil {
+    private static final Logger LOGGER = Logger.getLogger(SamplingDownloadUtil.class);
+
+    private SamplingDownloadUtil() {
+        //to hide public constructor
+    }
 
     public static void downloadSecond(MapComposer mc, Query downloadSecondQuery, String[] downloadSecondLayers) {
-        logger.debug("attempting to sample biocache records with analysis layers: " + downloadSecondQuery);
+        LOGGER.debug("attempting to sample biocache records with analysis layers: " + downloadSecondQuery);
         if (downloadSecondQuery != null) {
             try {
-                ArrayList<QueryField> fields = new ArrayList<QueryField>();
+                List<QueryField> fields = new ArrayList<QueryField>();
                 fields.add(new QueryField(downloadSecondQuery.getRecordIdFieldName()));
                 fields.add(new QueryField(downloadSecondQuery.getRecordLongitudeFieldName()));
                 fields.add(new QueryField(downloadSecondQuery.getRecordLatitudeFieldName()));
 
                 String results = downloadSecondQuery.sample(fields);
 
-                if (results == null) {
-                    //TODO: fail nicely
-                } else {
+                if (results != null) {
                     CSVReader csvreader = new CSVReader(new StringReader(results));
                     List<String[]> csv = csvreader.readAll();
                     csvreader.close();
@@ -72,7 +74,7 @@ public class SamplingDownloadUtil {
                         p[i / 2][1] = points[i + 1];
                     }
 
-                    ArrayList<String> layers = new ArrayList<String>();
+                    List<String> layers = new ArrayList<String>();
                     StringBuilder sb = new StringBuilder();
                     sb.append("id,longitude,latitude");
                     for (String layer : downloadSecondLayers) {
@@ -95,7 +97,7 @@ public class SamplingDownloadUtil {
                     }
                     List<String[]> sample = Sampling.sampling(layers, p);
 
-                    if (sample.size() > 0) {
+                    if (!sample.isEmpty()) {
                         for (int j = 0; j < sample.get(0).length; j++) {
                             sb.append("\n");
                             sb.append(ids[j]).append(",").append(p[j][0]).append(",").append(p[j][1]);
@@ -115,10 +117,10 @@ public class SamplingDownloadUtil {
 
                     Filedownload.save(baos.toByteArray(), "application/zip", "analysis_output_intersect.zip");
 
-                    downloadSecondQuery = null;
+
                 }
             } catch (Exception e) {
-                logger.error("error downloading samping records", e);
+                LOGGER.error("error downloading samping records", e);
             }
         }
     }

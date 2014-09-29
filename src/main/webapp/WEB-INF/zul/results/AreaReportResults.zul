@@ -1,10 +1,11 @@
 <?page contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk> 
-    <window id="popup_results"
+    <window id="popupResults"
         apply="au.org.ala.spatial.composer.results.AreaReportController"
         use="au.org.ala.spatial.composer.results.AreaReportController"
         width="650px"
         style="overflow:visible"
+        sizable="true"
         xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -14,7 +15,7 @@
         <n:div class="fancybox-bg" id="fancybox-bg-e" />
         <n:div class="fancybox-bg" id="fancybox-bg-s" />
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
-        <a sclass="fancybox-close" onClick="popup_results.onClick$btnCancel(null)" style="display: inline" />
+        <a sclass="fancybox-close" onClick="popupResults.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp()" style="display: inline" />
         <caption id="cTitle" />
         <vbox>
@@ -26,9 +27,11 @@
             <!-- set up the columns widths -->
                 <columns visible="false"><!-- make it invisible -->
                     <column width="250px"/>
-                    <column width="100px"/>
+                    <column width="70px"/>
+                    <column width="70px"/>
+                    <column width="70px"/>
+                    <column width="70px"/>
                     <column width="150px"/>
-                    <column width="100px"/>
                 </columns>
             </grid>
             <separator />

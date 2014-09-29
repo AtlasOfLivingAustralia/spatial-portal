@@ -1,6 +1,7 @@
 package au.org.ala.spatial.sampling;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
@@ -11,6 +12,7 @@ import org.zkoss.zk.ui.Executions;
 
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -23,10 +25,14 @@ import java.util.zip.ZipInputStream;
  *
  * @author adam
  */
-public class Sampling {
-    private static Logger logger = Logger.getLogger(Sampling.class);
+public final class Sampling {
+    private static final Logger LOGGER = Logger.getLogger(Sampling.class);
 
-    public static ArrayList<String[]> sampling(ArrayList<String> facetIds, double[][] points) {
+    private Sampling() {
+        //to hide public constructor
+    }
+
+    public static List<String[]> sampling(List<String> facetIds, double[][] points) {
         //form request and get from layers-service
 
         //TODO: progress indicator
@@ -34,7 +40,7 @@ public class Sampling {
         try {
             HttpClient client = new HttpClient();
 
-            PostMethod post = new PostMethod(CommonData.layersServer + "/intersect/batch");
+            PostMethod post = new PostMethod(CommonData.getLayersServer() + "/intersect/batch");
 
             StringBuilder facets = new StringBuilder();
             for (String f : facetIds) {
@@ -55,15 +61,15 @@ public class Sampling {
             post.addParameter("fids", facets.toString());
             post.addParameter("points", coordinates.toString());
 
-            post.addRequestHeader("Content-type", "application/json");
+            post.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.APPLICATION_JSON);
 
-            int result = client.executeMethod(post);
+            client.executeMethod(post);
             JSONObject jo = JSONObject.fromObject(post.getResponseBodyAsString());
 
             String statusUrl = jo.getString("statusUrl");
 
             //wait until done, or until it fails
-            String downloadUrl = null;
+            String downloadUrl;
             int count = 0;
             while ((downloadUrl = getDownloadUrl(statusUrl)) != null) {
 
@@ -80,10 +86,10 @@ public class Sampling {
             }
 
         } catch (Exception e) {
-            logger.error("error with sampling", e);
+            LOGGER.error("error with sampling", e);
         }
 
-        return null;
+        return new ArrayList();
     }
 
     static String getDownloadUrl(String statusUrl) {
@@ -94,52 +100,52 @@ public class Sampling {
 
             GetMethod get = new GetMethod(statusUrl);
 
-            get.addRequestHeader("Content-type", "application/json");
+            get.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.APPLICATION_JSON);
 
-            int result = client.executeMethod(get);
+            client.executeMethod(get);
 
             JSONObject jo = JSONObject.fromObject(get.getResponseBodyAsString());
 
-            if (jo.getString("status").equals("finished")) {
+            if ("finished".equals(jo.getString(StringConstants.STATUS))) {
                 downloadUrl = jo.getString("downloadUrl");
             } else {
                 downloadUrl = "";
             }
         } catch (Exception e) {
-            logger.error("error getting response from : " + statusUrl, e);
+            LOGGER.error("error getting response from : " + statusUrl, e);
         }
 
         return downloadUrl;
     }
 
-    static ArrayList<String[]> getDownloadData(String downloadUrl, int number_of_points) {
-        ArrayList<String[]> output = new ArrayList<String[]>();
+    static List<String[]> getDownloadData(String downloadUrl, int numberOfPoints) {
+        List<String[]> output = new ArrayList<String[]>();
 
         try {
             HttpClient client = new HttpClient();
 
             GetMethod get = new GetMethod(downloadUrl);
 
-            get.addRequestHeader("Content-type", "application/zip");
+            get.addRequestHeader(StringConstants.CONTENT_TYPE, "application/zip");
 
-            int result = client.executeMethod(get);
+            client.executeMethod(get);
 
-            String s = null;
             try {
                 ZipInputStream zip = new ZipInputStream(get.getResponseBodyAsStream());
                 CSVReader csv = new CSVReader(new InputStreamReader(zip));
 
-                String[] line = csv.readNext(); //read first line
+                //read first line
+                String[] line = csv.readNext();
 
                 //setup
                 for (int i = 2; i < line.length; i++) {
-                    output.add(new String[number_of_points]);
+                    output.add(new String[numberOfPoints]);
                 }
 
                 int row = 0;
-                while ((line = csv.readNext()) != null && row < number_of_points) {
+                while ((line = csv.readNext()) != null && row < numberOfPoints) {
 
-                    for (int i = 2; i < line.length && i - 2 < output.size(); i++) {
+                    for (int i = 2; i - 2 < output.size() && i < line.length; i++) {
                         output.get(i - 2)[row] = line[i];
                     }
 
@@ -148,10 +154,10 @@ public class Sampling {
 
                 zip.close();
             } catch (Exception e) {
-                logger.error("failed to read zipped stream from: " + downloadUrl, e);
+                LOGGER.error("failed to read zipped stream from: " + downloadUrl, e);
             }
         } catch (Exception e) {
-            logger.error("error getting response from url: " + downloadUrl, e);
+            LOGGER.error("error getting response from url: " + downloadUrl, e);
         }
 
         return output;

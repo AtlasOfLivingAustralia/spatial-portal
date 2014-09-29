@@ -5,6 +5,7 @@
  */
 package au.org.ala.spatial.composer.quicklinks;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.composer.MapComposer;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -14,23 +15,22 @@ import org.zkoss.zk.ui.event.EventListener;
  */
 public class AddToMapEvent implements EventListener {
 
-    String type;
-    MapComposer mc;
+    private String type;
 
-    public AddToMapEvent(MapComposer mc, String type) {
-        this.mc = mc;
+    public AddToMapEvent(String type) {
         this.type = type;
     }
 
     @Override
     public void onEvent(Event event) throws Exception {
-        if (type.equals("species")) {
+        MapComposer mc = (MapComposer) event.getPage().getFellow(StringConstants.MAPPORTALPAGE);
+        if (StringConstants.SPECIES.equals(type)) {
             mc.onClick$btnAddSpecies(null);
-        } else if (type.equals("area")) {
+        } else if (StringConstants.AREA.equals(type)) {
             mc.onClick$btnAddArea(null);
-        } else if (type.equals("layer")) {
+        } else if (StringConstants.LAYER.equals(type)) {
             mc.onClick$btnAddLayer(null);
-        } else if (type.equals("facet")) {
+        } else if (StringConstants.FACET.equals(type)) {
             mc.onClick$btnAddFacet(null);
         }
     }

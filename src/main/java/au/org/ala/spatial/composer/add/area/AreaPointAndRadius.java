@@ -1,10 +1,10 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.menu.MapLayer;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
@@ -16,18 +16,17 @@ import org.zkoss.zul.Textbox;
  */
 public class AreaPointAndRadius extends AreaToolComposer {
 
-    private static Logger logger = Logger.getLogger(AreaPointAndRadius.class);
+    private static final Logger LOGGER = Logger.getLogger(AreaPointAndRadius.class);
+    private Textbox txtLayerName;
+    private Button btnNext;
+    private Button btnClear;
     private Textbox displayGeom;
-    //String layerName;
-    Textbox txtLayerName;
-    Button btnNext;
-    Button btnClear;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang(StringConstants.DEFAULT_AREA_LAYER_NAME)));
     }
 
     public void onClick$btnNext(Event event) {
@@ -46,7 +45,7 @@ public class AreaPointAndRadius extends AreaToolComposer {
             mc.removeLayer(layerName);
         }
         String script = mc.getOpenLayersJavascript().addRadiusDrawingTool();
-        mc.getOpenLayersJavascript().execute(OpenLayersJavascript.iFrameReferences + script);
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().getIFrameReferences() + script);
         displayGeom.setText("");
         btnNext.setDisabled(true);
         btnClear.setDisabled(true);
@@ -69,9 +68,8 @@ public class AreaPointAndRadius extends AreaToolComposer {
         try {
 
             String wkt = "";
-            if (selectionGeom.contains("NaN NaN")) {
+            if (selectionGeom.contains(StringConstants.NAN_NAN)) {
                 displayGeom.setValue("");
-                //  lastTool = null;
             } else if (selectionGeom.startsWith("LAYER(")) {
                 //get WKT from this feature
                 String v = selectionGeom.replace("LAYER(", "");
@@ -93,14 +91,14 @@ public class AreaPointAndRadius extends AreaToolComposer {
                 layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
                 MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
 
-                mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadataForWKT(CommonData.lang("metadata_point_and_radius"), wkt));
+                mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadataForWKT(CommonData.lang(StringConstants.METADATA_POINT_AND_RADIUS), wkt));
             }
 
             btnNext.setDisabled(false);
             btnClear.setDisabled(false);
 
         } catch (Exception e) {
-            logger.error("error mapping point and radius", e);
+            LOGGER.error("error mapping point and radius", e);
         }
     }
 }

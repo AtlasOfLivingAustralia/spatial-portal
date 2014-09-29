@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk xmlns="http://www.zkoss.org/2005/zul">
+    <window id="addtoolwindow"  use="au.org.ala.spatial.composer.tool.PointGenerationComposer"
+    apply="au.org.ala.spatial.composer.tool.PointGenerationComposer" width="550px" height="300px" style="overflow:visible"
+    xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="addtoolwindow.onClick$btnCancel(null)" style="display: inline" />
+        <n:a class="fancybox-help" n:onClick="loadHelp('area-report-tools')" style="display: inline" />
+        <caption id="cTitle" />
+        <separator />
+        <hbox>
+            <vbox >
+                <grid width="150px">
+                <columns>
+                 <column width="120px"/>
+                        <column />
+                </columns>
+                <rows>
+                       <row>
+                            <label id="lblStep1" style="font-weight:bold" value="1. Select Area"/>
+                            <html id="imgCompletedStep1" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
+                       </row>
+                       <row>
+                            <label id="lblStep2" value="2. Set resolution and layer name"/>
+                            <html id="imgCompletedStep2" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
+                       </row>
+                    </rows>
+                  </grid>
+            </vbox>
+            <vbox  >
+                <div id="atstep1" visible="true" zclass="first optional" sclass="atstep" style="padding:5px;" >
+                    <label id="atstep1_desc" value="Select area" />
+                    <label id="atstep1_label" value="" />
+                    <separator />
+                    <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true" style="height:220px;overflow:scroll;" >
+                        <radio id="rAreaCurrent" label="Current extent" value="current" />
+                        <radio id="rAreaAustralia" label="Australia" value="australia" />
+                        <radio id="rAreaWorld" label="World" value="world" />
+                    </radiogroup>
+                </div>
+                <div id="atstep2" visible="false" zclass="optinal last" sclass="atstep" style="padding:5px;" >
+                    <label id="atstep2_desc" value="Enter resolution and layer name" />
+                    <label id="atstep2_label" value="" />
+                    <separator />
+                    <hbox>
+                        <label value="Enter resolution (e.g. 0.5)"/><doublebox id="resolution" value="0.2" />
+                    </hbox>
+                    <separator />
+                    <hbox>
+                        <label value="Enter layer name"/><textbox id="tToolName" width="250px" onOK="addtoolwindow.onClick$btnOk(null)"/>
+                    </hbox>
+                </div>
+            </vbox>
+            <separator/>
+             <div class="btn-group" style="position:absolute;right:10px;bottom:10px">
+                    <button label="Cancel" id="btnCancel" />
+                    <button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self" />
+            </div>
+        </hbox>
+    </window>
+</zk>

@@ -9,34 +9,28 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.value.BoundingBox;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
-
-import java.util.Properties;
 
 /**
  * @author geoff
  */
 public class PortalSessionUtilities {
-
-    private static Logger logger = Logger.getLogger(PortalSessionUtilities.class);
-
-    private LanguagePack languagePack = null;
-    private Settings settings = null;
     /**
      * Enumeration IDs as used in the config file xml schema - to allow
      * conversion between strings used in config file and ints used at runtime
      */
-    private final static String LAYER_TAB = "LAYER";
-    private final static String LINK_TAB = "LINK";
-    private final static String SEARCH_TAB = "SEARCH";
-    private final static String AREA_TAB = "AREA";
-    private final static String MAP_TAB = "MAP";
-    private final static String START_TAB = "START";
-    private final static String LAYER_FACILITY_TAB = "FACILITY";
-    private final static String LAYER_REGION_TAB = "REGION";
-    private final static String LAYER_REALTIME_TAB = "REALTIME";
-    private final static String LAYER_USER_TAB = "USER";
+    private static final String LAYER_TAB = "LAYER";
+    private static final String LINK_TAB = "LINK";
+    private static final String SEARCH_TAB = "SEARCH";
+    private static final String AREA_TAB = "AREA";
+    private static final String MAP_TAB = "MAP";
+    private static final String START_TAB = "START";
+    private static final String LAYER_FACILITY_TAB = "FACILITY";
+    private static final String LAYER_REGION_TAB = "REGION";
+    private static final String LAYER_REALTIME_TAB = "REALTIME";
+    private static final String LAYER_USER_TAB = "USER";
+    private LanguagePack languagePack = null;
+    private Settings settings = null;
 
     public MapLayer getUserDefinedById(PortalSession portalSession, String id) {
         for (MapLayer map : portalSession.getUserDefinedLayers()) {

@@ -1,11 +1,13 @@
 package au.org.ala.spatial.composer.quicklinks;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.util.LayerUtilities;
-import org.apache.log4j.Logger;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.zkoss.zhtml.Li;
 import org.zkoss.zhtml.Ul;
+import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.A;
 import org.zkoss.zul.Vbox;
 
@@ -17,17 +19,27 @@ import java.util.List;
  */
 public class ContextualMenu extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(ContextualMenu.class);
+    private Vbox contents;
 
+    @Override
+    public void afterCompose() {
+        super.afterCompose();
 
-    Vbox contents;
+        getMapComposer().setContextualMenuRefreshListener(new EventListener() {
+
+            @Override
+            public void onEvent(Event event) throws Exception {
+                refresh();
+            }
+        });
+    }
 
     public void refresh() {
         for (int i = contents.getChildren().size() - 1; i >= 0; i--) {
             contents.getChildren().get(i).detach();
         }
 
-        ArrayList<Action> actions = getActions();
+        List<Action> actions = getActions();
 
         Ul ul = new Ul();
         ul.setStyle("margin:0px");
@@ -37,14 +49,14 @@ public class ContextualMenu extends UtilityComposer {
             Li li = new Li();
             li.setParent(ul);
             A a = new A(actions.get(i).label);
-            a.addEventListener("onClick", actions.get(i).eventListener);
+            a.addEventListener(StringConstants.ONCLICK, actions.get(i).eventListener);
             a.setParent(li);
         }
     }
 
-    ArrayList<Action> getActions() {
-        ArrayList<Action> actions = new ArrayList<Action>();
-        ArrayList<MapLayer> layers = getVisibleLayers();
+    List<Action> getActions() {
+        List<Action> actions = new ArrayList<Action>();
+        List<MapLayer> layers = getVisibleLayers();
 
         MapLayer speciesLayer = null;
         MapLayer polygonLayer = null;
@@ -53,7 +65,7 @@ public class ContextualMenu extends UtilityComposer {
         MapLayer firstLayer = null;
         for (int i = 0; i < layers.size() /*&& actions.size() < 5*/; i++) {
             if (layers.get(i).getSpeciesQuery() != null
-                    && layers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
+                    && layers.get(i).getSubType() != LayerUtilitiesImpl.SCATTERPLOT) {
                 if (speciesLayer == null) {
                     speciesLayer = layers.get(i);
                 }
@@ -61,7 +73,7 @@ public class ContextualMenu extends UtilityComposer {
                     firstLayer = layers.get(i);
                 }
             } else if (layers.get(i).isPolygonLayer()
-                    && layers.get(i).getSubType() != LayerUtilities.ALOC) {
+                    && layers.get(i).getSubType() != LayerUtilitiesImpl.ALOC) {
                 if (polygonLayer == null) {
                     polygonLayer = layers.get(i);
                 }
@@ -69,9 +81,9 @@ public class ContextualMenu extends UtilityComposer {
                     firstLayer = layers.get(i);
                 }
             } else if (layers.get(i).isGridLayer()
-                    && layers.get(i).getSubType() != LayerUtilities.MAXENT
-                    && layers.get(i).getSubType() != LayerUtilities.GDM
-                    && layers.get(i).getSubType() != LayerUtilities.ALOC) {
+                    && layers.get(i).getSubType() != LayerUtilitiesImpl.MAXENT
+                    && layers.get(i).getSubType() != LayerUtilitiesImpl.GDM
+                    && layers.get(i).getSubType() != LayerUtilitiesImpl.ALOC) {
                 //TODO: grid test
                 if (gridLayer == null) {
                     gridLayer = layers.get(i);
@@ -79,88 +91,89 @@ public class ContextualMenu extends UtilityComposer {
                 if (firstLayer == null) {
                     firstLayer = layers.get(i);
                 }
-            } else if (layers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
-                if (firstLayer == null) {
-                    firstLayer = layers.get(i);
-                }
+            } else if (layers.get(i).getSubType() != LayerUtilitiesImpl.SCATTERPLOT
+                    && firstLayer == null) {
+                firstLayer = layers.get(i);
             }
         }
 
         //actions rules
         if (polygonLayer != null) {
             actions.add(new Action("View area report for \"" + polygonLayer.getDisplayName() + "\"",
-                    new AreaReportEvent(getMapComposer(), polygonLayer.getName())));
+                    new AreaReportEvent(polygonLayer.getName())));
         }
         if (firstLayer != null) {
             actions.add(new Action("View metadata for \"" + firstLayer.getDisplayName() + "\"",
-                    new MetadataEvent(getMapComposer(), firstLayer.getName())));
+                    new MetadataEvent(firstLayer.getName())));
         }
         if (polygonLayer != null) {
             actions.add(new Action("Download species list for \"" + polygonLayer.getDisplayName() + "\"",
-                    new SpeciesListEvent(getMapComposer(), polygonLayer.getName())));
+                    new SpeciesListEvent(polygonLayer.getName())));
         }
         if (speciesLayer != null) {
             actions.add(new Action("Download all records for \"" + speciesLayer.getDisplayName() + "\""
-                    + ((polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : ""),
-                    new SamplingEvent(getMapComposer(), speciesLayer.getName(),
+                    + formatLayerName(polygonLayer),
+                    new SamplingEvent(speciesLayer.getName(),
                             (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         } else if (polygonLayer != null) {
             actions.add(new Action("Download all records "
-                    + ((polygonLayer != null) ? " for " + "\"" + polygonLayer.getDisplayName() + "\"" : ""),
-                    new SamplingEvent(getMapComposer(), null, polygonLayer.getName(), null)));
+                    + (" for " + "\"" + polygonLayer.getDisplayName() + "\""),
+                    new SamplingEvent(null, polygonLayer.getName(), null)));
         }
         if (polygonLayer != null) {
             actions.add(new Action("Generate classification for \"" + polygonLayer.getDisplayName() + "\"",
-                    new ClassificationEvent(getMapComposer(), polygonLayer.getName(), null)));
+                    new ClassificationEvent(polygonLayer.getName(), null)));
         }
         if (speciesLayer != null) {
             actions.add(new Action("Produce scatterplot for \"" + speciesLayer.getDisplayName() + "\""
-                    + ((polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : ""),
-                    new ScatterplotEvent(getMapComposer(), speciesLayer.getName(),
+                    + formatLayerName(polygonLayer),
+                    new ScatterplotEvent(speciesLayer.getName(),
                             (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         }
         if (speciesLayer != null) {
             actions.add(new Action("Generate prediction for \"" + speciesLayer.getDisplayName() + "\""
-                    + ((polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : ""),
-                    new PredictionEvent(getMapComposer(), speciesLayer.getName(),
+                    + formatLayerName(polygonLayer),
+                    new PredictionEvent(speciesLayer.getName(),
                             (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         }
         if (speciesLayer != null) {
             actions.add(new Action("Produce points to grid for \"" + speciesLayer.getDisplayName() + "\""
-                    + ((polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : ""),
-                    new SitesBySpeciesEvent(getMapComposer(), speciesLayer.getName(),
+                    + formatLayerName(polygonLayer),
+                    new SitesBySpeciesEvent(speciesLayer.getName(),
                             (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         }
         if (speciesLayer != null) {
             actions.add(new Action("Produce GDM using species \"" + speciesLayer.getDisplayName() + "\""
-                    + ((polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : ""),
-                    new GDMEvent(getMapComposer(), speciesLayer.getName(),
+                    + formatLayerName(polygonLayer),
+                    new GDMEvent(speciesLayer.getName(),
                             (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         }
         if (polygonLayer != null) {
             actions.add(new Action("Export area \"" + polygonLayer.getDisplayName() + "\"",
-                    new ExportAreaEvent(getMapComposer(), polygonLayer.getName())));
+                    new ExportAreaEvent(polygonLayer.getName())));
         }
-        if (speciesLayer != null
-                && (speciesLayer == getMapComposer().getActiveLayersSelection(false)
-                || (getMapComposer().getActiveLayersSelection(false) == null && layers != null && speciesLayer == layers.get(0)))) {
+        if (speciesLayer != null && speciesLayer == layers.get(0)) {
             actions.add(new Action("Display facet of \"" + speciesLayer.getDisplayName() + "\"",
-                    new OpenFacetsEvent(getMapComposer(), speciesLayer.getName())));
+                    new OpenFacetsEvent(speciesLayer.getName())));
         }
 
         //default actions
-        if (actions.size() == 0) {
-            actions.add(new Action("Map species occurrences", new AddToMapEvent(getMapComposer(), "species")));
-            actions.add(new Action("Map area", new AddToMapEvent(getMapComposer(), "area")));
-            actions.add(new Action("Map layer", new AddToMapEvent(getMapComposer(), "layer")));
-            actions.add(new Action("Map facet", new AddToMapEvent(getMapComposer(), "facet")));
+        if (actions.isEmpty()) {
+            actions.add(new Action("Map species occurrences", new AddToMapEvent(StringConstants.SPECIES)));
+            actions.add(new Action("Map area", new AddToMapEvent(StringConstants.AREA)));
+            actions.add(new Action("Map layer", new AddToMapEvent(StringConstants.LAYER)));
+            actions.add(new Action("Map facet", new AddToMapEvent(StringConstants.FACET)));
         }
 
         return actions;
     }
 
-    ArrayList<MapLayer> getVisibleLayers() {
-        ArrayList<MapLayer> list = new ArrayList<MapLayer>();
+    private String formatLayerName(MapLayer polygonLayer) {
+        return (polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : "";
+    }
+
+    List<MapLayer> getVisibleLayers() {
+        List<MapLayer> list = new ArrayList<MapLayer>();
         List<MapLayer> allLayers = getPortalSession().getActiveLayers();
         for (int i = 0; i < allLayers.size(); i++) {
             if (allLayers.get(i).isDisplayed()) {

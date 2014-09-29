@@ -4,7 +4,7 @@
     <window id="phylogeneticdiversityresultswindow" border="normal"
     use="au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults"
             apply="au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults"
-            width="400px"
+            width="750px"
             style="overflow:visible"
              xmlns:n="http://www.zkoss.org/2005/zk/native">
             <n:div class="fancybox-bg" id="fancybox-bg-ne" />
@@ -18,13 +18,22 @@
             <a sclass="fancybox-close" onClick="phylogeneticdiversityresultswindow.detach()" style="display: inline" />
 <caption label="Phylogenetic Diversity Results Preview" />
              <separator />
-            <label id="results_label" value=""/>
+            <label id="resultsLabel" value=""/>
             <separator />
             <separator />
-            <listbox id="popup_listbox_results" height="200px">
-                            <listhead id="popup_listbox_header" sizable="true" >
+            <listbox id="popupListboxResults" height="200px">
+                            <listhead id="treesHeader">
+                                    <listheader id="lh_treeViewUrl" label="" width="35px" />
+                                    <listheader id="lh_maxPd" label = "Max PD" hflex="min"/>
+                                    <listheader id="lh_group" label="Group" hflex="min"/>
+                                    <listheader id="lh_focalClade" label = "Focal Clade" hflex="min"/>
+                                    <listheader id="lh_numberOfLeaves" label = "# Leaves" hflex="min"/>
+                                    <listheader id="lh_studyName" label = "Study Name" width="200px"/>
 
-                            </listhead>
+                                    <listheader id="lh_studyId" label= "study ID" hflex="min"/>
+                                    <listheader id="lh_treeId" label="Tree ID" hflex="min"/>
+
+                                </listhead>
                         </listbox>
 
             <div class="btn-group">

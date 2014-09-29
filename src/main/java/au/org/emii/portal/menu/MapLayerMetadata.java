@@ -6,11 +6,6 @@ import java.util.List;
 public class MapLayerMetadata implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    public final static int EARLIEST_CONCATENATED = 0;
-    public final static int EARLIEST_ISO = 1;
-    public final static int LATEST_CONCATENATED = 2;
-    public final static int LATEST_ISO = 3;
-    private String units = null;
     private List<Double> bbox = null;
 
     private String moreInfo;
@@ -20,6 +15,14 @@ public class MapLayerMetadata implements Serializable {
 
     public List<Double> getBbox() {
         return bbox;
+    }
+
+    public void setBbox(List<Double> bbox) {
+        bbox.set(0, Math.max(-180.0, bbox.get(0)));
+        bbox.set(1, Math.max(-85.0, bbox.get(1)));
+        bbox.set(2, Math.min(180.0, bbox.get(2)));
+        bbox.set(3, Math.min(85.0, bbox.get(3)));
+        this.bbox = bbox;
     }
 
     public String getBboxString() {
@@ -33,14 +36,6 @@ public class MapLayerMetadata implements Serializable {
                 + bbox.get(1) + ","
                 + bbox.get(2) + ","
                 + bbox.get(3);
-    }
-
-    public void setBbox(List<Double> bbox) {
-        bbox.set(0, Math.max(-180.0, bbox.get(0)));
-        bbox.set(1, Math.max(-85.0, bbox.get(1)));
-        bbox.set(2, Math.min(180.0, bbox.get(2)));
-        bbox.set(3, Math.min(85.0, bbox.get(3)));
-        this.bbox = bbox;
     }
 
     public String getMoreInfo() {

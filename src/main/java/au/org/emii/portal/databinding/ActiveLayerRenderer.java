@@ -1,13 +1,13 @@
 package au.org.emii.portal.databinding;
 
-import au.org.emii.portal.composer.MapComposer;
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.event.*;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.springframework.beans.factory.annotation.Required;
-import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zul.*;
 
 public class ActiveLayerRenderer implements ListitemRenderer {
@@ -17,10 +17,10 @@ public class ActiveLayerRenderer implements ListitemRenderer {
     private VisibilityToggleEventListener visibilityToggleEventListener = null;
 
     @Override
-    public void render(Listitem item, Object data, int item_idx) throws Exception {
+    public void render(Listitem item, Object data, int itemIdx) throws Exception {
         final MapLayer layer = (MapLayer) data;
         Listcell listcell = new Listcell();
-        Checkbox checkbox = null;
+        Checkbox checkbox;
         /*
          * In the past it was assumed that we just set true here - this is not
          * the case because this method is called to re-render the list after
@@ -31,19 +31,11 @@ public class ActiveLayerRenderer implements ListitemRenderer {
         checkbox.setChecked(layer.isDisplayed());
         checkbox.setParent(listcell);
         checkbox.setTooltiptext("Hide");
-        if (layer.getType() != LayerUtilities.MAP) {
-            checkbox.addEventListener("onCheck", visibilityToggleEventListener);
-        } else {
+        if (layer.getType() == LayerUtilitiesImpl.MAP) {
             checkbox.setChecked(true);
-            checkbox.addEventListener("onCheck", new EventListener() {
-
-                @Override
-                public void onEvent(Event event) throws Exception {
-                    MapComposer mapComposer = (MapComposer) event.getPage().getFellow("mapPortalPage");
-                    mapComposer.toggleLayers(event);
-                }
-            });
         }
+        checkbox.addEventListener("onCheck", visibilityToggleEventListener);
+
         if (!layer.isRemoveable()) {
             checkbox.setStyle("float:left; visibility:hidden; ");
             checkbox.setDisabled(true);
@@ -51,13 +43,12 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 
         Label label = new Label(layer.getDisplayName());
         //do after legend
-        //label.setParent(listcell);
         listcell.setParent(item);
 
         // dnd list reordering support
         item.addEventListener("onDrop", new ActiveLayerDNDEventListener());
-        item.setDraggable("true");
-        item.setDroppable("true");
+        item.setDraggable(StringConstants.TRUE);
+        item.setDroppable(StringConstants.TRUE);
 
         // bind to the ActiveLayer instance (we readback later)
         item.setValue(layer);
@@ -65,11 +56,8 @@ public class ActiveLayerRenderer implements ListitemRenderer {
         // simple description for tooltip
         label.setTooltiptext(layer.getDescription());
 
-        //label.addEventListener("onClick", new ActiveLayersInfoEventListener());
-//        label.setStyle("float:left;");
-
         if (layer.isRemoveable()) {
-            checkbox.setStyle("float:left;");
+            checkbox.setStyle(StringConstants.FLOAT_LEFT);
         }
 
         /*
@@ -77,28 +65,28 @@ public class ActiveLayerRenderer implements ListitemRenderer {
          */
         if (layer.isRemoveable()) {
             Html remove = new Html(languagePack.getLang("layer_remove_icon_html"));
-            remove.addEventListener("onClick", new ActiveLayersRemoveEventListener());
+            remove.addEventListener(StringConstants.ONCLICK, new ActiveLayersRemoveEventListener());
             remove.setParent(listcell);
-            remove.setStyle("float:right;");
+            remove.setStyle(StringConstants.FLOAT_RIGHT);
             remove.setTooltiptext("remove layer");
         }
 
         Html info = new Html(languagePack.getLang("layer_info_icon_html"));
         info.setParent(listcell);
-        info.setStyle("float:right;");
+        info.setStyle(StringConstants.FLOAT_RIGHT);
         info.setTooltiptext("metadata");
-        info.addEventListener("onClick", new ActiveLayersInfoEventListener());
+        info.addEventListener(StringConstants.ONCLICK, new ActiveLayersInfoEventListener());
 
-        if (layer.getType() != LayerUtilities.MAP) {
+        if (layer.getType() != LayerUtilitiesImpl.MAP) {
             Html zoomextent = new Html(languagePack.getLang("layer_zoomextent_icon_html"));
             zoomextent.setParent(listcell);
             zoomextent.setStyle("float:right");
             zoomextent.setTooltiptext("zoom to extent");
-            zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
+            zoomextent.addEventListener(StringConstants.ONCLICK, new ActiveLayersZoomExtentEventListener());
         }
 
         //Set the legend graphic based on the layer type
-        Image legend = new Image();
+        Image legend;
         if (layer.isGridLayer()) {
             legend = new Image(languagePack.getLang("icon_grid"));
         } else if (layer.isSpeciesLayer()) {
@@ -112,14 +100,14 @@ public class ActiveLayerRenderer implements ListitemRenderer {
             legend = new Image(languagePack.getLang("layer_legend_icon"));
         }
 
-        legend.setStyle("float:left;");
+        legend.setStyle(StringConstants.FLOAT_LEFT);
         legend.setParent(listcell);
         legend.setTooltiptext("View/edit the legend");
-        legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
+        legend.addEventListener(StringConstants.ONCLICK, new ActiveLayersLegendEventListener());
         label.setParent(listcell);
 
         // adding buttons to basemap in layer list
-        if (layer.getType() == LayerUtilities.MAP) {
+        if (layer.getType() == LayerUtilitiesImpl.MAP) {
             //add select all or unselect all button or delete all buttons
             //NOTE: Objects created here are referenced by relative location in the listcell.
             //      Changes made here must also be made in MapComposer.adjustActiveLayersList
@@ -130,52 +118,24 @@ public class ActiveLayerRenderer implements ListitemRenderer {
             div.setStyle("float:right;margin-right:30px");
 
             Button b = new Button("Delete all");
-            b.setClass("btn-mini");
+            b.setClass(StringConstants.BTN_MINI);
             b.setParent(div);
             b.setVisible(false);
-            b.addEventListener("onClick", new EventListener() {
-
-                @Override
-                public void onEvent(Event event) throws Exception {
-                    Messagebox.show("All layers will be deleted, are you sure?", "Warning", Messagebox.OK | Messagebox.CANCEL, Messagebox.EXCLAMATION
-                            , new EventListener() {
-                        public void onEvent(Event evt) {
-                            switch (((Integer) evt.getData()).intValue()) {
-                                case Messagebox.OK:
-                                    ((MapComposer) evt.getPage().getFellow("mapPortalPage")).onClick$removeAllLayers();
-                                    break;
-                            }
-                        }
-                    });
-                }
-            });
+            b.addEventListener(StringConstants.ONCLICK, new ActiveLayersRemoveAll());
 
             b = new Button("Show all");
-            b.setClass("btn-mini");
+            b.setClass(StringConstants.BTN_MINI);
             b.setParent(div);
             b.setVisible(false);
-            b.addEventListener("onClick", new EventListener() {
+            b.addEventListener(StringConstants.ONCLICK, new VisibilityAllToggleEventListener(true));
 
-                @Override
-                public void onEvent(Event event) throws Exception {
-                    ((MapComposer) event.getPage().getFellow("mapPortalPage")).setLayersVisible(true);
-
-                }
-            });
             b = new Button("Hide all");
-            b.setClass("btn-mini");
+            b.setClass(StringConstants.BTN_MINI);
             b.setParent(div);
             b.setVisible(false);
-            b.addEventListener("onClick", new EventListener() {
+            b.addEventListener(StringConstants.ONCLICK, new VisibilityAllToggleEventListener(false));
 
-                @Override
-                public void onEvent(Event event) throws Exception {
-                    ((MapComposer) event.getPage().getFellow("mapPortalPage")).setLayersVisible(false);
-
-                }
-            });
-
-            ((MapComposer) listcell.getPage().getFellow("mapPortalPage")).adjustActiveLayersList();
+            new ActiveLayersAdjustEventListener().equals(new ForwardEvent("", legend, null));
         }
     }
 

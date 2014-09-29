@@ -5,68 +5,53 @@
  */
 package au.org.ala.spatial.composer.quicklinks;
 
-import au.org.ala.spatial.composer.tool.SpeciesListComposer;
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.composer.MapComposer;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author adam
  */
 public class SpeciesListEvent implements EventListener {
 
-    String polygonLayerName;
-    MapComposer mc;
-    int steps_to_skip;
-    boolean[] geospatialKosher;
-    boolean chooseEndemic = false;
-    String extraParams;
+    private String polygonLayerName;
+    private boolean[] geospatialKosher;
+    private boolean chooseEndemic = false;
+    private String extraParams;
 
-    public SpeciesListEvent(MapComposer mc, String polygonLayerName) {
-        this.mc = mc;
+    public SpeciesListEvent(String polygonLayerName) {
         this.polygonLayerName = polygonLayerName;
-        this.steps_to_skip = 0;
         this.geospatialKosher = null;
     }
 
-    public SpeciesListEvent(MapComposer mc, String polygonLayerName, int steps_to_skip, boolean[] geospatialKosher) {
-        this(mc, polygonLayerName, steps_to_skip, geospatialKosher, false);
-    }
-
-    public SpeciesListEvent(MapComposer mc, String polygonLayerName, int steps_to_skip, boolean[] geospatialKosher, boolean chooseEndemic) {
-        this(mc, polygonLayerName, steps_to_skip, geospatialKosher, chooseEndemic, null);
-    }
-
-    public SpeciesListEvent(MapComposer mc, String polygonLayerName, int steps_to_skip, boolean[] geospatialKosher, boolean chooseEndemic, String extraParams) {
-        this.mc = mc;
+    public SpeciesListEvent(String polygonLayerName, boolean[] geospatialKosher, boolean chooseEndemic, String extraParams) {
         this.polygonLayerName = polygonLayerName;
-        this.steps_to_skip = steps_to_skip;
-        this.geospatialKosher = geospatialKosher;
+        this.geospatialKosher = geospatialKosher.clone();
         this.chooseEndemic = chooseEndemic;
         this.extraParams = extraParams;
     }
 
     @Override
     public void onEvent(Event event) throws Exception {
-        Hashtable<String, Object> params = new Hashtable<String, Object>();
+        Map<String, Object> params = new HashMap<String, Object>();
         if (polygonLayerName != null) {
-            params.put("polygonLayerName", polygonLayerName);
+            params.put(StringConstants.POLYGON_LAYER_NAME, polygonLayerName);
         } else {
-            params.put("polygonLayerName", "none");
+            params.put(StringConstants.POLYGON_LAYER_NAME, StringConstants.NONE);
         }
         if (extraParams != null) {
-            params.put("extraParams", extraParams);
+            params.put(StringConstants.EXTRAPARAMS, extraParams);
         }
-        SpeciesListComposer window = (SpeciesListComposer) mc.openModal("WEB-INF/zul/tool/SpeciesList.zul", params, "addtoolwindow");
-        window.setGeospatialKosherCheckboxes(geospatialKosher);
-        window.setChooseEndemic(chooseEndemic);
+        if (geospatialKosher != null) {
+            params.put(StringConstants.GEOSPATIAL_KOSHER, geospatialKosher);
+        }
+        params.put(StringConstants.CHOOSEENDEMIC, chooseEndemic);
 
-        int skip = steps_to_skip;
-        while (skip > 0) {
-            window.onClick$btnOk(event);
-            skip--;
-        }
+        MapComposer mc = (MapComposer) event.getPage().getFellow(StringConstants.MAPPORTALPAGE);
+        mc.openModal("WEB-INF/zul/tool/SpeciesList.zul", params, StringConstants.ADDTOOLWINDOW);
     }
 }

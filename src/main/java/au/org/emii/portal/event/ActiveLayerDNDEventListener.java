@@ -1,6 +1,7 @@
 package au.org.emii.portal.event;
 
 import au.org.emii.portal.composer.MapComposer;
+import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.DropEvent;
 import org.zkoss.zk.ui.event.Event;
@@ -11,13 +12,14 @@ import org.zkoss.zul.Listitem;
  * @author geoff
  */
 public class ActiveLayerDNDEventListener extends PortalEvent implements EventListener {
+    private static final Logger LOGGER = Logger.getLogger(PortalEvent.class);
 
     @Override
     public void onEvent(Event event) throws Exception {
-        logger.debug("active layers item drop received");
+        LOGGER.debug("active layers item drop received");
         MapComposer mapComposer = getMapComposer(event);
         if (mapComposer != null && mapComposer.safeToPerformMapAction()) {
-            logger.debug("inside ActiveLayerDNDEventListener.onEvent()");
+            LOGGER.debug("inside ActiveLayerDNDEventListener.onEvent()");
 
             if (event instanceof DropEvent) {
                 DropEvent dragEvent = (DropEvent) event;
@@ -27,10 +29,10 @@ public class ActiveLayerDNDEventListener extends PortalEvent implements EventLis
                 if (eventType instanceof Listitem) {
                     reorderList(mapComposer, dragEvent);
                 } else {
-                    logger.debug("unsupported dnd event " + eventType.getClass().getName());
+                    LOGGER.debug("unsupported dnd event " + eventType.getClass().getName());
                 }
             } else {
-                logger.debug("event is not a DropEvent instance: " + event.getClass().getName());
+                LOGGER.debug("event is not a DropEvent instance: " + event.getClass().getName());
             }
         }
     }

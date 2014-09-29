@@ -4,9 +4,9 @@
  */
 package au.org.ala.spatial.composer.tool;
 
-import au.org.ala.spatial.data.*;
-import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.SelectedArea;
+import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.util.*;
+import au.org.emii.portal.menu.SelectedArea;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -15,24 +15,17 @@ import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Filedownload;
 
-import java.awt.geom.Rectangle2D;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * @author ajay
  */
 public class ScatterplotListComposer extends ToolComposer {
 
-    private static Logger logger = Logger.getLogger(ScatterplotListComposer.class);
+    private static final Logger LOGGER = Logger.getLogger(ScatterplotListComposer.class);
 
-
-    private static final String ACTIVE_AREA_SERIES = "In Active Area";
-    int generation_count = 1;
-    ScatterplotData data;
-    Checkbox chkShowEnvIntersection;
-    Boolean missing_data = false;
+    private Checkbox chkShowEnvIntersection;
 
     @Override
     public void afterCompose() {
@@ -42,7 +35,6 @@ public class ScatterplotListComposer extends ToolComposer {
         this.totalSteps = 5;
 
         this.setIncludeAnalysisLayersForAnyQuery(true);
-        //this.setIncludeAnalysisLayersForUploadQuery(true);
 
         this.loadAreaLayers("World");
         this.loadSpeciesLayers();
@@ -51,19 +43,19 @@ public class ScatterplotListComposer extends ToolComposer {
         this.loadSpeciesLayersBk();
         this.updateWindowTitle();
 
-        this.updateName(getMapComposer().getNextAreaLayerName("My Scatterplot"));
+        this.updateName(getMapComposer().getNextAreaLayerName(StringConstants.MY_SCATTERPLOT));
     }
 
     @Override
     public void onLastPanel() {
         super.onLastPanel();
-        this.updateName(getMapComposer().getNextAreaLayerName("My Scatterplot"));
+        this.updateName(getMapComposer().getNextAreaLayerName(StringConstants.MY_SCATTERPLOT));
     }
 
     @Override
     public boolean onFinish() {
-        logger.debug("Area: " + getSelectedArea());
-        logger.debug("Species: " + getSelectedSpecies());
+        LOGGER.debug("Area: " + getSelectedArea());
+        LOGGER.debug("Species: " + getSelectedSpecies());
 
         Query query = getSelectedSpecies();
         if (query == null) {
@@ -76,20 +68,16 @@ public class ScatterplotListComposer extends ToolComposer {
         SelectedArea highlightSa = getSelectedAreaHighlight();
         Query lsidQuery = QueryUtil.queryFromSelectedArea(lsid, filterSa, false, getGeospatialKosher());
 
-        String name = getSelectedSpeciesName();
-
         if (lsidQuery == null || lsidQuery.getOccurrenceCount() == 0) {
             getMapComposer().showMessage("No occurrences found for the selected species in the selected area.");
             return false;
         }
 
         String pid = "";
-        Rectangle2D.Double selection = null;
-        boolean enabled = true;
 
         Query backgroundLsid = getSelectedSpeciesBk();
         if (bgSearchSpeciesACComp.hasValidAnnotatedItemSelected()) {
-            backgroundLsid = bgSearchSpeciesACComp.getQuery(getMapComposer(), false, getGeospatialKosher());//QueryUtil.get((String) bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer(), false, getGeospatialKosher());
+            backgroundLsid = bgSearchSpeciesACComp.getQuery((Map) getMapComposer().getSession().getAttribute(StringConstants.USERPOINTS), false, getGeospatialKosher());
         }
 
         boolean envGrid = chkShowEnvIntersection.isChecked();
@@ -99,8 +87,6 @@ public class ScatterplotListComposer extends ToolComposer {
             backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false, getGeospatialKosherBk());
         }
 
-        ArrayList<ScatterplotData> datas = new ArrayList<ScatterplotData>();
-
         String sbenvsel = getSelectedLayers();
         String[] layers = sbenvsel.split(":");
         if (layers.length > 20) {
@@ -108,21 +94,21 @@ public class ScatterplotListComposer extends ToolComposer {
             return false;
         }
 
-        String layernames = "";
+        StringBuilder layernames = new StringBuilder();
         for (int i = 0; i < layers.length; i++) {
             if (layernames.length() > 0) {
-                layernames += ",";
+                layernames.append(",");
             }
-            layernames += "\"" + CommonData.getLayerDisplayName(layers[i]).replace("\"", "\"\"") + "\"";
+            layernames.append("\"").append(CommonData.getLayerDisplayName(layers[i]).replace("\"", "\"\"")).append("\"");
         }
 
         try {
             HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.satServer + "/ws/scatterplotlist");
+            PostMethod post = new PostMethod(CommonData.getSatServer() + "/ws/scatterplotlist");
 
             //add data parameters
             post.addParameter("layers", getSelectedLayers());
-            post.addParameter("layernames", layernames);
+            post.addParameter("layernames", layernames.toString());
             post.addParameter("foregroundOccurrencesQs", lsidQuery.getQ());
             post.addParameter("foregroundOccurrencesBs", lsidQuery.getBS());
             post.addParameter("foregroundName", lsidQuery.getName());
@@ -143,20 +129,20 @@ public class ScatterplotListComposer extends ToolComposer {
 
             //add style parameters (highlight area)
             if (highlightSa != null) {
-                post.addParameter("highlightWkt", highlightSa.getWkt());
+                post.addParameter(StringConstants.HIGHLIGHT_WKT, highlightSa.getWkt());
             }
 
-            post.addRequestHeader("Accept", "application/json");
+            post.addRequestHeader(StringConstants.ACCEPT, StringConstants.APPLICATION_JSON);
 
-            int result = client.executeMethod(post);
-            String has_id = post.getResponseBodyAsString();
+            client.executeMethod(post);
+            String hasId = post.getResponseBodyAsString();
 
-            JSONObject jo = JSONObject.fromObject(has_id);
+            JSONObject jo = JSONObject.fromObject(hasId);
 
             String htmlUrl = null;
             String downloadUrl = null;
-            if (jo.containsKey("id")) {
-                pid = jo.getString("id");
+            if (jo.containsKey(StringConstants.ID)) {
+                pid = jo.getString(StringConstants.ID);
             }
             if (jo.containsKey("htmlUrl")) {
                 htmlUrl = jo.getString("htmlUrl");
@@ -166,11 +152,11 @@ public class ScatterplotListComposer extends ToolComposer {
             }
 
             if (htmlUrl != null && downloadUrl != null) {
-                Events.echoEvent("openUrl", getMapComposer(), htmlUrl);
+                Events.echoEvent(StringConstants.OPEN_URL, getMapComposer(), htmlUrl);
                 try {
                     Filedownload.save(new URL(downloadUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip");
                 } catch (Exception e) {
-                    logger.error("error preparing download for scatterplot data", e);
+                    LOGGER.error("error preparing download for scatterplot data", e);
                 }
 
                 try {
@@ -178,9 +164,9 @@ public class ScatterplotListComposer extends ToolComposer {
                     if (highlightSa != null) {
                         extras += "highlight=" + highlightSa.getWkt();
                     }
-                    if (backgroundLsid != null && backgroundLsid instanceof BiocacheQuery) {
+                    if (backgroundLsid instanceof BiocacheQuery) {
                         extras += "background=" + ((BiocacheQuery) backgroundLsid).getLsids();
-                    } else if (backgroundLsid != null && backgroundLsid instanceof UserDataQuery) {
+                    } else if (backgroundLsid instanceof UserDataQuery) {
                         extras += "background=" + backgroundLsid.getQ();
                     } else {
                         extras += "background=none";
@@ -189,21 +175,21 @@ public class ScatterplotListComposer extends ToolComposer {
                     if (lsidQuery instanceof BiocacheQuery) {
                         BiocacheQuery bq = (BiocacheQuery) lsidQuery;
                         extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
-                        remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot List", filterSa.getWkt(), bq.getLsids(), sbenvsel, pid, extras, "SUCCESSFUL");
+                        remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot List", filterSa.getWkt(), bq.getLsids(), sbenvsel, pid, extras, StringConstants.SUCCESSFUL);
                     } else if (lsidQuery instanceof UserDataQuery) {
-                        remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot List", filterSa.getWkt(), lsidQuery.getQ(), sbenvsel, pid, extras, "SUCCESSFUL");
+                        remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot List", filterSa.getWkt(), lsidQuery.getQ(), sbenvsel, pid, extras, StringConstants.SUCCESSFUL);
                     } else {
-                        remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot List", filterSa.getWkt(), "", sbenvsel, pid, extras, "SUCCESSFUL");
+                        remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Scatterplot List", filterSa.getWkt(), "", sbenvsel, pid, extras, StringConstants.SUCCESSFUL);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOGGER.error("failed to produce a scatterplot list.", e);
                 }
             } else {
-                logger.error("failed to produce a scatterplot list.  response: " + jo);
+                LOGGER.error("failed to produce a scatterplot list.  response: " + jo);
             }
 
         } catch (Exception e) {
-            logger.error("error getting a new scatterplot id", e);
+            LOGGER.error("error getting a new scatterplot id", e);
         }
 
         this.detach();
@@ -228,7 +214,6 @@ public class ScatterplotListComposer extends ToolComposer {
                 rgAreaHighlight.setFocus(true);
                 break;
             case 4:
-                //cbLayer2.setFocus(true);
                 break;
             case 5:
                 if (rSpeciesSearchBk.isChecked()) {
@@ -240,6 +225,8 @@ public class ScatterplotListComposer extends ToolComposer {
             case 6:
                 tToolName.setFocus(true);
                 break;
+            default:
+                LOGGER.error("invalid step for ScatterplotListComposer: " + currentStep);
         }
     }
 }

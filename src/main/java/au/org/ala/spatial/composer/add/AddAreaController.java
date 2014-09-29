@@ -1,13 +1,13 @@
 package au.org.ala.spatial.composer.add;
 
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.tool.ToolComposer;
 import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.menu.MapLayer;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
@@ -25,12 +25,12 @@ import java.util.Map;
  */
 public class AddAreaController extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(AddAreaController.class);
+    private static final Logger LOGGER = Logger.getLogger(AddAreaController.class);
 
-    RemoteLogger remoteLogger;
-    Radiogroup cbAreaSelection;
-    Radio ciWKT, ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView, ciRadiusManualSelection, ciMergeAreas;
-    Button btnOk;
+    private RemoteLogger remoteLogger;
+    private Radiogroup cbAreaSelection;
+    private Radio ciWKT, ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView, ciRadiusManualSelection, ciMergeAreas;
+    private Button btnOk;
     private Map args;
 
     @Override
@@ -86,21 +86,21 @@ public class AddAreaController extends UtilityComposer {
             windowName = "WEB-INF/zul/add/area/AreaEnvironmentalEnvelope.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {
             String wkt = CommonData.AUSTRALIA_WKT;
-            String layerName = mc.getNextAreaLayerName(CommonData.lang("australia_bounding_box"));
+            String layerName = mc.getNextAreaLayerName(CommonData.lang(StringConstants.AUSTRALIA_BOUNDING_BOX));
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
-            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata(CommonData.lang("australia_bounding_box") + " " + wkt));
+            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata(CommonData.lang(StringConstants.AUSTRALIA_BOUNDING_BOX) + " " + wkt));
             remoteLogger.logMapArea(layerName, "Area - BoxAustralia", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
             String wkt = CommonData.WORLD_WKT;
-            String layerName = mc.getNextAreaLayerName(CommonData.lang("world_bounding_box"));
+            String layerName = mc.getNextAreaLayerName(CommonData.lang(StringConstants.WORLD_BOUNDING_BOX));
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
-            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata(CommonData.lang("world_bounding_box") + " " + wkt));
+            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata(CommonData.lang(StringConstants.WORLD_BOUNDING_BOX) + " " + wkt));
             remoteLogger.logMapArea(layerName, "Area - BoxWorld", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxCurrentView) {
             String wkt = mc.getMapComposer().getViewArea();
-            String layerName = mc.getNextAreaLayerName(CommonData.lang("current_view_area"));
+            String layerName = mc.getNextAreaLayerName(CommonData.lang(StringConstants.CURRENT_VIEW_AREA));
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
-            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata(CommonData.lang("current_view_area") + " " + wkt));
+            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata(CommonData.lang(StringConstants.CURRENT_VIEW_AREA) + " " + wkt));
             remoteLogger.logMapArea(layerName, "Area - BoxCurrentView", wkt);
         } else if (cbAreaSelection.getSelectedItem() == ciWKT) {
             windowName = "WEB-INF/zul/add/area/AreaWKT.zul";
@@ -108,8 +108,8 @@ public class AddAreaController extends UtilityComposer {
             windowName = "WEB-INF/zul/add/area/AreaMerge.zul";
             overlapped = false;
         }
-        if (!windowName.contentEquals("")) {
-            mc.getOpenLayersJavascript().execute(OpenLayersJavascript.iFrameReferences + script);
+        if (!windowName.isEmpty()) {
+            mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().getIFrameReferences() + script);
             Window window = (Window) Executions.createComponents(windowName, this.getParent(), args);
             try {
                 if (overlapped) {
@@ -118,26 +118,24 @@ public class AddAreaController extends UtilityComposer {
                     window.doModal();
                 }
             } catch (Exception e) {
-                logger.error("error opening window: " + windowName, e);
+                LOGGER.error("error opening window: " + windowName, e);
             }
-        } else if (this.getParent().getId().equals("addtoolwindow")) {
+        } else if (StringConstants.ADDTOOLWINDOW.equals(getParent().getId())) {
             ToolComposer analysisParent = (ToolComposer) this.getParent();
-            //analysisParent.hasCustomArea = true;
-            analysisParent.resetWindow(getMapComposer().getNextAreaLayerName("My Area"));
-        } else if (this.getParent().getId().equals("addfacetwindow")) {
+            analysisParent.resetWindow(getMapComposer().getNextAreaLayerName(StringConstants.MY_AREA));
+        } else if (StringConstants.ADDFACETWINDOW.equals(getParent().getId())) {
             AddFacetController analysisParent = (AddFacetController) this.getParent();
-            //analysisParent.hasCustomArea = true;
-            analysisParent.resetWindow(getMapComposer().getNextAreaLayerName("My Area"));
+            analysisParent.resetWindow(getMapComposer().getNextAreaLayerName(StringConstants.MY_AREA));
         }
 
         if (cbAreaSelection.getSelectedItem() != null) {
-            mc.setAttribute("addareawindow", cbAreaSelection.getSelectedItem().getId());
+            mc.setAttribute(StringConstants.ADDAREAWINDOW, cbAreaSelection.getSelectedItem().getId());
         }
         this.detach();
     }
 
     public void onClick$btnCancel(Event event) {
-        if (this.getParent().getId().equals("addtoolwindow")) {
+        if (StringConstants.ADDTOOLWINDOW.equals(getParent().getId())) {
             ToolComposer analysisParent = (ToolComposer) this.getParent();
             analysisParent.resetWindow(null);
         }

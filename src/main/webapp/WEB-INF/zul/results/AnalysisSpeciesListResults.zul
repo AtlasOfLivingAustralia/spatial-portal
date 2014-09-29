@@ -18,14 +18,14 @@
             <a sclass="fancybox-close" onClick="specieslistresultswindow.detach()" style="display: inline" />
 <caption label="Species List Results Preview" />
              <separator />
-            <label id="results_label" value=""/>
+            <label id="resultsLabel" value=""/>
             <separator />
             <separator />
-            <listbox id="popup_listbox_results" height="400px">
+            <listbox id="popupListboxResults" height="400px">
                             <listhead sizable="true" >
-                                <listheader label="Species" />
-                                <listheader label="Species Name" />
+                                <listheader label="LSID" visible="false" />
                                 <listheader label="Scientific Name" />
+                                <listheader label="Taxon Concept" />
                                 <listheader label="Taxon Rank" />
                                 <listheader label="Kingdom" />
                                 <listheader label="Phylum" />

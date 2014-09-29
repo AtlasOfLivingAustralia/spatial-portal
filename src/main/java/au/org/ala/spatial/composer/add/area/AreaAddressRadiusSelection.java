@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
 import au.org.ala.spatial.util.Util;
@@ -22,15 +23,14 @@ import java.net.URLEncoder;
  */
 public class AreaAddressRadiusSelection extends AreaToolComposer {
 
-    private static Logger logger = Logger.getLogger(AreaAddressRadiusSelection.class);
-
+    private static final Logger LOGGER = Logger.getLogger(AreaAddressRadiusSelection.class);
+    private Doublebox dRadius;
+    private Label addressLabel;
+    private Textbox txtLayerName;
+    private Button btnOk;
+    private Button btnClear;
     private Textbox addressBox;
-    Doublebox dRadius;
-    Label addressLabel;
     private Textbox displayGeom;
-    Textbox txtLayerName;
-    Button btnOk;
-    Button btnClear;
     private double longitude;
     private double latitude;
 
@@ -39,7 +39,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
         super.afterCompose();
         dRadius.setDisabled(true);
         btnOk.setDisabled(true);
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang(StringConstants.DEFAULT_AREA_LAYER_NAME)));
     }
 
     public void onClick$btnOk(Event event) {
@@ -56,15 +56,12 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
     }
 
     public void onClick$btnCancel(Event event) {
-        MapComposer mc = getMapComposer();
         this.detach();
     }
 
     public void createRadiusFromAddress() {
         String wkt = radiusFromAddress(addressBox.getText());
-        if (wkt.contentEquals("none")) {
-            return;
-        } else {
+        if (!StringConstants.NONE.equalsIgnoreCase(wkt)) {
             try {
                 MapComposer mc = getMapComposer();
                 layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
@@ -76,23 +73,23 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
 
                 displayGeom.setText(wkt);
             } catch (Exception e) {
-                logger.error("Error adding WKT layer");
+                LOGGER.error("Error adding WKT layer");
             }
         }
     }
 
     public String findAddressLine(String text) throws Exception {
-        String url = "http://maps.google.com/maps/api/geocode/json?components=locality&sensor=false&address=" + URLEncoder.encode(text, "UTF-8");
+        String url = StringConstants.GOOGLE_ADDRESS_LINE + URLEncoder.encode(text, StringConstants.UTF_8);
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = mapper.readTree(new URL(url));
-        return node.get("results").get(0).get("formatted_address").getTextValue();
+        return node.get(StringConstants.RESULTS).get(0).get(StringConstants.FORMATTED_ADDRESS).getTextValue();
     }
 
     public double[] findAddressLatLng(String text) throws Exception {
-        String url = "http://maps.google.com/maps/api/geocode/json?components=locality&sensor=false&address=" + URLEncoder.encode(text, "UTF-8");
+        String url = StringConstants.GOOGLE_ADDRESS_LINE + URLEncoder.encode(text, StringConstants.UTF_8);
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = mapper.readTree(new URL(url));
-        JsonNode latLngNode = node.get("results").get(0).get("geometry").get("location");
+        JsonNode latLngNode = node.get(StringConstants.RESULTS).get(0).get(StringConstants.GEOMETRY).get(StringConstants.LOCATION);
         return new double[]{
                 latLngNode.get("lat").getDoubleValue(),
                 latLngNode.get("lng").getDoubleValue()
@@ -107,7 +104,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
             dRadius.setDisabled(false);
             btnOk.setDisabled(false);
         } catch (Exception e) {
-            logger.error("error finding address: " + address, e);
+            LOGGER.error("error finding address: " + address, e);
         }
     }
 
@@ -117,7 +114,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
             double radius = dRadius.getValue() * 1000.0;
             return Util.createCircleJs(latlng[1], latlng[0], radius);
         } catch (Exception ge) {
-            return "none";
+            return StringConstants.NONE;
         }
     }
 
@@ -126,7 +123,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
 
         double radius = dRadius.getValue();
         if (radius <= 0) {
-            sb.append("\n" + CommonData.lang("error_msg_radius_0"));
+            sb.append("\n").append(CommonData.lang(StringConstants.ERROR_MESSAGE_RADIUS_0));
         }
 
         if (sb.length() > 0) {

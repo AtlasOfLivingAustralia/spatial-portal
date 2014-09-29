@@ -4,7 +4,7 @@
  */
 package au.org.emii.portal.lang;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -38,6 +38,6 @@ public interface LanguagePack {
      */
     String getLang(String key);
 
-    HashMap<String, String> getLangMap();
+    Map<String, String> getLangMap();
 
 }

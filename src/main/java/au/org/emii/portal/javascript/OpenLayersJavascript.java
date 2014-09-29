@@ -5,7 +5,6 @@
 package au.org.emii.portal.javascript;
 
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.value.BoundingBox;
 
 import java.util.List;
@@ -23,9 +22,7 @@ public interface OpenLayersJavascript {
      * findbugs reports this but I'm willing to sacrifice a small amount of
      * memory rather than refactor this code to use getters.
      */
-    public static final String iFrameReferences = "var safeToProceed=true; " + "if (mapLayers == null) {" + "\tmapLayers = window.mapFrame.mapLayers; " + "} " + "if (map == null) {" + "\tmap = window.mapFrame.map; " + "} " + "if (OpenLayers == null) {" + "\tOpenLayers = window.mapFrame.OpenLayers; " + "} " + "if (baseLayers == null) {" + "\tbaseLayers = window.mapFrame.baseLayers; " + "} " + "if (currentBaseLayer == null) {" + "\tcurrentBaseLayer = window.mapFrame.currentBaseLayer; " + "} " + "if (currentBaseLayer == null) {" + "\tcurrentBaseLayer = window.mapFrame.currentBaseLayer; " + "} " + "if (registerLayer == null) {" + "\tregisterLayer = window.mapFrame.registerLayer; " + "} " + "if (\t(mapLayers == null) || " + "\t\t(map == null) || " + "\t\t(OpenLayers == null) || " + "\t\t(baseLayers == null)) { " + "\tsafeToProceed=false;" + "\talert(\'map subsystem is not fully loaded yet - this operation will fail\');" + "} ";
-    public static final String safeToProceedClose = "} ";
-    public static final String safeToProceedOpen = "if (safeToProceed) { ";
+    String getIFrameReferences();
 
     /**
      * appends any additional scripts to the execute function
@@ -33,13 +30,9 @@ public interface OpenLayersJavascript {
      * @param additionalScript
      * @return
      */
-    public void setAdditionalScript(String additionalScript);
+    void setAdditionalScript(String additionalScript);
 
-    public String getAdditionalScript();
-
-    public void useAdditionalScript();
-
-    public String activateMapLayer(MapLayer mapLayer);
+    void useAdditionalScript();
 
     /**
      * Activate a map layer described by the passed in Layer instance. If the id
@@ -49,14 +42,14 @@ public interface OpenLayersJavascript {
      * @param mapLayer
      * @return
      */
-    public String activateMapLayer(MapLayer mapLayer, boolean recursive, boolean alternativeScript);
+    String activateMapLayer(MapLayer mapLayer, boolean recursive, boolean alternativeScript);
 
     /**
      * As activeateMapLayer but executes immediately
      *
      * @param layer
      */
-    public void activateMapLayerNow(MapLayer layer);
+    void activateMapLayerNow(MapLayer layer);
 
     /**
      * Activate all layers in the passed in list. As each layer will be
@@ -65,80 +58,34 @@ public interface OpenLayersJavascript {
      *
      * @return
      */
-    public String activateMapLayers(List<MapLayer> layers);
+    String activateMapLayers(List<MapLayer> layers);
 
-    /**
-     * As activateateMapLayers but with immediate execution
-     *
-     * @param layers
-     */
-    public void activateMapLayersNow(List<MapLayer> layers);
+    void removeLayer(MapLayer ml);
 
-    public void removeLayer(MapLayer ml);
+    void redrawFeatures(MapLayer selectedLayer);
 
-    public void redrawFeatures(MapLayer selectedLayer);
+    void redrawWKTFeatures(MapLayer selectedLayer);
 
-    public void redrawWKTFeatures(MapLayer selectedLayer);
+    String addBoxDrawingTool();
 
-    public String defineKMLMapLayer(MapLayer layer);
+    void zoomGeoJsonExtentNow(MapLayer ml);
 
-    public String defineGeoJSONMapLayer(MapLayer layer);
+    String zoomGeoJsonExtent(MapLayer ml);
 
-    public String defineWKTMapLayer(MapLayer layer);
-
-    public void zoomGeoJsonExtentNow(MapLayer layer);
-
-    public String zoomGeoJsonExtent(MapLayer layer);
-
-    public void addFeatureSelection();
-
-    public void zoomLayerExtent(MapLayer ml);
-
-    /**
-     * create an instance of OpenLayers.Layer.WMS.
-     * <p/>
-     * Base layers will be rendered differently and stored in the baseLayers
-     * associative array instead of the mapLayers associative array
-     *
-     * @param layer
-     * @return
-     */
-    public String defineWMSMapLayer(MapLayer layer);
+    void zoomLayerExtent(MapLayer ml);
 
     /**
      * Convenience wrapper around ZKs JavaScript execution system
      *
      * @param script
      */
-    public void execute(String script);
+    void execute(String script);
 
-    public String initialiseMap();
+    String initialiseMap(BoundingBox boundingBox);
 
-    public void initialiseMapNow();
+    boolean mapLoaded();
 
-    public void initialiseTransectDrawing(MapLayer mapLayer);
-
-    public boolean mapLoaded();
-
-    public String minify(String fragment);
-
-    /**
-     * Create a popup window
-     *
-     * @param uri
-     * @param title
-     * @return
-     */
-    public String popupWindow(String uri, String title);
-
-    /**
-     * Create a popup window immediately
-     *
-     * @param uri
-     * @param title
-     * @return
-     */
-    public void popupWindowNow(String uri, String title);
+    String minify(String fragment);
 
     /**
      * Convenience method to reload a map layer by removing it and then adding
@@ -147,45 +94,21 @@ public interface OpenLayersJavascript {
      * @param mapLayer
      * @return
      */
-    public String reloadMapLayer(MapLayer mapLayer);
+    String reloadMapLayer(MapLayer mapLayer);
 
     /**
      * Immediate execution of reloadMapLayer
      *
      * @param mapLayer
      */
-    public void reloadMapLayerNow(MapLayer mapLayer);
+    void reloadMapLayerNow(MapLayer mapLayer);
 
-    public String removeMapLayer(MapLayer layer);
-
-    /**
-     * Generate the code to remove a layer from the map and the array of layers
-     * - don't forget to scope your iFrameReferences first - see
-     * removeLayerNow()
-     *
-     * @param id
-     * @return
-     */
-    public String removeMapLayer(MapLayer layer, boolean recursive);
+    String removeMapLayer(MapLayer layer);
 
     /**
      * As removeLayer but execute immediately without returning any code
-     *
-     * @param id
      */
-    public void removeMapLayerNow(MapLayer mapLayer);
-
-    /**
-     * Set the opacity for the layer at the position key in the associative
-     * array of layers
-     *
-     * @param key
-     * @param percentage
-     * @return
-     */
-    public String setMapLayerOpacity(MapLayer mapLayer, float percentage);
-
-    public void setMapLayerOpacityNow(MapLayer mapLayer, float percentage);
+    void removeMapLayerNow(MapLayer mapLayer);
 
     /**
      * Ask OpenLayers to re-order the layers displayed in the associative array
@@ -200,66 +123,26 @@ public interface OpenLayersJavascript {
      *
      * @return
      */
-    public String updateMapLayerIndexes(List<MapLayer> activeLayers);
+    String updateMapLayerIndexes(List<MapLayer> activeLayers);
 
-    public void updateMapLayerIndexesNow(List<MapLayer> activeLayers);
+    void updateMapLayerIndexesNow(List<MapLayer> activeLayers);
 
-    public String wrapWithSafeToProceed(String script);
-
-    public String zoomToBoundingBox(BoundingBox boundingBox);
-
-    public void zoomToBoundingBoxNow(BoundingBox boundingBox);
-
-    public String zoomToBoundingBox(BoundingBox boundingBox, boolean closest);
-
-    public void zoomToBoundingBoxNow(BoundingBox boundingBox, boolean closest);
+    String zoomToBoundingBox(BoundingBox boundingBox, boolean closest);
 
     /**
      * Adds the openlayers polygon drawing tool to the map
      */
-    public String addPolygonDrawingTool();
+    String addPolygonDrawingTool();
 
     /**
      * Adds the radius drawing tool to the map
      */
-    public String addRadiusDrawingTool();
+    String addRadiusDrawingTool();
 
     /**
      * Adds the feature selection tool (for area) to the map
      */
-    public String addFeatureSelectionTool();
+    String addFeatureSelectionTool();
 
-    /**
-     * Copy for Sampling, ALOC, Filtering, Adds the openlayers polygon drawing
-     * tool to the map
-     */
-    public void addPolygonDrawingToolSampling();
-
-    public void addPolygonDrawingToolALOC();
-
-    public void addPolygonDrawingToolFiltering();
-
-    public void removePolygonSampling();
-
-    public void removePolygonALOC();
-
-    public void removePolygonFiltering();
-
-    public void removeAreaSelection();
-
-    /**
-     * Adds the openlayers box drawing tool to the map
-     */
-    public String addBoxDrawingTool();
-
-    /**
-     * Adds a geojson layer
-     *
-     * @param url the url of the json feature
-     */
-    public void addGeoJsonLayer(String url);
-
-    public String setBaseLayer(String baseLayer);
-
-    LayerUtilities getLayerUtilities();
+    String setBaseLayer(String baseLayer);
 }

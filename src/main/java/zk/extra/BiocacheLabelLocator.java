@@ -12,14 +12,14 @@ import java.util.Locale;
  * @author Natasha Carter (natasha.carter@csiro.au)
  */
 public class BiocacheLabelLocator implements org.zkoss.util.resource.LabelLocator {
-    private static Logger logger = Logger.getLogger(BiocacheLabelLocator.class);
+    private static final Logger LOGGER = Logger.getLogger(BiocacheLabelLocator.class);
 
     @Override
     public URL locate(Locale locale) throws Exception {
         // TODO Auto-generated method stub
-        String suffix = locale != null || isEnglish(locale) ? "" : locale + ".properties";
-        String url = CommonData.biocacheServer + "/facets/i18n" + suffix;
-        logger.debug("Retrieve BiocacheLocationURL for " + locale + " " + url);
+        String suffix = /*locale != null ||*/ isEnglish(locale) ? "" : locale + ".properties";
+        String url = CommonData.getBiocacheServer() + "/facets/i18n" + suffix;
+        LOGGER.debug("Retrieve BiocacheLocationURL for " + locale + " " + url);
         return new URL(url);
     }
 

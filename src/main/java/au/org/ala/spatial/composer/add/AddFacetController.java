@@ -1,16 +1,13 @@
 package au.org.ala.spatial.composer.add;
 
 import au.com.bytecode.opencsv.CSVReader;
-import au.org.ala.spatial.data.BiocacheQuery;
-import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.QueryUtil;
-import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.SelectedArea;
-import au.org.ala.spatial.util.Util;
+import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.util.*;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.menu.SelectedArea;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.ala.layers.legend.Facet;
 import org.ala.layers.legend.Legend;
 import org.ala.layers.legend.LegendObject;
@@ -27,60 +24,59 @@ import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.*;
 
 import java.io.StringReader;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class AddFacetController extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(AddFacetController.class);
-    String winTop = "300px";
-    String winLeft = "500px";
-    Map<String, Object> params;
-    int currentStep = 1, totalSteps = 2;
-    String selectedMethod = "";
-    Button btnCancel, btnOk, btnBack, clearSelection;
-    int SLIDER_MAX = 500;
-    String pid;
-    String imagePath = "";
-    public Listbox legend;
-    Button createInGroup;
-    List<String[]> legend_lines;
-    Doublebox dmin;
-    Doublebox dmax;
-    double minValue;
-    double maxValue;
-    double gMinValue;
-    double gMaxValue;
-    Label dlabel;
-    Div divContinous;
-    Checkbox dunknown;
-    Button dbutton;
-    boolean intContinous = false;
-    boolean isMonth = false;
-    boolean isNumber = false;
-    boolean disableselection = false;
-    HashMap<String, String> legend_facets = null;
-    Facet facet;
-    Div dCreateButtons;
-    Listheader lhFirstColumn;
-    Listheader lhSecondColumn;
-    Listheader lhThirdColumn;
-    Listheader lhFourthColumn;
-    Combobox cbColour;
-    boolean hasCustomArea = false;
-    Radiogroup rgArea, rgAreaHighlight, rgSpecies, rgSpeciesBk;
-    SelectedArea sa;
-    Query query;
-    Map map = new HashMap();
-    String colourmode;
-    boolean readonly = true;
-    boolean checkmarks = true;
-    MapComposer mc = getMapComposer();
-    Radio rAreaWorld, rAreaCustom, rAreaSelected, rAreaAustralia;
-    MapLayer prevTopArea = null;
-    Checkbox chkGeoKosherTrue, chkGeoKosherFalse;
-    LegendObject lo = null;
-    Checkbox cbContinousRange;
-    Label lblOccurrencesSelected;
+    private static final Logger LOGGER = Logger.getLogger(AddFacetController.class);
+    private double minValue;
+    private double maxValue;
+    private double gMinValue;
+    private double gMaxValue;
+    private Listbox legend;
+    private String winTop = "300px";
+    private String winLeft = "500px";
+    private Map<String, Object> params;
+    private int currentStep = 1, totalSteps = 2;
+    private String selectedMethod = "";
+    private Button btnCancel, btnOk, btnBack, clearSelection;
+    private int sliderMax = 500;
+    private Button createInGroup;
+    private List<String[]> legendLines;
+    private Doublebox dmin;
+    private Doublebox dmax;
+    private Label dlabel;
+    private Div divContinous;
+    private Checkbox dunknown;
+    private Button dbutton;
+    private boolean intContinous = false;
+    private boolean disableselection = false;
+    private Map<String, String> legendFacets = null;
+    private Facet facet;
+    private Div dCreateButtons;
+    private Listheader lhFirstColumn;
+    private Listheader lhSecondColumn;
+    private Listheader lhThirdColumn;
+    private Listheader lhFourthColumn;
+    private Combobox cbColour;
+    private boolean hasCustomArea = false;
+    private Radiogroup rgArea, rgAreaHighlight, rgSpecies, rgSpeciesBk;
+    private SelectedArea sa;
+    private Query query;
+    private Map map = new HashMap();
+    private String colourmode;
+    private boolean readonly = true;
+    private boolean checkmarks = true;
+    private MapComposer mc = getMapComposer();
+    private Radio rAreaWorld, rAreaCustom, rAreaSelected, rAreaAustralia;
+    private MapLayer prevTopArea = null;
+    private Checkbox chkGeoKosherTrue, chkGeoKosherFalse;
+    private LegendObject lo = null;
+    private Checkbox cbContinousRange;
+    private Label lblOccurrencesSelected;
 
     @Override
     public void afterCompose() {
@@ -88,12 +84,12 @@ public class AddFacetController extends UtilityComposer {
         winTop = this.getTop();
         winLeft = this.getLeft();
         setupDefaultParams();
-        HashMap<String, Object> tmp = new HashMap<String, Object>();
+        Map<String, Object> tmp = new HashMap<String, Object>();
         Map m = Executions.getCurrent().getArg();
         if (m != null) {
-            for (Object k : m.keySet()) {
-                if (k instanceof String) {
-                    tmp.put((String) k, m.get(k));
+            for (Object entry : m.entrySet()) {
+                if (((Map.Entry) entry).getKey() instanceof String) {
+                    tmp.put((String) ((Map.Entry) entry).getKey(), ((Map.Entry) entry).getValue());
                 }
             }
         }
@@ -126,19 +122,15 @@ public class AddFacetController extends UtilityComposer {
     }
 
     public void updateWindowTitle() {
-        ((Caption) getFellow("cTitle")).setLabel("Step " + currentStep + " of " + totalSteps + " - " + selectedMethod);
+        ((Caption) getFellow(StringConstants.CTITLE)).setLabel("Step " + currentStep + " of " + totalSteps + " - " + selectedMethod);
     }
 
     void fixFocus() {
-        switch (currentStep) {
-            case 1:
-                rgArea.setFocus(true);
-                rgArea.setSelectedItem(rAreaWorld);
-                break;
-            case 2:
-                cbColour.setFocus(true);
-                break;
-
+        if (currentStep == 1) {
+            rgArea.setFocus(true);
+            rgArea.setSelectedItem(rAreaWorld);
+        } else if (currentStep == 2) {
+            cbColour.setFocus(true);
         }
     }
 
@@ -148,10 +140,7 @@ public class AddFacetController extends UtilityComposer {
         }
         hasCustomArea = false;
         rAreaSelected = rgArea.getSelectedItem();
-        try {
-            rAreaSelected = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
-        } catch (Exception e) {
-        }
+
         if (rAreaSelected == rAreaCustom) {
             hasCustomArea = false;
         }
@@ -162,11 +151,11 @@ public class AddFacetController extends UtilityComposer {
         String area = rAreaSelected.getValue();
         SelectedArea selectedarea = null;
         try {
-            if (area.equals("current")) {
+            if (StringConstants.CURRENT.equals(area)) {
                 selectedarea = new SelectedArea(null, getMapComposer().getViewArea());
-            } else if (area.equals("australia")) {
+            } else if (StringConstants.AUSTRALIA.equals(area)) {
                 selectedarea = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
-            } else if (area.equals("world")) {
+            } else if (StringConstants.WORLD.equals(area)) {
                 selectedarea = new SelectedArea(null, CommonData.WORLD_WKT);
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
@@ -183,7 +172,7 @@ public class AddFacetController extends UtilityComposer {
                 }
             }
         } catch (Exception e) {
-            logger.error("Unable to retrieve selected area", e);
+            LOGGER.error("Unable to retrieve selected area", e);
         }
 
         return selectedarea;
@@ -194,34 +183,28 @@ public class AddFacetController extends UtilityComposer {
         try {
             lo = query.getLegend(colourmode);
         } catch (Exception e) {
-            logger.error("error getting legend: " + query.getFullQ(false) + " colourmode:" + colourmode, e);
+            LOGGER.error("error getting legend: " + query.getFullQ(false) + " colourmode:" + colourmode, e);
         }
 
-        map.put("colourmode", colourmode);
-
-        pid = (String) (Executions.getCurrent().getArg().get("pid"));
+        map.put(StringConstants.COLOURMODE, colourmode);
 
         buildLegend();
     }
 
     void buildLegend() {
         try {
-            String slist = null;
+            StringBuilder slist = new StringBuilder();
 
             if (query != null) {
-                if (colourmode.equals("grid")) {
-                    slist = "name,red,green,blue,count";
+                if (StringConstants.GRID.equals(colourmode)) {
+                    slist.append("name,red,green,blue,count");
                     for (int i = 0; i < 600; i += 100) {
-                        if (i == 1) {
-                            slist += ">";
-                        } else {
-                            slist += ">";
-                        }
+                        slist.append(">");
 
-                        slist += "\n" + i + "," + LegendObject.getRGB(Legend.getLinearColour(i, 0, 500, 0xFFFFFF00, 0xFFFF0000)) + ",";
+                        slist.append("\n").append(i).append(",").append(LegendObject.getRGB(Legend.getLinearColour(i, 0, 500, 0xFFFFFF00, 0xFFFF0000))).append(",");
                     }
                 } else {
-                    slist = query.getLegend(colourmode).getTable();
+                    slist.append(query.getLegend(colourmode).getTable());
                 }
             } else {
                 return;
@@ -229,12 +212,12 @@ public class AddFacetController extends UtilityComposer {
 
 
             try {
-                legend_lines = new CSVReader(new StringReader(slist)).readAll();
+                legendLines = new CSVReader(new StringReader(slist.toString())).readAll();
             } catch (Exception e) {
-                logger.error("failed to read legend list as csv", e);
+                LOGGER.error("failed to read legend list as csv", e);
             }
-            String[] first_line = legend_lines.get(0);
-            legend_lines.remove(0);
+
+            legendLines.remove(0);
 
             String h = "";
             facet = null;
@@ -242,22 +225,22 @@ public class AddFacetController extends UtilityComposer {
             divContinous.setVisible(false);
 
             //test for range (user upload)
-            if (legend_lines.size() > 1) {
-                String first = legend_lines.get(0)[0];
-                if (first == null || first.length() == 0 || first.startsWith("Unknown")) {
-                    first = legend_lines.get(1)[0];
+            if (legendLines.size() > 1) {
+                String first = legendLines.get(0)[0];
+                if (first == null || first.length() == 0 || first.startsWith(StringConstants.UNKNOWN)) {
+                    first = legendLines.get(1)[0];
                 }
                 if (!checkmarks && query.getLegend(colourmode) != null
                         && query.getLegend(colourmode).getNumericLegend() != null) {
-                    setupForNumericalList(first, h);
+                    setupForNumericalList(h);
                     //test for manual range (solr query)
-                } else if (colourmode.equals("occurrence_year")) {
+                } else if (StringConstants.OCCURRENCE_YEAR.equals(colourmode)) {
                     setupForBiocacheNumber(h, colourmode, true);
-                } else if (colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
+                } else if (StringConstants.OCCURRENCE_YEAR_DECADE.equals(colourmode) || StringConstants.DECADE.equals(colourmode)) {
                     setupForBiocacheDecade();
-                } else if (colourmode.equals("coordinate_uncertainty") || colourmode.equals("uncertainty")) {
+                } else if (StringConstants.COORDINATE_UNCERTAINTY.equals(colourmode) || StringConstants.UNCERTAINTY.equals(colourmode)) {
                     setupForBiocacheNumber(h, colourmode, false);
-                } else if (colourmode.equals("month")) {
+                } else if (StringConstants.MONTH.equals(colourmode)) {
                     setupForBiocacheMonth();
                 }
             }
@@ -266,7 +249,7 @@ public class AddFacetController extends UtilityComposer {
             legend.setItemRenderer(new ListitemRenderer() {
 
                 @Override
-                public void render(Listitem li, Object data, int item_idx) {
+                public void render(Listitem li, Object data, int itemIdx) {
                     String[] ss = (String[]) data;
 
                     if (ss == null) {
@@ -308,8 +291,8 @@ public class AddFacetController extends UtilityComposer {
                         red = Integer.parseInt(ss[1]);
                         green = Integer.parseInt(ss[2]);
                         blue = Integer.parseInt(ss[3]);
-                    } catch (Exception e) {
-                        logger.error("error parsing colours : " + ss[0], e);
+                    } catch (NumberFormatException e) {
+                        LOGGER.error("error parsing colours : " + ss[0], e);
                     }
 
                     lc = new Listcell("   ");
@@ -329,10 +312,10 @@ public class AddFacetController extends UtilityComposer {
                 }
             });
 
-            legend.setModel(new SimpleListModel(legend_lines));
+            legend.setModel(new SimpleListModel(legendLines));
 
         } catch (Exception e) {
-            logger.error("error rendering legend", e);
+            LOGGER.error("error rendering legend", e);
         }
     }
 
@@ -342,27 +325,27 @@ public class AddFacetController extends UtilityComposer {
         boolean unknown = false;
         if (!divContinous.isVisible() || !cbContinousRange.isChecked()) {
             for (Listitem li : legend.getItems()) {
-                if (li.getFirstChild().getChildren().size() > 0
+                if (!li.getFirstChild().getChildren().isEmpty()
                         && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                     String v = ((Listcell) li.getChildren().get(1)).getLabel();
                     v = displayToActualLabel(v);
-                    if (legend_facets != null) {
-                        if (v.equals("Unknown") || v.contains("occurrence_year") || v.contains("uncertainty") || v.contains("coordinate_uncertainty")) {
+                    if (legendFacets != null) {
+                        if (StringConstants.UNKNOWN.equals(v) || v.contains(StringConstants.OCCURRENCE_YEAR) || v.contains(StringConstants.UNCERTAINTY) || v.contains(StringConstants.COORDINATE_UNCERTAINTY)) {
                             //keep unchanged
                             divContinous.setVisible(true);
                             onCheck$cbContinousRange(null);
                         } else {
-                            v = legend_facets.get(v);
+                            v = legendFacets.get(v);
                         }
                     }
 
-                    if (v.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && v.equals("Unknown"))) {
+                    if (v.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && StringConstants.UNKNOWN.equals(v))) {
                         unknown = true;
                     } else {
                         if (values.length() > 0) {
                             values.append(" OR ");
                         }
-                        if (legend_facets != null) {
+                        if (legendFacets != null) {
                             values.append(v);
                         } else {
                             values.append(colourmode).append(":\"");
@@ -382,9 +365,7 @@ public class AddFacetController extends UtilityComposer {
                 }
             }
         } else {
-            if (minValue == gMinValue && maxValue == gMaxValue && dunknown.isChecked()) {
-                //no facet
-            } else {
+            if (minValue != gMinValue || maxValue != gMaxValue || !dunknown.isChecked()) {
                 if (dunknown.isChecked()) {
                     if (intContinous) {
                         values.append(String.format("-(%s:[* TO *] AND -%s:[%d TO %d])", colourmode, colourmode, (int) minValue, (int) maxValue));
@@ -446,16 +427,16 @@ public class AddFacetController extends UtilityComposer {
 
     void uncheckAll() {
         for (Listitem li : legend.getItems()) {
-            if (li.getFirstChild().getChildren().size() > 0
+            if (!li.getFirstChild().getChildren().isEmpty()
                     && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                 ((Checkbox) li.getFirstChild().getFirstChild()).setChecked(false);
             }
         }
     }
 
-    private void setupForNumericalList(String first, String facetString) {
+    private void setupForNumericalList(String facetString) {
         String h = facetString;
-        legend_facets = new HashMap<String, String>();
+        legendFacets = new HashMap<String, String>();
         try {
             divContinous.setVisible(!disableselection);
             onCheck$cbContinousRange(null);
@@ -467,8 +448,8 @@ public class AddFacetController extends UtilityComposer {
             gMinValue = minValue = lo.getMinMax()[0];
             gMaxValue = maxValue = lo.getMinMax()[1];
             double rng = gMaxValue - gMinValue;
-            if (intContinous && rng < SLIDER_MAX && rng > 0) {
-                SLIDER_MAX = (int) rng;
+            if (intContinous && rng < sliderMax && rng > 0) {
+                sliderMax = (int) rng;
             }
             dmin.setValue(gMinValue);
             dmax.setValue(gMaxValue);
@@ -493,18 +474,18 @@ public class AddFacetController extends UtilityComposer {
                     dunknown.setChecked(nulls);
                 }
             } catch (Exception e) {
-                logger.error("error with numerical legend", e);
+                LOGGER.error("error with numerical legend", e);
             }
-            for (int j = 0; j < legend_lines.size(); j++) {
+            for (int j = 0; j < legendLines.size(); j++) {
 
-                String label = legend_lines.get(j)[0];
+                String label = legendLines.get(j)[0];
                 if (label.charAt(0) == '-') {
-                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
-                    legend_lines.get(j)[0] = "Unknown";
+                    legendFacets.put(StringConstants.UNKNOWN, legendLines.get(j)[0]);
+                    legendLines.get(j)[0] = StringConstants.UNKNOWN;
                 } else {
-                    String s = legend_lines.get(j)[0];
+                    String s = legendLines.get(j)[0];
 
-                    String[] ss = s.replace("[", "").replace("]", "").replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "").split(" TO ");
+                    String[] ss = s.replace("[", "").replace("]", "").replace(StringConstants.DATE_TIME_END_OF_YEAR, "").replace(StringConstants.DATE_TIME_BEGINNING_OF_YEAR, "").split(" TO ");
 
                     float[] cutoffs = lo.getNumericLegend().getCutoffFloats();
                     float[] cutoffMins = lo.getNumericLegend().getCutoffMinFloats();
@@ -513,12 +494,11 @@ public class AddFacetController extends UtilityComposer {
                     double max;
                     double nextmin;
                     if (ss.length > 1) {
-                        if (ss[1].equals("*")) {
-                            double v = Double.parseDouble(ss[3]);
+                        if ("*".equals(ss[1])) {
                             min = cutoffMins[0];
                             max = cutoffs[0];
                             nextmin = cutoffMins.length > 1 ? cutoffMins[1] : cutoffMins[0];
-                        } else if (ss[3].equals("*")) {
+                        } else if ("*".equals(ss[3])) {
                             min = cutoffMins[cutoffMins.length - 1];
                             max = gMaxValue;
                             nextmin = gMaxValue;
@@ -556,8 +536,8 @@ public class AddFacetController extends UtilityComposer {
 
                             strFacet = colourmode + ":[" + min + " TO " + max + "]";
                         }
-                        legend_lines.get(j)[0] = range;
-                        legend_facets.put(range, strFacet);
+                        legendLines.get(j)[0] = range;
+                        legendFacets.put(range, strFacet);
                     }
                 }
             }
@@ -565,15 +545,13 @@ public class AddFacetController extends UtilityComposer {
         } catch (Exception e) {
             divContinous.setVisible(false);
             onCheck$cbContinousRange(null);
-            logger.error("error building numerical legend", e);
+            LOGGER.error("error building numerical legend", e);
         }
     }
 
     private void setupForBiocacheNumber(String facetString, String facetName, boolean integer) {
-        String h = facetString;
-        isNumber = true;
         intContinous = integer;
-        legend_facets = new HashMap<String, String>();
+        legendFacets = new HashMap<String, String>();
 
         if (lo != null) {
             //enable sliders
@@ -586,13 +564,13 @@ public class AddFacetController extends UtilityComposer {
             dmax.setValue(gMaxValue);
 
             if (intContinous) {
-                SLIDER_MAX = Math.min(SLIDER_MAX, (int) (gMaxValue - gMinValue));
+                sliderMax = Math.min(sliderMax, (int) (gMaxValue - gMinValue));
             }
             try {
                 if (facet != null) {
                     //count OR and test for null
-                    boolean nulls = h.contains("-(" + facetName + ":") || h.contains("-" + facetName + ":");
-                    int countOr = h.split(" OR ").length;
+                    boolean nulls = facetString.contains("-(" + facetName + ":") || facetString.contains("-" + facetName + ":");
+                    int countOr = facetString.split(" OR ").length;
                     if (countOr == 1 || (nulls && countOr == 2)) {
                         minValue = facet.getMin();
                         maxValue = facet.getMax();
@@ -606,39 +584,41 @@ public class AddFacetController extends UtilityComposer {
                     dunknown.setChecked(nulls);
                 }
             } catch (Exception e) {
-                logger.error("error building numberical legend", e);
+                LOGGER.error("error building numberical legend", e);
             }
 
             //update text in legend lines
-            for (int j = 0; j < legend_lines.size(); j++) {
+            for (int j = 0; j < legendLines.size(); j++) {
 
-                String label = legend_lines.get(j)[0];
+                String label = legendLines.get(j)[0];
                 if (label.charAt(0) == '-') {
-                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
-                    legend_lines.get(j)[0] = "Unknown";
+                    legendFacets.put(StringConstants.UNKNOWN, legendLines.get(j)[0]);
+                    legendLines.get(j)[0] = StringConstants.UNKNOWN;
                 } else {
-                    String s = legend_lines.get(j)[0];
+                    String s = legendLines.get(j)[0];
 
-                    String[] ss = s.replace("[", "").replace("]", "").replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "").split(" TO ");
+                    String[] ss = s.replace("[", "").replace("]", "").replace(StringConstants.DATE_TIME_END_OF_YEAR, "").replace(StringConstants.DATE_TIME_BEGINNING_OF_YEAR, "").split(" TO ");
 
                     float[] cutoffs = lo.getNumericLegend().getCutoffFloats();
                     float[] cutoffMins = lo.getNumericLegend().getCutoffMinFloats();
                     String range, strFacet;
                     if (ss.length > 1) {
-                        if (ss[0].equals("*")) {
-                            double v = Double.parseDouble(ss[1]);
+                        if ("*".equals(ss[0])) {
                             if (intContinous) {
                                 if (cutoffs.length > 1) {
                                     range = String.format(">= %d and < %d", (int) cutoffMins[0], (int) cutoffMins[1]);
                                 } else {
                                     range = String.format(">= %d and <= %d", (int) cutoffMins[0], (int) cutoffs[0]);
                                 }
-                                if (colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
+                                if (StringConstants.OCCURRENCE_YEAR.equals(colourmode)
+                                        || StringConstants.OCCURRENCE_YEAR_DECADE.equals(colourmode)
+                                        || StringConstants.DECADE.equals(colourmode)) {
                                     String minyear = String.valueOf((int) cutoffMins[0]);
                                     while (minyear.length() < 4) {
                                         minyear = "0" + minyear;
                                     }
-                                    strFacet = "" + facetName + ":[" + minyear + "-01-01T00:00:00Z TO " + (int) cutoffs[0] + "-12-31T00:00:00Z]";
+                                    strFacet = "" + facetName + ":[" + minyear + StringConstants.DATE_TIME_END_OF_YEAR
+                                            + " TO " + (int) cutoffs[0] + StringConstants.DATE_TIME_END_OF_YEAR + "]";
                                 } else {
                                     strFacet = "" + facetName + ":[" + (int) cutoffMins[0] + " TO " + (int) cutoffs[0] + "]";
                                 }
@@ -650,12 +630,13 @@ public class AddFacetController extends UtilityComposer {
                                 }
                                 strFacet = "" + facetName + ":[" + cutoffMins[0] + " TO " + cutoffs[0] + "]";
                             }
-                        } else if (ss[1].equals("*")) {
+                        } else if ("*".equals(ss[1])) {
                             if (intContinous) {
-                                //range = String.format(">= %d and <= %d", (int) cutoffMins[cutoffMins.length - 1], (int) gMaxValue);
                                 range = String.format("<= %d", (int) gMaxValue);
 
-                                if (colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
+                                if (StringConstants.OCCURRENCE_YEAR.equals(colourmode)
+                                        || StringConstants.OCCURRENCE_YEAR_DECADE.equals(colourmode)
+                                        || StringConstants.DECADE.equals(colourmode)) {
                                     String minyear = String.valueOf((int) cutoffMins[cutoffMins.length - 1]);
                                     while (minyear.length() < 4) {
                                         minyear = "0" + minyear;
@@ -665,7 +646,6 @@ public class AddFacetController extends UtilityComposer {
                                     strFacet = "" + facetName + ":[" + (int) cutoffMins[cutoffMins.length - 1] + " TO " + (int) gMaxValue + "]";
                                 }
                             } else {
-                                //range = String.format(">= %.2f and <= %.2f", cutoffMins[cutoffMins.length - 1], gMaxValue);
                                 range = String.format("<= %.2f", gMaxValue);
                                 strFacet = "" + facetName + ":[" + cutoffMins[cutoffMins.length - 1] + " TO " + gMaxValue + "]";
                             }
@@ -679,10 +659,11 @@ public class AddFacetController extends UtilityComposer {
                                 if (pos + 1 < cutoffs.length) {
                                     range = String.format("< %d", (int) cutoffMins[pos + 1]);
                                 } else {
-                                    //range = String.format(">= %d and <= %d", (int) cutoffMins[pos], (int) cutoffs[pos]);
                                     range = String.format("<= %d", (int) cutoffs[pos]);
                                 }
-                                if (colourmode.equals("occurrence_year") || colourmode.equals("occurrence_year_decade") || colourmode.equals("decade")) {
+                                if (StringConstants.OCCURRENCE_YEAR.equals(colourmode)
+                                        || StringConstants.OCCURRENCE_YEAR_DECADE.equals(colourmode)
+                                        || StringConstants.DECADE.equals(colourmode)) {
                                     String minyear = String.valueOf((int) cutoffMins[pos]);
                                     while (minyear.length() < 4) {
                                         minyear = "0" + minyear;
@@ -700,8 +681,8 @@ public class AddFacetController extends UtilityComposer {
                                 strFacet = "" + facetName + ":[" + cutoffMins[pos] + " TO " + cutoffs[pos] + "]";
                             }
                         }
-                        legend_lines.get(j)[0] = range;
-                        legend_facets.put(range, strFacet);
+                        legendLines.get(j)[0] = range;
+                        legendFacets.put(range, strFacet);
                     }
                 }
             }
@@ -709,24 +690,18 @@ public class AddFacetController extends UtilityComposer {
     }
 
     private void setupForBiocacheDecade() {
-        String h = "occurrence_year";
-        isNumber = false;
         intContinous = true;
-        legend_facets = new HashMap<String, String>();
+        legendFacets = new HashMap<String, String>();
 
-        //checkmarks = false;
         if (lo != null) {
             //update text in legend lines
-            for (int j = 0; j < legend_lines.size(); j++) {
-                String label = legend_lines.get(j)[0];
+            for (int j = 0; j < legendLines.size(); j++) {
+                String label = legendLines.get(j)[0];
                 if (label.charAt(0) == '-') {
-                    legend_facets.put("Unknown", legend_lines.get(j)[0]);
-                    legend_lines.get(j)[0] = "Unknown";
+                    legendFacets.put(StringConstants.UNKNOWN, legendLines.get(j)[0]);
+                    legendLines.get(j)[0] = StringConstants.UNKNOWN;
                 } else {
-                    //String[] ss = legend_lines.get(j);
-                    //s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
-                    //s = s.replace("-12-31T00:00:00Z", "").replace("-01-01T00:00:00Z", "");
-                    String[] ss = legend_lines.get(j)[0].split(" TO ");
+                    String[] ss = legendLines.get(j)[0].split(" TO ");
 
                     String range, strFacet;
                     if (ss.length > 1) {
@@ -735,74 +710,55 @@ public class AddFacetController extends UtilityComposer {
                         range = String.format("%s0s", yr);
                         strFacet = "occurrence_year:[" + yr + "0-01-01T00:00:00Z TO " + yr + "9-12-31T00:00:00Z]";
 
-                        legend_lines.get(j)[0] = range;
-                        legend_facets.put(range, strFacet);
+                        legendLines.get(j)[0] = range;
+                        legendFacets.put(range, strFacet);
                     }
                 }
             }
-        }
-    }
-
-    private void setupForBiocacheGeospatialKosher() {
-        legend_facets = new HashMap<String, String>();
-        //update text in legend lines
-        for (int j = 0; j < legend_lines.size(); j++) {
-            String value = legend_lines.get(j)[0];
-            String s;
-            if (value.equals("true")) {
-                s = "Spatially valid";
-            } else if (value.equals("false")) {
-                s = "Spatially suspect";
-            } else {
-                s = "Coordinates not supplied";
-            }
-            legend_facets.put(s, "geospatial_kosher:" + value);
-            legend_lines.get(j)[0] = s;
         }
     }
 
     private void setupForBiocacheMonth() {
-        isMonth = true;
-        legend_facets = new HashMap<String, String>();
+        legendFacets = new HashMap<String, String>();
         //update text in legend lines
-        for (int j = 0; j < legend_lines.size(); j++) {
-            String label = legend_lines.get(j)[0];
+        for (int j = 0; j < legendLines.size(); j++) {
+            String label = legendLines.get(j)[0];
             if (label.charAt(0) == '-') {
-                legend_facets.put("Unknown", legend_lines.get(j)[0]);
-                legend_lines.get(j)[0] = "Unknown";
+                legendFacets.put(StringConstants.UNKNOWN, legendLines.get(j)[0]);
+                legendLines.get(j)[0] = StringConstants.UNKNOWN;
             } else {
-                String s = legend_lines.get(j)[0];
+                String s = legendLines.get(j)[0];
                 s = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
                 String[] ss = s.split(" TO ");
                 if (ss.length > 1) {
-                    if (ss[1].equals("01")) {
-                        s = "January";
-                    } else if (ss[1].equals("02")) {
-                        s = "February";
-                    } else if (ss[1].equals("03")) {
-                        s = "March";
-                    } else if (ss[1].equals("04")) {
-                        s = "April";
-                    } else if (ss[1].equals("05")) {
-                        s = "May";
-                    } else if (ss[1].equals("06")) {
-                        s = "June";
-                    } else if (ss[1].equals("07")) {
-                        s = "July";
-                    } else if (ss[1].equals("08")) {
-                        s = "August";
-                    } else if (ss[1].equals("09")) {
-                        s = "September";
-                    } else if (ss[1].equals("10")) {
-                        s = "October";
-                    } else if (ss[1].equals("11")) {
-                        s = "November";
-                    } else if (ss[1].equals("12")) {
-                        s = "December";
+                    if ("01".equals(ss[1])) {
+                        s = StringConstants.JANUARY;
+                    } else if ("02".equals(ss[1])) {
+                        s = StringConstants.FEBRUARY;
+                    } else if ("03".equals(ss[1])) {
+                        s = StringConstants.MARCH;
+                    } else if ("04".equals(ss[1])) {
+                        s = StringConstants.APRIL;
+                    } else if ("05".equals(ss[1])) {
+                        s = StringConstants.MAY;
+                    } else if ("06".equals(ss[1])) {
+                        s = StringConstants.JUNE;
+                    } else if ("07".equals(ss[1])) {
+                        s = StringConstants.JULY;
+                    } else if ("08".equals(ss[1])) {
+                        s = StringConstants.AUGUST;
+                    } else if ("09".equals(ss[1])) {
+                        s = StringConstants.SEPTEMBER;
+                    } else if ("10".equals(ss[1])) {
+                        s = StringConstants.OCTOBER;
+                    } else if ("11".equals(ss[1])) {
+                        s = StringConstants.NOVEMBER;
+                    } else if ("12".equals(ss[1])) {
+                        s = StringConstants.DECEMBER;
                     }
                 }
-                legend_facets.put(s, "month:[" + ss[1] + " TO " + ss[1] + "]");
-                legend_lines.get(j)[0] = s;
+                legendFacets.put(s, "month:[" + ss[1] + " TO " + ss[1] + "]");
+                legendLines.get(j)[0] = s;
             }
 
         }
@@ -812,11 +768,11 @@ public class AddFacetController extends UtilityComposer {
         int countChecked = 0;
         boolean unknownChecked = false;
         for (Listitem li : legend.getItems()) {
-            if (li.getFirstChild().getChildren().size() > 0
+            if (!li.getFirstChild().getChildren().isEmpty()
                     && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                 String v = ((Listcell) li.getChildren().get(1)).getLabel();
                 v = displayToActualLabel(v);
-                if (((query instanceof BiocacheQuery || divContinous.isVisible()) && v.equals("Unknown"))
+                if (((query instanceof BiocacheQuery || divContinous.isVisible()) && StringConstants.UNKNOWN.equals(v))
                         || v.length() == 0) {
                     unknownChecked = true;
                 } else {
@@ -826,7 +782,7 @@ public class AddFacetController extends UtilityComposer {
         }
         int[] state = new int[2];
         state[0] = countChecked;
-        state[1] = (unknownChecked ? 1 : 0);
+        state[1] = unknownChecked ? 1 : 0;
 
         return state;
     }
@@ -840,7 +796,7 @@ public class AddFacetController extends UtilityComposer {
     public void onClick$selectAll(Event event) {
         if (legend != null && legend.getItemCount() > 0) {
             for (Listitem li : legend.getItems()) {
-                if (li.getFirstChild().getChildren().size() > 0
+                if (!li.getFirstChild().getChildren().isEmpty()
                         && !((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                     ((Checkbox) li.getFirstChild().getFirstChild()).setChecked(true);
                 }
@@ -864,12 +820,12 @@ public class AddFacetController extends UtilityComposer {
                 this.setLeft("-9999px");
 
                 Map<String, Object> winProps = new HashMap<String, Object>();
-                winProps.put("parent", this);
-                winProps.put("parentname", "Tool");
-                winProps.put("selectedMethod", selectedMethod);
+                winProps.put(StringConstants.PARENT, this);
+                winProps.put(StringConstants.PARENTNAME, "Tool");
+                winProps.put(StringConstants.SELECTEDMETHOD, selectedMethod);
 
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
-                if (layers != null && layers.size() > 0) {
+                if (layers != null && !layers.isEmpty()) {
                     prevTopArea = layers.get(0);
                 } else {
                     prevTopArea = null;
@@ -882,21 +838,21 @@ public class AddFacetController extends UtilityComposer {
                 return;
             }
 
-            Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
-            Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
+            Div currentDiv = (Div) getFellowIfAny(StringConstants.ATSTEP + currentStep);
+            Div nextDiv = (Div) getFellowIfAny(StringConstants.ATSTEP + (currentStep + 1));
 
-            if (!currentDiv.getZclass().contains("last")) {
+            if (!currentDiv.getZclass().contains(StringConstants.LAST)) {
                 currentDiv.setVisible(false);
                 nextDiv.setVisible(true);
 
-                Html previousStepCompletedImg = (Html) getFellowIfAny("imgCompletedStep" + (currentStep));
+                Html previousStepCompletedImg = (Html) getFellowIfAny(StringConstants.IMG_COMPLETED_STEP + (currentStep));
                 previousStepCompletedImg.setVisible(true);
 
-                Label previousStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep));
-                previousStepLabel.setStyle("font-weight:normal");
+                Label previousStepLabel = (Label) getFellowIfAny(StringConstants.LBLSTEP + (currentStep));
+                previousStepLabel.setStyle(StringConstants.FONT_WEIGHT_NORMAL);
 
-                Label currentStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep + 1));
-                currentStepLabel.setStyle("font-weight:bold");
+                Label currentStepLabel = (Label) getFellowIfAny(StringConstants.LBLSTEP + (currentStep + 1));
+                currentStepLabel.setStyle(StringConstants.FONT_WEIGHT_BOLD);
 
                 currentStep++;
                 updateWindowTitle();
@@ -904,15 +860,15 @@ public class AddFacetController extends UtilityComposer {
                 sa = getSelectedArea();
                 query = QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher());
                 if (query != null) {
-                    ArrayList<QueryField> fields = query.getFacetFieldList();
+                    List<QueryField> fields = query.getFacetFieldList();
                     Collections.sort(fields, new QueryField.QueryFieldComparator());
-                    Comboitem seperator = new Comboitem("seperator");
+
                     String lastGroup = null;
 
                     for (QueryField field : fields) {
                         String newGroup = field.getGroup().getName();
                         if (!newGroup.equals(lastGroup)) {
-                            Comboitem sep = new Comboitem("seperator");
+                            Comboitem sep = new Comboitem(StringConstants.SEPERATOR);
                             sep.setLabel("---------------" + StringUtils.center(newGroup, 19) + "---------------");
                             sep.setParent(cbColour);
                             sep.setDisabled(true);
@@ -935,17 +891,17 @@ public class AddFacetController extends UtilityComposer {
                 Facet f = Facet.parseFacet(getSelectionFacet());
                 Query querynew = query.newFacet(f, true);
                 if (querynew.getOccurrenceCount() <= 0) {
-                    getMapComposer().showMessage(CommonData.lang("no_occurrences_selected"));
+                    getMapComposer().showMessage(CommonData.lang(StringConstants.NO_OCCURRENCES_SELECTED));
                 } else {
                     getMapComposer().mapSpecies(querynew,
-                            "My facet", "species", -1, LayerUtilities.SPECIES, null, 0, MapComposer.DEFAULT_POINT_SIZE,
+                            StringConstants.MY_FACET, StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, 0, MapComposer.DEFAULT_POINT_SIZE,
                             MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
                     this.detach();
                 }
             }
 
         } catch (Exception ex) {
-            logger.error("error adding facet", ex);
+            LOGGER.error("error adding facet", ex);
         }
 
         fixFocus();
@@ -953,33 +909,30 @@ public class AddFacetController extends UtilityComposer {
 
     public void onClick$btnBack(Event event) {
 
-        Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
-        Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
-        Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep - 1))) : null;
+        Div currentDiv = (Div) getFellowIfAny(StringConstants.ATSTEP + currentStep);
 
-        if (currentDiv.getZclass().contains("first")) {
+        Div previousDiv = currentStep > 1 ? (Div) getFellowIfAny(StringConstants.ATSTEP + (currentStep - 1)) : null;
+
+        if (currentDiv.getZclass().contains(StringConstants.FIRST)) {
             btnBack.setDisabled(true);
         } else {
             currentDiv.setVisible(false);
             previousDiv.setVisible(true);
 
-            Html currentStepCompletedImg = (Html) getFellowIfAny("imgCompletedStep" + (currentStep - 1));
+            Html currentStepCompletedImg = (Html) getFellowIfAny(StringConstants.IMG_COMPLETED_STEP + (currentStep - 1));
             currentStepCompletedImg.setVisible(false);
 
-            Label nextStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep));
-            nextStepLabel.setStyle("font-weight:normal");
+            Label nextStepLabel = (Label) getFellowIfAny(StringConstants.LBLSTEP + (currentStep));
+            nextStepLabel.setStyle(StringConstants.FONT_WEIGHT_NORMAL);
 
-            Label currentStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep - 1));
-            currentStepLabel.setStyle("font-weight:bold");
+            Label currentStepLabel = (Label) getFellowIfAny(StringConstants.LBLSTEP + (currentStep - 1));
+            currentStepLabel.setStyle(StringConstants.FONT_WEIGHT_BOLD);
 
             currentStep--;
 
-            if (previousDiv != null) {
-                btnBack.setDisabled(((previousDiv.getZclass().contains("first"))));
-            }
+            btnBack.setDisabled(previousDiv.getZclass().contains(StringConstants.FIRST));
         }
 
-        //btnOk.setLabel("Next >");
         btnOk.setDisabled(false);
         updateWindowTitle();
 
@@ -999,49 +952,16 @@ public class AddFacetController extends UtilityComposer {
 
     boolean isAreaHighlightCustom() {
         return isAreaHighlightTab() && rgAreaHighlight != null
-                && rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight");
+                && StringConstants.RAREACUSTOMHIGHLIGHT.equals(rgAreaHighlight.getSelectedItem().getId());
     }
 
     public void onCheck$rgAreaHighlight(Event event) {
         if (rgAreaHighlight == null) {
             return;
         }
-        if (rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight")) {
+        if (StringConstants.RAREACUSTOMHIGHLIGHT.equals(rgAreaHighlight.getSelectedItem().getId())) {
             hasCustomArea = false;
         }
-    }
-
-    public SelectedArea getSelectedAreaHighlight() {
-        String area = rgAreaHighlight.getSelectedItem().getValue();
-
-        SelectedArea selectedarea = null;
-        try {
-            if (area.equals("none")) {
-            } else if (area.equals("current")) {
-                selectedarea = new SelectedArea(null, getMapComposer().getViewArea());
-            } else if (area.equals("australia")) {
-                selectedarea = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
-            } else if (area.equals("world")) {
-                selectedarea = new SelectedArea(null, CommonData.WORLD_WKT);
-            } else {
-                List<MapLayer> layers = getMapComposer().getPolygonLayers();
-                for (MapLayer ml : layers) {
-                    if (area.equals(ml.getWKT())) {
-                        selectedarea = new SelectedArea(ml, null);
-                        break;
-                    }
-                }
-
-                //for 'all areas'
-                if (selectedarea == null) {
-                    selectedarea = new SelectedArea(null, area);
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Unable to retrieve selected area", e);
-        }
-
-        return selectedarea;
     }
 
     public void loadAreaLayers() {
@@ -1063,51 +983,29 @@ public class AddFacetController extends UtilityComposer {
 
             Radio rAreaCurrent = (Radio) getFellowIfAny("rAreaCurrent");
 
-            String selectedLayerName = (String) params.get("polygonLayerName");
+            String selectedLayerName = (String) params.get(StringConstants.POLYGON_LAYER_NAME);
             Radio rSelectedLayer = null;
 
-            StringBuilder allWKT = new StringBuilder();
-            int count_not_envelopes = 0;
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
                 rAr.setValue(lyr.getWKT());
 
-                if (lyr.getWKT() != null && !lyr.getWKT().contains("ENVELOPE")) {
-                    if (count_not_envelopes > 0) {
-                        allWKT.append(',');
-                    }
-                    count_not_envelopes++;
-                    String wkt = lyr.getWKT();
-                    if (wkt.startsWith("GEOMETRYCOLLECTION(")) {
-                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length() - 1);
-                    }
-                    allWKT.append(wkt);
-                }
-
                 rAr.setParent(rgArealocal);
                 rgArealocal.insertBefore(rAr, rAreaCurrent);
 
-                if (selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
+                if (lyr.getName().equals(selectedLayerName)) {
                     rSelectedLayer = rAr;
                     rAreaSelected = rAr;
                 }
             }
 
-            if (!layers.isEmpty() && count_not_envelopes > 1) {
-               /*Radio rAr = new Radio("All area layers"
-                        + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
-                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
-                rAr.setParent(rgArealocal);
-                rgArealocal.insertBefore(rAr, rAreaCurrent);*/
-            }
-
-            if (selectedAreaName != null && !selectedAreaName.equals("")) {
+            if (selectedAreaName != null && !selectedAreaName.isEmpty()) {
                 for (int i = 0; i < rgArealocal.getItemCount(); i++) {
                     if (rgArealocal.getItemAtIndex(i).isVisible() && rgArealocal.getItemAtIndex(i).getLabel().equals(selectedAreaName)) {
                         rAreaSelected = rgArealocal.getItemAtIndex(i);
-                        logger.debug("2.resetting indexToSelect = " + i);
+                        LOGGER.debug("2.resetting indexToSelect = " + i);
                         rgArealocal.setSelectedItem(rAreaSelected);
                         break;
                     }
@@ -1115,7 +1013,7 @@ public class AddFacetController extends UtilityComposer {
             } else if (rSelectedLayer != null) {
                 rAreaSelected = rSelectedLayer;
                 rgArealocal.setSelectedItem(rAreaSelected);
-            } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
+            } else if (StringConstants.NONE.equals(selectedLayerName)) {
                 rgArealocal.setSelectedItem(rAreaWorld);
                 rAreaSelected = rAreaWorld;
                 rgArealocal.setSelectedItem(rAreaSelected);
@@ -1127,7 +1025,7 @@ public class AddFacetController extends UtilityComposer {
             Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
 
         } catch (Exception e) {
-            logger.error("Unable to load active area layers:", e);
+            LOGGER.error(StringConstants.UNABLE_TO_LOAD_ACTIVE_AREA_LAYERS, e);
         }
     }
 
@@ -1146,56 +1044,34 @@ public class AddFacetController extends UtilityComposer {
 
             Radio rAreaCurrentHighlight = (Radio) getFellowIfAny("rAreaCurrentHighlight");
 
-            String selectedLayerName = (String) params.get("polygonLayerName");
+            String selectedLayerName = (String) params.get(StringConstants.POLYGON_LAYER_NAME);
             Radio rSelectedLayer = null;
 
-            StringBuilder allWKT = new StringBuilder();
-            int count_not_envelopes = 0;
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
                 rAr.setValue(lyr.getWKT());
 
-                if (!lyr.getWKT().contains("ENVELOPE")) {
-                    if (count_not_envelopes > 0) {
-                        allWKT.append(',');
-                    }
-                    count_not_envelopes++;
-                    String wkt = lyr.getWKT();
-                    if (wkt.startsWith("GEOMETRYCOLLECTION(")) {
-                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length() - 1);
-                    }
-                    allWKT.append(wkt);
-                }
-
                 rAr.setParent(rgArealocal);
                 rgArealocal.insertBefore(rAr, rAreaCurrentHighlight);
 
-                if (selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
+                if (lyr.getName().equals(selectedLayerName)) {
                     rSelectedLayer = rAr;
                 }
             }
 
-            if (!layers.isEmpty() && count_not_envelopes > 1) {
-                /*Radio rAr = new Radio("All area layers"
-                        + ((count_not_envelopes < layers.size()) ? " (excluding Environmental Envelopes)" : ""));
-                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
-                rAr.setParent(rgArealocal);
-                rgArealocal.insertBefore(rAr, rAreaCurrentHighlight);*/
-            }
-
-            if (selectedAreaName != null && !selectedAreaName.equals("")) {
+            if (selectedAreaName != null && !selectedAreaName.isEmpty()) {
                 for (int i = 0; i < rgArealocal.getItemCount(); i++) {
                     if (rgArealocal.getItemAtIndex(i).isVisible() && rgArealocal.getItemAtIndex(i).getLabel().equals(selectedAreaName)) {
-                        logger.debug("2.resetting indexToSelect = " + i);
+                        LOGGER.debug("2.resetting indexToSelect = " + i);
                         rgArealocal.setSelectedItem(rgArealocal.getItemAtIndex(i));
                         break;
                     }
                 }
             } else if (rSelectedLayer != null) {
                 rgArealocal.setSelectedItem(rAreaSelected);
-            } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
+            } else if (StringConstants.NONE.equals(selectedLayerName)) {
                 rgArealocal.setSelectedItem(rAreaWorld);
             } else {
                 for (int i = 0; i < rgArealocal.getItemCount(); i++) {
@@ -1208,7 +1084,7 @@ public class AddFacetController extends UtilityComposer {
             Clients.evalJavaScript("jq('#" + rgArealocal.getSelectedItem().getUuid() + "-real').attr('checked', true);");
 
         } catch (Exception e) {
-            logger.error("Unable to load active area layers:", e);
+            LOGGER.error(StringConstants.UNABLE_TO_LOAD_ACTIVE_AREA_LAYERS, e);
         }
     }
 
@@ -1231,24 +1107,20 @@ public class AddFacetController extends UtilityComposer {
 
             rAreaNone.setSelected(true);
         } catch (Exception e) {
-            logger.error("Unable to load active area layers:", e);
+            LOGGER.error(StringConstants.UNABLE_TO_LOAD_ACTIVE_AREA_LAYERS, e);
         }
     }
 
     public void resetWindow(String selectedArea) {
         try {
 
-            if (selectedArea == null || selectedArea.trim().isEmpty()) {
-                hasCustomArea = false;
-            } else {
-                hasCustomArea = true;
-            }
+            hasCustomArea = !(selectedArea == null || selectedArea.trim().isEmpty());
 
             boolean ok = false;
             if (hasCustomArea) {
-                MapLayer curTopArea = null;
+                MapLayer curTopArea;
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
-                if (layers != null && layers.size() > 0) {
+                if (layers != null && !layers.isEmpty()) {
                     curTopArea = layers.get(0);
                 } else {
                     curTopArea = null;
@@ -1277,12 +1149,12 @@ public class AddFacetController extends UtilityComposer {
             fixFocus();
 
         } catch (SuspendNotAllowedException ex) {
-            logger.error("Exception when resetting analysis window", ex);
+            LOGGER.error("Exception when resetting analysis window", ex);
         }
     }
 
     /**
-     * TODO NC 2013-08-15: Remove the need for "false" as the third item in the
+     * TODO NC 2013-08-15: Remove the need for Constants.FALSE as the third item in the
      * array.
      *
      * @return
@@ -1292,15 +1164,15 @@ public class AddFacetController extends UtilityComposer {
     }
 
     public void onCheck$chkGeoKosherTrue(Event event) {
-        event = ((ForwardEvent) event).getOrigin();
-        if (!((CheckEvent) event).isChecked() && !chkGeoKosherFalse.isChecked()) {
+        Event evt = ((ForwardEvent) event).getOrigin();
+        if (!((CheckEvent) evt).isChecked() && !chkGeoKosherFalse.isChecked()) {
             chkGeoKosherFalse.setChecked(true);
         }
     }
 
     public void onCheck$chkGeoKosherFalse(Event event) {
-        event = ((ForwardEvent) event).getOrigin();
-        if (!((CheckEvent) event).isChecked() && !chkGeoKosherTrue.isChecked()) {
+        Event evt = ((ForwardEvent) event).getOrigin();
+        if (!((CheckEvent) evt).isChecked() && !chkGeoKosherTrue.isChecked()) {
             chkGeoKosherTrue.setChecked(true);
         }
     }
@@ -1339,15 +1211,15 @@ public class AddFacetController extends UtilityComposer {
         dunknown.setDisabled(!cbContinousRange.isChecked());
 
         for (Listitem li : legend.getItems()) {
-            if (li.getFirstChild().getChildren().size() > 0) {
-                ((Checkbox) li.getFirstChild().getFirstChild()).setVisible(!cbContinousRange.isChecked());
+            if (!li.getFirstChild().getChildren().isEmpty()) {
+                li.getFirstChild().getFirstChild().setVisible(!cbContinousRange.isChecked());
             }
         }
 
         if (!cbContinousRange.isChecked()) {
-            dlabel.setValue(CommonData.lang("msg_list_selection_enabled"));
+            dlabel.setValue(CommonData.lang(StringConstants.MSG_LIST_SELECTION_ENABLED));
         } else {
-            dlabel.setValue(CommonData.lang("msg_range_selection_enabled"));
+            dlabel.setValue(CommonData.lang(StringConstants.MSG_RANGE_SELECTION_ENABLED));
         }
     }
 }

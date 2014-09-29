@@ -6,6 +6,7 @@ package au.org.emii.portal.lang;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -32,8 +33,8 @@ public class LanguagePackImpl implements LanguagePack {
     }
 
     @Override
-    public HashMap<String, String> getLangMap() {
-        HashMap<String, String> map = new HashMap<String, String>();
+    public Map<String, String> getLangMap() {
+        Map<String, String> map = new HashMap<String, String>();
         for (String key : lang.keySet()) {
             map.put(key, lang.getString(key));
         }

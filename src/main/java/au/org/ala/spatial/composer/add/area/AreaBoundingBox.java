@@ -1,9 +1,9 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.menu.MapLayer;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
@@ -15,16 +15,16 @@ import org.zkoss.zul.Textbox;
  */
 public class AreaBoundingBox extends AreaToolComposer {
 
-    private static Logger logger = Logger.getLogger(AreaBoundingBox.class);
+    private static final Logger LOGGER = Logger.getLogger(AreaBoundingBox.class);
+    private Textbox txtLayerName;
+    private Button btnNext;
+    private Button btnClear;
     private Textbox displayGeom;
-    Textbox txtLayerName;
-    Button btnNext;
-    Button btnClear;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang(StringConstants.DEFAULT_AREA_LAYER_NAME)));
     }
 
     public void onClick$btnNext(Event event) {
@@ -42,7 +42,7 @@ public class AreaBoundingBox extends AreaToolComposer {
             mc.removeLayer(layerName);
         }
         String script = mc.getOpenLayersJavascript().addBoxDrawingTool();
-        mc.getOpenLayersJavascript().execute(OpenLayersJavascript.iFrameReferences + script);
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().getIFrameReferences() + script);
         displayGeom.setValue("");
         btnNext.setDisabled(true);
         btnClear.setDisabled(true);
@@ -60,7 +60,7 @@ public class AreaBoundingBox extends AreaToolComposer {
         String boxGeom = (String) event.getData();
         try {
 
-            if (boxGeom.contains("NaN NaN")) {
+            if (boxGeom.contains(StringConstants.NAN_NAN)) {
                 displayGeom.setValue("");
             } else {
                 displayGeom.setValue(boxGeom);
@@ -72,12 +72,12 @@ public class AreaBoundingBox extends AreaToolComposer {
             //add feature to the map as a new layer
             layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
             MapLayer mapLayer = mc.addWKTLayer(boxGeom, layerName, txtLayerName.getValue());
-            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadataForWKT(CommonData.lang("metadata_user_bounding_box"), boxGeom));
+            mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadataForWKT(CommonData.lang(StringConstants.METADATA_USER_BOUNDING_BOX), boxGeom));
 
             btnNext.setDisabled(false);
             btnClear.setDisabled(false);
         } catch (Exception e) {
-            logger.error("Error adding user bounding box area", e);
+            LOGGER.error("Error adding user bounding box area", e);
         }
 
     }

@@ -12,7 +12,11 @@ import java.text.SimpleDateFormat;
  *
  * @author geoff
  */
-public class Validate {
+public final class Validate {
+
+    private Validate() {
+        //to hide public constructor
+    }
 
     /**
      * Check if a passed in string is empty
@@ -22,7 +26,7 @@ public class Validate {
      * return true
      */
     public static boolean empty(String string) {
-        return (!((string != null) && (!string.matches("\\s*"))));
+        return !(string != null && !string.matches("\\s*"));
     }
 
     /**
@@ -42,10 +46,10 @@ public class Validate {
      */
     public static boolean invalidHttpUri(String uri) {
         UrlValidator urlValidator = new UrlValidator(
-                new String[]{"http", "https"}
+                new String[]{"http", "https" }
         );
 
-        return (!urlValidator.isValid(uri.trim()));
+        return !urlValidator.isValid(uri.trim());
 
     }
 
@@ -53,13 +57,12 @@ public class Validate {
      * Check if a uri stars with http[s]://, if it doesn't, prepend
      * it and return the new string
      *
-     * @param string
      * @return
      */
     public static String prefixUri(String uri) {
         /* idiot proofing: prefix with "http://" if we dont' start
          * with either http:// or https://
-		 */
+   */
         String fullUri;
         if (!uri.matches("^[Hh][Tt][Tt][Pp][Ss]?://.*")) {
             fullUri = "http://" + uri;
@@ -77,10 +80,9 @@ public class Validate {
      * @return
      */
     public static DateFormat getIsoDateFormatter() {
-        SimpleDateFormat sd = new SimpleDateFormat(
+        return new SimpleDateFormat(
                 "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
         );
-        return sd;
     }
 
     /**
@@ -90,10 +92,9 @@ public class Validate {
      * @return
      */
     public static SimpleDateFormat getShortIsoDateFormatter() {
-        SimpleDateFormat sd = new SimpleDateFormat(
+        return new SimpleDateFormat(
                 "yyyy-MM-dd"
         );
-        return sd;
     }
 
     /**

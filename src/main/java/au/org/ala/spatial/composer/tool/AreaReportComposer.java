@@ -5,20 +5,14 @@
 package au.org.ala.spatial.composer.tool;
 
 import au.org.ala.spatial.composer.results.AreaReportController;
-import au.org.ala.spatial.util.SelectedArea;
 import au.org.emii.portal.menu.MapLayer;
-import org.apache.log4j.Logger;
+import au.org.emii.portal.menu.SelectedArea;
 import org.zkoss.zul.Window;
 
 /**
  * @author ajay
  */
 public class AreaReportComposer extends ToolComposer {
-    private static Logger logger = Logger.getLogger(AreaReportComposer.class);
-    String selectedLayers = "";
-    int generation_count = 1;
-    String layerLabel = "";
-    String legendPath = "";
 
     @Override
     public void afterCompose() {
@@ -32,14 +26,9 @@ public class AreaReportComposer extends ToolComposer {
     }
 
     @Override
-    public void onLastPanel() {
-        super.onLastPanel();
-    }
-
-    @Override
     public boolean onFinish() {
         //close any existing area report
-        Window w = (Window) getPage().getFellowIfAny("popup_results");
+        Window w = (Window) getPage().getFellowIfAny("popupResults");
         if (w != null) {
             w.detach();
         }

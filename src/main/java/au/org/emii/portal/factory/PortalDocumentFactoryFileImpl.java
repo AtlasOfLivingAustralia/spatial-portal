@@ -4,20 +4,18 @@
  */
 package au.org.emii.portal.factory;
 
-import au.org.emii.portal.config.ConfigurationFile;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.util.PortalProperties;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.xmlbeans.XmlException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.util.Assert;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
-
-import org.apache.xmlbeans.SchemaLocalElement;
 
 /**
  * Support for validation, reading and writing of configuration file
@@ -31,9 +29,8 @@ public class PortalDocumentFactoryFileImpl implements PortalDocumentFactory, Ini
     /**
      * Logger instance
      */
-    private Logger logger = Logger.getLogger(this.getClass());
+    private static final Logger LOGGER = Logger.getLogger(PortalDocumentFactoryFileImpl.class);
 
-    private final static String CONFIG_FILE = "webportal_config.xml";
     private Settings settings = null;
 
     /**
@@ -59,17 +56,17 @@ public class PortalDocumentFactoryFileImpl implements PortalDocumentFactory, Ini
 
         } catch (FileNotFoundException e) {
             portalDocument = null;
-            logger.error("Could not load portal configuration file from: " + getConfigFilename());
+            LOGGER.error("Could not load portal configuration file from: " + getConfigFilename());
         } catch (IOException e) {
             portalDocument = null;
-            logger.error("IOException reading configuration - should never happen, you may have big problems! - check this stack trace", e);
+            LOGGER.error("IOException reading configuration - should never happen, you may have big problems! - check this stack trace", e);
         } finally {
             try {
                 if (is != null) {
                     is.close();
                 }
             } catch (Exception e) {
-                logger.error("Error closing " + getConfigFilename(), e);
+                LOGGER.error("Error closing " + getConfigFilename(), e);
             }
         }
 

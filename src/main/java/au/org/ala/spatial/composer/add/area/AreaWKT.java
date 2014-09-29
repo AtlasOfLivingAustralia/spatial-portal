@@ -1,8 +1,8 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.menu.MapLayer;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
@@ -22,18 +22,17 @@ import java.util.Calendar;
  */
 public class AreaWKT extends AreaToolComposer {
 
-    private static Logger logger = Logger.getLogger(AreaWKT.class);
-
+    private static final Logger LOGGER = Logger.getLogger(AreaWKT.class);
+    private Textbox txtLayerName;
+    private Label invalidWKT;
+    private Button btnOk;
+    private Button btnClear;
     private Textbox displayGeom;
-    Textbox txtLayerName;
-    Label invalidWKT;
-    Button btnOk;
-    Button btnClear;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang(StringConstants.DEFAULT_AREA_LAYER_NAME)));
     }
 
     public void onClick$btnOk(Event event) {
@@ -51,8 +50,8 @@ public class AreaWKT extends AreaToolComposer {
 
             String metadata = "";
             metadata += "User pasted WKT \n";
-            metadata += "Name: " + layerName + " <br />\n";
-            metadata += "Date: " + formatter.format(calendar.getTime()) + " <br />\n";
+            metadata += "Name: " + layerName + "<br />";
+            metadata += "Date: " + formatter.format(calendar.getTime());
 
             mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
 
@@ -70,32 +69,32 @@ public class AreaWKT extends AreaToolComposer {
 
     public boolean validWKT(String wkt) {
         if (wkt.replaceAll(" ", "").isEmpty()) {
-            invalidWKT.setValue(CommonData.lang("error_wkt_invalid"));
+            invalidWKT.setValue(CommonData.lang(StringConstants.ERROR_WKT_INVALID));
             return false;
         }
         try {
             WKTReader wktReader = new WKTReader();
             com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
             //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
-            //logger.debug("GEOMETRY TYPE: " + g.getGeometryType());
+
             IsValidOp op = new IsValidOp(g);
             if (!op.isValid()) {
-                invalidWKT.setValue(CommonData.lang("error_wkt_invalid") + " " + op.getValidationError().getMessage());
-                logger.warn("WKT is invalid." + op.getValidationError().getMessage());
+                invalidWKT.setValue(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + op.getValidationError().getMessage());
+                LOGGER.warn("WKT is invalid." + op.getValidationError().getMessage());
                 //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
             } else if (g.isRectangle()) {
                 //NC 20130319: When the shape is a rectangle ensure that the points a specified in the correct order.
                 //get the new WKT for the rectangle will possibly need to change the order.
 
                 com.vividsolutions.jts.geom.Envelope envelope = g.getEnvelopeInternal();
-                String wkt2 = "POLYGON(("
+                String wkt2 = StringConstants.POLYGON + "(("
                         + envelope.getMinX() + " " + envelope.getMinY() + ","
                         + envelope.getMaxX() + " " + envelope.getMinY() + ","
                         + envelope.getMaxX() + " " + envelope.getMaxY() + ","
                         + envelope.getMinX() + " " + envelope.getMaxY() + ","
                         + envelope.getMinX() + " " + envelope.getMinY() + "))";
                 if (!wkt.equals(wkt2)) {
-                    logger.debug("NEW WKT for Rectangle: " + wkt);
+                    LOGGER.debug("NEW WKT for Rectangle: " + wkt);
                     invalidWKT.setValue(CommonData.lang("error_wkt_rectangle_wrong_order"));
                     displayGeom.setValue(wkt2);
                     return false;
@@ -104,7 +103,7 @@ public class AreaWKT extends AreaToolComposer {
             }
             return op.isValid();
         } catch (ParseException parseException) {
-            invalidWKT.setValue(CommonData.lang("error_wkt_invalid") + " " + parseException.getMessage());
+            invalidWKT.setValue(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + parseException.getMessage());
             return false;
         }
     }
@@ -115,7 +114,7 @@ public class AreaWKT extends AreaToolComposer {
             mc.removeLayer(layerName);
         }
         String script = mc.getOpenLayersJavascript().addBoxDrawingTool();
-        mc.getOpenLayersJavascript().execute(OpenLayersJavascript.iFrameReferences + script);
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().getIFrameReferences() + script);
         displayGeom.setValue("");
 
         invalidWKT.setVisible(false);

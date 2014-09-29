@@ -1,5 +1,6 @@
 package au.org.emii.portal.web;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.config.ConfigurationLoaderStage1Impl;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.session.PortalSession;
@@ -20,11 +21,11 @@ import java.io.IOException;
 
 public class SessionInitImpl implements SessionInit, DesktopInit {
 
-    public final static String PORTAL_SESSION_ATTRIBUTE = "portalSession";
-    private static Logger logger = Logger.getLogger(SessionInitImpl.class);
-    private final static String ERROR_PAGE = "/WEB-INF/jsp/Error.jsp";
+    public static final String PORTAL_SESSION_ATTRIBUTE = StringConstants.PORTAL_SESSION;
+    private static final Logger LOGGER = Logger.getLogger(SessionInitImpl.class);
+    private static final String ERROR_PAGE = "/WEB-INF/jsp/Error.jsp";
     // Max time to wait while portal is reloading
-    private final static int MAX_TIME_RELOADING_SECONDS = 30;
+    private static final int MAX_TIME_RELOADING_SECONDS = 30;
 
     private PortalSession getMasterPortalSession(Session session) {
         return (PortalSession) getServletContext(session).getAttribute(ApplicationInit.PORTAL_MASTER_SESSION_ATTRIBUTE);
@@ -56,8 +57,9 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
         while (stage1.isReloading() && (seconds > 0)) {
             try {
                 Thread.sleep(1000);
-                logger.debug("waited " + (MAX_TIME_RELOADING_SECONDS - seconds) + " for portal to come up...");
+                LOGGER.debug("waited " + (MAX_TIME_RELOADING_SECONDS - seconds) + " for portal to come up...");
             } catch (InterruptedException ex) {
+                LOGGER.debug("config reload-wait cancelled");
             }
             seconds--;
         }
@@ -66,7 +68,7 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
 
     @Override
     public void init(Session session, Object request) throws Exception {
-        logger.debug("* SESSION INIT:");
+        LOGGER.debug("* SESSION INIT:");
 
         // obtain stage1 loader - check for errors
         ConfigurationLoaderStage1Impl stage1 = getConfigurationLoaderStage1(session);
@@ -88,7 +90,7 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
             if (masterPortalSession == null) {
                 // hmm master portal session never got created - don't know why, check
                 // output for previous errors
-                logger.error("masterPortalSession is null - redirecting user to error page");
+                LOGGER.error("masterPortalSession is null - redirecting user to error page");
 
                 // redirect to error page - nothing we can do and portal doesn't look to
                 // be coming up any time soon
@@ -101,7 +103,7 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
                 PortalSessionCloner cloner = getPortalSessionCloner(session);
                 PortalSession portalSession = cloner.clone(masterPortalSession);
                 session.setAttribute(PORTAL_SESSION_ATTRIBUTE, portalSession);
-                logger.debug("* SESSION INIT OK");
+                LOGGER.debug("* SESSION INIT OK");
             }
         }
     }
@@ -116,17 +118,17 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
                 }
             }
         } catch (IOException ex) {
-            logger.error("Error redirecting", ex);
+            LOGGER.error("Error redirecting", ex);
         }
     }
 
     @Override
     public void init(Desktop desktop, Object request) throws Exception {
-        logger.debug("* INIT Desktop");
+        LOGGER.debug("* INIT Desktop");
         Session session = desktop.getSession();
 
         if (session == null) {
-            logger.debug(
+            LOGGER.debug(
                     "user has a null session - no idea why (system coming up/going down - "
                             + "concurrency ?) will redirect to error page");
             redirectAndInvalidateSession(desktop.getSession(), ERROR_PAGE);
@@ -145,17 +147,15 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
             PortalSessionUtilities portalSessionUtilities = getPortalSessionUtilities(session);
             OpenLayersJavascript openLayersJavascript = getApplicationContext(session).getBean(OpenLayersJavascript.class);
             String script =
-                    openLayersJavascript.initialiseMap()
-                            + OpenLayersJavascript.iFrameReferences
+                    openLayersJavascript.initialiseMap(portalSessionUtilities.getCurrentBoundingBox(portalSession))
+                            + openLayersJavascript.getIFrameReferences()
                             + openLayersJavascript.setBaseLayer(portalSession.getBaseLayer())
-                            + openLayersJavascript.activateMapLayers(portalSession.getActiveLayers())
-                            + openLayersJavascript.zoomToBoundingBox(portalSessionUtilities.getCurrentBoundingBox(portalSession));
-
+                            + openLayersJavascript.activateMapLayers(portalSession.getActiveLayers());
             // remove all whitespace
             script = openLayersJavascript.minify(script);
             portalSession.setOnIframeMapFullyLoaded(script);
-            logger.debug("onIframeMapFullyLoaded set to: " + script);
+            LOGGER.debug("onIframeMapFullyLoaded set to: " + script);
         }
-        logger.debug("...session init complete");
+        LOGGER.debug("...session init complete");
     }
 }

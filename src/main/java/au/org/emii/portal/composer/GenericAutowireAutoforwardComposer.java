@@ -1,7 +1,7 @@
 package au.org.emii.portal.composer;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.session.PortalSession;
-import au.org.emii.portal.web.ApplicationInit;
 import au.org.emii.portal.web.SessionInitImpl;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Component;
@@ -25,7 +25,7 @@ import org.zkoss.zul.Window;
  */
 public abstract class GenericAutowireAutoforwardComposer extends Window implements AfterCompose, Composer {
 
-    private static Logger logger = Logger.getLogger(GenericAutowireAutoforwardComposer.class);
+    private static final Logger LOGGER = Logger.getLogger(GenericAutowireAutoforwardComposer.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -55,24 +55,15 @@ public abstract class GenericAutowireAutoforwardComposer extends Window implemen
     }
 
     public void setPortalSession(PortalSession portalSession) {
-        logger.debug("portal session updated for: " + this.getClass().getName());
+        LOGGER.debug("portal session updated for: " + this.getClass().getName());
         Sessions.getCurrent().setAttribute(SessionInitImpl.PORTAL_SESSION_ATTRIBUTE, portalSession);
-    }
-
-    /**
-     * Get the master portal session
-     *
-     * @return
-     */
-    public PortalSession getMasterPortalSession() {
-        return (PortalSession) Sessions.getCurrent().getWebApp().getAttribute(ApplicationInit.PORTAL_MASTER_SESSION_ATTRIBUTE);
     }
 
     public MapComposer getMapComposer() {
         return (MapComposer) Executions.getCurrent()
                 .getDesktop()
                 .getPage("MapZul")
-                .getFellow("mapPortalPage");
+                .getFellow(StringConstants.MAPPORTALPAGE);
     }
 
 }

@@ -10,24 +10,16 @@ package au.org.emii.portal.value;
  */
 public interface AbstractIdentifier {
 
-    /**
-     * Return a human readable dump of this object.  Skips the description
-     * because it could be long and mess up the output
-     *
-     * @return
-     */
-    public String dump();
+    String getDescription();
 
-    public String getDescription();
+    void setDescription(String description);
 
-    public String getId();
+    String getId();
 
-    public String getName();
+    void setId(String id);
 
-    public void setDescription(String description);
+    String getName();
 
-    public void setId(String id);
-
-    public void setName(String name);
+    void setName(String name);
 
 }

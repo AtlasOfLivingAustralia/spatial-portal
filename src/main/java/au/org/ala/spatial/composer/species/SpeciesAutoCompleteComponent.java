@@ -1,19 +1,20 @@
 package au.org.ala.spatial.composer.species;
 
-import au.org.ala.spatial.data.BiocacheQuery;
-import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.QueryUtil;
-import au.org.emii.portal.composer.MapComposer;
+import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.util.BiocacheQuery;
+import au.org.ala.spatial.util.Query;
+import au.org.ala.spatial.util.QueryUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.CheckEvent;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Vbox;
+
+import java.util.Map;
 
 /**
  * A combined species autocomplete item that allows users to select whether or
@@ -23,7 +24,7 @@ import org.zkoss.zul.Vbox;
  */
 public class SpeciesAutoCompleteComponent extends Div {
 
-    private static Logger logger = Logger.getLogger(SpeciesAutoCompleteComponent.class);
+    private static final Logger LOGGER = Logger.getLogger(SpeciesAutoCompleteComponent.class);
 
     private Vbox vbox;
     private Checkbox chkUseRawName;
@@ -42,26 +43,9 @@ public class SpeciesAutoCompleteComponent extends Div {
         vbox = new Vbox();
         chkUseRawName = new Checkbox("Use the scientific names supplied with the records");
         chkUseRawName.setChecked(false);
-        chkUseRawName.addEventListener("onCheck", new EventListener() {
-
-            @Override
-            public void onEvent(Event event) throws Exception {
-                // TODO Auto-generated method stub
-                onCheck$chkUseRawName(event);
-            }
-        });
         autoComplete = new SpeciesAutoComplete();
         autoComplete.setAutodrop(true);
         autoComplete.setWidth("330px");
-        autoComplete.addEventListener("onChange", new EventListener() {
-
-            @Override
-            public void onEvent(Event event) throws Exception {
-                // TODO Auto-generated method stub
-                autoCompleteSelectionChanged(event);
-            }
-
-        });
         vbox.appendChild(chkUseRawName);
         vbox.appendChild(autoComplete);
     }
@@ -72,7 +56,7 @@ public class SpeciesAutoCompleteComponent extends Div {
      *
      * @param event
      */
-    private void autoCompleteSelectionChanged(Event event) {
+    public void onChange$autoComplete(Event event) {
         Events.sendEvent(new Event("onValueSelected", this));
     }
 
@@ -95,7 +79,7 @@ public class SpeciesAutoCompleteComponent extends Div {
     public boolean hasValidAnnotatedItemSelected() {
         return !(autoComplete.getSelectedItem() == null
                 || autoComplete.getSelectedItem().getAnnotatedProperties() == null
-                || autoComplete.getSelectedItem().getAnnotatedProperties().size() == 0);
+                || autoComplete.getSelectedItem().getAnnotatedProperties().isEmpty());
     }
 
     /**
@@ -108,16 +92,15 @@ public class SpeciesAutoCompleteComponent extends Div {
     /**
      * Returns the query that can be used to retrieve the selected species.
      *
-     * @param mc
      * @param geokosher
      * @return
      */
-    public Query getQuery(MapComposer mc, boolean forMapping, boolean[] geokosher) {
+    public Query getQuery(Map points, boolean forMapping, boolean[] geokosher) {
         Query query;
         if (chkUseRawName.isChecked()) {
-            query = QueryUtil.get(autoComplete.getFacetField(), autoComplete.getSelectedItem().getAnnotatedProperties().get(0), mc, forMapping, geokosher);
+            query = QueryUtil.get(autoComplete.getFacetField(), autoComplete.getSelectedItem().getAnnotatedProperties().get(0), forMapping, geokosher);
         } else {
-            query = QueryUtil.get(autoComplete.getSelectedItem().getAnnotatedProperties().get(0), mc, forMapping, geokosher);
+            query = QueryUtil.get(autoComplete.getSelectedItem().getAnnotatedProperties().get(0), points, forMapping, geokosher);
         }
         return query;
     }
@@ -153,10 +136,10 @@ public class SpeciesAutoCompleteComponent extends Div {
         if (hasValidAnnotatedItemSelected()) {
             Comboitem si = autoComplete.getSelectedItem();
             if (shouldUseRawName()) {
-                return new String[]{autoComplete.getValue(), "unmatched"};
+                return new String[]{autoComplete.getValue(), "unmatched" };
             } else {
                 String taxon = autoComplete.getValue();
-                String rank = "";
+                String rank;
 
                 String spVal = si.getDescription();
                 if (spVal.trim().contains(": ")) {
@@ -164,15 +147,15 @@ public class SpeciesAutoCompleteComponent extends Div {
                     rank = spVal.trim().substring(0, spVal.trim().indexOf(":"));
                 } else {
                     rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
-                    logger.debug("mapping rank and species: " + rank + " - " + taxon);
+                    LOGGER.debug("mapping rank and species: " + rank + " - " + taxon);
                 }
-                if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
-                    rank = "taxon";
+                if (StringConstants.SCIENTIFICNAME.equalsIgnoreCase(rank) || StringConstants.SCIENTIFIC.equalsIgnoreCase(rank)) {
+                    rank = StringConstants.TAXON;
                 }
                 return new String[]{taxon, rank};
             }
         } else {
-            return null;
+            return new String[0];
         }
     }
 

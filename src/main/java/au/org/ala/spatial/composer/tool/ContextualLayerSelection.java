@@ -4,10 +4,10 @@
  */
 package au.org.ala.spatial.composer.tool;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.layer.ContextualLayersAutoComplete;
 import au.org.ala.spatial.util.CommonData;
-import au.org.emii.portal.composer.ContextualLayerListComposer;
-import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import net.sf.json.JSONObject;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -22,10 +22,10 @@ import java.util.Map;
  */
 public class ContextualLayerSelection extends ToolComposer {
 
-    Button btnNext;
-    ContextualLayersAutoComplete autoCompleteLayers;
-    String treeName, treePath, treeMetadata;
-    int treeSubType;
+    private Button btnNext;
+    private ContextualLayersAutoComplete autoCompleteLayers;
+    private String treeName, treePath, treeMetadata;
+    private int treeSubType;
 
     @Override
     public void afterCompose() {
@@ -42,9 +42,9 @@ public class ContextualLayerSelection extends ToolComposer {
     public void onClick$btnNext(Event event) {
 
         Map<String, Object> winProps = new HashMap<String, Object>();
-        winProps.put("parent", this);
-        winProps.put("parentname", "Tool");
-        winProps.put("selectedMethod", selectedMethod);
+        winProps.put(StringConstants.PARENT, this);
+        winProps.put(StringConstants.PARENTNAME, "Tool");
+        winProps.put(StringConstants.SELECTEDMETHOD, selectedMethod);
 
         if (treeName != null) {
             getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(treeName), treeName,
@@ -54,10 +54,10 @@ public class ContextualLayerSelection extends ToolComposer {
             String activeLayerName = treePath.replaceAll("^.*ALA:", "").replaceAll("&.*", "");
 
             String lyrSubType = "";
-            if (treeSubType == LayerUtilities.CONTEXTUAL) {
+            if (treeSubType == LayerUtilitiesImpl.CONTEXTUAL) {
                 lyrSubType = "Contextual";
-            } else if (treeSubType == LayerUtilities.GRID) {
-                lyrSubType = "Environmental";
+            } else if (treeSubType == LayerUtilitiesImpl.GRID) {
+                lyrSubType = StringConstants.ENVIRONMENTAL;
             }
 
             remoteLogger.logMapArea(treeName, "Layer - " + lyrSubType, treePath, activeLayerName, treeMetadata);
@@ -66,25 +66,24 @@ public class ContextualLayerSelection extends ToolComposer {
         Window window = (Window) Executions.createComponents("WEB-INF/zul/add/area/AreaMapPolygon.zul", this.getParent(), winProps);
         window.doOverlapped();
         String script = getMapComposer().getOpenLayersJavascript().addFeatureSelectionTool();
-        getMapComposer().getOpenLayersJavascript().execute(getMapComposer().getOpenLayersJavascript().iFrameReferences + script);
+        getMapComposer().getOpenLayersJavascript().execute(getMapComposer().getOpenLayersJavascript().getIFrameReferences() + script);
 
         this.detach();
     }
 
     public void onChange$autoCompleteLayers(Event event) {
         treeName = null;
-        //btnOk.setDisabled(true);
 
         ContextualLayerListComposer llc = (ContextualLayerListComposer) getFellow("layerTree").getFellow("contextuallayerlistwindow");
 
         if (autoCompleteLayers.getItemCount() > 0 && autoCompleteLayers.getSelectedItem() != null) {
-            JSONObject jo = (JSONObject) autoCompleteLayers.getSelectedItem().getValue();
-            String metadata = "";
+            JSONObject jo = autoCompleteLayers.getSelectedItem().getValue();
+            String metadata;
 
-            metadata = CommonData.layersServer + "/layers/view/more/" + jo.getString("id");
+            metadata = CommonData.getLayersServer() + "/layers/view/more/" + jo.getString(StringConstants.ID);
 
-            setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata,
-                    jo.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
+            setLayer(jo.getString(StringConstants.DISPLAYNAME), jo.getString("displaypath"), metadata,
+                    StringConstants.ENVIRONMENTAL.equalsIgnoreCase(jo.getString(StringConstants.TYPE)) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
         } else {
 
             // if the autocomplete has been type, but before selecting an option,
@@ -95,33 +94,30 @@ public class ContextualLayerSelection extends ToolComposer {
             }
 
             JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
-            if (!joLayer.getString("type").contentEquals("class")) {
+            if (!StringConstants.CLASS.equals(joLayer.getString(StringConstants.TYPE))) {
 
-                String metadata = CommonData.layersServer + "/layers/view/more/" + joLayer.getString("id");
+                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.getString(StringConstants.ID);
 
-                setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
-                        joLayer.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
+                setLayer(joLayer.getString(StringConstants.DISPLAYNAME), joLayer.getString("displaypath"), metadata,
+                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.getString(StringConstants.TYPE)) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
             } else {
-                String classAttribute = joLayer.getString("classname");
-                String classValue = joLayer.getString("displayname");
-                String layer = joLayer.getString("layername");
-                //String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
-                String displaypath = CommonData.geoServer
+                String classValue = joLayer.getString(StringConstants.DISPLAYNAME);
+                String layer = joLayer.getString(StringConstants.LAYERNAME);
+                String displaypath = CommonData.getGeoServer()
                         + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
                         + joLayer.getString("displaypath");
-                //Filtered requests don't work on
+
                 displaypath = displaypath.replace("gwc/service/", "");
-                // Messagebox.show(displaypath);
-                String metadata = CommonData.layersServer + "/layers/view/more/" + joLayer.getString("id");
+
+                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.getString(StringConstants.ID);
 
                 setLayer(layer + " - " + classValue, displaypath, metadata,
-                        joLayer.getString("type").equalsIgnoreCase("environmental") ? LayerUtilities.GRID : LayerUtilities.CONTEXTUAL);
+                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.getString(StringConstants.TYPE)) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
             }
 
             //close parent if it is 'addlayerwindow'
-            try {
+            if (getRoot().hasFellow("addlayerwindow")) {
                 getRoot().getFellow("addlayerwindow").detach();
-            } catch (Exception e) {
             }
         }
     }
@@ -139,7 +135,6 @@ public class ContextualLayerSelection extends ToolComposer {
         ContextualLayerListComposer llc = (ContextualLayerListComposer) getFellow("layerTree").getFellow("contextuallayerlistwindow");
         llc.tree.clearSelection();
 
-        // btnOk.setDisabled(false);
         btnNext.setDisabled(false);
     }
 }

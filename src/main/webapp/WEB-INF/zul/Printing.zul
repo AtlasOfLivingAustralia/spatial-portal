@@ -45,11 +45,11 @@
                 </combobox>
             </hbox>
 
-            <hbox visible="false">
+            <hbox visible="true" id="hboxImageResolution">
                 <div width="150px"><label value="Image resolution" width="150px"/></div>
-                <combobox id="cbResolution" autodrop="true">
-                    <comboitem label="screen"/>
-                    <comboitem label="print"/>
+                    <combobox id="cbResolution" autodrop="true">
+                    <comboitem label="normal"/>
+                    <comboitem label="high (slower)"/>
                 </combobox>
             </hbox>
 <separator />

@@ -11,51 +11,37 @@ import au.org.emii.portal.value.BoundingBox;
  */
 public interface Settings {
 
-    public int getCacheMaxAge();
+    int getCacheMaxAge();
 
-    public String getCacheParameter();
+    int getConfigRereadInitialInterval();
 
-    public int getConfigRereadInitialInterval();
+    void setConfigRereadInitialInterval(int configRereadInitialInterval);
 
-    public int getConfigRereadInterval();
+    int getConfigRereadInterval();
 
-    public BoundingBox getDefaultBoundingBox();
+    void setConfigRereadInterval(int configRereadInterval);
 
-    public int getNetConnectSlowTimeout();
+    BoundingBox getDefaultBoundingBox();
 
-    public int getNetConnectTimeout();
+    void setDefaultBoundingBox(BoundingBox defaultBoundingBox);
 
-    public int getNetReadSlowTimeout();
+    int getNetConnectSlowTimeout();
 
-    public int getNetReadTimeout();
+    void setNetConnectSlowTimeout(int netConnectSlowTimeout);
 
-    public String getProxyAllowedHosts();
+    int getNetConnectTimeout();
 
-    public String getXmlMimeType();
+    void setNetConnectTimeout(int netConnectTimeout);
 
-    public void setCacheMaxAge(int cacheMaxAge);
+    int getNetReadSlowTimeout();
 
-    public void setCacheParameter(String cacheParameter);
+    void setNetReadSlowTimeout(int netReadSlowTimeout);
 
-    public void setConfigRereadInitialInterval(int configRereadInitialInterval);
+    int getNetReadTimeout();
 
-    public void setConfigRereadInterval(int configRereadInterval);
+    void setNetReadTimeout(int netReadTimeout);
 
-    public void setDefaultBoundingBox(BoundingBox defaultBoundingBox);
+    String getProxyAllowedHosts();
 
-    public void setNetConnectSlowTimeout(int netConnectSlowTimeout);
-
-    public void setNetConnectTimeout(int netConnectTimeout);
-
-    public void setNetReadSlowTimeout(int netReadSlowTimeout);
-
-    public void setNetReadTimeout(int netReadTimeout);
-
-    public void setProxyAllowedHosts(String proxyAllowedHosts);
-
-    public void setXmlMimeType(String xmlMimeType);
-
-    public String getConfigPath();
-
-    public void setConfigPath(String configPath);
+    void setProxyAllowedHosts(String proxyAllowedHosts);
 }

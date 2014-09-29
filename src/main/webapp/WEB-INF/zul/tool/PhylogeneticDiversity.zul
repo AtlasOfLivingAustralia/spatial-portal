@@ -53,7 +53,6 @@
                 <listbox id="treesList" height="350px" multiple="false" checkmark="true">
                     <listhead id="treesHeader">
                         <listheader id="lh_treeViewUrl" label="" width="35px" />
-                        <listheader id="lh_maxPd" label = "Max PD" hflex="min"/>
                         <listheader id="lh_group" label="Group" hflex="min"/>
                         <listheader id="lh_focalClade" label = "Focal Clade" hflex="min"/>
                         <listheader id="lh_numberOfLeaves" label = "# Leaves" hflex="min"/>

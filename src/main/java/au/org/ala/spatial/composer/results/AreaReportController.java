@@ -1,21 +1,16 @@
 package au.org.ala.spatial.composer.results;
 
-import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.quicklinks.SamplingEvent;
 import au.org.ala.spatial.composer.quicklinks.SpeciesListEvent;
 import au.org.ala.spatial.dto.AreaReportItemDTO;
 import au.org.ala.spatial.dto.AreaReportItemDTO.ListType;
-import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.QueryUtil;
-import au.org.ala.spatial.data.SpeciesListUtil;
 import au.org.ala.spatial.logger.RemoteLogger;
-import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.SelectedArea;
-import au.org.ala.spatial.util.Util;
+import au.org.ala.spatial.util.*;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
-
-import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.menu.SelectedArea;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
@@ -24,7 +19,6 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.zkoss.util.resource.Labels;
 import org.zkoss.zhtml.Filedownload;
@@ -32,11 +26,11 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.*;
 
 import javax.swing.event.ListDataEvent;
-import java.io.StringReader;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -65,39 +59,96 @@ import static au.org.ala.spatial.dto.AreaReportItemDTO.ExtraInfoEnum;
 public class AreaReportController extends UtilityComposer {
 
     private static final String VIEW_RECORDS = "View Records";
-    public static final int MAX_GAZ_POINT = 5000;
-    private static Logger logger = Logger.getLogger(AreaReportController.class);
-    RemoteLogger remoteLogger;
+    private static final Logger LOGGER = Logger.getLogger(AreaReportController.class);
+    private String pid;
+    private RemoteLogger remoteLogger;
+    private String[] speciesDistributionText = null;
+    private String[] speciesChecklistText = null;
+    private String[] areaChecklistText = null;
+    private boolean addedListener = false;
 
-    String[] speciesDistributionText = null;
-    String[] speciesChecklistText = null;
-    String[] areaChecklistText = null;
-    Window window = null;
-    public String pid;
-    boolean addedListener = false;
+    private SelectedArea selectedArea = null;
+    private String areaName = StringConstants.AREA_REPORT;
+    private String areaDisplayName = StringConstants.AREA_REPORT;
+    private String areaSqKm = null;
+    private boolean includeEndemic;
+    private Div divWorldNote;
 
-    SelectedArea selectedArea = null;
-    String areaName = "Area Report";
-    String areaDisplayName = "Area Report";
-    String areaSqKm = null;
-    boolean includeEndemic;
-    double[] boundingBox = null;
-    HashMap<String, String> data = new HashMap<String, String>();
-    Div divWorldNote;
+    private JSONArray gazPoints = null;
 
-    JSONArray gazPoints = null;
+    private JSONArray pointsOfInterest = null;
 
-    JSONArray pointsOfInterest = null;
-
-    Map<String, Future<Map<String, String>>> futures = null;
-    long futuresStart = -1;
-    ExecutorService pool = null;
-    List<String> firedEvents = null;
+    private Map<String, Future<Map<String, String>>> futures = null;
+    private long futuresStart = -1;
+    private ExecutorService pool = null;
+    private List<String> firedEvents = null;
 
     //Items for the list of configured facets
-    Grid facetsValues;
-    ChangableSimpleListModel areaReportListModel;
-    Map<String, AreaReportItemDTO> reportModelMap;
+    private Grid facetsValues;
+    private ChangableSimpleListModel areaReportListModel;
+    private Map<String, AreaReportItemDTO> reportModelMap;
+    private String biostorHtml = null;
+
+    public static void open(SelectedArea sa, String name, String displayName, String areaSqKm, double[] boundingBox, boolean includeEndemic) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("includeEndemic", includeEndemic);
+        params.put("displayPointsOfInterest", CommonData.getDisplayPointsOfInterest());
+        AreaReportController win = (AreaReportController) Executions.createComponents("/WEB-INF/zul/results/AreaReportResults.zul", null, params);
+        try {
+            win.doOverlapped();
+            win.setPosition("center");
+            win.setReportArea(sa, name, displayName, areaSqKm, boundingBox.clone(), includeEndemic);
+        } catch (Exception e) {
+            LOGGER.error("error opening AreaReportResults.zul", e);
+        }
+    }
+
+    public static JSONArray getGazPoints(String wkt) {
+        try {
+            int limit = Integer.MAX_VALUE;
+            String url = CommonData.getLayersServer() + "/objects/inarea/" + CommonData.getSettings().get("area_report_gaz_field") + "?limit=" + limit;
+
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(url);
+            LOGGER.debug(url);
+            if (wkt != null) {
+                post.addParameter(StringConstants.WKT, wkt);
+            }
+            post.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
+            int result = client.executeMethod(post);
+            if (result == 200) {
+                String txt = post.getResponseBodyAsString();
+                return JSONArray.fromObject(txt);
+            } else {
+                LOGGER.debug(result + ", " + post.getResponseBodyAsString());
+            }
+        } catch (Exception e) {
+            LOGGER.error("error getting number of gaz points in an area: " + wkt, e);
+        }
+        return null;
+    }
+
+    public static JSONArray getPointsOfInterest(String wkt) {
+        try {
+            String url = CommonData.getLayersServer() + "/intersect/poi/wkt";
+
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(url);
+            if (wkt != null) {
+                NameValuePair nvp = new NameValuePair(StringConstants.WKT, wkt);
+                post.setRequestBody(new NameValuePair[]{nvp});
+            }
+            post.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
+            int result = client.executeMethod(post);
+            if (result == 200) {
+                String txt = post.getResponseBodyAsString();
+                return JSONArray.fromObject(txt);
+            }
+        } catch (Exception e) {
+            LOGGER.error("error getting points of interest in an area: " + wkt, e);
+        }
+        return null;
+    }
 
     public boolean shouldIncludeEndemic() {
         return includeEndemic;
@@ -105,37 +156,34 @@ public class AreaReportController extends UtilityComposer {
 
     public void setReportArea(SelectedArea sa, String name, String displayname, String areaSqKm, double[] boundingBox, boolean includeEndemic) {
         this.selectedArea = sa;
-        sa.getReducedWkt();     //initialize reduced area
+        //initialize reduced area
+        sa.getReducedWkt();
 
         this.areaName = name;
         this.areaDisplayName = displayname;
         this.areaSqKm = areaSqKm;
-        this.boundingBox = boundingBox;
         this.includeEndemic = includeEndemic;
-        ((Caption) getFellow("cTitle")).setLabel(displayname);
+        ((Caption) getFellow(StringConstants.CTITLE)).setLabel(displayname);
 
-        if (name.equals("Current extent")) {
+        if (StringConstants.CURRENT_EXTENT.equals(name)) {
             addListener();
         }
 
-        try {
-            startQueries();
-            String extras = "";
-            extras += "areaSqKm: " + areaSqKm;
-            extras += ";boundingBox: " + boundingBox;
-            remoteLogger.logMapAnalysis(displayname, "Tool - Area Report", areaName + "__"  + sa.getReducedWkt(), "", "", pid, extras, "0");
-        } catch (Exception e) {
-            //logger.error("error logging", e);
+        startQueries();
+        String extras = "";
+        extras += "areaSqKm: " + areaSqKm;
+        if (boundingBox != null) {
+            extras += ";boundingBox: " + boundingBox[0] + "," + boundingBox[1] + "," + boundingBox[2] + "," + boundingBox[3];
         }
-
+        remoteLogger.logMapAnalysis(displayname, "Tool - Area Report", areaName + "__" + sa.getReducedWkt(), "", "", pid, extras, "0");
 
         // start checking of completed threads
-        Events.echoEvent("checkFutures", this, null);
+        Events.echoEvent(StringConstants.CHECK_FUTURES, this, null);
     }
 
     @Override
     public void detach() {
-        getMapComposer().getLeftmenuSearchComposer().removeViewportEventListener("filteringResults");
+        getMapComposer().getLeftmenuSearchComposer().removeViewportEventListener(StringConstants.FILTERING_RESULTS);
         super.detach();
     }
 
@@ -148,14 +196,8 @@ public class AreaReportController extends UtilityComposer {
                     selectedArea = new SelectedArea(null, getMapComposer().getViewArea());
                 }
             };
-            getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
+            getMapComposer().getLeftmenuSearchComposer().addViewportEventListener(StringConstants.FILTERING_RESULTS, el);
         }
-    }
-
-
-    boolean isTabOpen() {
-        return true; // getMapComposer().getPortalSession().getCurrentNavigationTab()
-        // == PortalSession.LINK_TAB;
     }
 
     /**
@@ -166,40 +208,41 @@ public class AreaReportController extends UtilityComposer {
     private Map<String, AreaReportItemDTO> setUpModelMap(boolean isWorldSelected) {
         Map<String, AreaReportItemDTO> values = new LinkedHashMap<String, AreaReportItemDTO>();
         String worldSuffix = isWorldSelected ? "*" : "";
-        //area        
-        values.put("area", new AreaReportItemDTO("Area (sq km)"));
+        //area
+        values.put(StringConstants.AREA, new AreaReportItemDTO("Area (sq km)"));
         //species
-        values.put("species" + worldSuffix, new AreaReportItemDTO("Number of species"));
-        //spatially valid species 
-        values.put("spatialSpecies", new AreaReportItemDTO("Number of species - spatially valid only"));
+        values.put(StringConstants.SPECIES + worldSuffix, new AreaReportItemDTO("Number of species"));
+        //spatially valid species
+        values.put(StringConstants.SPATIAL_SPECIES, new AreaReportItemDTO("Number of species - spatially valid only"));
         if (includeEndemic) {
             //endemic
-            values.put("endemicSpecies", new AreaReportItemDTO("Number of endemic species"));
-            values.put("spatialEndemicSpecies", new AreaReportItemDTO("Number of endemic species - spatially valid only"));
+            values.put(StringConstants.ENDEMIC_SPECIES, new AreaReportItemDTO("Number of endemic species"));
+            values.put(StringConstants.SPATIAL_ENDEMIC_SPECIES, new AreaReportItemDTO("Number of endemic species - spatially valid only"));
         }
         //occurrences
-        values.put("occurrences" + worldSuffix, new AreaReportItemDTO("Occurrences"));
+        values.put(StringConstants.OCCURRENCES + worldSuffix, new AreaReportItemDTO("Occurrences"));
         //spatially valid occurrences
-        values.put("spatialOccurrences", new AreaReportItemDTO("Occurrences - spatially valid only"));
+        values.put(StringConstants.SPATIAL_OCCURRENCES, new AreaReportItemDTO("Occurrences - spatially valid only"));
         //expert distribution
-        values.put("expertDistributions", new AreaReportItemDTO("Expert distributions"));
+        values.put(StringConstants.EXPERT_DISTRIBUTIONS, new AreaReportItemDTO("Expert distributions"));
         //checklist areas
-        values.put("checklistArea", new AreaReportItemDTO("Checklist areas"));
-        //checklist species 
-        values.put("checklistSpecies", new AreaReportItemDTO("Checklist species"));
+        values.put(StringConstants.CHECKLIST_AREA, new AreaReportItemDTO(StringConstants.CHECKLIST_AREAS));
+        //checklist species
+        values.put(StringConstants.CHECKLIST_SPECIES, new AreaReportItemDTO("Checklist species"));
         //biostor documents
-        values.put("biostor", new AreaReportItemDTO("Biostor documents"));
+        values.put(StringConstants.BIOSTOR, new AreaReportItemDTO("Biostor documents"));
         //gazetteer points
-        values.put("gazetteer", new AreaReportItemDTO("Gazetteer points"));
+        values.put(StringConstants.GAZETTEER, new AreaReportItemDTO("Gazetteer points"));
         //points of interest
-        if (CommonData.displayPointsOfInterest) {
-            values.put("poi", new AreaReportItemDTO("Points of interest"));
+        if (CommonData.getDisplayPointsOfInterest()) {
+            values.put("poi", new AreaReportItemDTO(StringConstants.POINTS_OF_INTEREST));
         }
         //configured facets
-        values.put("configuedFacets", new AreaReportItemDTO(""));
+        for (int i = 0; i < CommonData.getAreaReportFacets().length; i++) {
+            values.put(StringConstants.CONFIGURED_FACETS + i, new AreaReportItemDTO(""));
+        }
         return values;
     }
-
 
     void startQueries() {
 
@@ -212,29 +255,38 @@ public class AreaReportController extends UtilityComposer {
         facetsValues.setRowRenderer(new RowRenderer() {
 
             @Override
-            public void render(Row row, Object data, int item_idx) throws Exception {
+            public void render(Row row, Object data, int itemIdx) throws Exception {
                 //data should be a map of facet result information
                 if (data instanceof AreaReportItemDTO) {
                     final AreaReportItemDTO dto = (AreaReportItemDTO) data;
                     row.appendChild(new Label(dto.getTitle()));
                     row.appendChild(new Label(dto.getCount()));
                     //check for the buttons to display
+                    Div listDiv = new Div();
+                    Div mapDiv = new Div();
+                    Div sampleDiv = new Div();
+                    row.appendChild(listDiv);
+                    row.appendChild(mapDiv);
+                    row.appendChild(sampleDiv);
+                    listDiv.setZclass("areaReportListCol");
+                    mapDiv.setZclass("areaReportMapCol");
+                    sampleDiv.setZclass("areaReportSampleCol");
+                    Button b;
                     if (dto.getExtraInfo() != null) {
-                        Div newDiv = new Div();
                         final boolean[] gk = dto.isGeospatialKosher() ? new boolean[]{true, false, false} : new boolean[]{true, true, false};
                         final boolean kosher = dto.isGeospatialKosher();
                         for (ExtraInfoEnum type : dto.getExtraInfo()) {
                             switch (type) {
-                                case LIST: {
-                                    Button b = new Button("List");
-                                    b.setZclass("btn btn-mini");
-                                    b.addEventListener("onClick", new EventListener() {
+                                case LIST:
+                                    b = new Button("List");
+                                    b.setZclass(StringConstants.BTN_BTN_MINI);
+                                    b.addEventListener(StringConstants.ONCLICK, new EventListener() {
 
                                         @Override
                                         public void onEvent(Event event)
                                                 throws Exception {
                                             if (dto.getListType() == ListType.SPECIES) {
-                                                new SpeciesListEvent(getMapComposer(), areaName, 1, gk, dto.isEndemic(), dto.getExtraParams()).onEvent(null);
+                                                new SpeciesListEvent(areaName, gk, dto.isEndemic(), dto.getExtraParams()).onEvent(event);
                                             } else if (dto.getListType() == ListType.DISTRIBUTION) {
                                                 listDistributions(dto);
                                             } else if (dto.getListType() == ListType.AREA_CHECKLIST) {
@@ -248,38 +300,36 @@ public class AreaReportController extends UtilityComposer {
                                         }
 
                                     });
-                                    newDiv.appendChild(b);
+                                    listDiv.appendChild(b);
                                     break;
-                                }
-                                case SAMPLE: {
-                                    Button b = new Button("Sample");
-                                    b.setZclass("btn btn-mini");
-                                    final SamplingEvent sle = new SamplingEvent(getMapComposer(), null, areaName, null, 2, gk);
-                                    b.addEventListener("onClick", new EventListener() {
+                                case SAMPLE:
+                                    b = new Button("Sample");
+                                    b.setZclass(StringConstants.BTN_BTN_MINI);
+                                    final SamplingEvent sle = new SamplingEvent(null, areaName, null, gk);
+                                    b.addEventListener(StringConstants.ONCLICK, new EventListener() {
 
                                         @Override
                                         public void onEvent(Event event)
                                                 throws Exception {
-                                            sle.onEvent(null);
+                                            sle.onEvent(new ForwardEvent("", getMapComposer(), null));
 
                                         }
 
                                     });
-                                    newDiv.appendChild(b);
+                                    sampleDiv.appendChild(b);
                                     break;
-                                }
-                                case MAP_ALL: {
-                                    //set up the map button                                  
-                                    Button b = new Button("Map all");
-                                    b.setZclass("btn btn-mini");
-                                    b.addEventListener("onClick", new EventListener() {
+                                case MAP_ALL:
+                                    //set up the map button
+                                    b = new Button("Map all");
+                                    b.setZclass(StringConstants.BTN_BTN_MINI);
+                                    b.addEventListener(StringConstants.ONCLICK, new EventListener() {
 
                                         @Override
                                         public void onEvent(Event event)
                                                 throws Exception {
                                             if (dto.getTitle().contains("Gazetteer")) {
                                                 mapGazetteer();
-                                            } else if (dto.getTitle().equals("Points of interest")) {
+                                            } else if (StringConstants.POINTS_OF_INTEREST.equals(dto.getTitle())) {
                                                 onMapPointsOfInterest(event);
                                             } else if (kosher) {
                                                 onMapSpeciesKosher(null);
@@ -288,15 +338,12 @@ public class AreaReportController extends UtilityComposer {
                                             }
                                         }
                                     });
-                                    newDiv.appendChild(b);
+                                    mapDiv.appendChild(b);
                                     break;
-                                }
+                                default:
+                                    LOGGER.error("invalid type for AreaReportController: " + type);
                             }
                         }
-
-                        row.appendChild(newDiv);
-                    } else {
-                        row.appendChild(new Label(""));
                     }
                     if (dto.getUrlDetails() != null) {
                         Vlayout vlayout = new Vlayout();
@@ -307,16 +354,15 @@ public class AreaReportController extends UtilityComposer {
 
                             if (url.startsWith("http")) {
                                 viewRecords.setHref(url);
-                                viewRecords.setTarget("_blank");
+                                viewRecords.setTarget(StringConstants.BLANK);
                             } else {
-                                final String helpUrl = CommonData.settings.get("help_url") + "/spatial-portal-help/" + url;
-                                viewRecords.addEventListener("onClick", new EventListener() {
+                                final String helpUrl = CommonData.getSettings().get("help_url") + "/spatial-portal-help/" + url;
+                                viewRecords.addEventListener(StringConstants.ONCLICK, new EventListener() {
 
                                     @Override
                                     public void onEvent(Event event)
                                             throws Exception {
-                                        //zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', help_base_url + "/" + page));
-                                        Events.echoEvent("openUrl", getMapComposer(), helpUrl);
+                                        Events.echoEvent(StringConstants.OPEN_URL, getMapComposer(), helpUrl);
 
                                     }
 
@@ -328,7 +374,6 @@ public class AreaReportController extends UtilityComposer {
                     } else {
                         row.appendChild(new Label(""));
                     }
-                    //viewRecordsUrl
                 }
             }
 
@@ -339,93 +384,98 @@ public class AreaReportController extends UtilityComposer {
         Callable occurrenceCount = new Callable<Map<String, Object>>() {
             @Override
             public Map<String, Object> call() {
-                return occurrenceCount(worldAreaSelected, reportModelMap.get("occurrences"));
+                return occurrenceCount(worldAreaSelected, reportModelMap.get(StringConstants.OCCURRENCES));
             }
         };
 
         Callable occurrenceCountKosher = new Callable<Map<String, Object>>() {
             @Override
             public Map<String, Object> call() {
-                return occurrenceCountKosher(worldAreaSelected, reportModelMap.get("spatialOccurrences"));
+                return occurrenceCountKosher(worldAreaSelected, reportModelMap.get(StringConstants.SPATIAL_OCCURRENCES));
             }
         };
 
         Callable speciesCount = new Callable<Map<String, Integer>>() {
             @Override
             public Map<String, Integer> call() {
-                return speciesCount(worldAreaSelected, reportModelMap.get("species"));
+                return speciesCount(worldAreaSelected, reportModelMap.get(StringConstants.SPECIES));
             }
         };
 
         Callable speciesCountKosher = new Callable<Map<String, Integer>>() {
             @Override
             public Map<String, Integer> call() {
-                return speciesCountKosher(worldAreaSelected, reportModelMap.get("spatialSpecies"));
+                return speciesCountKosher(worldAreaSelected, reportModelMap.get(StringConstants.SPATIAL_SPECIES));
             }
         };
 
         Callable endemismCount = new Callable<Map<String, Integer>>() {
             @Override
             public Map<String, Integer> call() {
-                return endemismCount(worldAreaSelected, reportModelMap.get("endemicSpecies"));
+                return endemismCount(worldAreaSelected, reportModelMap.get(StringConstants.ENDEMIC_SPECIES));
             }
         };
 
         Callable endemismCountKosher = new Callable<Map<String, Integer>>() {
             @Override
             public Map<String, Integer> call() {
-                return endemismCountKosher(worldAreaSelected, reportModelMap.get("spatialEndemicSpecies"));
+                return endemismCountKosher(worldAreaSelected, reportModelMap.get(StringConstants.SPATIAL_ENDEMIC_SPECIES));
             }
         };
 
         Callable speciesDistributions = new Callable<Map<String, Integer>>() {
             @Override
             public Map<String, Integer> call() {
-                return intersectWithSpeciesDistributions(reportModelMap.get("expertDistributions"));
+                return intersectWithSpeciesDistributions(reportModelMap.get(StringConstants.EXPERT_DISTRIBUTIONS));
             }
         };
 
         Callable calculatedArea = new Callable<Map<String, String>>() {
             @Override
             public Map<String, String> call() {
-                return calculateArea(reportModelMap.get("area"));
+                return calculateArea(reportModelMap.get(StringConstants.AREA));
             }
         };
 
         Callable speciesChecklists = new Callable<Map<String, String>>() {
             @Override
             public Map<String, String> call() {
-                return intersectWithSpeciesChecklists(reportModelMap.get("checklistArea"), reportModelMap.get("checklistSpecies"));
+                return intersectWithSpeciesChecklists(reportModelMap.get(StringConstants.CHECKLIST_AREA), reportModelMap.get(StringConstants.CHECKLIST_SPECIES));
             }
         };
 
-        Callable gazPoints = new Callable<Map<String, String>>() {
+        Callable gazPointsC = new Callable<Map<String, String>>() {
             @Override
             public Map<String, String> call() {
-                return countGazPoints(reportModelMap.get("gazetteer"));
+                return countGazPoints(reportModelMap.get(StringConstants.GAZETTEER));
             }
         };
 
         Callable biostor = new Callable<Map<String, String>>() {
             @Override
             public Map<String, String> call() {
-                return biostor(reportModelMap.get("biostor"));
+                return biostor(reportModelMap.get(StringConstants.BIOSTOR));
             }
         };
 
-        Callable pointsOfInterest = new Callable<Map<String, String>>() {
+        Callable pointsOfInterestC = new Callable<Map<String, String>>() {
             @Override
             public Map<String, String> call() {
                 return countPointsOfInterest(reportModelMap.get("poi"));
             }
         };
 
-        Callable areaFacets = new Callable<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> call() {
-                return facetCounts(reportModelMap.get("configuedFacets"));
-            }
-        };
+        Callable[] areaFacets = new Callable[CommonData.getAreaReportFacets().length];
+        for (int i = 0; i < CommonData.getAreaReportFacets().length; i++) {
+            final String facet = CommonData.getAreaReportFacets()[i];
+            final String s = String.valueOf(i);
+            areaFacets[i] = new Callable<Map<String, Object>>() {
+                @Override
+                public Map<String, Object> call() {
+                    return facetCounts(reportModelMap.get(StringConstants.CONFIGURED_FACETS + s), facet);
+                }
+            };
+        }
 
         try {
             this.pool = Executors.newFixedThreadPool(9);
@@ -435,16 +485,18 @@ public class AreaReportController extends UtilityComposer {
             futures.put("CalculatedArea", pool.submit(calculatedArea));
             futures.put("OccurrenceCount", pool.submit(occurrenceCount));
             futures.put("OccurrenceCountKosher", pool.submit(occurrenceCountKosher));
-            futures.put("AreaFacetCounts", pool.submit(areaFacets));
+            for (int i = 0; i < areaFacets.length; i++) {
+                futures.put("AreaFacetCounts" + i, pool.submit(areaFacets[i]));
+            }
             futures.put("SpeciesCount", pool.submit(speciesCount));
             futures.put("SpeciesCountKosher", pool.submit(speciesCountKosher));
-            futures.put("GazPoints", pool.submit(gazPoints));
+            futures.put("GazPoints", pool.submit(gazPointsC));
             futures.put("SpeciesChecklists", pool.submit(speciesChecklists));
             futures.put("SpeciesDistributions", pool.submit(speciesDistributions));
             futures.put("Biostor", pool.submit(biostor));
 
-            if (CommonData.displayPointsOfInterest) {
-                futures.put("PointsOfInterest", pool.submit(pointsOfInterest));
+            if (CommonData.getDisplayPointsOfInterest()) {
+                futures.put("PointsOfInterest", pool.submit(pointsOfInterestC));
             }
 
             if (includeEndemic) {
@@ -454,24 +506,19 @@ public class AreaReportController extends UtilityComposer {
 
             futuresStart = System.currentTimeMillis();
         } catch (Exception e) {
-            logger.error("error setting counts for futures", e);
+            LOGGER.error("error setting counts for futures", e);
         }
     }
 
     public void checkFutures() {
         try {
-            logger.debug("Check futures.....");
+            LOGGER.debug("Check futures.....");
+            int cancelled = 0;
 
             for (Map.Entry<String, Future<Map<String, String>>> futureEntry : futures.entrySet()) {
                 String eventToFire = "render" + futureEntry.getKey();
-                // logger.debug("eventToFire: " + eventToFire + ", is done: " +
-                // futureEntry.getValue().isDone());
+
                 if (futureEntry.getValue().isDone() && !firedEvents.contains(eventToFire)) {
-                    try {
-                        this.getClass().getMethod(eventToFire, Map.class, Boolean.class).invoke(this, futureEntry.getValue().get(), Boolean.TRUE);
-                    } catch (Exception e) {
-                        logger.error("error firing event: " + eventToFire, e);
-                    }
                     firedEvents.add(eventToFire);
                     //inform the list model to update
                     areaReportListModel.setModelChanged();
@@ -480,9 +527,7 @@ public class AreaReportController extends UtilityComposer {
                 // if biostor and greater than timeout....
                 if ("Biostor".equals(futureEntry.getKey()) && !futureEntry.getValue().isDone() && (System.currentTimeMillis() - futuresStart) > 10000) {
                     futureEntry.getValue().cancel(true);
-                    Map<String, String> biostorData = new HashMap<String, String>();
-                    biostorData.put("biostor", "na");
-                    renderBiostor(biostorData, Boolean.FALSE);
+
                     Clients.evalJavaScript("displayBioStorCount('biostorrow','na');");
                 }
 
@@ -495,114 +540,39 @@ public class AreaReportController extends UtilityComposer {
                             model.setCount("Request timed out");
                         }
                     }
+                    cancelled++;
                     areaReportListModel.setModelChanged();
                 }
             }
-            logger.debug("Fired events: " + firedEvents.size() + ", Futures: " + futures.size());
+            LOGGER.debug("Fired events: " + firedEvents.size() + ", Futures: " + futures.size() + ", Cancelled: " + cancelled);
 
-            boolean allComplete = firedEvents.size() == futures.size();
+            boolean allComplete = firedEvents.size() + cancelled == futures.size();
 
             if (!allComplete) {
                 Thread.sleep(1000);
-                Events.echoEvent("checkFutures", this, null);
+                Events.echoEvent(StringConstants.CHECK_FUTURES, this, null);
             } else {
-                logger.debug("All futures completed.");
+                LOGGER.debug("All futures completed.");
                 this.pool.shutdown();
                 futures = null;
             }
 
-        } catch (Exception e) {
-            logger.error("", e);
-        }
-    }
-
-    public void setTimedOut(Label lbl) {
-        lbl.setValue("Request timed out");
-        lbl.setSclass("");
-    }
-
-    public void renderOccurrenceCount(Map<String, Object> recordCounts, Boolean complete) {
-        logger.debug("1. Rendering occurrence count...");
-        if (!complete) {
-
-
-            return;
-        }
-
-        Integer occurrenceCount = (Integer) recordCounts.get("occurrencesCount");
-
-        if (occurrenceCount > 0 && occurrenceCount <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
-
-
-        } else {
-
-
-        }
-    }
-
-    public void renderOccurrenceCountKosher(Map<String, Object> recordCounts, Boolean complete) {
-        logger.debug("2. Rendering occurrence count kosher...");
-    }
-
-    public void renderSpeciesCount(Map<String, Integer> recordCounts, Boolean complete) {
-        logger.debug("3. Rendering species count...");
-    }
-
-    public void renderSpeciesCountKosher(Map<String, Integer> recordCounts, Boolean complete) {
-        logger.debug("4. Rendering species count kosher...");
-    }
-
-    public void renderEndemicCount(Map<String, Integer> recordCounts, Boolean complete) {
-        logger.debug("5. Rendering endemic counts...");
-    }
-
-    public void renderEndemicCountKosher(Map<String, String> recordCounts, Boolean complete) {
-        logger.debug("6. Rendering endemic kosher counts...");
-    }
-
-    public void renderSpeciesDistributions(Map<String, Integer> recordCounts, Boolean complete) {
-        logger.debug("7. Rendering species distributions...");
-    }
-
-    public void renderSpeciesChecklists(Map<String, String> recordCounts, Boolean complete) {
-        logger.debug("8. Rendering checklists...");
-    }
-
-    public void renderGazPoints(Map<String, String> recordCounts, Boolean complete) {
-        logger.debug("9. Rendering gaz points...");
-    }
-
-    public void renderCalculatedArea(Map<String, String> recordCounts, Boolean complete) {
-        logger.debug("10. Rendering calculated area...");
-    }
-
-    public void renderBiostor(Map<String, String> recordCounts, Boolean complete) {
-        logger.debug("11. Rendering biostor...");
-    }
-
-    public void renderPointsOfInterest(Map<String, String> recordCounts, Boolean complete) {
-        logger.debug("12. Rendering points of interest...");
-    }
-
-    public void renderAreaFacetCounts(Map<String, Object> facetCounts, Boolean complete) {
-        logger.debug("13. Rendering custom facets...");
-        if (complete) {
-            areaReportListModel.setModelChanged();
-            areaReportListModel.addAll(facetCounts.values());
-            //areaReportListModel.setModelChanged();
+        } catch (InterruptedException e) {
+            LOGGER.error("", e);
         }
     }
 
     Map<String, Integer> endemismCount(boolean worldSelected, AreaReportItemDTO model) {
         Map<String, Integer> countsData = new HashMap<String, Integer>();
         Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, true, false});
-        int endemic_count = sq.getEndemicSpeciesCount();
-        countsData.put("endemicSpeciesCount", endemic_count);
-        model.setCount(String.format("%,d", endemic_count));
+        int endemicCount = sq.getEndemicSpeciesCount();
+        countsData.put("endemicSpeciesCount", endemicCount);
+        model.setCount(String.format("%,d", endemicCount));
         model.setGeospatialKosher(false);
-        if (endemic_count > 0) {
-            model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
+        if (endemicCount > 0) {
+            model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST, ExtraInfoEnum.MAP_ALL});
             model.setListType(ListType.SPECIES);
+            model.setEndemic(true);
         }
         model.setEndemic(true);
         return countsData;
@@ -617,7 +587,7 @@ public class AreaReportController extends UtilityComposer {
         countsData.put("endemicSpeciesCountKosher", count);
         model.setCount(String.format("%,d", count));
         if (count > 0) {
-            model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
+            model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST, ExtraInfoEnum.MAP_ALL});
             model.setListType(ListType.SPECIES);
             model.setEndemic(true);
             model.setGeospatialKosher(true);
@@ -630,67 +600,74 @@ public class AreaReportController extends UtilityComposer {
         Map<String, Integer> countsData = new HashMap<String, Integer>();
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
-            int results_count = sq.getSpeciesCount();
+            int resultsCount = sq.getSpeciesCount();
 
-            if (results_count == 0) {
-                countsData.put("speciesCount", 0);
+            if (resultsCount == 0) {
+                countsData.put(StringConstants.SPECIES_COUNT, 0);
                 model.setCount("0");
 
                 return countsData;
             }
-            countsData.put("speciesCount", results_count);
+            countsData.put(StringConstants.SPECIES_COUNT, resultsCount);
             model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
             model.setListType(ListType.SPECIES);
 
             model.setGeospatialKosher(false);
-            model.setCount(String.format("%,d", results_count));
+            model.setCount(String.format("%,d", resultsCount));
         } catch (Exception ex) {
-            logger.error("error getting speciescount", ex);
+            LOGGER.error("error getting speciescount", ex);
         }
         return countsData;
     }
 
-    Map<String, Object> facetCounts(AreaReportItemDTO pmodel) {
+    Map<String, Object> facetCounts(AreaReportItemDTO pmodel, String facet) {
         org.zkoss.util.Locales.setThreadLocal(null);
         Map<String, AreaReportItemDTO> countsData = new LinkedHashMap<String, AreaReportItemDTO>();
-        logger.debug("Starting to get facet counts for : " + StringUtils.join(CommonData.areaReportFacets));
-        for (String f : CommonData.areaReportFacets) {
-            //Map<String, Object> fmap = new HashMap<String,Object>();
-            AreaReportItemDTO dto = new AreaReportItemDTO();
-            int colonIdx = f.indexOf(":");
-            String query = colonIdx > 0 ? f : f + ":*";
-            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, query, false, null);
-            int count = sq.getSpeciesCount();
-            String label = Labels.getLabel("facet." + f, f);
-            //title
-            dto.setTitle(label);
-            //count
-            dto.setCount(String.format("%,d", count));
-            //add the appropriate urls
-            //check to see if it is a species list
-            if (f.startsWith("species_list") && colonIdx > 0) {
-                //extract everything to the right of the colon and construct the url
-                String dataResourceUid = f.substring(colonIdx + 1);
-                String title = SpeciesListUtil.getSpeciesListMap().get(dataResourceUid);
-                if (title != null) {
-                    dto.setTitle(title);
-                }
-                dto.addUrlDetails("Full List", CommonData.speciesListServer + "/speciesListItem/list/" + dataResourceUid);
+        LOGGER.debug("Starting to get facet counts for : " + facet);
+
+        AreaReportItemDTO dto = pmodel;
+        int colonIdx = facet.indexOf(':');
+        String query = colonIdx > 0 ? facet : facet + ":*";
+
+        Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, query, false, null);
+        int count = sq.getSpeciesCount();
+        String label = Labels.getLabel("facet." + facet, facet);
+        //title
+        dto.setTitle(label);
+        //count
+        dto.setCount(String.format("%,d", count));
+        //add the appropriate urls
+        //check to see if it is a species list
+        if (facet.startsWith("species_list") && colonIdx > 0) {
+            //extract everything to the right of the colon and construct the url
+            String dataResourceUid = facet.substring(colonIdx + 1);
+            String title = SpeciesListUtil.getSpeciesListMap().get(dataResourceUid);
+            if (title != null) {
+                dto.setTitle(title);
             }
-            //url
-            //dto.setUrl(CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
-            if (count > 0) {
-                dto.addUrlDetails(VIEW_RECORDS, CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
-                //areaReportListModel.add(fmap);
-                dto.setExtraParams(query);
-                dto.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
-                dto.setListType(ListType.SPECIES);
-            }
-            countsData.put(f, dto);
+            dto.addUrlDetails("Full List", CommonData.getSpeciesListServer() + "/speciesListItem/list/" + dataResourceUid);
+        } else if (facet.startsWith("state_conservation")) {
+            dto.setTitle("Threatened Species (all lists)");
+        } else if (facet.startsWith("pest_flag")) {
+            dto.setTitle("Invasive Species (all lists)");
+        } else if (facet.startsWith("species_group")) {
+            dto.setTitle(facet.substring(colonIdx + 1));
         }
-        logger.debug("Facet Counts ::: " + countsData);
-        pmodel.setCount("");
-        return (Map) countsData;//this data needs to be added to the model on the correct thread...
+
+        //url
+        if (count > 0) {
+            dto.addUrlDetails(VIEW_RECORDS, CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+
+            dto.setExtraParams(query);
+            dto.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST, ExtraInfoEnum.MAP_ALL});
+            dto.setListType(ListType.SPECIES);
+        }
+        countsData.put(facet, dto);
+
+        LOGGER.debug("Facet Counts ::: " + countsData);
+
+        //this data needs to be added to the model on the correct thread...
+        return (Map) countsData;
     }
 
     Map<String, Integer> speciesCountKosher(boolean worldSelected, AreaReportItemDTO model) {
@@ -699,21 +676,21 @@ public class AreaReportController extends UtilityComposer {
 
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, false, false});
-            int results_count_kosher = sq.getSpeciesCount();
+            int resultsCountKosher = sq.getSpeciesCount();
 
-            if (results_count_kosher == 0) {
-                countsData.put("speciesCountKosher", 0);
+            if (resultsCountKosher == 0) {
+                countsData.put(StringConstants.SPECIES_COUNT_KOSHER, 0);
                 model.setCount("0");
                 return countsData;
             }
-            countsData.put("speciesCountKosher", results_count_kosher);
+            countsData.put(StringConstants.SPECIES_COUNT_KOSHER, resultsCountKosher);
             model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
-            //model.put("speciesListEvent", "true");
+
             model.setListType(ListType.SPECIES);
             model.setGeospatialKosher(true);
-            model.setCount(String.format("%,d", results_count_kosher));
+            model.setCount(String.format("%,d", resultsCountKosher));
         } catch (Exception ex) {
-            logger.error("error getting speciesCountKosher", ex);
+            LOGGER.error("error getting speciesCountKosher", ex);
         }
         return countsData;
     }
@@ -723,26 +700,26 @@ public class AreaReportController extends UtilityComposer {
         Map<String, Object> countsData = new HashMap<String, Object>();
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
-            int results_count_occurrences = sq.getOccurrenceCount();
-            if (results_count_occurrences == 0) {
-                countsData.put("occurrencesCount", "0");//delete me
+            int resultsCountOccurrences = sq.getOccurrenceCount();
+            if (resultsCountOccurrences == 0) {
+                countsData.put(StringConstants.OCCURRENCES_COUNT, "0");
                 model.setCount("0");
 
                 return countsData;
             } else {
-                model.addUrlDetails(VIEW_RECORDS, CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+                model.addUrlDetails(VIEW_RECORDS, CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
             }
 
-            countsData.put("occurrencesCount", results_count_occurrences);//delete me
-            model.setCount(String.format("%,d", results_count_occurrences));
+            countsData.put(StringConstants.OCCURRENCES_COUNT, resultsCountOccurrences);
+            model.setCount(String.format("%,d", resultsCountOccurrences));
             //add the info about the buttons to include
-            //model.put("button", "MS");
-            if (results_count_occurrences > 0 && results_count_occurrences <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
+
+            if (resultsCountOccurrences > 0 && resultsCountOccurrences <= Integer.parseInt(CommonData.getSettings().getProperty(StringConstants.MAX_RECORD_COUNT_MAP))) {
                 model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.MAP_ALL, ExtraInfoEnum.SAMPLE});
             }
             model.setGeospatialKosher(false);
         } catch (Exception ex) {
-            logger.error("error getting occurrences count", ex);
+            LOGGER.error("error getting occurrences count", ex);
         }
         return countsData;
     }
@@ -752,34 +729,33 @@ public class AreaReportController extends UtilityComposer {
         Map<String, Object> countsData = new HashMap<String, Object>();
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, false, false});
-            int results_count_occurrences_kosher = sq.getOccurrenceCount();
+            int resultsCountOccurrencesKosher = sq.getOccurrenceCount();
 
-            if (results_count_occurrences_kosher == 0) {
-                countsData.put("occurrencesCountKosher", 0);
+            if (resultsCountOccurrencesKosher == 0) {
+                countsData.put(StringConstants.OCCURRENCES_COUNT_KOSHER, 0);
                 model.setCount("0");
 
                 return countsData;
             } else {
-                countsData.put("viewRecordsKosherUrl", CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
-                model.addUrlDetails(VIEW_RECORDS, CommonData.biocacheWebServer + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+                countsData.put("viewRecordsKosherUrl", CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+                model.addUrlDetails(VIEW_RECORDS, CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
             }
             model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.MAP_ALL, ExtraInfoEnum.SAMPLE});
             model.setGeospatialKosher(true);
-            if (results_count_occurrences_kosher > 0 && results_count_occurrences_kosher <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
-                countsData.put("occurrencesCountKosher", results_count_occurrences_kosher);
+            if (resultsCountOccurrencesKosher > 0 && resultsCountOccurrencesKosher <= Integer.parseInt(CommonData.getSettings().getProperty(StringConstants.MAX_RECORD_COUNT_MAP))) {
+                countsData.put(StringConstants.OCCURRENCES_COUNT_KOSHER, resultsCountOccurrencesKosher);
             }
-            model.setCount(String.format("%,d", results_count_occurrences_kosher));
+            model.setCount(String.format("%,d", resultsCountOccurrencesKosher));
         } catch (Exception ex) {
-            logger.error("error getting occurrences count", ex);
+            LOGGER.error("error getting occurrences count", ex);
         }
         return countsData;
     }
 
-
     public void onMapSpecies(Event event) {
         try {
-            SelectedArea sa = null;
-            if (!areaName.equalsIgnoreCase("Current extent")) {
+            SelectedArea sa;
+            if (!StringConstants.CURRENT_EXTENT.equalsIgnoreCase(areaName)) {
                 sa = selectedArea;
             } else {
                 sa = new SelectedArea(null, getMapComposer().getViewArea());
@@ -788,18 +764,18 @@ public class AreaReportController extends UtilityComposer {
             Query query = QueryUtil.queryFromSelectedArea(null, sa, true, null);
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);
-            getMapComposer().mapSpecies(query, activeAreaLayerName, "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
+            getMapComposer().mapSpecies(query, activeAreaLayerName, StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                     Util.nextColour(), false);
 
         } catch (Exception e) {
-            logger.error("error mapping species in area", e);
+            LOGGER.error("error mapping species in area", e);
         }
     }
 
     public void onMapSpeciesKosher(Event event) {
         try {
-            SelectedArea sa = null;
-            if (!areaName.equalsIgnoreCase("Current extent")) {
+            SelectedArea sa;
+            if (!StringConstants.CURRENT_EXTENT.equalsIgnoreCase(areaName)) {
                 sa = selectedArea;
             } else {
                 sa = new SelectedArea(null, getMapComposer().getViewArea());
@@ -808,11 +784,11 @@ public class AreaReportController extends UtilityComposer {
             Query query = QueryUtil.queryFromSelectedArea(null, sa, true, new boolean[]{true, false, false});
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName + " geospatial kosher");
-            getMapComposer().mapSpecies(query, activeAreaLayerName, "species", -1, LayerUtilities.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
+            getMapComposer().mapSpecies(query, activeAreaLayerName, StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                     Util.nextColour(), false);
 
         } catch (Exception e) {
-            logger.error("error mapping kosher species in area", e);
+            LOGGER.error("error mapping kosher species in area", e);
         }
     }
 
@@ -825,8 +801,8 @@ public class AreaReportController extends UtilityComposer {
 
             for (int i = 0; i < pointsOfInterest.size(); i++) {
                 JSONObject jsonObjPoi = pointsOfInterest.getJSONObject(i);
-                double latitude = jsonObjPoi.getDouble("latitude");
-                double longitude = jsonObjPoi.getDouble("longitude");
+                double latitude = jsonObjPoi.getDouble(StringConstants.LATITUDE);
+                double longitude = jsonObjPoi.getDouble(StringConstants.LONGITUDE);
 
                 sb.append(longitude);
                 sb.append(" ");
@@ -842,21 +818,7 @@ public class AreaReportController extends UtilityComposer {
             getMapComposer().mapPointsOfInterest(sb.toString(), activeAreaLayerName, activeAreaLayerName);
 
         } catch (Exception e) {
-            logger.error("error mapping points of interest", e);
-        }
-    }
-
-    static public void open(SelectedArea sa, String name, String displayName, String areaSqKm, double[] boundingBox, boolean includeEndemic) {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("includeEndemic", includeEndemic);
-        params.put("displayPointsOfInterest", CommonData.displayPointsOfInterest);
-        AreaReportController win = (AreaReportController) Executions.createComponents("/WEB-INF/zul/results/AreaReportResults.zul", null, params);
-        try {
-            win.doOverlapped();
-            win.setPosition("center");
-            win.setReportArea(sa, name, displayName, areaSqKm, boundingBox, includeEndemic);
-        } catch (Exception e) {
-            logger.error("error opening AreaReportResults.zul", e);
+            LOGGER.error("error mapping points of interest", e);
         }
     }
 
@@ -864,30 +826,30 @@ public class AreaReportController extends UtilityComposer {
         Map<String, Integer> speciesDistributions = new HashMap<String, Integer>();
         try {
             String wkt = selectedArea.getReducedWkt();
-            if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+            if (wkt.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
                 double long1 = bbox.get(0);
                 double lat1 = bbox.get(1);
                 double long2 = bbox.get(2);
                 double lat2 = bbox.get(3);
-                wkt = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+                wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
             }
-            String[] lines = getDistributionsOrChecklists("distributions", wkt, null, null);
+            String[] lines = Util.getDistributionsOrChecklists(StringConstants.DISTRIBUTIONS, wkt, null, null);
 
-            if (lines == null || lines.length <= 1) {
-                speciesDistributions.put("intersectWithSpeciesDistributions", 0);
+            if (lines.length <= 1) {
+                speciesDistributions.put(StringConstants.INTERSECT_WITH_SPECIES_DISTRIBUTIONS, 0);
                 model.setCount("0");
                 speciesDistributionText = null;
             } else {
-                speciesDistributions.put("intersectWithSpeciesDistributions", lines.length - 1);
+                speciesDistributions.put(StringConstants.INTERSECT_WITH_SPECIES_DISTRIBUTIONS, lines.length - 1);
                 model.setCount(Integer.toString(lines.length - 1));
                 model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
                 model.setListType(ListType.DISTRIBUTION);
                 speciesDistributionText = lines;
             }
         } catch (Exception e) {
-            logger.error("error getting intersected distribution areas", e);
+            LOGGER.error("error getting intersected distribution areas", e);
         }
         return speciesDistributions;
     }
@@ -896,38 +858,38 @@ public class AreaReportController extends UtilityComposer {
         Map<String, String> checklistsCounts = new HashMap<String, String>();
         try {
             String wkt = selectedArea.getReducedWkt();
-            if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+            if (wkt.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
                 double long1 = bbox.get(0);
                 double lat1 = bbox.get(1);
                 double long2 = bbox.get(2);
                 double lat2 = bbox.get(3);
-                wkt = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+                wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
             }
 
-            String[] lines = getDistributionsOrChecklists("checklists", wkt, null, null);
+            String[] lines = Util.getDistributionsOrChecklists(StringConstants.CHECKLISTS, wkt, null, null);
 
-            if (lines == null || lines.length <= 1) {
+            if (lines.length <= 1) {
                 spModel.setCount("0");
-                checklistsCounts.put("intersectWithSpeciesChecklists", "0");
+                checklistsCounts.put(StringConstants.INTERSECT_WITH_SPECIES_CHECKLISTS, "0");
                 areaModel.setCount("0");
-                checklistsCounts.put("intersectWithAreaChecklists", "0");
+                checklistsCounts.put(StringConstants.INTERSECT_WITH_AREA_CHECKLISTS, "0");
                 speciesChecklistText = null;
             } else {
-                checklistsCounts.put("intersectWithSpeciesChecklists", String.format("%,d", lines.length - 1));
+                checklistsCounts.put(StringConstants.INTERSECT_WITH_SPECIES_CHECKLISTS, String.format("%,d", lines.length - 1));
                 spModel.setCount(String.format("%,d", lines.length - 1));
                 spModel.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
                 spModel.setListType(ListType.SPECIES_CHECKLIST);
-                areaChecklistText = getAreaChecklists(lines);
-                checklistsCounts.put("intersectWithAreaChecklists", String.format("%,d", areaChecklistText.length - 1));
+                areaChecklistText = Util.getAreaChecklists(lines);
+                checklistsCounts.put(StringConstants.INTERSECT_WITH_AREA_CHECKLISTS, String.format("%,d", areaChecklistText.length - 1));
                 areaModel.setCount(String.format("%,d", areaChecklistText.length - 1));
                 areaModel.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
                 areaModel.setListType(ListType.AREA_CHECKLIST);
                 speciesChecklistText = lines;
             }
         } catch (Exception e) {
-            logger.error("error getting intersected species checklists", e);
+            LOGGER.error("error getting intersected species checklists", e);
         }
 
         return checklistsCounts;
@@ -937,30 +899,30 @@ public class AreaReportController extends UtilityComposer {
         Map<String, String> gazPointsCounts = new HashMap<String, String>();
         try {
             String wkt = selectedArea.getReducedWkt();
-            if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+            if (wkt.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
                 double long1 = bbox.get(0);
                 double lat1 = bbox.get(1);
                 double long2 = bbox.get(2);
                 double lat2 = bbox.get(3);
-                wkt = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+                wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
             }
 
             JSONArray ja = getGazPoints(wkt);
 
-            if (ja == null || ja.size() == 0) {
-                gazPointsCounts.put("countGazPoints", "0");
+            if (ja == null || ja.isEmpty()) {
+                gazPointsCounts.put(StringConstants.COUNT_GAZ_POINTS, "0");
                 model.setCount("0");
                 speciesChecklistText = null;
             } else {
-                gazPointsCounts.put("countGazPoints", String.format("%,d", ja.size()));
+                gazPointsCounts.put(StringConstants.COUNT_GAZ_POINTS, String.format("%,d", ja.size()));
                 model.setCount(String.format("%,d", ja.size()));
                 model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.MAP_ALL});
                 gazPoints = ja;
             }
         } catch (Exception e) {
-            logger.error("error with area gaz point count", e);
+            LOGGER.error("error with area gaz point count", e);
         }
 
         return gazPointsCounts;
@@ -970,36 +932,34 @@ public class AreaReportController extends UtilityComposer {
         Map<String, String> poiCounts = new HashMap<String, String>();
         try {
             String wkt = selectedArea.getReducedWkt();
-            if (wkt.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+            if (wkt.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
                 double long1 = bbox.get(0);
                 double lat1 = bbox.get(1);
                 double long2 = bbox.get(2);
                 double lat2 = bbox.get(3);
-                wkt = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+                wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
             }
 
             JSONArray ja = getPointsOfInterest(wkt);
 
-            if (ja == null || ja.size() == 0) {
-                poiCounts.put("countPointsOfInterest", "0");
+            if (ja == null || ja.isEmpty()) {
+                poiCounts.put(StringConstants.COUNT_POINTS_OF_INTEREST, "0");
                 model.setCount("0");
                 speciesChecklistText = null;
             } else {
-                poiCounts.put("countPointsOfInterest", String.format("%,d", ja.size()));
+                poiCounts.put(StringConstants.COUNT_POINTS_OF_INTEREST, String.format("%,d", ja.size()));
                 model.setCount(String.format("%,d", ja.size()));
                 model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.MAP_ALL});
                 pointsOfInterest = ja;
             }
         } catch (Exception e) {
-            logger.error("area report error counting points of interest", e);
+            LOGGER.error("area report error counting points of interest", e);
         }
 
         return poiCounts;
     }
-
-    String biostorHtml = null;
 
     Map<String, String> biostor(AreaReportItemDTO model) {
 
@@ -1011,7 +971,7 @@ public class AreaReportController extends UtilityComposer {
             double lat2 = 0;
             double long1 = 0;
             double long2 = 0;
-            if (area.contains("ENVELOPE") && selectedArea.getMapLayer() != null) {
+            if (area.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
                 long1 = bbox.get(0);
@@ -1050,7 +1010,7 @@ public class AreaReportController extends UtilityComposer {
             HttpClient client = new HttpClient();
             client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
             GetMethod get = new GetMethod(biostorurl);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
             get.addRequestHeader("User-Agent", "ALA Spatial Portal");
             int result = client.executeMethod(get);
 
@@ -1065,276 +1025,36 @@ public class AreaReportController extends UtilityComposer {
                     for (int i = 0; i < list.size(); i++) {
                         sb.append("<li>");
                         sb.append("<a href=\"http://biostor.org/reference/");
-                        sb.append(list.getJSONObject(i).getString("id"));
+                        sb.append(list.getJSONObject(i).getString(StringConstants.ID));
                         sb.append("\" target=\"_blank\">");
-                        sb.append(list.getJSONObject(i).getString("title"));
+                        sb.append(list.getJSONObject(i).getString(StringConstants.TITLE));
                         sb.append("</li>");
                     }
                     sb.append("</ol>");
 
-                    if (list.size() > 0) {
+                    if (!list.isEmpty()) {
                         biostorHtml = sb.toString();
                     }
 
-                    countData.put("biostor", String.valueOf(list.size()));
+                    countData.put(StringConstants.BIOSTOR, String.valueOf(list.size()));
                     model.setCount(Integer.toString(list.size()));
-                    if (list.size() > 0) {
+                    if (!list.isEmpty()) {
                         model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
                         model.setListType(ListType.BIOSTOR);
-                        //model.setUrl("http://biostor.org/");
                         model.addUrlDetails("Biostor info", "http://biostor.org/");
                     }
                 }
             } else {
-                // lblBiostor.setValue("BioStor currently down");
-                countData.put("biostor", "Biostor currently down");
+                countData.put(StringConstants.BIOSTOR, "Biostor currently down");
                 model.setCount("Biostor currently down");
             }
 
         } catch (Exception e) {
-            logger.error("unable to get area info from biostor, is it down?", e);
-            // lblBiostor.setValue("BioStor currently down");
-            countData.put("biostor", "Biostor currently down");
+            LOGGER.error("unable to get area info from biostor, is it down?", e);
+            countData.put(StringConstants.BIOSTOR, "Biostor currently down");
             model.setCount("Biostor currently down");
         }
         return countData;
-    }
-
-    /**
-     * Generates data for rendering of distributions table.
-     *
-     * @param type
-     * @param wkt
-     * @param lsids
-     * @param geom_idx
-     * @return
-     */
-    public static String[] getDistributionsOrChecklists(String type, String wkt, String lsids, String geom_idx) {
-        try {
-            StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append("/" + type);
-
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.layersServer + sbProcessUrl.toString()); // testurl
-            logger.debug(CommonData.layersServer + sbProcessUrl.toString());
-            if (wkt != null) {
-                post.addParameter("wkt", wkt);
-            }
-            if (lsids != null) {
-                post.addParameter("lsids", lsids);
-            }
-            if (geom_idx != null) {
-                post.addParameter("geom_idx", geom_idx);
-            }
-            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(post);
-            if (result == 200) {
-                String txt = post.getResponseBodyAsString();
-                JSONArray ja = JSONArray.fromObject(txt);
-                if (ja == null || ja.size() == 0) {
-                    return null;
-                } else {
-                    String[] lines = new String[ja.size() + 1];
-                    lines[0] = "SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,LSID,AREA_NAME,AREA_SQ_KM";
-                    for (int i = 0; i < ja.size(); i++) {
-                        JSONObject jo = ja.getJSONObject(i);
-                        String spcode = jo.containsKey("spcode") ? jo.getString("spcode") : "";
-                        String scientific = jo.containsKey("scientific") ? jo.getString("scientific") : "";
-                        String auth = jo.containsKey("authority_") ? jo.getString("authority_") : "";
-                        String common = jo.containsKey("common_nam") ? jo.getString("common_nam") : "";
-                        String family = jo.containsKey("family") ? jo.getString("family") : "";
-                        String genus = jo.containsKey("genus") ? jo.getString("genus") : "";
-                        String name = jo.containsKey("specific_n") ? jo.getString("specific_n") : "";
-                        String min = jo.containsKey("min_depth") ? jo.getString("min_depth") : "";
-                        String max = jo.containsKey("max_depth") ? jo.getString("max_depth") : "";
-                        // String p =
-                        // jo.containsKey("pelagic_fl")?jo.getString("pelagic_fl"):"";
-                        String md = jo.containsKey("metadata_u") ? jo.getString("metadata_u") : "";
-                        String lsid = jo.containsKey("lsid") ? jo.getString("lsid") : "";
-                        String area_name = jo.containsKey("area_name") ? jo.getString("area_name") : "";
-                        String area_km = jo.containsKey("area_km") ? jo.getString("area_km") : "";
-                        String data_resource_uid = jo.containsKey("data_resource_uid") ? jo.getString("data_resource_uid") : "";
-
-                        lines[i + 1] = spcode + "," + wrap(scientific) + "," + wrap(auth) + "," + wrap(common) + "," + wrap(family) + "," + wrap(genus) + "," + wrap(name) + "," + min + "," + max + "," + wrap(md) + "," + wrap(lsid) + "," + wrap(area_name) + "," + wrap(area_km) + "," + wrap(data_resource_uid);
-                    }
-
-                    return lines;
-                }
-            }
-        } catch (Exception e) {
-            logger.error("error building distribution or checklist csv", e);
-        }
-        return null;
-    }
-
-    public static JSONArray getGazPoints(String wkt) {
-        try {
-            int limit = Integer.MAX_VALUE;
-            String url = CommonData.layersServer + "/objects/inarea/" + CommonData.settings.get("area_report_gaz_field") + "?limit=" + limit;
-
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(url);
-            logger.debug(CommonData.layersServer + url);
-            if (wkt != null) {
-                post.addParameter("wkt", wkt);
-            }
-            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(post);
-            if (result == 200) {
-                String txt = post.getResponseBodyAsString();
-                return JSONArray.fromObject(txt);
-            }
-        } catch (Exception e) {
-            logger.error("error getting number of gaz points in an area: " + wkt, e);
-        }
-        return null;
-    }
-
-    public static JSONArray getPointsOfInterest(String wkt) {
-        try {
-            String url = CommonData.layersServer + "/intersect/poi/wkt";
-
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(url);
-            if (wkt != null) {
-                NameValuePair nvp = new NameValuePair("wkt", wkt);
-                post.setRequestBody(new NameValuePair[]{nvp});
-            }
-            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            //post.setRequestHeader("Content-Type", "application/wkt");
-            int result = client.executeMethod(post);
-            if (result == 200) {
-                String txt = post.getResponseBodyAsString();
-                return JSONArray.fromObject(txt);
-            }
-        } catch (Exception e) {
-            logger.error("error getting points of interest in an area: " + wkt, e);
-        }
-        return null;
-    }
-
-    public static String[] getAreaChecklists(String geom_idx, String lsids, String wkt) {
-        try {
-            return getAreaChecklists(getDistributionsOrChecklists("checklists", lsids, wkt, geom_idx));
-        } catch (Exception e) {
-            logger.error("error getting checklists for: " + geom_idx + "," + wkt + "," + lsids, e);
-        }
-        return null;
-    }
-
-    public static String[] getAreaChecklists(String[] records) {
-        String[] lines = null;
-        try {
-            if (records != null) {
-                String[][] data = new String[records.length - 1][]; // exclude
-                // header
-                for (int i = 1; i < records.length; i++) {
-                    CSVReader csv = new CSVReader(new StringReader(records[i]));
-                    data[i - 1] = csv.readNext();
-                    csv.close();
-                }
-                java.util.Arrays.sort(data, new Comparator<String[]>() {
-                    @Override
-                    public int compare(String[] o1, String[] o2) {
-                        // compare WMS urls
-                        return CommonData.getSpeciesChecklistWMSFromSpcode(o1[0])[1].compareTo(CommonData.getSpeciesChecklistWMSFromSpcode(o2[0])[1]);
-                    }
-                });
-
-                lines = new String[records.length];
-                lines[0] = lines[0] = "SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,LSID,AREA_NAME,AREA_SQ_KM,SPECIES_COUNT";
-                int len = 1;
-                int thisCount = 0;
-                for (int i = 0; i < data.length; i++) {
-                    thisCount++;
-                    if (i == data.length - 1 || !CommonData.getSpeciesChecklistWMSFromSpcode(data[i][0])[1].equals(CommonData.getSpeciesChecklistWMSFromSpcode(data[i + 1][0])[1])) {
-                        StringBuilder sb = new StringBuilder();
-                        for (int j = 0; j < data[i].length; j++) {
-                            if (j > 0) {
-                                sb.append(",");
-                            }
-                            if (j == 0 || (j >= 9 && j != 10)) {
-                                sb.append(wrap(data[i][j]));
-                            }
-                        }
-                        sb.append(",").append(thisCount);
-                        lines[len] = sb.toString();
-                        len++;
-                        thisCount = 0;
-                    }
-                }
-                lines = java.util.Arrays.copyOf(lines, len);
-            }
-        } catch (Exception e) {
-            logger.error("error building species checklist", e);
-            lines = null;
-        }
-        return lines;
-    }
-
-    public static String[] getDistributionOrChecklist(String spcode) {
-        try {
-            StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append("/distribution/" + spcode);
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.layersServer + sbProcessUrl.toString()); // testurl
-            logger.debug(CommonData.layersServer + sbProcessUrl.toString());
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
-            if (result == 200) {
-                String txt = get.getResponseBodyAsString();
-                JSONObject jo = JSONObject.fromObject(txt);
-                if (jo == null) {
-                    return null;
-                } else {
-                    String[] output = new String[14];
-                    // "SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,LSID,AREA_NAME,AREA_SQ_KM";
-
-                    // String spcode = jo.containsKey("spcode") ?
-                    // jo.getString("spcode") : "";
-                    String scientific = jo.containsKey("scientific") ? jo.getString("scientific") : "";
-                    String auth = jo.containsKey("authority_") ? jo.getString("authority_") : "";
-                    String common = jo.containsKey("common_nam") ? jo.getString("common_nam") : "";
-                    String family = jo.containsKey("family") ? jo.getString("family") : "";
-                    String genus = jo.containsKey("genus") ? jo.getString("genus") : "";
-                    String name = jo.containsKey("specific_n") ? jo.getString("specific_n") : "";
-                    String min = jo.containsKey("min_depth") ? jo.getString("min_depth") : "";
-                    String max = jo.containsKey("max_depth") ? jo.getString("max_depth") : "";
-                    // String p =
-                    // jo.containsKey("pelagic_fl")?jo.getString("pelagic_fl"):"";
-                    String md = jo.containsKey("metadata_u") ? jo.getString("metadata_u") : "";
-                    String lsid = jo.containsKey("lsid") ? jo.getString("lsid") : "";
-                    String area_name = jo.containsKey("area_name") ? jo.getString("area_name") : "";
-                    String area_km = jo.containsKey("area_km") ? jo.getString("area_km") : "";
-                    String data_resource_id = jo.containsKey("data_resource_uid") ? jo.getString("data_resource_uid") : "";
-
-                    output[0] = spcode;
-                    output[1] = scientific;
-                    output[2] = auth;
-                    output[3] = common;
-                    output[4] = family;
-                    output[5] = genus;
-                    output[6] = name;
-                    output[7] = min;
-                    output[8] = max;
-                    output[9] = md;
-                    output[10] = lsid;
-                    output[11] = area_name;
-                    output[12] = area_km;
-                    output[13] = data_resource_id;
-
-                    return output;
-                }
-            }
-        } catch (Exception e) {
-            logger.error("error building distributions list", e);
-        }
-        return null;
-    }
-
-    static String wrap(String s) {
-        return "\"" + s.replace("\"", "\"\"") + "\"";
     }
 
     public void listDistributions(AreaReportItemDTO model) {
@@ -1342,25 +1062,19 @@ public class AreaReportController extends UtilityComposer {
         try {
             c = Integer.parseInt(model.getCount().replace(",", ""));
         } catch (Exception e) {
+            LOGGER.error("failed to list distributions", e);
         }
         if (c > 0 && speciesDistributionText != null) {
-            try {
-                getMapComposer().getFellowIfAny("distributionresults").detach();
-            } catch (Exception e) {
+            if (getMapComposer().hasFellow(StringConstants.DISTRIBUTION_RESULTS)) {
+                getMapComposer().getFellowIfAny(StringConstants.DISTRIBUTION_RESULTS).detach();
             }
-            DistributionsController window = (DistributionsController) Executions.createComponents("WEB-INF/zul/results/AnalysisDistributionResults.zul", this, null);
+            DistributionsController dc = (DistributionsController) Executions.createComponents("WEB-INF/zul/results/AnalysisDistributionResults.zul", this, null);
 
             try {
-                window.doModal();
-                window.init(speciesDistributionText, "Expert Distributions", model.getCount(), new EventListener() {
-
-                    @Override
-                    public void onEvent(Event event) throws Exception {
-                        onClick$sdDownload(event);
-                    }
-                });
+                dc.doModal();
+                dc.init(speciesDistributionText, "Expert Distributions", model.getCount());
             } catch (Exception e) {
-                logger.error("error opening expert distributions window", e);
+                LOGGER.error("error opening expert distributions window", e);
             }
         }
     }
@@ -1370,21 +1084,16 @@ public class AreaReportController extends UtilityComposer {
         try {
             c = Integer.parseInt(model.getCount().replace(",", ""));
         } catch (Exception e) {
+            LOGGER.error("failed to get checklists", e);
         }
         if (c > 0 && speciesChecklistText != null) {
-            DistributionsController window = (DistributionsController) Executions.createComponents("WEB-INF/zul/results/AnalysisDistributionResults.zul", this, null);
+            DistributionsController dc = (DistributionsController) Executions.createComponents("WEB-INF/zul/results/AnalysisDistributionResults.zul", this, null);
 
             try {
-                window.doModal();
-                window.init(speciesChecklistText, "Species Checklists", model.getCount(), new EventListener() {
-
-                    @Override
-                    public void onEvent(Event event) throws Exception {
-                        onClick$clDownload(event);
-                    }
-                });
+                dc.doModal();
+                dc.init(speciesChecklistText, "Species Checklists", model.getCount());
             } catch (Exception e) {
-                logger.error("error opening species checklists window", e);
+                LOGGER.error("error opening species checklists window", e);
             }
         }
     }
@@ -1396,21 +1105,17 @@ public class AreaReportController extends UtilityComposer {
         try {
             c = Integer.parseInt(model.getCount().replace(",", ""));
         } catch (Exception e) {
+            LOGGER.error("failed to get checklists", e);
         }
         if (c > 0 && areaChecklistText != null) {
-            DistributionsController window = (DistributionsController) Executions.createComponents("WEB-INF/zul/results/AnalysisDistributionResults.zul", this, null);
+            DistributionsController dc = (DistributionsController) Executions.createComponents("WEB-INF/zul/results/AnalysisDistributionResults.zul", this, null);
 
             try {
-                window.doModal();
-                window.init(areaChecklistText, "Checklist areas", model.getCount(), new EventListener() {
+                dc.doModal();
+                dc.init(areaChecklistText, StringConstants.CHECKLIST_AREAS, model.getCount());
 
-                    @Override
-                    public void onEvent(Event event) throws Exception {
-                        onClick$aclDownload(event);
-                    }
-                });
             } catch (Exception e) {
-                logger.error("error opening area checklists window", e);
+                LOGGER.error("error opening area checklists window", e);
             }
         }
     }
@@ -1421,11 +1126,11 @@ public class AreaReportController extends UtilityComposer {
 
     public void onClick$sdDownload(Event event) {
         String spid = pid;
-        if (spid == null || spid.equals("none")) {
+        if (spid == null || StringConstants.NONE.equals(spid)) {
             spid = String.valueOf(System.currentTimeMillis());
         }
 
-        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat date = new SimpleDateFormat(StringConstants.DATE);
         String sdate = date.format(new Date());
 
         StringBuilder sb = new StringBuilder();
@@ -1435,7 +1140,7 @@ public class AreaReportController extends UtilityComposer {
             }
             sb.append(s);
         }
-        Filedownload.save(sb.toString(), "text/plain", "Species_distributions_" + sdate + "_" + spid + ".csv");
+        Filedownload.save(sb.toString(), StringConstants.TEXT_PLAIN, "Species_distributions_" + sdate + "_" + spid + ".csv");
     }
 
     public void onClick$downloadchecklist(Event event) {
@@ -1444,11 +1149,11 @@ public class AreaReportController extends UtilityComposer {
 
     public void onClick$clDownload(Event event) {
         String spid = pid;
-        if (spid == null || spid.equals("none")) {
+        if (spid == null || StringConstants.NONE.equals(spid)) {
             spid = String.valueOf(System.currentTimeMillis());
         }
 
-        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat date = new SimpleDateFormat(StringConstants.DATE);
         String sdate = date.format(new Date());
 
         StringBuilder sb = new StringBuilder();
@@ -1458,16 +1163,16 @@ public class AreaReportController extends UtilityComposer {
             }
             sb.append(s);
         }
-        Filedownload.save(sb.toString(), "text/plain", "Species_checklists_" + sdate + "_" + spid + ".csv");
+        Filedownload.save(sb.toString(), StringConstants.TEXT_PLAIN, "Species_checklists_" + sdate + "_" + spid + ".csv");
     }
 
     public void onClick$aclDownload(Event event) {
         String spid = pid;
-        if (spid == null || spid.equals("none")) {
+        if (spid == null || StringConstants.NONE.equals(spid)) {
             spid = String.valueOf(System.currentTimeMillis());
         }
 
-        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat date = new SimpleDateFormat(StringConstants.DATE);
         String sdate = date.format(new Date());
 
         StringBuilder sb = new StringBuilder();
@@ -1477,7 +1182,7 @@ public class AreaReportController extends UtilityComposer {
             }
             sb.append(s);
         }
-        Filedownload.save(sb.toString(), "text/plain", "Area_checklists_" + sdate + "_" + spid + ".csv");
+        Filedownload.save(sb.toString(), StringConstants.TEXT_PLAIN, "Area_checklists_" + sdate + "_" + spid + ".csv");
     }
 
     protected Map<String, String> calculateArea(AreaReportItemDTO model) {
@@ -1485,10 +1190,10 @@ public class AreaReportController extends UtilityComposer {
         Map<String, String> areaCalc = new HashMap<String, String>();
 
         if (areaSqKm != null) {
-            areaCalc.put("area", areaSqKm);
+            areaCalc.put(StringConstants.AREA, areaSqKm);
             model.setCount(areaSqKm);
             speciesDistributionText = null;
-            //model.setUrl("note-area-sq-km");
+
             model.addUrlDetails("Info", "note-area-sq-km");
             return areaCalc;
         }
@@ -1497,17 +1202,14 @@ public class AreaReportController extends UtilityComposer {
             double totalarea = Util.calculateArea(selectedArea.getWkt());
             DecimalFormat df = new DecimalFormat("###,###.##");
 
-            // lblArea.setValue(String.format("%,d", (int) (totalarea / 1000 /
-            // 1000)));
-            // data.put("area",String.format("%,f", (totalarea / 1000 / 1000)));
-            areaCalc.put("area", df.format(totalarea / 1000 / 1000));
+            areaCalc.put(StringConstants.AREA, df.format(totalarea / 1000 / 1000));
             model.setCount(df.format(totalarea / 1000 / 1000));
-            //model.setUrl("note-area-sq-km");
+
             model.addUrlDetails("Info", "note-area-sq-km");
 
         } catch (Exception e) {
-            logger.error("Error in calculateArea", e);
-            areaCalc.put("area", "");
+            LOGGER.error("Error in calculateArea", e);
+            areaCalc.put(StringConstants.AREA, "");
             model.setCount("ERROR...");
         }
         return areaCalc;
@@ -1519,28 +1221,19 @@ public class AreaReportController extends UtilityComposer {
 
     public void listBiostor() {
         if (biostorHtml != null) {
-            Event ev = new Event("onClick", this, "Biostor Documents\n" + biostorHtml);
+            Event ev = new Event(StringConstants.ONCLICK, this, "Biostor Documents\n" + biostorHtml);
             getMapComposer().openHTML(ev);
         }
     }
 
-    private boolean isNumberGreaterThanZero(String value) {
-        boolean ret = false;
-        try {
-            ret = Double.parseDouble(value.replace(",", "")) > 0;
-        } catch (Exception e) {
-        }
-        return ret;
-    }
-
     public void mapGazetteer() {
         try {
-            if (gazPoints == null || gazPoints.size() == 0) {
+            if (gazPoints == null || gazPoints.isEmpty()) {
                 return;
             }
 
             StringBuilder sb = new StringBuilder();
-            TreeSet<String> columns = new TreeSet<String>();
+            Set<String> columns = new TreeSet<String>();
 
             // get columns
             for (int i = 0; i < gazPoints.size(); i++) {
@@ -1550,7 +1243,7 @@ public class AreaReportController extends UtilityComposer {
             // write columns, first two are longitude,latitude
             sb.append("longitude,latitude");
             for (String s : columns) {
-                if (!s.equals("longitude") && !s.equals("latitude")) {
+                if (!StringConstants.LONGITUDE.equals(s) && !StringConstants.LATITUDE.equals(s)) {
                     sb.append(",").append(s);
                 }
             }
@@ -1558,8 +1251,8 @@ public class AreaReportController extends UtilityComposer {
             for (int i = 0; i < gazPoints.size(); i++) {
                 sb.append("\n");
 
-                if (gazPoints.getJSONObject(i).containsKey("geometry")) {
-                    String geometry = gazPoints.getJSONObject(i).getString("geometry");
+                if (gazPoints.getJSONObject(i).containsKey(StringConstants.GEOMETRY)) {
+                    String geometry = gazPoints.getJSONObject(i).getString(StringConstants.GEOMETRY);
                     geometry = geometry.replace("POINT(", "").replace(")", "").replace(" ", ",");
                     sb.append(geometry);
                 } else {
@@ -1567,17 +1260,17 @@ public class AreaReportController extends UtilityComposer {
                 }
 
                 for (String s : columns) {
-                    if (!s.equals("longitude") && !s.equals("latitude")) {
+                    if (!StringConstants.LONGITUDE.equals(s) && !StringConstants.LATITUDE.equals(s)) {
                         String ss = gazPoints.getJSONObject(i).containsKey(s) ? gazPoints.getJSONObject(i).getString(s) : "";
                         sb.append(",\"").append(ss.replace("\"", "\"\"")).append("\"");
                     }
                 }
             }
 
-            getMapComposer().featuresCSV = sb.toString();
+            getMapComposer().setFeaturesCSV(sb.toString());
             getMapComposer().getOpenLayersJavascript().execute("mapFrame.mapPoints('" + StringEscapeUtils.escapeJavaScript(gazPoints.toString()) + "');");
         } catch (Exception e) {
-            logger.error("error mapping gaz points from area report", e);
+            LOGGER.error("error mapping gaz points from area report", e);
         }
     }
 
@@ -1586,7 +1279,7 @@ public class AreaReportController extends UtilityComposer {
      *
      * @author Natasha Carter (natasha.carter@csiro.au)
      */
-    public class ChangableSimpleListModel extends ListModelList {
+    public static class ChangableSimpleListModel extends ListModelList {
         public ChangableSimpleListModel(List data) {
             super(data);
         }

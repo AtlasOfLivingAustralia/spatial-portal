@@ -1,5 +1,6 @@
 package au.org.ala.spatial.util;
 
+import au.org.ala.spatial.StringConstants;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -8,15 +9,12 @@ import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import org.apache.log4j.Logger;
 import org.geotools.data.*;
-import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
-import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -35,17 +33,21 @@ import java.util.Map;
 /**
  * @author ajay
  */
-public class ShapefileUtils {
+public final class ShapefileUtils {
 
-    private static Logger logger = Logger.getLogger(ShapefileUtils.class);
+    private static final Logger LOGGER = Logger.getLogger(ShapefileUtils.class);
+
+    private ShapefileUtils() {
+        //to hide public constructor
+    }
 
     public static Map loadShapefile(File shpfile) {
         try {
 
             FileDataStore store = FileDataStoreFinder.getDataStore(shpfile);
 
-            logger.debug("Loading shapefile. Reading content:");
-            logger.debug(store.getTypeNames()[0]);
+            LOGGER.debug("Loading shapefile. Reading content:");
+            LOGGER.debug(store.getTypeNames()[0]);
 
             FeatureSource featureSource = store.getFeatureSource(store.getTypeNames()[0]);
 
@@ -56,28 +58,27 @@ public class ShapefileUtils {
             StringBuilder sbGeometryCollection = new StringBuilder();
             boolean isGeometryCollection = false;
             while (it.hasNext()) {
-                //logger.debug("======================================");
-                //logger.debug("Feature: ");
+
                 SimpleFeature feature = (SimpleFeature) it.next();
-                //logger.debug(feature.getID());
+
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
                 WKTWriter wkt = new WKTWriter();
 
                 String wktString = wkt.write(geom);
-//                wktString = wktString.replaceAll(", ", ",").replace(",(", ",POLYGON(").replace("),", "),");
+
                 wktString = wktString.replaceAll(", ", ",");
                 boolean valid = true;
                 boolean multipolygon = false;
                 boolean polygon = false;
                 boolean geometrycollection = false;
-                if (wktString.startsWith("MULTIPOLYGON ")) {
-                    wktString = wktString.substring("MULTIPOLYGON (".length(), wktString.length() - 1);
+                if (wktString.startsWith(StringConstants.MULTIPOLYGON + " ")) {
+                    wktString = wktString.substring((StringConstants.MULTIPOLYGON + " (").length(), wktString.length() - 1);
                     multipolygon = true;
-                } else if (wktString.startsWith("POLYGON ")) {
-                    wktString = wktString.substring("POLYGON ".length());
+                } else if (wktString.startsWith(StringConstants.POLYGON + " ")) {
+                    wktString = wktString.substring((StringConstants.POLYGON + " ").length());
                     polygon = true;
-                } else if (wktString.startsWith("GEOMETRYCOLLECTION (")) {
-                    wktString = wktString.substring("GEOMETRYCOLLECTION (".length(), wktString.length() - 1);
+                } else if (wktString.startsWith(StringConstants.GEOMETRYCOLLECTION + " (")) {
+                    wktString = wktString.substring((StringConstants.GEOMETRYCOLLECTION + " (").length(), wktString.length() - 1);
                     geometrycollection = true;
                     isGeometryCollection = true;
                 } else {
@@ -91,35 +92,21 @@ public class ShapefileUtils {
                     sb.append(wktString);
 
                     if (multipolygon) {
-                        sbGeometryCollection.append("MULTIPOLYGON(").append(wktString).append(")");
+                        sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append("(").append(wktString).append(")");
                     } else if (polygon) {
-                        sbGeometryCollection.append("POLYGON").append(wktString);
+                        sbGeometryCollection.append(StringConstants.POLYGON).append(wktString);
                     } else if (geometrycollection) {
                         sbGeometryCollection.append(wktString);
                     }
                 }
-
-//                if (wktString.indexOf(",POLYGON") > -1) {
-//                    wktString = wktString.replace("MULTIPOLYGON (((", "GEOMETRYCOLLECTION(POLYGON((");
-//                } else {
-//                    wktString = wktString.replace("MULTIPOLYGON (((", "POLYGON((").replace(")))", "))");
-//                }
-
-
-                //logger.debug(wkt.writeFormatted(geom));
-                //addWKTLayer(wkt.write(geom), feature.getID());
-//                shape.put("id", feature.getID());
-//                shape.put("wkt", wktString);
-
-//                break;
             }
-//            shape.put("id", feature.getID());
+
             if (!isGeometryCollection) {
                 sb.append(")");
-                shape.put("wkt", "MULTIPOLYGON(" + sb);
+                shape.put(StringConstants.WKT, StringConstants.MULTIPOLYGON + "(" + sb);
             } else {
                 sbGeometryCollection.append(")");
-                shape.put("wkt", "GEOMETRYCOLLECTION(" + sbGeometryCollection);
+                shape.put(StringConstants.WKT, StringConstants.GEOMETRYCOLLECTION + "(" + sbGeometryCollection);
             }
 
             it.close();
@@ -127,7 +114,7 @@ public class ShapefileUtils {
             return shape;
 
         } catch (Exception e) {
-            logger.error("Unable to load shapefile: ", e);
+            LOGGER.error("Unable to load shapefile: ", e);
         }
 
         return null;
@@ -135,14 +122,10 @@ public class ShapefileUtils {
 
     public static void saveShapefile(File shpfile, String wktString) {
         try {
-            String wkttype = "POLYGON";
-            if (wktString.contains("GEOMETRYCOLLECTION") || wktString.contains("MULTIPOLYGON")) {
-                wkttype = "GEOMETRYCOLLECTION";
-            }
-            final SimpleFeatureType TYPE = createFeatureType(wkttype);
+            final SimpleFeatureType type = createFeatureType();
 
             List<SimpleFeature> features = new ArrayList<SimpleFeature>();
-            SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(TYPE);
+            SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(type);
 
             WKTReader wkt = new WKTReader();
             Geometry geom = wkt.read(wktString);
@@ -151,8 +134,8 @@ public class ShapefileUtils {
                 GeometryCollection gc = (GeometryCollection) geom;
                 for (int i = 0; i < gc.getNumGeometries(); i++) {
                     Geometry g = gc.getGeometryN(i);
-                    if(g instanceof Polygon) {
-                        g = new GeometryBuilder().multiPolygon((Polygon)g);
+                    if (g instanceof Polygon) {
+                        g = new GeometryBuilder().multiPolygon((Polygon) g);
                     }
                     featureBuilder.add(g);
 
@@ -161,8 +144,8 @@ public class ShapefileUtils {
                 }
             } else {
                 Geometry g = geom;
-                if(g instanceof Polygon) {
-                    g = new GeometryBuilder().multiPolygon((Polygon)g);
+                if (g instanceof Polygon) {
+                    g = new GeometryBuilder().multiPolygon((Polygon) g);
                 }
 
                 featureBuilder.add(g);
@@ -178,7 +161,7 @@ public class ShapefileUtils {
             params.put("create spatial index", Boolean.TRUE);
 
             ShapefileDataStore newDataStore = (ShapefileDataStore) dataStoreFactory.createNewDataStore(params);
-            newDataStore.createSchema(TYPE);
+            newDataStore.createSchema(type);
 
             newDataStore.forceSchemaCRS(DefaultGeographicCRS.WGS84);
 
@@ -198,7 +181,7 @@ public class ShapefileUtils {
                     transaction.commit();
 
                 } catch (Exception problem) {
-                    logger.error("error pricessing shape file: " + shpfile.getAbsolutePath(), problem);
+                    LOGGER.error("error pricessing shape file: " + shpfile.getAbsolutePath(), problem);
                     transaction.rollback();
 
                 } finally {
@@ -206,55 +189,22 @@ public class ShapefileUtils {
                 }
             }
 
-            logger.debug("Active Area shapefile written to: " + shpfile.getAbsolutePath());
+            LOGGER.debug("Active Area shapefile written to: " + shpfile.getAbsolutePath());
 
         } catch (Exception e) {
-            logger.error("Unable to save shapefile: " + shpfile.getAbsolutePath(), e);
+            LOGGER.error("Unable to save shapefile: " + shpfile.getAbsolutePath(), e);
         }
     }
 
-    private static SimpleFeatureType createFeatureType(String type) {
-
-        // DataUtilities.createType("ActiveArea", "area:Polygon:srid=4326", "name:String");
+    private static SimpleFeatureType createFeatureType() {
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName("ActiveArea");
-        builder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate reference system
+        builder.setCRS(DefaultGeographicCRS.WGS84);
 
-        org.opengis.filter.expression.Function f;
-
-        // add attributes in order
-        //if ("GEOMETRYCOLLECTION".equalsIgnoreCase(type)) {
-            builder.add("the_geom", MultiPolygon.class);
-        //builder.length(15).add("Name", String.class); // <- 15 chars width for name field
-        //} else {
-        //    builder.add("area", Polygon.class);
-        //}
-        //builder.length(15).add("name", String.class); // <- 15 chars width for name field
+        builder.add("the_geom", MultiPolygon.class);
 
         // build the type
-        final SimpleFeatureType ActiveArea = builder.buildFeatureType();
-
-        return ActiveArea;
-    }
-
-    public static void main(String[] args) {
-//        logger.debug("Loading shapefile");
-//        //File shpfile = new File("/Users/ajay/projects/tmp/uploads/SinglePolygon/SinglePolygon.shp");
-//        File shpfile = new File("/Users/ajay/Downloads/My_Area_1_Shapefile/My_Area_1_Shapefile.shp");
-//        loadShapefile(shpfile);
-
-//        try {
-//            logger.debug("Saving shapefile");
-//            File shpfile = new File("/Users/ajay/projects/tmp/uploads/ActiveArea/ActiveArea.shp");
-//            //String wktString = "POLYGON((128.63867187521 -23.275665408794,128.63867187521 -29.031198581005,137.25195312487 -28.56908637161,138.8339843748 -24.561114535569,134.61523437497 -20.83211850342,130.83593750012 -21.160338084068,128.63867187521 -23.275665408794))";
-//            String wktfile = "/Users/ajay/Downloads/Australian_Capital_Territory_WKT.txt";
-//            String wktString = FileUtils.readFileToString(new File(wktfile));
-//            saveShapefile(shpfile, wktString.toString());
-//        } catch (Exception e) {
-//            logger.debug("Error reading wkt file");
-//            e.printStackTrace(System.out);
-//        }
-
+        return builder.buildFeatureType();
     }
 }

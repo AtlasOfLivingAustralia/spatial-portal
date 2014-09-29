@@ -1,29 +1,28 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.LayersUtil;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.geom.util.GeometryCombiner;
+import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.layers.legend.Facet;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zul.*;
-import org.zkoss.zul.Calendar;
+import org.zkoss.zul.Button;
+import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Textbox;
+import org.zkoss.zul.Vbox;
 
-import java.net.URL;
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Only does (area or area or area) not (area and area and area) so
@@ -33,18 +32,18 @@ import java.util.*;
  */
 public class AreaMerge extends AreaToolComposer {
 
-    private static Logger logger = Logger.getLogger(AreaMerge.class);
+    private static final Logger LOGGER = Logger.getLogger(AreaMerge.class);
 
-    Textbox txtLayerName;
-    Button btnOk;
-    Vbox vboxAreas;
+    private Textbox txtLayerName;
+    private Button btnOk;
+    private Vbox vboxAreas;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
         btnOk.setDisabled(false);
 
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang(StringConstants.DEFAULT_AREA_LAYER_NAME)));
 
         List<MapLayer> layers = getMapComposer().getPolygonLayers();
         for (int i = 0; i < layers.size(); i++) {
@@ -54,40 +53,34 @@ public class AreaMerge extends AreaToolComposer {
             MapLayer ml = layers.get(i);
 
             boolean isGrid = false;
-            if(ml.getFacets() != null) {
+            if (ml.getFacets() != null
+                    && ml.getWKT() != null && ml.getWKT().startsWith(StringConstants.ENVELOPE)) {
                 String wkt = ml.getWKT();
-                if(wkt != null && wkt.startsWith("ENVELOPE")) {
-                    //get fid
-                    String fid = wkt.substring(9,wkt.indexOf(','));
 
-                    if(fid.startsWith("cl")) {
+                //get fid
+                String fid = wkt.substring(9, wkt.indexOf(','));
 
-                        JSONArray ja = CommonData.getLayerListJSONArray();
-                        for(int j=0;j<ja.size();j++) {
-                            JSONObject jo = (JSONObject) ja.get(j);
-                            if(jo.getString("id").equalsIgnoreCase(fid)) {
-                                if(jo.containsKey("fields")) {
-                                    JSONArray fields = jo.getJSONArray("fields");
-                                    for(int k=0;k<fields.size();k++) {
-                                        JSONObject field = (JSONObject)fields.getJSONObject(k);
-                                        if(field.getString("type").equalsIgnoreCase("a") ||
-                                                field.getString("type").equalsIgnoreCase("b")) {
-                                            isGrid = true;
-                                            break;
-                                        }
-                                    }
+                if (fid.startsWith("cl")) {
+                    JSONArray ja = CommonData.getLayerListJSONArray();
+                    for (int j = 0; j < ja.size() && !isGrid; j++) {
+                        JSONObject jo = (JSONObject) ja.get(j);
+                        if (jo.getString(StringConstants.ID).equalsIgnoreCase(fid) && jo.containsKey(StringConstants.FIELDS)) {
+                            JSONArray fields = jo.getJSONArray(StringConstants.FIELDS);
+                            for (int k = 0; k < fields.size() && !isGrid; k++) {
+                                JSONObject field = fields.getJSONObject(k);
+                                if ("a".equalsIgnoreCase(field.getString(StringConstants.TYPE)) ||
+                                        "b".equalsIgnoreCase(field.getString(StringConstants.TYPE))) {
+                                    isGrid = true;
                                 }
-
-                                break;
                             }
                         }
-                    } else {
-                        isGrid = true;
                     }
+                } else {
+                    isGrid = true;
                 }
             }
 
-            if(ml.getFacets() == null || !isGrid) {
+            if (ml.getFacets() == null || !isGrid) {
                 Checkbox cb = new Checkbox();
                 cb.setLabel(layers.get(i).getDisplayName());
                 cb.setValue(layers.get(i));
@@ -109,14 +102,13 @@ public class AreaMerge extends AreaToolComposer {
     }
 
     public void onClick$btnCancel(Event event) {
-        MapComposer mc = getMapComposer();
         this.detach();
     }
 
     private boolean validate() {
         int count = 0;
-        for(int i=0;i<vboxAreas.getChildren().size();i++) {
-            if(((Checkbox) vboxAreas.getChildren().get(i)).isChecked()) {
+        for (int i = 0; i < vboxAreas.getChildren().size(); i++) {
+            if (((Checkbox) vboxAreas.getChildren().get(i)).isChecked()) {
                 count++;
             }
         }
@@ -125,59 +117,57 @@ public class AreaMerge extends AreaToolComposer {
     }
 
     void mergeAreas() {
-        ArrayList<Facet> facets = new ArrayList<Facet>();
-        ArrayList<Geometry> wkt = new ArrayList<Geometry>();
+        List<Facet> facets = new ArrayList<Facet>();
+        List<Geometry> wkt = new ArrayList<Geometry>();
         WKTReader wktReader = new WKTReader();
 
-        String layer_display_names = "";
+        String layerDisplayNames = "";
 
-        for(int i=0;i<vboxAreas.getChildren().size();i++) {
-            Checkbox cb = ((Checkbox) vboxAreas.getChildren().get(i));
-            if(cb.isChecked()) {
-                MapLayer ml = (MapLayer)cb.getValue();
-                if(layer_display_names.length() > 0) {
-                    layer_display_names += ", ";
+        for (int i = 0; i < vboxAreas.getChildren().size(); i++) {
+            Checkbox cb = (Checkbox) vboxAreas.getChildren().get(i);
+            if (cb.isChecked()) {
+                MapLayer ml = cb.getValue();
+                if (layerDisplayNames.length() > 0) {
+                    layerDisplayNames += ", ";
                 }
-                layer_display_names += ml.getDisplayName();
+                layerDisplayNames += ml.getDisplayName();
 
-                if(ml != null) {
+                if (ml != null) {
                     if (ml.getFacets() != null) {
                         facets.addAll(ml.getFacets());
                     }
-//                  else {
-                        try {
-                            //get actual WKT when 'envelope' is specified
-                            String w = ml.getWKT();
-                            if (w.startsWith("ENVELOPE")) {
-                                //should only be one pid
-                                String pid = w.substring(w.indexOf(',') + 1, w.length()-1);
-                                w = Util.readUrl(CommonData.layersServer + "/shape/wkt/" + pid);
-                            }
-                            Geometry g = wktReader.read(w);
-                            if(g != null) {
-                                wkt.add(g);
-                            }
-                        } catch (Exception e) {
-                            logger.error("cannot parse WKT for map layer: " + ml.getDisplayName() + " for WKT: " + ml.getWKT());
+                    try {
+                        //get actual WKT when 'envelope' is specified
+                        String w = ml.getWKT();
+                        if (w.startsWith(StringConstants.ENVELOPE)) {
+                            //should only be one pid
+                            String pid = w.substring(w.indexOf(',') + 1, w.length() - 1);
+                            w = Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid);
                         }
-//                    }
+                        Geometry g = wktReader.read(w);
+                        if (g != null) {
+                            wkt.add(g);
+                        }
+                    } catch (ParseException e) {
+                        LOGGER.error("cannot parse WKT for map layer: " + ml.getDisplayName() + " for WKT: " + ml.getWKT());
+                    }
                 } else {
                     String swkt = null;
-                    if (cb.getLabel().equalsIgnoreCase("Australia")) {
+                    if ("Australia".equalsIgnoreCase(cb.getLabel())) {
                         swkt = CommonData.AUSTRALIA_WKT;
-                    } else if(cb.getLabel().equalsIgnoreCase("Current Extent")) {
+                    } else if ("Current Extent".equalsIgnoreCase(cb.getLabel())) {
                         swkt = getMapComposer().getViewArea();
                     } else {
-                        logger.error("cannot determine what this checked area is: " + cb.getLabel());
+                        LOGGER.error("cannot determine what this checked area is: " + cb.getLabel());
                     }
-                    if(swkt != null) {
+                    if (swkt != null) {
                         try {
                             Geometry g = wktReader.read(swkt);
-                            if(g != null) {
+                            if (g != null) {
                                 wkt.add(g);
                             }
-                        } catch (Exception e) {
-                            logger.error("cannot parse WKT for map layer: " + ml.getDisplayName() + " for WKT: " + swkt);
+                        } catch (ParseException e) {
+                            LOGGER.error("cannot parse WKT for map layer: " + ml.getDisplayName() + " for WKT: " + swkt);
                         }
                     }
                 }
@@ -186,15 +176,14 @@ public class AreaMerge extends AreaToolComposer {
 
         //produce single geometry
         Geometry geometry = null;
-        if (wkt.size() > 0) {
+        if (!wkt.isEmpty()) {
             geometry = wkt.get(0);
-            for(int i=1;i<wkt.size();i++) {
+            for (int i = 1; i < wkt.size(); i++) {
                 geometry = GeometryCombiner.combine(geometry, wkt.get(i));
             }
         }
 
-        String finalWkt = (geometry == null)?null:geometry.toString();
-        //finalWkt = Util.reduceWKT(finalWkt);
+        String finalWkt = (geometry == null) ? null : geometry.toString();
 
         MapComposer mc = getMapComposer();
 
@@ -202,14 +191,14 @@ public class AreaMerge extends AreaToolComposer {
         MapLayer mapLayer = mc.addWKTLayer(finalWkt, layerName, txtLayerName.getValue());
 
         //if possible, use facets instead of WKT with biocache
-        if(wkt.size() == facets.size()) {
+        if (wkt.size() == facets.size()) {
             //change to a single OR facet.
             //Because all facet areas are single or multiple, ORs just need to OR for joining.
             String fq = facets.get(0).toString();
-            for(int i=1;i<facets.size();i++) {
+            for (int i = 1; i < facets.size(); i++) {
                 fq += " OR " + facets.get(i).toString();
             }
-            ArrayList<Facet> array = new ArrayList<Facet>();
+            List<Facet> array = new ArrayList<Facet>();
             array.add(Facet.parseFacet(fq));
             mapLayer.setFacets(array);
         }
@@ -218,7 +207,7 @@ public class AreaMerge extends AreaToolComposer {
         calendar.setTimeInMillis(System.currentTimeMillis());
 
         String metadata = "";
-        metadata += "Merged WKT layers\nLayers: " + layer_display_names + "\n";
+        metadata += "Merged WKT layers\nLayers: " + layerDisplayNames + "\n";
         metadata += "Name: " + layerName + " <br />\n";
         metadata += "Date: " + formatter.format(calendar.getTime()) + " <br />\n";
 

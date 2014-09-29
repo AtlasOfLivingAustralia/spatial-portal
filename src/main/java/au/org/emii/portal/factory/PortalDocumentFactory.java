@@ -20,6 +20,6 @@ public interface PortalDocumentFactory {
      *
      * @return PortalDocument instance if reading succeeded, null if an error was encountered
      */
-    public Properties createPortalDocumentInstance();
+    Properties createPortalDocumentInstance();
 
 }

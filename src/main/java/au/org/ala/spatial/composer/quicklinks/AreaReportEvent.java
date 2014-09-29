@@ -5,35 +5,34 @@
  */
 package au.org.ala.spatial.composer.quicklinks;
 
-import au.org.ala.spatial.composer.tool.AreaReportComposer;
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.composer.MapComposer;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author adam
  */
 public class AreaReportEvent implements EventListener {
 
-    String polygonLayerName;
-    MapComposer mc;
+    private String polygonLayerName;
 
-    public AreaReportEvent(MapComposer mc, String polygonLayerName) {
-        this.mc = mc;
+    public AreaReportEvent(String polygonLayerName) {
         this.polygonLayerName = polygonLayerName;
     }
 
     @Override
     public void onEvent(Event event) throws Exception {
-        Hashtable<String, Object> params = new Hashtable<String, Object>();
+        Map<String, Object> params = new HashMap<String, Object>();
         if (polygonLayerName != null) {
-            params.put("polygonLayerName", polygonLayerName);
+            params.put(StringConstants.POLYGON_LAYER_NAME, polygonLayerName);
         } else {
-            params.put("polygonLayerName", "none");
+            params.put(StringConstants.POLYGON_LAYER_NAME, StringConstants.NONE);
         }
-        AreaReportComposer window = (AreaReportComposer) mc.openModal("WEB-INF/zul/tool/AreaReport.zul", params, "addtoolwindow");
+        ((MapComposer) event.getPage().getFellow(StringConstants.MAPPORTALPAGE)).openModal("WEB-INF/zul/tool/AreaReport.zul", params, StringConstants.ADDTOOLWINDOW);
 
     }
 }

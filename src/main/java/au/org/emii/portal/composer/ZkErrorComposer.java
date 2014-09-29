@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public class ZkErrorComposer extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(ZkErrorComposer.class);
+    private static final Logger LOGGER = Logger.getLogger(ZkErrorComposer.class);
 
 
     private static final long serialVersionUID = 1L;
@@ -42,7 +42,7 @@ public class ZkErrorComposer extends UtilityComposer {
         Map map = getPage().getAttributes(REQUEST_SCOPE);
         Throwable exception = (Throwable) map.get("javax.servlet.error.exception");
 
-        logger.error("***FIXME***! Unhandled error delivered to user: ", exception);
+        LOGGER.error("Unhandled error delivered to user: ", exception);
     }
 
 }

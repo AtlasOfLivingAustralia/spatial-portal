@@ -9,14 +9,13 @@ package au.org.emii.portal.config;
 import au.org.emii.portal.factory.PortalDocumentFactory;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.settings.Settings;
-import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.web.ApplicationInit;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 
 import javax.servlet.ServletContext;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -29,37 +28,32 @@ import java.util.Properties;
  */
 public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 {
 
-    public static final ArrayList<Thread> loaders = new ArrayList<Thread>();
-
     /**
-     * Logger instance
+     * The config file re-read interval is normally read from the
+     * config file, but if the config file is broken, we can't
+     * get an initial value, so we will use this one which
+     * specifies reloading time in ms
+     * <p/>
+     * 300000 = 5 mins
      */
-    private Logger logger = Logger.getLogger(this.getClass());
-
-
-    private ConfigurationLoaderStage2 stage2 = null;
-
-    private PortalDocumentFactory portalDocumentFactory = null;
-
-    private Settings settings = null;
-
-    /**
-     * Request thread shutdown
-     */
-    private boolean running = false;
-
-    /**
-     * Flag to indicate whether configuration is currently reloading
-     */
-    private boolean reloading = false;
-
+    public static final int BROKEN_CONFIG_RELOAD = 300000;
     /**
      * Time to keep configuration file in memory - other components wanting
      * to refresh things from config should read this value
      */
-    public static int rereadInterval = BROKEN_CONFIG_RELOAD;
-
-    private Date lastReloaded = null;
+    private static int rereadInterval = BROKEN_CONFIG_RELOAD;
+    public static final List<Thread> LOADERS = new ArrayList<Thread>();
+    /**
+     * Logger instance
+     */
+    private static final Logger LOGGER = Logger.getLogger(ConfigurationLoaderStage1Impl.class);
+    private ConfigurationLoaderStage2 stage2 = null;
+    private PortalDocumentFactory portalDocumentFactory = null;
+    private Settings settings = null;
+    /**
+     * Request thread shutdown
+     */
+    private boolean running = false;
 
     private ServletContext servletContext = null;
 
@@ -67,16 +61,9 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
      * Flag to indicate whether the configuration contains error(s) or not
      */
     private boolean error = false;
-
-    private PortalSessionUtilities portalSessionUtilities = null;
-
-    @Override
-    public ConfigurationLoaderStage2 getStage2() {
-        return stage2;
-    }
+    private boolean reloading;
 
     @Required
-    @Override
     public void setStage2(ConfigurationLoaderStage2 stage2) {
         this.stage2 = stage2;
     }
@@ -87,7 +74,7 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
         reloading = true;
         Properties portalDocument = portalDocumentFactory.createPortalDocumentInstance();
         if (portalDocument == null) {
-            logger.debug("Configuration file missing or invalid - cannot load portal.  See previous message for cause");
+            LOGGER.debug("Configuration file missing or invalid - cannot load portal.  See previous message for cause");
         } else {
             stage2.setProperties(portalDocument);
 
@@ -118,8 +105,7 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
              *  so that it can be accessed via spring
              */
             servletContext.setAttribute(ApplicationInit.PORTAL_MASTER_SESSION_ATTRIBUTE, masterPortalSession);
-            logger.debug("finished building master portalSession");
-            lastReloaded = new Date();
+            LOGGER.debug("finished building master portalSession");
         }
         reloading = false;
     }
@@ -149,7 +135,7 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
                  */
 
                 if (firstRun) {
-                    loaders.add(Thread.currentThread());
+                    LOADERS.add(Thread.currentThread());
                     rereadInterval = settings.getConfigRereadInitialInterval();
                     firstRun = false;
                 } else {
@@ -159,15 +145,15 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
                 // sanity check the reread interval - it might be 0 if settings didn't load, or config
                 // is broken
                 if (rereadInterval == 0) {
-                    logger.warn("invalid value (0) for configReloadInitial or configReload in config file (or config file not loaded)");
+                    LOGGER.warn("invalid value (0) for configReloadInitial or configReload in config file (or config file not loaded)");
                     rereadInterval = BROKEN_CONFIG_RELOAD;
                 }
 
-                logger.debug("menu (re)load attempt finished, goinging to sleep for " + rereadInterval + "ms");
+                LOGGER.debug("menu (re)load attempt finished, goinging to sleep for " + rereadInterval + "ms");
 
                 Thread.sleep(rereadInterval);
             } catch (InterruptedException e) {
-                logger.debug(
+                LOGGER.debug(
                         "Configuration Loader was interrupted during its sleep, probably "
                                 + "not important");
             }
@@ -180,17 +166,12 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
      */
     @Override
     public void stop() {
-        logger.debug("requesting stop for configuration loader thread");
+        LOGGER.debug("requesting stop for configuration loader thread");
         running = false;
 
         // remove reference to servlet context to allow the server to be brought
         // down cleanly (?)
         servletContext = null;
-    }
-
-    @Override
-    public Date getLastReloaded() {
-        return lastReloaded;
     }
 
     public Settings getSettings() {
@@ -203,11 +184,6 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
     }
 
     @Override
-    public ServletContext getServletContext() {
-        return servletContext;
-    }
-
-    @Override
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
@@ -216,26 +192,11 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
     public boolean isError() {
         return error;
     }
-
-    @Override
-    public boolean isReloading() {
-        return reloading;
-    }
-
-    public PortalSessionUtilities getPortalSessionUtilities() {
-        return portalSessionUtilities;
-    }
-
-    @Required
-    public void setPortalSessionUtilities(PortalSessionUtilities portalSessionUtilities) {
-        this.portalSessionUtilities = portalSessionUtilities;
-    }
-
-    public PortalDocumentFactory getPortalDocumentFactory() {
-        return portalDocumentFactory;
-    }
-
     public void setPortalDocumentFactory(PortalDocumentFactory portalDocumentFactory) {
         this.portalDocumentFactory = portalDocumentFactory;
+    }
+
+    public boolean isReloading() {
+        return reloading;
     }
 }

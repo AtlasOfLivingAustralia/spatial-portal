@@ -1,8 +1,9 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.dto.UserDataDTO;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.ShapefileUtils;
-import au.org.ala.spatial.util.UserData;
 import au.org.ala.spatial.util.Zipper;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
@@ -12,9 +13,9 @@ import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.operation.valid.IsValidOp;
 import org.apache.log4j.Logger;
-import org.geotools.kml.KMLConfiguration;
 import org.geotools.xml.Parser;
 import org.opengis.feature.simple.SimpleFeature;
+import org.xml.sax.SAXException;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
@@ -26,6 +27,7 @@ import org.zkoss.zul.Button;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,15 +38,53 @@ import java.util.Map;
  */
 public class AreaUploadShapefile extends AreaToolComposer {
 
-    private static Logger logger = Logger.getLogger(AreaUploadShapefile.class);
-    //Fileupload fileUpload;
-    Button fileUpload;
-    Textbox txtLayerName;
+    private static final Logger LOGGER = Logger.getLogger(AreaUploadShapefile.class);
+    private Button fileUpload;
+    private Textbox txtLayerName;
+
+    private static String getKMLPolygonAsWKT(String kmldata) {
+        try {
+            Parser parser = new Parser(new org.geotools.kml.v22.KMLConfiguration());
+            SimpleFeature f = (SimpleFeature) parser.parse(new StringReader(kmldata));
+            Collection placemarks = (Collection) f.getAttribute(StringConstants.FEATURE);
+
+            Geometry g = null;
+            SimpleFeature sf = null;
+
+            //for <Placemark>
+            if (!placemarks.isEmpty() && !placemarks.isEmpty()) {
+                sf = (SimpleFeature) placemarks.iterator().next();
+                g = (Geometry) sf.getAttribute(StringConstants.GEOMETRY);
+            }
+
+            //for <Folder><Placemark>
+            if (g == null && sf != null) {
+                placemarks = (Collection) sf.getAttribute(StringConstants.FEATURE);
+                if (placemarks != null && !placemarks.isEmpty()) {
+                    g = (Geometry) ((SimpleFeature) placemarks.iterator().next()).getAttribute(StringConstants.GEOMETRY);
+                }
+            }
+
+            if (g != null) {
+                WKTWriter wr = new WKTWriter();
+                String wkt = wr.write(g);
+                return wkt.replace(" (", "(").replace(", ", ",").replace(") ", ")");
+            }
+        } catch (SAXException e) {
+            LOGGER.error("KML spec parse error", e);
+        } catch (ParserConfigurationException e) {
+            LOGGER.error("error converting KML to WKT", e);
+        } catch (IOException e) {
+            LOGGER.error("error reading KML", e);
+        }
+
+        return null;
+    }
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang(StringConstants.DEFAULT_AREA_LAYER_NAME)));
         fileUpload.addEventListener("onUpload", new EventListener() {
 
             public void onEvent(Event event) throws Exception {
@@ -65,35 +105,35 @@ public class AreaUploadShapefile extends AreaToolComposer {
     public void onUpload$btnFileUpload(Event event) {
 
         UploadEvent ue = null;
-        if (event.getName().equals("onUpload")) {
+        if ("onUpload".equals(event.getName())) {
             ue = (UploadEvent) event;
-        } else if (event.getName().equals("onForward")) {
+        } else if ("onForward".equals(event.getName())) {
             ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
         }
         if (ue == null) {
-            logger.debug("unable to upload file");
+            LOGGER.debug("unable to upload file");
             return;
         } else {
-            logger.debug("fileUploaded()");
+            LOGGER.debug("fileUploaded()");
         }
         try {
             Media m = ue.getMedia();
 
-            logger.debug("m.getName(): " + m.getName());
-            logger.debug("getContentType: " + m.getContentType());
-            logger.debug("getFormat: " + m.getFormat());
+            LOGGER.debug("m.getName(): " + m.getName());
+            LOGGER.debug("getContentType: " + m.getContentType());
+            LOGGER.debug("getFormat: " + m.getFormat());
 
-            UserData ud = new UserData(txtLayerName.getValue());
+            UserDataDTO ud = new UserDataDTO(txtLayerName.getValue());
             ud.setFilename(m.getName());
 
             byte[] kmldata = getKml(m);
-            if (kmldata != null) {
+            if (kmldata.length > 0) {
                 loadUserLayerKML(m.getName(), kmldata, ud);
 
             } else if (m.getName().toLowerCase().endsWith("zip")) {
                 Map args = new HashMap();
-                args.put("layername", txtLayerName.getValue());
-                args.put("media", m);
+                args.put(StringConstants.LAYERNAME, txtLayerName.getValue());
+                args.put(StringConstants.MEDIA, m);
 
                 String windowname = "areashapewizard";
                 if (getFellowIfAny(windowname) != null) {
@@ -104,39 +144,36 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 try {
                     window.doModal();
                 } catch (SuspendNotAllowedException e) {
-                    // we are really closing the window without opening/displaying to the user                
+                    // we are really closing the window without opening/displaying to the user
                 }
             } else if (m.getName().toLowerCase().endsWith("zip_removeme")) {
 
                 Map input = Zipper.unzipFile(m.getName(), m.getStreamData(), "/data/ala/runtime/output/layers/");
                 String type = "";
                 String file = "";
-                if (input.containsKey("type")) {
-                    type = (String) input.get("type");
+                if (input.containsKey(StringConstants.TYPE)) {
+                    type = (String) input.get(StringConstants.TYPE);
                 }
-                if (input.containsKey("file")) {
-                    file = (String) input.get("file");
+                if (input.containsKey(StringConstants.FILE)) {
+                    file = (String) input.get(StringConstants.FILE);
                 }
-                if (type.equalsIgnoreCase("shp")) {
-                    logger.debug("Uploaded file is a shapefile. Loading...");
+                if ("shp".equalsIgnoreCase(type)) {
+                    LOGGER.debug("Uploaded file is a shapefile. Loading...");
                     Map shape = ShapefileUtils.loadShapefile(new File(file));
 
-                    if (shape == null) {
-                        return;
-                    } else {
-                        String wkt = (String) shape.get("wkt");
-                        logger.debug("Got shapefile wkt...validating");
+                    if (shape != null) {
+                        String wkt = (String) shape.get(StringConstants.WKT);
+                        LOGGER.debug("Got shapefile wkt...validating");
                         String msg = "";
                         boolean invalid = false;
                         try {
                             WKTReader wktReader = new WKTReader();
                             com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
                             //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
-                            //logger.debug("GEOMETRY TYPE: " + g.getGeometryType());
                             IsValidOp op = new IsValidOp(g);
                             if (!op.isValid()) {
                                 invalid = true;
-                                logger.warn(CommonData.lang("error_wkt_invalid") + " " + op.getValidationError().getMessage());
+                                LOGGER.warn(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + op.getValidationError().getMessage());
                                 msg = op.getValidationError().getMessage();
                                 //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
                             } else if (g.isRectangle()) {
@@ -151,7 +188,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                                         + envelope.getMinX() + " " + envelope.getMaxY() + ","
                                         + envelope.getMinX() + " " + envelope.getMinY() + "))";
                                 if (!wkt.equals(wkt2)) {
-                                    logger.debug("NEW WKT for Rectangle: " + wkt);
+                                    LOGGER.debug("NEW WKT for Rectangle: " + wkt);
                                     msg = CommonData.lang("error_wkt_anticlockwise");
                                     invalid = true;
                                 }
@@ -160,12 +197,12 @@ public class AreaUploadShapefile extends AreaToolComposer {
                                 invalid = !op.isValid();
                             }
                         } catch (ParseException parseException) {
-                            logger.error("error testing validity of uploaded shape file wkt", parseException);
+                            LOGGER.error("error testing validity of uploaded shape file wkt", parseException);
                         }
 
                         if (invalid) {
                             ok = false;
-                            getMapComposer().showMessage(CommonData.lang("error_wkt_invalid") + " " + msg);
+                            getMapComposer().showMessage(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + msg);
                         } else {
 
                             layerName = txtLayerName.getValue();
@@ -185,16 +222,16 @@ public class AreaUploadShapefile extends AreaToolComposer {
                         }
                     }
                 } else {
-                    logger.debug("Unknown file type. ");
+                    LOGGER.debug("Unknown file type. ");
                     getMapComposer().showMessage(CommonData.lang("error_unknown_file_type"));
                 }
             } else {
-                logger.debug("Unknown file type. ");
+                LOGGER.debug("Unknown file type. ");
                 getMapComposer().showMessage(CommonData.lang("error_unknown_file_type"));
             }
         } catch (Exception ex) {
             getMapComposer().showMessage(CommonData.lang("error_upload_failed"));
-            logger.error("unable to load user area file: ", ex);
+            LOGGER.error("unable to load user area file: ", ex);
         }
     }
 
@@ -210,14 +247,16 @@ public class AreaUploadShapefile extends AreaToolComposer {
                     Writer writer = new StringWriter();
 
                     char[] buffer = new char[1024];
+                    Reader reader = null;
                     try {
-                        Reader reader = new BufferedReader(
+                        reader = new BufferedReader(
                                 new InputStreamReader(data));
                         int n;
                         while ((n = reader.read(buffer)) != -1) {
                             writer.write(buffer, 0, n);
                         }
                     } finally {
+                        reader.close();
                         data.close();
                     }
                     kmlData = writer.toString();
@@ -225,59 +264,27 @@ public class AreaUploadShapefile extends AreaToolComposer {
             } else if ("txt".equals(m.getFormat())) {
                 Writer writer = new StringWriter();
                 char[] buffer = new char[1024];
-                try {
-                    Reader reader = m.getReaderData();
-                    int n;
-                    while ((n = reader.read(buffer)) != -1) {
-                        writer.write(buffer, 0, n);
-                    }
-                } finally {
+                Reader reader = m.getReaderData();
+                int n;
+                while ((n = reader.read(buffer)) != -1) {
+                    writer.write(buffer, 0, n);
                 }
+
                 kmlData = writer.toString();
             }
 
-            if (kmlData.contains("xml") && kmlData.contains("Document")) { // kmlData.contains("kml") && 
+            if (kmlData.contains("xml") && kmlData.contains("Document")) {
                 return kmlData.getBytes();
             } else {
-                return null;
+                return new byte[0];
             }
         } catch (Exception e) {
-            logger.error("Exception checking if kml file", e);
+            LOGGER.error("Exception checking if kml file", e);
         }
-        return null;
+        return new byte[0];
     }
 
-    public void loadUserLayerKML(String name, InputStream data, UserData ud) {
-        try {
-            String kmlData = "";
-
-            if (data != null) {
-                Writer writer = new StringWriter();
-
-                char[] buffer = new char[1024];
-                try {
-                    Reader reader = new BufferedReader(
-                            new InputStreamReader(data));
-                    int n;
-                    while ((n = reader.read(buffer)) != -1) {
-                        writer.write(buffer, 0, n);
-                    }
-                } finally {
-                    data.close();
-                }
-                kmlData = writer.toString();
-            }
-
-            loadUserLayerKML(name, kmlData.getBytes(), ud);
-
-        } catch (Exception e) {
-            getMapComposer().showMessage(CommonData.lang("error_upload_failed"));
-
-            logger.debug("unable to load user kml: ", e);
-        }
-    }
-
-    public void loadUserLayerKML(String name, byte[] kmldata, UserData ud) {
+    public void loadUserLayerKML(String name, byte[] kmldata, UserDataDTO ud) {
         try {
 
             String id = String.valueOf(System.currentTimeMillis());
@@ -300,11 +307,10 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 WKTReader wktReader = new WKTReader();
                 com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
                 //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
-                //logger.debug("GEOMETRY TYPE: " + g.getGeometryType());
                 IsValidOp op = new IsValidOp(g);
                 if (!op.isValid()) {
                     invalid = true;
-                    logger.warn(CommonData.lang("error_wkt_invalid") + " "  + op.getValidationError().getMessage());
+                    LOGGER.warn(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + op.getValidationError().getMessage());
                     msg = op.getValidationError().getMessage();
                     //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
                 } else if (g.isRectangle()) {
@@ -312,14 +318,14 @@ public class AreaUploadShapefile extends AreaToolComposer {
                     //get the new WKT for the rectangle will possibly need to change the order.
 
                     com.vividsolutions.jts.geom.Envelope envelope = g.getEnvelopeInternal();
-                    String wkt2 = "POLYGON(("
+                    String wkt2 = StringConstants.POLYGON + "(("
                             + envelope.getMinX() + " " + envelope.getMinY() + ","
                             + envelope.getMaxX() + " " + envelope.getMinY() + ","
                             + envelope.getMaxX() + " " + envelope.getMaxY() + ","
                             + envelope.getMinX() + " " + envelope.getMaxY() + ","
                             + envelope.getMinX() + " " + envelope.getMinY() + "))";
                     if (!wkt.equals(wkt2)) {
-                        logger.debug("NEW WKT for Rectangle: " + wkt);
+                        LOGGER.debug("NEW WKT for Rectangle: " + wkt);
                         msg = CommonData.lang("error_wkt_anticlockwise");
                         invalid = true;
                     }
@@ -328,12 +334,12 @@ public class AreaUploadShapefile extends AreaToolComposer {
                     invalid = !op.isValid();
                 }
             } catch (ParseException parseException) {
-                logger.error(CommonData.lang("error_wkt_invalid"), parseException);
+                LOGGER.error(CommonData.lang(StringConstants.ERROR_WKT_INVALID), parseException);
             }
 
             if (invalid) {
                 ok = false;
-                getMapComposer().showMessage(CommonData.lang("error_wkt_invalid") + " "  + msg);
+                getMapComposer().showMessage(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + msg);
             } else {
                 MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
 
@@ -349,54 +355,18 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
 
                 if (mapLayer == null) {
-                    logger.debug("The layer " + name + " couldnt be created");
+                    LOGGER.debug("The layer " + name + " couldnt be created");
                     mc.showMessage(mc.getLanguagePack().getLang("ext_layer_creation_failure"));
                 } else {
                     ok = true;
                     mc.addUserDefinedLayerToMenu(mapLayer, true);
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
 
             getMapComposer().showMessage(CommonData.lang("error_upload_failed"));
 
-            logger.debug("unable to load user kml: ", e);
+            LOGGER.debug("unable to load user kml: ", e);
         }
-    }
-
-    private static String getKMLPolygonAsWKT(String kmldata) {
-        try {
-            Parser parser = new Parser(new org.geotools.kml.v22.KMLConfiguration());
-            SimpleFeature f = (SimpleFeature) parser.parse(new StringReader(kmldata));
-            Collection placemarks = (Collection) f.getAttribute("Feature");
-
-            Geometry g = null;
-            SimpleFeature sf = null;
-
-            //for <Placemark>
-            if (placemarks.size() > 0 && placemarks.size() > 0) {
-                sf = (SimpleFeature) placemarks.iterator().next();
-                g = (Geometry) sf.getAttribute("Geometry");
-            }
-
-            //for <Folder><Placemark>
-            if (g == null && sf != null) {
-                placemarks = (Collection) sf.getAttribute("Feature");
-                if (placemarks != null && placemarks.size() > 0) {
-                    g = (Geometry) ((SimpleFeature) placemarks.iterator().next()).getAttribute("Geometry");
-                }
-            }
-
-            if (g != null) {
-                WKTWriter wr = new WKTWriter();
-                String wkt = wr.write(g);
-                return wkt.replace(" (", "(").replace(", ", ",").replace(") ", ")");
-            }
-
-        } catch (Exception e) {
-            logger.error("erro converting KML to WKT: " + kmldata.substring(0, 200));
-        }
-
-        return null;
     }
 }

@@ -1,11 +1,12 @@
 package au.org.ala.spatial.composer.results;
 
 import au.com.bytecode.opencsv.CSVReader;
-import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.QueryUtil;
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.logger.RemoteLogger;
-import au.org.ala.spatial.util.SelectedArea;
+import au.org.ala.spatial.util.Query;
+import au.org.ala.spatial.util.QueryUtil;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.SelectedArea;
 import org.apache.log4j.Logger;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
@@ -20,36 +21,29 @@ import java.util.Date;
  * @author adam
  */
 public class SpeciesListResults extends UtilityComposer {
-    private static Logger logger = Logger.getLogger(SpeciesListResults.class);
-
-    RemoteLogger remoteLogger;
-    public String pid;
-    String shape;
-    public String[] results;
-    public Button download;
-    public Listbox popup_listbox_results;
-    public Label results_label;
-    Row rowUpdating;
-    Row rowCounts;
-    int results_count = 0;
-    int results_count_occurrences = 0;
-    SelectedArea selectedArea;
-    boolean[] geospatialKosher;
-    boolean chooseEndemic;
+    private static final Logger LOGGER = Logger.getLogger(SpeciesListResults.class);
+    private String pid;
+    private String[] results;
+    private Button download;
+    private Listbox popupListboxResults;
+    private Label resultsLabel;
+    private RemoteLogger remoteLogger;
+    private SelectedArea selectedArea;
+    private boolean[] geospatialKosher;
+    private boolean chooseEndemic;
     //Support for extra filters to be applied - allows facets to be listed
-    String extraParams;
+    private String extraParams;
+    private boolean addedListener = false;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
         selectedArea = (SelectedArea) Executions.getCurrent().getArg().get("selectedarea");
         geospatialKosher = (boolean[]) Executions.getCurrent().getArg().get("geospatialKosher");
-        chooseEndemic = (Boolean) Executions.getCurrent().getArg().get("chooseEndemic");
-        extraParams = (String) Executions.getCurrent().getArg().get("extraParams");
+        chooseEndemic = (Boolean) Executions.getCurrent().getArg().get(StringConstants.CHOOSEENDEMIC);
+        extraParams = (String) Executions.getCurrent().getArg().get(StringConstants.EXTRAPARAMS);
         populateList();
     }
-
-    boolean addedListener = false;
 
     public void populateList() {
         if (selectedArea == null) {
@@ -62,8 +56,8 @@ public class SpeciesListResults extends UtilityComposer {
             if (sq.getSpeciesCount() <= 0) {
                 getMapComposer().showMessage("No species records in the active area.");
                 results = null;
-                popup_listbox_results.setVisible(false);
-                results_label.setVisible(false);
+                popupListboxResults.setVisible(false);
+                resultsLabel.setVisible(false);
                 this.detach();
                 return;
             }
@@ -74,24 +68,24 @@ public class SpeciesListResults extends UtilityComposer {
 
             java.util.Arrays.sort(results);
 
-            // results should already be sorted: Arrays.sort(results);
+            // results should already be sorted
             String[] tmp = results;
             if (results.length > 200) {
                 tmp = java.util.Arrays.copyOf(results, 200);
-                results_label.setValue("preview of first 200 of " + results.length + " species found");
+                resultsLabel.setValue("preview of first 200 of " + results.length + " species found");
             } else {
-                results_label.setValue("preview of all " + results.length + " species found");
+                resultsLabel.setValue("preview of all " + results.length + " species found");
             }
 
-            popup_listbox_results.setModel(new ListModelArray(tmp, false));
-            popup_listbox_results.setItemRenderer(
+            popupListboxResults.setModel(new ListModelArray(tmp, false));
+            popupListboxResults.setItemRenderer(
                     new ListitemRenderer() {
 
-                        public void render(Listitem li, Object data, int item_idx) {
+                        public void render(Listitem li, Object data, int itemIdx) {
                             String s = (String) data;
                             CSVReader reader = new CSVReader(new StringReader(s));
 
-                            String[] ss = null;
+                            String[] ss;
                             try {
                                 ss = reader.readNext();
                             } catch (Exception e) {
@@ -115,32 +109,32 @@ public class SpeciesListResults extends UtilityComposer {
                             try {
                                 reader.close();
                             } catch (IOException e) {
-                                logger.error("error closing after reading species list", e);
+                                LOGGER.error("error closing after reading species list", e);
                             }
                         }
                     });
         } catch (Exception e) {
-            logger.error("error reading species list data", e);
+            LOGGER.error("error reading species list data", e);
         }
     }
 
     public void onClick$btnDownload() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Species,Species Name,Scientific Name,Taxon Rank,Kingdom,Phylum,Class,Order,Family,Genus,Vernacular Name,Number of records\r\n");
+        sb.append("LSID,Scientific Name,Taxon Concept,Taxon Rank,Kingdom,Phylum,Class,Order,Family,Genus,Vernacular Name,Number of records\r\n");
         for (String s : results) {
             sb.append(s);
             sb.append("\r\n");
         }
 
         String spid = pid;
-        if (spid == null || spid.equals("none")) {
+        if (spid == null || StringConstants.NONE.equals(spid)) {
             spid = String.valueOf(System.currentTimeMillis());
         }
 
-        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat date = new SimpleDateFormat(StringConstants.DATE);
         String sdate = date.format(new Date());
 
-        Filedownload.save(sb.toString(), "text/plain", "Species_list_" + sdate + "_" + spid + ".csv");
+        Filedownload.save(sb.toString(), StringConstants.TEXT_PLAIN, "Species_list_" + sdate + "_" + spid + ".csv");
 
         if (selectedArea == null) {
             selectedArea = new SelectedArea(null, getMapComposer().getViewArea());

@@ -9,14 +9,14 @@ import java.util.Properties;
  */
 public class PortalProperties extends Properties {
 
-    private static Logger logger = Logger.getLogger(PortalProperties.class);
+    private static final Logger LOGGER = Logger.getLogger(PortalProperties.class);
 
     @Override
     public String getProperty(String key) {
         String property = super.getProperty(key);
 
         if (property == null) {
-            logger.error("****** MISSING PROPERTY in webportal-config.properties: " + key);
+            LOGGER.error("****** MISSING PROPERTY in webportal-config.properties: " + key);
         }
 
         return property;

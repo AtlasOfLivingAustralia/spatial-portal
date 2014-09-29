@@ -28,9 +28,10 @@
     </library-property>
 
     <session-config>
-        <!--  session timeout in seconds -->
-        <session-timeout>7200</session-timeout>
         <timer-keep-alive>true</timer-keep-alive>
+        <automatic-timeout>true</automatic-timeout>
+        <device-type>ajax</device-type>
+        <timeout-message>Session timeout. Please reload.</timeout-message>
     </session-config>
 
     <library-property>
@@ -49,14 +50,6 @@
         <exception-type>java.lang.Throwable</exception-type>
         <location>/WEB-INF/zul/ZkError.zul</location>
     </error-page>
-
-    <!--  if a user tries to carry on working when their session has timed out
-   ask them what to do...
-    -->
-    <device-config>
-        <device-type>ajax</device-type>
-        <timeout-uri>/timeout.zul</timeout-uri>
-    </device-config>
 
     <!--
     required to prevent getting 'not unique in idspace' errors when

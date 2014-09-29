@@ -5,6 +5,7 @@
  */
 package au.org.ala.spatial.composer.quicklinks;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import org.zkoss.zk.ui.event.Event;
@@ -16,19 +17,18 @@ import org.zkoss.zk.ui.event.Events;
  */
 public class OpenFacetsEvent implements EventListener {
 
-    String layerName;
-    MapComposer mc;
+    private String layerName;
 
-    public OpenFacetsEvent(MapComposer mc, String layerName) {
-        this.mc = mc;
+    public OpenFacetsEvent(String layerName) {
         this.layerName = layerName;
     }
 
     @Override
     public void onEvent(Event event) throws Exception {
+        MapComposer mc = (MapComposer) event.getPage().getFellow(StringConstants.MAPPORTALPAGE);
         MapLayer mapLayer = mc.getMapLayer(layerName);
         if (mapLayer != null) {
-            if (mapLayer.getColourMode().equals("grid")) {
+            if (StringConstants.GRID.equals(mapLayer.getColourMode())) {
                 mapLayer.setColourMode("-1");
                 mc.updateLayerControls();
             }

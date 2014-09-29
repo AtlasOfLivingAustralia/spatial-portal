@@ -1,7 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
-  <display-name>zkspringcoresec</display-name>
-  <servlet>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         id="WebApp_ID" version="2.5">
+  <display-name>spatial-portal</display-name>
+    <listener>
+        <description>Load the application config file, then pass control to spring to merge config file keys into bean
+            definitions and create application context
+        </description>
+        <listener-class>au.org.emii.portal.web.ApplicationInit</listener-class>
+    </listener>
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            /WEB-INF/applicationContext.xml
+        </param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+    </listener>
+    <listener>
+        <description>Used to cleanup when a session is destroyed</description>
+        <display-name>ZK Session Cleaner</display-name>
+        <listener-class>org.zkoss.zk.ui.http.HttpSessionListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
+    </listener>
+
+    <servlet>
     <servlet-name>zkLoader</servlet-name>
     <servlet-class>
 			org.zkoss.zk.ui.http.DHtmlLayoutServlet
@@ -12,32 +38,6 @@
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
-  <context-param>
-    <param-name>contextConfigLocation</param-name>
-      <param-value>
-              /WEB-INF/applicationContext.xml
-          </param-value>
-  </context-param>
-  <listener>
-    <listener-class>org.zkoss.spring.web.context.CoreContextListener</listener-class>
-  </listener>
-  <listener>
-    <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
-  </listener>
-  <listener>
-    <description>Used to cleanup when a session is destroyed</description>
-    <display-name>ZK Session Cleaner</display-name>
-    <listener-class>org.zkoss.zk.ui.http.HttpSessionListener</listener-class>
-  </listener>
-  <listener>
-    <listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
-  </listener>
-    <listener>
-        <description>Load the application config file, then pass control to spring to merge config file keys into bean
-            definitions and create application context
-        </description>
-        <listener-class>au.org.emii.portal.web.ApplicationInit</listener-class>
-    </listener>
   <servlet>
     <servlet-name>auEngine</servlet-name>
     <servlet-class>

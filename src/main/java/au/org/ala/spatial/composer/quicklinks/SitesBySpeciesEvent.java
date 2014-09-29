@@ -5,25 +5,24 @@
  */
 package au.org.ala.spatial.composer.quicklinks;
 
-import au.org.ala.spatial.composer.tool.ToolComposer;
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.composer.MapComposer;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author a
  */
 public class SitesBySpeciesEvent implements EventListener {
 
-    String speciesLayerName;
-    String polygonLayerName;
-    String environmentalLayerName;
-    MapComposer mc;
+    private String speciesLayerName;
+    private String polygonLayerName;
+    private String environmentalLayerName;
 
-    public SitesBySpeciesEvent(MapComposer mc, String speciesLayerName, String polygonLayerName, String environmentalLayerName) {
-        this.mc = mc;
+    public SitesBySpeciesEvent(String speciesLayerName, String polygonLayerName, String environmentalLayerName) {
         this.speciesLayerName = speciesLayerName;
         this.polygonLayerName = polygonLayerName;
         this.environmentalLayerName = environmentalLayerName;
@@ -31,22 +30,23 @@ public class SitesBySpeciesEvent implements EventListener {
 
     @Override
     public void onEvent(Event event) throws Exception {
-        Hashtable<String, Object> params = new Hashtable<String, Object>();
+        Map<String, Object> params = new HashMap<String, Object>();
         if (speciesLayerName != null) {
-            params.put("speciesLayerName", speciesLayerName);
+            params.put(StringConstants.SPECIES_LAYER_NAME, speciesLayerName);
         } else {
-            params.put("speciesLayerName", "none");
+            params.put(StringConstants.SPECIES_LAYER_NAME, StringConstants.NONE);
         }
         if (polygonLayerName != null) {
-            params.put("polygonLayerName", polygonLayerName);
+            params.put(StringConstants.POLYGON_LAYER_NAME, polygonLayerName);
         } else {
-            params.put("polygonLayerName", "none");
+            params.put(StringConstants.POLYGON_LAYER_NAME, StringConstants.NONE);
         }
         if (environmentalLayerName != null) {
-            params.put("environmentalLayerName", environmentalLayerName);
+            params.put(StringConstants.ENVIRONMENTALLAYERNAME, environmentalLayerName);
         } else {
-            params.put("environmentalLayerName", "default");
+            params.put(StringConstants.ENVIRONMENTALLAYERNAME, "default");
         }
-        ToolComposer window = (ToolComposer) mc.openModal("WEB-INF/zul/tool/SitesBySpecies.zul", params, "addtoolwindow");
+        MapComposer mc = (MapComposer) event.getPage().getFellow(StringConstants.MAPPORTALPAGE);
+        mc.openModal("WEB-INF/zul/tool/SitesBySpecies.zul", params, StringConstants.ADDTOOLWINDOW);
     }
 }

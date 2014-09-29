@@ -12,8 +12,8 @@ import org.zkoss.zk.ui.event.EventListener;
  */
 public class Action {
 
-    public String label;
-    public EventListener eventListener;
+    protected String label;
+    protected EventListener eventListener;
 
     //defaults
     public Action(String label, EventListener eventListener) {

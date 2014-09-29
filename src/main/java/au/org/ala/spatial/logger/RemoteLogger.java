@@ -1,26 +1,19 @@
 package au.org.ala.spatial.logger;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.jasig.cas.client.authentication.AttributePrincipal;
-import org.springframework.beans.factory.annotation.Required;
-import org.zkoss.lang.Threads;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.net.URLEncoder;
-import java.security.Principal;
-import java.util.Properties;
 
 /**
  * Helper class to send logging information to the logger-service
@@ -29,14 +22,14 @@ import java.util.Properties;
  */
 public class RemoteLogger {
 
-    private static Logger logger = Logger.getLogger(RemoteLogger.class);
+    private static final Logger LOGGER = Logger.getLogger(RemoteLogger.class);
 
-    String logger_service = "";
-    String appid = "";
+    private String loggerService = "";
+    private String appid = "";
 
     private void init() {
-        logger_service = CommonData.settings.getProperty("logging_url");
-        appid = CommonData.settings.getProperty("app_id");
+        loggerService = CommonData.getSettings().getProperty("logging_url");
+        appid = CommonData.getSettings().getProperty("app_id");
     }
 
     public void logMapSpecies(String name, String lsid, String area, String extra) {
@@ -69,20 +62,7 @@ public class RemoteLogger {
 
     private int sendToServer(String type, String name, String lsid, String area, String layers, String extra, String status, String privacy, String pid) {
         try {
-//            StringBuffer sbProcessUrl = new StringBuffer();
-//            sbProcessUrl.append(logger_service);
-//            sbProcessUrl.append("/log/action?").append("?");
-//            sbProcessUrl.append("email=guest@ala.org.au").append("&");
-//            sbProcessUrl.append("appid=").append(appid).append("&");
-//            sbProcessUrl.append("userip=").append(userip).append("&");
-//            sbProcessUrl.append("type=").append(type).append("&");
-//            sbProcessUrl.append("name=").append(name).append("&");
-//            sbProcessUrl.append("specieslsid=").append(lsid).append("&");
-//            //sbProcessUrl.append("area=").append(area).append("&");
-//            sbProcessUrl.append("status=mapped").append("&");
-//            sbProcessUrl.append("privacy=0");
-
-            if (StringUtils.isBlank(logger_service)) {
+            if (StringUtils.isBlank(loggerService)) {
                 init();
             }
 
@@ -98,49 +78,52 @@ public class RemoteLogger {
 
             String useremail = Util.getUserEmail();
 
-            logger.debug("Sending log to: " + logger_service + "/log/action");
+            LOGGER.debug("Sending log to: " + loggerService + "/log/action");
             HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(logger_service + "/log/action");
-            post.addRequestHeader("Accept", "application/json");
+            PostMethod post = new PostMethod(loggerService + "/log/action");
+            post.addRequestHeader(StringConstants.ACCEPT, StringConstants.APPLICATION_JSON);
 
-            String category1 = "", category2 = "";
+            String category1, category2 = "";
             String[] types = type.split("-");
             category1 = StringUtils.capitalize(types[0].trim());
             if (types.length > 1) {
                 category2 = StringUtils.capitalize(types[1].trim());
             }
 
-            if (StringUtils.isBlank(lsid)) {
-                lsid = "";
+            String newLsid = lsid;
+            if (StringUtils.isBlank(newLsid)) {
+                newLsid = "";
             }
-            if (StringUtils.isBlank(pid)) {
-                pid = "";
+            String newPid = pid;
+            if (StringUtils.isBlank(newPid)) {
+                newPid = "";
             }
-            if (StringUtils.isBlank(area)) {
-                area = "";
+            String newArea = area;
+            if (StringUtils.isBlank(newArea)) {
+                newArea = "";
             }
 
             post.addParameter("email", useremail);
             post.addParameter("appid", appid);
             post.addParameter("userip", userip);
             post.addParameter("sessionid", sessionid);
-            post.addParameter("type", type);
+            post.addParameter(StringConstants.TYPE, type);
             post.addParameter("category1", category1);
             post.addParameter("category2", category2);
-            post.addParameter("name", name);
-            post.addParameter("processid", pid);
-            post.addParameter("specieslsid", lsid);
+            post.addParameter(StringConstants.NAME, name);
+            post.addParameter("processid", newPid);
+            post.addParameter("specieslsid", newLsid);
             post.addParameter("layers", layers);
-            post.addParameter("status", status);
+            post.addParameter(StringConstants.STATUS, status);
             post.addParameter("privacy", privacy);
-            post.addParameter("area", area);
+            post.addParameter(StringConstants.AREA, newArea);
             post.addParameter("extra", extra);
 
-            logger.debug("logging " + type + " action for user session " + sessionid + " for user " + useremail + " from " + userip);
+            LOGGER.debug("logging " + type + " action for user session " + sessionid + " for user " + useremail + " from " + userip);
             return client.executeMethod(post);
 
         } catch (Exception e) {
-            logger.error("Error sending logging information to server:", e);
+            LOGGER.error("Error sending logging information to server:", e);
         }
 
         return -1;
@@ -150,14 +133,14 @@ public class RemoteLogger {
         try {
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(logger_service + "/log/update/" + pid + "/" + status);
-            get.addRequestHeader("Accept", "application/json");
+            GetMethod get = new GetMethod(loggerService + "/log/update/" + pid + "/" + status);
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.APPLICATION_JSON);
 
-            logger.debug("logging status update on " + pid);
+            LOGGER.debug("logging status update on " + pid);
             return client.executeMethod(get);
 
         } catch (Exception e) {
-            logger.error("Error sending logging information to server:", e);
+            LOGGER.error("Error sending logging information to server:", e);
         }
 
         return -1;
@@ -168,24 +151,24 @@ public class RemoteLogger {
 
         try {
             if (Util.isLoggedIn()) {
-                String url = logger_service + "/app/types/tool.json?"
-                        + "email=" + URLEncoder.encode(Util.getUserEmail(), "UTF-8")
-                        + "&appid=" + URLEncoder.encode(appid, "UTF-8")
-                        + "&api_key=" + URLEncoder.encode(CommonData.settings.getProperty("api_key"), "UTF-8");
+                String url = loggerService + "/app/types/tool.json?"
+                        + "email=" + URLEncoder.encode(Util.getUserEmail(), StringConstants.UTF_8)
+                        + "&appid=" + URLEncoder.encode(appid, StringConstants.UTF_8)
+                        + "&api_key=" + URLEncoder.encode(CommonData.getSettings().getProperty("api_key"), StringConstants.UTF_8);
 
                 HttpClient client = new HttpClient();
                 GetMethod get = new GetMethod(url);
 
-                get.addRequestHeader("Accept", "application/json");
+                get.addRequestHeader(StringConstants.ACCEPT, StringConstants.APPLICATION_JSON);
 
                 client.executeMethod(get);
 
-                logger.debug("get: " + url + ", response: " + get.getResponseBodyAsString());
+                LOGGER.debug("get: " + url + ", response: " + get.getResponseBodyAsString());
 
                 return JSONObject.fromObject(get.getResponseBodyAsString());
             }
         } catch (Exception e) {
-            logger.error("Error getting logging information from server:", e);
+            LOGGER.error("Error getting logging information from server:", e);
         }
 
         return null;
@@ -197,27 +180,26 @@ public class RemoteLogger {
         try {
 
             if (Util.isLoggedIn()) {
-                String url = logger_service + "/app/view/"
-                         + logId + ".json"
-                        + "?appid=" + URLEncoder.encode(appid,"UTF-8")
-                        + "&api_key=" + URLEncoder.encode(CommonData.settings.getProperty("api_key"), "UTF-8");
-
+                String url = loggerService + "/app/view/"
+                        + logId + ".json"
+                        + "?appid=" + URLEncoder.encode(appid, StringConstants.UTF_8)
+                        + "&api_key=" + URLEncoder.encode(CommonData.getSettings().getProperty("api_key"), StringConstants.UTF_8);
 
 
                 HttpClient client = new HttpClient();
                 GetMethod get = new GetMethod(url);
 
-                get.addRequestHeader("Accept", "application/json");
+                get.addRequestHeader(StringConstants.ACCEPT, StringConstants.APPLICATION_JSON);
 
                 client.executeMethod(get);
 
-                logger.debug("get: " + url + ", response: " + get.getResponseBodyAsString());
+                LOGGER.debug("get: " + url + ", response: " + get.getResponseBodyAsString());
 
                 return JSONObject.fromObject(get.getResponseBodyAsString());
             }
 
         } catch (Exception e) {
-            logger.error("Error getting logging information from server:", e);
+            LOGGER.error("Error getting logging information from server:", e);
         }
 
         return null;

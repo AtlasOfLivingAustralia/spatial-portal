@@ -1,16 +1,15 @@
 package au.org.ala.spatial.composer.input;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.progress.ProgressController;
 import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.ListEntry;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
-
-import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.wms.WMSStyle;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
@@ -25,29 +24,28 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author ajay
  */
 public class ImportAnalysisController extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(ImportAnalysisController.class);
-
+    private static final Logger LOGGER = Logger.getLogger(ImportAnalysisController.class);
+    private RemoteLogger remoteLogger;
+    private Textbox refNum;
+    private String pid;
+    private boolean isAloc = false;
+    private boolean isMaxent = false;
+    private boolean isSxS = false;
+    private boolean isGdm = false;
+    private boolean sxsSitesBySpecies = false;
+    private boolean sxsOccurrenceDensity = false;
+    private boolean sxsSpeciesDensity = false;
+    private String[] gdmEnvlist;
+    private Div divPriorAnalysis;
+    private Listbox lbLog;
     private LanguagePack languagePack = null;
-    RemoteLogger remoteLogger;
-    Textbox refNum;
-    String pid;
-    boolean isAloc = false;
-    boolean isMaxent = false;
-    boolean isSxS = false;
-    boolean isGdm = false;
-    boolean sxsSitesBySpecies = false;
-    boolean sxsOccurrenceDensity = false;
-    boolean sxsSpeciesDensity = false;
-    String[] gdmEnvlist;
-    Div divPriorAnalysis;
-
-    Listbox lbLog;
 
     @Override
     public void afterCompose() {
@@ -57,34 +55,34 @@ public class ImportAnalysisController extends UtilityComposer {
             JSONObject jo = remoteLogger.getLogCSV();
 
 
-            if (jo != null && jo.containsKey("abe") && jo.getJSONArray("abe").size() > 0) {
-                ArrayList<String[]> logEntries = new ArrayList<String[]>();
+            if (jo != null && jo.containsKey("abe") && !jo.getJSONArray("abe").isEmpty()) {
+                List<String[]> logEntries = new ArrayList<String[]>();
 
                 for (Object o : jo.getJSONArray("abe")) {
                     JSONObject j = (JSONObject) o;
 
                     String[] r = new String[5];
-                    r[0] = j.containsKey("id") ? j.getString("id") : "";
+                    r[0] = j.containsKey(StringConstants.ID) ? j.getString(StringConstants.ID) : "";
                     r[1] = j.containsKey("category2") ? j.getString("category2") : "";
                     r[2] = j.containsKey("time") ? new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(new Date(j.getLong("time"))) : "";
                     r[3] = "";
-                    r[4] = j.containsKey("service") && j.getJSONObject("service").containsKey("processid")? j.getJSONObject("service").getString("processid") : "";
+                    r[4] = j.containsKey("service") && j.getJSONObject("service").containsKey("processid") ? j.getJSONObject("service").getString("processid") : "";
 
-                    if(r[4].length() > 0 && !r[4].equals("-1") &&
-                            (r[1].equalsIgnoreCase("Classification")
-                            || r[1].equalsIgnoreCase("GDM")
-                            || r[1].equalsIgnoreCase("Prediction")
-                            || r[1].equalsIgnoreCase("Species to Grid"))) {
+                    if (r[4].length() > 0 && !"-1".equals(r[4]) &&
+                            (StringConstants.CLASSIFICATION.equalsIgnoreCase(r[1])
+                                    || StringConstants.GDM.equalsIgnoreCase(r[1])
+                                    || StringConstants.PREDICTION.equalsIgnoreCase(r[1])
+                                    || StringConstants.SPECIES_TO_GRID.equalsIgnoreCase(r[1]))) {
 
                         try {
-                            r[3] = "true";
+                            r[3] = StringConstants.TRUE;
                             refNum.setValue(r[4]);
 
                             pid = r[4];
 
-                            if (!getJobStatus().contains("job does not exist")) {
+                            if (!getJobStatus().contains(StringConstants.JOB_DOES_NOT_EXIST)) {
                                 //not sure why, but sometimes data is missing even when the job exists
-                                if( hasValidMetadata(r) ) {
+                                if (hasValidMetadata(r)) {
                                     logEntries.add(r);
                                 }
                             } else {
@@ -95,12 +93,12 @@ public class ImportAnalysisController extends UtilityComposer {
 
                         } catch (Exception e) {
                             r[4] = "unavailable";
-                            r[3] = "false";
+                            r[3] = StringConstants.FALSE;
                         }
                     }
                 }
 
-                if(logEntries.size() > 0) {
+                if (!logEntries.isEmpty()) {
                     divPriorAnalysis.setVisible(true);
 
                     lbLog.setModel(new SimpleListModel(logEntries));
@@ -110,7 +108,7 @@ public class ImportAnalysisController extends UtilityComposer {
 
             }
         } catch (Exception e) {
-            logger.error("getting log did not work", e);
+            LOGGER.error("getting log did not work", e);
         }
 
         refNum.setValue("");
@@ -120,7 +118,7 @@ public class ImportAnalysisController extends UtilityComposer {
         lbLog.setItemRenderer(new ListitemRenderer() {
 
             @Override
-            public void render(Listitem li, Object data, int item_idx) {
+            public void render(Listitem li, Object data, int itemIdx) {
                 String[] d = (String[]) data;
 
                 li.setValue(d);
@@ -134,28 +132,28 @@ public class ImportAnalysisController extends UtilityComposer {
                 n = new Listcell();
                 Html info = new Html(languagePack.getLang("layer_info_icon_html"));
 
-                info.addEventListener("onClick", new EventListener() {
+                info.addEventListener(StringConstants.ONCLICK, new EventListener() {
 
                     @Override
                     public void onEvent(Event event) throws Exception {
 
-                        String[] s = (String[]) ((Listitem) event.getTarget().getParent().getParent()).getValue();
+                        String[] s = ((Listitem) event.getTarget().getParent().getParent()).getValue();
 
                         String metadata = null;
                         Event ev = null;
-                        if(s[1].equalsIgnoreCase("Classification")) {
-                            metadata = CommonData.settings.getProperty("sat_url") + "/output/aloc/" + refNum.getValue() + "/classification.html";
-                        } else if(s[1].equalsIgnoreCase("Prediction")) {
-                            metadata = CommonData.settings.getProperty("sat_url") + "/output/maxent/" + refNum.getValue() + "/species.html";
-                        } else if(s[1].equalsIgnoreCase("GDM")) {
-                            metadata = CommonData.settings.getProperty("sat_url") + "/output/gdm/" +refNum.getValue() + "/gdm.html";
-                        } else if(s[1].equalsIgnoreCase("Species to Grid")) {
+                        if (StringConstants.CLASSIFICATION.equalsIgnoreCase(s[1])) {
+                            metadata = CommonData.getSettings().getProperty("sat_url") + "/output/aloc/" + refNum.getValue() + "/classification.html";
+                        } else if (StringConstants.PREDICTION.equalsIgnoreCase(s[1])) {
+                            metadata = CommonData.getSettings().getProperty("sat_url") + "/output/maxent/" + refNum.getValue() + "/species.html";
+                        } else if (StringConstants.GDM.equalsIgnoreCase(s[1])) {
+                            metadata = CommonData.getSettings().getProperty("sat_url") + "/output/gdm/" + refNum.getValue() + "/gdm.html";
+                        } else if ("Species to Grid".equalsIgnoreCase(s[1])) {
 
-                            String link1 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/sxs_metadata.html";
+                            String link1 = CommonData.getSettings().getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/sxs_metadata.html";
                             //and or
-                            String link2 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/odensity_metadata.html";
+                            String link2 = CommonData.getSettings().getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/odensity_metadata.html";
                             //and or
-                            String link3 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/srichness_metadata.html";
+                            String link3 = CommonData.getSettings().getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/srichness_metadata.html";
 
                             String html = "<html><body>";
                             if (Util.readUrl(link1).length() > 0) {
@@ -169,13 +167,13 @@ public class ImportAnalysisController extends UtilityComposer {
                             }
                             html += "</body></html>";
 
-                            ev = new Event("onClick", null, "Points to Grid\n" + html);
+                            ev = new Event(StringConstants.ONCLICK, null, "Points to Grid\n" + html);
                         }
-                        logger.debug("metadata: " + metadata);
+                        LOGGER.debug("metadata: " + metadata);
 
-                        if(metadata != null) {
+                        if (metadata != null) {
                             getMapComposer().activateLink(metadata, "Metadata", false);
-                        } else if(ev != null) {
+                        } else if (ev != null) {
                             getMapComposer().openHTML(ev);
                         }
                     }
@@ -186,22 +184,22 @@ public class ImportAnalysisController extends UtilityComposer {
         });
     }
 
-    boolean hasValidMetadata(String [] s) {
+    boolean hasValidMetadata(String[] s) {
         String metadata = null;
-        Event ev = null;
-        if(s[1].equalsIgnoreCase("Classification")) {
-            metadata = CommonData.settings.getProperty("sat_url") + "/output/aloc/" + refNum.getValue() + "/classification.html";
-        } else if(s[1].equalsIgnoreCase("Prediction")) {
-            metadata = CommonData.settings.getProperty("sat_url") + "/output/maxent/" + refNum.getValue() + "/species.html";
-        } else if(s[1].equalsIgnoreCase("GDM")) {
-            metadata = CommonData.settings.getProperty("sat_url") + "/output/gdm/" +refNum.getValue() + "/gdm.html";
-        } else if(s[1].equalsIgnoreCase("Species to Grid")) {
 
-            String link1 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/sxs_metadata.html";
+        if (StringConstants.CLASSIFICATION.equalsIgnoreCase(s[1])) {
+            metadata = CommonData.getSettings().getProperty("sat_url") + "/output/aloc/" + refNum.getValue() + "/classification.html";
+        } else if (StringConstants.PREDICTION.equalsIgnoreCase(s[1])) {
+            metadata = CommonData.getSettings().getProperty("sat_url") + "/output/maxent/" + refNum.getValue() + "/species.html";
+        } else if (StringConstants.GDM.equalsIgnoreCase(s[1])) {
+            metadata = CommonData.getSettings().getProperty("sat_url") + "/output/gdm/" + refNum.getValue() + "/gdm.html";
+        } else if ("Species to Grid".equalsIgnoreCase(s[1])) {
+
+            String link1 = CommonData.getSettings().getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/sxs_metadata.html";
             //and or
-            String link2 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/odensity_metadata.html";
+            String link2 = CommonData.getSettings().getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/odensity_metadata.html";
             //and or
-            String link3 = CommonData.settings.getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/srichness_metadata.html";
+            String link3 = CommonData.getSettings().getProperty("sat_url") + "/output/sitesbyspecies/" + refNum.getValue() + "/srichness_metadata.html";
 
             if (Util.readUrl(link1).length() > 0) {
                 return true;
@@ -214,17 +212,14 @@ public class ImportAnalysisController extends UtilityComposer {
             }
         }
 
-        if(metadata != null) {
-            return Util.readUrl(metadata).length() > 0;
-        }
+        return metadata != null && Util.readUrl(metadata).length() > 0;
 
 
-        return false;
     }
 
     public void onSelect$lbLog(Event event) {
         Listitem li = lbLog.getSelectedItem();
-        String[] s = (String[]) li.getValue();
+        String[] s = li.getValue();
         refNum.setValue(s[4]);
     }
 
@@ -276,14 +271,11 @@ public class ImportAnalysisController extends UtilityComposer {
                 p5 = txt.length();
             }
 
-            pos = p5 - 5;
-
-            String pid = txt.substring(p1 + 4, p2).trim();
+            String pd = txt.substring(p1 + 4, p2).trim();
             String gc = txt.substring(p2 + 3, p3).trim();
             String area = txt.substring(p3 + 5, p4).trim();
             String envlist = txt.substring(p4 + 8, p5).trim();
 
-            //remove ';' from end
             if (gc.endsWith(";")) {
                 gc = gc.substring(0, gc.length() - 1);
             }
@@ -294,11 +286,11 @@ public class ImportAnalysisController extends UtilityComposer {
                 envlist = envlist.substring(0, envlist.length() - 1);
             }
 
-            logger.debug("got [" + pid + "][" + gc + "][" + area + "][" + envlist + "]");
+            LOGGER.debug("got [" + pd + "][" + gc + "][" + area + "][" + envlist + "]");
 
             return true;
         } catch (Exception e) {
-            logger.error("error building aloc parameters", e);
+            LOGGER.error("error building aloc parameters", e);
         }
         return false;
     }
@@ -307,28 +299,28 @@ public class ImportAnalysisController extends UtilityComposer {
         try {
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer + "/ws/jobs/" + "inputs" + "?pid=" + pid);
+            GetMethod get = new GetMethod(CommonData.getSatServer() + "/ws/jobs/" + "inputs" + "?pid=" + pid);
 
-            get.addRequestHeader("Accept", "text/plain");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.TEXT_PLAIN);
 
-            int result = client.executeMethod(get);
+            client.executeMethod(get);
 
             return get.getResponseBodyAsString();
         } catch (Exception e) {
-            logger.error("error getting job info pid=" + pid, e);
+            LOGGER.error("error getting job info pid=" + pid, e);
         }
         return "";
     }
 
     void openProgressBarAloc() {
         ProgressController window = (ProgressController) Executions.createComponents("WEB-INF/zul/progress/AnalysisProgress.zul", getMapComposer(), null);
-        window.parent = this;
-        window.start(pid, "Classification");
+        window.setParentWindow(this);
+        window.start(pid, StringConstants.CLASSIFICATION);
         try {
             window.doModal();
 
         } catch (Exception e) {
-            logger.error("error opening classification progress bar for pid: " + pid, e);
+            LOGGER.error("error opening classification progress bar for pid: " + pid, e);
         }
     }
 
@@ -338,35 +330,35 @@ public class ImportAnalysisController extends UtilityComposer {
         } else if (isMaxent) {
             loadMapMaxent(event);
         } else if (isSxS) {
-            loadMapSxS(event);
+            loadMapSxS();
         }
     }
 
     public void loadMapAloc(Event event) {
         String layerLabel = "Classification - " + pid;
 
-        String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_" + pid + "&FORMAT=image%2Fpng";
-        String legendurl = CommonData.geoServer
+        String mapurl = CommonData.getGeoServer() + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_" + pid + "&FORMAT=image%2Fpng";
+        String legendurl = CommonData.getGeoServer()
                 + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:aloc_" + pid;
-        logger.debug(legendurl);
-        getMapComposer().addWMSLayer("aloc_" + pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);
+        LOGGER.debug(legendurl);
+        getMapComposer().addWMSLayer("aloc_" + pid, layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilitiesImpl.ALOC, null, null);
         MapLayer mapLayer = getMapComposer().getMapLayer("aloc_" + pid);
         mapLayer.setPid(pid);
         if (mapLayer != null) {
             WMSStyle style = new WMSStyle();
-            style.setName("Default");
+            style.setName(StringConstants.DEFAULT);
             style.setDescription("Default style");
-            style.setTitle("Default");
+            style.setTitle(StringConstants.DEFAULT);
             style.setLegendUri(legendurl);
 
-            logger.debug("legend:" + legendurl);
+            LOGGER.debug("legend:" + legendurl);
             mapLayer.addStyle(style);
             mapLayer.setSelectedStyleIndex(1);
 
             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
 
-            String infoUrl = CommonData.satServer + "/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:" + pid;
+            String infoUrl = CommonData.getSatServer() + "/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:" + pid;
             md.setMoreInfo(infoUrl);
             md.setId(Long.valueOf(pid));
 
@@ -374,10 +366,10 @@ public class ImportAnalysisController extends UtilityComposer {
 
             try {
                 // set off the download as well
-                String fileUrl = CommonData.satServer + "/ws/download/" + pid;
-                Filedownload.save(new URL(fileUrl).openStream(), "application/zip", layerLabel.replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
+                String fileUrl = CommonData.getSatServer() + "/ws/download/" + pid;
+                Filedownload.save(new URL(fileUrl).openStream(), "application/zip", layerLabel.replaceAll(" ", "_") + ".zip");
             } catch (Exception ex) {
-                logger.error("Error generating download for classification model pid=" + pid, ex);
+                LOGGER.error("Error generating download for classification model pid=" + pid, ex);
             }
         }
 
@@ -389,20 +381,20 @@ public class ImportAnalysisController extends UtilityComposer {
         try {
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer + "/output/aloc/" + pid + "/aloc.pngextents.txt");
+            GetMethod get = new GetMethod(CommonData.getSatServer() + "/output/aloc/" + pid + "/aloc.pngextents.txt");
 
-            get.addRequestHeader("Accept", "text/plain");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.TEXT_PLAIN);
 
-            int result = client.executeMethod(get);
+            client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
-            logger.debug("getExtents:" + slist);
+            LOGGER.debug("getExtents:" + slist);
 
             String[] s = slist.split("\n");
             for (int i = 0; i < 6 && i < s.length; i++) {
                 d[i] = Double.parseDouble(s[i]);
             }
         } catch (Exception e) {
-            logger.error("error getting aloc extents, pid=" + pid, e);
+            LOGGER.error("error getting aloc extents, pid=" + pid, e);
         }
         return d;
     }
@@ -410,20 +402,19 @@ public class ImportAnalysisController extends UtilityComposer {
     String getJob() {
         try {
             StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append(CommonData.satServer).append("/ws/jobs/").append("inputs").append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.getSatServer()).append("/ws/jobs/").append("inputs").append("?pid=").append(pid);
 
-            logger.debug(sbProcessUrl.toString());
+            LOGGER.debug(sbProcessUrl.toString());
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
 
-            get.addRequestHeader("Accept", "text/plain");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.TEXT_PLAIN);
 
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            logger.debug(slist);
-            return slist;
+            client.executeMethod(get);
+            return get.getResponseBodyAsString();
+
         } catch (Exception e) {
-            logger.error("error getting job type for job pid=" + pid, e);
+            LOGGER.error("error getting job type for job pid=" + pid, e);
         }
         return "";
     }
@@ -431,32 +422,30 @@ public class ImportAnalysisController extends UtilityComposer {
     String getJobStatus() {
         try {
             StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append(CommonData.satServer).append("/ws/job").append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.getSatServer()).append("/ws/job").append("?pid=").append(pid);
 
-            logger.debug(sbProcessUrl.toString());
+            LOGGER.debug(sbProcessUrl.toString());
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
 
-            get.addRequestHeader("Accept", "application/json");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.APPLICATION_JSON);
 
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            //logger.debug(slist);
-            return slist;
+            client.executeMethod(get);
+            return get.getResponseBodyAsString();
         } catch (Exception e) {
-            logger.error("error getting job type for job pid=" + pid, e);
+            LOGGER.error("error getting job type for job pid=" + pid, e);
         }
         return "";
     }
 
     void openProgressBarMaxent() {
         ProgressController window = (ProgressController) Executions.createComponents("WEB-INF/zul/progress/AnalysisProgress.zul", getMapComposer(), null);
-        window.parent = this;
-        window.start(pid, "Prediction");
+        window.setParentWindow(this);
+        window.start(pid, StringConstants.PREDICTION);
         try {
             window.doModal();
         } catch (Exception e) {
-            logger.error("error opening prediction progress bar pid=" + pid, e);
+            LOGGER.error("error opening prediction progress bar pid=" + pid, e);
         }
     }
 
@@ -469,13 +458,10 @@ public class ImportAnalysisController extends UtilityComposer {
                 return false;
             }
             int p2 = txt.indexOf("taxonid:", pos);
-            if (p2 < 0) {
-                return false;
-            }
+            return p2 >= 0;
 
-            return true;
         } catch (Exception e) {
-            logger.error("error getting maxent parameters pid=" + pid + ", inputs=" + txt, e);
+            LOGGER.error("error getting maxent parameters pid=" + pid + ", inputs=" + txt, e);
         }
         return false;
     }
@@ -505,114 +491,99 @@ public class ImportAnalysisController extends UtilityComposer {
 
             return true;
         } catch (Exception e) {
-            logger.error("error getting sites by species inputs, pid=" + pid + ", inputs=" + txt, e);
+            LOGGER.error("error getting sites by species inputs, pid=" + pid + ", inputs=" + txt, e);
         }
         return false;
     }
 
     void openProgressBarSxS() {
         ProgressController window = (ProgressController) Executions.createComponents("WEB-INF/zul/progress/AnalysisProgress.zul", getMapComposer(), null);
-        window.parent = this;
+        window.setParentWindow(this);
         window.start(pid, "Points to Grid");
         try {
             window.doModal();
         } catch (Exception e) {
-            logger.error("error opening sites by species progress bar pid=" + pid, e);
+            LOGGER.error("error opening sites by species progress bar pid=" + pid, e);
         }
     }
 
     public void loadMapMaxent(Event event) {
 
-        String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
+        String mapurl = CommonData.getGeoServer() + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
 
-        String legendurl = CommonData.geoServer
+        String legendurl = CommonData.getGeoServer()
                 + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:species_" + pid
                 + "&STYLE=alastyles";
 
-        logger.debug(legendurl);
+        LOGGER.debug(legendurl);
 
         //get job inputs
-        String speciesName = "";
-        try {
-            for (String s : getJob().split(";")) {
-                if (s.startsWith("scientificName")) {
-                    speciesName = s.split(":")[1];
-                    if (speciesName != null && speciesName.length() > 1) {
-                        speciesName = speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1);
-                    }
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            logger.error("error getting maxent job species names pid=" + pid, e);
-        }
-
         String layername = "Maxent - " + pid;
-        getMapComposer().addWMSLayer("species_" + pid, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
+        getMapComposer().addWMSLayer("species_" + pid, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilitiesImpl.MAXENT, null, null);
         MapLayer ml = getMapComposer().getMapLayer("species_" + pid);
         ml.setPid(pid);
-        String infoUrl = CommonData.satServer + "/output/maxent/" + pid + "/species.html";
+        String infoUrl = CommonData.getSatServer() + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();
         md.setMoreInfo(infoUrl + "\nMaxent Output\npid:" + pid);
         md.setId(Long.valueOf(pid));
 
         try {
             // set off the download as well
-            String fileUrl = CommonData.satServer + "/ws/download/" + pid;
-            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", layername.replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
+            String fileUrl = CommonData.getSatServer() + "/ws/download/" + pid;
+            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", layername.replaceAll(" ", "_") + ".zip");
         } catch (Exception ex) {
-            logger.error("Error generating download for prediction model pid=" + pid, ex);
+            LOGGER.error("Error generating download for prediction model pid=" + pid, ex);
         }
 
         this.detach();
     }
 
-    private void loadMapSxS(Event event) {
+    private void loadMapSxS() {
         try {
             if (sxsOccurrenceDensity) {
-                String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:odensity_" + pid + "&styles=odensity_" + pid + "&FORMAT=image%2Fpng";
-                String legendurl = CommonData.geoServer
+                String mapurl = CommonData.getGeoServer() + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:odensity_" + pid + "&styles=odensity_" + pid + "&FORMAT=image%2Fpng";
+                String legendurl = CommonData.getGeoServer()
                         + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                         + "&LAYER=ALA:odensity_" + pid
                         + "&STYLE=odensity_" + pid;
 
-                logger.debug(legendurl);
+                LOGGER.debug(legendurl);
 
-                String layername = getMapComposer().getNextAreaLayerName("Occurrence Density");
-                getMapComposer().addWMSLayer(pid + "_odensity", layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ODENSITY, null, null);
+                String layername = getMapComposer().getNextAreaLayerName(StringConstants.OCCURRENCE_DENSITY);
+                getMapComposer().addWMSLayer(pid + "_odensity", layername, mapurl, (float) 0.5, null, legendurl, LayerUtilitiesImpl.ODENSITY, null, null);
                 MapLayer ml = getMapComposer().getMapLayer(pid + "_odensity");
                 ml.setPid(pid + "_odensity");
-                String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/odensity_metadata.html";
+                String infoUrl = CommonData.getSatServer() + "/output/sitesbyspecies/" + pid + "/odensity_metadata.html";
                 MapLayerMetadata md = ml.getMapLayerMetadata();
                 md.setMoreInfo(infoUrl + "\nOccurrence Density\npid:" + pid);
                 md.setId(Long.valueOf(pid));
             }
 
             if (sxsSpeciesDensity) {
-                String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:srichness_" + pid + "&styles=srichness_" + pid + "&FORMAT=image%2Fpng";
-                String legendurl = CommonData.geoServer
+                String mapurl = CommonData.getGeoServer() + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:srichness_" + pid + "&styles=srichness_" + pid + "&FORMAT=image%2Fpng";
+                String legendurl = CommonData.getGeoServer()
                         + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                         + "&LAYER=ALA:srichness_" + pid
                         + "&STYLE=srichness_" + pid;
 
-                logger.debug(legendurl);
+                LOGGER.debug(legendurl);
 
-                String layername = getMapComposer().getNextAreaLayerName("Species Richness");
-                getMapComposer().addWMSLayer(pid + "_srichness", layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.SRICHNESS, null, null);
+                String layername = getMapComposer().getNextAreaLayerName(StringConstants.SPECIES_RICHNESS);
+                getMapComposer().addWMSLayer(pid + "_srichness", layername, mapurl, (float) 0.5, null, legendurl, LayerUtilitiesImpl.SRICHNESS, null, null);
                 MapLayer ml = getMapComposer().getMapLayer(pid + "_srichness");
                 ml.setPid(pid + "_srichness");
-                String infoUrl = CommonData.satServer + "/output/sitesbyspecies/" + pid + "/srichness_metadata.html";
+                String infoUrl = CommonData.getSatServer() + "/output/sitesbyspecies/" + pid + "/srichness_metadata.html";
                 MapLayerMetadata md = ml.getMapLayerMetadata();
                 md.setMoreInfo(infoUrl + "\nSpecies Richness\npid:" + pid);
                 md.setId(Long.valueOf(pid));
             }
 
             // set off the download as well
-            String fileUrl = CommonData.satServer + "/ws/download/" + pid;
+            String fileUrl = CommonData.getSatServer() + "/ws/download/" + pid;
             Filedownload.save(new URL(fileUrl).openStream(), "application/zip", "sites_by_species.zip");
         } catch (Exception ex) {
-            logger.error("Error generating download for sites by species pid=" + pid, ex);
+            LOGGER.error("Error generating download for sites by species pid=" + pid, ex);
         }
 
         this.detach();
@@ -623,9 +594,9 @@ public class ImportAnalysisController extends UtilityComposer {
             //TODO: analysis output url into config
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer.replace("/alaspatial", "") + "/output/gdm/" + pid + "/ala.properties");
+            GetMethod get = new GetMethod(CommonData.getSatServer().replace("/alaspatial", "") + "/output/gdm/" + pid + "/ala.properties");
 
-            get.addRequestHeader("Accept", "text/plain");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.TEXT_PLAIN);
 
             int result = client.executeMethod(get);
 
@@ -639,7 +610,7 @@ public class ImportAnalysisController extends UtilityComposer {
                 return true;
             }
         } catch (Exception e) {
-            logger.error("Error getting gdm parameters pid=" + pid, e);
+            LOGGER.error("Error getting gdm parameters pid=" + pid, e);
         }
         return false;
     }
@@ -648,31 +619,30 @@ public class ImportAnalysisController extends UtilityComposer {
         String[] envlist = gdmEnvlist;
 
         for (String env : envlist) {
-            String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:gdm_" + env + "Tran_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
+            String mapurl = CommonData.getGeoServer() + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:gdm_" + env + "Tran_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
 
-            String legendurl = CommonData.geoServer
+            String legendurl = CommonData.getGeoServer()
                     + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                     + "&LAYER=ALA:gdm_" + env + "Tran_" + pid
                     + "&STYLE=alastyles";
 
-            logger.debug(legendurl);
+            LOGGER.debug(legendurl);
 
             String layername = "Tranformed " + CommonData.getLayerDisplayName(env);
-            //logger.debug("Converting '" + env + "' to '" + layername.substring(10) + "' (" + CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(env)) + ")");
-            getMapComposer().addWMSLayer(pid + "_" + env, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.GDM, null, null);
+            getMapComposer().addWMSLayer(pid + "_" + env, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilitiesImpl.GDM, null, null);
             MapLayer ml = getMapComposer().getMapLayer(pid + "_" + env);
             ml.setPid(pid + "_" + env);
-            String infoUrl = CommonData.satServer + "/output/gdm/" + pid + "/gdm.html";
+            String infoUrl = CommonData.getSatServer() + "/output/gdm/" + pid + "/gdm.html";
             MapLayerMetadata md = ml.getMapLayerMetadata();
             md.setMoreInfo(infoUrl + "\nGDM Output\npid:" + pid);
             md.setId(Long.valueOf(pid));
         }
 
-        String fileUrl = CommonData.satServer + "/ws/download/" + pid;
+        String fileUrl = CommonData.getSatServer() + "/ws/download/" + pid;
         try {
-            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", "gdm_" + pid + ".zip"); // "ALA_Prediction_"+pid+".zip"
+            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", "gdm_" + pid + ".zip");
         } catch (Exception e) {
-            logger.error("error mapping gdm pid=" + pid, e);
+            LOGGER.error("error mapping gdm pid=" + pid, e);
         }
 
         this.detach();

@@ -4,23 +4,20 @@
  */
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.dto.UserDataDTO;
 import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.UserData;
 import au.org.ala.spatial.util.Zipper;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.operation.valid.IsValidOp;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.geotools.data.DataStore;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
-import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
@@ -34,9 +31,8 @@ import org.geotools.map.MapContent;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.renderer.GTRenderer;
-import org.geotools.renderer.lite.RendererUtilities;
 import org.geotools.renderer.lite.StreamingRenderer;
-import org.geotools.styling.*;
+import org.geotools.styling.SLD;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeType;
@@ -46,39 +42,34 @@ import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
-import org.xml.sax.helpers.NamespaceSupport;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.event.MouseEvent;
-import org.zkoss.zul.*;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.*;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author ajay
  */
 public class AreaUploadShapefileWizardController extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(AreaUploadShapefileWizardController.class);
-    Imagemap img;
-    Media media;
-    Listbox lAttributes;
-    Button btnRefresh;
-    Button btnNext;
-    SimpleFeatureSource source;
-    SimpleFeatureCollection features;
-    String file;
-    String layername;
+    private static final Logger LOGGER = Logger.getLogger(AreaUploadShapefileWizardController.class);
+    private Imagemap img;
+    private Media media;
+    private Listbox lAttributes;
+    private Button btnRefresh;
+    private Button btnNext;
+    private SimpleFeatureSource source;
+    private SimpleFeatureCollection features;
+    private String file;
+    private String layername;
 
     @Override
     public void afterCompose() {
@@ -86,51 +77,43 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
 
         Map args = Executions.getCurrent().getArg();
 
-        layername = (String) args.get("layername");
+        layername = (String) args.get(StringConstants.LAYERNAME);
 
-        media = (Media) args.get("media");
-        logger.debug("Got media in wizard");
-        logger.debug("m.getName(): " + media.getName());
-        logger.debug("getContentType: " + media.getContentType());
-        logger.debug("getFormat: " + media.getFormat());
+        media = (Media) args.get(StringConstants.MEDIA);
+        LOGGER.debug("Got media in wizard");
+        LOGGER.debug("m.getName(): " + media.getName());
+        LOGGER.debug("getContentType: " + media.getContentType());
+        LOGGER.debug("getFormat: " + media.getFormat());
 
-        logger.debug("Layer name: " + layername);
+        LOGGER.debug("Layer name: " + layername);
 
         processMedia();
-
-        img.addEventListener("onClick", new EventListener() {
-
-            public void onEvent(Event event) throws Exception {
-                //imageClicked(event);
-            }
-        });
     }
 
     private void processMedia() {
-        Map input = Zipper.unzipFile(media.getName(), media.getStreamData(), CommonData.settings.getProperty("analysis_output_dir") + "layers/");
+        Map input = Zipper.unzipFile(media.getName(), media.getStreamData(), CommonData.getSettings().getProperty(StringConstants.ANALYSIS_OUTPUT_DIR) + "layers/");
         String type = "";
-        //String file = "";
-        if (input.containsKey("type")) {
-            type = (String) input.get("type");
+        if (input.containsKey(StringConstants.TYPE)) {
+            type = (String) input.get(StringConstants.TYPE);
         }
-        if (input.containsKey("file")) {
-            file = (String) input.get("file");
+        if (input.containsKey(StringConstants.FILE)) {
+            file = (String) input.get(StringConstants.FILE);
         }
-        if (type.equalsIgnoreCase("shp")) {
+        if ("shp".equalsIgnoreCase(type)) {
             loadShape(file);
         } else {
-            logger.debug("Unknown file type. ");
+            LOGGER.debug("Unknown file type. ");
             getMapComposer().showMessage(CommonData.lang("error_unknown_file_type"));
         }
     }
 
     private void executeShapeImageRenderer(Filter filter) {
         try {
-            logger.debug("Generating image");
+            LOGGER.debug("Generating image");
 
             SimpleFeatureCollection features1;
 
-            if(filter == null) {
+            if (filter == null) {
                 features1 = source.getFeatures();
             } else {
                 features1 = source.getFeatures(filter);
@@ -149,21 +132,16 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             int imageWidth = 800;
             int imageHeight = 300;
 
-            Rectangle imageBounds = null;
-            ReferencedEnvelope mapBounds = null;
-            try {
-                mapBounds = map.getMaxBounds();
-                double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
-                if (heightToWidth * imageWidth > imageHeight) {
-                    imageBounds = new Rectangle(
-                            0, 0, (int)Math.round(imageHeight / heightToWidth), imageHeight);
-                } else {
-                    imageBounds = new Rectangle(
-                            0, 0, imageWidth, (int) Math.round(imageWidth * heightToWidth));
-                }
-            } catch (Exception e) {
-                // failed to access map layers
-                throw new RuntimeException(e);
+            Rectangle imageBounds;
+            ReferencedEnvelope mapBounds;
+            mapBounds = map.getMaxBounds();
+            double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
+            if (heightToWidth * imageWidth > imageHeight) {
+                imageBounds = new Rectangle(
+                        0, 0, (int) Math.round(imageHeight / heightToWidth), imageHeight);
+            } else {
+                imageBounds = new Rectangle(
+                        0, 0, imageWidth, (int) Math.round(imageWidth * heightToWidth));
             }
 
             BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height, BufferedImage.TYPE_INT_RGB);
@@ -177,14 +155,13 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             img.setContent(image);
 
         } catch (Exception e) {
-            logger.debug("Unable to generate image for selected shapefile", e);
+            LOGGER.debug("Unable to generate image for selected shapefile", e);
         }
     }
 
     private void loadShape(String filename) {
 
-        //final FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
-        String userFilter = "none";
+        CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
         try {
             FileDataStore store = FileDataStoreFinder.getDataStore(new File(filename));
             source = store.getFeatureSource();
@@ -193,7 +170,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
 
             Listhead lhd = new Listhead();
             SimpleFeatureType schema = features.getSchema();
-            Listheader lh = new Listheader("id");
+            Listheader lh = new Listheader(StringConstants.ID);
             lh.setParent(lhd);
             for (AttributeType at : schema.getTypes()) {
                 if (schema.getDescriptor(at.getName()) == null) {
@@ -208,8 +185,8 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             while (fi.hasNext()) {
                 SimpleFeature f = fi.next();
                 Listitem li = new Listitem();
-                Listcell lc = null;
-                String value = "";
+                Listcell lc;
+                String value;
 
                 //add identifier
                 lc = new Listcell(f.getIdentifier().getID());
@@ -230,31 +207,30 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                     lc.setParent(li);
                 }
                 li.setValue(f.getIdentifier());
-                //li.setValue(value);
                 li.setParent(lAttributes);
             }
 
             // loadFeatures
             // check if only a single feature,
             // if so, then select it and map it automatically
-            logger.debug("features.size(): " + features.size());
+            LOGGER.debug("features.size(): " + features.size());
             if (features.size() > 1) {
                 executeShapeImageRenderer(null);
             } else {
-                logger.debug("only a single feature, bypassing wizard...");
+                LOGGER.debug("only a single feature, bypassing wizard...");
                 fi = features.features();
 
-                Set<FeatureId> IDs = new HashSet<FeatureId>();
-                IDs.add(fi.next().getIdentifier());
-                loadOnMap(IDs);
+                Set<FeatureId> ids = new HashSet<FeatureId>();
+                ids.add(fi.next().getIdentifier());
+                loadOnMap(ids);
 
                 this.detach();
             }
 
         } catch (IOException e) {
-            logger.debug("IO Exception ", e);
+            LOGGER.debug("IO Exception ", e);
         } catch (Exception e) {
-            logger.debug("Generic exception", e);
+            LOGGER.debug("Generic exception", e);
 
         }
     }
@@ -268,8 +244,6 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
     }
 
     public void onClick$btnRefresh(Event event) {
-        String column = "fid";
-        String filter = "";
 
         Iterator<Listitem> it = lAttributes.getSelectedItems().iterator();
 
@@ -287,32 +261,32 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
 
     public void onClick$btnNext(Event event) {
         try {
-            final FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
+            CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
             Iterator<Listitem> it = lAttributes.getSelectedItems().iterator();
-            Set<FeatureId> IDs = new HashSet<FeatureId>();
+            Set<FeatureId> ids = new HashSet<FeatureId>();
             while (it.hasNext()) {
                 Listitem li = it.next();
-                IDs.add((FeatureId) li.getValue());
+                ids.add((FeatureId) li.getValue());
             }
 
-            loadOnMap(IDs);
+            loadOnMap(ids);
             this.detach();
         } catch (Exception ex) {
-            logger.error("Error iterating thru' features", ex);
+            LOGGER.error("Error iterating thru' features", ex);
         }
     }
 
-    private void loadOnMap(Set<FeatureId> IDs) {
+    private void loadOnMap(Set<FeatureId> ids) {
         try {
-            String column = "fid";
             final FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
-            Filter filter = ff.id(IDs);
+            Filter filter = ff.id(ids);
 
             // set up the math transform used to process the data
             SimpleFeatureType schema = features.getSchema();
             CoordinateReferenceSystem dataCRS = schema.getCoordinateReferenceSystem();
             CoordinateReferenceSystem wgsCRS = DefaultGeographicCRS.WGS84;
-            boolean lenient = true; // allow for some error due to different datums
+            // allow for some error due to different datums
+            boolean lenient = true;
             MathTransform transform = CRS.findMathTransform(dataCRS, wgsCRS, lenient);
 
             SimpleFeatureCollection sff = source.getFeatures(filter);
@@ -320,13 +294,13 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             StringBuilder sb = new StringBuilder();
             StringBuilder sbGeometryCollection = new StringBuilder();
             boolean isGeometryCollection = false;
-            ArrayList<Geometry> geoms = new ArrayList<Geometry>();
+            List<Geometry> geoms = new ArrayList<Geometry>();
             while (fif.hasNext()) {
                 SimpleFeature f = fif.next();
 
-                logger.debug("Selected Feature: " + f.getID() + " -> " + f.getAttribute("ECOREGION"));
+                LOGGER.debug("Selected Feature: " + f.getID() + " -> " + f.getAttribute("ECOREGION"));
 
-                //geoms.add((Geometry) f.getDefaultGeometry());
+
                 Geometry geom = (Geometry) f.getDefaultGeometry();
                 geom = JTS.transform(geom, transform);
                 String wktString = geom.toText();
@@ -335,14 +309,14 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 boolean multipolygon = false;
                 boolean polygon = false;
                 boolean geometrycollection = false;
-                if (wktString.startsWith("MULTIPOLYGON ")) {
-                    wktString = wktString.substring("MULTIPOLYGON (".length(), wktString.length() - 1);
+                if (wktString.startsWith(StringConstants.MULTIPOLYGON + " ")) {
+                    wktString = wktString.substring((StringConstants.MULTIPOLYGON + " ").length(), wktString.length() - 1);
                     multipolygon = true;
-                } else if (wktString.startsWith("POLYGON ")) {
-                    wktString = wktString.substring("POLYGON ".length());
+                } else if (wktString.startsWith(StringConstants.POLYGON + " ")) {
+                    wktString = wktString.substring((StringConstants.POLYGON + " ").length());
                     polygon = true;
-                } else if (wktString.startsWith("GEOMETRYCOLLECTION (")) {
-                    wktString = wktString.substring("GEOMETRYCOLLECTION (".length(), wktString.length() - 1);
+                } else if (wktString.startsWith(StringConstants.GEOMETRYCOLLECTION + " (")) {
+                    wktString = wktString.substring((StringConstants.GEOMETRYCOLLECTION + " (").length(), wktString.length() - 1);
                     geometrycollection = true;
                     isGeometryCollection = true;
                 } else {
@@ -356,26 +330,26 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                     sb.append(wktString);
 
                     if (multipolygon) {
-                        sbGeometryCollection.append("MULTIPOLYGON(").append(wktString).append(")");
+                        sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append("(").append(wktString).append(")");
                     } else if (polygon) {
-                        sbGeometryCollection.append("POLYGON").append(wktString);
+                        sbGeometryCollection.append(StringConstants.POLYGON).append(wktString);
                     } else if (geometrycollection) {
                         sbGeometryCollection.append(wktString);
                     }
                 }
             }
-            String wkt = "";
+            String wkt;
             if (!isGeometryCollection) {
                 sb.append(")");
-                wkt = "MULTIPOLYGON(" + sb.toString();
+                wkt = StringConstants.MULTIPOLYGON + "(" + sb.toString();
             } else {
                 sbGeometryCollection.append(")");
-                wkt = "GEOMETRYCOLLECTION(" + sbGeometryCollection.toString();
+                wkt = StringConstants.GEOMETRYCOLLECTION + "(" + sbGeometryCollection.toString();
                 getMapComposer().showMessage("Shape is invalid: " + "GEOMETRYCOLLECTION not supported.");
             }
 
             GeometryFactory gf = new GeometryFactory();
-            GeometryCollection gcol = gf.createGeometryCollection(GeometryFactory.toGeometryArray(geoms));
+            gf.createGeometryCollection(GeometryFactory.toGeometryArray(geoms));
 
             String msg = "";
             boolean invalid = false;
@@ -383,11 +357,10 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 WKTReader wktReader = new WKTReader();
                 com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
                 //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
-                //logger.debug("GEOMETRY TYPE: " + g.getGeometryType());
                 IsValidOp op = new IsValidOp(g);
                 if (!op.isValid()) {
                     invalid = true;
-                    logger.warn(CommonData.lang("error_wkt_invalid") + " " + op.getValidationError().getMessage());
+                    LOGGER.warn(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + op.getValidationError().getMessage());
                     msg = op.getValidationError().getMessage();
                     //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
                 } else if (g.isRectangle()) {
@@ -395,14 +368,14 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                     //get the new WKT for the rectangle will possibly need to change the order.
 
                     com.vividsolutions.jts.geom.Envelope envelope = g.getEnvelopeInternal();
-                    String wkt2 = "POLYGON(("
+                    String wkt2 = StringConstants.POLYGON + "(("
                             + envelope.getMinX() + " " + envelope.getMinY() + ","
                             + envelope.getMaxX() + " " + envelope.getMinY() + ","
                             + envelope.getMaxX() + " " + envelope.getMaxY() + ","
                             + envelope.getMinX() + " " + envelope.getMaxY() + ","
                             + envelope.getMinX() + " " + envelope.getMinY() + "))";
                     if (!wkt.equals(wkt2)) {
-                        logger.debug("NEW WKT for Rectangle: " + wkt);
+                        LOGGER.debug("NEW WKT for Rectangle: " + wkt);
                         msg = CommonData.lang("error_wkt_anticlockwise");
                         invalid = true;
                     }
@@ -411,15 +384,15 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                     invalid = !op.isValid();
                 }
             } catch (ParseException parseException) {
-                logger.error("error testing validity of uploaded shape file wkt", parseException);
+                LOGGER.error("error testing validity of uploaded shape file wkt", parseException);
             }
 
             if (invalid) {
-                getMapComposer().showMessage(CommonData.lang("error_wkt_invalid") + " " + msg);
+                getMapComposer().showMessage(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + msg);
             } else {
 
                 MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layername, layername);
-                UserData ud = new UserData(layername);
+                UserDataDTO ud = new UserDataDTO(layername);
                 ud.setFilename(media.getName());
 
                 ud.setUploadedTimeInMs(System.currentTimeMillis());
@@ -440,35 +413,14 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             }
 
         } catch (IOException e) {
-            logger.debug("IO Error retrieving geometry", e);
+            LOGGER.debug("IO Error retrieving geometry", e);
         } catch (Exception e) {
-            logger.debug("Generic Error retrieving geometry", e);
+            LOGGER.debug("Generic Error retrieving geometry", e);
         }
 
     }
 
     public void onClick$btnCancel(Event event) {
         this.detach();
-    }
-
-    public void imageClicked(Event event) {
-        try {
-            logger.debug("*************************");
-            logger.debug("Image clicked.");
-            logger.debug(event.getClass().getCanonicalName());
-            logger.debug(event.getData());
-            if (event instanceof MouseEvent) {
-                MouseEvent me = (MouseEvent) event;
-                logger.debug(me.getX() + ", " + me.getY());
-            }
-            logger.debug("*************************");
-            String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\"," + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]]," + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]]," + "  PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]]," + "  UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]]," + "  AXIS[\"Lat\",NORTH]," + "  AXIS[\"Long\",EAST]," + "  AUTHORITY[\"EPSG\",\"4326\"]]";
-            CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
-
-            NamespaceSupport ns = new NamespaceSupport();
-            RendererUtilities.worldToScreenTransform(null, null, wgsCRS);
-        } catch (Exception e) {
-            logger.error("error after clicking on image", e);
-        }
     }
 }

@@ -51,12 +51,12 @@ public class BoundingBox implements Serializable, Cloneable {
         this.maxLongitude = maxLongitude;
     }
 
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
-
     @Override
     public String toString() {
-        return String.valueOf(minLongitude) + "," + String.valueOf(minLatitude) + "," + String.valueOf(maxLongitude) + "," + String.valueOf(maxLatitude);
+        return minLongitude + "," + minLatitude + "," + maxLongitude + "," + maxLatitude;
+    }
+
+    public Object copy() throws CloneNotSupportedException {
+        return this.clone();
     }
 }

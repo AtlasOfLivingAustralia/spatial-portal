@@ -82,12 +82,6 @@ public class SettingsImpl implements Settings {
     private String proxyAllowedHosts = null;
 
     /**
-     * Name of the Parameter containing the URL for requests made to the cache
-     * reflector service
-     */
-    private String cacheParameter = null;
-
-    /**
      * Time to keep an object in cache (SQUID) in seconds
      */
     private int cacheMaxAge = 0;
@@ -102,30 +96,12 @@ public class SettingsImpl implements Settings {
         return cacheMaxAge;
     }
 
-
-    @Override
-    public void setCacheMaxAge(int cacheMaxAge) {
-        this.cacheMaxAge = cacheMaxAge;
-    }
-
-    @Override
-    public String getCacheParameter() {
-        return cacheParameter;
-    }
-
-    @Override
-
-    public void setCacheParameter(String cacheParameter) {
-        this.cacheParameter = cacheParameter;
-    }
-
     @Override
     public int getConfigRereadInitialInterval() {
         return configRereadInitialInterval;
     }
 
     @Override
-
     public void setConfigRereadInitialInterval(int configRereadInitialInterval) {
         this.configRereadInitialInterval = configRereadInitialInterval;
     }
@@ -206,25 +182,4 @@ public class SettingsImpl implements Settings {
     public void setProxyAllowedHosts(String proxyAllowedHosts) {
         this.proxyAllowedHosts = proxyAllowedHosts;
     }
-
-    @Override
-    public String getXmlMimeType() {
-        return xmlMimeType;
-    }
-
-    @Override
-
-    public void setXmlMimeType(String xmlMimeType) {
-        this.xmlMimeType = xmlMimeType;
-    }
-
-    public String getConfigPath() {
-        return configPath;
-    }
-
-    @Override
-    public void setConfigPath(String configPath) {
-        this.configPath = configPath;
-    }
-
 }

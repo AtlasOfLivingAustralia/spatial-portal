@@ -8,13 +8,11 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.util.PortalSessionUtilities;
+import au.org.emii.portal.util.RemoteMap;
 import au.org.emii.portal.value.BoundingBox;
-import au.org.emii.portal.wms.RemoteMap;
 import org.apache.log4j.Logger;
-import org.apache.xmlbeans.XmlCursor;
 import org.springframework.beans.factory.annotation.Required;
 
-import java.util.HashMap;
 import java.util.Properties;
 
 /**
@@ -30,7 +28,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
     /**
      * Log4j
      */
-    private static Logger logger = Logger.getLogger(ConfigurationLoaderStage2Impl.class);
+    private static final Logger LOGGER = Logger.getLogger(ConfigurationLoaderStage2Impl.class);
     /**
      * Remote map URI mangler helper class - spring autowired
      */
@@ -84,10 +82,10 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
         finaliseSession();
 
         // If we were able to construct the working session with no errors,
-        // return this to the user otherwise return null;
+        // return this to the user otherwise return null
         PortalSession masterPortalSession;
         if (error) {
-            logger.error(
+            LOGGER.error(
                     "error constructing master portal session in stage 2 loader " +
                             "- error flag got set, returning null PortalSession instance " +
                             "and disabling portal"
@@ -130,28 +128,22 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
     }
 
     private void settings() {
-        logger.debug("settings...");
+        LOGGER.debug("settings...");
 
-        try {
-            logger.debug("Settings from config file:");
+        LOGGER.debug("Settings from config file:");
 
-            settings.setConfigRereadInitialInterval(Integer.parseInt(portalDocument.getProperty("configRereadInitialInterval")));
-            settings.setConfigRereadInterval(Integer.parseInt(portalDocument.getProperty("configRereadInterval")));
+        settings.setConfigRereadInitialInterval(Integer.parseInt(portalDocument.getProperty("configRereadInitialInterval")));
+        settings.setConfigRereadInterval(Integer.parseInt(portalDocument.getProperty("configRereadInterval")));
 
-            settings.setNetConnectSlowTimeout(Integer.parseInt(portalDocument.getProperty("netConnectSlowTimeout")));
-            settings.setNetConnectTimeout(Integer.parseInt(portalDocument.getProperty("netConnectTimeout")));//xmlSettings.getNetConnectTimeout().intValue());
-            settings.setNetReadSlowTimeout(Integer.parseInt(portalDocument.getProperty("netReadSlowTimeout")));//xmlSettings.getNetReadSlowTimeout().intValue());
-            settings.setNetReadTimeout(Integer.parseInt(portalDocument.getProperty("netReadTimeout")));//xmlSettings.getNetReadTimeout().intValue());
+        settings.setNetConnectSlowTimeout(Integer.parseInt(portalDocument.getProperty("netConnectSlowTimeout")));
+        settings.setNetConnectTimeout(Integer.parseInt(portalDocument.getProperty("netConnectTimeout")));
+        settings.setNetReadSlowTimeout(Integer.parseInt(portalDocument.getProperty("netReadSlowTimeout")));
+        settings.setNetReadTimeout(Integer.parseInt(portalDocument.getProperty("netReadTimeout")));
 
-            settings.setProxyAllowedHosts((portalDocument.getProperty("proxyAllowedHosts")));//xmlSettings.getProxyAllowedHosts());
+        settings.setProxyAllowedHosts(portalDocument.getProperty("proxyAllowedHosts"));
 
-            // remaining items are complex types so needs special handling
-            settings.setDefaultBoundingBox(defaultBoundingBox());
-        } catch (NullPointerException e) {
-            // FIXME - make this message nicer
-            logger.error("configuration is broken: missing settings value for " + e.getMessage(), e);
-            error = true;
-        }
+        // remaining items are complex types so needs special handling
+        settings.setDefaultBoundingBox(defaultBoundingBox());
     }
 
     /**
@@ -165,7 +157,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
             bbox.setMinLongitude(Float.parseFloat(portalDocument.getProperty("defaultBoundingBox.minLongitude")));
             bbox.setMaxLongitude(Float.parseFloat(portalDocument.getProperty("defaultBoundingBox.maxLongitude")));
         } catch (Exception e) {
-            logger.error("failed to parse defaultBoundBox values", e);
+            LOGGER.error("failed to parse defaultBoundBox values", e);
         }
 
         return bbox;
@@ -183,17 +175,6 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
     public void setRemoteMap(RemoteMap remoteMap) {
         this.remoteMap = remoteMap;
     }
-
-    @Override
-    public PortalSession getWorkingPortalSession() {
-        return workingPortalSession;
-    }
-
-    @Override
-    public void setWorkingPortalSession(PortalSession workingPortalSession) {
-        this.workingPortalSession = workingPortalSession;
-    }
-
 
     public Settings getSettings() {
         return settings;
@@ -216,11 +197,6 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
     @Required
     public void setPortalSessionUtilities(PortalSessionUtilities portalSessionUtilities) {
         this.portalSessionUtilities = portalSessionUtilities;
-    }
-
-    @Override
-    public boolean isReloading() {
-        return reloading;
     }
 
     public void setReloading(boolean reloading) {

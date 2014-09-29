@@ -1,11 +1,11 @@
 package au.org.emii.portal.net;
 
 import au.org.emii.portal.settings.Settings;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import java.io.*;
-import java.net.HttpURLConnection;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -16,24 +16,8 @@ import java.net.URLConnection;
  * @author geoff
  */
 public class HttpConnectionImpl implements HttpConnection {
-    private static Logger logger = Logger.getLogger(HttpConnectionImpl.class);
+    private static final Logger LOGGER = Logger.getLogger(HttpConnectionImpl.class);
     private Settings settings = null;
-
-    /**
-     * Return a URL connection that times out according to the
-     * net_connect_timeout and net_read_timeout entries in the
-     * config file
-     *
-     * @param uri
-     * @throws IOException
-     */
-    public URLConnection configureURLConnection(String uri) throws IOException {
-        return configureURLConnection(
-                uri,
-                settings.getNetConnectTimeout(),
-                settings.getNetReadTimeout()
-        );
-    }
 
     /**
      * Return a URL connection that times out according to the
@@ -61,79 +45,12 @@ public class HttpConnectionImpl implements HttpConnection {
      * @return
      * @throws IOException
      */
-    @Override
-    public URLConnection configureURLConnection(String uri, int connectTimeout, int readtimeout) throws IOException {
+    private URLConnection configureURLConnection(String uri, int connectTimeout, int readtimeout) throws IOException {
         URL url = new URL(uri);
         URLConnection con = url.openConnection();
         con.setConnectTimeout(connectTimeout);
         con.setReadTimeout(readtimeout);
         return con;
-    }
-
-    public URLConnection configureURLConnectionWithAuthentication(String uri,
-                                                                  String userName, String passWord) throws IOException {
-        String input = userName + ":" + passWord;
-        URL url = new URL(uri);
-        URLConnection con = url.openConnection();
-        con.setConnectTimeout(settings.getNetConnectSlowTimeout());
-        con.setReadTimeout(settings.getNetReadSlowTimeout());
-
-        String encoding = base64Encode(input);
-        con.setRequestProperty("Authorization", "Basic "
-                + encoding);
-
-        return con;
-    }
-
-    /**
-     * Readback the raw data from a uri and return it
-     *
-     * @param uri
-     * @return
-     */
-    public String readRawData(String uri) {
-        String raw;
-        InputStream in = null;
-        URLConnection con = null;
-        try {
-            con = configureURLConnection(uri);
-            in = con.getInputStream();
-            raw = IOUtils.toString(in);
-        } catch (IOException e) {
-            // for 404 errors, the message will be the requested url
-            logger.debug(
-                    "IO error (" + e.getMessage() + ") reading raw " +
-                            "data from URI: " + uri
-            );
-            raw = null;
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException ex) {
-                    logger.debug(ex);
-                }
-            }
-
-            // httpURLConnection also covers https connections
-            if (con instanceof HttpURLConnection) {
-                logger.debug("attempting to read error stream");
-                HttpURLConnection httpCon = (HttpURLConnection) con;
-                in = httpCon.getErrorStream();
-                try {
-                    if (in != null) {
-                        raw = IOUtils.toString(in);
-                    }
-                } catch (IOException ex) {
-                    logger.debug(ex);
-                }
-
-            } else {
-                logger.debug("leaving readRawData without getting error stream");
-            }
-        } finally {
-            IOUtils.closeQuietly(in);
-        }
-        return raw;
     }
 
     public Settings getSettings() {
@@ -142,18 +59,6 @@ public class HttpConnectionImpl implements HttpConnection {
 
     public void setSettings(Settings settings) {
         this.settings = settings;
-    }
-
-
-    public static String base64Encode(String s) {
-        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        Base64OutputStream out = new Base64OutputStream(bOut);
-        try {
-            out.write(s.getBytes());
-            out.flush();
-        } catch (IOException exception) {
-        }
-        return bOut.toString();
     }
 }
 
@@ -166,6 +71,16 @@ public class HttpConnectionImpl implements HttpConnection {
  */
 
 class Base64OutputStream extends FilterOutputStream {
+    private static char[] toBase64 = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+            'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+            'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+            'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
+            'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
+            '8', '9', '+', '/'};
+    private int col = 0;
+    private int i = 0;
+    private int[] inbuf = new int[3];
+
     public Base64OutputStream(OutputStream out) {
         super(out);
     }
@@ -203,19 +118,6 @@ class Base64OutputStream extends FilterOutputStream {
             super.write('=');
         }
     }
-
-    private static char[] toBase64 = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-            'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
-            'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-            'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
-            'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', '+', '/'};
-
-    private int col = 0;
-
-    private int i = 0;
-
-    private int[] inbuf = new int[3];
 }
 
 

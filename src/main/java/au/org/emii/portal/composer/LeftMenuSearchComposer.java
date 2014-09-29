@@ -7,26 +7,20 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class LeftMenuSearchComposer extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(LeftMenuSearchComposer.class);
+    private static final Logger LOGGER = Logger.getLogger(LeftMenuSearchComposer.class);
 
     private static final long serialVersionUID = 2540820748110129339L;
-
+    //map of event listeners for viewport changes (west Doublebox onchange)
+    private Map<String, EventListener> viewportChangeEvents = new HashMap<String, EventListener>();
     private double north;
     private double south;
     private double east;
     private double west;
     private int zoom;
-
-    //map of event listeners for viewport changes (west Doublebox onchange)
-    HashMap<String, EventListener> viewportChangeEvents = new HashMap<String, EventListener>();
-
-    @Override
-    public void afterCompose() {
-        super.afterCompose();
-    }
 
     public BoundingBox getViewportBoundingBox() {
         BoundingBox bbox = new BoundingBox();
@@ -40,8 +34,6 @@ public class LeftMenuSearchComposer extends UtilityComposer {
     public int getZoom() {
         return zoom;
     }
-
-    ;
 
     public void setExtents(Event event) {
         String[] extents = ((String) event.getData()).split(",");
@@ -62,13 +54,17 @@ public class LeftMenuSearchComposer extends UtilityComposer {
         bb.setMaxLatitude((float) north);
         bb.setMinLongitude((float) west);
         bb.setMaxLongitude((float) east);
-        getMapComposer().getPortalSession().setDefaultBoundingbox(bb);
+
+        //don't want to update this when map is not fully loaded
+        if (getPortalSession().isMapLoaded()) {
+            getMapComposer().getPortalSession().setDefaultBoundingbox(bb);
+        }
 
         for (EventListener el : viewportChangeEvents.values()) {
             try {
                 el.onEvent(null);
             } catch (Exception ex) {
-                logger.error("error running viewport change listener", ex);
+                LOGGER.error("error running viewport change listener", ex);
             }
         }
     }

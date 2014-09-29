@@ -5,28 +5,25 @@
 package au.org.ala.spatial.composer.layer;
 
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.LayerSelection;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.util.LayerSelection;
-import au.org.emii.portal.util.LayerUtilities;
-import org.apache.log4j.Logger;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
- * same as LayersAutoComplete with type="environmental" layers only
+ * same as LayersAutoComplete with type=Constants.ENVIRONMENTAL layers only
  *
  * @author ajay
  */
 public class SelectedLayersCombobox extends Combobox {
 
-    private static Logger logger = Logger.getLogger(SelectedLayersCombobox.class);
+    private boolean includeAnalysisLayers = false;
 
-    boolean includeAnalysisLayers = false;
-
-    public void init(ArrayList<LayerSelection> layerSelections, MapComposer mc, boolean includeAnalysisLayers) {
+    public void init(List<LayerSelection> layerSelections, MapComposer mc, boolean includeAnalysisLayers) {
         this.includeAnalysisLayers = includeAnalysisLayers;
 
         while (getItemCount() > 0) {
@@ -37,9 +34,9 @@ public class SelectedLayersCombobox extends Combobox {
         ci.setParent(this);
         ci = new Comboitem("Import a layer set");
         ci.setParent(this);
-        for (int i = 0; i < CommonData.analysisLayerSets.size(); i++) {
-            ci = new Comboitem(CommonData.analysisLayerSets.get(i).toString());
-            ci.setValue(CommonData.analysisLayerSets.get(i));
+        for (int i = 0; i < CommonData.getAnalysisLayerSets().size(); i++) {
+            ci = new Comboitem(CommonData.getAnalysisLayerSets().get(i).toString());
+            ci.setValue(CommonData.getAnalysisLayerSets().get(i));
             ci.setParent(this);
         }
         for (int i = 0; i < layerSelections.size(); i++) {
@@ -54,7 +51,7 @@ public class SelectedLayersCombobox extends Combobox {
             String name = null;
             String url = ml.getUri();
             int p1 = url.indexOf("ALA:") + 4;
-            int p2 = url.indexOf("&", p1);
+            int p2 = url.indexOf('&', p1);
             if (p1 > 4) {
                 if (p2 < 0) {
                     p2 = url.length();
@@ -72,15 +69,15 @@ public class SelectedLayersCombobox extends Combobox {
             //add on map layers, active and inactive
             for (MapLayer ml : mc.getAnalysisLayers()) {
                 String name = null;
-                if (ml.getSubType() == LayerUtilities.ALOC) {
+                if (ml.getSubType() == LayerUtilitiesImpl.ALOC) {
                     name = ml.getPid();
-                } else if (ml.getSubType() == LayerUtilities.MAXENT) {
+                } else if (ml.getSubType() == LayerUtilitiesImpl.MAXENT) {
                     name = ml.getPid();
-                } else if (ml.getSubType() == LayerUtilities.GDM) {
+                } else if (ml.getSubType() == LayerUtilitiesImpl.GDM) {
                     name = ml.getPid();
-                } else if (ml.getSubType() == LayerUtilities.ODENSITY) {
+                } else if (ml.getSubType() == LayerUtilitiesImpl.ODENSITY) {
                     name = ml.getPid();
-                } else if (ml.getSubType() == LayerUtilities.SRICHNESS) {
+                } else if (ml.getSubType() == LayerUtilitiesImpl.SRICHNESS) {
                     name = ml.getPid();
                 }
                 if (name != null) {

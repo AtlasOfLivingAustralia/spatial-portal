@@ -4,11 +4,11 @@ package au.org.ala.spatial.dto;
  * Created by a on 6/05/2014.
  */
 public class ShapeObjectDTO {
-    String wkt;
-    String name;
-    String description;
-    String user_id;
-    String api_key;
+    private String wkt;
+    private String name;
+    private String description;
+    private String user_id;
+    private String api_key;
 
     public ShapeObjectDTO(String wkt, String name, String description, String user_id, String api_key) {
         this.wkt = wkt;

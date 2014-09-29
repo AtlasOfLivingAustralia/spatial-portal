@@ -5,71 +5,61 @@
  */
 package au.org.ala.spatial.composer.quicklinks;
 
-import au.org.ala.spatial.composer.tool.SamplingComposer;
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.composer.MapComposer;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author adam
  */
 public class SamplingEvent implements EventListener {
 
-    String speciesLayerName;
-    String polygonLayerName;
-    String environmentalLayerName;
-    MapComposer mc;
-    int steps_to_skip;
-    boolean[] geospatialKosher;
+    private boolean[] geospatialKosher;
+    private String speciesLayerName;
+    private String polygonLayerName;
+    private String environmentalLayerName;
 
-    public SamplingEvent(MapComposer mc, String speciesLayerName, String polygonLayerName, String environmentalLayerName) {
-        this.mc = mc;
+    public SamplingEvent(String speciesLayerName, String polygonLayerName, String environmentalLayerName) {
         this.speciesLayerName = speciesLayerName;
         this.polygonLayerName = polygonLayerName;
         this.environmentalLayerName = environmentalLayerName;
-        this.steps_to_skip = 0;
         this.geospatialKosher = null;
     }
 
-    public SamplingEvent(MapComposer mc, String speciesLayerName, String polygonLayerName, String environmentalLayerName, int steps_to_skip, boolean[] geospatialKosher) {
-        this.mc = mc;
+    public SamplingEvent(String speciesLayerName, String polygonLayerName, String environmentalLayerName, boolean[] geospatialKosher) {
         this.speciesLayerName = speciesLayerName;
         this.polygonLayerName = polygonLayerName;
         this.environmentalLayerName = environmentalLayerName;
-        this.steps_to_skip = steps_to_skip;
-        this.geospatialKosher = geospatialKosher;
+        this.geospatialKosher = geospatialKosher.clone();
     }
 
     @Override
     public void onEvent(Event event) throws Exception {
-        Hashtable<String, Object> params = new Hashtable<String, Object>();
+        MapComposer mc = (MapComposer) event.getPage().getFellow(StringConstants.MAPPORTALPAGE);
+
+        Map<String, Object> params = new HashMap<String, Object>();
         if (speciesLayerName != null) {
-            params.put("speciesLayerName", speciesLayerName);
+            params.put(StringConstants.SPECIES_LAYER_NAME, speciesLayerName);
         } else {
-            params.put("speciesLayerName", "none");
+            params.put(StringConstants.SPECIES_LAYER_NAME, StringConstants.NONE);
         }
         if (polygonLayerName != null) {
-            params.put("polygonLayerName", polygonLayerName);
+            params.put(StringConstants.POLYGON_LAYER_NAME, polygonLayerName);
         } else {
-            params.put("polygonLayerName", "none");
+            params.put(StringConstants.POLYGON_LAYER_NAME, StringConstants.NONE);
         }
         if (environmentalLayerName != null) {
-            params.put("environmentalLayerName", environmentalLayerName);
+            params.put(StringConstants.ENVIRONMENTALLAYERNAME, environmentalLayerName);
         } else {
-            params.put("environmentalLayerName", "none");
+            params.put(StringConstants.ENVIRONMENTALLAYERNAME, StringConstants.NONE);
         }
-        SamplingComposer window = (SamplingComposer) mc.openModal("WEB-INF/zul/tool/Sampling.zul", params, "addtoolwindow");
-
-        window.setGeospatialKosherCheckboxes(geospatialKosher);
-
-        int skip = steps_to_skip;
-        while (skip > 0) {
-            window.onClick$btnOk(event);
-            skip--;
+        if (geospatialKosher != null) {
+            params.put(StringConstants.GEOSPATIAL_KOSHER, geospatialKosher);
         }
-        //window.onClick$btnOk(event);
-        //window.onClick$btnOk(event);
+        mc.openModal("WEB-INF/zul/tool/Sampling.zul", params, StringConstants.ADDTOOLWINDOW);
     }
 }

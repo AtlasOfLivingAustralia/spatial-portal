@@ -14,8 +14,8 @@ import org.apache.log4j.Logger;
  * @author geoff
  */
 public class PortalSessionCloner {
+    private static final Logger LOGGER = Logger.getLogger(PortalSessionCloner.class);
     private PortalSessionUtilities portalSessionUtilities = null;
-    private static Logger logger = Logger.getLogger(PortalSessionCloner.class);
 
     public PortalSessionUtilities getPortalSessionUtilities() {
         return portalSessionUtilities;
@@ -26,7 +26,7 @@ public class PortalSessionCloner {
     }
 
     public PortalSession clone(PortalSession masterPortalSession) throws CloneNotSupportedException {
-        PortalSession portalSession = (PortalSession) masterPortalSession.clone();
+        PortalSession portalSession = (PortalSession) masterPortalSession.copy();
         
         /* super.clone will leave references to existing objects
          * in place, e.g.  portalSession.mapLayers == mapLayers is
@@ -50,8 +50,8 @@ public class PortalSessionCloner {
         // step 2: copy regions/facilities and settings
 
         // default map bounding box
-        if (masterPortalSession.getDefaultBoundingBox() == null) {
-            portalSession.setDefaultBoundingbox((BoundingBox) masterPortalSession.getDefaultBoundingBox().clone());
+        if (masterPortalSession.getDefaultBoundingBox() != null) {
+            portalSession.setDefaultBoundingbox((BoundingBox) masterPortalSession.getDefaultBoundingBox().copy());
         }
 
         // step 4: clone active layers
@@ -63,8 +63,8 @@ public class PortalSessionCloner {
 
         /* step 5: skip things
          *
-         * o	userDefined
-         * o	UserDefinedMenu
+         * o userDefined
+         * o UserDefinedMenu
          * All get skipped because for new sessions they should
          * all be empty lists/objects
          */
@@ -73,7 +73,7 @@ public class PortalSessionCloner {
          * during stage 2 because otherwise we would have to bother cloning everything
          */
 
-        logger.debug("Session cloned");
+        LOGGER.debug("Session cloned");
         return portalSession;
     }
 }

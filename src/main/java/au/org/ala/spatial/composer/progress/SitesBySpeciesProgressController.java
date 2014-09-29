@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.composer.progress;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.UtilityComposer;
@@ -21,15 +22,14 @@ import java.net.SocketTimeoutException;
  */
 public class SitesBySpeciesProgressController extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(SitesBySpeciesProgressController.class);
-
-    RemoteLogger remoteLogger;
-    Label jobstatus;
-    Progressmeter jobprogress;
-    Timer timer;
-    Textbox tbPid;
-    public String pid = null;
-    public Window parent = null;
+    private static final Logger LOGGER = Logger.getLogger(SitesBySpeciesProgressController.class);
+    private String pid = null;
+    private Window parent = null;
+    private RemoteLogger remoteLogger;
+    private Label jobstatus;
+    private Progressmeter jobprogress;
+    private Timer timer;
+    private Textbox tbPid;
 
     @Override
     public void afterCompose() {
@@ -37,9 +37,9 @@ public class SitesBySpeciesProgressController extends UtilityComposer {
         timer.stop();
     }
 
-    public void start(String pid_) {
-        pid = pid_;
-        tbPid.setValue(pid_);
+    public void start(String pid) {
+        this.pid = pid;
+        tbPid.setValue(pid);
 
         timer.start();
 
@@ -52,46 +52,47 @@ public class SitesBySpeciesProgressController extends UtilityComposer {
         }
 
         //get status
-        String status = get("status");
+        String status = get(StringConstants.STATUS);
         if (status.length() > 0) {
             jobstatus.setValue(status);
         }
 
-        String s = get("state");
-        if (s.equals("job does not exist")) {
+        String s = get(StringConstants.STATE);
+        if (StringConstants.JOB_DOES_NOT_EXIST.equals(s)) {
             timer.stop();
-            getMapComposer().showMessage("Points to grid request does not exist", "");//get("error"));
+            getMapComposer().showMessage("Points to grid request does not exist", "");
             this.detach();
             return;
         }
 
-        logger.debug("**************** STATE: " + s);
+        LOGGER.debug("**************** STATE: " + s);
         remoteLogger.logMapAnalysisUpdateStatus(pid, s);
 
-        String p = get("progress");
+        String p = get(StringConstants.PROGRESS);
 
         try {
             double d = Double.parseDouble(p);
             jobprogress.setValue((int) (d * 100));
         } catch (Exception ex) {
+            LOGGER.error("failed to parse progress %: " + p);
         }
 
-        if (s.equals("SUCCESSFUL")) {
+        if (StringConstants.SUCCESSFUL.equals(s)) {
             timer.stop();
             Events.echoEvent("loadMap", parent, null);
             this.detach();
-        } else if (s.startsWith("FAILED")) {
+        } else if (s.startsWith(StringConstants.FAILED)) {
             timer.stop();
-            String error_info = get("message");
-            if (!error_info.equals("job does not exist")) {
-                error_info = " with the following message: \n\n" + error_info;
+            String errorInfo = get("message");
+            if (!StringConstants.JOB_DOES_NOT_EXIST.equals(errorInfo)) {
+                errorInfo = " with the following message: \n\n" + errorInfo;
             } else {
-                error_info = "";
+                errorInfo = "";
             }
-            getMapComposer().showMessage("Points to grid failed" + error_info);
+            getMapComposer().showMessage("Points to grid failed" + errorInfo);
             this.detach();
             this.parent.detach();
-        } else if (s.equals("CANCELLED")) {
+        } else if (StringConstants.CANCELLED.equals(s)) {
             timer.stop();
             getMapComposer().showMessage("Points to grid cancelled by user");
             this.detach();
@@ -102,17 +103,18 @@ public class SitesBySpeciesProgressController extends UtilityComposer {
         try {
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod((CommonData.satServer + "/ws/jobs/") + type + "?pid=" + pid);
+            GetMethod get = new GetMethod((CommonData.getSatServer() + "/ws/jobs/") + type + "?pid=" + pid);
 
-            get.addRequestHeader("Accept", "text/plain");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.TEXT_PLAIN);
 
             client.getHttpConnectionManager().getParams().setSoTimeout(timer.getDelay());
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            return slist;
+
+            client.executeMethod(get);
+            return get.getResponseBodyAsString();
         } catch (SocketTimeoutException e) {
+            LOGGER.debug("progress timeout exception, will be trying again.");
         } catch (Exception e) {
-            logger.error("error getting updated job info pid=" + pid, e);
+            LOGGER.error("error getting updated job info pid=" + pid, e);
         }
         return "";
     }

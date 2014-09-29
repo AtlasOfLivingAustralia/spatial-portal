@@ -4,28 +4,26 @@
  */
 package au.org.emii.portal.composer.legend;
 
-import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.UserDataQuery;
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.LegendMaker;
+import au.org.ala.spatial.util.Query;
+import au.org.ala.spatial.util.UserDataQuery;
 import au.org.emii.portal.composer.GenericAutowireAutoforwardComposer;
 import au.org.emii.portal.menu.MapLayer;
 import org.ala.layers.legend.QueryField;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zul.Button;
-import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.*;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,40 +31,29 @@ import java.util.Map;
  */
 public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardComposer {
 
-    private static Logger logger = Logger.getLogger(ScatterplotLayerLegendComposer.class);
+    private static final Logger LOGGER = Logger.getLogger(ScatterplotLayerLegendComposer.class);
 
-    Slider opacitySlider;
-    Label opacityLabel;
-    Slider redSlider;
-    Slider greenSlider;
-    Slider blueSlider;
-    Slider sizeSlider;
-    Slider plotSizeSlider;
-    Checkbox chkUncertaintySize;
-    public Button btnPointsCluster;
-    Label lblFupload;
-    Label redLabel;
-    Label greenLabel;
-    Label blueLabel;
-    Label sizeLabel;
-    Label plotSizeLabel;
-    Listbox activeLayersList;
-    Div layerControls;
-    Div uncertainty;
-    Hbox uncertaintyLegend;
-    Div colourChooser;
-    Div sizeChooser;
-    Image legendImg;
-    Image legendImgUri;
-    Div legendHtml;
-    Label legendLabel;
-    Div divUserColours;
-    Combobox cbColour;
-    Comboitem ciColourUser; //User selected colour
-    Label layerName;
-    EventListener listener;
-    Query query;
-    MapLayer mapLayer;
+    private Slider opacitySlider;
+    private Label opacityLabel;
+    private Slider redSlider;
+    private Slider greenSlider;
+    private Slider blueSlider;
+    private Slider sizeSlider;
+    private Slider plotSizeSlider;
+    private Label redLabel;
+    private Label greenLabel;
+    private Label blueLabel;
+    private Label sizeLabel;
+    private Label plotSizeLabel;
+    private Div sizeChooser;
+    private Image legendImg;
+    private Div legendHtml;
+    private Div divUserColours;
+    private Combobox cbColour;
+    private Comboitem ciColourUser;
+    private EventListener listener;
+    private Query query;
+    private MapLayer mapLayer;
 
     @Override
     public void afterCompose() {
@@ -134,10 +121,10 @@ public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardCo
     public void selectColour(Object obj) {
         Div div = (Div) obj;
         String style = div.getStyle();
-        String background_color = "background-color";
-        int a = style.indexOf(background_color);
+        String backgroundColor = "background-color";
+        int a = style.indexOf(backgroundColor);
         if (a >= 0) {
-            String colour = style.substring(a + background_color.length() + 2, a + background_color.length() + 8);
+            String colour = style.substring(a + backgroundColor.length() + 2, a + backgroundColor.length() + 8);
             int r = Integer.parseInt(colour.substring(0, 2), 16);
             int g = Integer.parseInt(colour.substring(2, 4), 16);
             int b = Integer.parseInt(colour.substring(4, 6), 16);
@@ -183,31 +170,27 @@ public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardCo
 
     void showPointsColourModeLegend() {
         //remove all
-        while (legendHtml.getChildren().size() > 0) {
+        while (!legendHtml.getChildren().isEmpty()) {
             legendHtml.removeChild(legendHtml.getFirstChild());
         }
 
-        //1. register legend
-        //String pid = registerPointsColourModeLegend(lsid, (String) cbColour.getSelectedItem().getValue());
-
         //put any parameters into map
         Map map = new HashMap();
-        //map.put("pid", pid);
-        map.put("query", query);
-        map.put("layer", mapLayer);
-        map.put("readonly", "true");
-        map.put("colourmode", cbColour.getSelectedItem().getValue());
-        if (!mapLayer.getColourMode().equals("grid")
+        map.put(StringConstants.QUERY, query);
+        map.put(StringConstants.LAYER, mapLayer);
+        map.put(StringConstants.READONLY, StringConstants.TRUE);
+        map.put(StringConstants.COLOURMODE, cbColour.getSelectedItem().getValue());
+        if (!StringConstants.GRID.equals(mapLayer.getColourMode())
                 && query.getLegend((String) cbColour.getSelectedItem().getValue()).getCategoryNameOrder() != null) {
-            map.put("checkmarks", "true");
+            map.put("checkmarks", StringConstants.TRUE);
         }
-        map.put("disableselection", "true");
+        map.put("disableselection", StringConstants.TRUE);
 
         try {
             Executions.createComponents(
                     "/WEB-INF/zul/legend/LayerLegendClassification.zul", legendHtml, map);
         } catch (Exception e) {
-            logger.error("error creating LayerLegendClassification.zul", e);
+            LOGGER.error("error creating LayerLegendClassification.zul", e);
         }
     }
 
@@ -278,16 +261,11 @@ public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardCo
     public void onClick$btnApply(Event event) {
         if (listener != null) {
             try {
-                //listener.onEvent(null);
-                Component c = getParent().getFellowIfAny("scatterplotwindow");
-                if (c != null && c instanceof LayerLegendScatterplotController) {
-                    ((LayerLegendScatterplotController) c).updateFromLegend();
-                }
+                listener.onEvent(null);
             } catch (Exception e) {
-                logger.error("Error updating legend in scatterplot window", e);
+                LOGGER.error("Error updating legend in scatterplot window", e);
             }
         }
-        //this.detach();
     }
 
     public void onClick$btnClose(Event event) {
@@ -299,37 +277,29 @@ public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardCo
     }
 
     private void setupCBColour(Query q) {
-        for (int i = 0; i < cbColour.getItemCount(); i++) {
+        for (int i = cbColour.getItemCount() - 1; i >= 0; i--) {
             if (cbColour.getItemAtIndex(i) != ciColourUser) {
                 cbColour.removeItemAt(i);
-                i--;
             }
         }
 
-        //Query q = (Query) m.getSpeciesQuery();
-//        Object [] o = (Object []) RecordsLookup.getData(q.getQ());
-//        ArrayList<QueryField> fields = (ArrayList<QueryField>) o[1];
-
-
         if (q != null) {
 
-            ArrayList<QueryField> fields = query.getFacetFieldList();
+            List<QueryField> fields = query.getFacetFieldList();
             Collections.sort(fields, new QueryField.QueryFieldComparator());
-            Comboitem seperator = new Comboitem("seperator");
+
             String lastGroup = null;
 
-
             for (QueryField field : fields) {
-                if (q != null
-                        && field.getFieldType() == QueryField.FieldType.STRING
+                if (field.getFieldType() == QueryField.FieldType.STRING
                         && (q instanceof UserDataQuery
-                        || !(field.getName().equalsIgnoreCase("occurrence_year")
-                        || field.getName().equalsIgnoreCase("coordinate_uncertainty")
-                        || field.getName().equalsIgnoreCase("month")))) {
+                        || !(StringConstants.OCCURRENCE_YEAR.equalsIgnoreCase(field.getName())
+                        || StringConstants.COORDINATE_UNCERTAINTY.equalsIgnoreCase(field.getName())
+                        || StringConstants.MONTH.equalsIgnoreCase(field.getName())))) {
                     String newGroup = field.getGroup().getName();
                     if (!newGroup.equals(lastGroup)) {
-                        Comboitem sep = new Comboitem("seperator");
-                        sep.setLabel("---------------" + StringUtils.center(newGroup, 19) + "---------------");
+                        Comboitem sep = new Comboitem(StringConstants.SEPERATOR);
+                        sep.setLabel(StringUtils.center(newGroup, 19));
                         sep.setParent(cbColour);
                         sep.setDisabled(true);
                         lastGroup = newGroup;
@@ -339,8 +309,6 @@ public class ScatterplotLayerLegendComposer extends GenericAutowireAutoforwardCo
                     ci.setParent(cbColour);
                 }
             }
-
-
         }
     }
 }

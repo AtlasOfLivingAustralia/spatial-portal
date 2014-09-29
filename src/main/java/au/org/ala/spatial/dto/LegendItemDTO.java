@@ -1,16 +1,19 @@
 package au.org.ala.spatial.dto;
 
+import au.org.ala.spatial.StringConstants;
+
 /**
  * A dto that represents a legend item
  *
  * @author Natasha Quimby (natasha.quimby@csiro.au)
  */
 public class LegendItemDTO {
-    String name = "Unknown";//a null name defaults to "Unknown"
-    Integer count;
-    Integer red;
-    Integer green;
-    Integer blue;
+
+    private String name = StringConstants.UNKNOWN;
+    private Integer count;
+    private Integer red;
+    private Integer green;
+    private Integer blue;
 
     public LegendItemDTO() {
 

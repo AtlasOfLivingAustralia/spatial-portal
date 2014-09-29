@@ -29,25 +29,14 @@ public class ApplicationInit extends ContextLoaderListener {
     /**
      * Logger instance
      */
-    private static Logger logger = Logger.getLogger(ApplicationInit.class);
+    private static final Logger LOGGER = Logger.getLogger(ApplicationInit.class);
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         // first log message can come from a log4j instance without substituting
         // variables, just so we know we at least got this far...
-        logger.debug("================[WEB PORTAL APPLICATION INIT]================");
+        LOGGER.debug("================[WEB PORTAL APPLICATION INIT]================");
 
-        // quick sanity check that JVM arg spring will look for is really there
-        // so we can give a friendlier error message than spring does
-//        if (System.getProperty(CONFIG_DIR_JVM_ARG) == null) {
-//            // If config dir not set, no point setting up log4j - will fail so use
-//            // the default log4j.xml file in the classpath to print the following
-//            // error message
-//            logger.error(
-//                    "Config file location not set.  You must supply the full " +
-//                            "path to a web portal configuration directory by starting your " +
-//                            "JVM with -D" + CONFIG_DIR_JVM_ARG + "=/full/path/to/config/dir");
-//        } else {
 
         // now the spring context gets loaded by superclass...
         super.contextInitialized(sce);
@@ -72,24 +61,19 @@ public class ApplicationInit extends ContextLoaderListener {
 
         // start the tread running and return control immediately
         configurationLoaderThread.start();
-//        }
 
         //NC 2013-11-26: initialise the ZK Labels to include biocache WS i18n version. 
-        logger.debug("REGISTERING Biocache Labeller...");
+        LOGGER.debug("REGISTERING Biocache Labeller...");
         Labels.register(new BiocacheLabelLocator());
-        logger.debug("* APPLICATION INIT: complete");
+        LOGGER.debug("* APPLICATION INIT: complete");
 
 
     }
 
 
-    /**
-     * FIXME - MOVE TO DEDICATED SHUTDOWN CLASS!!
-     * Called by servlet container when shutting down
-     */
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        logger.debug("APPLICATION shutdown requested");
+        LOGGER.debug("APPLICATION shutdown requested");
         ServletContext servletContext = sce.getServletContext();
         ConfigurationLoaderStage1 configurationLoader =
                 (ConfigurationLoaderStage1) servletContext.getAttribute(CONFIGURATION_LOADER_ATTRIBUTE);

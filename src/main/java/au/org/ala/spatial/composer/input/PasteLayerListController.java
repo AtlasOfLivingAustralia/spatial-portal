@@ -1,8 +1,10 @@
 package au.org.ala.spatial.composer.input;
 
-import au.org.ala.spatial.composer.tool.ToolComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zul.Textbox;
 
 /**
@@ -10,22 +12,27 @@ import org.zkoss.zul.Textbox;
  */
 public class PasteLayerListController extends UtilityComposer {
 
-    Textbox layerList;
+    private static final Logger LOGGER = Logger.getLogger(PasteLayerListController.class);
 
-    @Override
-    public void afterCompose() {
-        super.afterCompose();
-    }
+    private Textbox layerList;
+    private EventListener callback;
 
     public void onClick$btnOk(Event event) {
-        if (getParent() instanceof ToolComposer) {
-            ((ToolComposer) getParent()).selectLayerFromList(layerList.getText());
-            ((ToolComposer) getParent()).updateLayerSelectionCount();
+        if (callback != null) {
+            try {
+                callback.onEvent(new ForwardEvent("", this, event, layerList.getText()));
+            } catch (Exception e) {
+                LOGGER.error("failed when calling ToolComposer callback", e);
+            }
         }
         this.detach();
     }
 
     public void onClick$btnCancel(Event event) {
         this.detach();
+    }
+
+    public void setCallback(EventListener callback) {
+        this.callback = callback;
     }
 }

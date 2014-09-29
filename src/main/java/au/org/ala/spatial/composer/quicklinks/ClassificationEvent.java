@@ -5,41 +5,40 @@
  */
 package au.org.ala.spatial.composer.quicklinks;
 
-import au.org.ala.spatial.composer.tool.ALOCComposer;
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.composer.MapComposer;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author adam
  */
 public class ClassificationEvent implements EventListener {
 
-    String polygonLayerName;
-    String environmentalLayerName;
-    MapComposer mc;
+    private String polygonLayerName;
+    private String environmentalLayerName;
 
-    public ClassificationEvent(MapComposer mc, String polygonLayerName, String environmentalLayerName) {
-        this.mc = mc;
+    public ClassificationEvent(String polygonLayerName, String environmentalLayerName) {
         this.polygonLayerName = polygonLayerName;
         this.environmentalLayerName = environmentalLayerName;
     }
 
     @Override
     public void onEvent(Event event) throws Exception {
-        Hashtable<String, Object> params = new Hashtable<String, Object>();
+        Map<String, Object> params = new HashMap<String, Object>();
         if (polygonLayerName != null) {
-            params.put("polygonLayerName", polygonLayerName);
+            params.put(StringConstants.POLYGON_LAYER_NAME, polygonLayerName);
         } else {
-            params.put("polygonLayerName", "none");
+            params.put(StringConstants.POLYGON_LAYER_NAME, StringConstants.NONE);
         }
         if (environmentalLayerName != null) {
-            params.put("environmentalLayerName", environmentalLayerName);
+            params.put(StringConstants.ENVIRONMENTALLAYERNAME, environmentalLayerName);
         } else {
-            params.put("environmentalLayerName", "none");
+            params.put(StringConstants.ENVIRONMENTALLAYERNAME, StringConstants.NONE);
         }
-        ALOCComposer window = (ALOCComposer) mc.openModal("WEB-INF/zul/tool/ALOC.zul", params, "addtoolwindow");
+        ((MapComposer) event.getPage().getFellow(StringConstants.MAPPORTALPAGE)).openModal("WEB-INF/zul/tool/ALOC.zul", params, StringConstants.ADDTOOLWINDOW);
     }
 }

@@ -2,7 +2,6 @@ package au.org.emii.portal.composer;
 
 import au.org.emii.portal.util.Validate;
 import org.apache.log4j.Logger;
-import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 
@@ -15,7 +14,7 @@ import org.zkoss.zk.ui.event.EventListener;
  */
 public class UtilityComposer extends GenericAutowireAutoforwardComposer {
 
-    private static Logger logger = Logger.getLogger(UtilityComposer.class);
+    private static final Logger LOGGER = Logger.getLogger(UtilityComposer.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -36,10 +35,10 @@ public class UtilityComposer extends GenericAutowireAutoforwardComposer {
          * string starts with the '-' character.  If it does, we do
          * the nudge 
          */
-        logger.debug("nudging window");
+        LOGGER.debug("nudging window");
         String top = getTop();
         if ((!Validate.empty(top)) && (top.charAt(0) == '-')) {
-            logger.debug("moving window from " + top + " to 0px");
+            LOGGER.debug("moving window from " + top + " to 0px");
             setTop("0px");
         }
     }
@@ -59,13 +58,9 @@ public class UtilityComposer extends GenericAutowireAutoforwardComposer {
     }
 
     @Override
-    public void doAfterCompose(Component component) throws Exception {
-    }
-
-    @Override
     public void afterCompose() {
         super.afterCompose();
-        logger.debug("registered UtilityComposer event listeners");
+        LOGGER.debug("registered UtilityComposer event listeners");
         addEventListener("onMove", new EventListener() {
             public void onEvent(Event event) throws Exception {
                 onNudgeToView();

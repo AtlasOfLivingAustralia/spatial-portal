@@ -1,12 +1,12 @@
 package au.org.ala.spatial.composer.input;
 
-import au.org.ala.spatial.composer.add.AddSpeciesController;
-import au.org.ala.spatial.composer.tool.ToolComposer;
-import au.org.ala.spatial.data.SpeciesListUtil;
+import au.org.ala.spatial.util.SpeciesListUtil;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.UtilityComposer;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Textbox;
 
@@ -17,12 +17,13 @@ import org.zkoss.zul.Textbox;
  */
 public class UploadToSpeciesListController extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(UploadToSpeciesListController.class);
+    private static final Logger LOGGER = Logger.getLogger(UploadToSpeciesListController.class);
 
-    Textbox tbName, tbDesc;
-    Label tbInstructions;
-    String species;
-    String dataResourceUid;
+    private Textbox tbName, tbDesc;
+    private Label tbInstructions;
+    private String species;
+    private String dataResourceUid;
+    private EventListener callback;
 
     /**
      * The species string needs to be set containing a comma separated list of
@@ -34,16 +35,22 @@ public class UploadToSpeciesListController extends UtilityComposer {
         this.species = species;
     }
 
+    public void setCallback(EventListener callback) {
+        this.callback = callback;
+    }
+
     public void onClick$btnOk(Event event) {
         if (tbName.getValue().length() > 0) {
             String name = tbName.getValue();
             String description = tbDesc.getValue();
             dataResourceUid = SpeciesListUtil.createNewList(name, species, description, null, Util.getUserEmail());
-            logger.debug("The data resource uid: " + dataResourceUid);
-            if (this.getParent() instanceof AddSpeciesController) {
-                ((AddSpeciesController) this.getParent()).updateSpeciesListMessage(dataResourceUid);
-            } else if (this.getParent() instanceof ToolComposer) {
-                ((ToolComposer) this.getParent()).updateSpeciesListMessage(dataResourceUid);
+            LOGGER.debug("The data resource uid: " + dataResourceUid);
+            if (callback != null) {
+                try {
+                    callback.onEvent(new ForwardEvent("", null, null, dataResourceUid));
+                } catch (Exception e) {
+                    LOGGER.error("failed to trigger callback from species list upload", e);
+                }
             }
             this.detach();
         } else {
@@ -52,10 +59,6 @@ public class UploadToSpeciesListController extends UtilityComposer {
     }
 
     public void onClick$btnCancel(Event event) {
-        if (this.getParent().getId().equals("addtoolwindow")) {
-            ToolComposer analysisParent = (ToolComposer) this.getParent();
-            analysisParent.resetWindowFromSpeciesUpload("", "cancel");
-        }
         this.detach();
     }
 

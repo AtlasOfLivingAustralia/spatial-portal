@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
 import au.org.ala.spatial.util.Util;
@@ -17,22 +18,22 @@ import org.zkoss.zul.Textbox;
  */
 public class AreaRadiusManual extends AreaToolComposer {
 
-    private static Logger logger = Logger.getLogger(AreaRadiusManual.class);
-    Doublebox dLongitude;
-    Doublebox dLatitude;
-    Doublebox dRadius;
+    private static final Logger LOGGER = Logger.getLogger(AreaRadiusManual.class);
+    private Doublebox dLongitude;
+    private Doublebox dLatitude;
+    private Doublebox dRadius;
+    private Textbox txtLayerName;
+    private Button btnOk;
+    private Button btnClear;
     private Textbox displayGeom;
-    Textbox txtLayerName;
-    Button btnOk;
-    Button btnClear;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang(StringConstants.DEFAULT_AREA_LAYER_NAME)));
         BoundingBox bb = getMapComposer().getLeftmenuSearchComposer().getViewportBoundingBox();
-        dLongitude.setValue(Math.round((bb.getMinLongitude() + (bb.getMaxLongitude() - bb.getMinLongitude()) / 2) * 100) / 100.0);
-        dLatitude.setValue(Math.round((bb.getMinLatitude() + (bb.getMaxLatitude() - bb.getMinLatitude()) / 2) * 100) / 100.0);
+        dLongitude.setValue(Math.round((bb.getMinLongitude() + (bb.getMaxLongitude() - bb.getMinLongitude()) / 2.0) * 100) / 100.0);
+        dLatitude.setValue(Math.round((bb.getMinLatitude() + (bb.getMaxLatitude() - bb.getMinLatitude()) / 2.0) * 100) / 100.0);
     }
 
     public void onClick$btnOk(Event event) {
@@ -50,9 +51,7 @@ public class AreaRadiusManual extends AreaToolComposer {
 
     public void createCircle() {
         String wkt = Util.createCircleJs(dLongitude.getValue(), dLatitude.getValue(), dRadius.getValue() * 1000.0);
-        if (wkt.contentEquals("none")) {
-            return;
-        } else {
+        if (!StringConstants.NONE.equalsIgnoreCase(wkt)) {
             try {
                 MapComposer mc = getMapComposer();
                 layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
@@ -62,7 +61,7 @@ public class AreaRadiusManual extends AreaToolComposer {
 
                 displayGeom.setText(wkt);
             } catch (Exception e) {
-                logger.error("Error adding WKT layer", e);
+                LOGGER.error("Error adding WKT layer", e);
             }
         }
     }
@@ -73,17 +72,17 @@ public class AreaRadiusManual extends AreaToolComposer {
         //test longitude
         double longitude = dLongitude.getValue();
         if (longitude < -180 || longitude > 360) {
-            sb.append("\n" + CommonData.lang("error_invalid_longitude"));
+            sb.append("\n").append(CommonData.lang(StringConstants.ERROR_INVALID_LONGITUDE));
         }
 
         double latitude = dLatitude.getValue();
         if (latitude < -90 || latitude > 90) {
-            sb.append("\n" + CommonData.lang("error_invalid_latitude"));
+            sb.append("\n").append(CommonData.lang(StringConstants.ERROR_INVALID_LATITUDE));
         }
 
         double radius = dRadius.getValue();
         if (radius <= 0) {
-            sb.append("\n" + CommonData.lang("error_invalid_radius"));
+            sb.append("\n").append(CommonData.lang(StringConstants.ERROR_INVALID_RADIUS));
         }
 
         if (sb.length() > 0) {

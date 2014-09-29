@@ -4,23 +4,18 @@
  */
 package au.org.ala.spatial.util;
 
-import au.org.ala.spatial.data.LsidCounts;
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.lang.LanguagePackImpl;
-import au.org.emii.portal.util.LayerSelection;
-import com.sun.imageio.plugins.common.I18N;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.layers.legend.QueryField;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * common data store
@@ -31,102 +26,108 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Adam
  */
-public class CommonData {
-
-    private static Logger logger = Logger.getLogger(CommonData.class);
+public final class CommonData {
 
     //common data
-    static public final String WORLD_WKT = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 84.999,179.999 -89.999,-179.999 -89.999))";
-    //NC: 20130319 changed to using the correct direction 
-    static public final String AUSTRALIA_WKT = "POLYGON((112.0 -44.0,154.0 -44.0,154.0 -9.0,112.0 -9.0,112.0 -44.0))";
-    //common parameters
-    static final String SAT_URL = "sat_url";
-    static final String GEOSERVER_URL = "geoserver_url";
-    static final String LAYERS_URL = "layers_url";
-    static final String WEBPORTAL_URL = "webportal_url";
-    static final String BIE_URL = "bie_url";
-    static final String BIOCACHE_SERVICE_URL = "biocache_service_url";
-    static final String BIOCACHE_WEBAPP_URL = "biocache_webapp_url";
+    public static final String WORLD_WKT = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 84.999,179.999 -89.999,-179.999 -89.999))";
+    //NC: 20130319 changed to using the correct direction
+    public static final String AUSTRALIA_WKT = "POLYGON((112.0 -44.0,154.0 -44.0,154.0 -9.0,112.0 -9.0,112.0 -44.0))";
     public static final String PHYLOLIST_URL = "phylolist_url";
-    static final String SPECIES_LIST_URL = "species_list_url";
-    static final String COLLECTORY_URL = "collectory_url";
-    static final String DEFAULT_UPLOAD_SAMPLING = "default_upload_sampling";
-    static final String MAX_Q_LENGTH = "max_q_length";
-    static final String BIOCACHE_QC = "biocache_qc";
-    static final String ANALYSIS_LAYER_SETS = "analysis_layer_sets";
-    static final String MAX_AREA_FOR_ENDEMIC = "max_area_endemic";
-    static final String EXTRA_DOWNLOAD_FIELDS = "occurrence_extra_download";
-    static final String DISPLAY_POINTS_OF_INTEREST = "display_points_of_interest";
-    static final String CUSTOM_FACETS = "custom_facets";
-    static final String AREA_REPORT_FACETS = "area_report_facets";
+    //common parameters
+    private static final String SAT_URL = "sat_url";
+    private static final String GEOSERVER_URL = "geoserver_url";
+    private static final String LAYERS_URL = "layers_url";
+    private static final String WEBPORTAL_URL = "webportal_url";
+    private static final String BIE_URL = "bie_url";
+    private static final String BIOCACHE_SERVICE_URL = "biocache_service_url";
+    private static final String BIOCACHE_WEBAPP_URL = "biocache_webapp_url";
+    private static final String SPECIES_LIST_URL = "species_list_url";
+    private static final String COLLECTORY_URL = "collectory_url";
+    private static final String DEFAULT_UPLOAD_SAMPLING = "default_upload_sampling";
+    private static final String MAX_Q_LENGTH = "max_q_length";
+    private static final String BIOCACHE_QC = "biocache_qc";
+    private static final String ANALYSIS_LAYER_SETS = "analysis_layer_sets";
+    private static final String MAX_AREA_FOR_ENDEMIC = "max_area_endemic";
+    private static final String EXTRA_DOWNLOAD_FIELDS = "occurrence_extra_download";
+    private static final String DISPLAY_POINTS_OF_INTEREST = "display_points_of_interest";
+    private static final String CUSTOM_FACETS = "custom_facets";
+    private static final String AREA_REPORT_FACETS = "area_report_facets";
     //NC 20131017 - the default facets supplied by the biocache WS that are ignored.
-    static final String IGNORED_FACETS = "default_facets_ignored";
-    static final String I18N_URL = "i18nURL";
-    static final String I18N_IGNORE_THESE_PREFIXES = "i18nIgnoreThesePrefixes";
-
-    //(2) for EnvironmentalList
-    static JSONObject distances;
-    static HashMap<String, HashMap<String, Double>> distances_map;
-    static JSONObject copy_distances;
-    static HashMap<String, HashMap<String, Double>> copy_distances_map;
-    //(3) for layer list json
-    static JSONArray layerlistJSON = null;
-    static JSONArray copy_layerlistJSON = null;
-    static String defaultFieldString = null;
+    private static final String IGNORED_FACETS = "default_facets_ignored";
+    private static final String I18N_URL = "i18nURL";
+    private static final String I18N_IGNORE_THESE_PREFIXES = "i18nIgnoreThesePrefixes";
+    private static final Logger LOGGER = Logger.getLogger(CommonData.class);
+    protected static String collectoryServer;
+    protected static String[] customFacets;
+    protected static List<String> ignoredFacets;
+    //Common
+    private static String satServer;
+    private static String geoServer;
+    private static String layersServer;
+    private static String webportalServer;
+    private static String bieServer;
+    private static String biocacheServer;
+    private static String biocacheWebServer;
     //(4) species with distribution layres
+    private static String speciesListServer;
+    private static int maxQLength;
+    private static Properties settings;
+    //lsid counts, for species autocomplete
+    private static LsidCounts lsidCounts;
+    private static String biocacheQc;
+    private static List<LayerSelection> analysisLayerSets;
+    private static String[][] facetNameExceptions;
+    private static Set<String> biocacheLayerList;
+    private static int maxEndemicArea;
+    private static String extraDownloadFields = "coordinateUncertaintyInMeters";
+    private static boolean displayPointsOfInterest;
+    private static String[] areaReportFacets;
+    private static String i18nURL;
+    private static List<String> i18nIgnoredPrefixes;
+    //(2) for EnvironmentalList
+    private static JSONObject distances;
+    private static Map<String, Map<String, Double>> distancesMap;
+    private static JSONObject copyDistances;
+    private static Map<String, Map<String, Double>> copyDistancesMap;
+    //(3) for layer list json
+    private static JSONArray layerlistJSON = null;
+    private static JSONArray copyLayerlistJSON = null;
+    private static String defaultFieldString = null;
     /**
      * key = LSID value = list of WMS names
      */
-    static HashMap<String, String[]> species_wms_layers = null;
-    static HashMap<String, String[]> copy_species_wms_layers = null;
-    static HashMap<String, String[]> species_metadata_layers = null;
-    static HashMap<String, String[]> copy_species_metadata_layers = null;
-    static HashMap<String, String[]> species_spcode_layers = null;
-    static HashMap<String, String[]> copy_species_spcode_layers = null;
-    static HashMap<String, String[]> species_wms_layers_by_spcode = null;
-    static HashMap<String, String[]> copy_species_wms_layers_by_spcode = null;
-    static HashMap<String, String[]> checklistspecies_wms_layers = null;
-    static HashMap<String, String[]> copy_checklistspecies_wms_layers = null;
-    static HashMap<String, String[]> checklistspecies_metadata_layers = null;
-    static HashMap<String, String[]> copy_checklistspecies_metadata_layers = null;
-    static HashMap<String, String[]> checklistspecies_spcode_layers = null;
-    static HashMap<String, String[]> copy_checklistspecies_spcode_layers = null;
-    static HashMap<String, String[]> checklistspecies_wms_layers_by_spcode = null;
-    static HashMap<String, String[]> copy_checklistspecies_wms_layers_by_spcode = null;
+    private static Map<String, String[]> speciesWmsLayers = null;
+    private static Map<String, String[]> copySpeciesWmsLayers = null;
+    private static Map<String, String[]> speciesMetadataLayers = null;
+    private static Map<String, String[]> copySpeciesMetadataLayers = null;
+    private static Map<String, String[]> speciesSpcodeLayers = null;
+    private static Map<String, String[]> copySpeciesSpcodeLayers = null;
+    private static Map<String, String[]> speciesWmsLayersBySpcode = null;
+    private static Map<String, String[]> copySpeciesWmsLayersBySpcode = null;
+    private static Map<String, String[]> checklistspeciesWmsLayers = null;
+    private static Map<String, String[]> copyChecklistspeciesWmsLayers = null;
+    private static Map<String, String[]> checklistspeciesMetadataLayers = null;
+    private static Map<String, String[]> copyChecklistspeciesMetadataLayers = null;
+    private static Map<String, String[]> checklistspeciesSpcodeLayers = null;
+    private static Map<String, String[]> copyChecklistspeciesSpcodeLayers = null;
+    private static Map<String, String[]> checklistspeciesWmsLayersBySpcode = null;
+    private static Map<String, String[]> copyChecklistspeciesWmsLayersBySpcode = null;
     // download reasons
-    static JSONArray download_reasons;
-    static JSONArray copy_download_reasons;
-    //Common
-    static public String satServer;
-    static public String geoServer;
-    static public String layersServer;
-    static public String webportalServer;
-    static public String bieServer;
-    static public String biocacheServer;
-    static public String biocacheWebServer;
-    static public String speciesListServer;
-    static public String collectoryServer;
-    static public int maxQLength;
-    static public Properties settings;
-    //lsid counts, for species autocomplete
-    static public LsidCounts lsidCounts;
-    static public String biocacheQc;
-    static public ArrayList<LayerSelection> analysisLayerSets;
-    static public String[][] facetNameExceptions; //{{"cl22", "state"}, {"cl959", "places"}, {"cl20", "ibra"}, {"cl21", "imcra"}};
-    static public Set<String> biocacheLayerList;
-    static public int maxEndemicArea;
-    static public String extraDownloadFields = "coordinateUncertaintyInMeters";
-    static public boolean displayPointsOfInterest;
-    static public String[] customFacets;
-    static public List<String> ignoredFacets;
-    static public String[] areaReportFacets;
-    static public String i18nURL;
-    static public List<String> i18nIgnoredPrefixes;
+    private static JSONArray downloadReasons;
+    private static JSONArray copyDownloadReasons;
+    private static Map<String, JSONObject> layerToFacet;
+    private static Map<String, JSONObject> facetToLayer;
+    private static Properties i18nProperites = null;
+    private static LanguagePack languagePack = null;
+
+    private CommonData() {
+        //to hide public constructor
+    }
 
     /*
      * initialize common data from geoserver and satserver
      */
-    static public void init(Properties settings) {
+    public static void init(Properties settings) {
         CommonData.settings = settings;
 
         //Common
@@ -156,15 +157,11 @@ public class CommonData {
             extraDownloadFields = settings.getProperty(EXTRA_DOWNLOAD_FIELDS);
         }
 
-        if (settings.containsKey(DISPLAY_POINTS_OF_INTEREST)) {
-            displayPointsOfInterest = Boolean.parseBoolean(settings.getProperty(DISPLAY_POINTS_OF_INTEREST));
-        } else {
-            displayPointsOfInterest = false;
-        }
+        displayPointsOfInterest = settings.containsKey(DISPLAY_POINTS_OF_INTEREST) && Boolean.parseBoolean(settings.getProperty(DISPLAY_POINTS_OF_INTEREST));
 
         i18nURL = settings.getProperty(I18N_URL);
         String tmp = settings.getProperty(I18N_IGNORE_THESE_PREFIXES);
-        if(tmp != null) {
+        if (tmp != null) {
             i18nIgnoredPrefixes = java.util.Arrays.asList(tmp.split(" "));
         } else {
             i18nIgnoredPrefixes = new ArrayList<String>();
@@ -197,8 +194,8 @@ public class CommonData {
 
         // load the download reasons
         initDownloadReasons();
-        if (copy_download_reasons != null) {
-            download_reasons = copy_download_reasons;
+        if (copyDownloadReasons != null) {
+            downloadReasons = copyDownloadReasons;
         }
 
         //keep a list of biocache field names to know what is available for queries
@@ -208,122 +205,124 @@ public class CommonData {
         initLanguagePack();
 
         //(2) for EnvironmentalList
-        if (copy_distances != null) {
-            distances = copy_distances;
+        if (copyDistances != null) {
+            distances = copyDistances;
         }
 
-        if (copy_distances_map != null) {
-            distances_map = copy_distances_map;
+        if (copyDistancesMap != null) {
+            distancesMap = copyDistancesMap;
         }
 
-        //(3) for layer list json        
-        if (copy_layerlistJSON != null) {
-            layerlistJSON = copy_layerlistJSON;
+        //(3) for layer list json
+        if (copyLayerlistJSON != null) {
+            layerlistJSON = copyLayerlistJSON;
         }
 
         //(4) for species wms distributions & checklists
-        if (copy_species_wms_layers != null) {
-            species_wms_layers = copy_species_wms_layers;
+        if (copySpeciesWmsLayers != null) {
+            speciesWmsLayers = copySpeciesWmsLayers;
         }
-        if (copy_species_metadata_layers != null) {
-            species_metadata_layers = copy_species_metadata_layers;
+        if (copySpeciesMetadataLayers != null) {
+            speciesMetadataLayers = copySpeciesMetadataLayers;
         }
-        if (copy_species_spcode_layers != null) {
-            species_spcode_layers = copy_species_spcode_layers;
+        if (copySpeciesSpcodeLayers != null) {
+            speciesSpcodeLayers = copySpeciesSpcodeLayers;
         }
-        if (copy_species_wms_layers_by_spcode != null) {
-            species_wms_layers_by_spcode = copy_species_wms_layers_by_spcode;
+        if (copySpeciesWmsLayersBySpcode != null) {
+            speciesWmsLayersBySpcode = copySpeciesWmsLayersBySpcode;
         }
-        if (copy_checklistspecies_wms_layers != null) {
-            checklistspecies_wms_layers = copy_checklistspecies_wms_layers;
+        if (copyChecklistspeciesWmsLayers != null) {
+            checklistspeciesWmsLayers = copyChecklistspeciesWmsLayers;
         }
-        if (copy_checklistspecies_metadata_layers != null) {
-            checklistspecies_metadata_layers = copy_checklistspecies_metadata_layers;
+        if (copyChecklistspeciesMetadataLayers != null) {
+            checklistspeciesMetadataLayers = copyChecklistspeciesMetadataLayers;
         }
-        if (copy_checklistspecies_spcode_layers != null) {
-            checklistspecies_spcode_layers = copy_checklistspecies_spcode_layers;
+        if (copyChecklistspeciesSpcodeLayers != null) {
+            checklistspeciesSpcodeLayers = copyChecklistspeciesSpcodeLayers;
         }
-        if (copy_species_wms_layers_by_spcode != null) {
-            checklistspecies_wms_layers_by_spcode = copy_checklistspecies_wms_layers_by_spcode;
+        if (copyChecklistspeciesWmsLayersBySpcode != null) {
+            checklistspeciesWmsLayersBySpcode = copyChecklistspeciesWmsLayersBySpcode;
         }
 
 
     }
 
-    static public JSONArray getDownloadReasons() {
-        return download_reasons;
+    public static JSONArray getDownloadReasons() {
+        return downloadReasons;
     }
 
-    static public JSONObject getDistances() {
+    public static JSONObject getDistances() {
         return distances;
     }
 
-    static public void initLayerDistances() {
-        copy_distances = null;
-        copy_distances_map = null;
-        logger.debug("CommonData::initLayerDistances()");
+    public static void initLayerDistances() {
+        copyDistances = null;
+        copyDistancesMap = null;
+        LOGGER.debug("CommonData::initLayerDistances()");
         String url = satServer + "/ws/layerdistances";
         try {
-            logger.debug(url);
+            LOGGER.debug(url);
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(url);
 
             int result = client.executeMethod(get);
 
             if (result == 200) {
-                copy_distances = JSONObject.fromObject(get.getResponseBodyAsString());
+                copyDistances = JSONObject.fromObject(get.getResponseBodyAsString());
 
 
                 //make map
-                copy_distances_map = new HashMap<String, HashMap<String, Double>>();
-                for (Object okey : copy_distances.keySet()) {
-                    Double d = copy_distances.getDouble((String) okey);
+                copyDistancesMap = new HashMap<String, Map<String, Double>>();
+                for (Object okey : copyDistances.keySet()) {
+                    Double d = copyDistances.getDouble((String) okey);
                     String[] parts = ((String) okey).split(" ");
 
-                    HashMap<String, Double> part = copy_distances_map.get(parts[0]);
+                    Map<String, Double> part = copyDistancesMap.get(parts[0]);
                     if (part == null) {
-                        copy_distances_map.put(parts[0], part = new HashMap<String, Double>());
+                        part = new HashMap<String, Double>();
+                        copyDistancesMap.put(parts[0], part);
                     }
                     part.put(parts[1], d);
 
 
-                    part = copy_distances_map.get(parts[1]);
+                    part = copyDistancesMap.get(parts[1]);
                     if (part == null) {
-                        copy_distances_map.put(parts[1], part = new HashMap<String, Double>());
+                        part = new HashMap<String, Double>();
+                        copyDistancesMap.put(parts[1], part);
                     }
                     part.put(parts[0], d);
                 }
             }
         } catch (Exception e) {
-            copy_distances = null;
-            copy_distances_map = null;
-            logger.error("error getting layer distances", e);
+            copyDistances = null;
+            copyDistancesMap = null;
+            LOGGER.error("error getting layer distances", e);
         }
     }
 
-    static public HashMap<String, HashMap<String, Double>> getDistancesMap() {
-        return distances_map;
+    public static Map<String, Map<String, Double>> getDistancesMap() {
+        return distancesMap;
     }
 
     static void initLayerList() {
-        copy_layerlistJSON = null;
+        copyLayerlistJSON = null;
         String layersListURL = layersServer + "/layers";
         try {
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(layersListURL);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
 
             int result = client.executeMethod(get);
 
             if (result == 200) {
-                copy_layerlistJSON = JSONArray.fromObject(get.getResponseBodyAsString());
+                copyLayerlistJSON = JSONArray.fromObject(get.getResponseBodyAsString());
             }
 
-            addFieldsToLayers(copy_layerlistJSON);
+            addFieldsToLayers(copyLayerlistJSON);
         } catch (Exception e) {
-            logger.error("error getting layers list: " + layersListURL, e);
-            copy_layerlistJSON = null;
+            LOGGER.error("error getting layers list: " + layersListURL, e);
+            copyLayerlistJSON = null;
         }
     }
 
@@ -334,33 +333,34 @@ public class CommonData {
         GetMethod get = new GetMethod(fieldsURL);
         int result = client.executeMethod(get);
         if (result != 200) {
-            throw new Exception("cannot retrive field list: " + fieldsURL);
+            LOGGER.error("cannot retrive field list: " + fieldsURL);
+            return;
         }
         String fields = get.getResponseBodyAsString();
         JSONArray ja = JSONArray.fromObject(fields);
 
-        //attach to a new JSONArray in joLayers named "fields"
+        //attach to a new JSONArray in joLayers named Constants.FIELDS
         for (int j = 0; j < joLayers.size(); j++) {
             JSONObject layer = joLayers.getJSONObject(j);
-            if (layer.containsKey("id")) {
+            if (layer.containsKey(StringConstants.ID)) {
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject jo = ja.getJSONObject(i);
                     if (
-                            jo.containsKey("defaultlayer") && jo.getString("defaultlayer").equals("true")
+                            jo.containsKey("defaultlayer") && StringConstants.TRUE.equals(jo.getString("defaultlayer"))
 
-                                    && jo.containsKey("spid") && jo.getString("spid").equals(layer.getString("id"))) {
+                                    && jo.containsKey("spid") && jo.getString("spid").equals(layer.getString(StringConstants.ID))) {
                         //add to layer
-                        if (!layer.containsKey("fields")) {
-                            layer.put("fields", new JSONArray());
+                        if (!layer.containsKey(StringConstants.FIELDS)) {
+                            layer.put(StringConstants.FIELDS, new JSONArray());
                         }
-                        layer.getJSONArray("fields").add(jo);
+                        layer.getJSONArray(StringConstants.FIELDS).add(jo);
                     }
                 }
             }
         }
     }
 
-    static public JSONArray getLayerListJSONArray() {
+    public static JSONArray getLayerListJSONArray() {
         return layerlistJSON;
     }
 
@@ -369,45 +369,45 @@ public class CommonData {
             String layersListURL = layersServer + "/distributions";
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(layersListURL);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
             get.addRequestHeader("Accept-Encoding", "gzip");
 
-            copy_species_wms_layers = new HashMap<String, String[]>();
-            copy_species_metadata_layers = new HashMap<String, String[]>();
-            copy_species_spcode_layers = new HashMap<String, String[]>();
-            copy_species_wms_layers_by_spcode = new HashMap<String, String[]>();
+            copySpeciesWmsLayers = new HashMap<String, String[]>();
+            copySpeciesMetadataLayers = new HashMap<String, String[]>();
+            copySpeciesSpcodeLayers = new HashMap<String, String[]>();
+            copySpeciesWmsLayersBySpcode = new HashMap<String, String[]>();
 
-            int result = client.executeMethod(get);
+            client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
             JSONArray ja = JSONArray.fromObject(slist);
 
-            logger.debug(ja.size() + " species wms distributions");
+            LOGGER.debug(ja.size() + " species wms distributions");
 
             for (int i = 0; i < ja.size(); i++) {
                 JSONObject jo = ja.getJSONObject(i);
-                if (jo.containsKey("lsid") && jo.containsKey("wmsurl")) {
+                if (jo.containsKey(StringConstants.LSID) && jo.containsKey(StringConstants.WMSURL)) {
                     //manage lsids with multiple wmsurls
-                    String lsid = jo.getString("lsid");
+                    String lsid = jo.getString(StringConstants.LSID);
 
                     //wms
-                    String[] urls = copy_species_wms_layers.get(lsid);
+                    String[] urls = copySpeciesWmsLayers.get(lsid);
                     if (urls != null) {
                         String[] newUrls = new String[urls.length + 1];
                         System.arraycopy(urls, 0, newUrls, 0, urls.length);
-                        newUrls[newUrls.length - 1] = jo.getString("wmsurl");
+                        newUrls[newUrls.length - 1] = jo.getString(StringConstants.WMSURL);
                         urls = newUrls;
                     } else {
-                        urls = new String[]{jo.getString("wmsurl")};
+                        urls = new String[]{jo.getString(StringConstants.WMSURL)};
                     }
-                    copy_species_wms_layers.put(lsid, urls);
+                    copySpeciesWmsLayers.put(lsid, urls);
 
                     //metadata
                     String m = "";
-                    if (jo.containsKey("metadata_u")) {
-                        m = jo.getString("metadata_u");
+                    if (jo.containsKey(StringConstants.METADATA_U)) {
+                        m = jo.getString(StringConstants.METADATA_U);
                     }
-                    String[] md = copy_species_metadata_layers.get(lsid);
+                    String[] md = copySpeciesMetadataLayers.get(lsid);
                     if (md != null) {
                         String[] newMd = new String[md.length + 1];
                         System.arraycopy(md, 0, newMd, 0, md.length);
@@ -416,14 +416,14 @@ public class CommonData {
                     } else {
                         md = new String[]{m};
                     }
-                    copy_species_metadata_layers.put(lsid, md);
+                    copySpeciesMetadataLayers.put(lsid, md);
 
                     //spcode
                     m = "";
-                    if (jo.containsKey("spcode")) {
-                        m = jo.getString("spcode");
+                    if (jo.containsKey(StringConstants.SPCODE)) {
+                        m = jo.getString(StringConstants.SPCODE);
                     }
-                    md = copy_species_spcode_layers.get(lsid);
+                    md = copySpeciesSpcodeLayers.get(lsid);
                     if (md != null) {
                         String[] newMd = new String[md.length + 1];
                         System.arraycopy(md, 0, newMd, 0, md.length);
@@ -432,26 +432,26 @@ public class CommonData {
                     } else {
                         md = new String[]{m};
                     }
-                    copy_species_spcode_layers.put(lsid, md);
+                    copySpeciesSpcodeLayers.put(lsid, md);
 
                     //others
                     String spcode = null;
-                    if (jo.containsKey("spcode")) {
-                        spcode = jo.getString("spcode");
+                    if (jo.containsKey(StringConstants.SPCODE)) {
+                        spcode = jo.getString(StringConstants.SPCODE);
                     }
                     lsid = null;
-                    if (jo.containsKey("lsid")) {
-                        lsid = jo.getString("lsid");
+                    if (jo.containsKey(StringConstants.LSID)) {
+                        lsid = jo.getString(StringConstants.LSID);
                     }
                     String pid = null;
-                    if (jo.containsKey("pid")) {
-                        pid = jo.getString("pid");
+                    if (jo.containsKey(StringConstants.PID)) {
+                        pid = jo.getString(StringConstants.PID);
                     }
                     String type = null;
-                    if (jo.containsKey("type")) {
-                        type = jo.getString("type");
+                    if (jo.containsKey(StringConstants.TYPE)) {
+                        type = jo.getString(StringConstants.TYPE);
                     }
-                    copy_species_wms_layers_by_spcode.put(spcode, new String[]{jo.getString("scientific"), jo.getString("wmsurl"), m, lsid, pid, type});
+                    copySpeciesWmsLayersBySpcode.put(spcode, new String[]{jo.getString(StringConstants.SCIENTIFIC), jo.getString(StringConstants.WMSURL), m, lsid, pid, type});
                 }
             }
 
@@ -459,49 +459,49 @@ public class CommonData {
             layersListURL = layersServer + "/checklists";
             client = new HttpClient();
             get = new GetMethod(layersListURL);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
 
-            result = client.executeMethod(get);
+            client.executeMethod(get);
 
             get.addRequestHeader("Accept-Encoding", "gzip");
 
-            result = client.executeMethod(get);
+            int result = client.executeMethod(get);
 
-            copy_checklistspecies_wms_layers = new HashMap<String, String[]>();
-            copy_checklistspecies_metadata_layers = new HashMap<String, String[]>();
-            copy_checklistspecies_spcode_layers = new HashMap<String, String[]>();
-            copy_checklistspecies_wms_layers_by_spcode = new HashMap<String, String[]>();
+            copyChecklistspeciesWmsLayers = new HashMap<String, String[]>();
+            copyChecklistspeciesMetadataLayers = new HashMap<String, String[]>();
+            copyChecklistspeciesSpcodeLayers = new HashMap<String, String[]>();
+            copyChecklistspeciesWmsLayersBySpcode = new HashMap<String, String[]>();
 
             if (result == 200) {
                 slist = get.getResponseBodyAsString();
                 ja = JSONArray.fromObject(slist);
 
-                logger.debug(ja.size() + " species wms checklists");
+                LOGGER.debug(ja.size() + " species wms checklists");
 
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject jo = ja.getJSONObject(i);
-                    if (jo.containsKey("lsid") && jo.containsKey("wmsurl")) {
+                    if (jo.containsKey(StringConstants.LSID) && jo.containsKey(StringConstants.WMSURL)) {
                         //manage lsids with multiple wmsurls
-                        String lsid = jo.getString("lsid");
+                        String lsid = jo.getString(StringConstants.LSID);
 
                         //wms
-                        String[] urls = copy_checklistspecies_wms_layers.get(lsid);
+                        String[] urls = copyChecklistspeciesWmsLayers.get(lsid);
                         if (urls != null) {
                             String[] newUrls = new String[urls.length + 1];
                             System.arraycopy(urls, 0, newUrls, 0, urls.length);
-                            newUrls[newUrls.length - 1] = jo.getString("wmsurl");
+                            newUrls[newUrls.length - 1] = jo.getString(StringConstants.WMSURL);
                             urls = newUrls;
                         } else {
-                            urls = new String[]{jo.getString("wmsurl")};
+                            urls = new String[]{jo.getString(StringConstants.WMSURL)};
                         }
-                        copy_checklistspecies_wms_layers.put(lsid, urls);
+                        copyChecklistspeciesWmsLayers.put(lsid, urls);
 
                         //metadata
                         String m = "";
-                        if (jo.containsKey("metadata_u")) {
-                            m = jo.getString("metadata_u");
+                        if (jo.containsKey(StringConstants.METADATA_U)) {
+                            m = jo.getString(StringConstants.METADATA_U);
                         }
-                        String[] md = copy_checklistspecies_metadata_layers.get(lsid);
+                        String[] md = copyChecklistspeciesMetadataLayers.get(lsid);
                         if (md != null) {
                             String[] newMd = new String[md.length + 1];
                             System.arraycopy(md, 0, newMd, 0, md.length);
@@ -510,14 +510,14 @@ public class CommonData {
                         } else {
                             md = new String[]{m};
                         }
-                        copy_checklistspecies_metadata_layers.put(lsid, md);
+                        copyChecklistspeciesMetadataLayers.put(lsid, md);
 
                         //spcode
                         m = "";
-                        if (jo.containsKey("spcode")) {
-                            m = jo.getString("spcode");
+                        if (jo.containsKey(StringConstants.SPCODE)) {
+                            m = jo.getString(StringConstants.SPCODE);
                         }
-                        md = copy_checklistspecies_spcode_layers.get(lsid);
+                        md = copyChecklistspeciesSpcodeLayers.get(lsid);
                         if (md != null) {
                             String[] newMd = new String[md.length + 1];
                             System.arraycopy(md, 0, newMd, 0, md.length);
@@ -526,48 +526,48 @@ public class CommonData {
                         } else {
                             md = new String[]{m};
                         }
-                        copy_checklistspecies_spcode_layers.put(lsid, md);
+                        copyChecklistspeciesSpcodeLayers.put(lsid, md);
 
                         //by spcode
-                        String spcode = jo.getString("spcode");
-                        copy_checklistspecies_wms_layers_by_spcode.put(spcode, new String[]{jo.getString("scientific"), jo.getString("wmsurl"), m});
+                        String spcode = jo.getString(StringConstants.SPCODE);
+                        copyChecklistspeciesWmsLayersBySpcode.put(spcode, new String[]{jo.getString(StringConstants.SCIENTIFIC), jo.getString(StringConstants.WMSURL), m});
                     }
                 }
             }
         } catch (Exception e) {
-            copy_species_wms_layers = null;
-            copy_species_metadata_layers = null;
-            copy_species_spcode_layers = null;
-            copy_species_wms_layers_by_spcode = null;
+            copySpeciesWmsLayers = null;
+            copySpeciesMetadataLayers = null;
+            copySpeciesSpcodeLayers = null;
+            copySpeciesWmsLayersBySpcode = null;
 
-            copy_checklistspecies_wms_layers = null;
-            copy_checklistspecies_metadata_layers = null;
-            copy_checklistspecies_spcode_layers = null;
-            copy_checklistspecies_wms_layers_by_spcode = null;
+            copyChecklistspeciesWmsLayers = null;
+            copyChecklistspeciesMetadataLayers = null;
+            copyChecklistspeciesSpcodeLayers = null;
+            copyChecklistspeciesWmsLayersBySpcode = null;
 
 
-            logger.error("error getting species and distributions checklists", e);
+            LOGGER.error("error getting species and distributions checklists", e);
         }
     }
 
     /**
      * returns array of WMS species requests
      */
-    static public String[] getSpeciesDistributionWMS(String lsids) {
-        if (species_wms_layers == null || lsids == null) {
-            return null;
+    public static String[] getSpeciesDistributionWMS(String lsids) {
+        if (speciesWmsLayers == null || lsids == null) {
+            return new String[0];
         }
         String[] lsid = lsids.split(",");
-        ArrayList<String[]> wmsurls = new ArrayList<String[]>();
+        List<String[]> wmsurls = new ArrayList<String[]>();
         int count = 0;
         for (String s : lsid) {
-            String[] urls = species_wms_layers.get(s);
+            String[] urls = speciesWmsLayers.get(s);
             if (urls != null) {
                 count += urls.length;
                 wmsurls.add(urls);
             }
         }
-        String[] wms = null;
+        String[] wms = new String[0];
         if (count > 0) {
             wms = new String[count];
             int pos = 0;
@@ -582,21 +582,21 @@ public class CommonData {
     /**
      * returns array of metadata_u species requests
      */
-    static public String[] getSpeciesDistributionMetadata(String lsids) {
-        if (species_wms_layers == null) {
-            return null;
+    public static String[] getSpeciesDistributionMetadata(String lsids) {
+        if (speciesWmsLayers == null) {
+            return new String[0];
         }
         String[] lsid = lsids.split(",");
-        ArrayList<String[]> wmsurls = new ArrayList<String[]>();
+        List<String[]> wmsurls = new ArrayList<String[]>();
         int count = 0;
         for (String s : lsid) {
-            String[] urls = species_metadata_layers.get(s);
+            String[] urls = speciesMetadataLayers.get(s);
             if (urls != null) {
                 count += urls.length;
                 wmsurls.add(urls);
             }
         }
-        String[] wms = null;
+        String[] wms;
         if (count > 0) {
             wms = new String[count];
             int pos = 0;
@@ -604,6 +604,8 @@ public class CommonData {
                 System.arraycopy(s, 0, wms, pos, s.length);
                 pos += s.length;
             }
+        } else {
+            wms = new String[0];
         }
         return wms;
     }
@@ -611,21 +613,21 @@ public class CommonData {
     /**
      * returns array of spcode species requests
      */
-    static public String[] getSpeciesDistributionSpcode(String lsids) {
-        if (species_wms_layers == null) {
-            return null;
+    public static String[] getSpeciesDistributionSpcode(String lsids) {
+        if (speciesWmsLayers == null) {
+            return new String[0];
         }
         String[] lsid = lsids.split(",");
-        ArrayList<String[]> wmsurls = new ArrayList<String[]>();
+        List<String[]> wmsurls = new ArrayList<String[]>();
         int count = 0;
         for (String s : lsid) {
-            String[] urls = species_spcode_layers.get(s);
+            String[] urls = speciesSpcodeLayers.get(s);
             if (urls != null) {
                 count += urls.length;
                 wmsurls.add(urls);
             }
         }
-        String[] wms = null;
+        String[] wms;
         if (count > 0) {
             wms = new String[count];
             int pos = 0;
@@ -633,6 +635,8 @@ public class CommonData {
                 System.arraycopy(s, 0, wms, pos, s.length);
                 pos += s.length;
             }
+        } else {
+            wms = new String[0];
         }
         return wms;
     }
@@ -640,40 +644,38 @@ public class CommonData {
     /**
      * returns array of WMS species requests
      */
-    static public String[] getSpeciesChecklistWMS(String lsids) {
-        if (checklistspecies_wms_layers == null || lsids == null) {
-            return null;
+    public static String[] getSpeciesChecklistWMS(String lsids) {
+        if (checklistspeciesWmsLayers == null || lsids == null) {
+            return new String[0];
         }
         String[] lsid = lsids.split(",");
-        ArrayList<String[]> wmsurls = new ArrayList<String[]>();
+        List<String[]> wmsurls = new ArrayList<String[]>();
         int count = 0;
         for (String s : lsid) {
-            String[] urls = checklistspecies_wms_layers.get(s);
+            String[] urls = checklistspeciesWmsLayers.get(s);
             if (urls != null) {
                 count += urls.length;
                 wmsurls.add(urls);
             }
         }
-        String[] wms = null;
+        String[] wms;
         if (count > 0) {
             wms = new String[count];
             int pos = 0;
             for (String[] s : wmsurls) {
                 System.arraycopy(s, 0, wms, pos, s.length);
             }
+        } else {
+            wms = new String[0];
         }
         return wms;
     }
-
-
-    static HashMap<String, JSONObject> layerToFacet;
-    static HashMap<String, JSONObject> facetToLayer;
 
     public static String getLayerFacetName(String layer) {
         String facetName = layer;
         JSONObject f = layerToFacet.get(layer.toLowerCase());
         if (f != null) {
-            facetName = f.getString("id");
+            facetName = f.getString(StringConstants.ID);
         }
         return facetName;
     }
@@ -681,7 +683,7 @@ public class CommonData {
     public static String getFacetLayerName(String facet) {
         JSONObject jo = facetToLayer.get(facet);
         if (jo != null) {
-            return jo.getString("name");
+            return jo.getString(StringConstants.NAME);
         } else {
             return null;
         }
@@ -690,7 +692,7 @@ public class CommonData {
     public static String getFacetShapeNameField(String facet) {
         JSONObject layer = facetToLayer.get(facet);
         if (layer != null) {
-            JSONObject f = layerToFacet.get(layer.getString("name"));
+            JSONObject f = layerToFacet.get(layer.getString(StringConstants.NAME));
             if (f != null && f.containsKey("sname")) {
                 return f.getString("sname");
             }
@@ -701,18 +703,18 @@ public class CommonData {
 
     public static String getFacetLayerDisplayName(String facet) {
         JSONObject layer = facetToLayer.get(facet);
-        if (layer != null && layer.containsKey("displayname")) {
-            return layer.getString("displayname");
+        if (layer != null && layer.containsKey(StringConstants.DISPLAYNAME)) {
+            return layer.getString(StringConstants.DISPLAYNAME);
         }
         return null;
     }
 
     public static String getLayerDisplayName(String name) {
-        JSONObject layer = null;
+        JSONObject layer;
         for (int i = 0; i < layerlistJSON.size(); i++) {
             layer = layerlistJSON.getJSONObject(i);
-            if (layer.getString("name").equalsIgnoreCase(name) && layer.containsKey("displayname")) {
-                return layer.getString("displayname");
+            if (layer.getString(StringConstants.NAME).equalsIgnoreCase(name) && layer.containsKey(StringConstants.DISPLAYNAME)) {
+                return layer.getString(StringConstants.DISPLAYNAME);
             }
         }
         return null;
@@ -720,21 +722,21 @@ public class CommonData {
 
     private static void readLayerInfo() {
         try {
-            HashMap<String, JSONObject> ftl = new HashMap<String, JSONObject>();
-            HashMap<String, JSONObject> ltf = new HashMap<String, JSONObject>();
+            Map<String, JSONObject> ftl = new HashMap<String, JSONObject>();
+            Map<String, JSONObject> ltf = new HashMap<String, JSONObject>();
 
-            if (copy_layerlistJSON != null) {
-                for (int i = 0; i < copy_layerlistJSON.size(); i++) {
-                    JSONObject jo = copy_layerlistJSON.getJSONObject(i);
+            if (copyLayerlistJSON != null) {
+                for (int i = 0; i < copyLayerlistJSON.size(); i++) {
+                    JSONObject jo = copyLayerlistJSON.getJSONObject(i);
 
-                    if (jo.containsKey("fields")) {
-                        JSONArray ja = jo.getJSONArray("fields");
+                    if (jo.containsKey(StringConstants.FIELDS)) {
+                        JSONArray ja = jo.getJSONArray(StringConstants.FIELDS);
                         for (int j = 0; j < ja.size(); j++) {
                             JSONObject f = ja.getJSONObject(j);
                             if (f.containsKey("defaultlayer") && f.getBoolean("defaultlayer")) {
-                                logger.debug("adding defaultlayer: " + jo.getString("name") + ", " + f.getString("id"));
-                                String layer = jo.getString("name");
-                                String facet = f.getString("id");
+                                LOGGER.debug("adding defaultlayer: " + jo.getString(StringConstants.NAME) + ", " + f.getString(StringConstants.ID));
+                                String layer = jo.getString(StringConstants.NAME);
+                                String facet = f.getString(StringConstants.ID);
 
                                 ltf.put(layer.toLowerCase(), f);
                                 ftl.put(facet, jo);
@@ -744,26 +746,24 @@ public class CommonData {
                 }
             }
 
-            if (layerToFacet == null || ltf.size() > 0) {
+            if (layerToFacet == null || !ltf.isEmpty()) {
                 layerToFacet = ltf;
                 facetToLayer = ftl;
             }
         } catch (Exception e) {
-            logger.error("error reading layer info", e);
+            LOGGER.error("error reading layer info", e);
         }
     }
 
-    static public ArrayList<QueryField> getDefaultUploadSamplingFields() {
+    public static List<QueryField> getDefaultUploadSamplingFields() {
         String[] fl = defaultFieldString.split(",");
-        ArrayList<QueryField> fields = new ArrayList<QueryField>();
+        List<QueryField> fields = new ArrayList<QueryField>();
         for (int i = 0; i < fl.length; i++) {
             fields.add(new QueryField(fl[i], getFacetLayerDisplayName(fl[i]), QueryField.FieldType.AUTO));
         }
 
         return fields;
     }
-
-    static Properties i18nProperites = null;
 
     static void initI18nProperies() {
 
@@ -773,19 +773,19 @@ public class CommonData {
 
             i18nProperites = p;
         } catch (Exception e) {
-            logger.error("error loading properties file URL: " + i18nURL, e);
+            LOGGER.error("error loading properties file URL: " + i18nURL, e);
         }
     }
 
-    static public String getI18nProperty(String key) {
+    public static String getI18nProperty(String key) {
         return i18nProperites.getProperty(key);
     }
 
-    static public ArrayList<String> getI18nPropertiesList(String key) {
-        ArrayList<String> list = new ArrayList<String>();
+    public static List<String> getI18nPropertiesList(String key) {
+        List<String> list = new ArrayList<String>();
 
         //don't look up anything if it is an ignored key
-        if(!i18nIgnoredPrefixes.contains(key)) {
+        if (!i18nIgnoredPrefixes.contains(key)) {
             String startsWith = key + ".";
             for (String k : i18nProperites.stringPropertyNames()) {
                 if (k.startsWith(startsWith)) {
@@ -796,21 +796,21 @@ public class CommonData {
         return list;
     }
 
-    static public void initSimpleShapeFileCache(String[] fields) {
+    public static void initSimpleShapeFileCache(String[] fields) {
         String[] layers = new String[fields.length];
         String[] columns = new String[fields.length];
-        logger.debug("defaultFieldString: " + defaultFieldString);
+        LOGGER.debug("defaultFieldString: " + defaultFieldString);
         for (int i = 0; i < fields.length; i++) {
             layers[i] = getFacetLayerName(fields[i]);
             columns[i] = getFacetShapeNameField(fields[i]);
-            logger.debug("field,layer,columns:" + fields[i] + "," + layers[i] + "," + columns[i]);
+            LOGGER.debug("field,layer,columns:" + fields[i] + "," + layers[i] + "," + columns[i]);
         }
     }
 
     static void setupAnalysisLayerSets() {
-        ArrayList<LayerSelection> a = new ArrayList<LayerSelection>();
+        List<LayerSelection> a = new ArrayList<LayerSelection>();
         try {
-            if (CommonData.settings.getProperty(ANALYSIS_LAYER_SETS) != null) {
+            if (CommonData.getSettings().getProperty(ANALYSIS_LAYER_SETS) != null) {
                 String[] list = settings.getProperty(ANALYSIS_LAYER_SETS).split("\\|");
 
                 for (String row : list) {
@@ -824,31 +824,35 @@ public class CommonData {
 
             }
         } catch (Exception e) {
-            logger.error("error setting up analysis layer sets", e);
+            LOGGER.error("error setting up analysis layer sets", e);
         }
         analysisLayerSets = a;
     }
 
     public static String[] getSpeciesDistributionWMSFromSpcode(String spcode) {
-        if (species_wms_layers_by_spcode == null) {
-            return null;
+        if (speciesWmsLayersBySpcode == null) {
+            return new String[0];
         }
 
-        return species_wms_layers_by_spcode.get(spcode);
+        String[] ret = speciesWmsLayersBySpcode.get(spcode);
+
+        return ret == null ? new String[0] : ret;
     }
 
     public static String[] getSpeciesChecklistWMSFromSpcode(String spcode) {
-        if (checklistspecies_wms_layers_by_spcode == null) {
-            return null;
+        if (checklistspeciesWmsLayersBySpcode == null) {
+            return new String[0];
         }
 
-        return checklistspecies_wms_layers_by_spcode.get(spcode);
+        String[] ret = checklistspeciesWmsLayersBySpcode.get(spcode);
+
+        return ret == null ? new String[0] : ret;
     }
 
     public static int getSpeciesChecklistCountByWMS(String lookForWMS) {
         int count = 0;
-        if (checklistspecies_wms_layers != null) {
-            for (String[] wms : checklistspecies_wms_layers.values()) {
+        if (checklistspeciesWmsLayers != null) {
+            for (String[] wms : checklistspeciesWmsLayers.values()) {
                 for (int i = 0; i < wms.length; i++) {
                     if (wms[i].equals(lookForWMS)) {
                         count++;
@@ -859,24 +863,24 @@ public class CommonData {
         return count;
     }
 
-    static public void initDownloadReasons() {
-        copy_download_reasons = null;
-        logger.debug("CommonData::initDownloadReasons()");
+    public static void initDownloadReasons() {
+        copyDownloadReasons = null;
+        LOGGER.debug("CommonData::initDownloadReasons()");
         String url = "http://logger.ala.org.au/service/logger/reasons";
         try {
 
-            logger.debug(url);
+            LOGGER.debug(url);
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(url);
 
             int result = client.executeMethod(get);
 
             if (result == 200) {
-                copy_download_reasons = JSONArray.fromObject(get.getResponseBodyAsString());
+                copyDownloadReasons = JSONArray.fromObject(get.getResponseBodyAsString());
             }
         } catch (Exception e) {
-            copy_download_reasons = null;
-            logger.error("error getting reasons: " + url, e);
+            copyDownloadReasons = null;
+            LOGGER.error("error getting reasons: " + url, e);
         }
     }
 
@@ -896,7 +900,7 @@ public class CommonData {
         JSONObject layer = null;
         for (int i = 0; i < layerlistJSON.size(); i++) {
             layer = layerlistJSON.getJSONObject(i);
-            if (layer.getString("name").equalsIgnoreCase(name)) {
+            if (layer.getString(StringConstants.NAME).equalsIgnoreCase(name)) {
                 break;
             }
         }
@@ -908,28 +912,28 @@ public class CommonData {
 
         try {
             //environmental only
-            logger.debug(url);
+            LOGGER.debug(url);
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(url);
 
             int result = client.executeMethod(get);
 
-            logger.debug("initBiocacheLayerList: " + url + " > " + result);
+            LOGGER.debug("initBiocacheLayerList: " + url + " > " + result);
             if (result == 200) {
                 Set<String> set = new HashSet<String>();
                 JSONArray ja = JSONArray.fromObject(get.getResponseBodyAsString());
-                logger.debug("size: " + ja.size());
+                LOGGER.debug("size: " + ja.size());
 
                 // Populate the biocache layer list with the names of all
                 // indexed fields. The additional non-layer field names will
                 // not cause a problem here.
                 for (int i = 0; i < ja.size(); i++) {
-                    String layer = ja.getJSONObject(i).getString("name");
+                    String layer = ja.getJSONObject(i).getString(StringConstants.NAME);
                     set.add(layer);
                 }
-                if (ja.size() > 0) {
+                if (!ja.isEmpty()) {
                     // remove the "translated" names for particular layers. E.g.
-                    // "state" for cl22, "places" for cl959, "ibra" for  "cl20", "imcra"
+                    // Constants.STATE for cl22, "places" for cl959, "ibra" for  "cl20", "imcra"
                     for (int i = 0; i < facetNameExceptions.length; i++) {
                         if (set.contains(facetNameExceptions[i][0])) {
                             set.remove(facetNameExceptions[i][1]);
@@ -939,33 +943,92 @@ public class CommonData {
                 }
             }
         } catch (Exception e) {
-            logger.error("error getting: " + url, e);
+            LOGGER.error("error getting: " + url, e);
         }
+
     }
 
-    static ConcurrentHashMap<String, String> proxyAuthTickets = new ConcurrentHashMap<String, String>();
-
-    public static void putProxyAuthTicket(String pgt_iou, String pgt) {
-        proxyAuthTickets.put(pgt_iou, pgt);
-    }
-
-    public static String takeProxyAuthTicket(String pgt_iou) {
-        String pgt = proxyAuthTickets.get(pgt_iou);
-
-        proxyAuthTickets.remove(pgt_iou);
-
-        return pgt;
-    }
-
-    public static boolean hasProxyAuthTicket(String pgt_iou) {
-        return proxyAuthTickets.get(pgt_iou) != null;
-    }
-
-    static LanguagePack languagePack = null;
     public static String lang(String key) {
         return languagePack.getLang(key);
     }
+
     static void initLanguagePack() {
         languagePack = new LanguagePackImpl();
+    }
+
+    public static String getSatServer() {
+        return satServer;
+    }
+
+    public static String getGeoServer() {
+        return geoServer;
+    }
+
+    public static String getLayersServer() {
+        return layersServer;
+    }
+
+    public static String getWebportalServer() {
+        return webportalServer;
+    }
+
+    public static Properties getSettings() {
+        return settings;
+    }
+
+    public static String getSpeciesListServer() {
+        return speciesListServer;
+    }
+
+    public static String getBiocacheWebServer() {
+        return biocacheWebServer;
+    }
+
+    public static String[] getAreaReportFacets() {
+        return areaReportFacets;
+    }
+
+    public static boolean getDisplayPointsOfInterest() {
+        return displayPointsOfInterest;
+    }
+
+    public static List<LayerSelection> getAnalysisLayerSets() {
+        return analysisLayerSets;
+    }
+
+    public static String getBieServer() {
+        return bieServer;
+    }
+
+    public static LsidCounts getLsidCounts() {
+        return lsidCounts;
+    }
+
+    public static int getMaxEndemicArea() {
+        return maxEndemicArea;
+    }
+
+    public static String getBiocacheServer() {
+        return biocacheServer;
+    }
+
+    public static Set<String> getBiocacheLayerList() {
+        return biocacheLayerList;
+    }
+
+    public static String getBiocacheQc() {
+        return biocacheQc;
+    }
+
+    public static String[][] getFacetNameExceptions() {
+        return facetNameExceptions;
+    }
+
+    public static int getMaxQLength() {
+        return maxQLength;
+    }
+
+    public static String getExtraDownloadFields() {
+        return extraDownloadFields;
     }
 }

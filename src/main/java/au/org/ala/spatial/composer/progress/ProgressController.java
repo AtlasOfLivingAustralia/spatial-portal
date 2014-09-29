@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.composer.progress;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
@@ -23,19 +24,18 @@ import java.net.SocketTimeoutException;
  */
 public class ProgressController extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(ProgressController.class);
-    RemoteLogger remoteLogger;
-    Label jobstatus;
-    Progressmeter jobprogress;
-    Timer timer;
-    Textbox tbPid;
-    public String pid = null;
-    public Window parent = null;
-    public String name = "";
-    public boolean background = true;
-    Textbox txtLog;
-    String log = "";
-    Button btnHide;
+    private static final Logger LOGGER = Logger.getLogger(ProgressController.class);
+    private String pid = null;
+    private Window parent = null;
+    private String name = "";
+    private RemoteLogger remoteLogger;
+    private Label jobstatus;
+    private Progressmeter jobprogress;
+    private Timer timer;
+    private Textbox tbPid;
+    private Textbox txtLog;
+    private String log = "";
+    private Button btnHide;
 
     @Override
     public void afterCompose() {
@@ -43,19 +43,17 @@ public class ProgressController extends UtilityComposer {
         timer.stop();
     }
 
-    public void start(String pid_, String name) {
-        start(pid_, name, true);
+    public void start(String pid, String name) {
+        start(pid, name, true);
     }
 
-    public void start(String pid_, String name, boolean background) {
-        pid = pid_;
-        tbPid.setValue(pid_);
+    public void start(String pid, String name, boolean background) {
+        this.pid = pid;
+        tbPid.setValue(pid);
         this.name = name;
-        ((Caption) getFellow("cTitle")).setLabel(name);
-        this.background = background;
+        ((Caption) getFellow(StringConstants.CTITLE)).setLabel(name);
 
-        if (this.background) {
-            //onClick$btnHide(null);
+        if (background) {
             btnHide.setVisible(true);
         }
 
@@ -77,28 +75,29 @@ public class ProgressController extends UtilityComposer {
             return;
         }
 
-        if (jo.containsKey("status")) {
-            jobstatus.setValue(jo.getString("status"));
+        if (jo.containsKey(StringConstants.STATUS)) {
+            jobstatus.setValue(jo.getString(StringConstants.STATUS));
         }
 
-        String s = jo.getString("state");
-        if (s.equals("job does not exist")) {
+        String s = jo.getString(StringConstants.STATE);
+        if (StringConstants.JOB_DOES_NOT_EXIST.equals(s)) {
             timer.stop();
-            getMapComposer().showMessage(name + " request does not exist", "");//get("error"));
+            getMapComposer().showMessage(name + " request does not exist", "");
             this.detach();
             return;
         }
 
-        String p = jo.getString("progress");
+        String p = jo.getString(StringConstants.PROGRESS);
         try {
             double d = Double.parseDouble(p);
             jobprogress.setValue((int) (d * 100));
         } catch (Exception ex) {
+            LOGGER.error("failed to parse progress %: " + p);
         }
 
-        String log = jo.getString("log");
-        if (log != null) {
-            this.log = reverseLines(log) + this.log;
+        String l = jo.getString("log");
+        if (l != null) {
+            this.log = reverseLines(l) + this.log;
             if (txtLog != null) {
                 txtLog.setValue(this.log);
             }
@@ -106,23 +105,23 @@ public class ProgressController extends UtilityComposer {
 
         remoteLogger.logMapAnalysisUpdateStatus(pid, s);
 
-        if (s.equals("SUCCESSFUL")) {
+        if (StringConstants.SUCCESSFUL.equals(s)) {
             timer.stop();
-            logger.debug("JOB DONE. Calling loadMap");
+            LOGGER.debug("JOB DONE. Calling loadMap");
             Events.echoEvent("loadMap", parent, null);
             this.detach();
-        } else if (s.startsWith("FAILED")) {
+        } else if (s.startsWith(StringConstants.FAILED)) {
             timer.stop();
-            String error_info = jo.getString("message");
-            if (!error_info.equals("job does not exist")) {
-                error_info = " with the following message: \n\n" + Util.breakString(error_info, 64);
+            String errorInfo = jo.getString("message");
+            if (!StringConstants.JOB_DOES_NOT_EXIST.equals(errorInfo)) {
+                errorInfo = " with the following message: \n\n" + Util.breakString(errorInfo, 64);
             } else {
-                error_info = "";
+                errorInfo = "";
             }
-            getMapComposer().showMessage(name + " failed" + error_info);
+            getMapComposer().showMessage(name + " failed" + errorInfo);
             this.detach();
             this.parent.detach();
-        } else if (s.equals("CANCELLED")) {
+        } else if (StringConstants.CANCELLED.equals(s)) {
             timer.stop();
             getMapComposer().showMessage(name + " cancelled by user");
             this.detach();
@@ -133,14 +132,14 @@ public class ProgressController extends UtilityComposer {
     JSONObject get() {
         try {
             StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append(CommonData.satServer).append("/ws/job?pid=").append(pid);
+            sbProcessUrl.append(CommonData.getSatServer()).append("/ws/job?pid=").append(pid);
 
-            logger.debug("checking status every '" + timer.getDelay() + "' sec: " + sbProcessUrl.toString());
+            LOGGER.debug("checking status every '" + timer.getDelay() + "' sec: " + sbProcessUrl.toString());
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
 
-            get.addRequestHeader("Accept", "application/json");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.APPLICATION_JSON);
 
             client.getHttpConnectionManager().getParams().setSoTimeout(timer.getDelay());
             int result = client.executeMethod(get);
@@ -149,8 +148,9 @@ public class ProgressController extends UtilityComposer {
                 return JSONObject.fromObject(get.getResponseBodyAsString());
             }
         } catch (SocketTimeoutException e) {
+            LOGGER.debug("progress timeout exception, will be trying again.");
         } catch (Exception e) {
-            logger.error("error getting updated job info pid=" + pid, e);
+            LOGGER.error("error getting updated job info pid=" + pid, e);
         }
         return null;
     }
@@ -159,14 +159,14 @@ public class ProgressController extends UtilityComposer {
         try {
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod((CommonData.satServer + "/ws/jobs/cancel?pid=") + pid);
+            GetMethod get = new GetMethod((CommonData.getSatServer() + "/ws/jobs/cancel?pid=") + pid);
 
-            get.addRequestHeader("Accept", "text/plain");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.TEXT_PLAIN);
 
             client.getHttpConnectionManager().getParams().setSoTimeout(timer.getDelay());
-            int result = client.executeMethod(get);
+            client.executeMethod(get);
         } catch (Exception ex) {
-            logger.error("error getting updated job info pid=" + pid, ex);
+            LOGGER.error("error getting updated job info pid=" + pid, ex);
         }
         this.detach();
     }
@@ -194,5 +194,9 @@ public class ProgressController extends UtilityComposer {
             sb.append(split[i]);
         }
         return sb.toString();
+    }
+
+    public void setParentWindow(Window parentWindow) {
+        this.parent = parentWindow;
     }
 }

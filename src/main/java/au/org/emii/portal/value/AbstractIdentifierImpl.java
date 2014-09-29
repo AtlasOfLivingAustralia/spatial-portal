@@ -38,16 +38,4 @@ public abstract class AbstractIdentifierImpl implements Cloneable, Serializable,
     public void setDescription(String description) {
         this.description = description;
     }
-
-    /**
-     * Return a human readable dump of this object.  Skips the description
-     * because it could be long and mess up the output
-     *
-     * @return
-     */
-    @Override
-    public String dump() {
-        return "id=>'" + id + "', name=>'" + name + "' ";
-    }
-
 }

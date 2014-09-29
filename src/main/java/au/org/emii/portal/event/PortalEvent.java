@@ -1,5 +1,6 @@
 package au.org.emii.portal.event;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.composer.MapComposer;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Page;
@@ -10,7 +11,7 @@ import org.zkoss.zul.Treerow;
 
 public abstract class PortalEvent {
 
-    protected Logger logger = Logger.getLogger(this.getClass());
+    private static final Logger LOGGER = Logger.getLogger(PortalEvent.class);
 
     /**
      * Get the treeItem marked as target in the event
@@ -20,7 +21,7 @@ public abstract class PortalEvent {
      */
     protected Treeitem getTarget(Event event) {
         Treecell treecell = (Treecell) event.getTarget();
-        Treerow treerow = null;
+        Treerow treerow;
         Treeitem target = null;
         if (treecell != null) {
             treerow = (Treerow) treecell.getParent();
@@ -33,12 +34,11 @@ public abstract class PortalEvent {
 
     protected MapComposer getMapComposer(Event event) {
         MapComposer mapComposer = null;
-        Page page = null;
-        if ((event != null)
-                && ((page = event.getPage()) != null)
-                && ((mapComposer = (MapComposer) page.getFellow("mapPortalPage")) != null)) {
-        } else {
-            logger.debug(
+        Page page;
+        if ((event == null)
+                || ((page = event.getPage()) == null)
+                || ((mapComposer = (MapComposer) page.getFellow(StringConstants.MAPPORTALPAGE)) == null)) {
+            LOGGER.debug(
                     "Unable to obtain reference to mapPortalPage instance to perform changes "
                             + "I think this is a strange concurrent access problem, I've only ever seen "
                             + "it once (ignoring and proceeding normally)"

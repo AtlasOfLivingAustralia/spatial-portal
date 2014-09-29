@@ -1,10 +1,11 @@
 package au.org.ala.spatial.composer.layer;
 
+import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.dto.ListEntryDTO;
 import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.ListEntry;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
@@ -14,6 +15,7 @@ import org.zkoss.zul.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -21,14 +23,13 @@ import java.util.Set;
  */
 public class EnvironmentalList extends Listbox {
 
-    private static Logger logger = Logger.getLogger(EnvironmentalList.class);
-    ArrayList<ListEntry> listEntries;
-    float[] threasholds = {0.1f, 0.3f, 1.0f};
-    SimpleListModel listModel;
-    MapComposer mapComposer;
-    boolean includeAnalysisLayers;
-    boolean disableContextualLayers;
-    boolean singleDomain;
+    private static final Logger LOGGER = Logger.getLogger(EnvironmentalList.class);
+    private List<ListEntryDTO> listEntries;
+    private float[] threasholds = {0.1f, 0.3f, 1.0f};
+    private MapComposer mapComposer;
+    private boolean includeAnalysisLayers;
+    private boolean disableContextualLayers;
+    private boolean singleDomain;
 
     public void init(MapComposer mc, boolean includeAnalysisLayers, boolean disableContextualLayers, boolean singleDomain) {
         mapComposer = mc;
@@ -44,38 +45,38 @@ public class EnvironmentalList extends Listbox {
             this.setMultiple(true);
 
         } catch (Exception e) {
-            logger.error("error with initial setip of Environmental List", e);
+            LOGGER.error("error with initial setip of Environmental List", e);
         }
     }
 
     void setupListEntries() {
-        listEntries = new ArrayList<ListEntry>();
+        listEntries = new ArrayList<ListEntryDTO>();
         JSONArray ja = CommonData.getLayerListJSONArray();
         for (int i = 0; i < ja.size(); i++) {
             JSONObject jo = ja.getJSONObject(i);
             listEntries.add(
-                    new ListEntry(jo.getString("name"),
-                            (jo.containsKey("displayname") ? jo.getString("displayname") : jo.getString("name")),
-                            (jo.containsKey("classification1") ? jo.getString("classification1") : ""),
-                            (jo.containsKey("classification2") ? jo.getString("classification2") : ""),
-                            (jo.containsKey("type") ? jo.getString("type") : ""),
-                            (jo.containsKey("domain") ? jo.getString("domain") : ""),
+                    new ListEntryDTO(jo.getString(StringConstants.NAME),
+                            jo.containsKey(StringConstants.DISPLAYNAME) ? jo.getString(StringConstants.DISPLAYNAME) : jo.getString(StringConstants.NAME),
+                            jo.containsKey(StringConstants.CLASSIFICATION1) ? jo.getString(StringConstants.CLASSIFICATION1) : "",
+                            jo.containsKey(StringConstants.CLASSIFICATION2) ? jo.getString(StringConstants.CLASSIFICATION2) : "",
+                            jo.containsKey(StringConstants.TYPE) ? jo.getString(StringConstants.TYPE) : "",
+                            jo.containsKey(StringConstants.DOMAIN) ? jo.getString(StringConstants.DOMAIN) : "",
                             jo));
         }
 
-        if (includeAnalysisLayers) {         //add
+        if (includeAnalysisLayers) {
             for (MapLayer ml : mapComposer.getAnalysisLayers()) {
-                ListEntry le = null;
-                if (ml.getSubType() == LayerUtilities.ALOC) {
-                    le = new ListEntry(ml.getName(), ml.getDisplayName(), "Analysis", "Classification", "Contextual", null, null);
-                } else if (ml.getSubType() == LayerUtilities.MAXENT) {
-                    le = new ListEntry(ml.getName(), ml.getDisplayName(), "Analysis", "Prediction", "Environmental", null, null);
-                } else if (ml.getSubType() == LayerUtilities.GDM) {
-                    le = new ListEntry(ml.getName(), ml.getDisplayName(), "Analysis", "GDM", "Environmental", null, null);
-                } else if (ml.getSubType() == LayerUtilities.ODENSITY) {
-                    le = new ListEntry(ml.getName(), ml.getDisplayName(), "Analysis", "Occurrence Density", "Environmental", null, null);
-                } else if (ml.getSubType() == LayerUtilities.SRICHNESS) {
-                    le = new ListEntry(ml.getName(), ml.getDisplayName(), "Analysis", "Species Richness", "Environmental", null, null);
+                ListEntryDTO le = null;
+                if (ml.getSubType() == LayerUtilitiesImpl.ALOC) {
+                    le = new ListEntryDTO(ml.getName(), ml.getDisplayName(), StringConstants.ANALYSIS, StringConstants.CLASSIFICATION, "Contextual", null, null);
+                } else if (ml.getSubType() == LayerUtilitiesImpl.MAXENT) {
+                    le = new ListEntryDTO(ml.getName(), ml.getDisplayName(), StringConstants.ANALYSIS, StringConstants.PREDICTION, StringConstants.ENVIRONMENTAL, null, null);
+                } else if (ml.getSubType() == LayerUtilitiesImpl.GDM) {
+                    le = new ListEntryDTO(ml.getName(), ml.getDisplayName(), StringConstants.ANALYSIS, StringConstants.GDM, StringConstants.ENVIRONMENTAL, null, null);
+                } else if (ml.getSubType() == LayerUtilitiesImpl.ODENSITY) {
+                    le = new ListEntryDTO(ml.getName(), ml.getDisplayName(), StringConstants.ANALYSIS, StringConstants.OCCURRENCE_DENSITY, StringConstants.ENVIRONMENTAL, null, null);
+                } else if (ml.getSubType() == LayerUtilitiesImpl.SRICHNESS) {
+                    le = new ListEntryDTO(ml.getName(), ml.getDisplayName(), StringConstants.ANALYSIS, StringConstants.SPECIES_RICHNESS, StringConstants.ENVIRONMENTAL, null, null);
                 }
                 if (le != null) {
                     listEntries.add(le);
@@ -83,11 +84,11 @@ public class EnvironmentalList extends Listbox {
             }
         }
 
-        java.util.Collections.sort(listEntries, new Comparator<ListEntry>() {
+        java.util.Collections.sort(listEntries, new Comparator<ListEntryDTO>() {
 
             @Override
-            public int compare(ListEntry e1, ListEntry e2) {
-                return (e1.catagory1 + " " + e1.catagory2 + " " + e1.displayname).compareTo(e2.catagory1 + " " + e2.catagory2 + " " + e2.displayname);
+            public int compare(ListEntryDTO e1, ListEntryDTO e2) {
+                return (e1.getCatagory1() + " " + e1.getCatagory2() + " " + e1.getDisplayName()).compareTo(e2.getCatagory1() + " " + e2.getCatagory2() + " " + e2.getDisplayName());
             }
         });
     }
@@ -97,11 +98,11 @@ public class EnvironmentalList extends Listbox {
             setItemRenderer(new ListitemRenderer() {
 
                 @Override
-                public void render(Listitem li, Object data, int item_idx) {
-                    String type = ((ListEntry) data).type;
+                public void render(Listitem li, Object data, int itemIdx) {
+                    String type = ((ListEntryDTO) data).getType();
 
                     Image imgType = new Image();
-                    if (type.equalsIgnoreCase("environmental")) {
+                    if (StringConstants.ENVIRONMENTAL.equalsIgnoreCase(type)) {
                         imgType.setSrc("/img/icon_grid-layer.png");
                     } else {
                         imgType.setSrc("/img/icon_contextual-layer.png");
@@ -110,24 +111,24 @@ public class EnvironmentalList extends Listbox {
                     tc.setParent(li);
                     imgType.setParent(tc);
 
-                    Listcell n = new Listcell(((ListEntry) data).catagoryNames());
-                    //n.setHflex("1");
+                    Listcell n = new Listcell(((ListEntryDTO) data).catagoryNames());
+
                     n.setParent(li);
-                    n = new Listcell(((ListEntry) data).displayname);
-                    //n.setHflex("1");
+                    n = new Listcell(((ListEntryDTO) data).getDisplayName());
+
                     n.setParent(li);
 
                     Listcell lc = new Listcell();
                     lc.setParent(li);
                     lc.setValue(data);
 
-                    if (disableContextualLayers && type.equalsIgnoreCase("contextual")) {
+                    if (disableContextualLayers && StringConstants.CONTEXTUAL.equalsIgnoreCase(type)) {
                         li.setDisabled(true);
                     }
 
                     Html img = new Html("<i class='icon-info-sign'></i>");
 
-                    img.addEventListener("onClick", new EventListener() {
+                    img.addEventListener(StringConstants.ONCLICK, new EventListener() {
 
                         @Override
                         public void onEvent(Event event) throws Exception {
@@ -137,40 +138,39 @@ public class EnvironmentalList extends Listbox {
                             EnvironmentalList el = (EnvironmentalList) li.getParent();
                             el.updateDistances();
 
-                            String s = ((ListEntry) ((Listcell) event.getTarget().getParent()).getValue()).name;
-                            String metadata = CommonData.layersServer + "/layers/view/more/" + s;
+                            String s = ((ListEntryDTO) ((Listcell) event.getTarget().getParent()).getValue()).getName();
+                            String metadata = CommonData.getLayersServer() + "/layers/view/more/" + s;
                             mapComposer.activateLink(metadata, "Metadata", false);
 
                         }
                     });
                     img.setParent(lc);
 
-                    //String type = ((ListEntry) data).type;
-                    if (type.equalsIgnoreCase("environmental")) {
-                        float value = ((ListEntry) data).value;
+
+                    if (StringConstants.ENVIRONMENTAL.equalsIgnoreCase(type)) {
+                        float value = ((ListEntryDTO) data).getValue();
                         lc = new Listcell(" ");
                         if (threasholds[0] > value) {
-                            lc.setSclass("lcRed");//setStyle("background: #bb2222;");
+                            lc.setSclass(StringConstants.LCRED);
                         } else if (threasholds[1] > value) {
-                            lc.setSclass("lcYellow");//lc.setStyle("background: #ffff22;");
+                            lc.setSclass(StringConstants.LCYELLOW);
                         } else if (1 >= value) {
-                            lc.setSclass("lcGreen");//lc.setStyle("background: #22aa22;");
+                            lc.setSclass(StringConstants.LCGREEN);
                         } else {
-                            lc.setSclass("lcWhite");//setStyle("background: #ffffff;");
+                            lc.setSclass(StringConstants.LCWHITE);
                         }
                         lc.setParent(li);
                     }
                 }
 
-                ;
             });
 
-            listModel = new SimpleListModel(listEntries);
+            SimpleListModel listModel = new SimpleListModel(listEntries);
             setModel(listModel);
 
             setMultiple(true);
         } catch (Exception e) {
-            logger.debug("error setting up env list", e);
+            LOGGER.debug("error setting up env list", e);
         }
     }
 
@@ -195,36 +195,36 @@ public class EnvironmentalList extends Listbox {
 
         String fieldId;
 
-        for (ListEntry le : listEntries) {
+        for (ListEntryDTO le : listEntries) {
             //set to 2 for contextual and 'no association distance'
-            if (le.type.equalsIgnoreCase("contextual")
-                    || le.layerObject == null
-                    || !le.layerObject.containsKey("fields")
-                    || (fieldId = getFieldId(le.layerObject)) == null
+            if (StringConstants.CONTEXTUAL.equalsIgnoreCase(le.getType())
+                    || le.getLayerObject() == null
+                    || !le.getLayerObject().containsKey(StringConstants.FIELDS)
+                    || (fieldId = getFieldId(le.getLayerObject())) == null
                     || CommonData.getDistancesMap().get(fieldId) == null) {
-                le.value = 2;
+                le.setValue(2);
             } else {
-                le.value = 1;
+                le.setValue(1);
             }
         }
 
         for (Object o : getSelectedItems()) {
-            ListEntry l = listEntries.get(((Listitem) o).getIndex());
-            l.value = 0;
+            ListEntryDTO l = listEntries.get(((Listitem) o).getIndex());
+            l.setValue(0);
             String[] domain;
-            if (l.type.equalsIgnoreCase("environmental")
-                    && l.layerObject != null && l.layerObject.containsKey("fields")
-                    && (fieldId = getFieldId(l.layerObject)) != null
+            if (StringConstants.ENVIRONMENTAL.equalsIgnoreCase(l.getType())
+                    && l.getLayerObject() != null && l.getLayerObject().containsKey(StringConstants.FIELDS)
+                    && (fieldId = getFieldId(l.getLayerObject())) != null
                     && CommonData.getDistancesMap().get(fieldId) != null
-                    && (domain = getDomain(l.layerObject)) != null) {
-                for (ListEntry le : listEntries) {
-                    if (le.layerObject != null && le.layerObject.containsKey("fields")
-                            && (!singleDomain || isSameDomain(getDomain(le.layerObject), domain))) {
-                        String fieldId2 = getFieldId(le.layerObject);
+                    && (domain = getDomain(l.getLayerObject())).length > 0) {
+                for (ListEntryDTO le : listEntries) {
+                    if (le.getLayerObject() != null && le.getLayerObject().containsKey(StringConstants.FIELDS)
+                            && (!singleDomain || isSameDomain(getDomain(le.getLayerObject()), domain))) {
+                        String fieldId2 = getFieldId(le.getLayerObject());
 
                         Double d = CommonData.getDistancesMap().get(fieldId).get(fieldId2);
                         if (d != null) {
-                            le.value = (float) Math.min(le.value, d);
+                            le.setValue((float) Math.min(le.getValue(), d));
                         }
                     }
                 }
@@ -232,18 +232,18 @@ public class EnvironmentalList extends Listbox {
         }
 
         for (int i = 0; i < listEntries.size(); i++) {
-            float value = listEntries.get(i).value;
-            String type = listEntries.get(i).type;
+            float value = listEntries.get(i).getValue();
+            String type = listEntries.get(i).getType();
             Listcell lc = (Listcell) (getItemAtIndex(i).getLastChild());
-            if (type.equalsIgnoreCase("environmental")) {
+            if (StringConstants.ENVIRONMENTAL.equalsIgnoreCase(type)) {
                 if (threasholds[0] > value) {
-                    lc.setSclass("lcRed");//setStyle("background: #bb2222;");
+                    lc.setSclass(StringConstants.LCRED);
                 } else if (threasholds[1] > value) {
-                    lc.setSclass("lcYellow");//lc.setStyle("background: #ffff22;");
+                    lc.setSclass(StringConstants.LCYELLOW);
                 } else if (1 >= value) {
-                    lc.setSclass("lcGreen");//lc.setStyle("background: #22aa22;");
+                    lc.setSclass(StringConstants.LCGREEN);
                 } else {
-                    lc.setSclass("lcWhite");//lc.setStyle("background: #ffffff;");
+                    lc.setSclass(StringConstants.LCWHITE);
                 }
             }
         }
@@ -257,17 +257,18 @@ public class EnvironmentalList extends Listbox {
 
         if (!singleDomain || firstDomain == null) {
             for (int i = 0; i < listEntries.size(); i++) {
-                boolean defaultDisable = disableContextualLayers && listEntries.get(i).type.equalsIgnoreCase("contextual");
+                boolean defaultDisable = disableContextualLayers && StringConstants.CONTEXTUAL.equalsIgnoreCase(listEntries.get(i).getType());
                 getItemAtIndex(i).setDisabled(defaultDisable);
             }
             return;
         }
 
         for (int i = 0; i < listEntries.size(); i++) {
-            ListEntry l = listEntries.get(i);
-            if (l.layerObject != null
-                    && (thisDomain = getDomain(l.layerObject)) != null) {
-                boolean defaultDisable = disableContextualLayers && listEntries.get(i).type.equalsIgnoreCase("contextual");
+            ListEntryDTO l = listEntries.get(i);
+            thisDomain = getDomain(l.getLayerObject());
+            if (l.getLayerObject() != null
+                    && thisDomain.length > 0) {
+                boolean defaultDisable = disableContextualLayers && StringConstants.CONTEXTUAL.equalsIgnoreCase(listEntries.get(i).getType());
                 boolean match = false;
                 for (String d1 : firstDomain) {
                     for (String d2 : thisDomain) {
@@ -288,11 +289,11 @@ public class EnvironmentalList extends Listbox {
         String[] domain = null;
 
         for (Object o : getSelectedItems()) {
-            ListEntry l = listEntries.get(((Listitem) o).getIndex());
-            if (l.type.equalsIgnoreCase("environmental")
-                    && l.layerObject != null) {
-                domain = getDomain(l.layerObject);
-                if (domain != null) {
+            ListEntryDTO l = listEntries.get(((Listitem) o).getIndex());
+            if (StringConstants.ENVIRONMENTAL.equalsIgnoreCase(l.getType())
+                    && l.getLayerObject() != null) {
+                domain = getDomain(l.getLayerObject());
+                if (domain.length > 0) {
                     break;
                 }
             }
@@ -302,10 +303,10 @@ public class EnvironmentalList extends Listbox {
     }
 
     String[] getDomain(JSONObject layerObject) {
-        if (!layerObject.containsKey("domain")) {
-            return null;
+        if (!layerObject.containsKey(StringConstants.DOMAIN)) {
+            return new String[0];
         }
-        String[] d = layerObject.getString("domain").split(",");
+        String[] d = layerObject.getString(StringConstants.DOMAIN).split(",");
         for (int i = 0; i < d.length; i++) {
             d[i] = d[i].trim();
         }
@@ -315,16 +316,16 @@ public class EnvironmentalList extends Listbox {
     String getFieldId(JSONObject layerObject) {
         String fieldId = null;
         try {
-            JSONArray ja = (JSONArray) layerObject.get("fields");
+            JSONArray ja = (JSONArray) layerObject.get(StringConstants.FIELDS);
             for (int i = 0; i < ja.size(); i++) {
                 JSONObject jo = (JSONObject) ja.get(i);
-                if (jo.getString("analysis").equalsIgnoreCase("true")) {
-                    fieldId = jo.getString("id");
+                if (StringConstants.TRUE.equalsIgnoreCase(jo.getString("analysis"))) {
+                    fieldId = jo.getString(StringConstants.ID);
                     break;
                 }
             }
         } catch (Exception e) {
-            logger.error("error getting field id from layer JSON object: " + layerObject, e);
+            LOGGER.error("error getting field id from layer JSON object: " + layerObject, e);
         }
         return fieldId;
     }
@@ -340,13 +341,13 @@ public class EnvironmentalList extends Listbox {
         Set selectedItems = getSelectedItems();
         String[] selected = new String[selectedItems.size()];
         int i = 0;
-        logger.debug("getSelectedLayers: ");
+        LOGGER.debug("getSelectedLayers: ");
         for (Object o : selectedItems) {
-            selected[i] = listEntries.get(((Listitem) o).getIndex()).name;
+            selected[i] = listEntries.get(((Listitem) o).getIndex()).getName();
             i++;
-            logger.debug(listEntries.get(((Listitem) o).getIndex()).displayname + ", " + listEntries.get(((Listitem) o).getIndex()).name);
+            LOGGER.debug(listEntries.get(((Listitem) o).getIndex()).getDisplayName() + ", " + listEntries.get(((Listitem) o).getIndex()).getName());
         }
-        logger.debug("");
+        LOGGER.debug("");
         return selected;
     }
 
@@ -357,9 +358,9 @@ public class EnvironmentalList extends Listbox {
 
         for (int i = 0; i < listEntries.size(); i++) {
             for (int j = 0; j < layers.length; j++) {
-                if (listEntries.get(i).displayname.equalsIgnoreCase(layers[j])
-                        || listEntries.get(i).name.equalsIgnoreCase(layers[j])) {
-                    if (!getItemAtIndex(i).isSelected() && (!singleDomain || isSameDomain(firstDomain, getDomain(listEntries.get(i).layerObject)))) {
+                if (listEntries.get(i).getDisplayName().equalsIgnoreCase(layers[j])
+                        || listEntries.get(i).getName().equalsIgnoreCase(layers[j])) {
+                    if (!getItemAtIndex(i).isSelected() && (!singleDomain || isSameDomain(firstDomain, getDomain(listEntries.get(i).getLayerObject())))) {
                         toggleItemSelection(getItemAtIndex(i));
                     }
                     break;
@@ -377,10 +378,8 @@ public class EnvironmentalList extends Listbox {
             return;
         }
 
-        String[] firstDomain = getFirstDomain();
-
         for (int i = 0; i < listEntries.size(); i++) {
-            String f = CommonData.getLayerFacetName(listEntries.get(i).name);
+            String f = CommonData.getLayerFacetName(listEntries.get(i).getName());
 
             for (int j = 0; j < layers.length; j++) {
                 if (f != null && f.equalsIgnoreCase(layers[j])) {
@@ -407,7 +406,7 @@ public class EnvironmentalList extends Listbox {
     }
 
     private boolean isSameDomain(String[] domain1, String[] domain2) {
-        if (domain1 == null || domain2 == null) {
+        if (domain1.length == 0 || domain2.length == 0) {
             return true;
         }
 

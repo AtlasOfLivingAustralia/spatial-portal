@@ -101,7 +101,7 @@ public class WMSStyle implements Cloneable, Serializable {
         this.legendFormat = legendFormat;
     }
 
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
+    public Object copy() throws CloneNotSupportedException {
+        return this.clone();
     }
 }

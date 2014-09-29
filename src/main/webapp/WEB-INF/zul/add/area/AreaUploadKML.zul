@@ -25,7 +25,7 @@
                 </hbox>
             </div>
             <separator />
-            <label sclass="wordwrap" value="Select a KML (*.kml) file to upload." />
+            <label sclass="wordwrap" value="Click next to locate the KML (*.kml) file to upload." />
             <separator />
             <div class="btn-group">
                  <button label="Cancel" id="btnCancel"/>

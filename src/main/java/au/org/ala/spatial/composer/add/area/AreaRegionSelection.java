@@ -4,12 +4,13 @@
  */
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.gazetteer.GazetteerAutoComplete;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import net.sf.json.JSONObject;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
@@ -19,23 +20,19 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author angus
  */
 public class AreaRegionSelection extends AreaToolComposer {
 
-    private static Logger logger = Logger.getLogger(AreaRegionSelection.class);
-    Button btnOk;
-    Hbox hbRadius;
+    private static final Logger LOGGER = Logger.getLogger(AreaRegionSelection.class);
+    private Button btnOk;
+    private Hbox hbRadius;
+    private Doublebox dRadius;
+    private Checkbox displayAsWms;
     private GazetteerAutoComplete gazetteerAuto;
-    Doublebox dRadius;
-    Checkbox displayAsWms;
-
-    @Override
-    public void afterCompose() {
-        super.afterCompose();
-    }
 
     public void onClick$btnOk(Event event) {
         Comboitem ci = gazetteerAuto.getSelectedItem();
@@ -50,16 +47,15 @@ public class AreaRegionSelection extends AreaToolComposer {
         }
 
         JSONObject jo = ci.getValue();
-        JSONObject obj = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/object/" + jo.getString("pid")));
+        JSONObject obj = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/object/" + jo.getString(StringConstants.PID)));
 
         String label = ci.getLabel();
 
         //add feature to the map as a new layer
         MapLayer mapLayer;
-        //   if (displayAsWms.isChecked()) {
-        logger.debug(label + " | " + obj.getString("wmsurl"));
-        mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, obj.getString("wmsurl"), 0.6f, /*metadata url*/ null,
-                null, LayerUtilities.WKT, null, null);
+        LOGGER.debug(label + " | " + obj.getString(StringConstants.WMSURL));
+        mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, obj.getString(StringConstants.WMSURL), 0.6f, /*metadata url*/ null,
+                null, LayerUtilitiesImpl.WKT, null, null);
         if (mapLayer == null) {
             return;
         }
@@ -69,15 +65,13 @@ public class AreaRegionSelection extends AreaToolComposer {
 
         this.layerName = mapLayer.getName();
 
-
-        SimpleRegion sr = SimpleShapeFile.parseWKT(obj.getString("bbox"));
+        SimpleRegion sr = SimpleShapeFile.parseWKT(obj.getString(StringConstants.BBOX));
         double[][] bb = sr.getBoundingBox();
-        ArrayList<Double> dbb = new ArrayList<Double>();
+        List<Double> dbb = new ArrayList<Double>();
         dbb.add(bb[0][0]);
         dbb.add(bb[0][1]);
         dbb.add(bb[1][0]);
         dbb.add(bb[1][1]);
-
 
         //if the layer is a point create a radius
         boolean point = false;
@@ -101,11 +95,10 @@ public class AreaRegionSelection extends AreaToolComposer {
             dbb.add(bb[1][0]);
             dbb.add(bb[1][1]);
         } else {
-            mapLayer.setWKT(Util.readUrl(CommonData.layersServer + "/shape/wkt/" + obj.getString("pid")));
-            //mapLayer.setWKT("ENVELOPE(" + obj.getString("fid") + "," + obj.getString("pid") + ")");
+            mapLayer.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + obj.getString(StringConstants.PID)));
         }
 
-        String fid = obj.getString("fid");
+        String fid = obj.getString(StringConstants.FID);
 
         MapLayerMetadata md = mapLayer.getMapLayerMetadata();
         md.setBbox(dbb);
@@ -114,16 +107,16 @@ public class AreaRegionSelection extends AreaToolComposer {
         Facet facet = null;
         if (!point && mapLayer.getFacets() == null) {
             //only get field data if it is an intersected layer (to exclude layers containing points)
-            if(CommonData.getLayer(fid) != null) {
-                JSONObject fieldJson = JSONObject.fromObject(Util.readUrl(CommonData.layersServer + "/field/" + fid));
+            if (CommonData.getLayer(fid) != null) {
+                JSONObject fieldJson = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/field/" + fid));
 
-                md.setMoreInfo(CommonData.layersServer + "/layers/view/more/" + fieldJson.getString("spid"));
+                md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + fieldJson.getString("spid"));
 
-                facet = Util.getFacetForObject(label, fieldJson);
+                facet = Util.getFacetForObject(label, fid);
             }
 
             if (facet != null) {
-                ArrayList<Facet> facets = new ArrayList<Facet>();
+                List<Facet> facets = new ArrayList<Facet>();
                 facets.add(facet);
                 mapLayer.setFacets(facets);
             }
@@ -175,9 +168,9 @@ public class AreaRegionSelection extends AreaToolComposer {
                 String[] s = ci.getDescription().split(",");
                 try {
                     double lat = Double.parseDouble(s[2].trim());
-                    double lng = Double.parseDouble(s[2].trim());
-                    point = true;
-                } catch (Exception e) {
+                    point = !Double.isNaN(lat);
+                } catch (NumberFormatException e) {
+                    //not a double value
                 }
             }
 
@@ -194,7 +187,7 @@ public class AreaRegionSelection extends AreaToolComposer {
 
         double radius = dRadius.getValue();
         if (radius <= 0) {
-            sb.append("\n" + CommonData.lang("error_invalid_radius"));
+            sb.append("\n").append(CommonData.lang(StringConstants.ERROR_INVALID_RADIUS));
         }
 
         if (sb.length() > 0) {

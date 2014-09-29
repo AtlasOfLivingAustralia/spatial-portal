@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.gazetteer;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -13,9 +14,13 @@ import java.util.Map;
 /**
  * @author Angus
  */
-public class GazetteerPointSearch {
+public final class GazetteerPointSearch {
 
-    private static Logger logger = Logger.getLogger(GazetteerPointSearch.class);
+    private static final Logger LOGGER = Logger.getLogger(GazetteerPointSearch.class);
+
+    private GazetteerPointSearch() {
+        //to hide public constructor
+    }
 
     /**
      * *
@@ -26,29 +31,26 @@ public class GazetteerPointSearch {
      * @param layer geoserver layer to search
      * @return returns a link to a geojson feature in the gaz
      */
-    public static Map<String, String> PointSearch(String lon, String lat, String layer, String geoserver) {
+    public static Map<String, String> pointSearch(String lon, String lat, String layer, String geoserver) {
         try {
-            String uri = CommonData.layersServer + "/intersect/" + layer + "/" + lat + "/" + lon;
+            String uri = CommonData.getLayersServer() + "/intersect/" + layer + "/" + lat + "/" + lon;
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(uri);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
-            logger.debug("*************************************");
-            logger.debug("GazetteerPointSearch.PointSearch");
-            logger.debug("URI: " + uri);
-            logger.debug("result: " + result);
-            logger.debug("slist: " + slist);
-            logger.debug("*************************************");
+            LOGGER.debug("URI: " + uri);
+            LOGGER.debug("result: " + result);
+            LOGGER.debug("slist: " + slist);
 
             JSONArray ja = JSONArray.fromObject(slist);
 
-            if (ja != null && ja.size() > 0) {
+            if (ja != null && !ja.isEmpty()) {
                 JSONObject jo = ja.getJSONObject(0);
 
-                HashMap<String, String> map = new HashMap<String, String>();
+                Map<String, String> map = new HashMap<String, String>();
                 for (Object k : jo.keySet()) {
                     map.put((String) k, jo.getString((String) k));
                 }
@@ -56,7 +58,7 @@ public class GazetteerPointSearch {
                 return map;
             }
         } catch (Exception e1) {
-            logger.error("error with gaz point search", e1);
+            LOGGER.error("error with gaz point search", e1);
         }
         return null;
     }

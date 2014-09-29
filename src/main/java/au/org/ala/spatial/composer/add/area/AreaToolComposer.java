@@ -4,19 +4,16 @@
  */
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.add.AddFacetController;
 import au.org.ala.spatial.composer.tool.ToolComposer;
-import au.org.ala.spatial.data.BiocacheQuery;
-import au.org.ala.spatial.data.Query;
-import au.org.ala.spatial.data.QueryUtil;
 import au.org.ala.spatial.logger.RemoteLogger;
-import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.SelectedArea;
-import au.org.ala.spatial.util.Util;
+import au.org.ala.spatial.util.*;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.util.LayerUtilities;
+import au.org.emii.portal.menu.SelectedArea;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -29,30 +26,28 @@ import java.util.Map;
  */
 public class AreaToolComposer extends UtilityComposer {
 
-    private static Logger logger = Logger.getLogger(AreaToolComposer.class);
-    String layerName;
-    RemoteLogger remoteLogger;
-    boolean isAnalysisChild = false;
-    boolean isFacetChild = false;
-    ToolComposer analysisParent = null;
-    AddFacetController facetParent = null;
-    Map winProps = null;
-    public boolean ok = false;
+    private static final Logger LOGGER = Logger.getLogger(AreaToolComposer.class);
+    protected boolean ok = false;
+    protected String layerName;
+    private boolean isAnalysisChild = false;
+    private boolean isFacetChild = false;
+    private RemoteLogger remoteLogger;
+    private ToolComposer analysisParent = null;
+    private AddFacetController facetParent = null;
+    private Map winProps = null;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-        //txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang("default_area_layer_name")));
 
         Component parent = this.getParent();
-        //      logger.debug("Parent: " + parent.getId() + " - " + parent.getWidgetClass());
 
         winProps = Executions.getCurrent().getArg();
 
-        if (parent.getId().equals("addtoolwindow")) {
+        if (StringConstants.ADDTOOLWINDOW.equals(parent.getId())) {
             analysisParent = (ToolComposer) this.getParent();
             isAnalysisChild = true;
-        } else if (parent.getId().equals("addfacetwindow")) {
+        } else if (StringConstants.ADDFACETWINDOW.equals(parent.getId())) {
             facetParent = (AddFacetController) this.getParent();
             isFacetChild = true;
         } else {
@@ -64,8 +59,8 @@ public class AreaToolComposer extends UtilityComposer {
     @Override
     public void detach() {
         super.detach();
-        String parentname = (String) winProps.get("parentname");
-        String areatype = (String) getMapComposer().getAttribute("addareawindow");
+        String parentname = (String) winProps.get(StringConstants.PARENTNAME);
+        String areatype = (String) getMapComposer().getAttribute(StringConstants.ADDAREAWINDOW);
         if (areatype == null) {
             areatype = "";
         } else {
@@ -83,22 +78,20 @@ public class AreaToolComposer extends UtilityComposer {
         }
 
         if (isAnalysisChild) {
-            //analysisParent.hasCustomArea = true;
             analysisParent.resetWindow(ok ? layerName : null);
             try {
                 remoteLogger.logMapArea(layerName, areatype, getMapComposer().getMapLayer(layerName).getWKT());
             } catch (Exception e) {
-                logger.error("error with remote logging", e);
+                LOGGER.error("error with remote logging", e);
             }
         } else if (isFacetChild) {
-            //analysisParent.hasCustomArea = true;
             facetParent.resetWindow(ok ? layerName : null);
             try {
                 remoteLogger.logMapArea(layerName, areatype, getMapComposer().getMapLayer(layerName).getWKT());
             } catch (Exception e) {
-                logger.error("error with remote logging", e);
+                LOGGER.error("error with remote logging", e);
             }
-        } else if (parentname != null && parentname.equals("AddSpeciesInArea")) {
+        } else if (parentname != null && "AddSpeciesInArea".equals(parentname)) {
             //was OK clicked?
             if (ok) {
                 //map
@@ -106,53 +99,52 @@ public class AreaToolComposer extends UtilityComposer {
                 try {
                     wkt = getMapComposer().getMapLayer(layerName).getWKT();
                 } catch (Exception e) {
+                    LOGGER.error("failed to get WKT for layer: " + layerName, e);
                 }
 
                 Query q = null;
-                if (winProps.get("query") != null) {
-                    q = ((Query) winProps.get("query"));
+                if (winProps.get(StringConstants.QUERY) != null) {
+                    q = ((Query) winProps.get(StringConstants.QUERY));
 
                     SelectedArea sa = new SelectedArea(getMapComposer().getMapLayer(layerName),
-                            (getMapComposer().getMapLayer(layerName).getFacets() == null ? wkt : null));
+                            getMapComposer().getMapLayer(layerName).getFacets() == null ? wkt : null);
 
                     q = QueryUtil.queryFromSelectedArea(q, sa, true, null);
                 }
-                if (winProps.get("query") == null) {
+                if (winProps.get(StringConstants.QUERY) == null) {
                     mapSpeciesInArea();
-                } else if (winProps.get("filter") != null && (Boolean) winProps.get("filter")) {
+                } else if (winProps.get(StringConstants.FILTER) != null && (Boolean) winProps.get(StringConstants.FILTER)) {
                     MapLayer ml = getMapComposer().mapSpecies(
-                            q, (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"),
-                            (Integer) winProps.get("type"), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
+                            q, (String) winProps.get(StringConstants.NAME), (String) winProps.get("s"), (Integer) winProps.get(StringConstants.FEATURE_COUNT),
+                            (Integer) winProps.get(StringConstants.TYPE), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                             Util.nextColour(), false);
                     ml.getMapLayerMetadata().setMoreInfo((String) winProps.get("metadata"));
 
                 } else if (winProps.get("filterGrid") != null && (Boolean) winProps.get("filterGrid")) {
                     MapLayer ml = getMapComposer().mapSpecies(
-                            q, (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"),
-                            (Integer) winProps.get("type"), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
+                            q, (String) winProps.get(StringConstants.NAME), (String) winProps.get("s"), (Integer) winProps.get(StringConstants.FEATURE_COUNT),
+                            (Integer) winProps.get(StringConstants.TYPE), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                             Util.nextColour(), false);
                     ml.getMapLayerMetadata().setMoreInfo((String) winProps.get("metadata"));
 
                 } else if (winProps.get("byLsid") != null && (Boolean) winProps.get("byLsid")) {
                     MapLayer ml = getMapComposer().mapSpecies(
-                            q, (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"),
-                            (Integer) winProps.get("type"), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
+                            q, (String) winProps.get(StringConstants.NAME), (String) winProps.get("s"), (Integer) winProps.get(StringConstants.FEATURE_COUNT),
+                            (Integer) winProps.get(StringConstants.TYPE), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                             Util.nextColour(), false);
                     ml.getMapLayerMetadata().setMoreInfo((String) winProps.get("metadata"));
                 } else {
-                    MapLayer ml = getMapComposer().mapSpecies(
+                    getMapComposer().mapSpecies(
                             q,
-                            (String) winProps.get("taxon"),
-                            (String) winProps.get("rank"),
-                            0, LayerUtilities.SPECIES, wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
+                            (String) winProps.get(StringConstants.TAXON),
+                            (String) winProps.get(StringConstants.RANK),
+                            0, LayerUtilitiesImpl.SPECIES, wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                             Util.nextColour(), false);
                 }
                 if (getMapComposer().getMapLayer(layerName) != null) {
                     String displayName = getMapComposer().getMapLayer(layerName).getDisplayName();
-                    try {
-                        remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, wkt);
-                    } catch (Exception e) {
-                    }
+
+                    remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, wkt);
                 }
             }
         } else {
@@ -171,10 +163,7 @@ public class AreaToolComposer extends UtilityComposer {
                 } else {
                     getMapComposer().removeAttribute("activeLayerName");
                 }
-                try {
-                    remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, ml.getWKT(), activeLayerName, fromLayer);
-                } catch (Exception e) {
-                }
+                remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, ml.getWKT(), activeLayerName, fromLayer);
 
                 //warn user when reduced WKT may be used for analysis
                 getMapComposer().warnForLargeWKT(ml);
@@ -190,28 +179,28 @@ public class AreaToolComposer extends UtilityComposer {
      */
     void mapSpeciesInArea() {
         List<MapLayer> layers = getMapComposer().getPolygonLayers();
-        if (layers == null || layers.size() == 0) {
+        if (layers == null || layers.isEmpty()) {
             return;
         }
         try {
             String wkt = layers.get(0).getWKT();
 
             BiocacheQuery sq = new BiocacheQuery(null, wkt, null, null, true, null);
-            int results_count_occurrences = sq.getOccurrenceCount();
+            int resultsCountOccurrences = sq.getOccurrenceCount();
 
             //test limit
-            if (results_count_occurrences > 0 && results_count_occurrences <= Integer.parseInt(CommonData.settings.getProperty("max_record_count_map"))) {
+            if (resultsCountOccurrences > 0 && resultsCountOccurrences <= Integer.parseInt(CommonData.getSettings().getProperty(StringConstants.MAX_RECORD_COUNT_MAP))) {
                 String activeAreaLayerName = layers.get(0).getDisplayName();
-                getMapComposer().mapSpecies(sq, CommonData.lang("occurrences_in_area_prefix") + " " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, wkt,
+                getMapComposer().mapSpecies(sq, CommonData.lang("occurrences_in_area_prefix") + " " + activeAreaLayerName, StringConstants.SPECIES, resultsCountOccurrences, LayerUtilitiesImpl.SPECIES, wkt,
                         -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
             } else {
                 getMapComposer().showMessage(
                         CommonData.lang("error_too_many_occurrences_for_mapping")
-                                .replace("<counted_occurrences>", results_count_occurrences + "")
-                                .replace("<max_occurrences>", CommonData.settings.getProperty("max_record_count_map")));
+                                .replace("<counted_occurrences>", resultsCountOccurrences + "")
+                                .replace("<max_occurrences>", CommonData.getSettings().getProperty(StringConstants.MAX_RECORD_COUNT_MAP)));
             }
-        } catch (Exception e) {
-            logger.error("error mapping species in an area", e);
+        } catch (NumberFormatException e) {
+            LOGGER.error("error mapping species in an area", e);
         }
     }
 }
