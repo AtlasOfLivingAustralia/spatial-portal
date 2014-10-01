@@ -97,7 +97,7 @@ public class AreaReportController extends UtilityComposer {
         try {
             win.doOverlapped();
             win.setPosition("center");
-            win.setReportArea(sa, name, displayName, areaSqKm, boundingBox.clone(), includeEndemic);
+            win.setReportArea(sa, name, displayName, areaSqKm, (boundingBox == null) ? null : boundingBox.clone(), includeEndemic);
         } catch (Exception e) {
             LOGGER.error("error opening AreaReportResults.zul", e);
         }

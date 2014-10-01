@@ -42,7 +42,6 @@ public class AreaMapPolygon extends AreaToolComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        loadLayerSelection();
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName(CommonData.lang(StringConstants.DEFAULT_AREA_LAYER_NAME)));
         btnOk.setDisabled(true);
         btnClear.setDisabled(true);
@@ -98,30 +97,6 @@ public class AreaMapPolygon extends AreaToolComposer {
         mc.removeLayer(layerName);
         mc.activateLayer(ml, true);
 
-    }
-
-    public void loadLayerSelection() {
-        Radio rSelectedLayer = (Radio) getFellowIfAny("rSelectedLayer");
-
-        List<MapLayer> layers = getMapComposer().getContextualLayers();
-
-        if (!layers.isEmpty()) {
-
-            for (int i = 0; i < layers.size(); i++) {
-
-                MapLayer lyr = layers.get(i);
-                Radio rAr = new Radio(lyr.getDisplayName());
-                rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
-                rAr.setValue(lyr.getDisplayName());
-                rAr.setParent(rgPolygonLayers);
-
-                if (i == 0) {
-                    rAr.setSelected(true);
-                }
-                rgPolygonLayers.insertBefore(rAr, rSelectedLayer);
-            }
-            rSelectedLayer.setSelected(true);
-        }
     }
 
     /**

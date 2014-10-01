@@ -127,7 +127,7 @@ public class ScatterplotDataDTO implements Serializable {
     }
 
     public void setPoints(double[] points) {
-        this.points = points.clone();
+        this.points = points == null ? null : points.clone();
     }
 
     public double[][] getData() {
@@ -135,7 +135,7 @@ public class ScatterplotDataDTO implements Serializable {
     }
 
     public void setData(double[][] data) {
-        this.data = data.clone();
+        this.data = data == null ? null : data.clone();
     }
 
     public int getMissingCount() {
@@ -167,7 +167,7 @@ public class ScatterplotDataDTO implements Serializable {
     }
 
     public void setPrevSelection(double[] prevSelection) {
-        this.prevSelection = prevSelection.clone();
+        this.prevSelection = prevSelection == null ? null : prevSelection.clone();
     }
 
     public String getImagePath() {

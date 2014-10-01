@@ -92,7 +92,7 @@ public class AreaReportItemDTO {
      * @param extraInfo the extraInfo to set
      */
     public void setExtraInfo(ExtraInfoEnum[] extraInfo) {
-        this.extraInfo = extraInfo.clone();
+        this.extraInfo = extraInfo == null ? null : extraInfo.clone();
     }
 
     /**

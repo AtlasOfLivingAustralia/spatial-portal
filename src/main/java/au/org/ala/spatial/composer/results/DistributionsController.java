@@ -116,7 +116,7 @@ public class DistributionsController extends UtilityComposer {
 
         this.originalCount = count;
         this.type = type;
-        this.text = text.clone();
+        this.text = text == null ? null : text.clone();
         if (text != null && text.length > 1) {
             List<String[]> data = new ArrayList<String[]>();
             for (int i = 1; i < text.length; i++) {

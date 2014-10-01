@@ -44,4 +44,6 @@ public interface Settings {
     String getProxyAllowedHosts();
 
     void setProxyAllowedHosts(String proxyAllowedHosts);
+
+    void setConfigPath(String configPath);
 }

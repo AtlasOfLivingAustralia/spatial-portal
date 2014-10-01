@@ -39,7 +39,6 @@
     </bean>
 
     <bean id="configurationLoaderStage2" class="au.org.emii.portal.config.ConfigurationLoaderStage2Impl">
-        <property name="remoteMap" ref="remoteMap"/>
         <property name="settings" ref="settings"/>
         <property name="portalSessionUtilities" ref="portalSessionUtilities"/>
     </bean>
@@ -61,12 +60,6 @@
     <bean id="remoteMap" class="au.org.emii.portal.util.RemoteMapImpl" scope="prototype">
         <property name="languagePack" ref="languagePack"/>
         <property name="layerUtilities" ref="layerUtilities"/>
-        <property name="httpConnection" ref="httpConnection"/>
-        <property name="geoJSONUtilities" ref="geoJSONUtilities"/>
-    </bean>
-
-    <bean id="geoJSONUtilities" class="au.org.emii.portal.util.GeoJSONUtilitiesImpl">
-        <property name="httpConnection" ref="httpConnection"/>
     </bean>
 
     <bean id="openLayersJavascript" class="au.org.emii.portal.javascript.OpenLayersJavascriptImpl">

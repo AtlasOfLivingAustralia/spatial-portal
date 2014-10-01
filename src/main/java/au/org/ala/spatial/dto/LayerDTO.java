@@ -51,7 +51,7 @@ public class LayerDTO {
         this.displayName = displayName;
         this.description = description;
         this.type = type;
-        this.fieldDTOs = fieldDTOs.clone();
+        this.fieldDTOs = fieldDTOs == null ? null : fieldDTOs.clone();
     }
 
     public String getName() {

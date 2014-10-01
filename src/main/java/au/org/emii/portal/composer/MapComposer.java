@@ -2536,9 +2536,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         window = (Window) Executions.createComponents(page, layerControls, null);
         try {
-            ((HasMapLayer) window).setMapLayer(selectedLayer);
+            if (window instanceof HasMapLayer) {
+                ((HasMapLayer) window).setMapLayer(selectedLayer);
+            }
         } catch (Exception e) {
-            LOGGER.error("failed to set map layer to window: " + (window != null ? window.getId() : "window is null"));
+            LOGGER.error("failed to set map layer to window: " + (window != null ? window.getId() : "window is null"), e);
         }
         try {
             window.doEmbedded();
@@ -3112,6 +3114,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void setDownloadSecondLayers(String[] downloadSecondLayers) {
-        this.downloadSecondLayers = downloadSecondLayers.clone();
+        this.downloadSecondLayers = downloadSecondLayers == null ? null : downloadSecondLayers.clone();
     }
 }

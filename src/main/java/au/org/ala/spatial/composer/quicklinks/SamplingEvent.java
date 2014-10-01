@@ -34,7 +34,7 @@ public class SamplingEvent implements EventListener {
         this.speciesLayerName = speciesLayerName;
         this.polygonLayerName = polygonLayerName;
         this.environmentalLayerName = environmentalLayerName;
-        this.geospatialKosher = geospatialKosher.clone();
+        this.geospatialKosher = (geospatialKosher == null) ? null : geospatialKosher.clone();
     }
 
     @Override

@@ -20,6 +20,10 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by a on 15/08/2014.
@@ -498,29 +502,125 @@ public class AreaReportPDF {
     }
 
     final void init() {
-        counts = new HashMap<String, String>();
-        csvs = new HashMap<String, String>();
-        imageMap = new HashMap<String, byte[]>();
-        tabulation = new HashMap();
-        speciesLinks = new HashMap<String, String>();
+        counts = new ConcurrentHashMap<String, String>();
+        csvs = new ConcurrentHashMap<String, String>();
+        imageMap = new ConcurrentHashMap<String, byte[]>();
+        tabulation = new ConcurrentHashMap();
+        speciesLinks = new ConcurrentHashMap<String, String>();
 
         mlArea = createWKTLayer(wkt, 255, 0, 0, 0.6f);
 
-        initTabulation();
 
-        initImages();
+        List callables = new ArrayList();
 
-        initCountArea();
-        initCountSpecies();
-        initCsvSpecies();
-        initCountOccurrences();
-        initCountEndemicSpecies();
-        initCountThreatenedSpecies();
-        initCountChecklistAreasAndSpecies();
-        initCountDistributionAreas();
+        callables.addAll(initTabulation());
 
-        initDistributionsCsv(StringConstants.DISTRIBUTIONS);
-        initDistributionsCsv(StringConstants.CHECKLISTS);
+        callables.add(new Callable() {
+                  @Override
+                  public Object call() throws Exception {
+                      initImages();
+
+                      return null;
+                  }
+              });
+
+        callables.add(new Callable() {
+                  @Override
+                  public Object call() throws Exception {
+                      initCountArea();
+
+                      return null;
+                  }
+              });
+
+        callables.add(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                initCountSpecies();
+
+                return null;
+            }
+        });
+
+        callables.add(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                initCountOccurrences();
+
+                return null;
+            }
+        });
+
+        callables.add(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                initCsvSpecies();
+
+                return null;
+            }
+        });
+
+        callables.add(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                initCountThreatenedSpecies();
+
+                return null;
+            }
+        });
+
+        callables.add(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                initCountEndemicSpecies();
+
+                return null;
+            }
+        });
+
+        callables.add(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                initCountChecklistAreasAndSpecies();
+
+                return null;
+            }
+        });
+
+        callables.add(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                initCountDistributionAreas();
+
+                return null;
+            }
+        });
+
+        callables.add(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                initDistributionsCsv(StringConstants.CHECKLISTS);
+
+                return null;
+            }
+        });
+
+        callables.add(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                initDistributionsCsv(StringConstants.DISTRIBUTIONS);
+
+                return null;
+            }
+        });
+
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+        try {
+            executorService.invokeAll(callables);
+        } catch (InterruptedException e) {
+            LOGGER.error("failed to run all Init callables for detailed pdf", e);
+        }
 
         try {
             FileWriter fw = new FileWriter(filePath + File.separator + "counts.json");
@@ -543,22 +643,38 @@ public class AreaReportPDF {
 
     }
 
-    private void initTabulation() {
+    private Callable getTabulationCallable(String fieldId) {
+        final String fid = fieldId;
+        return new Callable() {
+            @Override
+            public Object call() throws Exception {
+                tabulation.put(fid, JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/tabulation/" + fid + "/" + areaPid + ".json")));
+
+                return null;
+            }
+        };
+    }
+    private List initTabulation() {
+
+        List callables = new ArrayList();
 
         String fid = CommonData.getLayerFacetName("dlcmv1");
-        tabulation.put(fid, JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/tabulation/" + fid + "/" + areaPid + ".json")));
+        callables.add(getTabulationCallable(fid));
 
         fid = CommonData.getLayerFacetName("teow");
-        tabulation.put(fid, JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/tabulation/" + fid + "/" + areaPid + ".json")));
+        callables.add(getTabulationCallable(fid));
 
-        //fid = CommonData.getLayerFacetName("meow_ecos");
-        //tabulation.put(fid,JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/tabulation/" + fid + "/" + areaPid + ".json")));
+        fid = CommonData.getLayerFacetName("meow_ecos");
+        //        callables.add(getTabulationCallable(fid));
+
 
         fid = CommonData.getLayerFacetName("feow");
-        tabulation.put(fid, JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/tabulation/" + fid + "/" + areaPid + ".json")));
+        callables.add(getTabulationCallable(fid));
 
         fid = CommonData.getLayerFacetName("imcra4_pb");
-        //tabulation.put(fid,JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/tabulation/" + fid + "/" + areaPid + ".json")));
+        //        callables.add(getTabulationCallable(fid));
+
+        return callables;
     }
 
     private void initDistributionsCsv(String type) {

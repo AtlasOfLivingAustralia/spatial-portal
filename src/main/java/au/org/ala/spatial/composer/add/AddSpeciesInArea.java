@@ -295,7 +295,7 @@ public class AddSpeciesInArea extends UtilityComposer {
     }
 
     void setGeospatialKosher(boolean[] geospatialKosher) {
-        this.geospatialKosher = geospatialKosher.clone();
+        this.geospatialKosher = (geospatialKosher == null) ? null : geospatialKosher.clone();
     }
 
     void setMultipleSpeciesUploadName(String multipleSpeciesUploadName) {

@@ -29,10 +29,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
      * Log4j
      */
     private static final Logger LOGGER = Logger.getLogger(ConfigurationLoaderStage2Impl.class);
-    /**
-     * Remote map URI mangler helper class - spring autowired
-     */
-    private RemoteMap remoteMap = null;
+
     /**
      * Parsed configuration file xml bean - NOT autowired by spring since
      * spring doesn't know about it - gets set by configuration loader
@@ -165,15 +162,6 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
 
     private void settingsSupplementary() {
         settingsSupplementary = portalDocument;
-    }
-
-    public RemoteMap getRemoteMap() {
-        return remoteMap;
-    }
-
-    @Required
-    public void setRemoteMap(RemoteMap remoteMap) {
-        this.remoteMap = remoteMap;
     }
 
     public Settings getSettings() {

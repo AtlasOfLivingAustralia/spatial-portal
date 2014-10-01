@@ -31,8 +31,8 @@ public class SPLFilter {
         if (layer != null) {
             layername = layer.getString(StringConstants.NAME);
         }
-        this.catagories = catagories.clone();
-        this.catagoryNames = catagoryNames.clone();
+        this.catagories = catagories == null ? null : catagories.clone();
+        this.catagoryNames = catagoryNames == null ? null : catagoryNames.clone();
         minimumValue = minimum;
         maximumValue = maximum;
 
@@ -61,7 +61,7 @@ public class SPLFilter {
     }
 
     public void setCatagories(int[] catagories) {
-        this.catagories = catagories.clone();
+        this.catagories = catagories == null ? null : catagories.clone();
     }
 
     public String[] getCatagoryNames() {
@@ -69,7 +69,7 @@ public class SPLFilter {
     }
 
     public void setCatagoryNames(String[] catagoryNames) {
-        this.catagoryNames = catagoryNames.clone();
+        this.catagoryNames = catagoryNames == null ? null : catagoryNames.clone();
     }
 
     public double getMinimumValue() {

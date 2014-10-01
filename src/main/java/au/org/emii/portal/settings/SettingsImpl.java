@@ -178,8 +178,12 @@ public class SettingsImpl implements Settings {
     }
 
     @Override
-
     public void setProxyAllowedHosts(String proxyAllowedHosts) {
         this.proxyAllowedHosts = proxyAllowedHosts;
+    }
+
+    @Override
+    public void setConfigPath(String configPath) {
+        this.configPath = configPath;
     }
 }

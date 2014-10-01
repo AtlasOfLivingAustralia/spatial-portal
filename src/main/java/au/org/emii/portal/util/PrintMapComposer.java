@@ -5,29 +5,32 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.value.BoundingBox;
 import org.ala.layers.util.SpatialUtil;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
 import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObjectImage;
+import org.hsqldb.lib.tar.TarFileOutputStream;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.RescaleOp;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 /**
  * Created by a on 12/05/2014.
@@ -66,8 +69,8 @@ public class PrintMapComposer {
         this.mapLayers = new ArrayList(mapLayers);
         this.baseMap = baseMap;
 
-        this.extents = extents.clone();
-        this.windowSize = windowSize.clone();
+        this.extents = extents == null ? null : extents.clone();
+        this.windowSize = windowSize == null ? null : windowSize.clone();
 
         //extents (epsg:3857) same as viewportarea (epsg:4326)
         if (bb.getMaxLongitude() < bb.getMinLongitude() || bb.getMaxLongitude() > 180) {
@@ -167,27 +170,26 @@ public class PrintMapComposer {
         dpi = (resolution == 1 && "outline".equalsIgnoreCase(baseMap)) ? DPI_HIGH_RES : DPI_LOW_RES;
     }
 
-    public byte[] get() {
-        BufferedImage map = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = (Graphics2D) map.getGraphics();
-        g.setPaint(Color.white);
-        g.fillRect(0, 0, width, height);
+
+    private List drawTiles(Graphics2D g, boolean drawTiles) {
+        //returns when all tiles are retrieved
+        List urls = new ArrayList();
 
         //base layer
         if ("normal".equalsIgnoreCase(baseMap)) {
             //google
-            drawGoogle(g, "roadmap");
+            urls.addAll(drawGoogle(g, "roadmap", drawTiles));
         } else if ("hybrid".equalsIgnoreCase(baseMap)) {
             //google hybrid
-            drawGoogle(g, "hybrid");
+            urls.addAll(drawGoogle(g, "hybrid", drawTiles));
         } else if ("minimal".equalsIgnoreCase(baseMap)) {
             //openstreetmap
-            drawOSM(g);
+            urls.addAll(drawOSM(g, drawTiles));
         } else {
             //outline
             //world layer
             String uri = CommonData.getGeoServer() + "/wms/reflect?LAYERS=ALA%3Aworld&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&FORMAT=image%2Fjpeg&SRS=EPSG%3A3857&DPI=" + dpi;
-            drawUri(g, uri, 1, false);
+            urls.addAll(drawUri(g, uri, 1, false, drawTiles));
         }
 
         //wms layers
@@ -196,12 +198,101 @@ public class PrintMapComposer {
                     && mapLayers.get(i).isDisplayed()) {
                 for (int j = mapLayers.get(i).getChildCount() - 1; j >= 0; j--) {
                     if (mapLayers.get(i).getChild(j).isDisplayed()) {
-                        drawLayer(g, mapLayers.get(i).getChild(j));
+                        urls.addAll(drawLayer(g, mapLayers.get(i).getChild(j), drawTiles));
                     }
                 }
-                drawLayer(g, mapLayers.get(i));
+                urls.addAll(drawLayer(g, mapLayers.get(i), drawTiles));
             }
         }
+
+
+        return urls;
+    }
+
+    public void fetchTiles(Graphics2D g) {
+        List list = drawTiles(g, false);
+
+        class FileCacheUrl implements Callable<String> {
+            String url;
+            Map map;
+
+            public FileCacheUrl(String url){
+                this.url = url;
+            }
+
+            @Override
+            public String call() throws Exception {
+                String cacheFilename = getCacheFilename(url);
+                File file = new File(cacheFilename);
+
+                if (!file.exists()) {
+                    try {
+                        HttpClient client = new HttpClient();
+                        GetMethod get = new GetMethod(url);
+
+                        client.executeMethod(get);
+
+                        //construct cache filename\
+                        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(cacheFilename));
+                        BufferedInputStream bis = new BufferedInputStream(get.getResponseBodyAsStream());
+                        byte[] bytes = new byte[1024];
+                        int n;
+                        while ((n = bis.read(bytes)) > 0) {
+                            bos.write(bytes, 0, n);
+                        }
+                        bos.close();
+                        bis.close();
+                    } catch (Exception e) {
+                        LOGGER.error("failed to get image at url: " + url + ", or write to file failed for: " + getCacheFilename(url), e);
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        List fileCacheUrls = new ArrayList();
+        for (Object o : list) {
+            fileCacheUrls.add(new FileCacheUrl((String) o));
+        }
+
+        int NUMBER_OF_GET_IMAGE_THREADS = 4;    //best not keep it at 4 unless updating code to 4 per site
+        ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_OF_GET_IMAGE_THREADS);
+
+        try {
+            executorService.invokeAll(fileCacheUrls);
+        } catch (InterruptedException e) {
+            LOGGER.error("getting image urls interrupted", e);
+        }
+    }
+
+    private String getCacheFilename(String url) {
+        String hash = url.hashCode() + "";
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] b = md.digest(url.getBytes());
+            hash = "";
+            for (byte i : b) {
+                hash += i;
+            }
+        } catch (NoSuchAlgorithmException e) {
+            LOGGER.error("failed to use MD5 as filename");
+        }
+        return "/data/webportal/cache/" + hash;
+    }
+
+
+    public byte[] get() {
+        BufferedImage map = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) map.getGraphics();
+        g.setPaint(Color.white);
+        g.fillRect(0, 0, width, height);
+
+        //fetch tiles > 1 at a time
+        fetchTiles(g);
+
+        //draw tiles
+        drawTiles(g, true);
 
         //remove alpha and add user comment
         int fontSize = 30;
@@ -243,7 +334,10 @@ public class PrintMapComposer {
         return bos.toByteArray();
     }
 
-    private void drawOSM(Graphics2D g) {
+    private List drawOSM(Graphics2D g, boolean drawTiles) {
+
+        List imageUrls = new ArrayList();
+
         double[] resolutions = {
                 156543.03390625,
                 78271.516953125,
@@ -312,20 +406,29 @@ public class PrintMapComposer {
             for (int ix = sx; ix <= mx; ix++) {
                 String bbox = res + "/" + (ix % tiles) + "/" + iy + ".png";
                 LOGGER.debug("print uri: " + uri + bbox);
-                BufferedImage img = getImage(uri + bbox, true);
-                if (img != null) {
-                    int nx = (ix - sx) * srcWidth + xOffset;
-                    int ny = (iy - sy) * srcHeight + yOffset;
-                    BufferedImage tmp = new BufferedImage(srcWidth, srcHeight, BufferedImage.TYPE_INT_ARGB);
-                    tmp.getGraphics().drawImage(img, 0, 0, srcWidth, srcHeight, 0, 0, tileWidth, tileHeight, null);
-                    g.drawImage(tmp, op, nx, ny);
+
+                imageUrls.add(uri + bbox);
+
+                if (drawTiles) {
+                    BufferedImage img = getImage(uri + bbox, true);
+                    if (img != null) {
+                        int nx = (ix - sx) * srcWidth + xOffset;
+                        int ny = (iy - sy) * srcHeight + yOffset;
+                        BufferedImage tmp = new BufferedImage(srcWidth, srcHeight, BufferedImage.TYPE_INT_ARGB);
+                        tmp.getGraphics().drawImage(img, 0, 0, srcWidth, srcHeight, 0, 0, tileWidth, tileHeight, null);
+                        g.drawImage(tmp, op, nx, ny);
+                    }
                 }
             }
         }
 
+        return imageUrls;
     }
 
-    private void drawGoogle(Graphics2D g, String maptype) {
+    private List drawGoogle(Graphics2D g, String maptype, boolean drawTiles) {
+
+        List imageUrls = new ArrayList();
+
         double[] resolutions = {
                 156543.03390625,
                 78271.516953125,
@@ -373,14 +476,21 @@ public class PrintMapComposer {
         RescaleOp op = new RescaleOp(new float[]{1f, 1f, 1f, 1f}, new float[]{0f, 0f, 0f, 0f}, null);
 
         LOGGER.debug("print uri: " + uri + parameters);
-        BufferedImage img = getImage(uri + parameters, true);
 
-        if (img != null) {
-            BufferedImage tmp = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            tmp.getGraphics().drawImage(img, 0, 0, width, height, 0, 0, imgWidth * gScale, imgHeight * gScale, null);
+        imageUrls.add(uri + parameters);
 
-            g.drawImage(tmp, op, 0, 0);
+        if (drawTiles) {
+            BufferedImage img = getImage(uri + parameters, true);
+
+            if (img != null) {
+                BufferedImage tmp = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                tmp.getGraphics().drawImage(img, 0, 0, width, height, 0, 0, imgWidth * gScale, imgHeight * gScale, null);
+
+                g.drawImage(tmp, op, 0, 0);
+            }
         }
+
+        return imageUrls;
     }
 
     private byte[] makePdfFromJpg(byte[] bytes) {
@@ -435,7 +545,10 @@ public class PrintMapComposer {
         return new byte[0];
     }
 
-    void drawLayer(Graphics2D g, MapLayer layer) {
+    private List drawLayer(Graphics2D g, MapLayer layer, boolean drawTiles) {
+
+        List imageUrls = new ArrayList();
+
         int oldSize = layer.getSizeVal();
         layer.setSizeVal((int) (oldSize * scale));
         String oldEnvParams = layer.getEnvParams();
@@ -529,13 +642,18 @@ public class PrintMapComposer {
                 "&SRS=EPSG:3857" +
                 "&DPI=" + dpi;
 
-        drawUri(g, uri, layer.getOpacity(), layer.getColourMode() != null && layer.getColourMode().equalsIgnoreCase(StringConstants.GRID));
+        imageUrls.addAll(drawUri(g, uri, layer.getOpacity(), layer.getColourMode() != null && layer.getColourMode().equalsIgnoreCase(StringConstants.GRID), drawTiles));
 
         layer.setEnvParams(oldEnvParams);
         layer.setSizeVal(oldSize);
+
+        return imageUrls;
     }
 
-    private void drawUri(Graphics2D g, String uri, float opacity, boolean imageOnly256) {
+    private List drawUri(Graphics2D g, String uri, float opacity, boolean imageOnly256, boolean drawTiles) {
+
+        List imageUrls = new ArrayList();
+
         //tiles
         double minX, maxX, minY, maxY, stepX, stepY;
         minX = extents[0];
@@ -566,18 +684,25 @@ public class PrintMapComposer {
             for (double x = minX; x < maxX; x += stepX, ix++) {
                 String bbox = "&BBOX=" + x + "," + (y - stepY) + "," + (x + stepX) + "," + y + "&WIDTH=" + tileWidth + "&HEIGHT=" + tileHeight + "&TRANSPARENT=true";
                 LOGGER.debug("print uri: " + uri + bbox);
-                BufferedImage img = getImage(uri + bbox, true);
-                if (img != null) {
-                    int nx = ix * tileWidth;
-                    int ny = iy * tileHeight;
 
-                    BufferedImage tmp = new BufferedImage(tileWidth, tileHeight, BufferedImage.TYPE_INT_ARGB);
-                    tmp.getGraphics().drawImage(img, 0, 0, null);
-                    g.drawImage(tmp, op, nx, ny);
+                imageUrls.add(uri + bbox);
 
+                if (drawTiles) {
+                    BufferedImage img = getImage(uri + bbox, true);
+                    if (img != null) {
+                        int nx = ix * tileWidth;
+                        int ny = iy * tileHeight;
+
+                        BufferedImage tmp = new BufferedImage(tileWidth, tileHeight, BufferedImage.TYPE_INT_ARGB);
+                        tmp.getGraphics().drawImage(img, 0, 0, null);
+                        g.drawImage(tmp, op, nx, ny);
+
+                    }
                 }
             }
         }
+
+        return imageUrls;
     }
 
     private BufferedImage getImage(String path, boolean useCache) {
@@ -586,46 +711,22 @@ public class PrintMapComposer {
 
         if (useCache) {
             synchronized (IMAGE_CACHE) {
-                if (IMAGE_CACHE.get(pth) != null) {
+                //using disk cache as prepared by the ExecutorService
+                String filename = getCacheFilename(path);
+                File file = new File(filename);
 
-                    Object[] o = IMAGE_CACHE.get(pth);
-                    o[0] = System.currentTimeMillis();
-
-                    return (BufferedImage) o[2];
+                if (file.exists()) {
+                    try {
+                        return ImageIO.read(file);
+                    } catch (IOException e) {
+                        LOGGER.error("failed to read cache image: " + filename, e);
+                    }
                 }
             }
         }
 
         try {
             BufferedImage img = ImageIO.read(new URL(pth));
-
-            if (useCache) {
-                synchronized (IMAGE_CACHE) {
-                    int size = ((DataBufferByte) img.getData().getDataBuffer()).getData().length;
-
-                    Object[] o = new Object[]{System.currentTimeMillis(), size, img};
-
-                    //need to resize cache?
-                    if (size < maxImageCacheSize) {
-                        while (imageCacheSize + size > maxImageCacheSize) {
-                            //remove oldest accessed cache object
-                            long smallest = Long.MAX_VALUE;
-                            String smallestKey = null;
-                            for (String key : IMAGE_CACHE.keySet()) {
-                                long age = (Long) IMAGE_CACHE.get(key)[0];
-                                if (age < smallest) {
-                                    smallest = age;
-                                    smallestKey = key;
-                                }
-                            }
-                            imageCacheSize -= (Integer) IMAGE_CACHE.get(smallestKey)[1];
-                            IMAGE_CACHE.remove(smallestKey);
-                        }
-
-                        IMAGE_CACHE.put(pth, o);
-                    }
-                }
-            }
 
             return img;
         } catch (Exception e) {

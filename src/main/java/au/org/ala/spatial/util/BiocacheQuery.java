@@ -113,7 +113,7 @@ public class BiocacheQuery implements Query, Serializable {
 
     public BiocacheQuery(String lsids, String[] rawNames, String wkt, String extraParams, List<Facet> facets, boolean forMapping, boolean[] geospatialKosher) {
         this.lsids = lsids;
-        this.rawNames = rawNames.clone();
+        this.rawNames = rawNames == null ? null : rawNames.clone();
         if (facets != null) {
             this.facets = new ArrayList<Facet>(facets.size());
             this.facets.addAll(facets);
@@ -139,7 +139,7 @@ public class BiocacheQuery implements Query, Serializable {
 
     public BiocacheQuery(String lsids, String[] rawNames, String wkt, String extraParams, List<Facet> facets, boolean forMapping, boolean[] geospatialKosher, String biocacheServer, String biocacheWebServer, boolean supportsDynamicFacets) {
         this.lsids = lsids;
-        this.rawNames = rawNames.clone();
+        this.rawNames = rawNames == null ? null : rawNames.clone();
         if (facets != null) {
             this.facets = new ArrayList<Facet>(facets.size());
             this.facets.addAll(facets);

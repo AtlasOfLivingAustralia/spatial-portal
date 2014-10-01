@@ -30,7 +30,7 @@ public class SpeciesListEvent implements EventListener {
 
     public SpeciesListEvent(String polygonLayerName, boolean[] geospatialKosher, boolean chooseEndemic, String extraParams) {
         this.polygonLayerName = polygonLayerName;
-        this.geospatialKosher = geospatialKosher.clone();
+        this.geospatialKosher = (geospatialKosher == null) ? null : geospatialKosher.clone();
         this.chooseEndemic = chooseEndemic;
         this.extraParams = extraParams;
     }
