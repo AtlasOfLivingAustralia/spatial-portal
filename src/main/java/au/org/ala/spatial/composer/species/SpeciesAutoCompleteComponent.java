@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.CheckEvent;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Comboitem;
@@ -43,11 +44,29 @@ public class SpeciesAutoCompleteComponent extends Div {
         vbox = new Vbox();
         chkUseRawName = new Checkbox("Use the scientific names supplied with the records");
         chkUseRawName.setChecked(false);
+
+        chkUseRawName.addEventListener("onCheck", new EventListener() {
+
+            @Override
+            public void onEvent(Event event) throws Exception {
+                onCheck$chkUseRawName(event);
+            }
+        });
         autoComplete = new SpeciesAutoComplete();
         autoComplete.setAutodrop(true);
         autoComplete.setWidth("330px");
+        autoComplete.addEventListener("onChange", new EventListener() {
+
+            @Override
+            public void onEvent(Event event) throws Exception {
+                autoCompleteSelectionChanged(event);
+            }
+
+        });
+
         vbox.appendChild(chkUseRawName);
         vbox.appendChild(autoComplete);
+
     }
 
     /**
@@ -56,7 +75,7 @@ public class SpeciesAutoCompleteComponent extends Div {
      *
      * @param event
      */
-    public void onChange$autoComplete(Event event) {
+    void autoCompleteSelectionChanged(Event event) {
         Events.sendEvent(new Event("onValueSelected", this));
     }
 

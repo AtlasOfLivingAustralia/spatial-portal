@@ -166,25 +166,6 @@ public class ToolComposer extends UtilityComposer {
             updateEndemicCheckBox();
         }
 
-        //add the species lists stuff
-        if (rSpeciesUploadLSID != null && speciesListListbox != null) {
-            speciesListListbox.addEventListener(StringConstants.ONSICHECKBOXCHANGED, new EventListener() {
-                @Override
-                public void onEvent(Event event) throws Exception {
-                    btnOk.setDisabled((Integer) event.getData() == 0);
-                }
-            });
-        }
-
-        if (rSpeciesUploadLSIDBk != null && speciesListListbox != null) {
-            speciesListListbox.addEventListener(StringConstants.ONSICHECKBOXCHANGED, new EventListener() {
-                @Override
-                public void onEvent(Event event) throws Exception {
-                    btnOk.setDisabled((Integer) event.getData() == 0);
-                }
-            });
-        }
-
         updateWindowTitle();
 
         fixFocus();
@@ -201,11 +182,31 @@ public class ToolComposer extends UtilityComposer {
             }
         }
 
+        if (searchSpeciesACComp != null) {
+            mSearchSpeciesACComp.addEventListener("onValueSelected", new EventListener() {
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    toggles();
+                }
+            });
+        }
         if (mSearchSpeciesACComp != null) {
             mSearchSpeciesACComp.getAutoComplete().setBiocacheOnly(true);
+            mSearchSpeciesACComp.addEventListener("onValueSelected", new EventListener() {
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    mChooseSelected(null);
+                }
+            });
         }
         if (mSearchSpeciesACCompBk != null) {
             mSearchSpeciesACCompBk.getAutoComplete().setBiocacheOnly(true);
+            mSearchSpeciesACCompBk.addEventListener("onValueSelected", new EventListener() {
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    mChooseSelectedBk(null);
+                }
+            });
         }
         // init includeLayers
         if (cbLayer != null) {
@@ -230,6 +231,36 @@ public class ToolComposer extends UtilityComposer {
         }
 
         updateDefaultGeospatialKosherValues();
+
+        //some variables won't wire because they are imported
+        if (getFellowIfAny("splistbox") != null) {
+            vboxImportSL = (Vbox) getFellow("splistbox").getFellow("vboxImportSL");
+            speciesListListbox = (SpeciesListListbox) this.getFellow("splistbox").getFellow("speciesListListbox");
+        }
+        if (getFellowIfAny("splistboxbk") != null) {
+            vboxImportSLBk = (Vbox) getFellow("splistboxbk").getFellow("vboxImportSL");
+            speciesListListboxBk = (SpeciesListListbox) this.getFellow("splistboxbk").getFellow("speciesListListbox");
+        }
+
+        //add the species lists stuff
+        if (rSpeciesUploadLSID != null && speciesListListbox != null) {
+            speciesListListbox.addEventListener(StringConstants.ONSICHECKBOXCHANGED, new EventListener() {
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    btnOk.setDisabled((Integer) event.getData() == 0);
+                }
+            });
+        }
+
+        if (rSpeciesUploadLSIDBk != null && speciesListListbox != null) {
+            speciesListListbox.addEventListener(StringConstants.ONSICHECKBOXCHANGED, new EventListener() {
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    btnOk.setDisabled((Integer) event.getData() == 0);
+                }
+            });
+        }
+
     }
 
     void updateDefaultGeospatialKosherValues() {
@@ -702,7 +733,9 @@ public class ToolComposer extends UtilityComposer {
         }
         Radio selectedItem = rgSpecies.getSelectedItem();
         try {
-            selectedItem = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+            if (selectedItem == null && event != null) {
+                selectedItem = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+            }
         } catch (Exception e) {
             LOGGER.error(StringConstants.FAILED_TO_SET_RADIO, e);
         }
@@ -1972,10 +2005,6 @@ public class ToolComposer extends UtilityComposer {
         updateLayerSelectionCount();
     }
 
-    public void onValueSelected$mSearchSpeciesACComp(Event event) {
-        mChooseSelected(null);
-    }
-
     public void mChooseSelected(Event event) {
         Comboitem ci = mSearchSpeciesACComp.getAutoComplete().getSelectedItem();
         if (ci != null && ci.getAnnotatedProperties() != null && ci.getAnnotatedProperties().get(0) != null) {
@@ -2012,10 +2041,6 @@ public class ToolComposer extends UtilityComposer {
             }
         }
         toggles();
-    }
-
-    public void onValueSelected$mSearchSpeciesACCompBk(Event event) {
-        mChooseSelectedBk(null);
     }
 
     public void mChooseSelectedBk(Event event) {

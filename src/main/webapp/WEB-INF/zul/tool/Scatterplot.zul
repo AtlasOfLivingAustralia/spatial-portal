@@ -86,8 +86,6 @@
                                 <hbox>
                                     <separator orient="vertical" />
                                     <div id="searchSpeciesACComp" use="au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent"/>
-
-
                                 </hbox>
                                 <separator/>
                                 <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
@@ -112,7 +110,6 @@
                             <label value="Add from search" />
                             <separator orient="vertical" />
                             <div id="mSearchSpeciesACComp" use="au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent"/>
-
                         </hbox>
                         <separator />
                         <separator />
@@ -220,7 +217,6 @@
                             <label value="Add from search" />
                             <separator orient="vertical" />
                             <div id="mSearchSpeciesACCompBk" use="au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent"/>
-
                         </hbox>
                         <separator />
                         <separator />

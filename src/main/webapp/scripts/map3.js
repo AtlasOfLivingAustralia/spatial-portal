@@ -300,9 +300,6 @@ function buildMapReal(west, south, east, north) {
         setVectorLayersSelectable();
     });
 
-    //zoom before registering moveend
-    map.zoomToExtent(bounds, false);
-
     map.events.register("moveend", map, function (e) {
         parent.setExtent();
         if (shownPicture && !shownPicturePopup) {
@@ -320,6 +317,8 @@ function buildMapReal(west, south, east, north) {
             autoSwitchBaseMap();
         }
     });
+
+    map.zoomToExtent(bounds, false);
 
     registerSpeciesClick();
     toggleActiveHover();

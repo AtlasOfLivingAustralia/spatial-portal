@@ -43,6 +43,10 @@ public class SitesBySpeciesComposer extends ToolComposer {
         this.selectedMethod = "Points To Grid";
         this.totalSteps = 3;
 
+        if (dResolution.getValue() == 0) {
+            dResolution.setValue(0.05);
+        }
+
         this.loadAreaLayers();
         this.loadSpeciesLayers(false);
         this.updateWindowTitle();
