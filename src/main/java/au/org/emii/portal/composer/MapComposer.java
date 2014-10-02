@@ -1096,6 +1096,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void mapLoaded(String text) {
         boolean loaded = Boolean.parseBoolean(text);
 
+        getPortalSession().setMapLoaded(loaded);
+
+        BoundingBox bb = getPortalSession().getDefaultBoundingBox();
+
         if (loaded) {
             LOGGER.debug("map is now loaded. let's try mapping.");
             MapLayer ml = loadUrlParameters();
@@ -1105,7 +1109,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         }
 
-        getPortalSession().setMapLoaded(loaded);
+        openLayersJavascript.zoomToBoundingBox(bb, false);
     }
 
     /**

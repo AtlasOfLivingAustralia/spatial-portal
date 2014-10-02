@@ -380,7 +380,7 @@ public class SpeciesAutoComplete extends Combobox {
                             }
                         }
                     } catch (Exception e) {
-                        LOGGER.error("SPECIES AUTOCOMPLETE ERROR|" + sdf.format(new Date()) + "|" + (System.currentTimeMillis() - start) + "ms|" + nsurl, e);
+                        LOGGER.debug("SPECIES AUTOCOMPLETE ERROR|" + sdf.format(new Date()) + "|" + (System.currentTimeMillis() - start) + "ms|" + nsurl, e);
                     }
                 }
             }

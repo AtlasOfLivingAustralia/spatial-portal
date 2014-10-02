@@ -1012,7 +1012,7 @@ public class BiocacheQuery implements Query, Serializable {
             return rank;
         }
 
-        if (lsids.split(",").length == 1) {
+        if (lsids != null && lsids.split(",").length == 1) {
             rank = getScientificNameRank(lsids).split(",")[1];
 
             if (StringConstants.SCIENTIFICNAME.equalsIgnoreCase(rank) || StringConstants.SCIENTIFIC.equalsIgnoreCase(rank)) {
