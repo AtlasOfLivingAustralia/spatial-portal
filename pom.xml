@@ -830,4 +830,17 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+        <distributionManagement>
+                <repository>
+                        <id>ala-repo</id>
+                        <name>Internal Releases</name>
+                        <url>http://ala-wonder.it.csiro.au/nexus/content/repositories/releases/</url>
+                </repository>
+                <snapshotRepository>
+                        <id>ala-repo</id>
+                        <name>Internal Releases</name>
+                        <url>http://ala-wonder.it.csiro.au/nexus/content/repositories/snapshots/</url>
+                </snapshotRepository>
+        </distributionManagement>
 </project>
