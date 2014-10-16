@@ -24,6 +24,11 @@ import au.org.emii.portal.util.RemoteMap;
 import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.DataHolder;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.persistence.FilePersistenceStrategy;
 import com.thoughtworks.xstream.persistence.PersistenceStrategy;
 import com.thoughtworks.xstream.persistence.XmlArrayList;
@@ -1327,6 +1332,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 } else if ("q".equals(key)) {
                     //relies on spitonparams (biocachequery)
                     s = value;
+
+                    //biocache is unhappy with (lsid:...)
+                    //remove brackets to make it work
+                    if (value.startsWith("(") && value.endsWith(")") && !value.contains(" ")) {
+                        s = value.substring(1, value.length() - 2);
+                    }
                 } else if ("fq".equals(key)) {
 
                     //flag geospatialKosher filters separately
@@ -1469,6 +1480,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public MapLayer addWKTLayer(String wkt, String label, String displayName) {
+
+        if (wkt != null) {
+            wkt = Util.fixWkt(wkt);
+        }
         MapLayer mapLayer = null;
 
         if (safeToPerformMapAction()) {
@@ -3009,7 +3024,49 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             ArrayUtils.reverse(scatterplotNames);
 
-            PersistenceStrategy strategy = new FilePersistenceStrategy(new File(sfld));
+            // ignore fields not found
+            XStream xstream =
+                    new XStream(new DomDriver()) {
+
+                        protected MapperWrapper wrapMapper(MapperWrapper next) {
+                            return new MapperWrapper(next) {
+                                public boolean shouldSerializeMember(Class definedIn, String fieldName) {
+                                    if (definedIn == Object.class || !super.shouldSerializeMember(definedIn, fieldName))
+                                        System.out.println("faled to read: " + definedIn + ", " + fieldName);
+
+                                    return definedIn != Object.class ? super.shouldSerializeMember(definedIn, fieldName) : false;
+                                }
+                            };
+                        }
+
+                        @Override
+                        public Object unmarshal(HierarchicalStreamReader reader) {
+                            Object o = super.unmarshal(reader);
+                            if (o instanceof BiocacheQuery)
+                                ((BiocacheQuery) o).getFullQ(false);
+                            return o;
+                        }
+
+                        @Override
+                        public Object unmarshal(HierarchicalStreamReader reader, Object root) {
+                            Object o = super.unmarshal(reader, root);
+                            if (o instanceof BiocacheQuery)
+                                ((BiocacheQuery) o).getFullQ(false);
+                            return o;
+                        }
+
+                        @Override
+                        public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder) {
+                            Object o = super.unmarshal(reader, root, dataHolder);
+                            if (o instanceof BiocacheQuery)
+                                ((BiocacheQuery) o).getFullQ(false);
+                            return o;
+                        }
+                    };
+
+
+            PersistenceStrategy strategy = new FilePersistenceStrategy(new File(sfld), xstream);
+
             List list = new XmlArrayList(strategy);
 
             ListIterator it = list.listIterator(list.size());
@@ -3033,11 +3090,35 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
 
         } catch (Exception e) {
+            try {
+
+                File f = new File("/data/sessions/" + sessionid + ".txt");
+
+                PrintWriter pw = new PrintWriter(f);
+
+                e.printStackTrace(pw);
+
+                pw.close();
+
+            } catch (Exception ex) {
+
+            }
             LOGGER.error("Unable to load session data", e);
             showMessage("Unable to load session data");
+
         } finally {
             if (scanner != null) {
                 scanner.close();
+            }
+            try {
+
+
+                File f = new File("/data/sessions/ok/" + sessionid + ".txt");
+
+                FileUtils.writeStringToFile(f, "ok");
+
+            } catch (Exception ex) {
+
             }
         }
     }

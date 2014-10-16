@@ -28,46 +28,50 @@ public class VisibilityToggleEventListener implements EventListener {
     public void onEvent(Event event) throws Exception {
         LOGGER.debug("VisibilityToggleEventListener.onEvent() fired ");
         Checkbox checkbox = (Checkbox) event.getTarget();
-        MapComposer mapComposer = (MapComposer) event.getPage().getFellow(StringConstants.MAPPORTALPAGE);
-        if (mapComposer.safeToPerformMapAction()) {
-            Listitem listitem = (Listitem) checkbox.getParent().getParent();
-            MapLayer layer = listitem.getValue();
-            boolean checked = checkbox.isChecked();
+        try {
+            MapComposer mapComposer = (MapComposer) event.getPage().getFellow(StringConstants.MAPPORTALPAGE);
+            if (mapComposer.safeToPerformMapAction()) {
+                Listitem listitem = (Listitem) checkbox.getParent().getParent();
+                MapLayer layer = listitem.getValue();
+                boolean checked = checkbox.isChecked();
 
-            /* checkbox state will be saved automatically in MapLayer instances
-             * with calls to activate/remove in OpenLayersJavascript
-             */
-            if (checked) {
+                /* checkbox state will be saved automatically in MapLayer instances
+                 * with calls to activate/remove in OpenLayersJavascript
+                 */
+                if (checked) {
 
-                PortalSession portalSession = (PortalSession) Executions.getCurrent()
-                        .getDesktop()
-                        .getSession()
-                        .getAttribute(StringConstants.PORTAL_SESSION);
+                    PortalSession portalSession = (PortalSession) Executions.getCurrent()
+                            .getDesktop()
+                            .getSession()
+                            .getAttribute(StringConstants.PORTAL_SESSION);
 
-                openLayersJavascript.execute(
-                        openLayersJavascript.getIFrameReferences()
-                                + openLayersJavascript.activateMapLayer(layer, false, true)
-                                + openLayersJavascript.updateMapLayerIndexes(
-                                portalSession.getActiveLayers()
-                        )
-                );
+                    openLayersJavascript.execute(
+                            openLayersJavascript.getIFrameReferences()
+                                    + openLayersJavascript.activateMapLayer(layer, false, true)
+                                    + openLayersJavascript.updateMapLayerIndexes(
+                                    portalSession.getActiveLayers()
+                            )
+                    );
 
-                checkbox.setTooltiptext("Hide");
+                    checkbox.setTooltiptext("Hide");
 
-                mapComposer.refreshContextualMenu();
+                    mapComposer.refreshContextualMenu();
+
+                } else {
+                    openLayersJavascript.removeMapLayerNow(layer);
+                    checkbox.setTooltiptext("Show");
+
+                    mapComposer.refreshContextualMenu();
+                }
 
             } else {
-                openLayersJavascript.removeMapLayerNow(layer);
-                checkbox.setTooltiptext("Show");
-
-                mapComposer.refreshContextualMenu();
+                /* there was a problem performing the action - 'undo'
+                 * the user's click on the checkbox
+                 */
+                checkbox.setChecked(!checkbox.isChecked());
             }
-
-        } else {
-            /* there was a problem performing the action - 'undo' 
-             * the user's click on the checkbox
-             */
-            checkbox.setChecked(!checkbox.isChecked());
+        } catch (Exception e) {
+            //toogle won't work if page not completely loaded.
         }
     }
 

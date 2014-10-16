@@ -167,6 +167,10 @@ function printHack(o) {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$onPrint', mapHTML));
 }
 function changeBaseLayer(type) {
+    if (undefined === map) {
+        return;
+    }
+
     currentbaselayertxt = type;
 
     $('li.bmapoption').removeClass('mapoptsel');

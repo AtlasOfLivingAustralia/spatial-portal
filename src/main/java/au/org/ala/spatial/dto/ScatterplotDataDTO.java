@@ -37,6 +37,7 @@ public class ScatterplotDataDTO implements Serializable {
     private Query query;
     private String name;
     private SelectedArea highlightSa;
+    private SelectedArea filterSa;  //keep for backwards compatability for saved sessions
     //data
     private double[] points;
     private double[][] data;
@@ -46,6 +47,7 @@ public class ScatterplotDataDTO implements Serializable {
 
     public ScatterplotDataDTO() {
         enabled = false;
+        missingDataChecked = false;
     }
 
     public ScatterplotDataDTO(Query query, String name, String layer1, String layer1name, String layer2
@@ -187,7 +189,7 @@ public class ScatterplotDataDTO implements Serializable {
     }
 
     public Boolean getMissingDataChecked() {
-        return missingDataChecked;
+        return missingDataChecked == null ? false : missingDataChecked;
     }
 
     public void setMissingDataChecked(boolean missingDataChecked) {

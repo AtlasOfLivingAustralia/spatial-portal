@@ -7,6 +7,7 @@ package au.org.ala.spatial.util;
 import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.lang.LanguagePackImpl;
+import au.org.emii.portal.util.PortalProperties;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.layers.legend.QueryField;
@@ -145,7 +146,7 @@ public final class CommonData {
         //handle the situation where there is no config value for endemic area and use default value of 50,000km
         String maxendemic = settings.getProperty(MAX_AREA_FOR_ENDEMIC) != null ? settings.getProperty(MAX_AREA_FOR_ENDEMIC) : "50000";
         maxEndemicArea = Integer.parseInt(maxendemic);
-        biocacheQc = settings.getProperty(BIOCACHE_QC);
+        biocacheQc = ((PortalProperties) settings).getProperty(BIOCACHE_QC, false);
         if (biocacheQc == null) {
             biocacheQc = "";
         }
@@ -841,12 +842,14 @@ public final class CommonData {
 
     public static String[] getSpeciesChecklistWMSFromSpcode(String spcode) {
         if (checklistspeciesWmsLayersBySpcode == null) {
-            return new String[0];
+            return new String[]{null, null};
         }
 
         String[] ret = checklistspeciesWmsLayersBySpcode.get(spcode);
 
-        return ret == null ? new String[0] : ret;
+        LOGGER.error("failed to find species checklist for spcode=" + spcode);
+
+        return ret == null ? new String[]{null, null} : ret;
     }
 
     public static int getSpeciesChecklistCountByWMS(String lookForWMS) {

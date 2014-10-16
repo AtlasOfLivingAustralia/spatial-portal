@@ -255,7 +255,7 @@ public class EnvironmentalList extends Listbox {
         String[] firstDomain = getFirstDomain();
         String[] thisDomain;
 
-        if (!singleDomain || firstDomain == null) {
+        if (!singleDomain || firstDomain.length == 0) {
             for (int i = 0; i < listEntries.size(); i++) {
                 boolean defaultDisable = disableContextualLayers && StringConstants.CONTEXTUAL.equalsIgnoreCase(listEntries.get(i).getType());
                 getItemAtIndex(i).setDisabled(defaultDisable);
@@ -286,7 +286,7 @@ public class EnvironmentalList extends Listbox {
     }
 
     String[] getFirstDomain() {
-        String[] domain = null;
+        String[] domain = {};
 
         for (Object o : getSelectedItems()) {
             ListEntryDTO l = listEntries.get(((Listitem) o).getIndex());

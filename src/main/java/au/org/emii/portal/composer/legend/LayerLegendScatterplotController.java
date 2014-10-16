@@ -154,7 +154,7 @@ public class LayerLegendScatterplotController extends UtilityComposer implements
         if (data.getImagePath() == null || !data.getImagePath().contains(".png")) {
             data.setImagePath(CommonData.getSatServer() + "/ws/scatterplot/" + data.getId() + ".png?" + System.currentTimeMillis());
         }
-        String script = "updateScatterplot(" + width + "," + height + ",'url(" + data.getImagePath() + ")')";
+        String script = "if (typeof updateScatterplot !== 'undefined') updateScatterplot(" + width + "," + height + ",'url(" + data.getImagePath() + ")')";
         Clients.evalJavaScript(script);
 
         scatterplotDownloads.setVisible(true);

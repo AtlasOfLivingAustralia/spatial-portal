@@ -34,7 +34,7 @@ import java.util.List;
 public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     public static final String SAFE_TO_PROCEED_CLOSE = "} ";
-    public static final String SAFE_TO_PROCEED_OPEN = "if (safeToProceed) { ";
+    public static final String SAFE_TO_PROCEED_OPEN = "if (typeof safeToProceed !== 'undefined' && safeToProceed) { ";
     private static final Logger LOGGER = Logger.getLogger(OpenLayersJavascriptImpl.class);
     private LayerUtilities layerUtilities = null;
     private String additionalScript = "";
@@ -270,7 +270,11 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         if (mapLayer.isBaseLayer()) {
             // remove previous baselayer (if any) to prevent supurious
             // requests
-            script.append("if (currentBaseLayer != null) { " + " map.removeLayer( ").append(associativeArray).append("[currentBaseLayer]); ").append(associativeArray).append("[currentBaseLayer] = null; ").append("} ").append("currentBaseLayer='").append(mapLayer.getUniqueIdJS()).append("'; ").append("map.setBaseLayer(").append(associativeArray).append("[currentBaseLayer]); ");
+            script.append("if (currentBaseLayer != null) { ")
+                    .append(" map.removeLayer( ").append(associativeArray).append("[currentBaseLayer]); ")
+                    .append(associativeArray).append("[currentBaseLayer] = null; ").append("} ")
+                    .append("currentBaseLayer='").append(mapLayer.getUniqueIdJS()).append("'; ")
+                    .append("map.setBaseLayer(").append(associativeArray).append("[currentBaseLayer]); ");
         }
 
         // add all the vector layers to be the selectable list
@@ -488,7 +492,11 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 }
             }
         }
-        return wrapWithSafeToProceed(script.toString());
+        if (script.toString().length() > 0) {
+            return wrapWithSafeToProceed(script.toString());
+        } else {
+            return "";
+        }
     }
 
     /**

@@ -51,6 +51,8 @@
             </hbox>
             <separator />
 
+            <textbox id="displayGeom" readonly="true" width="100%" visible="false" multiline="true" height="100px" />
+
             <div class="btn-group" >
                                             <button label="Cancel" id="btnCancel" />
                                             <button class="btn-primary" label="Next >" id="btnOk" />

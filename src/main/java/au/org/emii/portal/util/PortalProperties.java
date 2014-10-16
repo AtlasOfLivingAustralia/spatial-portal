@@ -13,9 +13,13 @@ public class PortalProperties extends Properties {
 
     @Override
     public String getProperty(String key) {
+        return getProperty(key, true);
+    }
+
+    public String getProperty(String key, boolean mandatory) {
         String property = super.getProperty(key);
 
-        if (property == null) {
+        if (property == null && mandatory) {
             LOGGER.error("****** MISSING PROPERTY in webportal-config.properties: " + key);
         }
 

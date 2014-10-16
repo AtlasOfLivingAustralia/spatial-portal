@@ -118,7 +118,7 @@ public class BiocacheQuery implements Query, Serializable {
             this.facets = new ArrayList<Facet>(facets.size());
             this.facets.addAll(facets);
         }
-        this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : wkt;
+        this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : Util.fixWkt(wkt);
         this.extraParams = extraParams;
         this.forMapping = forMapping;
         this.qc = CommonData.getBiocacheQc();
@@ -816,6 +816,10 @@ public class BiocacheQuery implements Query, Serializable {
     @Override
     public final String getFullQ(boolean encode) {
         StringBuilder sb = new StringBuilder();
+
+        if (wkt != null && "POLYGON EMPTY".equals(wkt)) {
+            wkt = null;
+        }
 
         int queryTerms = 0;
         if (lsids != null) {

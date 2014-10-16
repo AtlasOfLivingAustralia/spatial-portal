@@ -388,6 +388,9 @@ public class AddSpeciesController extends UtilityComposer {
                 Listitem li = (Listitem) event.getTarget().getParent();
                 li.detach();
                 refreshBtnOkDisabled();
+                if (multipleSpeciesUploadName == null) {
+                    multipleSpeciesUploadName = "";
+                }
                 if (loadedAssemblage && !multipleSpeciesUploadName.contains("subset")) {
                     multipleSpeciesUploadName += " - subset";
                 }

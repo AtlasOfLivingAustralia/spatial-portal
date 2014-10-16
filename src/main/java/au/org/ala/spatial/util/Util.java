@@ -8,6 +8,8 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.dto.WKTReducedDTO;
 import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.geom.util.AffineTransformation;
+import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.operation.valid.IsValidOp;
@@ -783,7 +785,7 @@ public final class Util {
     }
 
     public static String getMetadataHtmlForDistributionOrChecklist(String spcode, String[] row, String layerName) {
-        if (CommonData.getSpeciesDistributionWMSFromSpcode(spcode).length == 0) {
+        if (CommonData.getSpeciesDistributionWMSFromSpcode(spcode)[0] == null) {
             return getMetadataHtmlForExpertDistribution(Util.getDistributionOrChecklist(spcode));
         } else {
             return getMetadataHtmlForAreaChecklist(spcode, layerName);
@@ -965,5 +967,72 @@ public final class Util {
         }
 
         return null;
+    }
+
+    public static String fixWkt(String wkt) {
+        String newWkt = wkt;
+        try {
+            WKTReader wktReader = new WKTReader();
+            com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
+            //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
+
+            //if outside -180 to 180, cut and fit
+            Envelope env = g.getEnvelopeInternal();
+            if (env.getMinX() < -180 || env.getMaxX() > 180) {
+                int minx = -180;
+                while (minx > env.getMinX()) {
+                    minx -= 360;
+                }
+                int maxx = 180;
+                while (maxx < env.getMaxX()) {
+                    maxx += 360;
+                }
+
+                //divide, translate and rejoin
+                Geometry newGeometry = null;
+                for (int i = minx; i < maxx; i += 360) {
+                    Geometry cutter = wktReader.read("POLYGON((" + minx + " -90," + minx + " 90," + (minx + 360) + " 90," + (minx + 360) + " -90," + minx + " -90))");
+
+                    Geometry part = cutter.intersection(g);
+
+                    //offset cutter
+                    if (minx != -180) {
+                        AffineTransformation at = AffineTransformation.translationInstance(-180 - i, 0);
+
+                        part.apply(at);
+                    }
+
+                    if (part.getArea() > 0) {
+                        if (newGeometry == null) {
+                            newGeometry = part;
+                        } else {
+                            newGeometry = newGeometry.union(part);
+                        }
+                    }
+                }
+
+                newWkt = newGeometry.toText();
+            }
+
+            IsValidOp op = new IsValidOp(g);
+            if (!op.isValid()) {
+                //give up?
+            } else if (g.isRectangle()) {
+                //NC 20130319: When the shape is a rectangle ensure that the points a specified in the correct order.
+                //get the new WKT for the rectangle will possibly need to change the order.
+
+                com.vividsolutions.jts.geom.Envelope envelope = g.getEnvelopeInternal();
+                newWkt = StringConstants.POLYGON + "(("
+                        + envelope.getMinX() + " " + envelope.getMinY() + ","
+                        + envelope.getMaxX() + " " + envelope.getMinY() + ","
+                        + envelope.getMaxX() + " " + envelope.getMaxY() + ","
+                        + envelope.getMinX() + " " + envelope.getMaxY() + ","
+                        + envelope.getMinX() + " " + envelope.getMinY() + "))";
+            }
+        } catch (ParseException parseException) {
+            LOGGER.error("error fixing WKT", parseException);
+        }
+
+        return newWkt;
     }
 }

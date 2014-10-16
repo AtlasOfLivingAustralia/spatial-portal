@@ -60,7 +60,18 @@ public class AreaMapPolygon extends AreaToolComposer {
             activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
         }
         getMapComposer().setAttribute("activeLayerName", activeLayerName);
-        getMapComposer().setAttribute("mappolygonlayer", rgPolygonLayers.getSelectedItem().getValue());
+
+        try {
+            if (rgPolygonLayers.getSelectedItem() == null) {
+                if (rgPolygonLayers.getItemCount() > 0) {
+                    getMapComposer().setAttribute("mappolygonlayer", rgPolygonLayers.getItemAtIndex(0).getValue());
+                }
+            } else {
+                getMapComposer().setAttribute("mappolygonlayer", rgPolygonLayers.getSelectedItem().getValue());
+            }
+        } catch (Exception e) {
+            LOGGER.error("failed to set map area polygon selected by the radio button selection", e);
+        }
 
         this.detach();
     }
@@ -211,7 +222,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                         try {
                             md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + jo.getString("spid"));
                         } catch (Exception e) {
-                            LOGGER.error("error setting map layer moreInfo", e);
+                            LOGGER.error("error setting map layer moreInfo: " + (jo != null ? jo.toString() : "jo is null"), e);
                         }
 
                         //found the object on the layer

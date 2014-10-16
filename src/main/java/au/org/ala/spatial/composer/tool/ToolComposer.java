@@ -740,10 +740,10 @@ public class ToolComposer extends UtilityComposer {
             LOGGER.error(StringConstants.FAILED_TO_SET_RADIO, e);
         }
         try {
-            if (event != null && selectedItem != rSpeciesUploadLSID) {
+            if (vboxImportSL != null && event != null && selectedItem != rSpeciesUploadLSID) {
                 vboxImportSL.setVisible(false);
             }
-            if (event != null && vboxImportSLBk != null && selectedItem != rSpeciesUploadLSIDBk) {
+            if (vboxImportSLBk != null && event != null && vboxImportSLBk != null && selectedItem != rSpeciesUploadLSIDBk) {
                 vboxImportSLBk.setVisible(false);
             }
             // Check to see if we are perform a normal or background upload
@@ -802,13 +802,15 @@ public class ToolComposer extends UtilityComposer {
         }
         Radio selectedItem = rgSpeciesBk.getSelectedItem();
         try {
-            selectedItem = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+            if (selectedItem == null && event != null) {
+                selectedItem = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+            }
         } catch (Exception e) {
             LOGGER.error(StringConstants.FAILED_TO_SET_RADIO, e);
         }
         try {
 
-            if (event != null && selectedItem != rSpeciesUploadLSID) {
+            if (vboxImportSL != null && event != null && selectedItem != rSpeciesUploadLSID) {
                 vboxImportSL.setVisible(false);
             }
             if (event != null && vboxImportSLBk != null && selectedItem != rSpeciesUploadLSIDBk) {
