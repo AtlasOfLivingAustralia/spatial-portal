@@ -265,21 +265,23 @@ public class EnvironmentalList extends Listbox {
 
         for (int i = 0; i < listEntries.size(); i++) {
             ListEntryDTO l = listEntries.get(i);
-            thisDomain = getDomain(l.getLayerObject());
-            if (l.getLayerObject() != null
-                    && thisDomain.length > 0) {
-                boolean defaultDisable = disableContextualLayers && StringConstants.CONTEXTUAL.equalsIgnoreCase(listEntries.get(i).getType());
-                boolean match = false;
-                for (String d1 : firstDomain) {
-                    for (String d2 : thisDomain) {
-                        if (d1.equalsIgnoreCase(d2)) {
-                            match = true;
+            if (l.getLayerObject() != null) {
+                thisDomain = getDomain(l.getLayerObject());
+
+                if (thisDomain.length > 0) {
+                    boolean defaultDisable = disableContextualLayers && StringConstants.CONTEXTUAL.equalsIgnoreCase(listEntries.get(i).getType());
+                    boolean match = false;
+                    for (String d1 : firstDomain) {
+                        for (String d2 : thisDomain) {
+                            if (d1.equalsIgnoreCase(d2)) {
+                                match = true;
+                            }
                         }
                     }
-                }
-                getItemAtIndex(i).setDisabled(defaultDisable || !match);
-                if (!match && getItemAtIndex(i).isSelected()) {
-                    toggleItemSelection(getItemAtIndex(i));
+                    getItemAtIndex(i).setDisabled(defaultDisable || !match);
+                    if (!match && getItemAtIndex(i).isSelected()) {
+                        toggleItemSelection(getItemAtIndex(i));
+                    }
                 }
             }
         }

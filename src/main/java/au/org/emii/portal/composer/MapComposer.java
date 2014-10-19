@@ -1168,10 +1168,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public String getCookieValue(String cookieName) {
-        for (Cookie c : ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies()) {
-            if (c.getName().equals(cookieName)) {
-                return c.getValue();
+        try {
+            for (Cookie c : ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies()) {
+                if (c.getName().equals(cookieName)) {
+                    return c.getValue();
+                }
             }
+        } catch (Exception e) {
+            //does not matter if it does not work
         }
 
         return null;
