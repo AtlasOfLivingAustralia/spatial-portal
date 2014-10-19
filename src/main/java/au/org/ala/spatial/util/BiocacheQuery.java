@@ -144,7 +144,7 @@ public class BiocacheQuery implements Query, Serializable {
             this.facets = new ArrayList<Facet>(facets.size());
             this.facets.addAll(facets);
         }
-        this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : wkt;
+        this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : Util.fixWkt(wkt);
         this.extraParams = extraParams;
         this.forMapping = forMapping;
         this.qc = CommonData.getBiocacheQc();

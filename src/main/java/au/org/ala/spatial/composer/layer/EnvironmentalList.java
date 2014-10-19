@@ -306,11 +306,16 @@ public class EnvironmentalList extends Listbox {
         if (!layerObject.containsKey(StringConstants.DOMAIN)) {
             return new String[0];
         }
-        String[] d = layerObject.getString(StringConstants.DOMAIN).split(",");
-        for (int i = 0; i < d.length; i++) {
-            d[i] = d[i].trim();
+        String ds = layerObject.getString(StringConstants.DOMAIN);
+        if (ds != null) {
+            String[] d = ds.split(",");
+            for (int i = 0; i < d.length; i++) {
+                d[i] = d[i].trim();
+            }
+            return d;
+        } else {
+            return new String[0];
         }
-        return d;
     }
 
     String getFieldId(JSONObject layerObject) {

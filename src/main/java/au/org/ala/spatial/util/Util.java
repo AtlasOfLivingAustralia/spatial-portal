@@ -970,6 +970,11 @@ public final class Util {
     }
 
     public static String fixWkt(String wkt) {
+
+        if (wkt == null || !(wkt.startsWith("POLYGON") || wkt.startsWith("MULTIPOLYGON"))) {
+            return wkt;
+        }
+
         String newWkt = wkt;
         try {
             WKTReader wktReader = new WKTReader();
@@ -991,12 +996,12 @@ public final class Util {
                 //divide, translate and rejoin
                 Geometry newGeometry = null;
                 for (int i = minx; i < maxx; i += 360) {
-                    Geometry cutter = wktReader.read("POLYGON((" + minx + " -90," + minx + " 90," + (minx + 360) + " 90," + (minx + 360) + " -90," + minx + " -90))");
+                    Geometry cutter = wktReader.read("POLYGON((" + i + " -90," + i + " 90," + (i + 360) + " 90," + (i + 360) + " -90," + i + " -90))");
 
                     Geometry part = cutter.intersection(g);
 
                     //offset cutter
-                    if (minx != -180) {
+                    if (i != -180) {
                         AffineTransformation at = AffineTransformation.translationInstance(-180 - i, 0);
 
                         part.apply(at);

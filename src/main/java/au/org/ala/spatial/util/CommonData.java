@@ -847,9 +847,12 @@ public final class CommonData {
 
         String[] ret = checklistspeciesWmsLayersBySpcode.get(spcode);
 
-        LOGGER.error("failed to find species checklist for spcode=" + spcode);
+        if (ret == null) {
+            LOGGER.error("failed to find species checklist for spcode=" + spcode);
+            return new String[]{null, null};
+        }
 
-        return ret == null ? new String[]{null, null} : ret;
+        return ret;
     }
 
     public static int getSpeciesChecklistCountByWMS(String lookForWMS) {

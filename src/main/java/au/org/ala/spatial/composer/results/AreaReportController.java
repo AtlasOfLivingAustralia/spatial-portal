@@ -150,6 +150,28 @@ public class AreaReportController extends UtilityComposer {
         return null;
     }
 
+    public static int getPointsOfInterestCount(String wkt) {
+        try {
+            String url = CommonData.getLayersServer() + "/intersect/poi/count/wkt";
+
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(url);
+            if (wkt != null) {
+                NameValuePair nvp = new NameValuePair(StringConstants.WKT, wkt);
+                post.setRequestBody(new NameValuePair[]{nvp});
+            }
+            post.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
+            int result = client.executeMethod(post);
+            if (result == 200) {
+                String txt = post.getResponseBodyAsString();
+                return JSONObject.fromObject(txt).getInt("count");
+            }
+        } catch (Exception e) {
+            LOGGER.error("error getting points of interest in an area: " + wkt, e);
+        }
+        return -1;
+    }
+
     public boolean shouldIncludeEndemic() {
         return includeEndemic;
     }
@@ -478,7 +500,7 @@ public class AreaReportController extends UtilityComposer {
         }
 
         try {
-            this.pool = Executors.newFixedThreadPool(9);
+            this.pool = Executors.newFixedThreadPool(50);
             this.futures = new HashMap<String, Future<Map<String, String>>>();
             this.firedEvents = new ArrayList<String>();
             // add all futures
@@ -489,7 +511,7 @@ public class AreaReportController extends UtilityComposer {
                 futures.put("AreaFacetCounts" + i, pool.submit(areaFacets[i]));
             }
             futures.put("SpeciesCount", pool.submit(speciesCount));
-            futures.put("SpeciesCountKosher", pool.submit(speciesCountKosher));
+            futures.put("SpeciesCountK  osher", pool.submit(speciesCountKosher));
             futures.put("GazPoints", pool.submit(gazPointsC));
             futures.put("SpeciesChecklists", pool.submit(speciesChecklists));
             futures.put("SpeciesDistributions", pool.submit(speciesDistributions));
@@ -799,6 +821,19 @@ public class AreaReportController extends UtilityComposer {
             StringBuilder sb = new StringBuilder();
             sb.append("MULTIPOINT(");
 
+            if (pointsOfInterest == null) {
+                String wkt = selectedArea.getReducedWkt();
+                if (wkt.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
+                    // use boundingbox
+                    List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
+                    double long1 = bbox.get(0);
+                    double lat1 = bbox.get(1);
+                    double long2 = bbox.get(2);
+                    double lat2 = bbox.get(3);
+                    wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+                }
+                pointsOfInterest = getPointsOfInterest(wkt);
+            }
             for (int i = 0; i < pointsOfInterest.size(); i++) {
                 JSONObject jsonObjPoi = pointsOfInterest.getJSONObject(i);
                 double latitude = jsonObjPoi.getDouble(StringConstants.LATITUDE);
@@ -942,17 +977,16 @@ public class AreaReportController extends UtilityComposer {
                 wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
             }
 
-            JSONArray ja = getPointsOfInterest(wkt);
+            int count = getPointsOfInterestCount(wkt);
 
-            if (ja == null || ja.isEmpty()) {
+            if (count <= 0) {
                 poiCounts.put(StringConstants.COUNT_POINTS_OF_INTEREST, "0");
                 model.setCount("0");
                 speciesChecklistText = null;
             } else {
-                poiCounts.put(StringConstants.COUNT_POINTS_OF_INTEREST, String.format("%,d", ja.size()));
-                model.setCount(String.format("%,d", ja.size()));
+                poiCounts.put(StringConstants.COUNT_POINTS_OF_INTEREST, String.format("%,d", count));
+                model.setCount(String.format("%,d", count));
                 model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.MAP_ALL});
-                pointsOfInterest = ja;
             }
         } catch (Exception e) {
             LOGGER.error("area report error counting points of interest", e);
