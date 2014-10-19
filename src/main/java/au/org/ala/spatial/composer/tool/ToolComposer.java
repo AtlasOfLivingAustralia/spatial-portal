@@ -396,7 +396,7 @@ public class ToolComposer extends UtilityComposer {
 
                 Radio rSp = new Radio(lyr.getDisplayName());
                 rSp.setValue(lyr.getName());
-                rSp.setId(lyr.getName().replaceAll(" ", ""));
+                rSp.setId(lyr.getName().replaceAll(" ", "") + "_" + i);
                 rgSpecies.insertBefore(rSp, rSpeciesMapped);
 
                 if (rSp.getValue().equals(selectedSpeciesLayer)) {
@@ -444,7 +444,7 @@ public class ToolComposer extends UtilityComposer {
 
                 Radio rSp = new Radio(lyr.getDisplayName());
                 rSp.setValue(lyr.getName());
-                rSp.setId(lyr.getName().replaceAll(" ", "") + "__bk");
+                rSp.setId(lyr.getName().replaceAll(" ", "") + "__bk" + i);
                 rgSpeciesBk.insertBefore(rSp, rSpeciesMappedBk);
             }
 
@@ -613,7 +613,7 @@ public class ToolComposer extends UtilityComposer {
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
-                rAr.setId(lyr.getName().replaceAll(" ", ""));
+                rAr.setId(lyr.getName().replaceAll(" ", "") + "_" + i);
                 rAr.setValue(lyr.getWKT());
                 rAr.setParent(rgAreaHighlight);
                 rgAreaHighlight.insertBefore(rAr, rAreaCurrentHighlight);
@@ -1313,7 +1313,18 @@ public class ToolComposer extends UtilityComposer {
     public Query getSelectedSpecies(boolean mapspecies, boolean applycheckboxes) {
         Query q = null;
 
-        String species = rgSpecies.getSelectedItem().getValue();
+        if (rgSpecies == null) {
+            return q;
+        }
+        Radio r = rgSpecies.getSelectedItem();
+        if (r == null) {
+            if (rgSpecies.getItemCount() == 0) {
+                return q;
+            }
+            LOGGER.error("rgSpecies item is not selected. step=" + currentStep + " method=" + getTitle() + " rgSpeces item at [0]=" + (rgSpecies != null && rgSpecies.getItemCount() > 0 ? rgSpecies.getItemAtIndex(0).getValue() : "null or no species items in list"));
+            r = rgSpecies.getItemAtIndex(0);
+        }
+        String species = r.getValue();
         String id = rgSpecies.getSelectedItem().getId();
         LOGGER.debug("getSelectedSpecies.species: " + species);
 
@@ -1368,7 +1379,19 @@ public class ToolComposer extends UtilityComposer {
     public Query getSelectedSpeciesBk(boolean mapspecies, boolean applycheckboxes) {
         Query q = null;
 
-        String species = rgSpeciesBk.getSelectedItem().getValue();
+        if (rgSpeciesBk == null) {
+            return q;
+        }
+        Radio r = rgSpeciesBk.getSelectedItem();
+        if (r == null) {
+            if (rgSpeciesBk.getItemCount() == 0) {
+                return q;
+            }
+            LOGGER.error("rgSpeciesBk item is not selected. step=" + currentStep + " method=" + getTitle() + " rgSpeces item at [0]=" + (rgSpeciesBk != null && rgSpeciesBk.getItemCount() > 0 ? rgSpeciesBk.getItemAtIndex(0).getValue() : "null or no species items in list"));
+            r = rgSpeciesBk.getItemAtIndex(0);
+        }
+
+        String species = r.getValue();
         String id = rgSpeciesBk.getSelectedItem().getId();
 
         MapLayer ml = getMapComposer().getMapLayer(species);
@@ -2553,22 +2576,24 @@ public class ToolComposer extends UtilityComposer {
 
         // get selected species
         Query q = getSelectedSpecies(false, true);
-        boolean[] gk;
-        if (q instanceof BiocacheQuery && (gk = ((BiocacheQuery) q).getGeospatialKosher()) != null) {
-            chkGeoKosherTrue.setDisabled(false);
-            chkGeoKosherFalse.setDisabled(false);
+        if (q != null) {
+            boolean[] gk;
+            if (q instanceof BiocacheQuery && (gk = ((BiocacheQuery) q).getGeospatialKosher()) != null) {
+                chkGeoKosherTrue.setDisabled(false);
+                chkGeoKosherFalse.setDisabled(false);
 
-            if (chkGeoKosherTrue.isVisible()) {
-                chkGeoKosherTrue.setChecked(gk[0]);
+                if (chkGeoKosherTrue.isVisible()) {
+                    chkGeoKosherTrue.setChecked(gk[0]);
+                }
+                if (chkGeoKosherFalse.isVisible()) {
+                    chkGeoKosherFalse.setChecked(gk[1]);
+                }
+
+            } else {
+                chkGeoKosherTrue.setDisabled(true);
+                chkGeoKosherFalse.setDisabled(true);
+
             }
-            if (chkGeoKosherFalse.isVisible()) {
-                chkGeoKosherFalse.setChecked(gk[1]);
-            }
-
-        } else {
-            chkGeoKosherTrue.setDisabled(true);
-            chkGeoKosherFalse.setDisabled(true);
-
         }
     }
 
@@ -2599,21 +2624,23 @@ public class ToolComposer extends UtilityComposer {
 
         // get selected species
         Query q = getSelectedSpeciesBk(false, true);
-        boolean[] gk;
-        if (q instanceof BiocacheQuery && (gk = ((BiocacheQuery) q).getGeospatialKosher()) != null) {
-            chkGeoKosherTrueBk.setDisabled(false);
-            chkGeoKosherFalseBk.setDisabled(false);
+        if (q != null) {
+            boolean[] gk;
+            if (q instanceof BiocacheQuery && (gk = ((BiocacheQuery) q).getGeospatialKosher()) != null) {
+                chkGeoKosherTrueBk.setDisabled(false);
+                chkGeoKosherFalseBk.setDisabled(false);
 
-            if (chkGeoKosherTrueBk.isVisible()) {
-                chkGeoKosherTrueBk.setChecked(gk[0]);
-            }
-            if (chkGeoKosherFalseBk.isVisible()) {
-                chkGeoKosherFalseBk.setChecked(gk[1]);
-            }
+                if (chkGeoKosherTrueBk.isVisible()) {
+                    chkGeoKosherTrueBk.setChecked(gk[0]);
+                }
+                if (chkGeoKosherFalseBk.isVisible()) {
+                    chkGeoKosherFalseBk.setChecked(gk[1]);
+                }
 
-        } else {
-            chkGeoKosherTrueBk.setDisabled(true);
-            chkGeoKosherFalseBk.setDisabled(true);
+            } else {
+                chkGeoKosherTrueBk.setDisabled(true);
+                chkGeoKosherFalseBk.setDisabled(true);
+            }
         }
     }
 
