@@ -1185,7 +1185,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             , boolean supportDynamic) {
         Map<String, String> userParams = getQueryParameterMap(Executions.getCurrent().getDesktop().getQueryString());
 
-        for (Entry<String, String> entry : userParams.entrySet()) {
+        for (Entry<String, String> entry :                                              userParams.entrySet()) {
             String key = entry.getKey();
             if (layerNameParamPattern.matcher(key).find()) {
                 //we have a layer, retrieve the other bits
@@ -1431,9 +1431,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     return mapSpecies(q, q.getSolrName(), StringConstants.SPECIES, q.getOccurrenceCount()
                             , LayerUtilitiesImpl.SPECIES, null, setGrid, size, opacity, colour, colourBy, true);
                 }
-
-                mapMultiQueryLayers(geospatialKosher, bs, ws, supportDynamic);
             }
+
+            mapMultiQueryLayers(geospatialKosher, bs, ws, supportDynamic);
 
         } catch (Exception e) {
             LOGGER.debug("Error loading url parameters: " + params, e);
