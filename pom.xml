@@ -703,7 +703,6 @@
                     <source>1.6</source>
                     <target>1.6</target>
                     <compilerArgument>-g:lines,vars,source</compilerArgument>
-                    <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
 
