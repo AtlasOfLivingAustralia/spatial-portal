@@ -81,14 +81,14 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
     public String findAddressLine(String text) throws Exception {
         String url = StringConstants.GOOGLE_ADDRESS_LINE + URLEncoder.encode(text, StringConstants.UTF_8);
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode node = mapper.readTree(new URL(url));
+        JsonNode node = mapper.readTree(new URL(url).openStream());
         return node.get(StringConstants.RESULTS).get(0).get(StringConstants.FORMATTED_ADDRESS).getTextValue();
     }
 
     public double[] findAddressLatLng(String text) throws Exception {
         String url = StringConstants.GOOGLE_ADDRESS_LINE + URLEncoder.encode(text, StringConstants.UTF_8);
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode node = mapper.readTree(new URL(url));
+        JsonNode node = mapper.readTree(new URL(url).openStream());
         JsonNode latLngNode = node.get(StringConstants.RESULTS).get(0).get(StringConstants.GEOMETRY).get(StringConstants.LOCATION);
         return new double[]{
                 latLngNode.get("lat").getDoubleValue(),

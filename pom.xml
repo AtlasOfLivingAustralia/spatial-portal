@@ -273,9 +273,9 @@
             <version>1.9.3</version>
         </dependency>
         <dependency>
-            <groupId>org.ala.layers</groupId>
+            <groupId>au.org.ala</groupId>
             <artifactId>layers-store</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.opengis</groupId>
@@ -284,6 +284,10 @@
                 <exclusion>
                     <groupId>org.opengis</groupId>
                     <artifactId>geoapi-pending</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.sourceforge.andspidclient</groupId>
+                    <artifactId>ands-pid-client</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -703,7 +707,6 @@
                     <source>1.6</source>
                     <target>1.6</target>
                     <compilerArgument>-g:lines,vars,source</compilerArgument>
-                    <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
 
@@ -735,6 +738,16 @@
         </plugins>
     </build>
     <repositories>
+        <repository>
+            <id>ala-repository-nexus-releases</id>
+            <name>ala-repository-nexus-releases</name>
+            <url>http://nexus.ala.org.au/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>ala-repository-nexus-snapshots</id>
+            <name>ala-repository-nexus-snapshots</name>
+            <url>http://nexus.ala.org.au/content/repositories/snapshots/</url>
+        </repository>
         <repository>
             <url>http://download.java.net/maven/2</url>
             <id>hibernate-support</id>
