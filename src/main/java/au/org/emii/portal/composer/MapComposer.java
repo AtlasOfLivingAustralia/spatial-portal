@@ -1185,28 +1185,30 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             , boolean supportDynamic) {
         Map<String, String> userParams = getQueryParameterMap(Executions.getCurrent().getDesktop().getQueryString());
 
-        for (Entry<String, String> entry :                                              userParams.entrySet()) {
-            String key = entry.getKey();
-            if (layerNameParamPattern.matcher(key).find()) {
-                //we have a layer, retrieve the other bits
-                String layerName = entry.getValue();
-                String query = userParams.get(key + ".q");
-                String style = userParams.get(key + ".s");
+        if (userParams != null) {
+            for (Entry<String, String> entry : userParams.entrySet()) {
+                String key = entry.getKey();
+                if (layerNameParamPattern.matcher(key).find()) {
+                    //we have a layer, retrieve the other bits
+                    String layerName = entry.getValue();
+                    String query = userParams.get(key + ".q");
+                    String style = userParams.get(key + ".s");
 
-                LOGGER.debug(String.format("Add layer: '%s', query: '%s', style: '%s', key: '%s'", layerName
-                        , query, style, key));
+                    LOGGER.debug(String.format("Add layer: '%s', query: '%s', style: '%s', key: '%s'", layerName
+                            , query, style, key));
 
-                //format the query
-                if (query != null && query.contains(",")) {
-                    String[] queryComponents = query.split(",");
-                    query = StringUtils.join(queryComponents, " OR ");
-                }
-                if (query != null && style != null && layerName != null) {
+                    //format the query
+                    if (query != null && query.contains(",")) {
+                        String[] queryComponents = query.split(",");
+                        query = StringUtils.join(queryComponents, " OR ");
+                    }
+                    if (query != null && style != null && layerName != null) {
 
-                    BiocacheQuery q = new BiocacheQuery(null, null, query, null, true, geospatialKosher
-                            , baseBiocacheUrl, baseWSBiocacheUrl, supportDynamic);
-                    mapSpecies(q, layerName, StringConstants.SPECIES, q.getOccurrenceCount()
-                            , LayerUtilitiesImpl.SPECIES, null, 0, 4, 0.8f, Integer.decode(style), false);
+                        BiocacheQuery q = new BiocacheQuery(null, null, query, null, true, geospatialKosher
+                                , baseBiocacheUrl, baseWSBiocacheUrl, supportDynamic);
+                        mapSpecies(q, layerName, StringConstants.SPECIES, q.getOccurrenceCount()
+                                , LayerUtilitiesImpl.SPECIES, null, 0, 4, 0.8f, Integer.decode(style), false);
+                    }
                 }
             }
         }

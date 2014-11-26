@@ -227,6 +227,11 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 this.detach();
             }
 
+            try {
+                fi.close();
+            } catch (Exception e) {
+            }
+
         } catch (IOException e) {
             LOGGER.debug("IO Exception ", e);
         } catch (Exception e) {
@@ -287,6 +292,9 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             CoordinateReferenceSystem wgsCRS = DefaultGeographicCRS.WGS84;
             // allow for some error due to different datums
             boolean lenient = true;
+            if (dataCRS == null) {
+                dataCRS = DefaultGeographicCRS.WGS84;
+            }
             MathTransform transform = CRS.findMathTransform(dataCRS, wgsCRS, lenient);
 
             SimpleFeatureCollection sff = source.getFeatures(filter);
@@ -330,7 +338,14 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                     sb.append(wktString);
 
                     if (multipolygon) {
-                        sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append("(").append(wktString).append(")");
+                        if (wktString.contains("(((")) {
+                            sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append(wktString);
+                        } else {
+                            sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append("(").append(wktString);
+                        }
+                        if (!wktString.endsWith(")))")) {
+                            sbGeometryCollection.append(")");
+                        }
                     } else if (polygon) {
                         sbGeometryCollection.append(StringConstants.POLYGON).append(wktString);
                     } else if (geometrycollection) {
@@ -340,8 +355,14 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             }
             String wkt;
             if (!isGeometryCollection) {
-                sb.append(")");
-                wkt = StringConstants.MULTIPOLYGON + "(" + sb.toString();
+                if (!sb.toString().contains(")))")) {
+                    sb.append(")");
+                }
+                if (sb.toString().contains("(((")) {
+                    wkt = StringConstants.MULTIPOLYGON + sb.toString();
+                } else {
+                    wkt = StringConstants.MULTIPOLYGON + "(" + sb.toString();
+                }
             } else {
                 sbGeometryCollection.append(")");
                 wkt = StringConstants.GEOMETRYCOLLECTION + "(" + sbGeometryCollection.toString();

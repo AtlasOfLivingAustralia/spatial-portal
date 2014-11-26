@@ -205,6 +205,8 @@ public class ALOCComposer extends ToolComposer {
             md.setMoreInfo(infoUrl);
             md.setId(Long.valueOf(pid));
 
+            mapLayer.setSubType(LayerUtilitiesImpl.GRID);
+
             getMapComposer().updateLayerControls();
 
             try {

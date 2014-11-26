@@ -21,8 +21,6 @@ import org.zkoss.zul.*;
 
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -33,8 +31,6 @@ public class GDMComposer extends ToolComposer {
     private Query query = null;
     private String sbenvsel = "";
     private String area = null;
-    private List<String> vSp = new ArrayList<String>();
-    boolean isAssemblage = false;
     private Listbox lbenvlayers;
     private Button btnClearlbenvlayers;
     private Listbox cutpoint;
@@ -139,7 +135,7 @@ public class GDMComposer extends ToolComposer {
             query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
             sbenvsel = getSelectedLayers();
 
-            if (!isAssemblage || vSp.size() < 2) {
+            if (query.getSpeciesCount() < 2) {
                 getMapComposer().showMessage("An list of species with multiple occurrences for each species is required by GDM.", this);
                 return false;
             }
@@ -147,7 +143,7 @@ public class GDMComposer extends ToolComposer {
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(CommonData.getSatServer() + "/ws/gdm/step1?"
                     + "envlist=" + URLEncoder.encode(sbenvsel, StringConstants.UTF_8)
-                    + "&taxacount=" + vSp.size()
+                    + "&taxacount=" + query.getSpeciesCount()
                     + "&speciesq=" + URLEncoder.encode(QueryUtil.queryFromSelectedArea(query, sa, false, getGeospatialKosher()).getQ(), StringConstants.UTF_8)
                     + "&bs=" + URLEncoder.encode(query.getBS(), StringConstants.UTF_8));
 
@@ -349,6 +345,8 @@ public class GDMComposer extends ToolComposer {
 
             md.setMoreInfo(infoUrl + "\nGDM Output\npid:" + pid);
             md.setId(Long.valueOf(pid));
+
+            ml.setSubType(LayerUtilitiesImpl.GRID);
         }
     }
 

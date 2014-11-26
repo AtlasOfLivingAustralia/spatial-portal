@@ -46,17 +46,17 @@
                     <label value="Type: " />
                     <combobox id="cbTabType" width="200px" autodrop="true" readonly="true">
                         <comboitem value="area" label="Area" />
-                        <comboitem value="areatotal" label="Area %" />
+                        <!--comboitem value="areatotal" label="Area %" />
                         <comboitem value="arearow" label="Area row %" />
-                        <comboitem value="areacolumn" label="Area column %" />
+                        <comboitem value="areacolumn" label="Area column %" /-->
                         <comboitem value="species" label="Species" />
-                        <comboitem value="speciestotal" label="Species %" />
+                        <!--comboitem value="speciestotal" label="Species %" />
                         <comboitem value="speciesrow" label="Species row %" />
-                        <comboitem value="speciescolumn" label="Species column %" />
+                        <comboitem value="speciescolumn" label="Species column %" /-->
                         <comboitem value="occurrences" label="Occurrences" />
-                        <comboitem value="occurrencestotal" label="Occurrences %" />
+                        <!--comboitem value="occurrencestotal" label="Occurrences %" />
                         <comboitem value="occurrencesrow" label="Occurrences row %" />
-                        <comboitem value="occurrencescolumn" label="Occurrences column %" />
+                        <comboitem value="occurrencescolumn" label="Occurrences column %" /-->
                     </combobox>
 
                 </div>

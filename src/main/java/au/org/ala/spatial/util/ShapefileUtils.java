@@ -92,7 +92,14 @@ public final class ShapefileUtils {
                     sb.append(wktString);
 
                     if (multipolygon) {
-                        sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append("(").append(wktString).append(")");
+                        if (wktString.contains("(((")) {
+                            sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append(wktString);
+                        } else {
+                            sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append("(").append(wktString);
+                        }
+                        if (!wktString.endsWith(")))")) {
+                            sbGeometryCollection.append(")");
+                        }
                     } else if (polygon) {
                         sbGeometryCollection.append(StringConstants.POLYGON).append(wktString);
                     } else if (geometrycollection) {
@@ -102,14 +109,24 @@ public final class ShapefileUtils {
             }
 
             if (!isGeometryCollection) {
-                sb.append(")");
-                shape.put(StringConstants.WKT, StringConstants.MULTIPOLYGON + "(" + sb);
+                if (!sb.toString().contains(")))")) {
+                    sb.append(")");
+                }
+                if (sb.toString().contains("(((")) {
+                    shape.put(StringConstants.WKT, StringConstants.MULTIPOLYGON + sb.toString());
+                } else {
+                    shape.put(StringConstants.WKT, StringConstants.MULTIPOLYGON + "(" + sb.toString());
+                }
             } else {
                 sbGeometryCollection.append(")");
                 shape.put(StringConstants.WKT, StringConstants.GEOMETRYCOLLECTION + "(" + sbGeometryCollection);
             }
 
-            it.close();
+            try {
+                it.close();
+            } catch (Exception e) {
+
+            }
 
             return shape;
 

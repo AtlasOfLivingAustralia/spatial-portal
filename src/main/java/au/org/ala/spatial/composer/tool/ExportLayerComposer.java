@@ -51,6 +51,11 @@ public class ExportLayerComposer extends ToolComposer {
         this.updateWindowTitle();
 
         this.updateName(getMapComposer().getNextAreaLayerName("My Export Area"));
+
+        if (rgArea.getItemCount() == 0) {
+            getMapComposer().showMessage("No areas mapped. Create an area using Add to Map | Area");
+            this.detach();
+        }
     }
 
     //@Override

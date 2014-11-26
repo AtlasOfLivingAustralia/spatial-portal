@@ -39,13 +39,13 @@
 
             <vbox style="padding-left: 10px" >
                 <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
-                    <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
+                    <label id="atstep1_desc" value="Select an area to export. These are created by Add to Map | Area" sclass="wSubLabel"/>
                     <label id="atstep1_label" value="" />
                     <separator />
                     <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
-                        <radio id="rAreaCurrent" label="Current extent" value="current" />
+                        <!--radio id="rAreaCurrent" label="Current extent" value="current" />
                         <radio id="rAreaAustralia" label="Australia" value="australia" />
-                        <radio id="rAreaWorld" label="World" value="world" />
+                        <radio id="rAreaWorld" label="World" value="world" /-->
                     </radiogroup>
                         <!--
                     <radio id="rAreaAll" label="All areas" value="allareas" />
