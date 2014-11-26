@@ -77,7 +77,7 @@
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-apache-client</artifactId>
             <version>${jerseyVersion}</version>
-        </dependency-->
+        </dependency
 
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
@@ -89,8 +89,7 @@
             <groupId>com.itextpdf.tool</groupId>
             <artifactId>xmlworker</artifactId>
             <version>5.4.1</version>
-        </dependency>
-
+        </dependency>-->
 
 
         <dependency>
@@ -739,7 +738,11 @@
     </build>
     <repositories>
         <repository>
-            <id>ala-repository-nexus-releases</id>
+            <id>local-repo</id>
+            <url>file://${project.basedir}/lib</url>
+        </repository>
+        <repository>
+        <id>ala-repository-nexus-releases</id>
             <name>ala-repository-nexus-releases</name>
             <url>http://nexus.ala.org.au/content/repositories/releases/</url>
         </repository>
