@@ -379,7 +379,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         }
         if (!Validate.empty(layer.getEnvParams())) {
             try {
-                params += "env: '" + URLEncoder.encode(layer.getEnvParams().replace("'", "\\'"), StringConstants.UTF_8) + "', ";
+                params += "env: '" + URLEncoder.encode(layer.getEnvParams(), StringConstants.UTF_8) + "', ";
             } catch (UnsupportedEncodingException e) {
                 LOGGER.error("failed to encode env params : " + layer.getEnvParams().replace("'", "\\'"), e);
             }
@@ -539,7 +539,8 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
      */
     @Override
     public String reloadMapLayer(MapLayer mapLayer) {
-        return removeMapLayer(mapLayer) + activateMapLayer(mapLayer);    }
+        return removeMapLayer(mapLayer) + activateMapLayer(mapLayer);
+    }
 
     /**
      * Immediate execution of reloadMapLayer

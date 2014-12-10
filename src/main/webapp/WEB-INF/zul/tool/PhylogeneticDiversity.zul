@@ -43,6 +43,7 @@
                 <separator />
                 <vbox id="vboxArea" onOK="addtoolwindow.onClick$btnOk(null)" focus="true" height="350px">
                     <checkbox id="cAreaCurrent" label="Current extent" value="current" />
+                    <radio id="rAreaCustom" label="Define new area" value="custom" />
                 </vbox>
             </div>
 

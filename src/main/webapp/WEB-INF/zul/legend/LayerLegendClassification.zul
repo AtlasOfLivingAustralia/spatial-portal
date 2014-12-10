@@ -27,6 +27,13 @@
 
                          </div>
 
+                        <hbox style="float:left;">
+                               <textbox id="txtSearch" />
+                               <div class="btn-group" >
+                                    <button id="btnSearch" label="Filter" class="btn-mini" />
+                                    <button id="btnClear" label="Clear Filter" class="btn-mini" disabled="true" />
+                               </div>
+                        </hbox>
             <listbox sclass="legendlist" id="legend" width="380px" vflex="true" mold="paging">
                 <listhead>
                     <listheader label="   " width="20px" id="lhFirstColumn"  style="font-size:12px"/>
@@ -42,8 +49,6 @@
                             <button class="btn-small"  id="clearSelection" label="Clear selection"  visible="true" />
                             <button class="btn-small btn-primary"  id="createInGroup" label="Create layer" visible="true" />
                         </div>
-
-
             </vbox>
 
     </window>

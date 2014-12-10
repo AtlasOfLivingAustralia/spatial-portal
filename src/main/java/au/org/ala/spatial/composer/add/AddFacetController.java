@@ -24,10 +24,7 @@ import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.*;
 
 import java.io.StringReader;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AddFacetController extends UtilityComposer {
 
@@ -77,6 +74,7 @@ public class AddFacetController extends UtilityComposer {
     private LegendObject lo = null;
     private Checkbox cbContinousRange;
     private Label lblOccurrencesSelected;
+    private Textbox txtSearch;
 
     @Override
     public void afterCompose() {
@@ -104,7 +102,111 @@ public class AddFacetController extends UtilityComposer {
         } else {
             btnOk.setDisabled(true);
         }
+
+        getFellow("btnSearch").addEventListener(StringConstants.ONCLICK, new EventListener() {
+            @Override
+            public void onEvent(Event event) throws Exception {
+                List<String[]> legendLinesFiltered = new ArrayList<String[]>();
+                String txt = txtSearch.getValue().toLowerCase();
+                if (txt.length() > 0) {
+                    for (int i = 0; i < legendLines.size(); i++) {
+                        if (legendLines.get(i)[0].toLowerCase().contains(txt)) {
+                            legendLinesFiltered.add(legendLines.get(i));
+                        }
+                    }
+                    ((Button) getFellow("btnClear")).setDisabled(false);
+                    legend.setModel(new SimpleListModel(legendLinesFiltered));
+                    legend.setActivePage(0);
+                }
+            }
+        });
+
+        getFellow("btnClear").addEventListener(StringConstants.ONCLICK, new EventListener() {
+            @Override
+            public void onEvent(Event event) throws Exception {
+                ((Textbox) getFellow("txtSearch")).setValue("");
+                ((Button) getFellow("btnClear")).setDisabled(true);
+                legend.setModel(new SimpleListModel(legendLines));
+                legend.setActivePage(0);
+            }
+        });
+
+
+        //setup sorting
+        Comparator labelComparatorAsc = new Comparator() {
+
+            @Override
+            public int compare(Object o1, Object o2) {
+                String[] s1 = (String[]) o1;
+                String[] s2 = (String[]) o2;
+
+                return s1[0].compareTo(s2[0]);
+            }
+        };
+
+        Comparator labelComparatorDesc = new Comparator() {
+
+            @Override
+            public int compare(Object o1, Object o2) {
+                String[] s1 = (String[]) o1;
+                String[] s2 = (String[]) o2;
+
+                return s2[0].compareTo(s1[0]);
+            }
+        };
+
+        Comparator countComparatorAsc = new Comparator() {
+
+            @Override
+            public int compare(Object o1, Object o2) {
+                Long l1 = null;
+                Long l2 = null;
+                try {
+                    l1 = Long.parseLong(((String[]) o1)[4]);
+                    l2 = Long.parseLong(((String[]) o2)[4]);
+
+                    return l1.compareTo(l2);
+                } catch (Exception e) {
+                    if (l2 == null && l1 == null) {
+                        return 0;
+                    } else if (l2 == null) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                }
+            }
+        };
+
+        Comparator countComparatorDesc = new Comparator() {
+
+            @Override
+            public int compare(Object o1, Object o2) {
+                Long l1 = null;
+                Long l2 = null;
+                try {
+                    l1 = Long.parseLong(((String[]) o1)[4]);
+                    l2 = Long.parseLong(((String[]) o2)[4]);
+
+                    return l2.compareTo(l1);
+                } catch (Exception e) {
+                    if (l2 == null && l1 == null) {
+                        return 0;
+                    } else if (l2 == null) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                }
+            }
+        };
+
+        lhSecondColumn.setSortAscending(labelComparatorAsc);
+        lhSecondColumn.setSortDescending(labelComparatorDesc);
+        lhFourthColumn.setSortAscending(countComparatorAsc);
+        lhFourthColumn.setSortDescending(countComparatorDesc);
     }
+
 
     private void setupDefaultParams() {
         btnOk.setDisabled(true);

@@ -187,7 +187,7 @@ public class AreaMerge extends AreaToolComposer {
 
         MapComposer mc = getMapComposer();
 
-        String layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
+        layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
         MapLayer mapLayer = mc.addWKTLayer(finalWkt, layerName, txtLayerName.getValue());
 
         //if possible, use facets instead of WKT with biocache

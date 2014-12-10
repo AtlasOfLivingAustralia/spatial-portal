@@ -175,6 +175,8 @@ public class AreaMapPolygon extends AreaToolComposer {
                         mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(txtLayerName.getValue()), txtLayerName.getValue(), url, 0.6f, /*metadata url*/ null,
                                 null, LayerUtilitiesImpl.WKT, null, null);
 
+                        layerName = mapLayer.getName();
+
                         //add colour!
                         ml.setRedVal(255);
                         ml.setGreenVal(0);

@@ -102,7 +102,7 @@ public class BiocacheLegendObject extends LegendObject {
             categoriesNumeric.put((float) d, value);
 
             //check for endpoint (repitition of colour)
-            if (previous != null
+            /*if (previous != null
                     && previous.getRed().equals(item.getRed())
                     && previous.getGreen().equals(item.getGreen())
                     && previous.getBlue().equals(item.getBlue())
@@ -113,7 +113,10 @@ public class BiocacheLegendObject extends LegendObject {
                 }
                 count++;
                 sum += item.getCount();
-            } else {
+
+
+            } else*/
+            {
                 sb.append("\n");
 
                 colour = item.getRed() + "," + item.getGreen() + "," + item.getBlue();

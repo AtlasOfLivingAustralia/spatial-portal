@@ -54,6 +54,7 @@
                         <radio id="rAreaCurrent" label="Current extent" value="current"/>
                         <radio id="rAreaAustralia" label="Australia" value="australia"/>
                         <radio id="rAreaWorld" label="World" value="world" checked="true"/>
+                        <radio id="rAreaCustom" label="Define new area" value="custom" />
                     </radiogroup>
                 </div>
                 <div id="atstep2" visible="false" zclass="last optional" sclass="atstep" >
@@ -81,9 +82,16 @@
                         <label value="Legend" style="font-weight:bold" />
                     </div>
 
+            <hbox style="float:right;">
+                <textbox id="txtSearch" />
+               <div class="btn-group" >
+                    <button id="btnSearch" label="Filter" class="btn-mini" />
+                    <button id="btnClear" label="Clear Filter" class="btn-mini" disabled="true" />
+               </div>
+           </hbox>
 
             <div height="450px">
-            <listbox sclass="legendlist2" id="legend" width="525px" vflex="true"  mold="paging" autopaging="true" >
+            <listbox sclass="legendlist2" id="legend" width="500px" vflex="true"  mold="paging" autopaging="true" >
                 <listhead sizable="true">
                     <listheader label="   " width="25px" id="lhFirstColumn" />
                     <listheader label="class" align="center"  width="300px" id="lhSecondColumn"></listheader>
@@ -93,8 +101,8 @@
             </listbox>
 
             </div>
+            <separator style="height:30px" />
              <div id="dCreateButtons"  height="25px" align="left">
-
                 <div class="btn-group" style="float:left;">
                     <button id="selectAll" label="Select all"  style="btn-small"  />
                     <button id="clearSelection" style="btn-small" label="Clear selection" />

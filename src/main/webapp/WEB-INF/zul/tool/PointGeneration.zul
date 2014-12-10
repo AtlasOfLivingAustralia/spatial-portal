@@ -43,6 +43,7 @@
                         <radio id="rAreaCurrent" label="Current extent" value="current" />
                         <radio id="rAreaAustralia" label="Australia" value="australia" />
                         <radio id="rAreaWorld" label="World" value="world" />
+                        <radio id="rAreaCustom" label="Define new area" value="custom" />
                     </radiogroup>
                 </div>
                 <div id="atstep2" visible="false" zclass="optinal last" sclass="atstep" style="padding:5px;" >

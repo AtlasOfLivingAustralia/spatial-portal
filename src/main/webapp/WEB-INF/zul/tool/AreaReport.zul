@@ -15,16 +15,19 @@
         <n:a class="fancybox-help" n:onClick="loadHelp('area-report-tools')" style="display: inline" />
         <caption id="cTitle" />
         <separator />
-        <vbox  >
+        <vbox height="220px" style="overflow:scroll">
             <div id="atstep1" visible="true" zclass="first optional last" sclass="atstep" style="padding:5px;" >
                 <label id="atstep1_desc" value="Select area" />
                 <label id="atstep1_label" value="" />
                 <separator />
-                <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true" style="height:220px;overflow:scroll;" >
-                    <radio id="rAreaCurrent" label="Current extent" value="current" />
-                    <radio id="rAreaAustralia" label="Australia" value="australia" />
-                    <radio id="rAreaWorld" label="World" value="world" />
-                </radiogroup>               
+                <div style="overflow:scroll;"  height="170px">
+                    <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true"  >
+                        <radio id="rAreaCurrent" label="Current extent" value="current" />
+                        <radio id="rAreaAustralia" label="Australia" value="australia" />
+                        <radio id="rAreaWorld" label="World" value="world" />
+                        <radio id="rAreaCustom" label="Define new area" value="custom" />
+                    </radiogroup>
+                </div>
             </div>
         </vbox>
         <separator spacing="10px"/>

@@ -77,6 +77,32 @@ public class AreaToolComposer extends UtilityComposer {
             }
         }
 
+        //always map the user defined area
+        MapLayer ml = getMapComposer().getMapLayer(layerName);
+        if (ok && ml != null) {
+            String displayName = ml.getDisplayName();
+            String fromLayer = (String) getMapComposer().getAttribute("mappolygonlayer");
+            String activeLayerName = (String) getMapComposer().getAttribute("activeLayerName");
+
+            if (fromLayer == null) {
+                fromLayer = "";
+            } else {
+                getMapComposer().removeAttribute("mappolygonlayer");
+            }
+            if (activeLayerName == null) {
+                activeLayerName = "";
+            } else {
+                getMapComposer().removeAttribute("activeLayerName");
+            }
+            remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, ml.getWKT(), activeLayerName, fromLayer);
+
+            //warn user when reduced WKT may be used for analysis
+            getMapComposer().warnForLargeWKT(ml);
+
+            //upload this area and replace with WMS
+            getMapComposer().replaceWKTwithWMS(ml);
+        }
+
         if (isAnalysisChild) {
             analysisParent.resetWindow(ok ? layerName : null);
             try {
@@ -114,21 +140,21 @@ public class AreaToolComposer extends UtilityComposer {
                 if (winProps.get(StringConstants.QUERY) == null) {
                     mapSpeciesInArea();
                 } else if (winProps.get(StringConstants.FILTER) != null && (Boolean) winProps.get(StringConstants.FILTER)) {
-                    MapLayer ml = getMapComposer().mapSpecies(
+                    ml = getMapComposer().mapSpecies(
                             q, (String) winProps.get(StringConstants.NAME), (String) winProps.get("s"), (Integer) winProps.get(StringConstants.FEATURE_COUNT),
                             (Integer) winProps.get(StringConstants.TYPE), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                             Util.nextColour(), false);
                     ml.getMapLayerMetadata().setMoreInfo((String) winProps.get("metadata"));
 
                 } else if (winProps.get("filterGrid") != null && (Boolean) winProps.get("filterGrid")) {
-                    MapLayer ml = getMapComposer().mapSpecies(
+                    ml = getMapComposer().mapSpecies(
                             q, (String) winProps.get(StringConstants.NAME), (String) winProps.get("s"), (Integer) winProps.get(StringConstants.FEATURE_COUNT),
                             (Integer) winProps.get(StringConstants.TYPE), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                             Util.nextColour(), false);
                     ml.getMapLayerMetadata().setMoreInfo((String) winProps.get("metadata"));
 
                 } else if (winProps.get("byLsid") != null && (Boolean) winProps.get("byLsid")) {
-                    MapLayer ml = getMapComposer().mapSpecies(
+                    ml = getMapComposer().mapSpecies(
                             q, (String) winProps.get(StringConstants.NAME), (String) winProps.get("s"), (Integer) winProps.get(StringConstants.FEATURE_COUNT),
                             (Integer) winProps.get(StringConstants.TYPE), wkt, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                             Util.nextColour(), false);
@@ -146,30 +172,6 @@ public class AreaToolComposer extends UtilityComposer {
 
                     remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, wkt);
                 }
-            }
-        } else {
-            MapLayer ml = getMapComposer().getMapLayer(layerName);
-            if (ok && ml != null) {
-                String displayName = ml.getDisplayName();
-                String fromLayer = (String) getMapComposer().getAttribute("mappolygonlayer");
-                String activeLayerName = (String) getMapComposer().getAttribute("activeLayerName");
-                if (fromLayer == null) {
-                    fromLayer = "";
-                } else {
-                    getMapComposer().removeAttribute("mappolygonlayer");
-                }
-                if (activeLayerName == null) {
-                    activeLayerName = "";
-                } else {
-                    getMapComposer().removeAttribute("activeLayerName");
-                }
-                remoteLogger.logMapArea(layerName + ((!layerName.equalsIgnoreCase(displayName)) ? " (" + displayName + ")" : ""), areatype, ml.getWKT(), activeLayerName, fromLayer);
-
-                //warn user when reduced WKT may be used for analysis
-                getMapComposer().warnForLargeWKT(ml);
-
-                //upload this area and replace with WMS
-                getMapComposer().replaceWKTwithWMS(ml);
             }
         }
     }

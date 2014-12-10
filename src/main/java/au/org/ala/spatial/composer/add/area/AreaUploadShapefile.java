@@ -205,8 +205,8 @@ public class AreaUploadShapefile extends AreaToolComposer {
                             getMapComposer().showMessage(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + msg);
                         } else {
 
-                            layerName = txtLayerName.getValue();
-                            MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName, layerName);
+                            layerName = getMapComposer().getNextAreaLayerName(txtLayerName.getValue());
+                            MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName, txtLayerName.getValue());
 
                             ud.setUploadedTimeInMs(System.currentTimeMillis());
                             ud.setType("shapefile");
