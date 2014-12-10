@@ -119,7 +119,6 @@
             <version>2.0b4</version>
         </dependency-->
 
-        <!-- lib in this project -->
         <dependency>
             <groupId>org.zkoss.addons</groupId>
             <artifactId>zk-bootstrap</artifactId>
@@ -265,6 +264,7 @@
             <artifactId>jts</artifactId>
             <version>1.13</version>
         </dependency-->
+
 
 
         <!-- for persistence -->
@@ -800,4 +800,5 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
 </project>
