@@ -1,5 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>au.org.ala</groupId>
+        <artifactId>ala-parent-pom</artifactId>
+        <version>1.0</version>
+    </parent>
+
     <modelVersion>4.0.0</modelVersion>
     <groupId>au.org.ala</groupId>
     <artifactId>spatial-portal</artifactId>
@@ -35,27 +42,27 @@
             <artifactId>gt-shapefile</artifactId>
             <version>${geotools.version}</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-svg</artifactId>
             <version>${geotools.version}</version>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.geotools.xsd</groupId>
             <artifactId>gt-xsd-kml</artifactId>
             <version>${geotools.version}</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-render</artifactId>
             <version>${geotools.version}</version>
-        </dependency>
-        <dependency>
+        </dependency-->
+        <!--dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-wms</artifactId>
             <version>${geotools.version}</version>
-        </dependency>
-        <dependency>
+        </dependency-->
+        <!--dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.7</version>
@@ -71,13 +78,13 @@
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-client</artifactId>
             <version>${jerseyVersion}</version>
-        </dependency>
+        </dependency-->
 
         <!--dependency>
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-apache-client</artifactId>
             <version>${jerseyVersion}</version>
-        </dependency
+        </dependency-->
 
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
@@ -85,7 +92,7 @@
             <version>1.8.4</version>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>com.itextpdf.tool</groupId>
             <artifactId>xmlworker</artifactId>
             <version>5.4.1</version>
@@ -106,16 +113,27 @@
             <version>2.1</version>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>org.beanshell</groupId>
             <artifactId>bsh</artifactId>
             <version>2.0b4</version>
-        </dependency>
+        </dependency-->
 
+        <!-- lib in this project -->
         <dependency>
             <groupId>org.zkoss.addons</groupId>
             <artifactId>zk-bootstrap</artifactId>
             <version>1.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.zkoss.zk</groupId>
+                    <artifactId>zkmax</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.zkoss.zk</groupId>
+                    <artifactId>zkex</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -123,18 +141,18 @@
             <artifactId>log4j</artifactId>
             <version>1.2.16</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.jhlabs</groupId>
             <artifactId>filters</artifactId>
             <version>2.0.235</version>
-        </dependency>
+        </dependency-->
         <!--dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
             <scope>provided</scope>
         </dependency-->
-        <dependency>
+        <!--dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
             <version>1.1</version>
@@ -143,7 +161,7 @@
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
             <version>1.1.1</version>
-        </dependency>
+        </dependency-->
 
         <!--
         http client 3.1
@@ -182,11 +200,11 @@
             <artifactId>commons-validator</artifactId>
             <version>1.3.1</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>oro</groupId>
             <artifactId>oro</artifactId>
             <version>2.0.8</version>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.apache.xmlbeans</groupId>
             <artifactId>xmlbeans</artifactId>
@@ -197,25 +215,15 @@
             <artifactId>xmlbeans-xmlpublic</artifactId>
             <version>2.4.0</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
             <version>3.8</version>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>au.org.emii</groupId>
             <artifactId>wms_getcapabilities_xmlbeans</artifactId>
             <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.umd.cs.findbugs</groupId>
-            <artifactId>annotations</artifactId>
-            <version>1.3.9</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.umd.cs.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>1.3.9</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -227,37 +235,36 @@
             <artifactId>hibernate-entitymanager</artifactId>
             <version>3.3.2.GA</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>javax.sql</groupId>
             <artifactId>jdbc-stdext</artifactId>
             <version>2.0</version>
-        </dependency>
-        <dependency>
+        </dependency-->
+        <!--dependency>
             <groupId>javax.transaction</groupId>
             <artifactId>jta</artifactId>
             <version>1.0.1B</version>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>ejb3-persistence</artifactId>
             <version>1.0.1.GA</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>8.4-701.jdbc4</version>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.1-alpha1</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.vividsolutions</groupId>
             <artifactId>jts</artifactId>
             <version>1.13</version>
-        </dependency>
-
+        </dependency-->
 
 
         <!-- for persistence -->
@@ -736,59 +743,6 @@
 
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <id>local-repo</id>
-            <url>file://${project.basedir}/lib</url>
-        </repository>
-        <repository>
-        <id>ala-repository-nexus-releases</id>
-            <name>ala-repository-nexus-releases</name>
-            <url>http://nexus.ala.org.au/content/repositories/releases/</url>
-        </repository>
-        <repository>
-            <id>ala-repository-nexus-snapshots</id>
-            <name>ala-repository-nexus-snapshots</name>
-            <url>http://nexus.ala.org.au/content/repositories/snapshots/</url>
-        </repository>
-        <repository>
-            <url>http://download.java.net/maven/2</url>
-            <id>hibernate-support</id>
-            <layout>default</layout>
-            <name>Repository for library Library[hibernate-support]</name>
-        </repository>
-        <repository>
-            <url>http://mavensync.zkoss.org/maven2/</url>
-            <id>zkoss</id>
-            <name>Repository for ZK5</name>
-        </repository>
-        <repository>
-            <id>osgeo</id>
-            <name>Open Source Geospatial Foundation Repository</name>
-            <url>http://download.osgeo.org/webdav/geotools/</url>
-        </repository>
-        <!--
-        <repository>
-            <id>jboss</id>
-            <name>jboss</name>
-            <url>http://repository.jboss.org/maven2/</url>
-        </repository>
-        -->
-
-        <repository>
-            <id>ala-repository</id>
-            <name>ala-repository</name>
-            <url>http://maven.ala.org.au/repository</url>
-        </repository>
-
-        <repository>
-            <id>unknown-jars-temp-repo</id>
-            <name>A temporary repository created by NetBeans for libraries and jars it could not identify. Please
-                replace the dependencies in this repository with correct ones and delete this repository.
-            </name>
-            <url>file:${project.basedir}/lib</url>
-        </repository>
-    </repositories>
     <reporting>
         <plugins>
             <plugin>
@@ -846,17 +800,4 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <distributionManagement>
-        <repository>
-            <id>ala-repo</id>
-            <name>Internal Releases</name>
-            <url>http://nexus.ala.org.au/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ala-repo</id>
-            <name>Internal Releases</name>
-            <url>http://nexus.ala.org.au/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>

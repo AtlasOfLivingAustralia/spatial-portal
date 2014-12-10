@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.zkoss.zul.Doublebox;
 
 import java.io.StringReader;
+import java.util.List;
 
 /**
  */
@@ -39,7 +40,16 @@ public class PointGenerationComposer extends ToolComposer {
     public boolean onFinish() {
 
         SelectedArea sa = getSelectedArea();
-        double[][] bbox = SimpleShapeFile.parseWKT(sa.getWkt()).getBoundingBox();
+        double[][] bbox = null;
+        if (sa.getMapLayer() != null && sa.getMapLayer().getMapLayerMetadata() != null) {
+            List<Double> bb = sa.getMapLayer().getMapLayerMetadata().getBbox();
+            bbox[0][0] = bb.get(0);
+            bbox[0][1] = bb.get(1);
+            bbox[1][0] = bb.get(2);
+            bbox[1][1] = bb.get(3);
+        } else {
+            bbox = SimpleShapeFile.parseWKT(sa.getWkt()).getBoundingBox();
+        }
 
         //with bounding box, cut points
         SimpleRegion sr = SimpleShapeFile.parseWKT((sa.getMapLayer() != null ? sa.getMapLayer().getWKT() : sa.getWkt()));

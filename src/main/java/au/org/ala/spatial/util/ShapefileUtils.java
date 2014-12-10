@@ -137,7 +137,7 @@ public final class ShapefileUtils {
         return null;
     }
 
-    public static void saveShapefile(File shpfile, String wktString) {
+    public static void saveShapefile(File shpfile, String wktString, String name) {
         try {
             final SimpleFeatureType type = createFeatureType();
 
@@ -157,6 +157,7 @@ public final class ShapefileUtils {
                     featureBuilder.add(g);
 
                     SimpleFeature feature = featureBuilder.buildFeature(null);
+                    feature.setAttribute("name", name);
                     features.add(feature);
                 }
             } else {

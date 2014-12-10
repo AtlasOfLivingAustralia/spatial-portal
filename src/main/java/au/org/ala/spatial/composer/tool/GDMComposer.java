@@ -346,7 +346,6 @@ public class GDMComposer extends ToolComposer {
             md.setMoreInfo(infoUrl + "\nGDM Output\npid:" + pid);
             md.setId(Long.valueOf(pid));
 
-            ml.setSubType(LayerUtilitiesImpl.GRID);
         }
     }
 

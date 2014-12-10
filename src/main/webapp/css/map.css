@@ -158,7 +158,7 @@ hr {
     position: absolute;
     bottom: 68px ! important;
     right: 0px ! important;
-    width: 220px;
+    /*width: 220px;*/
     max-height: 300px ! important;
     padding: 6px;
     z-index: 410;

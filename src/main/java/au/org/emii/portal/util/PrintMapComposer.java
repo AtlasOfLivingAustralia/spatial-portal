@@ -7,19 +7,16 @@ import au.org.emii.portal.value.BoundingBox;
 import org.ala.layers.util.SpatialUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
 import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObjectImage;
-import org.hsqldb.lib.tar.TarFileOutputStream;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.awt.image.RescaleOp;
 import java.io.*;
 import java.net.URL;
@@ -30,7 +27,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by a on 12/05/2014.
@@ -216,7 +216,7 @@ public class PrintMapComposer {
             String url;
             Map map;
 
-            public FileCacheUrl(String url){
+            public FileCacheUrl(String url) {
                 this.url = url;
             }
 
@@ -405,7 +405,7 @@ public class PrintMapComposer {
         for (int iy = my; iy >= sy; iy--) {
             for (int ix = sx; ix <= mx; ix++) {
                 String bbox = res + "/" + (ix % tiles) + "/" + iy + ".png";
-                LOGGER.debug("print uri: " + uri + bbox);
+                LOGGER.trace("print uri: " + uri + bbox);
 
                 imageUrls.add(uri + bbox);
 

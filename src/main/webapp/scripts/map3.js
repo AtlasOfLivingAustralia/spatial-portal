@@ -7,6 +7,8 @@ var tmp_response;
 var popup;
 var selectControl;
 
+OpenLayers.IMAGE_RELOAD_ATTEMPTS = 5;
+
 var popupWidth = 435; //pixels
 var popupHeight = 370; //pixels
 
@@ -131,7 +133,7 @@ function checkLibraryLoaded() {
             // give up loading - too many attempts
             stopCheckingLibraryLoaded();
             alert(
-                "Map not loaded after waiting " + secondsToWaitForLibrary + " seconds.  " +
+                    "Map not loaded after waiting " + secondsToWaitForLibrary + " seconds.  " +
                     "Please wait a moment and then reload the page.  If this does not fix your " +
                     "problem, please contact ALA for assistance"
             );
@@ -878,7 +880,7 @@ function setupPopup(occurrenceCount, pointOfInterestCount, centerlonlat) {
     popup = new OpenLayers.Popup.FramedCloud("featurePopup",
         centerlonlat,
         new OpenLayers.Size(100, 170),
-        "<div id='sppopup'>" + msg + "</div>" //  style='width: 350px; height: 250px;'
+            "<div id='sppopup'>" + msg + "</div>" //  style='width: 350px; height: 250px;'
         ,
         null, true, onPopupClose);
     popup.autoSize = true;
@@ -972,9 +974,9 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
         " Occurrence date: " + occurrencedate + " <br />" +
         "Full record: <a href='" + biocache + "/occurrences/" + occinfo.uuid + "' target='_blank'>View details</a> <br />" +
         fullQueryLink + " <br/>" +
-         "<input type='checkbox' " + checkstate + " onClick='parent.flagRecord(\"" + query_layer[pos].name + "\",\"" + occinfo.uuid + "\",this.checked)' />Assign record to <i>ad hoc</i> group<br/>" +
+        "<input type='checkbox' " + checkstate + " onClick='parent.flagRecord(\"" + query_layer[pos].name + "\",\"" + occinfo.uuid + "\",this.checked)' />Assign record to <i>ad hoc</i> group<br/>" +
 
-        "</td><td>" + img+ "</td></tr></table>";
+        "</td><td>" + img + "</td></tr></table>";
 
     if (document.getElementById("sppopup") != null) {
         document.getElementById("sppopup").innerHTML = infohtml;
@@ -1258,7 +1260,7 @@ function initSelectControlLayers(layers) {
     if (layers instanceof Array) {
         selectControl.layers = layers;
         selectControl.layer = new OpenLayers.Layer.Vector.RootContainer(
-            selectControl.id + "_container", {
+                selectControl.id + "_container", {
                 layers: layers
             }
         );
@@ -1476,7 +1478,7 @@ function envLayerInspection(e) {
             popup = new OpenLayers.Popup.FramedCloud("featurePopup",
                 pt,
                 new OpenLayers.Size(20, 20),
-                "<div id='sppopup' style='width: 350px; height: 50px;'>" + "Loading..." + "</div>"
+                    "<div id='sppopup' style='width: 350px; height: 50px;'>" + "Loading..." + "</div>"
                 ,
                 null, true, onPopupClose);
 
@@ -2123,7 +2125,7 @@ function loadPanoramio(pictureIndexFrom, pictureIndexTo) {
         popup = new OpenLayers.Popup.FramedCloud("featurePopup",
             feature.geometry.getBounds().getCenterLonLat(),
             new OpenLayers.Size(400, 400),
-            "<div id='sppopup'>" + "Loading..." + "</div>" //  style='width: 350px; height: 50px;'
+                "<div id='sppopup'>" + "Loading..." + "</div>" //  style='width: 350px; height: 50px;'
             ,
             null, true, closePopup);
 

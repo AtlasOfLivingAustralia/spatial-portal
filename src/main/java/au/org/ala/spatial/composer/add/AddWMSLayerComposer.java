@@ -148,7 +148,6 @@ public class AddWMSLayerComposer extends UtilityComposer {
         }
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NS_DANGEROUS_NON_SHORT_CIRCUIT")
     public void onClick$addAllLayersButton() {
         LOGGER.debug("onClick$addAllLayersButton()");
 
@@ -156,7 +155,10 @@ public class AddWMSLayerComposer extends UtilityComposer {
         resultLabel.setVisible(false);
 
         // validate - DO NOT SHORT CURCUIT HERE!
-        if (validateCommon() & validateAutomaticModeCommon()) {
+        // DO NOT PUT TEST INTO IF STATEMENT (DO NOT SHORT CURCUIT HERE!)
+        boolean amc = validateAutomaticModeCommon();
+        boolean c = validateCommon();
+        if (c && amc) {
             try {
 
                 wmsServer = new WebMapServer(new URL(uri.getValue()));
@@ -262,12 +264,14 @@ public class AddWMSLayerComposer extends UtilityComposer {
      * User selected a map layer after doing "select layers" and clicked "add to
      * map"
      */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NS_DANGEROUS_NON_SHORT_CIRCUIT")
     public void onClick$addDiscoveredLayerButton() {
         LOGGER.debug("onAddDiscoveredLayer()");
 
-        //  DO NOT SHORT CURCUIT HERE!
-        if (validateCommon() & validateAutomaticModeCommon() & validiateAutomaticModeSelectLayer()) {
+        // DO NOT PUT TEST INTO IF STATEMENT (DO NOT SHORT CURCUIT HERE!)
+        boolean acm = validateAutomaticModeCommon();
+        boolean ams = validiateAutomaticModeSelectLayer();
+        boolean c = validateCommon();
+        if (acm && ams && c) {
 
             String discoveredLayerId = ((String[]) layerName.getSelectedItem().getValue())[0];
 
@@ -351,12 +355,13 @@ public class AddWMSLayerComposer extends UtilityComposer {
         }
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NS_DANGEROUS_NON_SHORT_CIRCUIT")
     public void onClick$addManualLayerButton() {
         LOGGER.debug("onAddManualLayer()");
 
-        // DO NOT SHORT CURCUIT HERE!
-        if (validateCommon() & validateManualMode()) {
+        // DO NOT PUT TEST INTO IF STATEMENT (DO NOT SHORT CURCUIT HERE!)
+        boolean mm = validateManualMode();
+        boolean c = validateCommon();
+        if (mm && c) {
             LOGGER.debug("adding" + getMapUri.getValue());
 
             if (getMapComposer().addWMSLayer("wmslayer",

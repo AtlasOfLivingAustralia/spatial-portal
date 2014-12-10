@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.util;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.lang.LanguagePackImpl;
@@ -15,6 +16,8 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
 
@@ -120,6 +123,10 @@ public final class CommonData {
     private static Map<String, JSONObject> facetToLayer;
     private static Properties i18nProperites = null;
     private static LanguagePack languagePack = null;
+    private static Map speciesListCounts;
+    private static Long speciesListCountsUpdated = 0L;
+    private static Map speciesListCountsKosher;
+    private static Long speciesListCountsUpdatedKosher = 0L;
 
     private CommonData() {
         //to hide public constructor
@@ -204,6 +211,13 @@ public final class CommonData {
 
         //init language pack (but not everywhere)
         initLanguagePack();
+
+        //need this data if using SP's endemic method
+        if (CommonData.getSettings().containsKey("endemic.sp.method")
+                && CommonData.getSettings().getProperty("endemic.sp.method").equals("true")) {
+            getSpeciesListCountsKosher(true);
+            getSpeciesListCounts(true);
+        }
 
         //(2) for EnvironmentalList
         if (copyDistances != null) {
@@ -1036,5 +1050,72 @@ public final class CommonData {
 
     public static String getExtraDownloadFields() {
         return extraDownloadFields;
+    }
+
+    public static Map getSpeciesListCounts(boolean refresh) {
+        if (speciesListCounts == null || refresh) {
+
+            Map m = new HashMap();
+
+            HttpClient client = new HttpClient();
+            String url = biocacheServer
+                    + "/occurrences/facets/download?facets=species_guid&count=true"
+                    + "&q=geospatial_kosher:*";
+            LOGGER.debug(url);
+            GetMethod get = new GetMethod(url);
+
+            try {
+                client.executeMethod(get);
+                CSVReader csv = new CSVReader(new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream())));
+                String[] row;
+                csv.readNext(); //skip header
+                while ((row = csv.readNext()) != null) {
+                    try {
+                        m.put(row[0], Long.parseLong(row[1]));
+                    } catch (Exception e) {
+                        LOGGER.error("error getting species_guid,count: " + url, e);
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("error getting species list from: " + url);
+            }
+
+            speciesListCountsUpdated = System.currentTimeMillis();
+            speciesListCounts = m;
+        }
+        return speciesListCounts;
+    }
+
+    public static Map getSpeciesListCountsKosher(boolean refresh) {
+        if (speciesListCountsKosher == null || refresh) {
+            Map m = new HashMap();
+
+            HttpClient client = new HttpClient();
+            String url = biocacheServer
+                    + "/occurrences/facets/download?facets=species_guid&count=true"
+                    + "&q=geospatial_kosher:true";
+            LOGGER.debug(url);
+            GetMethod get = new GetMethod(url);
+
+            try {
+                client.executeMethod(get);
+                CSVReader csv = new CSVReader(new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream())));
+                String[] row;
+                csv.readNext(); //skip header
+                while ((row = csv.readNext()) != null) {
+                    try {
+                        m.put(row[0], Long.parseLong(row[1]));
+                    } catch (Exception e) {
+                        LOGGER.error("error getting species_guid,count (kosher): " + url, e);
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("error getting species list from: " + url);
+            }
+
+            speciesListCountsUpdatedKosher = System.currentTimeMillis();
+            speciesListCountsKosher = m;
+        }
+        return speciesListCountsKosher;
     }
 }

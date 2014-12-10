@@ -13,9 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -60,6 +59,8 @@ public class RemoteRequestServlet implements HttpRequestHandler {
 
     private static final long serialVersionUID = 1L;
 
+    private byte[] requestBody;
+
     /**
      * Logger instance
      */
@@ -84,6 +85,9 @@ public class RemoteRequestServlet implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+        //read input stream first
+        requestBody = IOUtils.toString(request.getReader()).getBytes("UTF-8");
+
         String queryString = request.getQueryString();
         LOGGER.debug("requested: " + queryString);
         String targetUrl = request.getParameter("url");
@@ -104,12 +108,16 @@ public class RemoteRequestServlet implements HttpRequestHandler {
                     // ok - we are allowed to access this host, now
                     // we can grab the other parameters and append
                     // them to the url
+                    String extra = rebuildParameters(request.getParameterMap());
+                    if (targetUrl.contains("?") && extra.startsWith("?")) {
+                        extra = "&" + extra.substring(1);
+                    }
                     String target
                             = targetUrl
-                            + rebuildParameters(request.getParameterMap());
+                            + extra;
 
                     LOGGER.debug("access granted to hostname : " + hostname);
-                    fetchAndOutputUrl(target, response);
+                    fetchAndOutputUrl(target, response, request);
                 } else {
                     outputError(response);
                     LOGGER.debug(
@@ -122,31 +130,48 @@ public class RemoteRequestServlet implements HttpRequestHandler {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "WMI_WRONG_MAP_ITERATOR")
     private String rebuildParameters(Map params) {
         StringBuilder uri = new StringBuilder();
         String delim = "?";
-        for (Object key : params.keySet()) {
+        for (Object o : params.entrySet()) {
+            Map.Entry entry = (Map.Entry) o;
             // skip the url parameter - removal from the map is not allowed
-            if (!"url".equalsIgnoreCase((String) key)) {
-                String[] value = (String[]) params.get(key);
-                uri.append(delim).append(key).append("=").append(value[0]);
-                delim = "&";
+            if (!"url".equalsIgnoreCase((String) entry.getKey())) {
+                String[] value = (String[]) entry.getValue();
+                try {
+                    uri.append(delim).append(entry.getKey()).append("=").append(URLEncoder.encode(value[0], "UTF-8"));
+                    delim = "&";
+                } catch (UnsupportedEncodingException e) {
+                }
             }
         }
         return uri.toString();
     }
 
-    private void fetchAndOutputUrl(String url, HttpServletResponse response) {
+    private void fetchAndOutputUrl(String url, HttpServletResponse response, HttpServletRequest request) {
         URLConnection con;
         InputStream is = null;
         try {
             LOGGER.debug("will request '" + url + "' from remote server");
             con = httpConnection.configureSlowURLConnection(url);
 
-            // restore the MIME type for correct handling
-            response.setContentType(con.getContentType());
+
+            // POST parameters
+            if ("POST".equals(request.getMethod())) {
+                HttpURLConnection hc = (HttpURLConnection) new URL(url).openConnection();
+                if (request.getContentType() != null) {
+                    hc.setRequestProperty("Content-Type", request.getContentType());
+                }
+                hc.setRequestMethod("POST");
+                hc.setDoInput(true);
+                hc.setDoOutput(true);
+
+                if (requestBody != null && requestBody.length > 0) {
+                    hc.getOutputStream().write(requestBody);
+                }
+
+                con = hc;
+            }
 
             // force the url to be cached by adding/replaceing the cache-control header
             response.addHeader(
@@ -156,6 +181,9 @@ public class RemoteRequestServlet implements HttpRequestHandler {
             // get the data...
             is = con.getInputStream();
             byte[] data = IOUtils.toByteArray(is);
+
+            // restore the MIME type for correct handling
+            response.setContentType(con.getContentType());
 
             // flush to client
             response.getOutputStream().write(data);

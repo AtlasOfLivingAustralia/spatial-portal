@@ -2,6 +2,7 @@ package au.org.emii.portal.composer;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.composer.sandbox.SandboxPasteController;
 import au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent;
 import au.org.ala.spatial.dto.ScatterplotDataDTO;
 import au.org.ala.spatial.dto.UserDataDTO;
@@ -2912,11 +2913,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 openModal("WEB-INF/zul/add/AddSpecies.zul", params, "addspecieswindow");
 
             } else {
-                Map params = new HashMap();
-                params.put("setTbInstructions", "3. Select file (comma separated ID (text), " +
-                        "longitude (decimal degrees), latitude(decimal degrees))");
-                params.put("addToMap", true);
-                openModal("WEB-INF/zul/input/UploadSpecies.zul", params, "uploadspecieswindow");
+                if (StringUtils.isNotEmpty((String) CommonData.getSettings().getProperty("sandbox.url", null))
+                        && CommonData.getSettings().getProperty("import.points.layers-service", "false").equals("false")) {
+                    SandboxPasteController spc = (SandboxPasteController) Executions.createComponents("WEB-INF/zul/sandbox/SandboxPaste.zul", getMapComposer(), null);
+                    spc.setAddToMap(true);
+                    spc.doModal();
+                } else {
+                    Map params = new HashMap();
+                    params.put("setTbInstructions", "3. Select file (comma separated ID (text), " +
+                            "longitude (decimal degrees), latitude(decimal degrees))");
+                    params.put("addToMap", true);
+                    openModal("WEB-INF/zul/input/UploadSpecies.zul", params, "uploadspecieswindow");
+                }
+
+
             }
         }
     }

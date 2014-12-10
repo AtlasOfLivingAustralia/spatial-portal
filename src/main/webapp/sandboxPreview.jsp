@@ -1,0 +1,407 @@
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="app.version" content="0.1"/>
+<meta name="app.build" content=""/>
+<meta name="description" content="Atlas of Living Australia"/>
+<meta name="author" content="Atlas of Living Australia">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Sandbox file upload | Atlas of Living Australia</title>
+
+<!--link href="/datacheck/static/bundle-bundle_fileupload_head.css" type="text/css" rel="stylesheet" media="screen, projection" /-->
+
+<script src="scripts/jquery-1.7.2.min.js"
+        type="text/javascript"></script>
+<link href="http://www.ala.org.au/wp-content/themes/ala2011/images/favicon.ico" rel="shortcut icon"/>
+<link href="http://www.ala.org.au/wp-content/themes/ala2011/css/jquery.autocomplete.css" type="text/css"
+      rel="stylesheet" media="screen, projection"/>
+<script src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/jquery.autocomplete.js"
+        type="text/javascript"></script>
+<!--[if lt IE 9]>
+<script src="scripts/html5.js"
+        type="text/javascript"></script><![endif]-->
+<link href="css/bootstrap.css" type="text/css"
+      rel="stylesheet" media="screen, projection, print"/>
+<link href="css/bootstrap-responsive.css"
+      type="text/css" rel="stylesheet" media="screen" id="responsiveCss"/>
+<link href="css/bundle-bundle_progressbar_head.css" type="text/css"
+      rel="stylesheet" media="screen, projection"/>
+
+<script type="text/javascript">
+
+if (!window.console) console = {log: function () {
+}};
+
+var SANDBOX = {
+    dataResourceUid: "",
+    fileId: Number("<%= request.getParameter("uploadId") %>")
+}
+
+function init() {
+    console.log("Initialising sandbox...");
+    $('#uploadFeedback').html('');
+    $('#progressBar').hide();
+    $('#uploadFeedback').hide();
+    if (typeof String.prototype.trim !== 'function') {
+        String.prototype.trim = function () {
+            return this.replace(/^\s+|\s+$/g, '');
+        }
+    }
+}
+
+function reset() {
+    $('#processedContent').remove();
+    $('#uploadFeedback').html('');
+    $('#recognisedDataDiv').hide();
+    $('#processSample').slideUp("slow");
+    $('#progressBar').hide();
+    $('#uploadFeedback').hide();
+}
+
+function loadUploadedData(id) {
+    //$('#uploadProgressBar').progressbar( "destroy" );
+    $.ajaxSetup({
+        scriptCharset: "utf-8",
+        contentType: "text/html; charset=utf-8"
+    });
+
+    //wait for url
+    if (SANDBOX.sandbox_url == undefined) {
+        setTimeout("loadUploadedData(" + id + ")", 100);
+        return;
+    }
+
+    $.ajax({
+        type: "POST",
+        url: "RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url + "upload/parseColumns?id=" + id),
+        success: function (data) {
+            data = replacements(data)
+            $('#checkDataButton').removeClass("disabled");
+            $('#recognisedData').html(data)
+            $('#firstLineIsData').change(function () {
+                parseColumnsWithFirstLineInfo();
+            });
+        },
+        error: function () {
+            $('#checkDataButton').removeClass("disabled");
+            $('#checkDataButton').html("Check data");
+        }
+    });
+}
+
+function parseColumnsWithFirstLineInfo() {
+    console.log("Parsing first line to do interpretation...");
+    $.post("RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url) + "upload%2FparseColumnsWithFirstLineInfo"
+                    + encodeURIComponent("?id=" + SANDBOX.fileId + "&firstLineIsData=" + $('#firstLineIsData').val()),
+            {},
+            function (data) {
+                data = replacements(data)
+                $('#recognisedData').html(data)
+                $('#recognisedDataDiv').slideDown("slow");
+                processedData(SANDBOX.fileId);
+                $('#processSample').slideDown("slow");
+                $('#processingInfo').html('<strong>&nbsp;</strong>');
+                $('#firstLineIsData').change(function () {
+                    parseColumnsWithFirstLineInfo();
+                });
+            }, "html"
+    );
+}
+
+function updateStatus(uid) {
+    SANDBOX.dataResourceUid = uid;
+    $('#progressBar').show();
+
+    $('.progress .bar').progressbar({
+        use_percentage: true,
+        display_text: 2,
+        refresh_speed: 50,
+        text: 'Starting the upload...'
+    });
+
+    $('#uploadFeedback').show();
+    updateStatusPolling();
+}
+
+function randomString(length) {
+    var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'.split('');
+
+    if (!length) {
+        length = Math.floor(Math.random() * chars.length);
+    }
+
+    var str = '';
+    for (var i = 0; i < length; i++) {
+        str += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return str;
+}
+
+function updateStatusPolling() {
+
+    $.get("RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url) + "dataCheck%2FuploadStatus?uid=" + SANDBOX.dataResourceUid + "&random=" + randomString(10), function (data) {
+        console.log("Retrieving status...." + data.status + ", percentage: " + data.percentage);
+        if (data.status == "COMPLETE") {
+            SANDBOX.uploadStatus = data.status
+            $('.progress .bar').attr('data-percentage', '100');
+            $('#uploadFeedback').html('Upload complete.');
+            $('.progress .bar').progressbar();
+            $('#spatialPortalLink').attr('href', '/datacheck/dataCheck/redirectToSpatialPortal?uid=' + SANDBOX.dataResourceUid);
+            $('#hubLink').attr('href', '/datacheck/dataCheck/redirectToBiocache?uid=' + SANDBOX.dataResourceUid);
+            $('#downloadLink').attr('href', '/datacheck/dataCheck/redirectToDownload?uid=' + SANDBOX.dataResourceUid);
+            $('#optionsAfterDownload').css({'display': 'block'});
+            $("#uploadFeedback").html('');
+        } else if (data.status == "FAILED") {
+            SANDBOX.uploadStatus = data.status
+            $("#uploadFeedback").html('<span>Dataset upload <strong>failed</strong>. Please email support@ala.org.au with e details of your dataset.</span>');
+        } else {
+            $('.progress .bar').attr('data-percentage', data.percentage);
+            $('.progress .bar').progressbar();
+            $("#uploadFeedback").html('<span>Percentage completed: ' + data.percentage + '%. </span><span>STATUS: ' + data.status + ', ' + data.description + "</span>");
+            setTimeout("updateStatusPolling()", 1000);
+        }
+    });
+}
+
+function uploadToSandbox() {
+    console.log('Uploading to sandbox...');
+
+    $('#uploadButton').removeClass("disabled");
+    $('#uploadFeedback').html('<p class="uploaded">Starting upload of dataset....</p>');
+    $.ajax({
+        type: "POST",
+        url: "RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url + "upload/uploadToSandbox"),
+        data: JSON.stringify({
+            "fileId": "" + SANDBOX.fileId,
+            "headers": getColumnHeaders(),
+            "datasetName": $('#datasetName').val(),
+            "firstLineIsData": $('#firstLineIsData').val()
+        }),
+        success: function (data) {
+            updateStatus(data.uid);
+        },
+        error: function () {
+            alert("There was a problem starting the upload. Please email support@ala.org.au");
+        },
+        dataType: 'json',
+        contentType: "application/json"
+    });
+}
+
+function getColumnHeaders() {
+    console.log("Retrieve column headers...");
+    var columnHeaderInputs = $('.columnHeaderInput');
+    var columnHeadersCSV = "";
+    var i = 0;
+    $.each(columnHeaderInputs, function (index, input) {
+        if (index > 0) {
+            columnHeadersCSV = columnHeadersCSV + ",";
+        }
+        columnHeadersCSV = columnHeadersCSV + input.value;
+        i++;
+    });
+    console.log('Returning headers : ' + columnHeadersCSV);
+    return columnHeadersCSV;
+}
+
+function processedData() {
+    $('#processedData').slideUp("slow");
+    $('.processDataBtn').addClass("disabled");
+    $('.processDataBtn').text('Reprocessing.......');
+    $.ajaxSetup({
+        scriptCharset: "utf-8",
+        contentType: "application/x-www-form-urlencoded"
+    });
+    $.ajax({
+        type: "POST",
+        url: "RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url + "upload/viewProcessData?id=" + SANDBOX.fileId),
+        contentType: "application/x-www-form-urlencoded",
+        data: {
+            firstLineIsData: $('#firstLineIsData').val()
+        },
+        success: function (data) {
+            $('#processedData').html(data);
+            $('#processedData').slideDown("slow");
+            $('.processDataBtn').text('Reprocess data');
+            $('.processDataBtn').removeClass("disabled");
+        },
+        error: function () {
+            $('.processDataBtn').text('Reprocess data');
+            $('.processDataBtn').removeClass("disabled");
+        }
+    });
+}
+
+//setup the page
+$(document).ready(function () {
+    loadUploadedData(SANDBOX.fileId);
+    init();
+});
+
+
+// initialise plugins
+jQuery(function () {
+    // autocomplete on navbar search input
+    jQuery("form#search-form-2011 input#search-2011, form#search-inpage input#search, input#search-2013").autocomplete('http://bie.ala.org.au/search/auto.jsonp', {
+        extraParams: {limit: 100},
+        dataType: 'jsonp',
+        parse: function (data) {
+            var rows = new Array();
+            data = data.autoCompleteList;
+            for (var i = 0; i < data.length; i++) {
+                rows[i] = {
+                    data: data[i],
+                    value: data[i].matchedNames[0],
+                    result: data[i].matchedNames[0]
+                };
+            }
+            return rows;
+        },
+        matchSubset: false,
+        formatItem: function (row, i, n) {
+            return row.matchedNames[0];
+        },
+        cacheLength: 10,
+        minChars: 3,
+        scroll: false,
+        max: 10,
+        selectFirst: false
+    });
+
+    // Mobile/desktop toggle
+    // TODO: set a cookie so user's choice is remembered across pages
+    var responsiveCssFile = $("#responsiveCss").attr("href"); // remember set href
+    $(".toggleResponsive").click(function (e) {
+        e.preventDefault();
+        $(this).find("i").toggleClass("icon-resize-small icon-resize-full");
+        var currentHref = $("#responsiveCss").attr("href");
+        if (currentHref) {
+            $("#responsiveCss").attr("href", ""); // set to desktop (fixed)
+            $(this).find("span").html("Mobile");
+        } else {
+            $("#responsiveCss").attr("href", responsiveCssFile); // set to mobile (responsive)
+            $(this).find("span").html("Desktop");
+        }
+    });
+});
+
+function replacements(data) {
+    data = data.replace("/datacheck/dataCheck/autocomplete.json",
+                    "RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url + "dataCheck/autocomplete.json"))
+    data = data.replace("input.columnHeaderInput",
+            ".columnHeaderInput")
+
+
+    console.log(data)
+    console.log(jQuery("input.columnHeaderInput"))
+    console.log(jQuery(".columnHeaderInput"))
+    return data
+}
+</script>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="layout" content="main"/>
+
+
+</head>
+<body class="" id="" onload="">
+
+<div class="container" id="main-content">
+
+    <div class="container">
+
+        <h1>Sandbox file upload <i>(Early Alpha)</i></h1>
+
+        <div class="row-fluid" class="span12">
+
+            <h2>1. File uploaded</h2>
+
+            <div id="uploadedFileDetails" class="well">
+                <h4><span>File name: </span><span id="filename"><%= request.getParameter("uploadFn") %></span></h4>
+            </div>
+
+            <div id="recognisedDataDiv">
+                <h2>2. Check our initial interpretation</h2>
+
+                <p>
+                    Adjust headings that have been incorrectly matched using the text boxes.
+                    Fields marked in <strong>yellow</strong> havent been matched to a recognised field name
+                    (<a href="http://rs.tdwg.org/dwc/terms/" target="_blank">darwin core terms</a>).<br/>
+                    After adjusting, click
+                    <a href="javascript:processedData();" id="processDataBtn" name="processDataBtn"
+                       class="btn processDataBtn">Reprocess sample</a>
+                </p>
+
+                <div class="well">
+                    <div id="recognisedData"></div>
+                    <a href="javascript:processedData();" id="processDataBtn2" name="processDataBtn2"
+                       class="btn processDataBtn">Reprocess sample</a>
+                </div>
+
+            </div>
+            <!-- recognisedDataDiv -->
+
+            <div id="processSample">
+                <h2>3. Upload to sandbox</h2>
+
+                <div id="processSampleUpload">
+                    <div class="bs-callout bs-callout-info">
+                        The tables below display the first few records and our interpretation. The <strong>Processed
+                        value</strong>
+                        displays the results of name matching, sensitive data lookup and reverse geocoding where
+                        coordinates have been supplied.<br/>
+                        If you are happy with the initial processing, please give your dataset a name, and upload into
+                        the sandbox.
+                        This will process all the records and allow you to visualise your data on a map.
+                    </div>
+
+                    <div class="well">
+                        <label for="datasetName" class="datasetName"><strong>Your dataset name</strong></label>
+
+                        <input id="datasetName" class="datasetName" name="datasetName" type="text"
+                               value="<%= request.getParameter("uploadFn") %>" style="width:350px; margin-bottom:5px;"/>
+
+                        <a id="uploadButton" class="btn" href="javascript:uploadToSandbox();">Upload your data</a>
+
+                        <div id="uploadFeedback" style="clear:right;">
+                        </div>
+
+                        <div id="progressBar" class="progress progress-info" style="margin-top:20px;">
+                            <div class="bar" data-percentage="0"></div>
+                        </div>
+
+                        <div id="optionsAfterDownload" style="display:none; margin-bottom: 0px; padding-bottom: 0px;">
+
+                            <h2 style="margin-top:25px;">Options for working with your data</h2>
+
+                            <div class="row-fluid">
+                                <a href="#spatialPortalLink" id="spatialPortalLink" class="btn"
+                                   title="Mapping &amp; Analysis in the Spatial portal">Mapping & Analysis with your
+                                    data</a></dd>
+                                <a href="#hubLink" id="hubLink" class="btn" title="Tables &amp; charts for your data">Tables
+                                    & charts of your data</a></dd>
+                                <a href="#downloadLink" id="downloadLink" class="btn"
+                                   title="Life Science Identifier (pop-up)">Download the processed version of your
+                                    data</a></dd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- processedSample -->
+        </div>
+    </div>
+
+</div>
+<!--/.container-->
+
+<!-- JS resources-->
+<script src="scripts/bundle-bundle_bootstrap_defer.js"
+        type="text/javascript"></script>
+<script src="scripts/bundle-bundle_progressbar_defer.js"
+        type="text/javascript"></script>
+
+</body>
+</html>

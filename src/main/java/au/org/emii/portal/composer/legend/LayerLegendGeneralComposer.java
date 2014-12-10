@@ -274,6 +274,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
         String colourmode = cbColour.getSelectedItem().getValue();
         if (!StringConstants.GRID.equals(mapLayer.getColourMode())
+                && query.getLegend(colourmode) != null
                 && query.getLegend(colourmode).getCategoryNameOrder() != null) {
             map.put("checkmarks", StringConstants.TRUE);
         }
@@ -671,6 +672,11 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
         Query q = m.getSpeciesQuery();
         if (q != null) {
             List<QueryField> fields = q.getFacetFieldList();
+            for (int i = fields.size() - 1; i >= 0; i--) {
+                if (fields.get(i) == null) {
+                    fields.remove(i);
+                }
+            }
             Collections.sort(fields, new QueryField.QueryFieldComparator());
 
             String lastGroup = null;

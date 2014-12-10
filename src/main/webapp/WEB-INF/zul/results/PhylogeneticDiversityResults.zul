@@ -21,7 +21,7 @@
             <label id="resultsLabel" value=""/>
             <separator />
             <separator />
-            <listbox id="popupListboxResults" height="200px">
+            <listbox id="popupListboxResults" height="700px">
                             <listhead id="treesHeader">
                                     <listheader id="lh_treeViewUrl" label="" width="35px" />
                                     <listheader id="lh_maxPd" label = "Max PD" hflex="min"/>

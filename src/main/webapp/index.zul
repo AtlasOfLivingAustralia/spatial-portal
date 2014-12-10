@@ -255,7 +255,7 @@
 					<li><a href="http://www.ala.org.au" title="Atlas of Living Australia home">Home</a></li>
                     <li><a href="/actions/dashboard" target="_blank" title="Spatial Portal Dashboard">Dashboard</a></li>
                     <li><a href="javascript:saveSession();" title="Save current session">Save session</a></li>
-					<li class="last login-button"><a id="casLinkLogin" href="https://auth.ala.org.au/cas/login?service=http://spatial.ala.org.au" >Log in</a></li>
+					<li class="last login-button"><a id="casLinkLogin" href="https://auth.ala.org.au/cas/login?service=http://spatial.ala.org.au/webportal/" >Log in</a></li>
 				</ol>
 			</nav>
 			<nav style="display:none;" class="logged_in">
@@ -407,6 +407,7 @@
         <label id="help_url" visible="false" />
         <label id="cas_login_url" visible="false" />
         <label id="phylolist_url" visible="false" />
+        <label id="sandbox_url" visible="false" />
 
 <zscript>
 sat_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("sat_url"));
@@ -419,7 +420,7 @@ webportal_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("web
 help_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("help_url"));
 cas_login_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("casServerLoginUrl"));
 phylolist_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("phylolist_url"));
-
+sandbox_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("sandbox.url"));
 </zscript>
 
 

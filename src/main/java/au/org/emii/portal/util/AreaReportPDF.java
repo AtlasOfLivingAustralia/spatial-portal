@@ -18,8 +18,10 @@ import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -31,10 +33,11 @@ import java.util.concurrent.Executors;
 public class AreaReportPDF {
     private static final Logger LOGGER = Logger.getLogger(AreaReportPDF.class);
 
-    private static final String[] SPECIES_GROUPS = new String[]{"Algae", "Amphibians", "Angiosperms", "Animals", "Anthropods", "Bacteria"
+    private static final String[] SPECIES_GROUPS = new String[]{"Algae", "Amphibians", "Angiosperms", "Animals", "Arthropods", "Bacteria"
             , "Birds", "Bryophytes", "Chromista", "Crustaceans", "Dicots", "FernsAndAllies", "Fish", "Fungi"
-            , "Gymnosperms", "Insects", "Mammals", "Molluscs", "Monocots", "Plants", "Protozoa", "Reptiles" };
+            , "Gymnosperms", "Insects", "Mammals", "Molluscs", "Monocots", "Plants", "Protozoa", "Reptiles"};
 
+    private static final int PROGRESS_COUNT = 92;
 
     private String wkt;
     private MapLayer mlArea;
@@ -45,6 +48,7 @@ public class AreaReportPDF {
     private Map<String, String> speciesLinks;
     private BiocacheQuery query;
     private String[] checklists;
+    private String[] distributions;
     private Map<String, byte[]> imageMap;
     private RemoteMap remoteMap;
     private Map tabulation;
@@ -52,9 +56,12 @@ public class AreaReportPDF {
 
     private String filePath;
 
-    public AreaReportPDF(String wkt, String areaName) {
+    private Map progress;
+
+    public AreaReportPDF(String wkt, String areaName, Map progress) {
         this.wkt = wkt;
         this.areaName = areaName;
+        this.progress = progress;
 
         query = new BiocacheQuery(null, wkt, null, null, false, new boolean[]{true, true, true});
 
@@ -70,13 +77,41 @@ public class AreaReportPDF {
         }
 
         //query for images and data
-        init();
+        setProgress("Getting information", 0);
+        if (!isCancelled()) init();
 
         //transform data into html
-        makeHTML();
+        setProgress("Formatting", 0);
+        if (!isCancelled()) makeHTML();
 
         //transform html into pdf
-        savePDF();
+        setProgress("Producing PDF", 0);
+        if (!isCancelled()) savePDF();
+
+        setProgress("Finished", 1);
+    }
+
+    private boolean isCancelled() {
+        return progress != null && progress.containsKey("cancel");
+    }
+
+    private void setProgress(String label, double percent) {
+        if (progress != null) {
+            progress.put("label", label);
+
+            if (percent == 0) {
+                Double currentPercent = (Double) progress.get("percent");
+                if (currentPercent == null) {
+                    currentPercent = 0.0;
+                } else {
+                    currentPercent *= 100;
+                }
+
+                progress.put("percent", Math.min((currentPercent + 1) / 100, 1.0));
+            } else {
+                progress.put("percent", percent);
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -91,7 +126,7 @@ public class AreaReportPDF {
         //String wkt = "POLYGON((112.0 -44.0,112.0 -11.0,154.0 -11.0,154.0 -44.0,112.0 -44.0))";
         String wkt = "POLYGON((149.26687622068 -35.258741390775,149.35579681395 -35.298540090399,149.33657073973 -35.320673151768,149.28404235838 -35.336638814392,149.24559020995 -35.322914136746,149.26687622068 -35.258741390775))";
 
-        new AreaReportPDF(wkt, "My area");
+        new AreaReportPDF(wkt, "My area", null);
     }
 
     public byte[] getPDF() {
@@ -174,10 +209,10 @@ public class AreaReportPDF {
             fw.write("Checklist Species: " + String.format("%s", counts.getString("Checklist Species")));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("");
+            fw.write("Threatened Species (all lists): " + counts.getString("Threatened_Species"));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("");
+            fw.write("Invasive Species (all lists): " + counts.getString("Invasive_Species"));
             fw.write("</td>");
             fw.write("</tr>");
 
@@ -267,6 +302,30 @@ public class AreaReportPDF {
             speciesPage(true, fw, "My Area", "Species", notes, tableNumber, count, countKosher, figureNumber, imageUrl,
                     csvs.getString("Species"));
             tableNumber++;
+            fw.write("</body></html>");
+            fw.close();
+            fileNumber++;
+            fw = startHtmlOut(fileNumber, filename);
+
+            //threatened species page
+            count = Integer.parseInt(counts.getString("Threatened_Species"));
+            imageUrl = "Threatened_Species" + ".png";
+            notes = "";
+            speciesPage(true, fw, "My Area", "Threatened Species (all lists)", notes, tableNumber, count, -1, figureNumber, imageUrl,
+                    csvs.getString("Threatened_Species"));
+            figureNumber++;
+            fw.write("</body></html>");
+            fw.close();
+            fileNumber++;
+            fw = startHtmlOut(fileNumber, filename);
+
+            //invasive species page
+            count = Integer.parseInt(counts.getString("Invasive_Species"));
+            imageUrl = "Invasive_Species" + ".png";
+            notes = "";
+            speciesPage(true, fw, "My Area", "Invasive Species (all lists)", notes, tableNumber, count, -1, figureNumber, imageUrl,
+                    csvs.getString("Invasive_Species"));
+            figureNumber++;
             fw.write("</body></html>");
             fw.close();
             fileNumber++;
@@ -516,22 +575,22 @@ public class AreaReportPDF {
         callables.addAll(initTabulation());
 
         callables.add(new Callable() {
-                  @Override
-                  public Object call() throws Exception {
-                      initImages();
+            @Override
+            public Object call() throws Exception {
+                initImages();
 
-                      return null;
-                  }
-              });
+                return null;
+            }
+        });
 
         callables.add(new Callable() {
-                  @Override
-                  public Object call() throws Exception {
-                      initCountArea();
+            @Override
+            public Object call() throws Exception {
+                initCountArea();
 
-                      return null;
-                  }
-              });
+                return null;
+            }
+        });
 
         callables.add(new Callable() {
             @Override
@@ -578,23 +637,23 @@ public class AreaReportPDF {
             }
         });
 
-        callables.add(new Callable() {
-            @Override
-            public Object call() throws Exception {
-                initCountChecklistAreasAndSpecies();
-
-                return null;
-            }
-        });
-
-        callables.add(new Callable() {
-            @Override
-            public Object call() throws Exception {
-                initCountDistributionAreas();
-
-                return null;
-            }
-        });
+//        callables.add(new Callable() {
+//            @Override
+//            public Object call() throws Exception {
+//                initCountChecklistAreasAndSpecies();
+//
+//                return null;
+//            }
+//        });
+//
+//        callables.add(new Callable() {
+//            @Override
+//            public Object call() throws Exception {
+//                initCountDistributionAreas();
+//
+//                return null;
+//            }
+//        });
 
         callables.add(new Callable() {
             @Override
@@ -622,6 +681,8 @@ public class AreaReportPDF {
             LOGGER.error("failed to run all Init callables for detailed pdf", e);
         }
 
+        setProgress("Getting information: saving", 0);
+        if (isCancelled()) return;
         try {
             FileWriter fw = new FileWriter(filePath + File.separator + "counts.json");
             fw.write(JSONObject.fromObject(counts).toString());
@@ -638,7 +699,7 @@ public class AreaReportPDF {
             FileUtils.copyURLToFile(new URL(CommonData.getWebportalServer() + "/area-report/toc.xsl"),
                     new File(filePath + "/toc.xsl"));
         } catch (Exception e) {
-            LOGGER.error("failed to output area report information");
+            LOGGER.error("failed to output area report information", e);
         }
 
     }
@@ -654,6 +715,7 @@ public class AreaReportPDF {
             }
         };
     }
+
     private List initTabulation() {
 
         List callables = new ArrayList();
@@ -678,73 +740,127 @@ public class AreaReportPDF {
     }
 
     private void initDistributionsCsv(String type) {
+        setProgress("Getting information: " + type, 0);
+        if (isCancelled()) return;
         StringBuilder sb = new StringBuilder();
-        for (String line : Util.getDistributionsOrChecklists(type, wkt, null, null)) {
+        String[] list = Util.getDistributionsOrChecklists(type, wkt, null, null);
+        for (String line : list) {
             if (sb.length() > 0) {
                 sb.append("\n");
             }
             sb.append(line);
         }
+        if (StringConstants.CHECKLISTS.equals(type)) {
+            checklists = list;
+            if (checklists.length <= 0) {
+                counts.put("Checklist Areas", "0");
+                counts.put("Checklist Species", "0");
+            } else {
+                String[] areaChecklistText = Util.getAreaChecklists(checklists);
+                counts.put("Checklist Areas", String.valueOf(areaChecklistText.length - 1));
+                counts.put("Checklist Species", String.valueOf(checklists.length - 1));
+            }
+        } else {
+            distributions = list;
+            if (distributions.length <= 0) {
+                counts.put("Distribution Areas", "0");
+            } else {
+                counts.put("Distribution Areas", String.valueOf(distributions.length - 1));
+            }
+        }
+
         csvs.put(type, sb.toString());
     }
 
 
     private void initCsvSpecies() {
+        setProgress("Getting information: species list", 0);
+        if (isCancelled()) return;
         csvs.put("Species", query.speciesList());
         speciesLinks.put("Species", query.getWS() + "/occurrences/search?q=" + query.getQ());
 
         for (int i = 0; i < SPECIES_GROUPS.length; i++) {
             String s = SPECIES_GROUPS[i];
+            setProgress("Getting information: species list for lifeform " + s, 0);
+            if (isCancelled()) return;
             BiocacheQuery q = query.newFacet(new Facet("species_group", s, true), false);
             csvs.put(s, q.speciesList());
             speciesLinks.put(s, q.getWS() + "/occurrences/search?q=" + q.getQ());
             counts.put(s, String.valueOf(q.getSpeciesCount()));
             counts.put(s + " (spatially valid only)", String.valueOf(q.getSpeciesCountKosher()));
         }
+
+        setProgress("Getting information: threatened species list", 0);
+        if (isCancelled()) return;
+        BiocacheQuery q = query.newFacet(new Facet("state_conservation", "*", true), true);
+        csvs.put("Threatened_Species", query.speciesList());
+        speciesLinks.put("Threatened_Species", query.getWS() + "/occurrences/search?q=" + q.getQ());
+        counts.put("Threatened_Species", String.valueOf(q.getSpeciesCount()));
+
+        setProgress("Getting information: invasive species list", 0);
+        if (isCancelled()) return;
+        q = query.newFacet(new Facet("pest_flag_s", "*", true), true);
+        csvs.put("Invasive_Species", query.speciesList());
+        speciesLinks.put("Invasive_Species", query.getWS() + "/occurrences/search?q=" + q.getQ());
+        counts.put("Invasive_Species", String.valueOf(q.getSpeciesCount()));
     }
 
     private void initCountSpecies() {
+        setProgress("Getting information: species count", 0);
+        if (isCancelled()) return;
         counts.put("Species", String.valueOf(query.getSpeciesCount()));
+        setProgress("Getting information: species count geospatial_kosher=true", 0);
+        if (isCancelled()) return;
         counts.put("Species (spatially valid only)", String.valueOf(query.getSpeciesCountKosher()));
     }
 
     private void initCountOccurrences() {
+        setProgress("Getting information: occurrences", 0);
+        if (isCancelled()) return;
         counts.put("Occurrences", String.valueOf(query.getOccurrenceCount()));
+        setProgress("Getting information: occurrences count geospatial_kosher=true", 0);
+        if (isCancelled()) return;
         counts.put("Occurrences (spatially valid only)", String.valueOf(query.getOccurrenceCountKosher()));
         speciesLinks.put("Occurrences", query.getWS() + "/occurrences/search?q=" + query.getQ());
     }
 
     private void initCountEndemicSpecies() {
+        setProgress("Getting information: endemic species count", 0);
+        if (isCancelled()) return;
         counts.put("Endemic Species", String.valueOf(query.getEndemicSpeciesCount()));
     }
 
     private void initCountThreatenedSpecies() {
+        setProgress("Getting information: threatened species", 0);
+        if (isCancelled()) return;
         Facet f = new Facet("state_conservation", "Endangered", true);
         counts.put("Threatened Species", String.valueOf(query.newFacet(f, false).getSpeciesCount()));
     }
 
-    private void initCountChecklistAreasAndSpecies() {
-        checklists = Util.getDistributionsOrChecklists(StringConstants.CHECKLISTS, null, wkt, null);
-
-        if (checklists.length <= 0) {
-            counts.put("Checklist Areas", "0");
-            counts.put("Checklist Species", "0");
-        } else {
-            String[] areaChecklistText = Util.getAreaChecklists(checklists);
-            counts.put("Checklist Areas", String.valueOf(areaChecklistText.length - 1));
-            counts.put("Checklist Species", String.valueOf(checklists.length - 1));
-        }
-    }
-
-    private void initCountDistributionAreas() {
-        String[] distributions = Util.getDistributionsOrChecklists(StringConstants.DISTRIBUTIONS, null, wkt, null);
-
-        if (checklists.length <= 0) {
-            counts.put("Distribution Areas", "0");
-        } else {
-            counts.put("Distribution Areas", String.valueOf(distributions.length - 1));
-        }
-    }
+//    private void initCountChecklistAreasAndSpecies() {
+//        setProgress("Getting information: checklist areas", 0);
+//        checklists = Util.getDistributionsOrChecklists(StringConstants.CHECKLISTS, wkt, null, null);
+//
+//        if (checklists.length <= 0) {
+//            counts.put("Checklist Areas", "0");
+//            counts.put("Checklist Species", "0");
+//        } else {
+//            String[] areaChecklistText = Util.getAreaChecklists(checklists);
+//            counts.put("Checklist Areas", String.valueOf(areaChecklistText.length - 1));
+//            counts.put("Checklist Species", String.valueOf(checklists.length - 1));
+//        }
+//    }
+//
+//    private void initCountDistributionAreas() {
+//        setProgress("Getting information: distribution areas", 0);
+//        String[] distributions = Util.getDistributionsOrChecklists(StringConstants.DISTRIBUTIONS, wkt, null, null);
+//
+//        if (checklists.length <= 0) {
+//            counts.put("Distribution Areas", "0");
+//        } else {
+//            counts.put("Distribution Areas", String.valueOf(distributions.length - 1));
+//        }
+//    }
 
     private void initCountArea() {
         DecimalFormat df = new DecimalFormat("###,###.##");
@@ -781,45 +897,88 @@ public class AreaReportPDF {
             extentsLarge[3] = 85;
         }
 
+        setProgress("Getting information: images for map of map", 0);
+        if (isCancelled()) return;
         MapLayer mlSpecies = createSpeciesLayer(query, 0, 0, 255, .6f, false, 9, false);
 
         List<MapLayer> lifeforms = new ArrayList<MapLayer>();
         for (int i = 0; i < SPECIES_GROUPS.length; i++) {
             String s = SPECIES_GROUPS[i];
+            setProgress("Getting information: images for map of lifeform " + s, 0);
+            if (isCancelled()) return;
             lifeforms.add(createSpeciesLayer(query.newFacet(new Facet("species_group", s, true), false), 0, 0, 255, .6f, false, 9, false));
         }
 
+        setProgress("Getting information: images for map of threatened species", 0);
+        if (isCancelled()) return;
+        MapLayer threatenedSpecies = createSpeciesLayer(query.newFacet(new Facet("state_conservation", "*", true), false), 0, 0, 255, .6f, false, 9, false);
+
+        setProgress("Getting information: images for map of invasive species", 0);
+        if (isCancelled()) return;
+        MapLayer invasiveSpecies = createSpeciesLayer(query.newFacet(new Facet("pest_flag_s", "*", true), false), 0, 0, 255, .6f, false, 9, false);
+
+        setProgress("Getting information: images for map of layer " + "dlcmv1", 0);
+        if (isCancelled()) return;
         MapLayer mlDynamicLand = createLayer("dlcmv1", 1.0f);
+
+        setProgress("Getting information: images for map of layer " + "teow", 0);
+        if (isCancelled()) return;
         MapLayer mlTeow = createLayer("teow", 1.0f);
         mlTeow.setColourMode("&styles=teow&format_options=dpi:600");
         //MapLayer mlMeow = createLayer("meow_ecos", 1.0f);
         //mlMeow.setColourMode("&styles=meow_ecos");
+
+        setProgress("Getting information: images for map of layer " + "feow", 0);
+        if (isCancelled()) return;
         MapLayer mlFeow = createLayer("feow", 1.0f);
         mlFeow.setColourMode("&styles=feow&format_options=dpi:600");
         //MapLayer mlImcra = createLayer("imcra4_pb", 1.0f);
         //mlImcra.setColourMode("&styles=imcra4_pb&format_options=dpi:600");
 
+        setProgress("Getting information: making map of area", 0);
+        if (isCancelled()) return;
         imageMap.put("base_area", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea}, aspectRatio, "", type, resolution).get());
 
+        setProgress("Getting information: making map of area overview", 0);
+        if (isCancelled()) return;
         imageMap.put("base_area_zoomed_out", new PrintMapComposer(extentsLarge, basemap, new MapLayer[]{mlArea}, aspectRatio, "", type, resolution).get());
 
+        setProgress("Getting information: making occurrences", 0);
+        if (isCancelled()) return;
         imageMap.put(StringConstants.OCCURRENCES, new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, mlSpecies}, aspectRatio, "", type, resolution).get());
 
+        setProgress("Getting information: making threatened species", 0);
+        if (isCancelled()) return;
+        imageMap.put("Threatened_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, threatenedSpecies}, aspectRatio, "", type, resolution).get());
+
+        setProgress("Getting information: making invasive species", 0);
+        if (isCancelled()) return;
+        imageMap.put("Invasive_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, invasiveSpecies}, aspectRatio, "", type, resolution).get());
+
         for (int i = 0; i < SPECIES_GROUPS.length; i++) {
+            setProgress("Getting information: making map of lifeform " + SPECIES_GROUPS[i], 0);
+            if (isCancelled()) return;
             imageMap.put("lifeform - " + SPECIES_GROUPS[i], new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, lifeforms.get(i)}, aspectRatio, "", type, resolution).get());
         }
 
+        setProgress("Getting information: making map of dlcmv1", 0);
+        if (isCancelled()) return;
         imageMap.put("dlcmv1", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, mlDynamicLand}, aspectRatio, "", type, resolution).get());
 
+        setProgress("Getting information: making map of teow", 0);
+        if (isCancelled()) return;
         imageMap.put("teow", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, mlTeow}, aspectRatio, "", type, resolution).get());
 
         //imageMap.put("meow_ecos", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, mlMeow}, aspectRatio, "", type, resolution).get());
-
+        setProgress("Getting information: making map of feow", 0);
+        if (isCancelled()) return;
         imageMap.put("feow", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, mlFeow}, aspectRatio, "", type, resolution).get());
 
         //imageMap.put("imcra4_pb", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, mlImcra}, aspectRatio, "", type, resolution).get());
 
         //save images
+        setProgress("Getting information: saving maps", 0);
+        if (isCancelled()) return;
         for (String key : imageMap.keySet()) {
             try {
                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath + File.separator + key + ".png"));

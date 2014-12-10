@@ -12,10 +12,12 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.log4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -37,7 +39,7 @@ public class SpeciesListUtil {
 
     public static int getNumberOfPublicSpeciesLists(String user) {
         //TO DO retrive from lists.ala.org.au
-        JSONObject jobject = getLists(user, 0, 0, null, null);
+        JSONObject jobject = getLists(user, 0, 0, null, null, null);
         if (jobject != null) {
             return jobject.getInt("listCount");
         } else {
@@ -45,7 +47,7 @@ public class SpeciesListUtil {
         }
     }
 
-    private static JSONObject getLists(String user, Integer offset, Integer max, String sort, String order) {
+    private static JSONObject getLists(String user, Integer offset, Integer max, String sort, String order, String searchTerm) {
 
 
         StringBuilder sb = new StringBuilder(CommonData.getSpeciesListServer());
@@ -53,7 +55,7 @@ public class SpeciesListUtil {
 
 
         sb.append("?user=");
-        if (user != null) {
+        if (user != null && !"guest@ala.org.au".equals(user)) {
             sb.append(user);
         }
         if (offset != null) {
@@ -67,6 +69,13 @@ public class SpeciesListUtil {
         }
         if (order != null) {
             sb.append("&order=").append(order);
+        }
+        if (searchTerm != null) {
+            //sb.append("&listName=ilike:%25" + searchTerm + "%25");
+            try {
+                sb.append("&q=" + URLEncoder.encode(searchTerm, "UTF-8"));
+            } catch (Exception e) {
+            }
         }
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(sb.toString());
@@ -96,9 +105,12 @@ public class SpeciesListUtil {
      *
      * @return
      */
-    public static Collection getPublicSpeciesLists(String user, Integer offset, Integer max, String sort, String order) {
-        JSONObject jobject = getLists(user, offset, max, sort, order);
+    public static Collection getPublicSpeciesLists(String user, Integer offset, Integer max, String sort, String order, String searchTerm, MutableInt listSize) {
+        JSONObject jobject = getLists(user, offset, max, sort, order, searchTerm);
         JsonConfig cfg = new JsonConfig();
+        if (listSize != null) {
+            listSize.setValue(jobject.getInt("listCount"));
+        }
         cfg.setPropertySetStrategy(new IgnoreUnknownPropsStrategyWrapper(PropertySetStrategy.DEFAULT));
         cfg.setRootClass(SpeciesListDTO.class);
         return JSONArray.toCollection(jobject.getJSONArray("lists"), cfg);
@@ -195,7 +207,7 @@ public class SpeciesListUtil {
         int max = 50;
         Map<String, String> tmpMap = new java.util.HashMap<String, String>();
         while (total < num) {
-            Collection<SpeciesListDTO> batch = getPublicSpeciesLists(null, total, max, null, null);
+            Collection<SpeciesListDTO> batch = getPublicSpeciesLists(null, total, max, null, null, null, null);
             for (SpeciesListDTO item : batch) {
                 tmpMap.put(item.getDataResourceUid(), item.getListName());
                 total++;

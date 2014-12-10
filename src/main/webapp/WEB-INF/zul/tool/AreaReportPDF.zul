@@ -34,9 +34,22 @@
         </vbox-->
         <label value="This report can take a long time to generate (5-10 mins)." />
         <separator/>
-         <div class="btn-group" style="position:absolute;right:10px;bottom:10px">
-                <button label="Cancel" id="btnCancel" />
-                <button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self" />
+        <separator/>
+        <div id='divProgress' visible="false">
+            <label value="" id="progressLabel" />
+            <separator />
+            <progressmeter value="0" id="jobprogress" width="500px"/>
         </div>
+        <div class="btn-group" style="position:absolute;right:10px;bottom:10px">
+                <button label="Cancel" id="btnCancel" />
+                <button class="btn-primary" label="Next &gt;" id="btnOk" />
+        </div>
+
+        <script type="text/javascript">
+            function checkProgress() {
+                zAu.send(new zk.Event(zk.Widget.$(jq('$addtoolwindow')[0]), 'checkProgress', ''));
+            }
+        </script>
+
     </window>
 </zk>

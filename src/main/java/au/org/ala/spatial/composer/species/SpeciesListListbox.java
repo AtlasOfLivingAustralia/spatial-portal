@@ -7,6 +7,7 @@ import au.org.ala.spatial.util.BiocacheQuery;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.SpeciesListUtil;
 import au.org.ala.spatial.util.Util;
+import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -158,6 +159,18 @@ public class SpeciesListListbox extends Listbox {
         return new BiocacheQuery(lsids, unmatchedNames, null, null, null, false, geospatialKosher);
     }
 
+    public void onClick$btnSearchSpeciesListListbox(Event event) {
+
+        ((SpeciesListListModel) getModel()).setTxtSearchTerm((Textbox) getParent().getFellowIfAny("txtSearchTerm"));
+        ((SpeciesListListModel) getModel()).refreshModel();
+    }
+
+    public void onClick$btnClearSearchSpeciesListListbox(Event event) {
+
+        ((SpeciesListListModel) getModel()).setTxtSearchTerm(null);
+        ((SpeciesListListModel) getModel()).refreshModel();
+    }
+
     /**
      * The List Model to be used by the species list listbox. This supports the paging of lists via the use of
      * WS calls to the list tool.
@@ -170,11 +183,16 @@ public class SpeciesListListbox extends Listbox {
         private String sort = null;
         private String order = null;
         private String user = Util.getUserEmail();
+        private Textbox txtSearchTerm;
 
         public void refreshModel() {
             //remove the cached version of the current lists
             currentLists = null;
             fireEvent(ListDataEvent.CONTENTS_CHANGED, -1, -1);
+        }
+
+        public void setTxtSearchTerm(Textbox txtSearchTerm) {
+            this.txtSearchTerm = txtSearchTerm;
         }
 
         @Override
@@ -197,8 +215,14 @@ public class SpeciesListListbox extends Listbox {
             int page = index / pageSize;
 
             currentOffset = page * pageSize;
-            LOGGER.debug("Current offset: " + currentOffset + " index " + index + " " + sort + " " + order);
-            currentLists = new ArrayList<SpeciesListDTO>(SpeciesListUtil.getPublicSpeciesLists(user, currentOffset, pageSize, sort, order));
+            String searchTerm = null;
+            if (txtSearchTerm != null && txtSearchTerm.getText().length() > 0) {
+                searchTerm = txtSearchTerm.getText();
+            }
+            LOGGER.debug("Current offset: " + currentOffset + " index " + index + " " + sort + " " + order + " " + searchTerm);
+            MutableInt listCount = new MutableInt();
+            currentLists = new ArrayList<SpeciesListDTO>(SpeciesListUtil.getPublicSpeciesLists(user, currentOffset, pageSize, sort, order, searchTerm, listCount));
+            size = listCount.intValue();
             LOGGER.debug("Finished getting items");
 
         }

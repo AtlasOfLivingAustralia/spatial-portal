@@ -3,6 +3,7 @@ package au.org.ala.spatial.composer.add;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.input.UploadSpeciesController;
 import au.org.ala.spatial.composer.input.UploadToSpeciesListController;
+import au.org.ala.spatial.composer.sandbox.SandboxPasteController;
 import au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent;
 import au.org.ala.spatial.composer.species.SpeciesListListbox;
 import au.org.ala.spatial.util.BiocacheQuery;
@@ -69,6 +70,18 @@ public class AddSpeciesController extends UtilityComposer {
         mSearchSpeciesACComponent.getAutoComplete().setBiocacheOnly(true);
 
         vboxImportSL = (Vbox) this.getFellow("splistbox").getFellow("vboxImportSL");
+        vboxImportSL.getFellow("btnSearchSpeciesListListbox").addEventListener("onClick", new EventListener() {
+            @Override
+            public void onEvent(Event event) throws Exception {
+                onClick$btnSearchSpeciesListListbox(event);
+            }
+        });
+        vboxImportSL.getFellow("btnClearSearchSpeciesListListbox").addEventListener("onClick", new EventListener() {
+            @Override
+            public void onEvent(Event event) throws Exception {
+                onClick$btnClearSearchSpeciesListListbox(event);
+            }
+        });
         speciesListListbox = (SpeciesListListbox) this.getFellow("splistbox").getFellow("speciesListListbox");
         //check to see if a user is logged in
         String user = Util.getUserEmail();
@@ -95,6 +108,22 @@ public class AddSpeciesController extends UtilityComposer {
             }
         }
 
+    }
+
+    public void onClick$btnSearchSpeciesListListbox(Event event) {
+        try {
+            ((SpeciesListListbox) event.getTarget().getParent().getParent().getFellowIfAny("speciesListListbox")).onClick$btnSearchSpeciesListListbox(event);
+        } catch (Exception e) {
+            LOGGER.error("addspeciescontroller is missing speciesListListbox for refreshing", e);
+        }
+    }
+
+    public void onClick$btnClearSearchSpeciesListListbox(Event event) {
+        try {
+            ((SpeciesListListbox) event.getTarget().getParent().getParent().getFellowIfAny("speciesListListbox")).onClick$btnClearSearchSpeciesListListbox(event);
+        } catch (Exception e) {
+            LOGGER.error("addspeciescontroller is missing speciesListListbox for refreshing", e);
+        }
     }
 
     public void onValueSelected$searchSpeciesACComponent(Event event) {
@@ -225,18 +254,25 @@ public class AddSpeciesController extends UtilityComposer {
 
     public void onClick$btnUpload(Event event) {
         try {
-            UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/input/UploadSpecies.zul", getMapComposer(), null);
-
-            if (rUploadCoordinates.isSelected()) {
-                usc.setTbInstructions(CommonData.lang("instruction_upload_species_csv"));
-            } else if (rUploadLSIDs.isSelected()) {
-                usc.setTbInstructions(CommonData.lang("instruction_upload_species_lsids"));
+            if (StringUtils.isNotEmpty((String) CommonData.getSettings().getProperty("sandbox.url", null))
+                    && CommonData.getSettings().getProperty("import.points.layers-service", "false").equals("false")) {
+                SandboxPasteController spc = (SandboxPasteController) Executions.createComponents("WEB-INF/zul/sandbox/SandboxPaste.zul", getMapComposer(), null);
+                spc.setAddToMap(true);
+                spc.doModal();
             } else {
-                usc.setTbInstructions(CommonData.lang("instruction_upload_species_other"));
+                UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/input/UploadSpecies.zul", getMapComposer(), null);
+
+                if (rUploadCoordinates.isSelected()) {
+                    usc.setTbInstructions(CommonData.lang("instruction_upload_species_csv"));
+                } else if (rUploadLSIDs.isSelected()) {
+                    usc.setTbInstructions(CommonData.lang("instruction_upload_species_lsids"));
+                } else {
+                    usc.setTbInstructions(CommonData.lang("instruction_upload_species_other"));
+                }
+                usc.setAddToMap(true);
+                usc.setDefineArea(chkArea.isChecked());
+                usc.doModal();
             }
-            usc.setAddToMap(true);
-            usc.setDefineArea(chkArea.isChecked());
-            usc.doModal();
         } catch (Exception e) {
             LOGGER.error("error displaying uploadspecies.zul", e);
         }
@@ -265,6 +301,8 @@ public class AddSpeciesController extends UtilityComposer {
         }
 
         refreshBtnOkDisabled();
+
+        setPosition("center,center");
     }
 
     private void refreshBtnOkDisabled() {

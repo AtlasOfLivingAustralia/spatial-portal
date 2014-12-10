@@ -109,7 +109,7 @@ public class ExportLayerComposer extends ToolComposer {
             String outfile = name.replaceAll(" ", "_");
             if ("shp".equals(type)) {
                 shpfile = new File(exportBaseDir + id + File.separator + outfile + "_Shapefile.shp");
-                ShapefileUtils.saveShapefile(shpfile, sa.getWkt());
+                ShapefileUtils.saveShapefile(shpfile, sa.getWkt(), name);
 
                 outfile += "_SHP.zip";
             } else if ("kml".equals(type)) {

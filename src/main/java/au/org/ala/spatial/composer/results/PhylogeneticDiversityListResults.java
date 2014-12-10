@@ -53,21 +53,26 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
 
     private void fillPDTreeList() {
 
-        Object [] trees = new Object[selectedTrees.size()];
+        Object[] trees = new Object[selectedTrees.size()];
         header = new ArrayList<String>();
 
         //restrict header to what is in the zul
         for (int i = 0; i < selectedAreas.size(); i++) {
-            String s = selectedAreas.get(i).getMapLayer().getDisplayName();
-
-            header.add(s);
+            if (selectedAreas.get(i).getMapLayer() != null) {
+                header.add(selectedAreas.get(i).getMapLayer().getDisplayName());
+            } else {
+                header.add("Selected Area");
+            }
         }
         Component firstChild = getFellow(StringConstants.TREES_HEADER).getFirstChild();
         for (Component c : getFellow(StringConstants.TREES_HEADER).getChildren()) {
             header.add(c.getId().substring(3));
         }
         for (int i = 0; i < selectedAreas.size(); i++) {
-            String s = selectedAreas.get(i).getMapLayer().getDisplayName();
+            String s = "Selected Area";
+            if (selectedAreas.get(i).getMapLayer() != null) {
+                s = selectedAreas.get(i).getMapLayer().getDisplayName();
+            }
 
             Listheader lh = new Listheader(s);
             lh.setHflex("min");

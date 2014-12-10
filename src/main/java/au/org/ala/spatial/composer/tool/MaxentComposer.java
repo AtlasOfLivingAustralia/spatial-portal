@@ -261,8 +261,6 @@ public class MaxentComposer extends ToolComposer {
         md.setMoreInfo(infoUrl + "\nMaxent Output\npid:" + pid);
         md.setId(Long.valueOf(pid));
 
-        ml.setSubType(LayerUtilitiesImpl.GRID);
-
         try {
             // set off the download as well
             String fileUrl = CommonData.getSatServer() + "/ws/download/" + pid;

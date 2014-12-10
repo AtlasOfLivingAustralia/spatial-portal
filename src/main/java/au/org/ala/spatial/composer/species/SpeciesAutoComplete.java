@@ -108,7 +108,8 @@ public class SpeciesAutoComplete extends Combobox {
                 if (biocacheQuery != null) {
                     sb.append(biocacheQuery.getAutoComplete("raw_taxon_name", val, 50));
                 } else {
-                    sb.append(autoService(val));
+                    //sb.append(autoService(val));
+                    sb.append(searchService(val));
                 }
                 if (!biocacheOnly) {
                     sb.append(loadUserPoints(val));
@@ -227,7 +228,7 @@ public class SpeciesAutoComplete extends Combobox {
     }
 
     String searchService(String val) throws Exception {
-        String nsurl = CommonData.getBieServer() + "/search.json?pageSize=100&q=" + URLEncoder.encode(val, StringConstants.UTF_8);
+        String nsurl = CommonData.getBieServer() + "/search.json?pageSize=100&q=" + URLEncoder.encode(val, StringConstants.UTF_8) + "&fq=idxtype:TAXON";
 
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(nsurl);

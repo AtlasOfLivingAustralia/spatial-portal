@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.util;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.StringConstants;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
@@ -22,10 +23,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -630,25 +628,70 @@ public class BiocacheQuery implements Query, Serializable {
             return endemicSpeciesList;
         }
 
-        HttpClient client = new HttpClient();
-        String url = biocacheServer
-                + ENDEMIC_SPECIES_SERVICE_CSV
-                + "q=" + getQ()
-                + getQc();
+        if (CommonData.getSettings().containsKey("endemic.sp.method")
+                && CommonData.getSettings().getProperty("endemic.sp.method").equals("true")) {
+            String speciesList = speciesList();
 
-        /* TODO: permit query without WKT */
-        if (wkt == null || wkt.isEmpty()) {
-            url += "&wkt=" + "POLYGON((-180%20-90%2C-180%2090%2C180%2090%2C180%20-90%2C-180%20-90))";
-        }
+            //can get species list counts as "kosher:true" or "kosher:*" only
+            Map speciesCounts;
+            if (getGeospatialKosher()[1]) {     //[1] is 'include kosher:false'
+                speciesCounts = CommonData.getSpeciesListCounts(false);
+            } else {
+                speciesCounts = CommonData.getSpeciesListCountsKosher(false);
+            }
 
-        LOGGER.debug(url);
-        GetMethod get = new GetMethod(url);
+            StringBuilder sb = new StringBuilder();
+            int speciesCol = 0;
+            int countCol = 11;
+            try {
+                CSVReader csv = new CSVReader(new StringReader(speciesList));
+                String[] row;
+                int currentPos = 0;
+                int nextPos = speciesList.indexOf('\n', currentPos + 1);
+                sb.append(speciesList.substring(currentPos, nextPos));  //header
+                csv.readNext(); //header
+                while ((row = csv.readNext()) != null) {
+                    //add if species is not present elsewhere
+                    Long c = (Long) speciesCounts.get(row[speciesCol]);
+                    if (c != null && c <= Long.parseLong(row[countCol])) {
+                        if (nextPos > speciesList.length()) {
+                            nextPos = speciesList.length();
+                        }
+                        sb.append(speciesList.substring(currentPos, nextPos));
+                    } else if (c == null) {
+                        LOGGER.error("failed to find species_guid: " + row[speciesCol] + " in CommonData.getSpeciesListCounts()");
+                    }
 
-        try {
-            client.executeMethod(get);
-            endemicSpeciesList = get.getResponseBodyAsString();
-        } catch (Exception e) {
-            LOGGER.error("error getting endemic species result", e);
+                    currentPos = nextPos;
+                    nextPos = speciesList.indexOf('\n', currentPos + 1);
+                }
+            } catch (Exception e) {
+                LOGGER.error("failed generating endemic species list", e);
+            }
+
+            endemicSpeciesList = sb.toString();
+        } else {
+
+            HttpClient client = new HttpClient();
+            String url = biocacheServer
+                    + ENDEMIC_SPECIES_SERVICE_CSV
+                    + "q=" + getQ()
+                    + getQc();
+
+            /* TODO: permit query without WKT */
+            if (wkt == null || wkt.isEmpty()) {
+                url += "&wkt=" + "POLYGON((-180%20-90%2C-180%2090%2C180%2090%2C180%20-90%2C-180%20-90))";
+            }
+
+            LOGGER.debug(url);
+            GetMethod get = new GetMethod(url);
+
+            try {
+                client.executeMethod(get);
+                endemicSpeciesList = get.getResponseBodyAsString();
+            } catch (Exception e) {
+                LOGGER.error("error getting endemic species result", e);
+            }
         }
 
         return endemicSpeciesList;
@@ -1071,8 +1114,11 @@ public class BiocacheQuery implements Query, Serializable {
                 String facetName = jsonObject.getString(StringConstants.NAME);
                 String facetDisplayName = jsonObject.getString("displayName");
 
-                LOGGER.debug("Adding custom index : " + arrayElement);
-                customFacets.add(new QueryField(facetName, facetDisplayName, QueryField.GroupType.CUSTOM, QueryField.FieldType.STRING));
+                //TODO: remove this when _RNG fields work in legend &cm= parameter
+                if (!(facetDisplayName.contains("(Range)") && facetName.endsWith("_RNG"))) {
+                    LOGGER.debug("Adding custom index : " + arrayElement);
+                    customFacets.add(new QueryField(facetName, facetDisplayName, QueryField.GroupType.CUSTOM, QueryField.FieldType.STRING));
+                }
             }
         } catch (Exception e) {
             LOGGER.error("error loading custom facets for: " + jsonUri, e);
@@ -1187,6 +1233,9 @@ public class BiocacheQuery implements Query, Serializable {
 
                     //apply cutpoints to colourMode string
                     Legend l = lo.getNumericLegend();
+                    if (l == null || l.getCutoffFloats() == null) {
+                        return null;
+                    }
 
                     float[] cutpoints = l.getCutoffFloats();
                     float[] cutpointmins = l.getCutoffMinFloats();

@@ -1,6 +1,11 @@
 <zk>
 
 <vbox id="vboxImportSL" visible="false">
+    <hbox>
+        <textbox id="txtSearchTerm" width="200px" visible="true"/>
+        <button class="btn-primary" label="Search" id="btnSearchSpeciesListListbox" />
+        <button class="btn" label="Clear Search" id="btnClearSearchSpeciesListListbox" />
+    </hbox>
     <listbox id="speciesListListbox" use="au.org.ala.spatial.composer.species.SpeciesListListbox" mold="paging" height="400px" pageSize="14">
         <listhead>
             <listheader width="50px" />

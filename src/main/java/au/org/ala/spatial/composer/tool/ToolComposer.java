@@ -9,6 +9,7 @@ import au.org.ala.spatial.composer.input.UploadToSpeciesListController;
 import au.org.ala.spatial.composer.layer.EnvLayersCombobox;
 import au.org.ala.spatial.composer.layer.EnvironmentalList;
 import au.org.ala.spatial.composer.layer.SelectedLayersCombobox;
+import au.org.ala.spatial.composer.sandbox.SandboxPasteController;
 import au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent;
 import au.org.ala.spatial.composer.species.SpeciesListListbox;
 import au.org.ala.spatial.dto.UserDataDTO;
@@ -261,6 +262,52 @@ public class ToolComposer extends UtilityComposer {
             });
         }
 
+        if (vboxImportSL != null) {
+            vboxImportSL.getFellow("btnSearchSpeciesListListbox").addEventListener("onClick", new EventListener() {
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    onClick$btnSearchSpeciesListListbox(event);
+                }
+            });
+            vboxImportSL.getFellow("btnClearSearchSpeciesListListbox").addEventListener("onClick", new EventListener() {
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    onClick$btnClearSearchSpeciesListListbox(event);
+                }
+            });
+        }
+
+        if (vboxImportSLBk != null) {
+            vboxImportSLBk.getFellow("btnSearchSpeciesListListbox").addEventListener("onClick", new EventListener() {
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    onClick$btnSearchSpeciesListListbox(event);
+                }
+            });
+            vboxImportSL.getFellow("btnClearSearchSpeciesListListbox").addEventListener("onClick", new EventListener() {
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    onClick$btnClearSearchSpeciesListListbox(event);
+                }
+            });
+        }
+
+    }
+
+    public void onClick$btnSearchSpeciesListListbox(Event event) {
+        try {
+            ((SpeciesListListbox) event.getTarget().getParent().getParent().getFellowIfAny("speciesListListbox")).onClick$btnSearchSpeciesListListbox(event);
+        } catch (Exception e) {
+            LOGGER.error("toolcomposer is missing speciesListListbox for refreshing", e);
+        }
+    }
+
+    public void onClick$btnClearSearchSpeciesListListbox(Event event) {
+        try {
+            ((SpeciesListListbox) event.getTarget().getParent().getParent().getFellowIfAny("speciesListListbox")).onClick$btnClearSearchSpeciesListListbox(event);
+        } catch (Exception e) {
+            LOGGER.error("toolcomposer is missing speciesListListbox for refreshing", e);
+        }
     }
 
     void updateDefaultGeospatialKosherValues() {
@@ -2512,18 +2559,25 @@ public class ToolComposer extends UtilityComposer {
     public void onClick$btnUpload(Event event) {
         try {
             LOGGER.debug("onClick$btnUpload(Event event)");
-            UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/input/UploadSpecies.zul", this, null);
-
-            if (rSpeciesUploadSpecies.isSelected()) {
-                usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
-            } else if (rSpeciesUploadLSID.isSelected()) {
-                usc.setTbInstructions("3. Select file (text file, one LSID or name per line)");
+            if (StringUtils.isNotEmpty((String) CommonData.getSettings().getProperty("sandbox.url", null))
+                    && CommonData.getSettings().getProperty("import.points.layers-service", "false").equals("false")) {
+                SandboxPasteController spc = (SandboxPasteController) Executions.createComponents("WEB-INF/zul/sandbox/SandboxPaste.zul", getMapComposer(), null);
+                spc.setAddToMap(true);
+                spc.doModal();
             } else {
-                usc.setTbInstructions("3. Select file");
-            }
-            usc.setAddToMap(true);
+                UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/input/UploadSpecies.zul", this, null);
 
-            usc.doModal();
+                if (rSpeciesUploadSpecies.isSelected()) {
+                    usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
+                } else if (rSpeciesUploadLSID.isSelected()) {
+                    usc.setTbInstructions("3. Select file (text file, one LSID or name per line)");
+                } else {
+                    usc.setTbInstructions("3. Select file");
+                }
+                usc.setAddToMap(true);
+
+                usc.doModal();
+            }
         } catch (Exception e) {
             LOGGER.error("file upload error", e);
         }

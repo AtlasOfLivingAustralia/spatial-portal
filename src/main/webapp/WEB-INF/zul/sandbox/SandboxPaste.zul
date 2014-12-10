@@ -1,0 +1,83 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+     <window id="sandboxpaste" use="au.org.ala.spatial.composer.sandbox.SandboxPasteController"
+    apply="au.org.ala.spatial.composer.sandbox.SandboxPasteController" width="90%" style="overflow:visible" xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="sandboxpaste.onClick$btnCancel(null)" style="display: inline" />
+        <n:a class="fancybox-help" n:onClick="loadHelp('species-add-to-map')" style="display: inline" />
+        <caption label="Upload Point Data" sclass="caption" />
+
+<vbox width="100%">
+<separator />
+
+<n:div id='sandboxContainer' n:style="display:none;height:600px;width:100%">
+        <iframe id="sandboxFrame" width='100%' height='600px' name="sandboxFrame" src="sandbox.html" />
+</n:div>
+
+<div id="sandboxReady" visible="false" >
+    <label value="successful upload" />
+    <button class="btn-primary" label="Next" id="btnOk"/>
+</div>
+<div width="850px" id="divSandbox">
+      <n:h1>Sandbox file upload</n:h1>
+        <n:p>
+            This is a sandbox environment for data uploads, to allow users to view their data with ALA tools.
+            This is currently an <n:strong>experimental</n:strong> feature of the Atlas.<n:br/>
+            Uploaded data will be <n:strong>periodically cleared</n:strong> from the system.
+            <n:br/>
+            This tool accepts Excel spreadsheets and <a target="_blank" href="http://en.wikipedia.org/wiki/Comma-separated_values">CSV</a> files.
+            For large files, its recommended that the files are <a target="_blank" href="http://en.wikipedia.org/wiki/Zip_(file_format)">zipped</a> before uploading.
+        </n:p>
+</div>
+
+<div class="btn-group">
+
+    <button label="Cancel" id="btnCancel" class="btn" />
+
+    <fileupload id='fileUpload' upload="true" label="Choose a file..." class="btn btn-primary" />
+</div>
+
+</vbox>
+
+
+          <script type="text/JavaScript">
+
+         <![CDATA[
+
+        function testIfReady() {
+            try {
+                if (sandboxFrame.SANDBOX.uploadStatus.length > 0) {
+                    if (sandboxFrame.SANDBOX.uploadStatus == "COMPLETE") {
+                        zAu.send(new zk.Event(zk.Widget.$(jq('$sandboxpaste')[0]), 'gotDrUid', sandboxFrame.SANDBOX.dataResourceUid))
+                        return
+                    }
+                }
+            } catch (err) {
+            }
+            //retry
+            setTimeout("testIfReady()", 100)
+        }
+        setTimeout("testIfReady()", 100)
+
+        function setUrls() {
+            try {
+                sandboxFrame.SANDBOX.sandbox_url = jq('$sandbox_url')[0].innerHTML
+            } catch (err) {
+                setTimeout("setUrls()",500)
+            }
+        }
+        setTimeout("setUrls()",500)
+
+        ]]>
+
+        </script>
+
+    </window>
+</zk>
