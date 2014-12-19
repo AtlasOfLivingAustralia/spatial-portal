@@ -113,7 +113,9 @@ public class UserDataQuery implements Query {
     public UserDataQuery(String udHeaderId, String wkt, List<Facet> facets) {
         if (facets != null) {
             this.facets = new ArrayList<Facet>(facets.size());
-            Collections.copy(this.facets, facets);
+            for (int i = 0; i < facets.size(); i++) {
+                this.facets.add(facets.get(i));
+            }
         }
         this.wkt = (wkt != null && wkt.equals(CommonData.WORLD_WKT)) ? null : wkt;
 

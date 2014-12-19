@@ -2061,8 +2061,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         loadDistributionMap(lsids, wkt);
                     }
                     for (String extraLsid : extraLsids) {
-                        LOGGER.debug("loading layer for: " + extraLsid);
-                        loadDistributionMap(extraLsid, wkt);
+                        if (extraLsid != null && extraLsid.length() > 0) {
+                            LOGGER.debug("loading layer for: " + extraLsid);
+                            loadDistributionMap(extraLsid, wkt);
+                        }
                     }
                 }
             } catch (Exception e) {

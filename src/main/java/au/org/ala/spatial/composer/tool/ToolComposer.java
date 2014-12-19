@@ -531,7 +531,10 @@ public class ToolComposer extends UtilityComposer {
                 }
             }
 
-            String selectedLayerName = (String) params.get(StringConstants.POLYGON_LAYER_NAME);
+            String selectedLayerName = null;
+            if (params != null && params.containsKey(StringConstants.POLYGON_LAYER_NAME)) {
+                selectedLayerName = (String) params.get(StringConstants.POLYGON_LAYER_NAME);
+            }
             Radio rSelectedLayer = null;
 
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
@@ -541,7 +544,11 @@ public class ToolComposer extends UtilityComposer {
                 rAr.setValue(lyr.getWKT());
 
                 rAr.setParent(rgArea);
-                rgArea.insertBefore(rAr, rAreaCurrent);
+                if (rAreaCurrent != null) {
+                    rgArea.insertBefore(rAr, rAreaCurrent);
+                } else {
+                    rgArea.appendChild(rAr);
+                }
 
                 if (lyr.getName().equals(selectedLayerName)) {
                     rSelectedLayer = rAr;

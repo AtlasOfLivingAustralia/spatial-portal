@@ -279,7 +279,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 return new byte[0];
             }
         } catch (Exception e) {
-            LOGGER.error("Exception checking if kml file", e);
+            LOGGER.debug("Exception checking if kml file", e);
         }
         return new byte[0];
     }
