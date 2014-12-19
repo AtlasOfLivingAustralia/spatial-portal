@@ -205,7 +205,7 @@ public class SandboxPasteController extends UtilityComposer {
 
             //process if successful upload
             if (loaded) {
-                ((Iframe) getFellow("sandboxFrame")).setSrc("sandboxPreview.jsp?uploadId=" + uploadId + "&uploadFn=" + uploadFn);
+                ((Iframe) getFellow("sandboxFrame")).setSrc("sandboxPreview.html?uploadId=" + uploadId + "&uploadFn=" + uploadFn);
 
                 //display frame and trigger javascript setup function
                 getMapComposer().getOpenLayersJavascript().execute("$('#sandboxContainer')[0].style.display = \"inline\";setTimeout(\"setUrls()\",500)");

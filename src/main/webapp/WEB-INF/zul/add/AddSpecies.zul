@@ -44,8 +44,8 @@
                         <hbox>                                                        
                             <textbox id="tMultiple" width="380px" height="100px" multiline="true" />
                             <div class="btn-group">
-                                <button id="bMultiple" label="Add"/>
-                                <fileupload label="Upload" id="bSpeciesListUpload" class="btn btn-primary" />
+                                <button id="bMultiple" label="Add" class="btn"/>
+                                <button id="bSpeciesListUpload" label="Upload" class="btn btn-primary"/>
                             </div>
 
                         </hbox>

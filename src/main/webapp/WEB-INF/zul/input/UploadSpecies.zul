@@ -37,7 +37,7 @@
             <separator />
             <div class="btn-group">
                     <button  label="Cancel" id="btnCancel"/>
-                    <fileupload class="btn-primary btn"   id="fileUpload" label="Next" upload="true" />
+                    <fileupload class="btn-primary btn"   id="fileUpload" label="Choose a file..." upload="true" />
             </div>
             <separator />
         </vbox>

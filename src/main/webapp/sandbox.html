@@ -207,9 +207,6 @@ function updateStatusPolling() {
             $('.progress .bar').attr('data-percentage', '100');
             $('#uploadFeedback').html('Upload complete.');
             $('.progress .bar').progressbar();
-            $('#spatialPortalLink').attr('href', 'dataCheck/redirectToSpatialPortal?uid=' + SANDBOX.dataResourceUid);
-            $('#hubLink').attr('href', 'dataCheck/redirectToBiocache?uid=' + SANDBOX.dataResourceUid);
-            $('#downloadLink').attr('href', 'dataCheck/redirectToDownload?uid=' + SANDBOX.dataResourceUid);
             $('#optionsAfterDownload').css({'display': 'block'});
             $("#uploadFeedback").html('');
         } else if (data.status == "FAILED") {
@@ -419,19 +416,6 @@ jQuery(function () {
                         </div>
 
                         <div id="optionsAfterDownload" style="display:none; margin-bottom: 0px; padding-bottom: 0px;">
-
-                            <h2 style="margin-top:25px;">Options for working with your data</h2>
-
-                            <div class="row-fluid">
-                                <a href="#spatialPortalLink" id="spatialPortalLink" class="btn"
-                                   title="Mapping &amp; Analysis in the Spatial portal">Mapping & Analysis with your
-                                    data</a></dd>
-                                <a href="#hubLink" id="hubLink" class="btn" title="Tables &amp; charts for your data">Tables
-                                    & charts of your data</a></dd>
-                                <a href="#downloadLink" id="downloadLink" class="btn"
-                                   title="Life Science Identifier (pop-up)">Download the processed version of your
-                                    data</a></dd>
-                            </div>
                         </div>
                     </div>
                 </div>

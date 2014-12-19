@@ -43,6 +43,8 @@ public class PointGenerationComposer extends ToolComposer {
         double[][] bbox = null;
         if (sa.getMapLayer() != null && sa.getMapLayer().getMapLayerMetadata() != null) {
             List<Double> bb = sa.getMapLayer().getMapLayerMetadata().getBbox();
+            bbox = new double[2][2];
+
             bbox[0][0] = bb.get(0);
             bbox[0][1] = bb.get(1);
             bbox[1][0] = bb.get(2);

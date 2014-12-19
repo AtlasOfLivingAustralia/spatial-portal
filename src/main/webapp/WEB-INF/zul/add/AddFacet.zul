@@ -91,7 +91,7 @@
            </hbox>
 
             <div height="450px">
-            <listbox sclass="legendlist2" id="legend" width="500px" vflex="true"  mold="paging" autopaging="true" >
+            <listbox sclass="legendlist2" id="legend" width="500px" vflex="true"  mold="paging" autopaging="true" onSelect="alert(this);" >
                 <listhead sizable="true">
                     <listheader label="   " width="25px" id="lhFirstColumn" />
                     <listheader label="class" align="center"  width="300px" id="lhSecondColumn"></listheader>
@@ -107,7 +107,10 @@
                     <button id="selectAll" label="Select all"  style="btn-small"  />
                     <button id="clearSelection" style="btn-small" label="Clear selection" />
                 </div>
-
+                <vbox>
+                    <separator height="2px" />
+                    <label id="lblSelectedCount" value="0 facets selected" sclass="wSubLabel" />
+                </vbox>
             </div>
 
             </div>

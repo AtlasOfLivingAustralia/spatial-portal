@@ -96,7 +96,7 @@
                             <textbox id="tMultiple" width="380px" height="100px" multiline="true" />
                             <div class="btn-group">
                                 <button id="bMultiple" label="Add"/>
-                                <fileupload label="Upload" id="bSpeciesListUpload" class="btn btn-default"/>
+                                <button label="Upload" id="bSpeciesListUpload" class="btn btn-default"/>
                             </div>
                         </hbox>
                         <separator height="15px"/>

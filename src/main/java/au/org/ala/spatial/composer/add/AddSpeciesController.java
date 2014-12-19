@@ -1,6 +1,7 @@
 package au.org.ala.spatial.composer.add;
 
 import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.composer.input.UploadLayerListController;
 import au.org.ala.spatial.composer.input.UploadSpeciesController;
 import au.org.ala.spatial.composer.input.UploadToSpeciesListController;
 import au.org.ala.spatial.composer.sandbox.SandboxPasteController;
@@ -13,13 +14,14 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.UtilityComposer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.event.*;
+import org.zkoss.zk.ui.event.CheckEvent;
+import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zul.*;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -163,8 +165,32 @@ public class AddSpeciesController extends UtilityComposer {
                 }
             } else if (rMultiple.isSelected()) {
                 //when next is pressed we want to export the list to the species list
-                showExportSpeciesListDialog();
-                loadedAssemblage = true;
+                if (Util.getUserEmail() != null && !"guest@ala.org.au".equals(Util.getUserEmail())) {
+                    showExportSpeciesListDialog();
+                    loadedAssemblage = true;
+                } else {
+                    AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/add/AddSpeciesInArea.zul", getMapComposer(), params);
+                    //extract all lsids
+                    StringBuilder sb = new StringBuilder();
+                    for (Listitem li : lMultiple.getItems()) {
+                        Listcell lsidCell = (Listcell) li.getLastChild();
+                        if (!lsidCell.getLabel().contains("not found")) {
+                            if (sb.length() > 0) {
+                                sb.append(",");
+                            }
+                            sb.append(lsidCell.getLabel());
+                        }
+                    }
+                    query = new BiocacheQuery(sb.toString(), null, null, null, null, false, getGeospatialKosher());
+                    window.setSpeciesParams(query, rank, taxon);
+                    window.setMultipleSpeciesUploadName(CommonData.lang("uploaded_species_list_layer_name"));
+                    window.loadAreaLayers();
+                    try {
+                        window.doModal();
+                    } catch (Exception e) {
+                        LOGGER.error("error opening AddSpeciesInArea.zul", e);
+                    }
+                }
 
             } else if (rUploadLSIDs.isSelected()) {
                 //we need to populate the "create assemblage" with the values from the species list
@@ -650,61 +676,24 @@ public class AddSpeciesController extends UtilityComposer {
         return sb.toString();
     }
 
-    public void onUpload$bSpeciesListUpload(Event event) {
-        UploadEvent ue = null;
-        if (event instanceof UploadEvent) {
-            ue = (UploadEvent) event;
-        } else if (event instanceof ForwardEvent) {
-            ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
-        }
-        if (ue == null) {
-            LOGGER.warn("unable to upload file");
-            return;
-        } else {
-            LOGGER.debug("fileUploaded()");
-        }
-        try {
-            Media m = ue.getMedia();
+    public void onClick$bSpeciesListUpload(Event event) {
+        UploadLayerListController window = (UploadLayerListController) Executions.createComponents("WEB-INF/zul/input/UploadSpeciesList.zul", this, null);
+        window.setCallback(new EventListener() {
 
-            //forget content types, do 'try'
-            boolean loaded = false;
-            try {
-                importList(readerToString(m.getReaderData()));
-                loaded = true;
-                LOGGER.debug("read type " + m.getContentType() + " with getReaderData");
-            } catch (Exception e) {
-                //failed to read as m.getReaderData, will try other methods
+            @Override
+            public void onEvent(Event event) throws Exception {
+                importList((String) event.getData());
+
+                //enable btnOk
+                btnOk.setAutodisable("");
+                btnOk.setDisabled(false);
             }
-            if (!loaded) {
-                try {
-                    importList(new String(m.getByteData()));
-                    loaded = true;
-                    LOGGER.debug("read type " + m.getContentType() + " with getByteData");
-                } catch (Exception e) {
-                    //failed to read as m.getReaderData, will try other methods
-                }
-            }
-            if (!loaded) {
-                try {
-                    importList(readerToString(new InputStreamReader(m.getStreamData())));
-                    loaded = true;
-                    LOGGER.debug("read type " + m.getContentType() + " with getStreamData");
-                } catch (Exception e) {
-                    //failed to read as m.getReaderData, will try other methods
-                }
-            }
-            if (!loaded) {
-                try {
-                    importList(m.getStringData());
-                    LOGGER.debug("read type " + m.getContentType() + " with getStringData");
-                } catch (Exception e) {
-                    //last one, report error
-                    getMapComposer().showMessage(CommonData.lang("error_upload_failed"));
-                    LOGGER.error("unable to load user points", e);
-                }
-            }
-        } catch (Exception ex) {
-            LOGGER.error(ex);
+        });
+
+        try {
+            window.doModal();
+        } catch (Exception e) {
+            LOGGER.error("error opening UploadSpeciesList.zul", e);
         }
     }
 

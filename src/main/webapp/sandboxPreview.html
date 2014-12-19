@@ -35,7 +35,7 @@ if (!window.console) console = {log: function () {
 
 var SANDBOX = {
     dataResourceUid: "",
-    fileId: Number("<%= request.getParameter("uploadId") %>")
+    fileId: location.search.replace("?", "").split('&')[0].split('=')[1] //uploadId
 }
 
 function init() {
@@ -48,6 +48,8 @@ function init() {
             return this.replace(/^\s+|\s+$/g, '');
         }
     }
+    $("#datasetName")[0].value = location.search.split('&')[1].split('=')[1] //filename
+    $("#filename")[0].innerHTML = location.search.split('&')[1].split('=')[1] //filename
 }
 
 function reset() {
@@ -60,7 +62,6 @@ function reset() {
 }
 
 function loadUploadedData(id) {
-    //$('#uploadProgressBar').progressbar( "destroy" );
     $.ajaxSetup({
         scriptCharset: "utf-8",
         contentType: "text/html; charset=utf-8"
@@ -147,10 +148,6 @@ function updateStatusPolling() {
             $('.progress .bar').attr('data-percentage', '100');
             $('#uploadFeedback').html('Upload complete.');
             $('.progress .bar').progressbar();
-            $('#spatialPortalLink').attr('href', '/datacheck/dataCheck/redirectToSpatialPortal?uid=' + SANDBOX.dataResourceUid);
-            $('#hubLink').attr('href', '/datacheck/dataCheck/redirectToBiocache?uid=' + SANDBOX.dataResourceUid);
-            $('#downloadLink').attr('href', '/datacheck/dataCheck/redirectToDownload?uid=' + SANDBOX.dataResourceUid);
-            $('#optionsAfterDownload').css({'display': 'block'});
             $("#uploadFeedback").html('');
         } else if (data.status == "FAILED") {
             SANDBOX.uploadStatus = data.status
@@ -319,7 +316,7 @@ function replacements(data) {
             <h2>1. File uploaded</h2>
 
             <div id="uploadedFileDetails" class="well">
-                <h4><span>File name: </span><span id="filename"><%= request.getParameter("uploadFn") %></span></h4>
+                <h4><span>File name: </span><span id="filename"></span></h4>
             </div>
 
             <div id="recognisedDataDiv">
@@ -361,7 +358,7 @@ function replacements(data) {
                         <label for="datasetName" class="datasetName"><strong>Your dataset name</strong></label>
 
                         <input id="datasetName" class="datasetName" name="datasetName" type="text"
-                               value="<%= request.getParameter("uploadFn") %>" style="width:350px; margin-bottom:5px;"/>
+                               value="" style="width:350px; margin-bottom:5px;"/>
 
                         <a id="uploadButton" class="btn" href="javascript:uploadToSandbox();">Upload your data</a>
 
@@ -373,19 +370,6 @@ function replacements(data) {
                         </div>
 
                         <div id="optionsAfterDownload" style="display:none; margin-bottom: 0px; padding-bottom: 0px;">
-
-                            <h2 style="margin-top:25px;">Options for working with your data</h2>
-
-                            <div class="row-fluid">
-                                <a href="#spatialPortalLink" id="spatialPortalLink" class="btn"
-                                   title="Mapping &amp; Analysis in the Spatial portal">Mapping & Analysis with your
-                                    data</a></dd>
-                                <a href="#hubLink" id="hubLink" class="btn" title="Tables &amp; charts for your data">Tables
-                                    & charts of your data</a></dd>
-                                <a href="#downloadLink" id="downloadLink" class="btn"
-                                   title="Life Science Identifier (pop-up)">Download the processed version of your
-                                    data</a></dd>
-                            </div>
                         </div>
                     </div>
                 </div>

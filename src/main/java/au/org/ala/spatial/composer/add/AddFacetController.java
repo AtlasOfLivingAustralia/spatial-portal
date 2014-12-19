@@ -75,6 +75,8 @@ public class AddFacetController extends UtilityComposer {
     private Checkbox cbContinousRange;
     private Label lblOccurrencesSelected;
     private Textbox txtSearch;
+    private Label lblSelectedCount;
+    private Set selectedList = new HashSet();
 
     @Override
     public void afterCompose() {
@@ -207,6 +209,29 @@ public class AddFacetController extends UtilityComposer {
         lhFourthColumn.setSortDescending(countComparatorDesc);
     }
 
+    public void onSelect$legend(Event event) {
+        rebuildSelectedList();
+    }
+
+
+    private void rebuildSelectedList() {
+        for (Listitem li : legend.getItems()) {
+            if (!li.getFirstChild().getChildren().isEmpty()) {
+                String v = ((Listcell) li.getChildren().get(1)).getLabel();
+
+                if (((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
+                    //add if checked
+                    selectedList.add(v);
+                } else {
+                    //remove it not checked
+                    selectedList.remove(v);
+                }
+            }
+        }
+
+        lblSelectedCount.setValue(selectedList.size() + " facets selected");
+    }
+
 
     private void setupDefaultParams() {
         btnOk.setDisabled(true);
@@ -315,6 +340,9 @@ public class AddFacetController extends UtilityComposer {
 
             try {
                 legendLines = new CSVReader(new StringReader(slist.toString())).readAll();
+
+                //reset selection when legendLines is rebuilt
+                uncheckAll();
             } catch (Exception e) {
                 LOGGER.error("failed to read legend list as csv", e);
             }
@@ -367,6 +395,7 @@ public class AddFacetController extends UtilityComposer {
                             @Override
                             public void onEvent(Event event) throws Exception {
                                 btnOk.setDisabled(false);
+                                rebuildSelectedList();
                             }
                         });
                         cb.setVisible(!cbContinousRange.isChecked());
@@ -387,6 +416,10 @@ public class AddFacetController extends UtilityComposer {
                         lc = new Listcell("group " + ss[0]);
                     }
                     lc.setParent(li);
+
+                    if (cb != null) {
+                        cb.setChecked(selectedList.contains(lc.getLabel()));
+                    }
 
                     int red = 0, green = 0, blue = 0;
                     try {
@@ -426,33 +459,30 @@ public class AddFacetController extends UtilityComposer {
 
         boolean unknown = false;
         if (!divContinous.isVisible() || !cbContinousRange.isChecked()) {
-            for (Listitem li : legend.getItems()) {
-                if (!li.getFirstChild().getChildren().isEmpty()
-                        && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
-                    String v = ((Listcell) li.getChildren().get(1)).getLabel();
-                    v = displayToActualLabel(v);
-                    if (legendFacets != null) {
-                        if (StringConstants.UNKNOWN.equals(v) || v.contains(StringConstants.OCCURRENCE_YEAR) || v.contains(StringConstants.UNCERTAINTY) || v.contains(StringConstants.COORDINATE_UNCERTAINTY)) {
-                            //keep unchanged
-                            divContinous.setVisible(true);
-                            onCheck$cbContinousRange(null);
-                        } else {
-                            v = legendFacets.get(v);
-                        }
-                    }
-
-                    if (v.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && StringConstants.UNKNOWN.equals(v))) {
-                        unknown = true;
+            for (Object selectedItem : selectedList) {
+                String v = (String) selectedItem;
+                v = displayToActualLabel(v);
+                if (legendFacets != null) {
+                    if (StringConstants.UNKNOWN.equals(v) || v.contains(StringConstants.OCCURRENCE_YEAR) || v.contains(StringConstants.UNCERTAINTY) || v.contains(StringConstants.COORDINATE_UNCERTAINTY)) {
+                        //keep unchanged
+                        divContinous.setVisible(true);
+                        onCheck$cbContinousRange(null);
                     } else {
-                        if (values.length() > 0) {
-                            values.append(" OR ");
-                        }
-                        if (legendFacets != null) {
-                            values.append(v);
-                        } else {
-                            values.append(colourmode).append(":\"");
-                            values.append(v).append("\"");
-                        }
+                        v = legendFacets.get(v);
+                    }
+                }
+
+                if (v.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && StringConstants.UNKNOWN.equals(v))) {
+                    unknown = true;
+                } else {
+                    if (values.length() > 0) {
+                        values.append(" OR ");
+                    }
+                    if (legendFacets != null) {
+                        values.append(v);
+                    } else {
+                        values.append(colourmode).append(":\"");
+                        values.append(v).append("\"");
                     }
                 }
             }
@@ -534,6 +564,9 @@ public class AddFacetController extends UtilityComposer {
                 ((Checkbox) li.getFirstChild().getFirstChild()).setChecked(false);
             }
         }
+
+        selectedList = new HashSet();
+        lblSelectedCount.setValue(selectedList.size() + " facets selected");
     }
 
     private void setupForNumericalList(String facetString) {
@@ -866,29 +899,6 @@ public class AddFacetController extends UtilityComposer {
         }
     }
 
-    int[] getState() {
-        int countChecked = 0;
-        boolean unknownChecked = false;
-        for (Listitem li : legend.getItems()) {
-            if (!li.getFirstChild().getChildren().isEmpty()
-                    && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
-                String v = ((Listcell) li.getChildren().get(1)).getLabel();
-                v = displayToActualLabel(v);
-                if (((query instanceof BiocacheQuery || divContinous.isVisible()) && StringConstants.UNKNOWN.equals(v))
-                        || v.length() == 0) {
-                    unknownChecked = true;
-                } else {
-                    countChecked++;
-                }
-            }
-        }
-        int[] state = new int[2];
-        state[0] = countChecked;
-        state[1] = unknownChecked ? 1 : 0;
-
-        return state;
-    }
-
     public void onClick$clearSelection(Event e) {
 
         uncheckAll();
@@ -901,10 +911,15 @@ public class AddFacetController extends UtilityComposer {
                 if (!li.getFirstChild().getChildren().isEmpty()
                         && !((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                     ((Checkbox) li.getFirstChild().getFirstChild()).setChecked(true);
+
+                    String v = ((Listcell) li.getChildren().get(1)).getLabel();
+                    selectedList.add(v);
                 }
             }
             btnOk.setDisabled(false);
         }
+
+        lblSelectedCount.setValue(selectedList.size() + " facets selected");
     }
 
     public void onClick$btnCancel(Event event) {
@@ -985,8 +1000,7 @@ public class AddFacetController extends UtilityComposer {
                 btnBack.setDisabled(false);
                 btnOk.setDisabled(true);
             } else {
-                int[] state = getState();
-                if (state[0] == 0) {
+                if (selectedList.size() == 0) {
                     btnOk.setDisabled(true);
                 }
 

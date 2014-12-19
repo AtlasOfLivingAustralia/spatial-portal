@@ -16,6 +16,7 @@ import org.ala.layers.legend.LegendObject;
 import org.ala.layers.legend.QueryField;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.event.CheckEvent;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.*;
@@ -60,6 +61,8 @@ public class ClassificationLegend extends UtilityComposer {
     private Listheader lhSecondColumn;
     private Listheader lhThirdColumn;
     private Listheader lhFourthColumn;
+    private Label lblSelectedCount;
+    private Set selectedList = new HashSet();
 
     @Override
     public void afterCompose() {
@@ -115,7 +118,6 @@ public class ClassificationLegend extends UtilityComposer {
                 legend.setActivePage(0);
             }
         });
-
 
         //setup sorting
         Comparator labelComparatorAsc = new Comparator() {
@@ -192,6 +194,32 @@ public class ClassificationLegend extends UtilityComposer {
         lhFourthColumn.setSortDescending(countComparatorDesc);
     }
 
+    private void rebuildSelectedList() {
+        for (Listitem li : legend.getItems()) {
+            if (!li.getFirstChild().getChildren().isEmpty()) {
+                String v = ((Listcell) li.getChildren().get(1)).getLabel();
+
+                if (((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
+                    //add if checked
+                    selectedList.add(v);
+                } else {
+                    //remove it not checked
+                    selectedList.remove(v);
+                }
+            }
+        }
+
+        lblSelectedCount.setValue(selectedList.size() + " selected");
+
+        if (selectedList.size() > 0) {
+            createInGroup.setVisible(true);
+            clearSelection.setVisible(true);
+        } else {
+            createInGroup.setVisible(false);
+            clearSelection.setVisible(false);
+        }
+    }
+
     public void onClick$createInGroup(Event e) {
         getMapComposer().mapSpecies(query.newFacet(facet, true),
                 "Facet of " + mapLayer.getDisplayName(), StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE,
@@ -215,7 +243,7 @@ public class ClassificationLegend extends UtilityComposer {
             }
         }
         int[] state = new int[2];
-        state[0] = countChecked;
+        state[0] = selectedList.size();
         state[1] = (unknownChecked ? 1 : 0);
 
         return state;
@@ -258,6 +286,9 @@ public class ClassificationLegend extends UtilityComposer {
 
             try {
                 legendLines = new CSVReader(new StringReader(slist.toString())).readAll();
+
+                //reset selection when legendLines is rebuilt
+                uncheckAll();
             } catch (IOException e) {
                 LOGGER.error("failed to read legend list as csv", e);
             }
@@ -309,6 +340,23 @@ public class ClassificationLegend extends UtilityComposer {
 
                             @Override
                             public void onEvent(Event event) throws Exception {
+                                String v = ((Listcell) event.getTarget().getParent().getParent().getChildren().get(1)).getLabel();
+                                if (((CheckEvent) event).isChecked()) {
+                                    selectedList.add(v);
+                                } else {
+                                    selectedList.remove(v);
+                                }
+
+                                lblSelectedCount.setValue(selectedList.size() + " selected");
+
+                                if (selectedList.size() > 0) {
+                                    createInGroup.setVisible(true);
+                                    clearSelection.setVisible(true);
+                                } else {
+                                    createInGroup.setVisible(false);
+                                    clearSelection.setVisible(false);
+                                }
+
                                 checkboxClick(event);
                             }
                         });
@@ -388,30 +436,27 @@ public class ClassificationLegend extends UtilityComposer {
         StringBuilder values = new StringBuilder();
 
         boolean unknown = false;
-        for (Listitem li : legend.getItems()) {
-            if (!li.getFirstChild().getChildren().isEmpty()
-                    && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
-                String v = ((Listcell) li.getChildren().get(1)).getLabel();
-                v = displayToActualLabel(v);
-                if (legendFacets != null && !StringConstants.UNKNOWN.equals(v)
-                        && !v.contains(StringConstants.OCCURRENCE_YEAR)
-                        && !v.contains(StringConstants.UNCERTAINTY)
-                        && !v.contains(StringConstants.COORDINATE_UNCERTAINTY)) {
+        for (Object selectedItem : selectedList) {
+            String v = (String) selectedItem;
+            v = displayToActualLabel(v);
+            if (legendFacets != null && !StringConstants.UNKNOWN.equals(v)
+                    && !v.contains(StringConstants.OCCURRENCE_YEAR)
+                    && !v.contains(StringConstants.UNCERTAINTY)
+                    && !v.contains(StringConstants.COORDINATE_UNCERTAINTY)) {
 
-                    v = legendFacets.get(v);
+                v = legendFacets.get(v);
+            }
+            if (v.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && StringConstants.UNKNOWN.equals(v))) {
+                unknown = true;
+            } else {
+                if (values.length() > 0) {
+                    values.append(" OR ");
                 }
-                if (v.length() == 0 || ((query instanceof BiocacheQuery || divContinous.isVisible()) && StringConstants.UNKNOWN.equals(v))) {
-                    unknown = true;
+                if (legendFacets != null) {
+                    values.append(v);
                 } else {
-                    if (values.length() > 0) {
-                        values.append(" OR ");
-                    }
-                    if (legendFacets != null) {
-                        values.append(v);
-                    } else {
-                        values.append(colourmode).append(":\"");
-                        values.append(v).append("\"");
-                    }
+                    values.append(colourmode).append(":\"");
+                    values.append(v).append("\"");
                 }
             }
         }
@@ -502,6 +547,9 @@ public class ClassificationLegend extends UtilityComposer {
                 ((Checkbox) li.getFirstChild().getFirstChild()).setChecked(false);
             }
         }
+
+        selectedList = new HashSet();
+        lblSelectedCount.setValue(selectedList.size() + " selected");
     }
 
     void updateD() {
@@ -976,6 +1024,10 @@ public class ClassificationLegend extends UtilityComposer {
                     } else {
                         cb.setChecked(fct.isValid(value));
                     }
+                    if (cb.isChecked()) {
+                        selectedList.add(value);
+                        lblSelectedCount.setValue(selectedList.size() + " selected");
+                    }
                 } else {
                     LOGGER.debug("Error parsing: " + mapLayer.getHighlight());
                 }
@@ -989,12 +1041,19 @@ public class ClassificationLegend extends UtilityComposer {
                 if (!li.getFirstChild().getChildren().isEmpty()
                         && !((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
                     ((Checkbox) li.getFirstChild().getFirstChild()).setChecked(true);
+
+                    String v = ((Listcell) li.getChildren().get(1)).getLabel();
+                    selectedList.add(v);
                 }
             }
             updateD();
             mapLayer.setHighlight(getSelectionFacet());
             getMapComposer().applyChange(mapLayer);
             dCreateButtons.setVisible(true);
+            clearSelection.setVisible(true);
+            createInGroup.setVisible(true);
+
+            lblSelectedCount.setValue(selectedList.size() + " selected");
         }
     }
 

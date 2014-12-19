@@ -1099,11 +1099,15 @@ public class ToolComposer extends UtilityComposer {
             //ONLY perform these checks if the "lMultiple" or lMultipleBk" is on the current page
             if (Components.isAncestor(currentDiv, lMultiple) && rMultiple.isChecked()) {
                 // display the dialog and change the radio button to "use existing"...
-                showExportSpeciesListDialog(lMultiple);
-                return;
+                if (Util.getUserEmail() != null && !"guest@ala.org.au".equals(Util.getUserEmail())) {
+                    showExportSpeciesListDialog(lMultiple);
+                    return;
+                }
             } else if (Components.isAncestor(currentDiv, lMultipleBk) && rMultipleBk.isChecked()) {
-                showExportSpeciesListDialog(lMultipleBk);
-                return;
+                if (Util.getUserEmail() != null && !"guest@ala.org.au".equals(Util.getUserEmail())) {
+                    showExportSpeciesListDialog(lMultipleBk);
+                    return;
+                }
             }
 
             if (!currentDiv.getZclass().contains(StringConstants.LAST)) {
@@ -2836,62 +2840,24 @@ public class ToolComposer extends UtilityComposer {
         return sb.toString();
     }
 
-    public void onUpload$bSpeciesListUpload(Event event) {
-        UploadEvent ue = null;
-        if (event instanceof UploadEvent) {
-            ue = (UploadEvent) event;
-        } else if (event instanceof ForwardEvent) {
-            ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
-        }
-        if (ue == null) {
-            LOGGER.warn("unable to upload file");
-            return;
-        } else {
-            LOGGER.debug("fileUploaded()");
-        }
+    public void onClick$bSpeciesListUpload(Event event) {
+        UploadLayerListController window = (UploadLayerListController) Executions.createComponents("WEB-INF/zul/input/UploadSpeciesList.zul", this, null);
+        window.setCallback(new EventListener() {
+
+            @Override
+            public void onEvent(Event event) throws Exception {
+                importList((String) event.getData());
+
+                //enable btnOk
+                btnOk.setAutodisable("");
+                btnOk.setDisabled(false);
+            }
+        });
+
         try {
-            Media m = ue.getMedia();
-
-            // forget content types, do 'try'
-            boolean loaded = false;
-            try {
-                importList(readerToString(m.getReaderData()));
-                loaded = true;
-                LOGGER.debug("read type " + m.getContentType() + " with getReaderData");
-            } catch (Exception e) {
-                //failed to read user upload, will try another method
-            }
-            if (!loaded) {
-                try {
-                    importList(new String(m.getByteData()));
-                    loaded = true;
-                    LOGGER.debug("read type " + m.getContentType() + " with getByteData");
-                } catch (Exception e) {
-                    //failed to read user upload, will try another method
-                }
-            }
-            if (!loaded) {
-                try {
-                    importList(readerToString(new InputStreamReader(m.getStreamData())));
-                    loaded = true;
-                    LOGGER.debug("read type " + m.getContentType() + " with getStreamData");
-                } catch (Exception e) {
-                    //failed to read user upload, will try another method
-                }
-            }
-            if (!loaded) {
-                try {
-                    importList(m.getStringData());
-
-                    LOGGER.debug("read type " + m.getContentType() + " with getStringData");
-                } catch (Exception e) {
-                    // last one, report error
-                    getMapComposer().showMessage("Unable to load your file. Please try again.");
-                    LOGGER.error("unable to load user points: ", e);
-                }
-            }
-        } catch (Exception ex) {
-            LOGGER.error(ex);
+            window.doModal();
+        } catch (Exception e) {
+            LOGGER.error("error opening UploadSpeciesList.zul", e);
         }
     }
 

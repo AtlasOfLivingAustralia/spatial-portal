@@ -19,7 +19,7 @@
         <separator height="40px"/>
         <div class="btn-group">
                 <button  id="btnCancel" label="Cancel"/>
-                <fileupload  class="btn btn-primary"  id="fileUpload" label="Next" upload="true" />
+                <fileupload  class="btn btn-primary"  id="fileUpload" label="Choose a file..." upload="true" />
 
         </div>
         <separator />
