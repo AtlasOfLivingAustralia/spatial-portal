@@ -92,11 +92,7 @@ public final class ShapefileUtils {
                     sb.append(wktString);
 
                     if (multipolygon) {
-                        if (wktString.contains("(((")) {
-                            sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append(wktString);
-                        } else {
-                            sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append("(").append(wktString);
-                        }
+                        sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append("(").append(wktString.replace("(((", "(("));
                         if (!wktString.endsWith(")))")) {
                             sbGeometryCollection.append(")");
                         }
@@ -112,11 +108,7 @@ public final class ShapefileUtils {
                 if (!sb.toString().contains(")))")) {
                     sb.append(")");
                 }
-                if (sb.toString().contains("(((")) {
-                    shape.put(StringConstants.WKT, StringConstants.MULTIPOLYGON + sb.toString());
-                } else {
-                    shape.put(StringConstants.WKT, StringConstants.MULTIPOLYGON + "(" + sb.toString());
-                }
+                shape.put(StringConstants.WKT, StringConstants.MULTIPOLYGON + "(" + sb.toString().replace("(((", "(("));
             } else {
                 sbGeometryCollection.append(")");
                 shape.put(StringConstants.WKT, StringConstants.GEOMETRYCOLLECTION + "(" + sbGeometryCollection);

@@ -172,6 +172,11 @@ public class AreaUploadShapefile extends AreaToolComposer {
                             //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
                             IsValidOp op = new IsValidOp(g);
                             if (!op.isValid()) {
+                                //this will fix some issues
+                                g = g.buffer(0);
+                                op = new IsValidOp(g);
+                            }
+                            if (!op.isValid()) {
                                 invalid = true;
                                 LOGGER.warn(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + op.getValidationError().getMessage());
                                 msg = op.getValidationError().getMessage();
@@ -308,6 +313,11 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
                 //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
                 IsValidOp op = new IsValidOp(g);
+                if (!op.isValid()) {
+                    //this will fix some issues
+                    g = g.buffer(0);
+                    op = new IsValidOp(g);
+                }
                 if (!op.isValid()) {
                     invalid = true;
                     LOGGER.warn(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + op.getValidationError().getMessage());

@@ -2,8 +2,11 @@ package au.org.emii.portal.composer;
 
 import au.org.emii.portal.util.Validate;
 import org.apache.log4j.Logger;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+
+import java.util.Map;
 
 /**
  * Handy utilities to compose windows with - Currently, if you compose against
@@ -17,6 +20,8 @@ public class UtilityComposer extends GenericAutowireAutoforwardComposer {
     private static final Logger LOGGER = Logger.getLogger(UtilityComposer.class);
 
     private static final long serialVersionUID = 1L;
+
+    protected Map args;
 
     /**
      * Stop user dragging windows outsize viewport - if they try to do this,
@@ -66,5 +71,8 @@ public class UtilityComposer extends GenericAutowireAutoforwardComposer {
                 onNudgeToView();
             }
         });
+
+        //args may be lost if not used in afterCompose
+        args = Executions.getCurrent().getArg();
     }
 }

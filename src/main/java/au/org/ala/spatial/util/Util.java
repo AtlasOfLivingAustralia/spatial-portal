@@ -1021,6 +1021,11 @@ public final class Util {
 
             IsValidOp op = new IsValidOp(g);
             if (!op.isValid()) {
+                //this will fix some issues
+                g = g.buffer(0);
+                op = new IsValidOp(g);
+            }
+            if (!op.isValid()) {
                 //give up?
             } else if (g.isRectangle()) {
                 //NC 20130319: When the shape is a rectangle ensure that the points a specified in the correct order.

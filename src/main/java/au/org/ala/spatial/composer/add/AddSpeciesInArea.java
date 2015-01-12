@@ -49,7 +49,7 @@ public class AddSpeciesInArea extends UtilityComposer {
     public void loadAreaLayers() {
         try {
             List<MapLayer> layers = null;
-            Map m = Executions.getCurrent().getArg();
+            Map m = args;
             if (m != null) {
                 for (Object o : m.entrySet()) {
                     if (((Map.Entry) o).getKey() instanceof String

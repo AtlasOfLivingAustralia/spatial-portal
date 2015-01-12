@@ -338,11 +338,7 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                     sb.append(wktString);
 
                     if (multipolygon) {
-                        if (wktString.contains("(((")) {
-                            sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append(wktString);
-                        } else {
-                            sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append("(").append(wktString);
-                        }
+                        sbGeometryCollection.append(StringConstants.MULTIPOLYGON).append("(").append(wktString.replace("(((", "(("));
                         if (!wktString.endsWith(")))")) {
                             sbGeometryCollection.append(")");
                         }
@@ -358,11 +354,8 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 if (!sb.toString().contains(")))")) {
                     sb.append(")");
                 }
-                if (sb.toString().contains("(((")) {
-                    wkt = StringConstants.MULTIPOLYGON + sb.toString();
-                } else {
-                    wkt = StringConstants.MULTIPOLYGON + "(" + sb.toString();
-                }
+
+                wkt = StringConstants.MULTIPOLYGON + "(" + sb.toString().replace("(((", "((");
             } else {
                 sbGeometryCollection.append(")");
                 wkt = StringConstants.GEOMETRYCOLLECTION + "(" + sbGeometryCollection.toString();
@@ -379,6 +372,11 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
                 //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
                 IsValidOp op = new IsValidOp(g);
+                if (!op.isValid()) {
+                    //this will fix some issues
+                    g = g.buffer(0);
+                    op = new IsValidOp(g);
+                }
                 if (!op.isValid()) {
                     invalid = true;
                     LOGGER.warn(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + op.getValidationError().getMessage());

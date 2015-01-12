@@ -117,6 +117,11 @@ public class AreaPolygon extends AreaToolComposer {
             //NC 20130319: Ensure that the WKT is valid according to the WKT standards.
             IsValidOp op = new IsValidOp(g);
             if (!op.isValid()) {
+                //this will fix some issues
+                g = g.buffer(0);
+                op = new IsValidOp(g);
+            }
+            if (!op.isValid()) {
                 invalidWKT.setValue(CommonData.lang(StringConstants.ERROR_WKT_INVALID) + " " + op.getValidationError().getMessage());
                 LOGGER.warn("WKT is invalid." + op.getValidationError().getMessage());
                 //TODO Fix invalid WKT text using https://github.com/tudelft-gist/prepair maybe???
