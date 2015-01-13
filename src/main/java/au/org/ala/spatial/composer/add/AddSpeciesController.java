@@ -15,10 +15,7 @@ import au.org.emii.portal.composer.UtilityComposer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.event.CheckEvent;
-import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.event.ForwardEvent;
+import org.zkoss.zk.ui.event.*;
 import org.zkoss.zul.*;
 
 import java.io.IOException;
@@ -63,6 +60,7 @@ public class AddSpeciesController extends UtilityComposer {
     private A aMessage;
     private Label lblMessage;
 
+    private boolean listBoxEcho = false;
 
     @Override
     public void afterCompose() {
@@ -76,12 +74,28 @@ public class AddSpeciesController extends UtilityComposer {
             @Override
             public void onEvent(Event event) throws Exception {
                 onClick$btnSearchSpeciesListListbox(event);
+
+                //make listbox count update correctly by repeating once
+                if (listBoxEcho == false) {
+                    listBoxEcho = true;
+                    Events.echoEvent("onClick", vboxImportSL.getFellow("btnSearchSpeciesListListbox"), null);
+                } else {
+                    listBoxEcho = false;
+                }
             }
         });
         vboxImportSL.getFellow("btnClearSearchSpeciesListListbox").addEventListener("onClick", new EventListener() {
             @Override
             public void onEvent(Event event) throws Exception {
                 onClick$btnClearSearchSpeciesListListbox(event);
+
+                //make listbox count update correctly by repeating once
+                if (listBoxEcho == false) {
+                    listBoxEcho = true;
+                    Events.echoEvent("onClick", vboxImportSL.getFellow("btnClearSearchSpeciesListListbox"), null);
+                } else {
+                    listBoxEcho = false;
+                }
             }
         });
         speciesListListbox = (SpeciesListListbox) this.getFellow("splistbox").getFellow("speciesListListbox");

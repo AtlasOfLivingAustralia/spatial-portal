@@ -23,6 +23,8 @@
             <label value="2. Enter a description for the list" sclass="word-wrap" style="white-space: normal; padding: 5px"/>
             <textbox id="tbDesc" width="100%"/>
             <separator />
+            <checkbox id="chkPrivate" width="100%" label="3. Create this list as a private list." checked="true"/>
+            <separator />
             <label id="tbInstructions" style="white-space: normal; padding: 5px" />
             <separator />
             

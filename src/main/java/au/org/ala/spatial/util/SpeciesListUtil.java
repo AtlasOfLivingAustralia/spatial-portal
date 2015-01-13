@@ -147,7 +147,7 @@ public class SpeciesListUtil {
         return new ArrayList();
     }
 
-    public static String createNewList(String name, String items, String description, String url, String user) {
+    public static String createNewList(String name, String items, String description, String url, String user, boolean makePrivate) {
         String postUrl = CommonData.getSpeciesListServer() + "/ws/speciesList/";
         HttpClient client = new HttpClient();
         PostMethod post = new PostMethod(postUrl);
@@ -172,6 +172,7 @@ public class SpeciesListUtil {
                 }
                 map.put("listItems", items);
                 map.put("listType", "SPATIAL_PORTAL");
+                map.put("isPrivate", makePrivate);
                 String content = JSONObject.fromObject(map).toString();
                 LOGGER.debug("create new list : " + content + " for user " + user);
                 String contentType = StringConstants.APPLICATION_JSON;

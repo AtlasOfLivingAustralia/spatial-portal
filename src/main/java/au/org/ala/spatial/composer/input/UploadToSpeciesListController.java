@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
+import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Textbox;
 
@@ -20,6 +21,7 @@ public class UploadToSpeciesListController extends UtilityComposer {
     private static final Logger LOGGER = Logger.getLogger(UploadToSpeciesListController.class);
 
     private Textbox tbName, tbDesc;
+    private Checkbox chkPrivate;
     private Label tbInstructions;
     private String species;
     private String dataResourceUid;
@@ -43,7 +45,7 @@ public class UploadToSpeciesListController extends UtilityComposer {
         if (tbName.getValue().length() > 0) {
             String name = tbName.getValue();
             String description = tbDesc.getValue();
-            dataResourceUid = SpeciesListUtil.createNewList(name, species, description, null, Util.getUserEmail());
+            dataResourceUid = SpeciesListUtil.createNewList(name, species, description, null, Util.getUserEmail(), chkPrivate.isChecked());
             LOGGER.debug("The data resource uid: " + dataResourceUid);
             if (callback != null) {
                 try {

@@ -62,6 +62,9 @@ public class SpeciesListListbox extends Listbox {
         setItemRenderer(new ListitemRenderer() {
             @Override
             public void render(Listitem li, Object data, int itemIdx) {
+                if (data == null) {
+                    return;
+                }
                 final SpeciesListDTO item = (SpeciesListDTO) data;
                 li.setValue(item);
                 // add a button to select the species list for the assemblage
