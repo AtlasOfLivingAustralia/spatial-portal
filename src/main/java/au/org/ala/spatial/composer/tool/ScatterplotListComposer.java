@@ -6,6 +6,7 @@ package au.org.ala.spatial.composer.tool;
 
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.*;
+import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
@@ -99,7 +100,20 @@ public class ScatterplotListComposer extends ToolComposer {
             if (layernames.length() > 0) {
                 layernames.append(",");
             }
-            layernames.append("\"").append(CommonData.getLayerDisplayName(layers[i]).replace("\"", "\"\"")).append("\"");
+            String layerDisplayName = CommonData.getLayerDisplayName(layers[i]);
+            if (layerDisplayName == null) {
+                //check for user layers
+                for (MapLayer ml : getMapComposer().getAnalysisLayers()) {
+                    try {
+                        if (layers[i].equals(ml.getPid())) {
+                            layerDisplayName = ml.getDisplayName();
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+
+            }
+            layernames.append("\"").append(layerDisplayName.replace("\"", "\"\"")).append("\"");
         }
 
         try {
