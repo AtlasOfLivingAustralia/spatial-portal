@@ -47,6 +47,7 @@ public class RemoteMapImpl implements RemoteMap {
         if (wktLayer.getMapLayerMetadata() == null) {
             wktLayer.setMapLayerMetadata(new MapLayerMetadata());
         }
+        wkt = wkt.replace(" (", "(").replace(", ", ",");
         double[][] bbox = SimpleShapeFile.parseWKT(wkt).getBoundingBox();
         List<Double> bb = new ArrayList<Double>();
         bb.add(bbox[0][0]);
