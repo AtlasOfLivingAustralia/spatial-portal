@@ -248,50 +248,52 @@ public class SpeciesAutoComplete extends Combobox {
 
             //count for guid
             try {
-                long count = CommonData.getLsidCounts().getCount(o.getLong("left"), o.getLong("right"));
+                if (o.containsKey("left") && o.containsKey("right")) {
+                    long count = CommonData.getLsidCounts().getCount(o.getLong("left"), o.getLong("right"));
 
-                if (o.containsKey(StringConstants.NAME) && o.containsKey("guid") && o.containsKey(StringConstants.RANK)) {
-                    if (slist.length() > 0) {
-                        slist.append("\n");
-                    }
+                    if (o.containsKey(StringConstants.NAME) && o.containsKey("guid") && o.containsKey(StringConstants.RANK)) {
+                        if (slist.length() > 0) {
+                            slist.append("\n");
+                        }
 
-                    String commonName = null;
-                    boolean commonNameMatch = false;
-                    if (o.containsKey("commonName") && !StringConstants.NONE.equals(o.getString("commonName"))
-                            && !StringConstants.NULL.equals(o.getString("commonName"))) {
-                        commonName = o.getString("commonName");
-                        commonName = commonName.trim().replace("/", ",");
-                        String[] cns = commonName.split(",");
-                        for (int j = 0; j < cns.length; j++) {
-                            if (cns[j].toLowerCase().contains(val)) {
-                                commonName = cns[j];
-                                commonNameMatch = true;
-                                break;
+                        String commonName = null;
+                        boolean commonNameMatch = false;
+                        if (o.containsKey("commonName") && !StringConstants.NONE.equals(o.getString("commonName"))
+                                && !StringConstants.NULL.equals(o.getString("commonName"))) {
+                            commonName = o.getString("commonName");
+                            commonName = commonName.trim().replace("/", ",");
+                            String[] cns = commonName.split(",");
+                            for (int j = 0; j < cns.length; j++) {
+                                if (cns[j].toLowerCase().contains(val)) {
+                                    commonName = cns[j];
+                                    commonNameMatch = true;
+                                    break;
+                                }
+                            }
+                            if (commonName.indexOf(',') > 1) {
+                                commonName = commonName.substring(0, commonName.indexOf(','));
                             }
                         }
-                        if (commonName.indexOf(',') > 1) {
-                            commonName = commonName.substring(0, commonName.indexOf(','));
-                        }
-                    }
 
-                    //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
-                    //swap name and common name if it is a common name match
-                    if (commonNameMatch) {
-                        slist.append(commonName).append(" /");
-                        slist.append(o.getString("guid")).append("/");
-                        slist.append(o.getString(StringConstants.RANK));
-                        slist.append(", ").append(o.getString(StringConstants.NAME).replace("/", ","));
-                        slist.append("/found ");
-                        slist.append(count);
-                    } else {
-                        slist.append(o.getString(StringConstants.NAME).replace("/", ",")).append(" /");
-                        slist.append(o.getString("guid")).append("/");
-                        slist.append(o.getString(StringConstants.RANK));
-                        if (commonName != null) {
-                            slist.append(", ").append(commonName);
+                        //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
+                        //swap name and common name if it is a common name match
+                        if (commonNameMatch) {
+                            slist.append(commonName).append(" /");
+                            slist.append(o.getString("guid")).append("/");
+                            slist.append(o.getString(StringConstants.RANK));
+                            slist.append(", ").append(o.getString(StringConstants.NAME).replace("/", ","));
+                            slist.append("/found ");
+                            slist.append(count);
+                        } else {
+                            slist.append(o.getString(StringConstants.NAME).replace("/", ",")).append(" /");
+                            slist.append(o.getString("guid")).append("/");
+                            slist.append(o.getString(StringConstants.RANK));
+                            if (commonName != null) {
+                                slist.append(", ").append(commonName);
+                            }
+                            slist.append("/found ");
+                            slist.append(count);
                         }
-                        slist.append("/found ");
-                        slist.append(count);
                     }
                 }
             } catch (Exception e) {
