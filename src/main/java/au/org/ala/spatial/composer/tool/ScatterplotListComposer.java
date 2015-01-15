@@ -113,6 +113,11 @@ public class ScatterplotListComposer extends ToolComposer {
                 }
 
             }
+            if (layerDisplayName == null) {
+                //still cannot find a layer name. default to internal name.
+                LOGGER.error("failed to get layer display name for: " + layers[i]);
+                layerDisplayName = layers[i];
+            }
             layernames.append("\"").append(layerDisplayName.replace("\"", "\"\"")).append("\"");
         }
 

@@ -80,6 +80,8 @@ public class SpeciesListUtil {
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(sb.toString());
         try {
+            //permission to get private lists
+            get.addRequestHeader(StringConstants.COOKIE, "ALA-Auth=" + java.net.URLEncoder.encode(user, StringConstants.UTF_8));
 
             get.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.TEXT_PLAIN);
 
