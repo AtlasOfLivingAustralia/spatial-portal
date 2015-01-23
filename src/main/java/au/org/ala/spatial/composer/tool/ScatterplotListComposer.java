@@ -118,7 +118,7 @@ public class ScatterplotListComposer extends ToolComposer {
                 LOGGER.error("failed to get layer display name for: " + layers[i]);
                 layerDisplayName = layers[i];
             }
-            layernames.append("\"").append(layerDisplayName.replace("\"", "\"\"")).append("\"");
+            layernames.append("\"").append(layerDisplayName.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
         }
 
         try {

@@ -107,7 +107,7 @@ public class ScatterplotComposer extends ToolComposer {
             //colon delimited
             post.addParameter("layers", lyr1value + ":" + lyr2value);
             //CSV format
-            post.addParameter("layernames", "\"" + lyr1name.replace("\"", "\"\"") + "\",\"" + lyr2name.replace("\"", "\"\"") + "\"");
+            post.addParameter("layernames", "\"" + lyr1name.replace("\"", "\"\"").replace("\\", "\\\\") + "\",\"" + lyr2name.replace("\"", "\"\"").replace("\\", "\\\\") + "\"");
             post.addParameter("foregroundOccurrencesQs", lsidQuery.getQ());
             post.addParameter("foregroundOccurrencesBs", lsidQuery.getBS());
             post.addParameter("foregroundName", lsidQuery.getName());

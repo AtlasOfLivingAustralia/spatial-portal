@@ -215,12 +215,12 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                 sb.append(",");
             }
             String s = selectedAreas.get(i).getMapLayer().getDisplayName();
-            sb.append("\"").append(s.replace("\"", "\"\"")).append("\"");
+            sb.append("\"").append(s.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
         }
         for (int i = selectedAreas.size(); i < header.size(); i++) {
             sb.append(",");
             String s = header.get(i);
-            sb.append("\"").append(s.replace("\"", "\"\"")).append("\"");
+            sb.append("\"").append(s.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
         }
 
         //rows
@@ -237,7 +237,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                 if (s == null) {
                     s = "";
                 }
-                sb.append("\"").append(s.replace("\"", "\"\"")).append("\"");
+                sb.append("\"").append(s.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
             }
 
             for (int i = selectedAreas.size(); i < header.size(); i++) {
@@ -245,7 +245,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                 if (s == null) {
                     s = "";
                 }
-                sb.append(",\"").append(s.replace("\"", "\"\"")).append("\"");
+                sb.append(",\"").append(s.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
             }
         }
 
@@ -266,7 +266,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
             for (int i = 0; i < selectedAreas.size(); i++) {
                 sb.append(",");
                 String s = selectedAreas.get(i).getMapLayer().getDisplayName();
-                sb.append("\"").append(s.replace("\"", "\"\"")).append("\"");
+                sb.append("\"").append(s.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
             }
 
             //build map for the rows
@@ -286,7 +286,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                 sb.append("\n");
 
                 String s = a[i];
-                sb.append("\"").append(s.replace("\"", "\"\"")).append("\"");
+                sb.append("\"").append(s.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
 
                 for (int k = 0; k < selectedAreas.size(); k++) {
                     String v = "0";

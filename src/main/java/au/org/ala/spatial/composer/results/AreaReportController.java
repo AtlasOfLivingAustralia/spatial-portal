@@ -1296,7 +1296,7 @@ public class AreaReportController extends UtilityComposer {
                 for (String s : columns) {
                     if (!StringConstants.LONGITUDE.equals(s) && !StringConstants.LATITUDE.equals(s)) {
                         String ss = gazPoints.getJSONObject(i).containsKey(s) ? gazPoints.getJSONObject(i).getString(s) : "";
-                        sb.append(",\"").append(ss.replace("\"", "\"\"")).append("\"");
+                        sb.append(",\"").append(ss.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
                     }
                 }
             }

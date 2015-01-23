@@ -1295,7 +1295,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 String[] s = URLDecoder.decode(analysisLayerSelections, StringConstants.UTF_8).split("\n");
                 for (int i = 0; i < s.length; i++) {
                     String[] ls = s[i].split(" // ");
-                    selectedLayers.add(new LayerSelection(ls[0], ls[1]));
+                    if (ls.length > 1) {
+                        selectedLayers.add(new LayerSelection(ls[0], ls[1]));
+                    }
                 }
             }
         } catch (Exception e) {

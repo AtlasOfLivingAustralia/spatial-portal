@@ -8,7 +8,6 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
-import org.zkoss.zk.ui.Executions;
 
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -73,12 +72,11 @@ public final class Sampling {
             int count = 0;
             while ((downloadUrl = getDownloadUrl(statusUrl)) != null) {
 
-                //wait 10s, but not forever (timeout at 300s, so just under)
                 if (!downloadUrl.isEmpty() || count >= 25) {
                     break;
                 }
 
-                Executions.getCurrent().wait(10000);
+                count++;
             }
 
             if (downloadUrl != null) {

@@ -120,7 +120,7 @@ public class BiocacheLegendObject extends LegendObject {
                 sb.append("\n");
 
                 colour = item.getRed() + "," + item.getGreen() + "," + item.getBlue();
-                line = "\"" + item.getName().replace("\"", "\"\"") + "\"," + colour + "," + item.getCount();
+                line = "\"" + item.getName().replace("\"", "\"\"").replace("\\", "\\\\") + "\"," + colour + "," + item.getCount();
 
                 sb.append(line);
             }
@@ -200,7 +200,7 @@ public class BiocacheLegendObject extends LegendObject {
                 sb.append("\n");
 
                 colour = c[1] + "," + c[2] + "," + c[3];
-                line = "\"" + c[0] + "\"," + colour + "," + c[4];
+                line = "\"" + c[0].replace("\"", "\"\"") + "\"," + colour + "," + c[4];
                 sb.append(line);
             }
         }

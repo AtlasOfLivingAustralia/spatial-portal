@@ -731,7 +731,7 @@ public final class Util {
     }
 
     public static String wrap(String s) {
-        return "\"" + s.replace("\"", "\"\"") + "\"";
+        return "\"" + s.replace("\"", "\"\"").replace("\\", "\\\\") + "\"";
     }
 
     public static String[] getAreaChecklists(String[] records) {

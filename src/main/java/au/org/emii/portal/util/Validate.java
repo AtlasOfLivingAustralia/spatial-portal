@@ -46,7 +46,7 @@ public final class Validate {
      */
     public static boolean invalidHttpUri(String uri) {
         UrlValidator urlValidator = new UrlValidator(
-                new String[]{"http", "https" }
+                new String[]{"http", "https"}
         );
 
         return !urlValidator.isValid(uri.trim());
