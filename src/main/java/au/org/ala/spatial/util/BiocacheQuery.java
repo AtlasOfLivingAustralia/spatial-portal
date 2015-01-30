@@ -616,6 +616,22 @@ public class BiocacheQuery implements Query, Serializable {
         try {
             client.executeMethod(get);
             speciesList = get.getResponseBodyAsString();
+
+            //add 'Other' correction
+            int total = getOccurrenceCount();
+            CSVReader csv = new CSVReader(new StringReader(speciesList));
+            String[] line;
+            int count = 0;
+            while ((line = csv.readNext()) != null) {
+                try {
+                    count += Integer.parseInt(line[line.length - 1]);
+                } catch (Exception e) {
+                }
+            }
+            if (total - count > 0) {
+                String correction = "\n,,,,,,,,,,Other (not species rank)," + (total - count);
+                speciesList += correction;
+            }
         } catch (Exception e) {
             LOGGER.error("error getting species list from: " + url);
         }

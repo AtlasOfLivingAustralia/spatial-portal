@@ -886,7 +886,7 @@ public final class CommonData {
     public static void initDownloadReasons() {
         copyDownloadReasons = null;
         LOGGER.debug("CommonData::initDownloadReasons()");
-        String url = "http://logger.ala.org.au/service/logger/reasons";
+        String url = CommonData.getSettings().getProperty("logger.url") + "/service/logger/reasons";
         try {
 
             LOGGER.debug(url);

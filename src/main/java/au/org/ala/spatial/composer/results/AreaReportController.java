@@ -354,9 +354,9 @@ public class AreaReportController extends UtilityComposer {
                                             } else if (StringConstants.POINTS_OF_INTEREST.equals(dto.getTitle())) {
                                                 onMapPointsOfInterest(event);
                                             } else if (kosher) {
-                                                onMapSpeciesKosher(null);
+                                                onMapSpeciesKosher(new Event("", null, dto.getExtraParams()));
                                             } else {
-                                                onMapSpecies(null);
+                                                onMapSpecies(new Event("", null, dto.getExtraParams()));
                                             }
                                         }
                                     });
@@ -783,7 +783,11 @@ public class AreaReportController extends UtilityComposer {
                 sa = new SelectedArea(null, getMapComposer().getViewArea());
             }
 
-            Query query = QueryUtil.queryFromSelectedArea(null, sa, true, null);
+            Query baseQuery = null;
+            if (event != null && event.getData() != null) {
+                baseQuery = new BiocacheQuery(null, null, (String) event.getData(), null, false, null);
+            }
+            Query query = QueryUtil.queryFromSelectedArea(baseQuery, sa, true, null);
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);
             getMapComposer().mapSpecies(query, activeAreaLayerName, StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
@@ -803,7 +807,11 @@ public class AreaReportController extends UtilityComposer {
                 sa = new SelectedArea(null, getMapComposer().getViewArea());
             }
 
-            Query query = QueryUtil.queryFromSelectedArea(null, sa, true, new boolean[]{true, false, false});
+            Query baseQuery = null;
+            if (event != null && event.getData() != null) {
+                baseQuery = new BiocacheQuery(null, null, (String) event.getData(), null, false, null);
+            }
+            Query query = QueryUtil.queryFromSelectedArea(baseQuery, sa, true, new boolean[]{true, false, false});
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName + " geospatial kosher");
             getMapComposer().mapSpecies(query, activeAreaLayerName, StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,

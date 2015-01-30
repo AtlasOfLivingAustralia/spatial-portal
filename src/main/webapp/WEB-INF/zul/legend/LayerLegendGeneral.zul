@@ -218,9 +218,14 @@
                     <label id="legendLabel" value="Click symbol to edit" />
                 </div>
                 <div id="divClassificationPicker" visible="false" >
+                    <separator />
+
                     <hbox>
                         <label value="Highlight group: " />
-                        <combobox id="cbClassificationGroup" />
+                        <combobox id="cbClassificationGroup" width="200px" />
+                        <div class="btn-group">
+                            <button class="btn-small" id="btnCreateArea" visible="false" label="Create area" />
+                        </div>
                     </hbox>
                 </div>
                 <vbox>

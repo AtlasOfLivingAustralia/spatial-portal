@@ -2,7 +2,7 @@
  * Instance of OpenLayers map
  */
 var map;
-var proxy_script = "/webportal/RemoteRequest?url=";
+var proxy_script = "/RemoteRequest?url=";
 var tmp_response;
 var popup;
 var selectControl;
@@ -199,7 +199,8 @@ function buildMapReal(west, south, east, north) {
     });
 
     // proxy.cgi script provided by OpenLayers written in Python, must be on the same domain
-    OpenLayers.ProxyHost = proxy_script;
+    OpenLayers.ProxyHost = parent.jq('$webportal_url')[0].innerHTML + proxy_script;
+    proxy_script = OpenLayers.ProxyHost
 
 
     // ---------- map setup --------------- //

@@ -179,18 +179,7 @@ public class AreaReportPDF {
             fw.write("Species: " + String.format("%s", (counts.getString("Species"))));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Threatened Species: " + String.format("%s", counts.getString("Threatened Species")));
-            fw.write("</td>");
-            fw.write("</tr>");
-            fw.write("<tr>");
-            fw.write("<td>");
-            fw.write("Species (spatially valid only): " + String.format("%s", counts.getString("Species (spatially valid only)")));
-            fw.write("</td>");
-            fw.write("<td>");
-            fw.write("Endemic Species: " + String.format("%s", counts.getString("Endemic Species")));
-            fw.write("</td>");
-            fw.write("<td>");
-            fw.write("Checklist Areas: " + String.format("%s", counts.getString("Checklist Areas")));
+            fw.write("Endemic species: " + String.format("%s", counts.getString("Endemic Species")));
             fw.write("</td>");
             fw.write("</tr>");
             fw.write("<tr>");
@@ -198,21 +187,32 @@ public class AreaReportPDF {
             fw.write("Occurrences: " + String.format("%s", counts.getString("Occurrences")));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Occurrences (spatially valid only): " + String.format("%s", counts.getString("Occurrences (spatially valid only)")));
+            fw.write("Distribution areas: " + String.format("%s", counts.getString("Distribution Areas")));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Distribution Areas: " + String.format("%s", counts.getString("Distribution Areas")));
+            fw.write("");
             fw.write("</td>");
             fw.write("</tr>");
             fw.write("<tr>");
             fw.write("<td>");
-            fw.write("Checklist Species: " + String.format("%s", counts.getString("Checklist Species")));
+            fw.write("Plants: " + String.format("%s", counts.getString("Plants")));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Threatened Species (all lists): " + counts.getString("Threatened_Species"));
+            fw.write("Birds: " + String.format("%s", counts.getString("Birds")));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Invasive Species (all lists): " + counts.getString("Invasive_Species"));
+            fw.write("Animals: " + String.format("%s", counts.getString("Animals")));
+            fw.write("</td>");
+            fw.write("</tr>");
+            fw.write("<tr>");
+            fw.write("<td>");
+            fw.write("All threatened species: " + counts.getString("Threatened_Species"));
+            fw.write("</td>");
+            fw.write("<td>");
+            fw.write("All invasive species: " + counts.getString("Invasive_Species"));
+            fw.write("</td>");
+            fw.write("<td>");
+            fw.write("");
             fw.write("</td>");
             fw.write("</tr>");
 
@@ -311,7 +311,7 @@ public class AreaReportPDF {
             count = Integer.parseInt(counts.getString("Threatened_Species"));
             imageUrl = "Threatened_Species" + ".png";
             notes = "";
-            speciesPage(true, fw, "My Area", "Threatened Species (all lists)", notes, tableNumber, count, -1, figureNumber, imageUrl,
+            speciesPage(true, fw, "My Area", "All threatened species", notes, tableNumber, count, -1, figureNumber, imageUrl,
                     csvs.getString("Threatened_Species"));
             figureNumber++;
             fw.write("</body></html>");
@@ -323,7 +323,7 @@ public class AreaReportPDF {
             count = Integer.parseInt(counts.getString("Invasive_Species"));
             imageUrl = "Invasive_Species" + ".png";
             notes = "";
-            speciesPage(true, fw, "My Area", "Invasive Species (all lists)", notes, tableNumber, count, -1, figureNumber, imageUrl,
+            speciesPage(true, fw, "My Area", "All invasive species", notes, tableNumber, count, -1, figureNumber, imageUrl,
                     csvs.getString("Invasive_Species"));
             figureNumber++;
             fw.write("</body></html>");
@@ -793,15 +793,15 @@ public class AreaReportPDF {
         setProgress("Getting information: threatened species list", 0);
         if (isCancelled()) return;
         BiocacheQuery q = query.newFacet(new Facet("state_conservation", "*", true), true);
-        csvs.put("Threatened_Species", query.speciesList());
-        speciesLinks.put("Threatened_Species", query.getWS() + "/occurrences/search?q=" + q.getQ());
+        csvs.put("Threatened_Species", q.speciesList());
+        speciesLinks.put("Threatened_Species", q.getWS() + "/occurrences/search?q=" + q.getQ());
         counts.put("Threatened_Species", String.valueOf(q.getSpeciesCount()));
 
         setProgress("Getting information: invasive species list", 0);
         if (isCancelled()) return;
         q = query.newFacet(new Facet("pest_flag_s", "*", true), true);
-        csvs.put("Invasive_Species", query.speciesList());
-        speciesLinks.put("Invasive_Species", query.getWS() + "/occurrences/search?q=" + q.getQ());
+        csvs.put("Invasive_Species", q.speciesList());
+        speciesLinks.put("Invasive_Species", q.getWS() + "/occurrences/search?q=" + q.getQ());
         counts.put("Invasive_Species", String.valueOf(q.getSpeciesCount()));
     }
 
@@ -834,7 +834,7 @@ public class AreaReportPDF {
         setProgress("Getting information: threatened species", 0);
         if (isCancelled()) return;
         Facet f = new Facet("state_conservation", "Endangered", true);
-        counts.put("Threatened Species", String.valueOf(query.newFacet(f, false).getSpeciesCount()));
+        counts.put("Endangered Species", String.valueOf(query.newFacet(f, false).getSpeciesCount()));
     }
 
 //    private void initCountChecklistAreasAndSpecies() {

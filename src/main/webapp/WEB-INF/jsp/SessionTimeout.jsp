@@ -9,14 +9,14 @@ page manually by SessionInit.init()
     <meta http-equiv="Expires" content="-1"/>
     <title>ALA Spatial Portal DEVELOPMENT - Session timed out</title>
 
-    <link rel="stylesheet" type="text/css" href="/webportal/zkau/web/8914214/zul/css/normmoz.css.dsp"/>
-    <link rel="stylesheet" type="text/css" href="/webportal/zkau/web/8914214/zkex/zul/css/zkexmoz.css.dsp"/>
-    <link rel="stylesheet" type="text/css" href="/webportal/zkau/web/8914214/zkmax/zul/css/zkmaxmoz.css.dsp"/>
+    <link rel="stylesheet" type="text/css" href="/zkau/web/8914214/zul/css/normmoz.css.dsp"/>
+    <link rel="stylesheet" type="text/css" href="/zkau/web/8914214/zkex/zul/css/zkexmoz.css.dsp"/>
+    <link rel="stylesheet" type="text/css" href="/zkau/web/8914214/zkmax/zul/css/zkmaxmoz.css.dsp"/>
 
 
-    <script type="text/javascript" src="/webportal/zkau/web/8914214/js/zk/zk.js.dsp" charset="UTF-8">
+    <script type="text/javascript" src="/zkau/web/8914214/js/zk/zk.js.dsp" charset="UTF-8">
     </script>
-    <script type="text/javascript" src="/webportal/zkau/web/8914214/js/zk/lang.js.dsp" charset="UTF-8">
+    <script type="text/javascript" src="/zkau/web/8914214/js/zk/lang.js.dsp" charset="UTF-8">
     </script>
     <script type="text/javascript">
         zk_ver = '3.6.3';
@@ -32,15 +32,15 @@ page manually by SessionInit.init()
     </script>
 
 
-    <link rel="shortcut icon" type="image/x-icon" href="/webportal/img/favicon.ico"/>
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"/>
 
 
 </head>
 <body>
 
-<div class="zk" id="z_5a_0" z.dtid="g5a01" style="width:100%;height:100%;" z.zidsp="page" z.au="/webportal/zkau">
+<div class="zk" id="z_5a_0" z.dtid="g5a01" style="width:100%;height:100%;" z.zidsp="page" z.au="/zkau">
 
-    <script id="z_5a_1" type="text/javascript" src="/webportal/scripts/jquery-1.2.6.min.js">
+    <script id="z_5a_1" type="text/javascript" src="/scripts/jquery-1.2.6.min.js">
     </script>
 
 
@@ -50,7 +50,7 @@ page manually by SessionInit.init()
             <div id="z_5a_3" style="display:none;">
 
                 <iframe id="z_5a_4" z.type="zul.widget.Ifr" style="width:100%;height:250px;" frameborder="0"
-                        src="/webportal/zkau/web/8914214/img/spacer.gif">
+                        src="/zkau/web/8914214/img/spacer.gif">
                 </iframe>
             </div>
 
@@ -80,7 +80,7 @@ page manually by SessionInit.init()
 
                                 <div id="z_5a_e" class="z-separator-hor" style="height:20px;" z.zcls="z-separator-hor">
                                     &nbsp;</div>
-				<span z.type="zul.btn.Button" id="z_5a_f" class="z-button" z.zcls="z-button" z.href="/webportal/./"><table
+				<span z.type="zul.btn.Button" id="z_5a_f" class="z-button" z.zcls="z-button" z.href="/./"><table
                         id="z_5a_f!box" cellspacing="0" cellpadding="0" border="0" class="z-button ">
                     <tr>
                         <td class="z-button-tl">
@@ -148,7 +148,7 @@ page manually by SessionInit.init()
         background: url(img/body.png) top left;
     }
 </style>
-<link rel="stylesheet" type="text/css" href="/webportal/css/zkcomponents.css" id="z_5a_k"/>
+<link rel="stylesheet" type="text/css" href="/css/zkcomponents.css" id="z_5a_k"/>
 
 <noscript>
     <div class="noscript"><p>Sorry, JavaScript must be enabled.<br/>Change your browser options, then <a href="">try

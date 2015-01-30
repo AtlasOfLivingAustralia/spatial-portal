@@ -7,6 +7,7 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.value.AbstractIdentifierImpl;
 import au.org.emii.portal.wms.WMSStyle;
+import net.sf.json.JSONArray;
 import org.ala.layers.legend.Facet;
 import org.ala.layers.legend.LegendObject;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -185,6 +186,8 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
      * env params allow the user to dynamically style the Layer
      */
     private String envParams = null;
+    private JSONArray classificationObjects;
+    private String baseUri;
 
     /**
      * Constructor
@@ -935,5 +938,21 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
 
     public void setPid(String pid) {
         this.pid = pid;
+    }
+
+    public void setClassificationObjects(JSONArray classificationObjects) {
+        this.classificationObjects = classificationObjects;
+    }
+
+    public JSONArray getClassificationObjects() {
+        return classificationObjects;
+    }
+
+    public String getBaseUri() {
+        return baseUri;
+    }
+
+    public void setBaseUri(String baseUri) {
+        this.baseUri = baseUri;
     }
 }
