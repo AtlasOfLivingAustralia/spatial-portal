@@ -398,13 +398,16 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 2. layerdb, objects table, areas referenced by a pid.  these are geometries.
              */
             if (layer.getUri().contains("ALA:envelope")) {
-                filter = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\">"
-                        + "<NamedLayer><Name>" + layerUtilities.getLayer(layer.getUri()) + "</Name>"
-                        + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
-                        + "<ColorMap>"
-                        + "<ColorMapEntry color=\"#ffffff\" opacity=\"0\" quantity=\"0\"/>"
-                        + "<ColorMapEntry color=\"#" + colour + "\" opacity=\"1\" quantity=\"1\" />"
-                        + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
+                filter = "";
+                if (!layer.getUri().contains("sld_body")) {
+                    filter = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\">"
+                            + "<NamedLayer><Name>" + layerUtilities.getLayer(layer.getUri()) + "</Name>"
+                            + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
+                            + "<ColorMap>"
+                            + "<ColorMapEntry color=\"#ffffff\" opacity=\"0\" quantity=\"0\"/>"
+                            + "<ColorMapEntry color=\"#" + colour + "\" opacity=\"1\" quantity=\"1\" />"
+                            + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
+                }
 
             } else {
                 filter = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor version=\"1.0.0\" xmlns=\"http://www.opengis.net/sld\">"
@@ -414,7 +417,11 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         + "</PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
             }
             try {
-                dynamicStyle = "&sld_body=" + URLEncoder.encode(filter, StringConstants.UTF_8);
+                if (filter.length() == 0) {
+                    dynamicStyle = "";
+                } else {
+                    dynamicStyle = "&sld_body=" + URLEncoder.encode(filter, StringConstants.UTF_8);
+                }
             } catch (Exception e) {
                 LOGGER.debug("invalid filter sld", e);
             }
