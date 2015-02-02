@@ -42,6 +42,12 @@ public class AreaUploadShapefile extends AreaToolComposer {
     private Button fileUpload;
     private Textbox txtLayerName;
 
+    /**
+     * parse a KML containing a single placemark, or a placemark in a folder, into WKT.
+     *
+     * @param kmldata
+     * @return WKT if valid, null on error, empty string "" when placemark not matched.
+     */
     private static String getKMLPolygonAsWKT(String kmldata) {
         try {
             Parser parser = new Parser(new org.geotools.kml.v22.KMLConfiguration());
@@ -69,12 +75,14 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 WKTWriter wr = new WKTWriter();
                 String wkt = wr.write(g);
                 return wkt.replace(" (", "(").replace(", ", ",").replace(") ", ")");
+            } else {
+                return "";
             }
         } catch (SAXException e) {
             LOGGER.error("KML spec parse error", e);
         } catch (ParserConfigurationException e) {
             LOGGER.error("error converting KML to WKT", e);
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("error reading KML", e);
         }
 
@@ -305,7 +313,17 @@ public class AreaUploadShapefile extends AreaToolComposer {
             layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
             String wkt = getKMLPolygonAsWKT(kmlstr);
 
+            if (wkt != null && wkt.length() == 0) {
+                getMapComposer().showMessage("Failed to find the area in this KML file. \r\n\r\n" +
+                        "KML file must have a single placemark within no more than 1 folder.");
 
+                return;
+            } else if (wkt == null) {
+                getMapComposer().showMessage("Failed to parse this KML file. \r\n\r\n" +
+                        "Try importing a Shapefile or WKT instead.");
+
+                return;
+            }
             boolean invalid = false;
             String msg = "";
             try {
