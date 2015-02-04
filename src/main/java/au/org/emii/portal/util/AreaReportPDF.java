@@ -179,40 +179,40 @@ public class AreaReportPDF {
             fw.write("Species: " + String.format("%s", (counts.getString("Species"))));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Endemic species: " + String.format("%s", counts.getString("Endemic Species")));
-            fw.write("</td>");
-            fw.write("</tr>");
-            fw.write("<tr>");
-            fw.write("<td>");
             fw.write("Occurrences: " + String.format("%s", counts.getString("Occurrences")));
             fw.write("</td>");
+            fw.write("</tr>");
+            fw.write("<tr>");
             fw.write("<td>");
-            fw.write("Distribution areas: " + String.format("%s", counts.getString("Distribution Areas")));
+            fw.write("Endemic species: " + String.format("%s", counts.getString("Endemic Species")));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("");
+            fw.write("All threatened species: " + counts.getString("Threatened_Species"));
+            fw.write("</td>");
+            fw.write("<td>");
+            fw.write("Mammals: " + counts.getString("Mammals"));
             fw.write("</td>");
             fw.write("</tr>");
             fw.write("<tr>");
+            fw.write("<td>");
+            fw.write("All invasive species: " + counts.getString("Invasive_Species"));
+            fw.write("</td>");
+            fw.write("<td>");
+            fw.write("Iconic species: " + counts.getString("Iconic_Species"));
+            fw.write("</td>");
+            fw.write("<td>");
+            fw.write("Reptiles: " + counts.getString("Reptiles"));
+            fw.write("</td>");
+            fw.write("</tr>");
+            fw.write("<tr>");
+            fw.write("<td>");
+            fw.write("Animals: " + String.format("%s", counts.getString("Animals")));
+            fw.write("</td>");
             fw.write("<td>");
             fw.write("Plants: " + String.format("%s", counts.getString("Plants")));
             fw.write("</td>");
             fw.write("<td>");
             fw.write("Birds: " + String.format("%s", counts.getString("Birds")));
-            fw.write("</td>");
-            fw.write("<td>");
-            fw.write("Animals: " + String.format("%s", counts.getString("Animals")));
-            fw.write("</td>");
-            fw.write("</tr>");
-            fw.write("<tr>");
-            fw.write("<td>");
-            fw.write("All threatened species: " + counts.getString("Threatened_Species"));
-            fw.write("</td>");
-            fw.write("<td>");
-            fw.write("All invasive species: " + counts.getString("Invasive_Species"));
-            fw.write("</td>");
-            fw.write("<td>");
-            fw.write("");
             fw.write("</td>");
             fw.write("</tr>");
 
@@ -325,6 +325,18 @@ public class AreaReportPDF {
             notes = "";
             speciesPage(true, fw, "My Area", "All invasive species", notes, tableNumber, count, -1, figureNumber, imageUrl,
                     csvs.getString("Invasive_Species"));
+            figureNumber++;
+            fw.write("</body></html>");
+            fw.close();
+            fileNumber++;
+            fw = startHtmlOut(fileNumber, filename);
+
+            //iconic species page
+            count = Integer.parseInt(counts.getString("Iconic_Species"));
+            imageUrl = "Iconic_Species" + ".png";
+            notes = "";
+            speciesPage(true, fw, "My Area", "Iconic species", notes, tableNumber, count, -1, figureNumber, imageUrl,
+                    csvs.getString("Iconic_Species"));
             figureNumber++;
             fw.write("</body></html>");
             fw.close();
@@ -797,6 +809,20 @@ public class AreaReportPDF {
         speciesLinks.put("Threatened_Species", q.getWS() + "/occurrences/search?q=" + q.getQ());
         counts.put("Threatened_Species", String.valueOf(q.getSpeciesCount()));
 
+        setProgress("Getting information: iconic species list", 0);
+        if (isCancelled()) return;
+        q = query.newFacet(new Facet("species_list_uid", "dr781", true), true);
+        csvs.put("Iconic_Species", q.speciesList());
+        speciesLinks.put("Iconic_Species", q.getWS() + "/occurrences/search?q=" + q.getQ());
+        counts.put("Iconic_Species", String.valueOf(q.getSpeciesCount()));
+
+        /*setProgress("Getting information: migratory species list", 0);
+        if (isCancelled()) return;
+        q = query.newFacet(new Facet("species_list_uid", "dr1005", true), true);
+        csvs.put("Migratory_Species", q.speciesList());
+        speciesLinks.put("Migratory_Species", q.getWS() + "/occurrences/search?q=" + q.getQ());
+        counts.put("Migratory_Species", String.valueOf(q.getSpeciesCount()));*/
+
         setProgress("Getting information: invasive species list", 0);
         if (isCancelled()) return;
         q = query.newFacet(new Facet("pest_flag_s", "*", true), true);
@@ -913,6 +939,10 @@ public class AreaReportPDF {
         if (isCancelled()) return;
         MapLayer threatenedSpecies = createSpeciesLayer(query.newFacet(new Facet("state_conservation", "*", true), false), 0, 0, 255, .6f, false, 9, false);
 
+        setProgress("Getting information: images for map of iconic species", 0);
+        if (isCancelled()) return;
+        MapLayer iconicSpecies = createSpeciesLayer(query.newFacet(new Facet("species_list_uid", "dr781", true), false), 0, 0, 255, .6f, false, 9, false);
+
         setProgress("Getting information: images for map of invasive species", 0);
         if (isCancelled()) return;
         MapLayer invasiveSpecies = createSpeciesLayer(query.newFacet(new Facet("pest_flag_s", "*", true), false), 0, 0, 255, .6f, false, 9, false);
@@ -950,6 +980,10 @@ public class AreaReportPDF {
         setProgress("Getting information: making threatened species", 0);
         if (isCancelled()) return;
         imageMap.put("Threatened_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, threatenedSpecies}, aspectRatio, "", type, resolution).get());
+
+        setProgress("Getting information: making iconic species", 0);
+        if (isCancelled()) return;
+        imageMap.put("Iconic_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, iconicSpecies}, aspectRatio, "", type, resolution).get());
 
         setProgress("Getting information: making invasive species", 0);
         if (isCancelled()) return;
