@@ -52,9 +52,9 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
     }
 
 
-    private void waitForPortalReload(ConfigurationLoaderStage1Impl stage1) {
+    private void waitForPortalReload(ConfigurationLoaderStage1Impl stage1, Session session) {
         int seconds = MAX_TIME_RELOADING_SECONDS;
-        while (stage1.isReloading() && (seconds > 0)) {
+        while (getMasterPortalSession(session) == null) { //stage1.isReloading() && (seconds > 0)) {
             try {
                 Thread.sleep(1000);
                 LOGGER.debug("waited " + (MAX_TIME_RELOADING_SECONDS - seconds) + " for portal to come up...");
@@ -74,13 +74,14 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
         ConfigurationLoaderStage1Impl stage1 = getConfigurationLoaderStage1(session);
 
         // wait for portal to finish if its reloading
-        waitForPortalReload(stage1);
+        waitForPortalReload(stage1, session);
 
-        if (stage1.isReloading()) {
+        /*if (stage1.isReloading()) {
             // portal is taking too long to load - MAX_TIME_RELOADING_SECONDS exceeded!
             redirectAndInvalidateSession(session, "/WEB-INF/jsp/Reloading.jsp");
 
-        } else if (stage1.isError()) {
+        } else*/
+        if (stage1.isError()) {
             // portal reloaded but has errors
             redirectAndInvalidateSession(session, ERROR_PAGE);
         } else {

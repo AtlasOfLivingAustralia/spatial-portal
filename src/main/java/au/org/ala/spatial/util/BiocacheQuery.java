@@ -1142,11 +1142,38 @@ public class BiocacheQuery implements Query, Serializable {
         return customFacets;
     }
 
+    private List<String> retrieveCustomFields() {
+        List<String> customFields = new ArrayList<String>();
+        //look up facets
+        final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" + getFullQ(true) + "&qc=" + getQc();
+        try {
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(jsonUri);
+            get.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.APPLICATION_JSON);
+            client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            JSONArray ja = JSONArray.fromObject(slist);
+
+            for (Object arrayElement : ja) {
+                JSONObject jsonObject = (JSONObject) arrayElement;
+                String facetName = jsonObject.getString(StringConstants.NAME);
+
+                if (!facetName.endsWith("_RNG")) {
+                    customFields.add(facetName);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("error loading custom facets for: " + jsonUri, e);
+        }
+        return customFields;
+    }
+
     @Override
     public List<QueryField> getFacetFieldList() {
         if (facetFieldList == null) {
             List<QueryField> fields = new ArrayList<QueryField>();
-            if (supportsDynamicFacets) {
+            if (true || supportsDynamicFacets) {
                 fields.addAll(retrieveCustomFacets());
             }
             //NC: Load all the facets fields from the cache which is populated from the biocache=service
@@ -1550,6 +1577,10 @@ public class BiocacheQuery implements Query, Serializable {
         StringBuilder sb = new StringBuilder();
         try {
             sb.append("&fields=").append(URLEncoder.encode(CommonData.getSettings().getProperty("biocache_download_fields"), StringConstants.UTF_8));
+            List<String> customFields = retrieveCustomFields();
+            for (int i = 0; i < customFields.size(); i++) {
+                sb.append(",").append(customFields.get(i));
+            }
         } catch (Exception e) {
             LOGGER.error("webportal-config.properties biocache_download_fields error while encoding to UTF-8", e);
         }
