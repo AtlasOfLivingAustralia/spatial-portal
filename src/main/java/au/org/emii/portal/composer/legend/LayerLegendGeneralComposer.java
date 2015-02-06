@@ -793,8 +793,21 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 JSONObject objJson = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/field/" + fieldId));
                 JSONArray objects = objJson.getJSONArray("objects");
 
-                mapLayer.setClassificationGroupCount(objects.size());
-                mapLayer.setClassificationObjects(objects);
+                //sort
+                List<JSONObject> list = objects.subList(0, objects.size());
+                Collections.sort(list, new Comparator<JSONObject>() {
+                    @Override
+                    public int compare(JSONObject o1, JSONObject o2) {
+                        String s1 = (o1 == null || !o1.containsKey("name")) ? "" : o1.getString("name");
+                        String s2 = (o2 == null || !o2.containsKey("name")) ? "" : o2.getString("name");
+                        return s1.compareTo(s2);
+                    }
+                });
+                JSONArray obj = new JSONArray();
+                obj.addAll(list);
+
+                mapLayer.setClassificationGroupCount(obj.size());
+                mapLayer.setClassificationObjects(obj);
             }
             //reset content
             Integer groupCount = mapLayer.getClassificationGroupCount();

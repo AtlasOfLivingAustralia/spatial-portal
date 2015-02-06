@@ -37,6 +37,7 @@
         </n:p>
 </div>
 
+<separator height="30px"/>
 <div class="btn-group">
 
     <button label="Cancel" id="btnCancel" class="btn" />

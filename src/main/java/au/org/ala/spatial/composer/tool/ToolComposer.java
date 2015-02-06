@@ -1861,7 +1861,7 @@ public class ToolComposer extends UtilityComposer {
         StringBuilder sb = new StringBuilder();
         for (String s : lbListLayers.getSelectedLayers()) {
             try {
-                String displayname = CommonData.getFacetLayerDisplayName(CommonData.getLayerFacetName(s));
+                String displayname = CommonData.getFacetLayerDisplayNameDefault(CommonData.getLayerFacetName(s));
                 if (displayname != null && displayname.length() > 0) {
                     if (sb.length() > 0) {
                         sb.append(",");

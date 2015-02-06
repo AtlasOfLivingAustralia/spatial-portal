@@ -81,7 +81,7 @@ public final class SamplingDownloadUtil {
                         sb.append(",");
                         String name = CommonData.getLayerDisplayName(layer);
                         if (name == null) {
-                            name = CommonData.getFacetLayerDisplayName(layer);
+                            name = CommonData.getFacetLayerDisplayNameDefault(layer);
                             if (name == null) {
                                 MapLayer ml = mc.getMapLayer(layer);
                                 if (ml == null) {

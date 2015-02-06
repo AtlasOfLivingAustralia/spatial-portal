@@ -190,7 +190,7 @@ public class AreaReportPDF {
             fw.write("All threatened species: " + counts.getString("Threatened_Species"));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Mammals: " + counts.getString("Mammals"));
+            fw.write("Migratory species: " + counts.getString("Migratory_Species"));
             fw.write("</td>");
             fw.write("</tr>");
             fw.write("<tr>");
@@ -201,7 +201,7 @@ public class AreaReportPDF {
             fw.write("Iconic species: " + counts.getString("Iconic_Species"));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Reptiles: " + counts.getString("Reptiles"));
+            fw.write("Mammals: " + counts.getString("Mammals"));
             fw.write("</td>");
             fw.write("</tr>");
             fw.write("<tr>");
@@ -337,6 +337,18 @@ public class AreaReportPDF {
             notes = "";
             speciesPage(true, fw, "My Area", "Iconic species", notes, tableNumber, count, -1, figureNumber, imageUrl,
                     csvs.getString("Iconic_Species"));
+            figureNumber++;
+            fw.write("</body></html>");
+            fw.close();
+            fileNumber++;
+            fw = startHtmlOut(fileNumber, filename);
+
+            //migratory species page
+            count = Integer.parseInt(counts.getString("Migratory_Species"));
+            imageUrl = "Migratory_Species" + ".png";
+            notes = "";
+            speciesPage(true, fw, "My Area", "Migratory species", notes, tableNumber, count, -1, figureNumber, imageUrl,
+                    csvs.getString("Migratory_Species"));
             figureNumber++;
             fw.write("</body></html>");
             fw.close();
@@ -816,12 +828,12 @@ public class AreaReportPDF {
         speciesLinks.put("Iconic_Species", q.getWS() + "/occurrences/search?q=" + q.getQ());
         counts.put("Iconic_Species", String.valueOf(q.getSpeciesCount()));
 
-        /*setProgress("Getting information: migratory species list", 0);
+        setProgress("Getting information: migratory species list", 0);
         if (isCancelled()) return;
         q = query.newFacet(new Facet("species_list_uid", "dr1005", true), true);
         csvs.put("Migratory_Species", q.speciesList());
         speciesLinks.put("Migratory_Species", q.getWS() + "/occurrences/search?q=" + q.getQ());
-        counts.put("Migratory_Species", String.valueOf(q.getSpeciesCount()));*/
+        counts.put("Migratory_Species", String.valueOf(q.getSpeciesCount()));
 
         setProgress("Getting information: invasive species list", 0);
         if (isCancelled()) return;
@@ -943,6 +955,10 @@ public class AreaReportPDF {
         if (isCancelled()) return;
         MapLayer iconicSpecies = createSpeciesLayer(query.newFacet(new Facet("species_list_uid", "dr781", true), false), 0, 0, 255, .6f, false, 9, false);
 
+        setProgress("Getting information: images for map of migratory species", 0);
+        if (isCancelled()) return;
+        MapLayer migratorySpecies = createSpeciesLayer(query.newFacet(new Facet("species_list_uid", "dr1005", true), false), 0, 0, 255, .6f, false, 9, false);
+
         setProgress("Getting information: images for map of invasive species", 0);
         if (isCancelled()) return;
         MapLayer invasiveSpecies = createSpeciesLayer(query.newFacet(new Facet("pest_flag_s", "*", true), false), 0, 0, 255, .6f, false, 9, false);
@@ -984,6 +1000,10 @@ public class AreaReportPDF {
         setProgress("Getting information: making iconic species", 0);
         if (isCancelled()) return;
         imageMap.put("Iconic_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, iconicSpecies}, aspectRatio, "", type, resolution).get());
+
+        setProgress("Getting information: making migratory species", 0);
+        if (isCancelled()) return;
+        imageMap.put("Migratory_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, migratorySpecies}, aspectRatio, "", type, resolution).get());
 
         setProgress("Getting information: making invasive species", 0);
         if (isCancelled()) return;

@@ -121,6 +121,8 @@ public final class CommonData {
     private static JSONArray copyDownloadReasons;
     private static Map<String, JSONObject> layerToFacet;
     private static Map<String, JSONObject> facetToLayer;
+    private static Map<String, JSONObject> layerToFacetDefault;
+    private static Map<String, JSONObject> facetToLayerDefault;
     private static Properties i18nProperites = null;
     private static LanguagePack languagePack = null;
     private static Map speciesListCounts;
@@ -196,9 +198,6 @@ public final class CommonData {
         if (lc.getSize() > 0) {
             lsidCounts = lc;
         }
-
-        //(8) cache shape files used during coordinate uploads
-        initSimpleShapeFileCache(defaultFieldString.split(","));
 
         // load the download reasons
         initDownloadReasons();
@@ -361,9 +360,11 @@ public final class CommonData {
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject jo = ja.getJSONObject(i);
                     if (
-                            jo.containsKey("defaultlayer") && StringConstants.TRUE.equals(jo.getString("defaultlayer"))
+                            /*jo.containsKey("defaultlayer") && StringConstants.TRUE.equals(jo.getString("defaultlayer"))
 
-                                    && jo.containsKey("spid") && jo.getString("spid").equals(layer.getString(StringConstants.ID))) {
+                                    &&
+                                     */
+                            jo.containsKey("spid") && jo.getString("spid").equals(layer.getString(StringConstants.ID))) {
                         //add to layer
                         if (!layer.containsKey(StringConstants.FIELDS)) {
                             layer.put(StringConstants.FIELDS, new JSONArray());
@@ -691,6 +692,17 @@ public final class CommonData {
         JSONObject f = layerToFacet.get(layer.toLowerCase());
         if (f != null) {
             facetName = f.getString(StringConstants.ID);
+        } else {
+            facetName = getLayerFacetNameDefault(layer);
+        }
+        return facetName;
+    }
+
+    public static String getLayerFacetNameDefault(String layer) {
+        String facetName = layer;
+        JSONObject f = layerToFacetDefault.get(layer.toLowerCase());
+        if (f != null) {
+            facetName = f.getString(StringConstants.ID);
         }
         return facetName;
     }
@@ -700,24 +712,29 @@ public final class CommonData {
         if (jo != null) {
             return jo.getString(StringConstants.NAME);
         } else {
+            return getFacetLayerNameDefault(facet);
+        }
+    }
+
+    public static String getFacetLayerNameDefault(String facet) {
+        JSONObject jo = facetToLayerDefault.get(facet);
+        if (jo != null) {
+            return jo.getString(StringConstants.NAME);
+        } else {
             return null;
         }
     }
 
-    public static String getFacetShapeNameField(String facet) {
-        JSONObject layer = facetToLayer.get(facet);
-        if (layer != null) {
-            JSONObject f = layerToFacet.get(layer.getString(StringConstants.NAME));
-            if (f != null && f.containsKey("sname")) {
-                return f.getString("sname");
-            }
-        }
-
-        return null;
-    }
-
     public static String getFacetLayerDisplayName(String facet) {
         JSONObject layer = facetToLayer.get(facet);
+        if (layer != null && layer.containsKey(StringConstants.DISPLAYNAME)) {
+            return layer.getString(StringConstants.DISPLAYNAME);
+        }
+        return getFacetLayerDisplayNameDefault(facet);
+    }
+
+    public static String getFacetLayerDisplayNameDefault(String facet) {
+        JSONObject layer = facetToLayerDefault.get(facet);
         if (layer != null && layer.containsKey(StringConstants.DISPLAYNAME)) {
             return layer.getString(StringConstants.DISPLAYNAME);
         }
@@ -739,6 +756,8 @@ public final class CommonData {
         try {
             Map<String, JSONObject> ftl = new HashMap<String, JSONObject>();
             Map<String, JSONObject> ltf = new HashMap<String, JSONObject>();
+            Map<String, JSONObject> ftldefault = new HashMap<String, JSONObject>();
+            Map<String, JSONObject> ltfdefault = new HashMap<String, JSONObject>();
 
             if (copyLayerlistJSON != null) {
                 for (int i = 0; i < copyLayerlistJSON.size(); i++) {
@@ -748,13 +767,21 @@ public final class CommonData {
                         JSONArray ja = jo.getJSONArray(StringConstants.FIELDS);
                         for (int j = 0; j < ja.size(); j++) {
                             JSONObject f = ja.getJSONObject(j);
-                            if (f.containsKey("defaultlayer") && f.getBoolean("defaultlayer")) {
-                                LOGGER.debug("adding defaultlayer: " + jo.getString(StringConstants.NAME) + ", " + f.getString(StringConstants.ID));
+                            if (f.containsKey("indb") && f.getBoolean("indb")) {
+                                LOGGER.debug("adding indb: " + jo.getString(StringConstants.NAME) + ", " + f.getString(StringConstants.ID));
                                 String layer = jo.getString(StringConstants.NAME);
                                 String facet = f.getString(StringConstants.ID);
 
                                 ltf.put(layer.toLowerCase(), f);
                                 ftl.put(facet, jo);
+                            }
+                            if (f.containsKey("defaultlayer") && f.getBoolean("defaultlayer")) {
+                                LOGGER.debug("adding defaultlayer: " + jo.getString(StringConstants.NAME) + ", " + f.getString(StringConstants.ID));
+                                String layer = jo.getString(StringConstants.NAME);
+                                String facet = f.getString(StringConstants.ID);
+
+                                ltfdefault.put(layer.toLowerCase(), f);
+                                ftldefault.put(facet, jo);
                             }
                         }
                     }
@@ -764,6 +791,8 @@ public final class CommonData {
             if (layerToFacet == null || !ltf.isEmpty()) {
                 layerToFacet = ltf;
                 facetToLayer = ftl;
+                layerToFacetDefault = ltfdefault;
+                facetToLayerDefault = ftldefault;
             }
         } catch (Exception e) {
             LOGGER.error("error reading layer info", e);
@@ -809,17 +838,6 @@ public final class CommonData {
             }
         }
         return list;
-    }
-
-    public static void initSimpleShapeFileCache(String[] fields) {
-        String[] layers = new String[fields.length];
-        String[] columns = new String[fields.length];
-        LOGGER.debug("defaultFieldString: " + defaultFieldString);
-        for (int i = 0; i < fields.length; i++) {
-            layers[i] = getFacetLayerName(fields[i]);
-            columns[i] = getFacetShapeNameField(fields[i]);
-            LOGGER.debug("field,layer,columns:" + fields[i] + "," + layers[i] + "," + columns[i]);
-        }
     }
 
     static void setupAnalysisLayerSets() {

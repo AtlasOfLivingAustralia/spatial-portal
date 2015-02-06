@@ -850,7 +850,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         MapLayerMetadata md = mapLayer.getMapLayerMetadata();
 
         Facet facet = null;
-        if (CommonData.getLayer(fid) != null && CommonData.getFacetLayerName(fid) != null) {
+        if (CommonData.getLayer(fid) != null && CommonData.getFacetLayerNameDefault(fid) != null) {
             JSONObject field = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/field/" + fid + "?pageSize=0"));
 
             if (field.containsKey("indb") && StringConstants.TRUE.equalsIgnoreCase(field.getString("indb"))) {
