@@ -233,29 +233,28 @@ public class AreaReportPDF {
                     null, null);
             fw.write("</body></html>");
             fw.close();
-            fileNumber++;
-            fw = startHtmlOut(fileNumber, filename);
-            figureNumber++;
-            mapPage(fw, "National Dynamic Land Cover", figureNumber, tableNumber, "dlcmv1.png",
-                    "<br /><br />The Dynamic Land Cover Dataset is the first nationally consistent and thematically comprehensive land cover reference for Australia. It provides a base-line for reporting on change and trends in vegetation cover and extent. Information about land cover dynamics is essential to understanding and addressing a range of national challenges such as drought, salinity, water availability and ecosystem health. The data is a synopsis of land cover information for every 250m by 250m area of the country from April 2000 to April 2008. The classification scheme used to describe land cover categories in the Dataset conforms to the 2007 International Standards Organisation (ISO) land cover standard (19144-2). The Dataset shows Australian land covers clustered into 34 ISO classes. These reflect the structural character of vegetation, ranging from cultivated and managed land covers (crops and pastures) to natural land covers such as closed forest and open grasslands. [Ref1]" +
-                            "<br /><br />Australia's Dynamic Land Cover: <a href='http://www.ga.gov.au/earth-observation/landcover.html'>http://www.ga.gov.au/earth-observation/landcover.html</a>" +
-                            "<br /><br />National Dynamic Land Cover layer: Classification: Vegetation; Type: Contextual (polygonal); Metadata contact organisation: Geoscience Australia (GA). <a href='http://spatial.ala.org.au/ws/layers/view/more/dlcmv1'>http://spatial.ala.org.au/ws/layers/view/more/dlcmv1</a>",
-                    tabulations.getJSONObject(CommonData.getLayerFacetName("dlcmv1"))
-                    , "http://spatial.ala.org.au/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=dlcmv1");
-            fw.write("</body></html>");
-            fw.close();
-            fileNumber++;
-            fw = startHtmlOut(fileNumber, filename);
-            figureNumber++;
-            mapPage(fw, "Global Context Ecoregions", figureNumber, tableNumber, "teow.png",
-                    "<br /><br />Terrestrial Ecoregions of the World (TEOW)" +
-                            "<br /><br />Terrestrial Ecoregions of the World (TEOW) is a biogeographic regionalisation of the Earth's terrestrial biodiversity. Our biogeographic units are ecoregions, which are defined as relatively large units of land or water containing a distinct assemblage of natural communities sharing a large majority of species, dynamics, and environmental conditions. There are 867 terrestrial ecoregions, classified into 14 different biomes such as forests, grasslands, or deserts. Ecoregions represent the original distribution of distinct assemblages of species and communities. [Ref2]" +
-                            "<br /><br />TEOW: <a href='http://worldwildlife.org/biome-categories/terrestrial-ecoregions'>http://worldwildlife.org/biome-categories/terrestrial-ecoregions</a>" +
-                            "<br /><br />Terrestrial Ecoregional Boundaries layer: Classification: Biodiversity - Region; Type: Contextual (polygonal); Metadata contact organisation: The Nature Conservancy (TNC).  <a href='http://spatial.ala.org.au/ws/layers/view/more/1053'>http://spatial.ala.org.au/ws/layers/view/more/1053</a>",
-                    tabulations.getJSONObject(CommonData.getLayerFacetName("teow")), null);
-            fw.write("</body></html>");
-            fw.close();
-            fileNumber++;
+
+            String[] layers = CommonData.getSettings().getProperty("detailed_area_report_layers").split("\n");
+            for (String layer : layers) {
+                if (!layer.isEmpty()) {
+                    String[] split = layer.trim().split("\\|");
+                    String shortname = split[0];
+                    String displayname = split[1];
+                    String geoserver_url = split[2];
+                    String canSetColourMode = split[3];
+                    String description = split[4];
+
+                    fileNumber++;
+                    fw = startHtmlOut(fileNumber, filename);
+                    figureNumber++;
+                    mapPage(fw, displayname, figureNumber, tableNumber, shortname + ".png",
+                            description,
+                            tabulations.getJSONObject(CommonData.getLayerFacetName(shortname))
+                            , geoserver_url.isEmpty() ? null : geoserver_url);
+                    fw.write("</body></html>");
+                    fw.close();
+                }
+            }
 //            fw = startHtmlOut(fileNumber, filename);
 //            figureNumber++;
 //            mapPage(fw, "Integrated Marine and Coastal Regionalisation of Australia (IMCRA)", figureNumber, "imcra4_pb.png",
@@ -266,16 +265,7 @@ public class AreaReportPDF {
 //                    tabulations.getJSONObject(CommonData.getLayerFacetName("imcra4_pb")));
 //            fw.write("</body></html>");fw.close();
 //            fileNumber++;
-            fw = startHtmlOut(fileNumber, filename);
-            figureNumber++;
-            tableNumber++;
-            mapPage(fw, "Freshwater Ecoregions of the World (FEOW)", figureNumber, tableNumber, "feow.png",
-                    "<br /><br />Freshwater Ecoregions of the World (FEOW) is a collaborative project providing the first global biogeographic regionalization of the Earth's freshwater biodiversity, and synthesizing biodiversity and threat data for the resulting ecoregions. We define a freshwater ecoregion as a large area encompassing one or more freshwater systems that contains a distinct assemblage of natural freshwater communities and species. The freshwater species, dynamics, and environmental conditions within a given ecoregion are more similar to each other than to those of surrounding ecoregions and together form a conservation unit. [Ref5]" +
-                            "<br /><br />FEOW: <a href='http://worldwildlife.org/biome-categories/freshwater-ecoregions'>http://worldwildlife.org/biome-categories/freshwater-ecoregions</a>" +
-                            "<br /><br />Freshwater Ecoregions of the World layer: Classification: Biodiversity - Region; Type: Contextual (polygonal); Metadata contact organisation: TNC. <a href='http://spatial.ala.org.au/ws/layers/view/more/1052'>http://spatial.ala.org.au/ws/layers/view/more/1052</a>",
-                    tabulations.getJSONObject(CommonData.getLayerFacetName("feow")), null);
-            fw.write("</body></html>");
-            fw.close();
+
             fileNumber++;
             fw = startHtmlOut(fileNumber, filename);
             figureNumber++;
@@ -551,7 +541,7 @@ public class AreaReportPDF {
         fw.write("</tr><tr>");
 
         //tabulation table
-        if (tabulation != null) {
+        if (tabulation != null && tabulation.containsKey("tabulationList")) {
             double totalArea = 0;
             for (Object o : tabulation.getJSONArray("tabulationList")) {
                 JSONObject jo = (JSONObject) o;
@@ -733,7 +723,11 @@ public class AreaReportPDF {
         return new Callable() {
             @Override
             public Object call() throws Exception {
-                tabulation.put(fid, JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/tabulation/" + fid + "/" + areaPid + ".json")));
+                try {
+                    tabulation.put(fid, JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/tabulation/" + fid + "/" + areaPid + ".json")));
+                } catch (Exception e) {
+                    LOGGER.error("failed tabulation: fid=" + fid + ", areaPid=" + areaPid);
+                }
 
                 return null;
             }
@@ -744,21 +738,21 @@ public class AreaReportPDF {
 
         List callables = new ArrayList();
 
-        String fid = CommonData.getLayerFacetName("dlcmv1");
-        callables.add(getTabulationCallable(fid));
 
-        fid = CommonData.getLayerFacetName("teow");
-        callables.add(getTabulationCallable(fid));
+        String[] layers = CommonData.getSettings().getProperty("detailed_area_report_layers").split("\n");
+        for (String layer : layers) {
+            if (!layer.isEmpty()) {
+                String[] split = layer.trim().split("\\|");
+                String shortname = split[0];
+                String displayname = split[1];
+                String geoserver_url = split[2];
+                String canSetColourMode = split[3];
+                String description = split[4];
 
-        fid = CommonData.getLayerFacetName("meow_ecos");
-        //        callables.add(getTabulationCallable(fid));
-
-
-        fid = CommonData.getLayerFacetName("feow");
-        callables.add(getTabulationCallable(fid));
-
-        fid = CommonData.getLayerFacetName("imcra4_pb");
-        //        callables.add(getTabulationCallable(fid));
+                String fid = CommonData.getLayerFacetName(shortname);
+                callables.add(getTabulationCallable(fid));
+            }
+        }
 
         return callables;
     }
@@ -963,23 +957,30 @@ public class AreaReportPDF {
         if (isCancelled()) return;
         MapLayer invasiveSpecies = createSpeciesLayer(query.newFacet(new Facet("pest_flag_s", "*", true), false), 0, 0, 255, .6f, false, 9, false);
 
-        setProgress("Getting information: images for map of layer " + "dlcmv1", 0);
-        if (isCancelled()) return;
-        MapLayer mlDynamicLand = createLayer("dlcmv1", 1.0f);
 
-        setProgress("Getting information: images for map of layer " + "teow", 0);
-        if (isCancelled()) return;
-        MapLayer mlTeow = createLayer("teow", 1.0f);
-        mlTeow.setColourMode("&styles=teow&format_options=dpi:600");
-        //MapLayer mlMeow = createLayer("meow_ecos", 1.0f);
-        //mlMeow.setColourMode("&styles=meow_ecos");
+        String[] layers = CommonData.getSettings().getProperty("detailed_area_report_layers").split("\n");
+        for (String layer : layers) {
+            if (!layer.isEmpty()) {
+                String[] split = layer.trim().split("\\|");
+                String shortname = split[0];
+                String displayname = split[1];
+                String geoserver_url = split[2];
+                String canSetColourMode = split[3];
+                String description = split[4];
 
-        setProgress("Getting information: images for map of layer " + "feow", 0);
-        if (isCancelled()) return;
-        MapLayer mlFeow = createLayer("feow", 1.0f);
-        mlFeow.setColourMode("&styles=feow&format_options=dpi:600");
-        //MapLayer mlImcra = createLayer("imcra4_pb", 1.0f);
-        //mlImcra.setColourMode("&styles=imcra4_pb&format_options=dpi:600");
+                setProgress("Getting information: images for map of layer " + shortname, 0);
+                if (isCancelled()) return;
+
+                MapLayer ml = createLayer(shortname, 1.0f);
+                if ("Y".equalsIgnoreCase(canSetColourMode)) {
+                    ml.setColourMode("&styles=" + shortname + "&format_options=dpi:600");
+                }
+
+                setProgress("Getting information: making map of " + shortname, 0);
+                if (isCancelled()) return;
+                imageMap.put(shortname, new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, ml}, aspectRatio, "", type, resolution).get());
+            }
+        }
 
         setProgress("Getting information: making map of area", 0);
         if (isCancelled()) return;
@@ -1014,21 +1015,6 @@ public class AreaReportPDF {
             if (isCancelled()) return;
             imageMap.put("lifeform - " + SPECIES_GROUPS[i], new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, lifeforms.get(i)}, aspectRatio, "", type, resolution).get());
         }
-
-        setProgress("Getting information: making map of dlcmv1", 0);
-        if (isCancelled()) return;
-        imageMap.put("dlcmv1", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, mlDynamicLand}, aspectRatio, "", type, resolution).get());
-
-        setProgress("Getting information: making map of teow", 0);
-        if (isCancelled()) return;
-        imageMap.put("teow", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, mlTeow}, aspectRatio, "", type, resolution).get());
-
-        //imageMap.put("meow_ecos", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, mlMeow}, aspectRatio, "", type, resolution).get());
-        setProgress("Getting information: making map of feow", 0);
-        if (isCancelled()) return;
-        imageMap.put("feow", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, mlFeow}, aspectRatio, "", type, resolution).get());
-
-        //imageMap.put("imcra4_pb", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, mlImcra}, aspectRatio, "", type, resolution).get());
 
         //save images
         setProgress("Getting information: saving maps", 0);
