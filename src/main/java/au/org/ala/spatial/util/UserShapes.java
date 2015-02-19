@@ -2,10 +2,15 @@ package au.org.ala.spatial.util;
 
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.dto.ShapeObjectDTO;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.zkoss.json.JSONValue;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by a on 5/05/2014.
@@ -23,21 +28,27 @@ public final class UserShapes {
 
         try {
             ShapeObjectDTO obj = new ShapeObjectDTO(wkt, name, description, userId, apiKey);
-            JSONObject jo = JSONObject.fromObject(obj);
+            Map m = new HashMap();
+            m.put("wkt", wkt);
+            m.put("name", name);
+            m.put("description", description);
+            m.put("api_key", apiKey);
+            m.put("user_id", userId);
 
             HttpClient client = new HttpClient();
             PostMethod post = new PostMethod(url);
 
             post.setParameter("namesearch", StringConstants.FALSE);
-            post.setRequestBody(jo.toString());
+            post.setRequestBody(JSONValue.toJSONString(m));
 
             post.setRequestHeader("Content-Type", StringConstants.APPLICATION_JSON);
 
             int result = client.executeMethod(post);
             if (result == 200) {
-                JSONObject ja = JSONObject.fromObject(post.getResponseBodyAsString());
+                JSONParser jp = new JSONParser();
+                JSONObject ja = (JSONObject) jp.parse(post.getResponseBodyAsString());
                 if (ja.containsKey(StringConstants.ID)) {
-                    return ja.getString(StringConstants.ID);
+                    return ja.get(StringConstants.ID).toString();
                 }
             } else {
                 LOGGER.debug(post.getResponseBodyAsString());
