@@ -4,9 +4,11 @@ import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.*;
@@ -40,24 +42,25 @@ public class ContextualLayerListComposer extends UtilityComposer {
 
             JSONArray layerlist = CommonData.getLayerListJSONArray();
             for (int i = 0; i < layerlist.size(); i++) {
-                JSONObject jo = layerlist.getJSONObject(i);
+                JSONObject jo = (JSONObject) layerlist.get(i);
 
-                if (!jo.getBoolean(StringConstants.ENABLED)) {
+                if (!jo.get(StringConstants.ENABLED).toString().equalsIgnoreCase("true")) {
                     continue;
                 }
 
-                if ("Contextual".equalsIgnoreCase(jo.getString(StringConstants.TYPE))) {
+                if ("Contextual".equalsIgnoreCase(jo.get(StringConstants.TYPE).toString())) {
 
                     DefaultTreeNode stn;
                     stn = new DefaultTreeNode(jo, empty);
-                    String c1 = jo.containsKey(StringConstants.CLASSIFICATION1) ? jo.getString(StringConstants.CLASSIFICATION1) : "";
-                    String c2 = jo.containsKey(StringConstants.CLASSIFICATION2) ? jo.getString(StringConstants.CLASSIFICATION2) : "";
+                    String c1 = jo.containsKey(StringConstants.CLASSIFICATION1) ? jo.get(StringConstants.CLASSIFICATION1).toString() : "";
+                    String c2 = jo.containsKey(StringConstants.CLASSIFICATION2) ? jo.get(StringConstants.CLASSIFICATION2).toString() : "";
                     addToMap(htCat1, htCat2, c1, c2, stn);
                 }
             }
 
             for (Object o : htCat1.entrySet()) {
-                JSONObject joCat = JSONObject.fromObject("{displayname:'" + ((Map.Entry) o).getKey() + "',type:'node',subtype:" + LayerUtilitiesImpl.CONTEXTUAL + "}");
+                JSONParser jp = new JSONParser();
+                JSONObject joCat = (JSONObject) jp.parse("{displayname:'" + ((Map.Entry) o).getKey() + "',type:'node',subtype:" + LayerUtilitiesImpl.CONTEXTUAL + "}");
 
                 //sort 2nd level branches
                 List sorted = (ArrayList) ((Map.Entry) o).getValue();
@@ -67,14 +70,19 @@ public class ContextualLayerListComposer extends UtilityComposer {
                     public int compare(Object a, Object b) {
                         DefaultTreeNode sa = (DefaultTreeNode) a;
                         DefaultTreeNode sb = (DefaultTreeNode) b;
-                        JSONObject ja = JSONObject.fromObject(sa.getData());
-                        JSONObject jb = JSONObject.fromObject(sb.getData());
-                        String na = ja.getString(StringConstants.DISPLAYNAME);
-                        String nb = jb.getString(StringConstants.DISPLAYNAME);
-                        na = (na.contains(">")) ? na.split(">")[1] : na;
-                        nb = (nb.contains(">")) ? nb.split(">")[1] : nb;
+                        JSONParser jp = new JSONParser();
+                        try {
+                            JSONObject ja = (JSONObject) jp.parse(sa.getData().toString());
+                            JSONObject jb = (JSONObject) jp.parse(sb.getData().toString());
+                            String na = ja.get(StringConstants.DISPLAYNAME).toString();
+                            String nb = jb.get(StringConstants.DISPLAYNAME).toString();
+                            na = (na.contains(">")) ? na.split(">")[1] : na;
+                            nb = (nb.contains(">")) ? nb.split(">")[1] : nb;
+                            return na.compareToIgnoreCase(nb);
+                        } catch (Exception e) {
 
-                        return na.compareToIgnoreCase(nb);
+                        }
+                        return 0;
                     }
                 });
                 DefaultTreeNode cat = new DefaultTreeNode(joCat, sorted);
@@ -125,10 +133,16 @@ public class ContextualLayerListComposer extends UtilityComposer {
                 alCat1 = new ArrayList();
             }
 
-            String subtype = ((JSONObject) treeNode.getData()).getString(StringConstants.TYPE);
-            JSONObject joCat2 = JSONObject.fromObject("{displayname:'" + cat2Full + "',type:'node',subtype:"
-                    + ((StringConstants.ENVIRONMENTAL.equalsIgnoreCase(subtype)) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL)
-                    + "}");
+            String subtype = ((JSONObject) treeNode.getData()).get(StringConstants.TYPE).toString();
+            JSONParser jp = new JSONParser();
+            JSONObject joCat2 = null;
+            try {
+                joCat2 = (JSONObject) jp.parse("{displayname:'" + cat2Full + "',type:'node',subtype:"
+                        + ((StringConstants.ENVIRONMENTAL.equalsIgnoreCase(subtype)) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL)
+                        + "}");
+            } catch (ParseException e) {
+                LOGGER.error("parse error");
+            }
             DefaultTreeNode stnCat2 = new DefaultTreeNode(joCat2, alCat2);
 
             boolean found = false;
@@ -166,7 +180,8 @@ public class ContextualLayerListComposer extends UtilityComposer {
 
                 DefaultTreeNode t = (DefaultTreeNode) data;
 
-                JSONObject joLayer = JSONObject.fromObject(t.getData());
+                JSONParser jp = new JSONParser();
+                JSONObject joLayer = (JSONObject) jp.parse(t.getData().toString());
 
                 Treerow tr;
                 /*
@@ -182,18 +197,19 @@ public class ContextualLayerListComposer extends UtilityComposer {
                     tr.getChildren().clear();
                 }
 
-                String displayname = joLayer.getString(StringConstants.DISPLAYNAME);
+                String displayname = joLayer.get(StringConstants.DISPLAYNAME).toString();
                 displayname = (displayname.contains(">")) ? displayname.split(">")[1] : displayname;
                 Treecell tcName = new Treecell();
-                if (!"node".equals(joLayer.getString(StringConstants.TYPE))) {
+                if (!"node".equals(joLayer.get(StringConstants.TYPE))) {
                     Html img = new Html("<i class='icon-info-sign'></i>");
 
                     img.addEventListener(StringConstants.ONCLICK, new EventListener() {
 
                         @Override
                         public void onEvent(Event event) throws Exception {
-                            JSONObject jo = JSONObject.fromObject(event.getTarget().getParent().getParent().getAttribute("lyr"));
-                            String s = jo.getString(StringConstants.ID);
+                            JSONParser jp = new JSONParser();
+                            JSONObject jo = (JSONObject) jp.parse(event.getTarget().getParent().getParent().getAttribute("lyr").toString());
+                            String s = jo.get(StringConstants.ID).toString();
                             String metadata = CommonData.getLayersServer() + "/layers/view/more/" + s;
                             getMapComposer().activateLink(metadata, "Metadata", false);
                         }
@@ -206,41 +222,42 @@ public class ContextualLayerListComposer extends UtilityComposer {
                 Label lbl = new Label(displayname);
                 lbl.setParent(tcName);
 
-                if (!"node".equals(joLayer.getString(StringConstants.TYPE))) {
+                if (!"node".equals(joLayer.get(StringConstants.TYPE))) {
                     tr.setAttribute("lyr", joLayer);
                 }
 
                 // Attach onclick events:
-                if (!"node".equals(joLayer.getString(StringConstants.TYPE))) {
+                if (!"node".equals(joLayer.get(StringConstants.TYPE))) {
 
                     // tcAdd
                     tr.addEventListener(StringConstants.ONCLICK, new EventListener() {
 
                         @Override
                         public void onEvent(Event event) throws Exception {
-                            JSONObject joLayer = JSONObject.fromObject(tree.getSelectedItem().getTreerow().getAttribute("lyr"));
-                            if (!StringConstants.CLASS.equals(joLayer.getString(StringConstants.TYPE))) {
+                            JSONParser jp = new JSONParser();
+                            JSONObject joLayer = (JSONObject) jp.parse(tree.getSelectedItem().getTreerow().getAttribute("lyr").toString());
+                            if (!StringConstants.CLASS.equals(joLayer.get(StringConstants.TYPE))) {
 
-                                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.getString("uid");
+                                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.get("uid");
 
                                 initALC();
-                                contextualLayerSelection.setLayer(joLayer.getString(StringConstants.DISPLAYNAME), joLayer.getString("displaypath"), metadata,
-                                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.getString(StringConstants.TYPE)) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
+                                contextualLayerSelection.setLayer(joLayer.get(StringConstants.DISPLAYNAME).toString(), joLayer.get("displaypath").toString(), metadata,
+                                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
 
                             } else {
-                                String classValue = joLayer.getString(StringConstants.DISPLAYNAME);
-                                String layer = joLayer.getString(StringConstants.LAYERNAME);
+                                String classValue = joLayer.get(StringConstants.DISPLAYNAME).toString();
+                                String layer = joLayer.get(StringConstants.LAYERNAME).toString();
                                 String displaypath = CommonData.getGeoServer()
                                         + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
-                                        + joLayer.getString("displaypath");
+                                        + joLayer.get("displaypath");
 
                                 //Filtered requests don't work on
                                 displaypath = displaypath.replace("gwc/service/", "");
 
-                                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.getString(StringConstants.ID);
+                                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.get(StringConstants.ID);
                                 initALC();
                                 contextualLayerSelection.setLayer(layer + " - " + classValue, displaypath, metadata,
-                                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.getString(StringConstants.TYPE)) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
+                                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
                             }
                         }
                     });

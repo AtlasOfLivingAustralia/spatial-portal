@@ -8,10 +8,11 @@ import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.dto.ScatterplotDataDTO;
 import au.org.ala.spatial.util.*;
 import au.org.emii.portal.menu.SelectedArea;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.zul.Checkbox;
 
 import java.util.Map;
@@ -65,11 +66,11 @@ public class ScatterplotComposer extends ToolComposer {
 
         JSONObject jo = cbLayer1.getSelectedItem().getValue();
         String lyr1name = cbLayer1.getText();
-        String lyr1value = jo.getString(StringConstants.NAME);
+        String lyr1value = jo.get(StringConstants.NAME).toString();
 
         jo = cbLayer2.getSelectedItem().getValue();
         String lyr2name = cbLayer2.getText();
-        String lyr2value = jo.getString(StringConstants.NAME);
+        String lyr2value = jo.get(StringConstants.NAME).toString();
 
         String pid = "";
 
@@ -134,11 +135,12 @@ public class ScatterplotComposer extends ToolComposer {
             client.executeMethod(post);
 
             String str = post.getResponseBodyAsString();
-            JSONObject jsonObject = JSONObject.fromObject(str);
+            JSONParser jp = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jp.parse(str);
 
             if (jsonObject != null && jsonObject.containsKey(StringConstants.ID)) {
-                d.setId(jsonObject.getString(StringConstants.ID));
-                d.setMissingCount(jsonObject.getInt("missingCount"));
+                d.setId(jsonObject.get(StringConstants.ID).toString());
+                d.setMissingCount(Integer.parseInt(jsonObject.get("missingCount").toString()));
             } else {
                 LOGGER.error("error parsing scatterplot id from: " + str);
             }

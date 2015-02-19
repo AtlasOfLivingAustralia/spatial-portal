@@ -171,6 +171,7 @@ public class AddSpeciesController extends UtilityComposer {
             if (rSearch.isSelected()) {
                 AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/add/AddSpeciesInArea.zul", getMapComposer(), params);
                 window.setSpeciesParams(query, rank, taxon);
+                window.setExpertDistributions(chkExpertDistributions.isChecked());
                 window.loadAreaLayers();
                 try {
                     window.doModal();
@@ -184,6 +185,7 @@ public class AddSpeciesController extends UtilityComposer {
                     loadedAssemblage = true;
                 } else {
                     AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/add/AddSpeciesInArea.zul", getMapComposer(), params);
+                    window.setExpertDistributions(chkExpertDistributions.isChecked());
                     //extract all lsids
                     StringBuilder sb = new StringBuilder();
                     for (Listitem li : lMultiple.getItems()) {

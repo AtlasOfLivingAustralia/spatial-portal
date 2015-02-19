@@ -11,8 +11,6 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.SelectedArea;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
@@ -20,6 +18,9 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.util.resource.Labels;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
@@ -118,7 +119,8 @@ public class AreaReportController extends UtilityComposer {
             int result = client.executeMethod(post);
             if (result == 200) {
                 String txt = post.getResponseBodyAsString();
-                return JSONArray.fromObject(txt);
+                JSONParser jp = new JSONParser();
+                return (JSONArray) jp.parse(txt);
             } else {
                 LOGGER.debug(result + ", " + post.getResponseBodyAsString());
             }
@@ -142,7 +144,8 @@ public class AreaReportController extends UtilityComposer {
             int result = client.executeMethod(post);
             if (result == 200) {
                 String txt = post.getResponseBodyAsString();
-                return JSONArray.fromObject(txt);
+                JSONParser jp = new JSONParser();
+                return (JSONArray) jp.parse(txt);
             }
         } catch (Exception e) {
             LOGGER.error("error getting points of interest in an area: " + wkt, e);
@@ -164,7 +167,8 @@ public class AreaReportController extends UtilityComposer {
             int result = client.executeMethod(post);
             if (result == 200) {
                 String txt = post.getResponseBodyAsString();
-                return JSONObject.fromObject(txt).getInt("count");
+                JSONParser jp = new JSONParser();
+                return Integer.parseInt(((JSONObject) jp.parse(txt)).get("count").toString());
             }
         } catch (Exception e) {
             LOGGER.error("error getting points of interest in an area: " + wkt, e);
@@ -843,9 +847,9 @@ public class AreaReportController extends UtilityComposer {
                 pointsOfInterest = getPointsOfInterest(wkt);
             }
             for (int i = 0; i < pointsOfInterest.size(); i++) {
-                JSONObject jsonObjPoi = pointsOfInterest.getJSONObject(i);
-                double latitude = jsonObjPoi.getDouble(StringConstants.LATITUDE);
-                double longitude = jsonObjPoi.getDouble(StringConstants.LONGITUDE);
+                JSONObject jsonObjPoi = (JSONObject) pointsOfInterest.get(i);
+                double latitude = Double.parseDouble(jsonObjPoi.get(StringConstants.LATITUDE).toString());
+                double longitude = Double.parseDouble(jsonObjPoi.get(StringConstants.LONGITUDE).toString());
 
                 sb.append(longitude);
                 sb.append(" ");
@@ -1061,15 +1065,16 @@ public class AreaReportController extends UtilityComposer {
                 String slist = get.getResponseBodyAsString();
                 if (slist != null) {
 
-                    JSONArray list = JSONObject.fromObject(slist).getJSONArray("list");
+                    JSONParser jp = new JSONParser();
+                    JSONArray list = (JSONArray) ((JSONObject) jp.parse(slist)).get("list");
                     StringBuilder sb = new StringBuilder();
                     sb.append("<ol>");
                     for (int i = 0; i < list.size(); i++) {
                         sb.append("<li>");
                         sb.append("<a href=\"http://biostor.org/reference/");
-                        sb.append(list.getJSONObject(i).getString(StringConstants.ID));
+                        sb.append(((JSONObject) list.get(i)).get(StringConstants.ID).toString());
                         sb.append("\" target=\"_blank\">");
-                        sb.append(list.getJSONObject(i).getString(StringConstants.TITLE));
+                        sb.append(((JSONObject) list.get(i)).get(StringConstants.TITLE).toString());
                         sb.append("</li>");
                     }
                     sb.append("</ol>");
@@ -1279,7 +1284,7 @@ public class AreaReportController extends UtilityComposer {
 
             // get columns
             for (int i = 0; i < gazPoints.size(); i++) {
-                columns.addAll(gazPoints.getJSONObject(i).keySet());
+                columns.addAll(((JSONObject) gazPoints.get(i)).keySet());
             }
 
             // write columns, first two are longitude,latitude
@@ -1293,8 +1298,8 @@ public class AreaReportController extends UtilityComposer {
             for (int i = 0; i < gazPoints.size(); i++) {
                 sb.append("\n");
 
-                if (gazPoints.getJSONObject(i).containsKey(StringConstants.GEOMETRY)) {
-                    String geometry = gazPoints.getJSONObject(i).getString(StringConstants.GEOMETRY);
+                if (((JSONObject) gazPoints.get(i)).containsKey(StringConstants.GEOMETRY)) {
+                    String geometry = ((JSONObject) gazPoints.get(i)).get(StringConstants.GEOMETRY).toString();
                     geometry = geometry.replace("POINT(", "").replace(")", "").replace(" ", ",");
                     sb.append(geometry);
                 } else {
@@ -1303,7 +1308,7 @@ public class AreaReportController extends UtilityComposer {
 
                 for (String s : columns) {
                     if (!StringConstants.LONGITUDE.equals(s) && !StringConstants.LATITUDE.equals(s)) {
-                        String ss = gazPoints.getJSONObject(i).containsKey(s) ? gazPoints.getJSONObject(i).getString(s) : "";
+                        String ss = ((JSONObject) gazPoints.get(i)).containsKey(s) ? ((JSONObject) gazPoints.get(i)).get(s).toString() : "";
                         sb.append(",\"").append(ss.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
                     }
                 }

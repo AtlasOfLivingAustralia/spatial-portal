@@ -10,9 +10,11 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -48,11 +50,16 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
     }
 
     private void fillPDTreeList() {
-        JSONObject jo;
+        JSONObject jo = null;
         String url = CommonData.getSettings().getProperty(CommonData.PHYLOLIST_URL) + "/phylo/getExpertTrees?noTreeText=true";
-        jo = JSONObject.fromObject(Util.readUrl(url));
+        JSONParser jp = new JSONParser();
+        try {
+            jo = (JSONObject) jp.parse(Util.readUrl(url));
+        } catch (ParseException e) {
+            LOGGER.error("failed to parse getExpertTrees");
+        }
 
-        JSONArray ja = jo.getJSONArray("expertTrees");
+        JSONArray ja = (JSONArray) jo.get("expertTrees");
 
         trees = new Object[ja.size()];
         header = new ArrayList<String>();
@@ -64,13 +71,13 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
         int row = 0;
         for (int i = 0; i < ja.size(); i++) {
-            JSONObject j = ja.getJSONObject(i);
+            JSONObject j = (JSONObject) ja.get(i);
 
             Map<String, String> pdrow = new HashMap<String, String>();
 
             for (Object o : j.keySet()) {
                 String key = (String) o;
-                pdrow.put(key, j.getString(key));
+                pdrow.put(key, j.get(key).toString());
             }
 
             trees[row] = pdrow;

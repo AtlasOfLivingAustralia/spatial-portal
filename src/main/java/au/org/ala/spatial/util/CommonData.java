@@ -9,12 +9,13 @@ import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.lang.LanguagePackImpl;
 import au.org.emii.portal.util.PortalProperties;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.ala.layers.legend.QueryField;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -77,7 +78,7 @@ public final class CommonData {
     private static int maxQLength;
     private static Properties settings;
     //lsid counts, for species autocomplete
-    private static LsidCounts lsidCounts;
+    private static LsidCountsDynamic lsidCounts;
     private static String biocacheQc;
     private static List<LayerSelection> analysisLayerSets;
     private static String[][] facetNameExceptions;
@@ -194,10 +195,11 @@ public final class CommonData {
         initI18nProperies();
 
         //(7) lsid counts
-        LsidCounts lc = new LsidCounts();
-        if (lc.getSize() > 0) {
-            lsidCounts = lc;
-        }
+        //LsidCounts lc = new LsidCounts();
+        //if (lc.getSize() > 0) {
+        //    lsidCounts = lc;
+        //}
+        lsidCounts.clear();
 
         // load the download reasons
         initDownloadReasons();
@@ -282,13 +284,14 @@ public final class CommonData {
             int result = client.executeMethod(get);
 
             if (result == 200) {
-                copyDistances = JSONObject.fromObject(get.getResponseBodyAsString());
+                JSONParser jp = new JSONParser();
+                copyDistances = (JSONObject) jp.parse(get.getResponseBodyAsString());
 
 
                 //make map
                 copyDistancesMap = new HashMap<String, Map<String, Double>>();
                 for (Object okey : copyDistances.keySet()) {
-                    Double d = copyDistances.getDouble((String) okey);
+                    Double d = (Double) copyDistances.get((String) okey);
                     String[] parts = ((String) okey).split(" ");
 
                     Map<String, Double> part = copyDistancesMap.get(parts[0]);
@@ -330,7 +333,8 @@ public final class CommonData {
             int result = client.executeMethod(get);
 
             if (result == 200) {
-                copyLayerlistJSON = JSONArray.fromObject(get.getResponseBodyAsString());
+                JSONParser jp = new JSONParser();
+                copyLayerlistJSON = (JSONArray) jp.parse(get.getResponseBodyAsString());
             }
 
             addFieldsToLayers(copyLayerlistJSON);
@@ -351,25 +355,26 @@ public final class CommonData {
             return;
         }
         String fields = get.getResponseBodyAsString();
-        JSONArray ja = JSONArray.fromObject(fields);
+        JSONParser jp = new JSONParser();
+        JSONArray ja = (JSONArray) jp.parse(fields);
 
         //attach to a new JSONArray in joLayers named Constants.FIELDS
         for (int j = 0; j < joLayers.size(); j++) {
-            JSONObject layer = joLayers.getJSONObject(j);
+            JSONObject layer = (JSONObject) joLayers.get(j);
             if (layer.containsKey(StringConstants.ID)) {
                 for (int i = 0; i < ja.size(); i++) {
-                    JSONObject jo = ja.getJSONObject(i);
+                    JSONObject jo = (JSONObject) ja.get(i);
                     if (
                             /*jo.containsKey("defaultlayer") && StringConstants.TRUE.equals(jo.getString("defaultlayer"))
 
                                     &&
                                      */
-                            jo.containsKey("spid") && jo.getString("spid").equals(layer.getString(StringConstants.ID))) {
+                            jo.containsKey("spid") && jo.get("spid").toString().equals(layer.get(StringConstants.ID).toString())) {
                         //add to layer
                         if (!layer.containsKey(StringConstants.FIELDS)) {
                             layer.put(StringConstants.FIELDS, new JSONArray());
                         }
-                        layer.getJSONArray(StringConstants.FIELDS).add(jo);
+                        ((JSONArray) layer.get(StringConstants.FIELDS)).add(jo);
                     }
                 }
             }
@@ -396,32 +401,33 @@ public final class CommonData {
             client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
-            JSONArray ja = JSONArray.fromObject(slist);
+            JSONParser jp = new JSONParser();
+            JSONArray ja = (JSONArray) jp.parse(slist);
 
             LOGGER.debug(ja.size() + " species wms distributions");
 
             for (int i = 0; i < ja.size(); i++) {
-                JSONObject jo = ja.getJSONObject(i);
+                JSONObject jo = (JSONObject) ja.get(i);
                 if (jo.containsKey(StringConstants.LSID) && jo.containsKey(StringConstants.WMSURL)) {
                     //manage lsids with multiple wmsurls
-                    String lsid = jo.getString(StringConstants.LSID);
+                    String lsid = jo.get(StringConstants.LSID).toString();
 
                     //wms
                     String[] urls = copySpeciesWmsLayers.get(lsid);
                     if (urls != null) {
                         String[] newUrls = new String[urls.length + 1];
                         System.arraycopy(urls, 0, newUrls, 0, urls.length);
-                        newUrls[newUrls.length - 1] = jo.getString(StringConstants.WMSURL);
+                        newUrls[newUrls.length - 1] = jo.get(StringConstants.WMSURL).toString();
                         urls = newUrls;
                     } else {
-                        urls = new String[]{jo.getString(StringConstants.WMSURL)};
+                        urls = new String[]{jo.get(StringConstants.WMSURL).toString()};
                     }
                     copySpeciesWmsLayers.put(lsid, urls);
 
                     //metadata
                     String m = "";
                     if (jo.containsKey(StringConstants.METADATA_U)) {
-                        m = jo.getString(StringConstants.METADATA_U);
+                        m = jo.get(StringConstants.METADATA_U).toString();
                     }
                     String[] md = copySpeciesMetadataLayers.get(lsid);
                     if (md != null) {
@@ -437,7 +443,7 @@ public final class CommonData {
                     //spcode
                     m = "";
                     if (jo.containsKey(StringConstants.SPCODE)) {
-                        m = jo.getString(StringConstants.SPCODE);
+                        m = jo.get(StringConstants.SPCODE).toString();
                     }
                     md = copySpeciesSpcodeLayers.get(lsid);
                     if (md != null) {
@@ -453,21 +459,21 @@ public final class CommonData {
                     //others
                     String spcode = null;
                     if (jo.containsKey(StringConstants.SPCODE)) {
-                        spcode = jo.getString(StringConstants.SPCODE);
+                        spcode = jo.get(StringConstants.SPCODE).toString();
                     }
                     lsid = null;
                     if (jo.containsKey(StringConstants.LSID)) {
-                        lsid = jo.getString(StringConstants.LSID);
+                        lsid = jo.get(StringConstants.LSID).toString();
                     }
                     String pid = null;
                     if (jo.containsKey(StringConstants.PID)) {
-                        pid = jo.getString(StringConstants.PID);
+                        pid = jo.get(StringConstants.PID).toString();
                     }
                     String type = null;
                     if (jo.containsKey(StringConstants.TYPE)) {
-                        type = jo.getString(StringConstants.TYPE);
+                        type = jo.get(StringConstants.TYPE).toString();
                     }
-                    copySpeciesWmsLayersBySpcode.put(spcode, new String[]{jo.getString(StringConstants.SCIENTIFIC), jo.getString(StringConstants.WMSURL), m, lsid, pid, type});
+                    copySpeciesWmsLayersBySpcode.put(spcode, new String[]{jo.get(StringConstants.SCIENTIFIC).toString(), jo.get(StringConstants.WMSURL).toString(), m, lsid, pid, type});
                 }
             }
 
@@ -490,32 +496,32 @@ public final class CommonData {
 
             if (result == 200) {
                 slist = get.getResponseBodyAsString();
-                ja = JSONArray.fromObject(slist);
+                ja = (JSONArray) jp.parse(slist);
 
                 LOGGER.debug(ja.size() + " species wms checklists");
 
                 for (int i = 0; i < ja.size(); i++) {
-                    JSONObject jo = ja.getJSONObject(i);
+                    JSONObject jo = (JSONObject) ja.get(i);
                     if (jo.containsKey(StringConstants.LSID) && jo.containsKey(StringConstants.WMSURL)) {
                         //manage lsids with multiple wmsurls
-                        String lsid = jo.getString(StringConstants.LSID);
+                        String lsid = jo.get(StringConstants.LSID).toString();
 
                         //wms
                         String[] urls = copyChecklistspeciesWmsLayers.get(lsid);
                         if (urls != null) {
                             String[] newUrls = new String[urls.length + 1];
                             System.arraycopy(urls, 0, newUrls, 0, urls.length);
-                            newUrls[newUrls.length - 1] = jo.getString(StringConstants.WMSURL);
+                            newUrls[newUrls.length - 1] = jo.get(StringConstants.WMSURL).toString();
                             urls = newUrls;
                         } else {
-                            urls = new String[]{jo.getString(StringConstants.WMSURL)};
+                            urls = new String[]{jo.get(StringConstants.WMSURL).toString()};
                         }
                         copyChecklistspeciesWmsLayers.put(lsid, urls);
 
                         //metadata
                         String m = "";
                         if (jo.containsKey(StringConstants.METADATA_U)) {
-                            m = jo.getString(StringConstants.METADATA_U);
+                            m = jo.get(StringConstants.METADATA_U).toString();
                         }
                         String[] md = copyChecklistspeciesMetadataLayers.get(lsid);
                         if (md != null) {
@@ -531,7 +537,7 @@ public final class CommonData {
                         //spcode
                         m = "";
                         if (jo.containsKey(StringConstants.SPCODE)) {
-                            m = jo.getString(StringConstants.SPCODE);
+                            m = jo.get(StringConstants.SPCODE).toString();
                         }
                         md = copyChecklistspeciesSpcodeLayers.get(lsid);
                         if (md != null) {
@@ -545,8 +551,8 @@ public final class CommonData {
                         copyChecklistspeciesSpcodeLayers.put(lsid, md);
 
                         //by spcode
-                        String spcode = jo.getString(StringConstants.SPCODE);
-                        copyChecklistspeciesWmsLayersBySpcode.put(spcode, new String[]{jo.getString(StringConstants.SCIENTIFIC), jo.getString(StringConstants.WMSURL), m});
+                        String spcode = jo.get(StringConstants.SPCODE).toString();
+                        copyChecklistspeciesWmsLayersBySpcode.put(spcode, new String[]{jo.get(StringConstants.SCIENTIFIC).toString(), jo.get(StringConstants.WMSURL).toString(), m});
                     }
                 }
             }
@@ -691,7 +697,7 @@ public final class CommonData {
         String facetName = layer;
         JSONObject f = layerToFacet.get(layer.toLowerCase());
         if (f != null) {
-            facetName = f.getString(StringConstants.ID);
+            facetName = f.get(StringConstants.ID).toString();
         } else {
             facetName = getLayerFacetNameDefault(layer);
         }
@@ -702,7 +708,7 @@ public final class CommonData {
         String facetName = layer;
         JSONObject f = layerToFacetDefault.get(layer.toLowerCase());
         if (f != null) {
-            facetName = f.getString(StringConstants.ID);
+            facetName = f.get(StringConstants.ID).toString();
         }
         return facetName;
     }
@@ -710,7 +716,7 @@ public final class CommonData {
     public static String getFacetLayerName(String facet) {
         JSONObject jo = facetToLayer.get(facet);
         if (jo != null) {
-            return jo.getString(StringConstants.NAME);
+            return jo.get(StringConstants.NAME).toString();
         } else {
             return getFacetLayerNameDefault(facet);
         }
@@ -719,7 +725,7 @@ public final class CommonData {
     public static String getFacetLayerNameDefault(String facet) {
         JSONObject jo = facetToLayerDefault.get(facet);
         if (jo != null) {
-            return jo.getString(StringConstants.NAME);
+            return jo.get(StringConstants.NAME).toString();
         } else {
             return null;
         }
@@ -728,7 +734,7 @@ public final class CommonData {
     public static String getFacetLayerDisplayName(String facet) {
         JSONObject layer = facetToLayer.get(facet);
         if (layer != null && layer.containsKey(StringConstants.DISPLAYNAME)) {
-            return layer.getString(StringConstants.DISPLAYNAME);
+            return layer.get(StringConstants.DISPLAYNAME).toString();
         }
         return getFacetLayerDisplayNameDefault(facet);
     }
@@ -736,7 +742,7 @@ public final class CommonData {
     public static String getFacetLayerDisplayNameDefault(String facet) {
         JSONObject layer = facetToLayerDefault.get(facet);
         if (layer != null && layer.containsKey(StringConstants.DISPLAYNAME)) {
-            return layer.getString(StringConstants.DISPLAYNAME);
+            return layer.get(StringConstants.DISPLAYNAME).toString();
         }
         return null;
     }
@@ -744,9 +750,9 @@ public final class CommonData {
     public static String getLayerDisplayName(String name) {
         JSONObject layer;
         for (int i = 0; i < layerlistJSON.size(); i++) {
-            layer = layerlistJSON.getJSONObject(i);
-            if (layer.getString(StringConstants.NAME).equalsIgnoreCase(name) && layer.containsKey(StringConstants.DISPLAYNAME)) {
-                return layer.getString(StringConstants.DISPLAYNAME);
+            layer = (JSONObject) layerlistJSON.get(i);
+            if (layer.get(StringConstants.NAME).toString().equalsIgnoreCase(name) && layer.containsKey(StringConstants.DISPLAYNAME)) {
+                return layer.get(StringConstants.DISPLAYNAME).toString();
             }
         }
         return null;
@@ -761,24 +767,24 @@ public final class CommonData {
 
             if (copyLayerlistJSON != null) {
                 for (int i = 0; i < copyLayerlistJSON.size(); i++) {
-                    JSONObject jo = copyLayerlistJSON.getJSONObject(i);
+                    JSONObject jo = (JSONObject) copyLayerlistJSON.get(i);
 
                     if (jo.containsKey(StringConstants.FIELDS)) {
-                        JSONArray ja = jo.getJSONArray(StringConstants.FIELDS);
+                        JSONArray ja = (JSONArray) jo.get(StringConstants.FIELDS);
                         for (int j = 0; j < ja.size(); j++) {
-                            JSONObject f = ja.getJSONObject(j);
-                            if (f.containsKey("indb") && f.getBoolean("indb")) {
-                                LOGGER.debug("adding indb: " + jo.getString(StringConstants.NAME) + ", " + f.getString(StringConstants.ID));
-                                String layer = jo.getString(StringConstants.NAME);
-                                String facet = f.getString(StringConstants.ID);
+                            JSONObject f = (JSONObject) ja.get(j);
+                            if (f.containsKey("indb") && f.get("indb").toString().equalsIgnoreCase("true")) {
+                                LOGGER.debug("adding indb: " + jo.get(StringConstants.NAME) + ", " + f.get(StringConstants.ID));
+                                String layer = jo.get(StringConstants.NAME).toString();
+                                String facet = f.get(StringConstants.ID).toString();
 
                                 ltf.put(layer.toLowerCase(), f);
                                 ftl.put(facet, jo);
                             }
-                            if (f.containsKey("defaultlayer") && f.getBoolean("defaultlayer")) {
-                                LOGGER.debug("adding defaultlayer: " + jo.getString(StringConstants.NAME) + ", " + f.getString(StringConstants.ID));
-                                String layer = jo.getString(StringConstants.NAME);
-                                String facet = f.getString(StringConstants.ID);
+                            if (f.containsKey("defaultlayer") && f.get("defaultlayer").toString().equalsIgnoreCase("true")) {
+                                LOGGER.debug("adding defaultlayer: " + jo.get(StringConstants.NAME) + ", " + f.get(StringConstants.ID));
+                                String layer = jo.get(StringConstants.NAME).toString();
+                                String facet = f.get(StringConstants.ID).toString();
 
                                 ltfdefault.put(layer.toLowerCase(), f);
                                 ftldefault.put(facet, jo);
@@ -914,7 +920,8 @@ public final class CommonData {
             int result = client.executeMethod(get);
 
             if (result == 200) {
-                copyDownloadReasons = JSONArray.fromObject(get.getResponseBodyAsString());
+                JSONParser jp = new JSONParser();
+                copyDownloadReasons = (JSONArray) jp.parse(get.getResponseBodyAsString());
             }
         } catch (Exception e) {
             copyDownloadReasons = null;
@@ -937,8 +944,8 @@ public final class CommonData {
     public static JSONObject getLayer(String name) {
         JSONObject layer = null;
         for (int i = 0; i < layerlistJSON.size(); i++) {
-            layer = layerlistJSON.getJSONObject(i);
-            if (layer.getString(StringConstants.NAME).equalsIgnoreCase(name)) {
+            layer = (JSONObject) layerlistJSON.get(i);
+            if (layer.get(StringConstants.NAME).toString().equalsIgnoreCase(name)) {
                 break;
             }
         }
@@ -959,14 +966,15 @@ public final class CommonData {
             LOGGER.debug("initBiocacheLayerList: " + url + " > " + result);
             if (result == 200) {
                 Set<String> set = new HashSet<String>();
-                JSONArray ja = JSONArray.fromObject(get.getResponseBodyAsString());
+                JSONParser jp = new JSONParser();
+                JSONArray ja = (JSONArray) jp.parse(get.getResponseBodyAsString());
                 LOGGER.debug("size: " + ja.size());
 
                 // Populate the biocache layer list with the names of all
                 // indexed fields. The additional non-layer field names will
                 // not cause a problem here.
                 for (int i = 0; i < ja.size(); i++) {
-                    String layer = ja.getJSONObject(i).getString(StringConstants.NAME);
+                    String layer = ((JSONObject) ja.get(i)).get(StringConstants.NAME).toString();
                     set.add(layer);
                 }
                 if (!ja.isEmpty()) {
@@ -1038,7 +1046,7 @@ public final class CommonData {
         return bieServer;
     }
 
-    public static LsidCounts getLsidCounts() {
+    public static LsidCountsDynamic getLsidCounts() {
         return lsidCounts;
     }
 

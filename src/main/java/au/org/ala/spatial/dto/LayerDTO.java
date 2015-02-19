@@ -42,7 +42,7 @@ public class LayerDTO {
      * @param description more detailed text for UI as String
      * @param type        one of 'contextual' or 'environmental' as String
      *                    not enforced here.
-     * @param fieldDTOs      array of accessible table fields as Field []
+     * @param fieldDTOs   array of accessible table fields as Field []
      * @see FieldDTO
      */
     public LayerDTO(String name, String displayName, String description,

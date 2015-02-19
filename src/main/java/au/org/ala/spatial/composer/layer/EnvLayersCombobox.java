@@ -9,11 +9,12 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.InputEvent;
@@ -73,7 +74,8 @@ public class EnvLayersCombobox extends Combobox {
                 client.executeMethod(get);
                 String slist = get.getResponseBodyAsString();
 
-                results = JSONArray.fromObject(slist);
+                JSONParser jp = new JSONParser();
+                results = (JSONArray) jp.parse(slist);
             }
             LOGGER.debug("got " + results.size() + " layers");
 
@@ -83,25 +85,25 @@ public class EnvLayersCombobox extends Combobox {
 
                 for (int i = 0; i < results.size(); i++) {
 
-                    JSONObject jo = results.getJSONObject(i);
+                    JSONObject jo = (JSONObject) results.get(i);
 
-                    if (!jo.getBoolean(StringConstants.ENABLED) || !jo.containsKey(StringConstants.DISPLAYNAME) || !jo.containsKey(StringConstants.TYPE)
-                            || (!StringConstants.ENVIRONMENTAL.equalsIgnoreCase(jo.getString(StringConstants.TYPE))
+                    if (!jo.get(StringConstants.ENABLED).toString().equalsIgnoreCase("true") || !jo.containsKey(StringConstants.DISPLAYNAME) || !jo.containsKey(StringConstants.TYPE)
+                            || (!StringConstants.ENVIRONMENTAL.equalsIgnoreCase(jo.get(StringConstants.TYPE).toString())
                             && (includeLayers != null && !"AllLayers".equalsIgnoreCase(includeLayers)
                             && !"MixLayers".equalsIgnoreCase(includeLayers)))) {
                         continue;
                     }
 
-                    String displayName = jo.getString(StringConstants.DISPLAYNAME);
-                    String type = jo.getString(StringConstants.TYPE);
-                    String name = jo.getString(StringConstants.NAME);
+                    String displayName = jo.get(StringConstants.DISPLAYNAME).toString();
+                    String type = jo.get(StringConstants.TYPE).toString();
+                    String name = jo.get(StringConstants.NAME).toString();
 
                     JSONObject layer = CommonData.getLayer(name);
                     boolean skip = false;
                     if (layer != null && layer.containsKey(StringConstants.FIELDS)) {
-                        JSONArray ja = layer.getJSONArray(StringConstants.FIELDS);
+                        JSONArray ja = (JSONArray) layer.get(StringConstants.FIELDS);
                         for (int j = 0; j < ja.size() && !skip; j++) {
-                            if (ja.getJSONObject(j).containsKey(StringConstants.ADD_TO_MAP) && !ja.getJSONObject(j).getBoolean(StringConstants.ADD_TO_MAP)) {
+                            if (((JSONObject) ja.get(j)).containsKey(StringConstants.ADD_TO_MAP) && !((JSONObject) ja.get(j)).get(StringConstants.ADD_TO_MAP).toString().equalsIgnoreCase("true")) {
                                 skip = true;
                             }
                         }
@@ -118,12 +120,12 @@ public class EnvLayersCombobox extends Combobox {
                             myci.setParent(this);
                         }
                         String c2 = "";
-                        if (jo.containsKey(StringConstants.CLASSIFICATION2) && !StringConstants.NULL.equals(jo.getString(StringConstants.CLASSIFICATION2))) {
-                            c2 = jo.getString(StringConstants.CLASSIFICATION2) + ": ";
+                        if (jo.containsKey(StringConstants.CLASSIFICATION2) && !StringConstants.NULL.equals(jo.get(StringConstants.CLASSIFICATION2))) {
+                            c2 = jo.get(StringConstants.CLASSIFICATION2) + ": ";
                         }
                         String c1 = "";
-                        if (jo.containsKey(StringConstants.CLASSIFICATION1) && !StringConstants.NULL.equals(jo.getString(StringConstants.CLASSIFICATION1))) {
-                            c1 = jo.getString(StringConstants.CLASSIFICATION1) + ": ";
+                        if (jo.containsKey(StringConstants.CLASSIFICATION1) && !StringConstants.NULL.equals(jo.get(StringConstants.CLASSIFICATION1))) {
+                            c1 = jo.get(StringConstants.CLASSIFICATION1) + ": ";
                         }
                         myci.setDescription(c1 + c2 + type);
                         myci.setValue(jo);

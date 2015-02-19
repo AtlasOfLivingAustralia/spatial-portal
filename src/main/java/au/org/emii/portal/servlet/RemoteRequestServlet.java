@@ -58,13 +58,11 @@ import java.util.Map;
 public class RemoteRequestServlet implements HttpRequestHandler {
 
     private static final long serialVersionUID = 1L;
-
-    private byte[] requestBody;
-
     /**
      * Logger instance
      */
     private static final Logger LOGGER = Logger.getLogger(RemoteRequestServlet.class);
+    private byte[] requestBody;
     private List<String> allowedHosts = new ArrayList<String>();
     private Date updatedOn = null;
 

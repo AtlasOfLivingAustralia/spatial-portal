@@ -5,7 +5,7 @@
 
 package au.org.ala.spatial.dto;
 
-import net.sf.json.JSONObject;
+import org.json.simple.JSONObject;
 
 /**
  * @author Adam
@@ -47,7 +47,9 @@ public class ListEntryDTO {
         return displayName;
     }
 
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
     public String getCatagory1() {
         return catagory1;

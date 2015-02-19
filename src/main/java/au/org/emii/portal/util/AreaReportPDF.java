@@ -6,13 +6,16 @@ import au.org.ala.spatial.util.*;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.wms.WMSStyle;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.ala.layers.intersect.SimpleShapeFile;
 import org.ala.layers.legend.Facet;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.awt.*;
 import java.io.*;
@@ -91,6 +94,21 @@ public class AreaReportPDF {
         setProgress("Finished", 1);
     }
 
+    public static void main(String[] args) {
+        Properties p = new Properties();
+        try {
+            p.load(new FileInputStream("/data/webportal/config/webportal-config.properties"));
+            CommonData.init(p);
+        } catch (Exception e) {
+            LOGGER.error("failed to load properties", e);
+        }
+
+        //String wkt = "POLYGON((112.0 -44.0,112.0 -11.0,154.0 -11.0,154.0 -44.0,112.0 -44.0))";
+        String wkt = "POLYGON((149.26687622068 -35.258741390775,149.35579681395 -35.298540090399,149.33657073973 -35.320673151768,149.28404235838 -35.336638814392,149.24559020995 -35.322914136746,149.26687622068 -35.258741390775))";
+
+        new AreaReportPDF(wkt, "My area", null);
+    }
+
     private boolean isCancelled() {
         return progress != null && progress.containsKey("cancel");
     }
@@ -112,21 +130,6 @@ public class AreaReportPDF {
                 progress.put("percent", percent);
             }
         }
-    }
-
-    public static void main(String[] args) {
-        Properties p = new Properties();
-        try {
-            p.load(new FileInputStream("/data/webportal/config/webportal-config.properties"));
-            CommonData.init(p);
-        } catch (Exception e) {
-            LOGGER.error("failed to load properties", e);
-        }
-
-        //String wkt = "POLYGON((112.0 -44.0,112.0 -11.0,154.0 -11.0,154.0 -44.0,112.0 -44.0))";
-        String wkt = "POLYGON((149.26687622068 -35.258741390775,149.35579681395 -35.298540090399,149.33657073973 -35.320673151768,149.28404235838 -35.336638814392,149.24559020995 -35.322914136746,149.26687622068 -35.258741390775))";
-
-        new AreaReportPDF(wkt, "My area", null);
     }
 
     public byte[] getPDF() {
@@ -159,9 +162,10 @@ public class AreaReportPDF {
         try {
             //read data
 
-            JSONObject tabulations = JSONObject.fromObject(FileUtils.readFileToString(new File(filePath + "/tabulations.json"), "UTF-8"));
-            JSONObject csvs = JSONObject.fromObject(FileUtils.readFileToString(new File(filePath + "/csvs.json")));
-            JSONObject counts = JSONObject.fromObject(FileUtils.readFileToString(new File(filePath + "/counts.json"), "UTF-8"));
+            JSONParser jp = new JSONParser();
+            JSONObject tabulations = (JSONObject) jp.parse(FileUtils.readFileToString(new File(filePath + "/tabulations.json"), "UTF-8"));
+            JSONObject csvs = (JSONObject) jp.parse(FileUtils.readFileToString(new File(filePath + "/csvs.json")));
+            JSONObject counts = (JSONObject) jp.parse(FileUtils.readFileToString(new File(filePath + "/counts.json"), "UTF-8"));
 
             //header
             String filename = filePath + "/report.html";
@@ -173,46 +177,46 @@ public class AreaReportPDF {
             fw.write("<table id='dashboard' >");
             fw.write("<tr>");
             fw.write("<td>");
-            fw.write("Area: " + String.format("%s", (counts.getString("Area (sq km)"))) + " sq km");
+            fw.write("Area: " + String.format("%s", (counts.get("Area (sq km)"))) + " sq km");
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Species: " + String.format("%s", (counts.getString("Species"))));
+            fw.write("Species: " + String.format("%s", (counts.get("Species"))));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Occurrences: " + String.format("%s", counts.getString("Occurrences")));
-            fw.write("</td>");
-            fw.write("</tr>");
-            fw.write("<tr>");
-            fw.write("<td>");
-            fw.write("Endemic species: " + String.format("%s", counts.getString("Endemic Species")));
-            fw.write("</td>");
-            fw.write("<td>");
-            fw.write("All threatened species: " + counts.getString("Threatened_Species"));
-            fw.write("</td>");
-            fw.write("<td>");
-            fw.write("Migratory species: " + counts.getString("Migratory_Species"));
+            fw.write("Occurrences: " + String.format("%s", counts.get("Occurrences")));
             fw.write("</td>");
             fw.write("</tr>");
             fw.write("<tr>");
             fw.write("<td>");
-            fw.write("All invasive species: " + counts.getString("Invasive_Species"));
+            fw.write("Endemic species: " + String.format("%s", counts.get("Endemic Species")));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Iconic species: " + counts.getString("Iconic_Species"));
+            fw.write("All threatened species: " + counts.get("Threatened_Species"));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Mammals: " + counts.getString("Mammals"));
+            fw.write("Migratory species: " + counts.get("Migratory_Species"));
             fw.write("</td>");
             fw.write("</tr>");
             fw.write("<tr>");
             fw.write("<td>");
-            fw.write("Animals: " + String.format("%s", counts.getString("Animals")));
+            fw.write("All invasive species: " + counts.get("Invasive_Species"));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Plants: " + String.format("%s", counts.getString("Plants")));
+            fw.write("Iconic species: " + counts.get("Iconic_Species"));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Birds: " + String.format("%s", counts.getString("Birds")));
+            fw.write("Mammals: " + counts.get("Mammals"));
+            fw.write("</td>");
+            fw.write("</tr>");
+            fw.write("<tr>");
+            fw.write("<td>");
+            fw.write("Animals: " + String.format("%s", counts.get("Animals")));
+            fw.write("</td>");
+            fw.write("<td>");
+            fw.write("Plants: " + String.format("%s", counts.get("Plants")));
+            fw.write("</td>");
+            fw.write("<td>");
+            fw.write("Birds: " + String.format("%s", counts.get("Birds")));
             fw.write("</td>");
             fw.write("</tr>");
 
@@ -229,7 +233,7 @@ public class AreaReportPDF {
             int figureNumber = 1;
             int tableNumber = 1;
             mapPage(fw, areaName, figureNumber, tableNumber, "base_area.png",
-                    "Area: <b>" + String.format("%s", counts.getString("Area (sq km)")) + " sq km</b>",
+                    "Area: <b>" + String.format("%s", counts.get("Area (sq km)")) + " sq km</b>",
                     null, null);
             fw.write("</body></html>");
             fw.close();
@@ -249,7 +253,7 @@ public class AreaReportPDF {
                     figureNumber++;
                     mapPage(fw, displayname, figureNumber, tableNumber, shortname + ".png",
                             description,
-                            tabulations.getJSONObject(CommonData.getLayerFacetName(shortname))
+                            (JSONObject) tabulations.get(CommonData.getLayerFacetName(shortname))
                             , geoserver_url.isEmpty() ? null : geoserver_url);
                     fw.write("</body></html>");
                     fw.close();
@@ -272,8 +276,8 @@ public class AreaReportPDF {
             tableNumber++;
 
             //occurrences page
-            int count = Integer.parseInt(counts.getString("Occurrences"));
-            int countKosher = Integer.parseInt(counts.getString("Occurrences (spatially valid only)"));
+            int count = Integer.parseInt(counts.get("Occurrences").toString());
+            int countKosher = Integer.parseInt(counts.get("Occurrences (spatially valid only)").toString());
             String imageUrl = StringConstants.OCCURRENCES + ".png";
             String notes = "Spatially valid records are considered those that do not have any type of flag questioning their location, for example a terrestrial species being recorded in the ocean. [Ref6]";
             speciesPage(true, fw, "My Area", "Occurrences", notes, tableNumber, count, countKosher, figureNumber, imageUrl,
@@ -285,12 +289,12 @@ public class AreaReportPDF {
             fw = startHtmlOut(fileNumber, filename);
 
             //species pages
-            count = Integer.parseInt(counts.getString("Species"));
-            countKosher = Integer.parseInt(counts.getString("Species (spatially valid only)"));
+            count = Integer.parseInt(counts.get("Species").toString());
+            countKosher = Integer.parseInt(counts.get("Species (spatially valid only)").toString());
             imageUrl = null;
             notes = "Spatially valid records are considered those that do not have any type of flag questioning their location, for example a terrestrial species being recorded in the ocean. [Ref6]";
             speciesPage(true, fw, "My Area", "Species", notes, tableNumber, count, countKosher, figureNumber, imageUrl,
-                    csvs.getString("Species"));
+                    csvs.get("Species").toString());
             tableNumber++;
             fw.write("</body></html>");
             fw.close();
@@ -298,11 +302,11 @@ public class AreaReportPDF {
             fw = startHtmlOut(fileNumber, filename);
 
             //threatened species page
-            count = Integer.parseInt(counts.getString("Threatened_Species"));
+            count = Integer.parseInt(counts.get("Threatened_Species").toString());
             imageUrl = "Threatened_Species" + ".png";
             notes = "";
             speciesPage(true, fw, "My Area", "All threatened species", notes, tableNumber, count, -1, figureNumber, imageUrl,
-                    csvs.getString("Threatened_Species"));
+                    csvs.get("Threatened_Species").toString());
             figureNumber++;
             fw.write("</body></html>");
             fw.close();
@@ -310,11 +314,11 @@ public class AreaReportPDF {
             fw = startHtmlOut(fileNumber, filename);
 
             //invasive species page
-            count = Integer.parseInt(counts.getString("Invasive_Species"));
+            count = Integer.parseInt(counts.get("Invasive_Species").toString());
             imageUrl = "Invasive_Species" + ".png";
             notes = "";
             speciesPage(true, fw, "My Area", "All invasive species", notes, tableNumber, count, -1, figureNumber, imageUrl,
-                    csvs.getString("Invasive_Species"));
+                    csvs.get("Invasive_Species").toString());
             figureNumber++;
             fw.write("</body></html>");
             fw.close();
@@ -322,11 +326,11 @@ public class AreaReportPDF {
             fw = startHtmlOut(fileNumber, filename);
 
             //iconic species page
-            count = Integer.parseInt(counts.getString("Iconic_Species"));
+            count = Integer.parseInt(counts.get("Iconic_Species").toString());
             imageUrl = "Iconic_Species" + ".png";
             notes = "";
             speciesPage(true, fw, "My Area", "Iconic species", notes, tableNumber, count, -1, figureNumber, imageUrl,
-                    csvs.getString("Iconic_Species"));
+                    csvs.get("Iconic_Species").toString());
             figureNumber++;
             fw.write("</body></html>");
             fw.close();
@@ -334,11 +338,11 @@ public class AreaReportPDF {
             fw = startHtmlOut(fileNumber, filename);
 
             //migratory species page
-            count = Integer.parseInt(counts.getString("Migratory_Species"));
+            count = Integer.parseInt(counts.get("Migratory_Species").toString());
             imageUrl = "Migratory_Species" + ".png";
             notes = "";
             speciesPage(true, fw, "My Area", "Migratory species", notes, tableNumber, count, -1, figureNumber, imageUrl,
-                    csvs.getString("Migratory_Species"));
+                    csvs.get("Migratory_Species").toString());
             figureNumber++;
             fw.write("</body></html>");
             fw.close();
@@ -347,10 +351,10 @@ public class AreaReportPDF {
 
             for (int i = 0; i < SPECIES_GROUPS.length; i++) {
                 String s = SPECIES_GROUPS[i];
-                count = Integer.parseInt(counts.getString(s));
-                countKosher = Integer.parseInt(counts.getString(s + " (spatially valid only)"));
+                count = Integer.parseInt(counts.get(s).toString());
+                countKosher = Integer.parseInt(counts.get(s + " (spatially valid only)").toString());
                 speciesPage(true, fw, "My Area", "lifeform - " + s, notes, tableNumber, count, countKosher, figureNumber,
-                        "lifeform - " + s + ".png", csvs.getString(s));
+                        "lifeform - " + s + ".png", csvs.get(s).toString());
                 tableNumber++;
                 figureNumber++;
                 fw.write("</body></html>");
@@ -360,16 +364,16 @@ public class AreaReportPDF {
             }
 
             //expert distributions
-            count = Integer.parseInt(counts.getString("Distribution Areas"));
+            count = Integer.parseInt(counts.get("Distribution Areas").toString());
             speciesPage(false, fw, "My Area", "Expert Distributions", notes, tableNumber,
-                    count, -1, figureNumber, null, csvs.getString(StringConstants.DISTRIBUTIONS));
+                    count, -1, figureNumber, null, csvs.get(StringConstants.DISTRIBUTIONS).toString());
             fw.write("</body></html>");
             fw.close();
             fileNumber++;
             fw = startHtmlOut(fileNumber, filename);
-            count = Integer.parseInt(counts.getString("Checklist Areas"));
+            count = Integer.parseInt(counts.get("Checklist Areas").toString());
             speciesPage(false, fw, "My Area", "Checklist Areas", notes, tableNumber,
-                    count, -1, figureNumber, null, csvs.getString(StringConstants.CHECKLISTS));
+                    count, -1, figureNumber, null, csvs.get(StringConstants.CHECKLISTS).toString());
             fw.write("</body></html>");
             fw.close();
             fileNumber++;
@@ -543,9 +547,9 @@ public class AreaReportPDF {
         //tabulation table
         if (tabulation != null && tabulation.containsKey("tabulationList")) {
             double totalArea = 0;
-            for (Object o : tabulation.getJSONArray("tabulationList")) {
+            for (Object o : (JSONArray) tabulation.get("tabulationList")) {
                 JSONObject jo = (JSONObject) o;
-                totalArea += Double.parseDouble(jo.getString("area")) / 1000000.0;
+                totalArea += Double.parseDouble(jo.get("area").toString()) / 1000000.0;
             }
 
             if (totalArea > 0) {
@@ -554,14 +558,14 @@ public class AreaReportPDF {
                 fw.write("</td></tr><tr><td>");
                 fw.write("<br /><table id='table'><tr><td>Class/Region</td><td>Area (sq km)</td><td>% of total area</td></tr>");
 
-                for (Object o : tabulation.getJSONArray("tabulationList")) {
+                for (Object o : (JSONArray) tabulation.get("tabulationList")) {
                     JSONObject jo = (JSONObject) o;
                     fw.write("<tr><td>");
-                    fw.write(jo.getString("name1"));
+                    fw.write(jo.get("name1").toString());
                     fw.write("</td><td>");
-                    fw.write(String.format("%.2f", Double.parseDouble(jo.getString("area")) / 1000000.0));
+                    fw.write(String.format("%.2f", Double.parseDouble(jo.get("area").toString()) / 1000000.0));
                     fw.write("</td><td>");
-                    fw.write(String.format("%.2f", Double.parseDouble(jo.getString("area")) / 1000000.0 / totalArea * 100));
+                    fw.write(String.format("%.2f", Double.parseDouble(jo.get("area").toString()) / 1000000.0 / totalArea * 100));
                     fw.write("</td></tr>");
                 }
 
@@ -699,15 +703,15 @@ public class AreaReportPDF {
         if (isCancelled()) return;
         try {
             FileWriter fw = new FileWriter(filePath + File.separator + "counts.json");
-            fw.write(JSONObject.fromObject(counts).toString());
+            fw.write(JSONValue.toJSONString(counts));
             fw.close();
 
             fw = new FileWriter(filePath + File.separator + "tabulations.json");
-            fw.write(JSONObject.fromObject(tabulation).toString());
+            fw.write(JSONValue.toJSONString(tabulation));
             fw.close();
 
             fw = new FileWriter(filePath + File.separator + "csvs.json");
-            fw.write(JSONObject.fromObject(csvs).toString());
+            fw.write(JSONValue.toJSONString(csvs));
             fw.close();
 
             FileUtils.copyURLToFile(new URL(CommonData.getWebportalServer() + "/area-report/toc.xsl"),
@@ -724,7 +728,8 @@ public class AreaReportPDF {
             @Override
             public Object call() throws Exception {
                 try {
-                    tabulation.put(fid, JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/tabulation/" + fid + "/" + areaPid + ".json")));
+                    JSONParser jp = new JSONParser();
+                    tabulation.put(fid, jp.parse(Util.readUrl(CommonData.getLayersServer() + "/tabulation/" + fid + "/" + areaPid + ".json")));
                 } catch (Exception e) {
                     LOGGER.error("failed tabulation: fid=" + fid + ", areaPid=" + areaPid);
                 }
@@ -1039,13 +1044,13 @@ public class AreaReportPDF {
         String metadata = "";
         JSONArray layerlist = CommonData.getLayerListJSONArray();
         for (int j = 0; j < layerlist.size(); j++) {
-            JSONObject jo = layerlist.getJSONObject(j);
-            String name = jo.getString(StringConstants.NAME);
+            JSONObject jo = (JSONObject) layerlist.get(j);
+            String name = jo.get(StringConstants.NAME).toString();
             if (name.equals(layerName)) {
-                uid = jo.getString(StringConstants.ID);
-                type = jo.getString(StringConstants.TYPE);
-                treeName = StringUtils.capitalize(jo.getString(StringConstants.DISPLAYNAME));
-                treePath = jo.getString("displaypath");
+                uid = jo.get(StringConstants.ID).toString();
+                type = jo.get(StringConstants.TYPE).toString();
+                treeName = StringUtils.capitalize(jo.get(StringConstants.DISPLAYNAME).toString());
+                treePath = jo.get("displaypath").toString();
                 legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + layerName;
                 metadata = CommonData.getLayersServer() + "/layers/view/more/" + uid;
                 break;
@@ -1074,14 +1079,20 @@ public class AreaReportPDF {
 
     public MapLayer addObjectByPid(String pid, int red, int green, int blue, float opacity) {
 
-        JSONObject obj = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/object/" + pid));
+        JSONParser jp = new JSONParser();
+        JSONObject obj = null;
+        try {
+            obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + pid));
+        } catch (ParseException e) {
+            LOGGER.error("failed to parse for object: " + pid);
+        }
         //add feature to the map as a new layer
-        MapLayer mapLayer = addWMSLayer("PID:" + pid, "", obj.getString(StringConstants.WMSURL), opacity, null, null, LayerUtilitiesImpl.WKT, null, null, null);
+        MapLayer mapLayer = addWMSLayer("PID:" + pid, "", obj.get(StringConstants.WMSURL).toString(), opacity, null, null, LayerUtilitiesImpl.WKT, null, null, null);
 
         mapLayer.setPolygonLayer(true);
 
         //if the layer is a point create a radius
-        String bbox = obj.getString(StringConstants.BBOX);
+        String bbox = obj.get(StringConstants.BBOX).toString();
         MapLayerMetadata md = mapLayer.getMapLayerMetadata();
 
         try {

@@ -9,10 +9,10 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.util.GeometryCombiner;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.ala.layers.legend.Facet;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
@@ -64,12 +64,12 @@ public class AreaMerge extends AreaToolComposer {
                     JSONArray ja = CommonData.getLayerListJSONArray();
                     for (int j = 0; j < ja.size() && !isGrid; j++) {
                         JSONObject jo = (JSONObject) ja.get(j);
-                        if (jo.getString(StringConstants.ID).equalsIgnoreCase(fid) && jo.containsKey(StringConstants.FIELDS)) {
-                            JSONArray fields = jo.getJSONArray(StringConstants.FIELDS);
+                        if (jo.get(StringConstants.ID).toString().equalsIgnoreCase(fid) && jo.containsKey(StringConstants.FIELDS)) {
+                            JSONArray fields = (JSONArray) jo.get(StringConstants.FIELDS);
                             for (int k = 0; k < fields.size() && !isGrid; k++) {
-                                JSONObject field = fields.getJSONObject(k);
-                                if ("a".equalsIgnoreCase(field.getString(StringConstants.TYPE)) ||
-                                        "b".equalsIgnoreCase(field.getString(StringConstants.TYPE))) {
+                                JSONObject field = (JSONObject) fields.get(k);
+                                if ("a".equalsIgnoreCase(field.get(StringConstants.TYPE).toString()) ||
+                                        "b".equalsIgnoreCase(field.get(StringConstants.TYPE).toString())) {
                                     isGrid = true;
                                 }
                             }

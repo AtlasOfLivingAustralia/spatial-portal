@@ -3,23 +3,23 @@ package au.org.ala.spatial.util;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.dto.SpeciesListDTO;
 import au.org.ala.spatial.dto.SpeciesListItemDTO;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import net.sf.json.util.PropertySetStrategy;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.zkoss.json.JSONValue;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,7 +41,7 @@ public class SpeciesListUtil {
         //TO DO retrive from lists.ala.org.au
         JSONObject jobject = getLists(user, 0, 0, null, null, null);
         if (jobject != null) {
-            return jobject.getInt("listCount");
+            return Integer.parseInt(jobject.get("listCount").toString());
         } else {
             return 0;
         }
@@ -90,8 +90,8 @@ public class SpeciesListUtil {
             int result = client.executeMethod(get);
             if (result == 200) {
                 String rawJSON = get.getResponseBodyAsString();
-
-                return JSONObject.fromObject(rawJSON);
+                JSONParser jp = new JSONParser();
+                return (JSONObject) jp.parse(rawJSON);
             } else {
                 LOGGER.error("Unable to retrieve species list. " + result + " > " + get.getResponseBodyAsString());
             }
@@ -111,14 +111,26 @@ public class SpeciesListUtil {
      */
     public static Collection getPublicSpeciesLists(String user, Integer offset, Integer max, String sort, String order, String searchTerm, MutableInt listSize) {
         JSONObject jobject = getLists(user, offset, max, sort, order, searchTerm);
-        JsonConfig cfg = new JsonConfig();
-        if (listSize != null) {
-            listSize.setValue(jobject.getInt("listCount"));
-        }
-        cfg.setPropertySetStrategy(new IgnoreUnknownPropsStrategyWrapper(PropertySetStrategy.DEFAULT));
-        cfg.setRootClass(SpeciesListDTO.class);
-        return JSONArray.toCollection(jobject.getJSONArray("lists"), cfg);
+        JSONArray ja = (JSONArray) jobject.get("lists");
+        List list = new ArrayList<SpeciesListDTO>();
 
+        for (int i = 0; i < ja.size(); i++) {
+            JSONObject jo = (JSONObject) ja.get(i);
+            SpeciesListDTO sli = new SpeciesListDTO();
+            if (jo.containsKey("dataResourceUid")) sli.setDataResourceUid(jo.get("dataResourceUid").toString());
+            if (jo.containsKey("dateCreated")) sli.setDateCreated(jo.get("dateCreated").toString());
+            if (jo.containsKey("firstName")) sli.setFirstName(jo.get("firstName").toString());
+            if (jo.containsKey("fullName")) sli.setFullName(jo.get("fullName").toString());
+            if (jo.containsKey("itemCount")) sli.setItemCount(Integer.parseInt(jo.get("itemCount").toString()));
+            if (jo.containsKey("listName")) sli.setListName(jo.get("listName").toString());
+            if (jo.containsKey("listType")) sli.setListType(jo.get("listType").toString());
+            if (jo.containsKey("surname")) sli.setSurname(jo.get("surname").toString());
+            if (jo.containsKey("username")) sli.setUsername(jo.get("username").toString());
+
+            list.add(sli);
+        }
+
+        return list;
     }
 
     /**
@@ -139,7 +151,20 @@ public class SpeciesListUtil {
             if (result == 200) {
                 String rawJSON = get.getResponseBodyAsString();
 
-                return JSONArray.toCollection(JSONArray.fromObject(rawJSON), SpeciesListItemDTO.class);
+                JSONParser jp = new JSONParser();
+                JSONArray ja = (JSONArray) jp.parse(rawJSON);
+                List list = new ArrayList<SpeciesListItemDTO>();
+
+                for (int i = 0; i < ja.size(); i++) {
+                    JSONObject jo = (JSONObject) ja.get(i);
+                    SpeciesListItemDTO sli = new SpeciesListItemDTO();
+                    if (jo.containsKey("lsid")) sli.setLsid(jo.get("lsid").toString());
+                    if (jo.containsKey("name")) sli.setName(jo.get("name").toString());
+
+                    list.add(sli);
+                }
+
+                return list;
             } else {
                 LOGGER.error("Unable to retrieve species list items for " + listUid + ". " + result + " > " + get.getResponseBodyAsString());
             }
@@ -177,7 +202,8 @@ public class SpeciesListUtil {
                 map.put("listItems", items);
                 map.put("listType", "SPATIAL_PORTAL");
                 map.put("isPrivate", makePrivate);
-                String content = JSONObject.fromObject(map).toString();
+
+                String content = JSONValue.toJSONString(map);
                 LOGGER.debug("create new list : " + content + " for user " + user);
                 String contentType = StringConstants.APPLICATION_JSON;
                 String charset = StringConstants.UTF_8;
@@ -220,23 +246,5 @@ public class SpeciesListUtil {
             LOGGER.debug("Cached lists: " + tmpMap);
         }
         speciesListMap = tmpMap;
-    }
-
-    public static class IgnoreUnknownPropsStrategyWrapper extends PropertySetStrategy {
-
-        private PropertySetStrategy original;
-
-        public IgnoreUnknownPropsStrategyWrapper(PropertySetStrategy original) {
-            this.original = original;
-        }
-
-        @Override
-        public void setProperty(Object o, String string, Object o1) {
-            try {
-                original.setProperty(o, string, o1);
-            } catch (JSONException ex) {
-                //ignore
-            }
-        }
     }
 }

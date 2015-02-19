@@ -192,6 +192,7 @@ public class ConfigurationLoaderStage1Impl implements ConfigurationLoaderStage1 
     public boolean isError() {
         return error;
     }
+
     public void setPortalDocumentFactory(PortalDocumentFactory portalDocumentFactory) {
         this.portalDocumentFactory = portalDocumentFactory;
     }

@@ -8,7 +8,6 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.util.PortalSessionUtilities;
-import au.org.emii.portal.util.RemoteMap;
 import au.org.emii.portal.value.BoundingBox;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;

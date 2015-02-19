@@ -9,10 +9,11 @@ import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.UtilityComposer;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.*;
@@ -76,10 +77,10 @@ public class ProgressController extends UtilityComposer {
         }
 
         if (jo.containsKey(StringConstants.STATUS)) {
-            jobstatus.setValue(jo.getString(StringConstants.STATUS));
+            jobstatus.setValue(jo.get(StringConstants.STATUS).toString());
         }
 
-        String s = jo.getString(StringConstants.STATE);
+        String s = jo.get(StringConstants.STATE).toString();
         if (StringConstants.JOB_DOES_NOT_EXIST.equals(s)) {
             timer.stop();
             getMapComposer().showMessage(name + " request does not exist", "");
@@ -87,7 +88,7 @@ public class ProgressController extends UtilityComposer {
             return;
         }
 
-        String p = jo.getString(StringConstants.PROGRESS);
+        String p = jo.get(StringConstants.PROGRESS).toString();
         try {
             double d = Double.parseDouble(p);
             jobprogress.setValue((int) (d * 100));
@@ -95,7 +96,7 @@ public class ProgressController extends UtilityComposer {
             LOGGER.error("failed to parse progress %: " + p);
         }
 
-        String l = jo.getString("log");
+        String l = jo.get("log").toString();
         if (l != null) {
             this.log = reverseLines(l) + this.log;
             if (txtLog != null) {
@@ -112,7 +113,7 @@ public class ProgressController extends UtilityComposer {
             this.detach();
         } else if (s.startsWith(StringConstants.FAILED)) {
             timer.stop();
-            String errorInfo = jo.getString("message");
+            String errorInfo = jo.get("message").toString();
             if (!StringConstants.JOB_DOES_NOT_EXIST.equals(errorInfo)) {
                 errorInfo = " with the following message: \n\n" + Util.breakString(errorInfo, 64);
             } else {
@@ -145,7 +146,8 @@ public class ProgressController extends UtilityComposer {
             int result = client.executeMethod(get);
 
             if (result == 200) {
-                return JSONObject.fromObject(get.getResponseBodyAsString());
+                JSONParser jp = new JSONParser();
+                return (JSONObject) jp.parse(get.getResponseBodyAsString());
             }
         } catch (SocketTimeoutException e) {
             LOGGER.debug("progress timeout exception, will be trying again.");

@@ -8,10 +8,12 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.ala.layers.legend.Facet;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
@@ -125,8 +127,7 @@ public class AreaMapPolygon extends AreaToolComposer {
         LOGGER.debug("CommonData.getLayerList");
         LOGGER.debug("*************************************");
 
-        Object llist = CommonData.getLayerListJSONArray();
-        JSONArray layerlist = JSONArray.fromObject(llist);
+        JSONArray layerlist = CommonData.getLayerListJSONArray();
         MapComposer mc = getMapComposer();
 
         List<MapLayer> activeLayers = getPortalSession().getActiveLayers();
@@ -141,11 +142,11 @@ public class AreaMapPolygon extends AreaToolComposer {
             LOGGER.debug("ACTIVE LAYER: " + activeLayerName);
             if (ml.isDisplayed()) {
                 for (int j = 0; j < layerlist.size() && !searchComplete; j++) {
-                    JSONObject jo = layerlist.getJSONObject(j);
-                    if (jo.getString(StringConstants.TYPE) != null
-                            && jo.getString(StringConstants.TYPE).length() > 0
-                            && StringConstants.CONTEXTUAL.equalsIgnoreCase(jo.getString(StringConstants.TYPE))
-                            && jo.getString(StringConstants.NAME).equalsIgnoreCase(activeLayerName)) {
+                    JSONObject jo = (JSONObject) layerlist.get(j);
+                    if (jo.get(StringConstants.TYPE) != null
+                            && jo.get(StringConstants.TYPE).toString().length() > 0
+                            && StringConstants.CONTEXTUAL.equalsIgnoreCase(jo.get(StringConstants.TYPE).toString())
+                            && jo.get(StringConstants.NAME).toString().equalsIgnoreCase(activeLayerName)) {
 
                         LOGGER.debug(ml.getName());
                         Map<String, String> feature = GazetteerPointSearch.pointSearch(lon, lat, activeLayerName, CommonData.getGeoServer());
@@ -159,19 +160,24 @@ public class AreaMapPolygon extends AreaToolComposer {
                         //***
 
                         //add feature to the map as a new layer
-                        JSONObject obj;
-                        obj = JSONObject.fromObject(readUrl(CommonData.getLayersServer() + "/object/" + feature.get(StringConstants.PID)));
+                        JSONObject obj = null;
+                        JSONParser jp = new JSONParser();
+                        try {
+                            obj = (JSONObject) jp.parse(readUrl(CommonData.getLayersServer() + "/object/" + feature.get(StringConstants.PID)));
+                        } catch (ParseException e) {
+                            LOGGER.error("failed to parse object: " + feature.get(StringConstants.PID));
+                        }
 
                         searchComplete = true;
-                        displayGeom.setValue("layer: " + jo.getString(StringConstants.DISPLAYNAME) + "\r\n"
-                                + "area: " + obj.getString(StringConstants.NAME));
+                        displayGeom.setValue("layer: " + jo.get(StringConstants.DISPLAYNAME) + "\r\n"
+                                + "area: " + obj.get(StringConstants.NAME));
 
                         LOGGER.debug("setting layerName from " + layerName);
                         layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
                         LOGGER.debug("to " + layerName);
                         MapLayer mapLayer;
 
-                        String url = obj.getString(StringConstants.WMSURL);
+                        String url = obj.get(StringConstants.WMSURL).toString();
                         mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(txtLayerName.getValue()), txtLayerName.getValue(), url, 0.6f, /*metadata url*/ null,
                                 null, LayerUtilitiesImpl.WKT, null, null);
 
@@ -186,7 +192,12 @@ public class AreaMapPolygon extends AreaToolComposer {
 
                         mapLayer.setPolygonLayer(true);
 
-                        JSONObject objJson = JSONObject.fromObject(readUrl(CommonData.getLayersServer() + "/object/" + feature.get(StringConstants.PID)));
+                        JSONObject objJson = null;
+                        try {
+                            objJson = (JSONObject) jp.parse(readUrl(CommonData.getLayersServer() + "/object/" + feature.get(StringConstants.PID)));
+                        } catch (ParseException e) {
+                            LOGGER.error("failed to parse for object: " + feature.get(StringConstants.PID));
+                        }
 
                         Facet facet = null;
                         //only get field data if it is an intersected layer (to exclude layers containing points)
@@ -207,7 +218,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                         MapLayerMetadata md = mapLayer.getMapLayerMetadata();
                         String bbString = "";
                         try {
-                            bbString = objJson.getString(StringConstants.BBOX);
+                            bbString = objJson.get(StringConstants.BBOX).toString();
                             bbString = bbString.replace(StringConstants.POLYGON + "((", "").replace("))", "").replace(",", " ");
                             String[] split = bbString.split(" ");
                             List<Double> bbox = new ArrayList<Double>();
@@ -222,7 +233,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                             LOGGER.debug("failed to parse: " + bbString, e);
                         }
                         try {
-                            md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + jo.getString("spid"));
+                            md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + jo.get("spid"));
                         } catch (Exception e) {
                             LOGGER.error("error setting map layer moreInfo: " + (jo != null ? jo.toString() : "jo is null"), e);
                         }

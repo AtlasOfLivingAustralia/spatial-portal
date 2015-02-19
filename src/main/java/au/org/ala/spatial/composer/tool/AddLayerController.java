@@ -7,10 +7,10 @@ package au.org.ala.spatial.composer.tool;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.zkoss.zk.ui.event.Event;
 
 /**
@@ -62,13 +62,13 @@ public class AddLayerController extends ToolComposer {
                 String metadata = "";
                 JSONArray layerlist = CommonData.getLayerListJSONArray();
                 for (int j = 0; j < layerlist.size(); j++) {
-                    JSONObject jo = layerlist.getJSONObject(j);
-                    String name = jo.getString(StringConstants.NAME);
+                    JSONObject jo = (JSONObject) layerlist.get(j);
+                    String name = jo.get(StringConstants.NAME).toString();
                     if (name.equals(s)) {
-                        uid = jo.getString(StringConstants.ID);
-                        type = jo.getString(StringConstants.TYPE);
-                        treeName = StringUtils.capitalize(jo.getString(StringConstants.DISPLAYNAME));
-                        treePath = jo.getString("displaypath");
+                        uid = jo.get(StringConstants.ID).toString();
+                        type = jo.get(StringConstants.TYPE).toString();
+                        treeName = StringUtils.capitalize(jo.get(StringConstants.DISPLAYNAME).toString());
+                        treePath = jo.get("displaypath").toString();
                         legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
                         metadata = CommonData.getLayersServer() + "/layers/view/more/" + uid;
                         break;
@@ -89,10 +89,10 @@ public class AddLayerController extends ToolComposer {
         try {
             JSONArray layerlist = CommonData.getLayerListJSONArray();
             for (int j = 0; j < layerlist.size(); j++) {
-                JSONObject jo = layerlist.getJSONObject(j);
-                String n = jo.getString(StringConstants.NAME);
+                JSONObject jo = (JSONObject) layerlist.get(j);
+                String n = jo.get(StringConstants.NAME).toString();
                 if (name.equals(n)) {
-                    uid = jo.getString(StringConstants.ID);
+                    uid = jo.get(StringConstants.ID).toString();
                     LOGGER.debug("id=" + uid);
                     break;
                 }

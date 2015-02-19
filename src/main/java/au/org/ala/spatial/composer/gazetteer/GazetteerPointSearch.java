@@ -2,11 +2,12 @@ package au.org.ala.spatial.composer.gazetteer;
 
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,14 +46,15 @@ public final class GazetteerPointSearch {
             LOGGER.debug("result: " + result);
             LOGGER.debug("slist: " + slist);
 
-            JSONArray ja = JSONArray.fromObject(slist);
+            JSONParser jp = new JSONParser();
+            JSONArray ja = (JSONArray) jp.parse(slist);
 
             if (ja != null && !ja.isEmpty()) {
-                JSONObject jo = ja.getJSONObject(0);
+                JSONObject jo = (JSONObject) ja.get(0);
 
                 Map<String, String> map = new HashMap<String, String>();
                 for (Object k : jo.keySet()) {
-                    map.put((String) k, jo.getString((String) k));
+                    map.put((String) k, jo.get((String) k).toString());
                 }
 
                 return map;

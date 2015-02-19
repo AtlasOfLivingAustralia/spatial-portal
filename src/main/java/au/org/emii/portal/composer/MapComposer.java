@@ -33,8 +33,6 @@ import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.persistence.FilePersistenceStrategy;
 import com.thoughtworks.xstream.persistence.PersistenceStrategy;
 import com.thoughtworks.xstream.persistence.XmlArrayList;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.ala.layers.intersect.SimpleShapeFile;
 import org.ala.layers.legend.Facet;
 import org.ala.layers.legend.LegendObject;
@@ -44,6 +42,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.*;
 import org.zkoss.zk.ui.event.Event;
@@ -416,8 +418,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     sbContent.append("            <option value=''>-- select a reason --</option>");
                     JSONArray dlreasons = CommonData.getDownloadReasons();
                     for (int i = 0; i < dlreasons.size(); i++) {
-                        JSONObject dlr = dlreasons.getJSONObject(i);
-                        sbContent.append("            <option value='").append(dlr.getInt(StringConstants.ID)).append("'>").append(dlr.getString(StringConstants.NAME)).append("</option>");
+                        JSONObject dlr = (JSONObject) dlreasons.get(i);
+                        sbContent.append("            <option value='").append((Long) dlr.get(StringConstants.ID)).append("'>").append(dlr.get(StringConstants.NAME)).append("</option>");
                     }
                     sbContent.append("            <select></p>");
                     sbContent.append("                    <input style='display:none' type='radio' name='downloadType' value='fast' class='tooltip' checked='checked' title='Faster download but fewer fields are included'>");
@@ -831,12 +833,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @param pid
      */
     public MapLayer addObjectByPid(String pid, String displayName) {
+        JSONParser jp = new JSONParser();
 
-        JSONObject obj = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/object/" + pid));
+        JSONObject obj = null;
+        try {
+            obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + pid));
+        } catch (ParseException e) {
+            LOGGER.error("failed to parse for object: " + pid);
+        }
         //add feature to the map as a new layer
-        String areaName = obj.getString(StringConstants.NAME);
+        String areaName = obj.get(StringConstants.NAME).toString();
         MapLayer mapLayer = getMapComposer().addWMSLayer("PID:" + pid, displayName == null ? areaName : displayName
-                , obj.getString(StringConstants.WMSURL), 0.6f, null, null, LayerUtilitiesImpl.WKT, null, null);
+                , obj.get(StringConstants.WMSURL).toString(), 0.6f, null, null, LayerUtilitiesImpl.WKT, null, null);
         if (mapLayer == null) {
             return null;
         }
@@ -844,17 +852,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         //if the layer is a point create a radius
 
-        String bbox = obj.getString(StringConstants.BBOX);
-        String fid = obj.getString(StringConstants.FID);
+        String bbox = obj.get(StringConstants.BBOX).toString();
+        String fid = obj.get(StringConstants.FID).toString();
 
         MapLayerMetadata md = mapLayer.getMapLayerMetadata();
 
         Facet facet = null;
         if (CommonData.getLayer(fid) != null && CommonData.getFacetLayerNameDefault(fid) != null) {
-            JSONObject field = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/field/" + fid + "?pageSize=0"));
+            JSONObject field = null;
+            try {
+                field = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/field/" + fid + "?pageSize=0"));
+            } catch (ParseException e) {
+                LOGGER.error("failed to parse for field: " + fid);
+            }
 
-            if (field.containsKey("indb") && StringConstants.TRUE.equalsIgnoreCase(field.getString("indb"))) {
-                String spid = field.getString("spid");
+            if (field.containsKey("indb") && StringConstants.TRUE.equalsIgnoreCase(field.get("indb").toString())) {
+                String spid = field.get("spid").toString();
                 md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + spid);
 
                 facet = Util.getFacetForObject(areaName, fid);
@@ -1230,13 +1243,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             for (String s : layers) {
                 JSONArray layerlist = CommonData.getLayerListJSONArray();
                 for (int j = 0; j < layerlist.size(); j++) {
-                    JSONObject jo = layerlist.getJSONObject(j);
-                    String name = jo.getString(StringConstants.NAME);
+                    JSONObject jo = (JSONObject) layerlist.get(j);
+                    String name = jo.get(StringConstants.NAME).toString();
                     if (name.equalsIgnoreCase(s)) {
-                        String uid = jo.getString(StringConstants.ID);
-                        String type = jo.getString(StringConstants.TYPE);
-                        String treeName = StringUtils.capitalize(jo.getString(StringConstants.DISPLAYNAME));
-                        String treePath = jo.getString("displaypath");
+                        String uid = jo.get(StringConstants.ID).toString();
+                        String type = jo.get(StringConstants.TYPE).toString();
+                        String treeName = StringUtils.capitalize(jo.get(StringConstants.DISPLAYNAME).toString());
+                        String treePath = jo.get("displaypath").toString();
                         String legendurl = CommonData.getGeoServer()
                                 + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
                         String metadata = CommonData.getLayersServer() + "/layers/view/more/" + uid;
@@ -1800,19 +1813,24 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsids);
         String[] spcode = CommonData.getSpeciesDistributionSpcode(lsids);
         MapLayer ml;
+        JSONParser jp = new JSONParser();
         if (wmsNames.length > 0 && (newWkt == null || newWkt.equals(CommonData.WORLD_WKT))) {
             //add all
             for (int i = 0; i < wmsNames.length; i++) {
                 if (getMapLayerWMS(wmsNames[i]) == null) {
                     //map this layer with its recorded scientific name
-                    String scientific = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer()
-                            + "/distribution/" + spcode[i])).getString(StringConstants.SCIENTIFIC);
-                    String layerName = getNextAreaLayerName(scientific);
-                    String html = Util.getMetadataHtmlForDistributionOrChecklist(spcode[i], null, layerName);
-                    ml = addWMSLayer(layerName, getNextAreaLayerName("Expert distribution: " + scientific)
-                            , wmsNames[i], 0.35f, html, null, LayerUtilitiesImpl.WKT, null, null);
-                    ml.setSPCode(spcode[i]);
-                    setupMapLayerAsDistributionArea(ml);
+                    try {
+                        String scientific = ((JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer()
+                                + "/distribution/" + spcode[i]))).get(StringConstants.SCIENTIFIC).toString();
+                        String layerName = getNextAreaLayerName(scientific);
+                        String html = Util.getMetadataHtmlForDistributionOrChecklist(spcode[i], null, layerName);
+                        ml = addWMSLayer(layerName, getNextAreaLayerName("Expert distribution: " + scientific)
+                                , wmsNames[i], 0.35f, html, null, LayerUtilitiesImpl.WKT, null, null);
+                        ml.setSPCode(spcode[i]);
+                        setupMapLayerAsDistributionArea(ml);
+                    } catch (Exception e) {
+                        LOGGER.error("failed to parse for distribution: " + spcode[i]);
+                    }
                 }
             }
         } else if (wmsNames.length > 0 && newWkt != null && !newWkt.equals(CommonData.WORLD_WKT)) {
@@ -1826,18 +1844,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 int result = client.executeMethod(post);
                 if (result == 200) {
                     String txt = post.getResponseBodyAsString();
-                    JSONArray ja = JSONArray.fromObject(txt);
+
+                    JSONArray ja = (JSONArray) jp.parse(txt);
                     List<String> found = new ArrayList();
                     for (int i = 0; i < ja.size(); i++) {
-                        JSONObject jo = ja.getJSONObject(i);
+                        JSONObject jo = (JSONObject) ja.get(i);
                         if (jo.containsKey(StringConstants.WMSURL)) {
-                            found.add(jo.getString(StringConstants.WMSURL));
+                            found.add(jo.get(StringConstants.WMSURL).toString());
                         }
                     }
                     for (int i = 0; i < wmsNames.length; i++) {
                         if (getMapLayerWMS(wmsNames[i]) == null) {
-                            String scientific = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer()
-                                    + "/distribution/" + spcode[i])).getString(StringConstants.SCIENTIFIC);
+
+                            String scientific = ((JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer()
+                                    + "/distribution/" + spcode[i]))).get(StringConstants.SCIENTIFIC).toString();
                             String layerName = getNextAreaLayerName(scientific + " area " + (i + 1));
                             String html = Util.getMetadataHtmlForDistributionOrChecklist(spcode[i], null, layerName);
                             ml = addWMSLayer(layerName, getNextAreaLayerName("Expert distribution: " + scientific)
@@ -1981,21 +2001,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 LOGGER.debug("******** failed to find wkt for " + mapLayer.getUri() + " > " + spcode);
                 return;
             }
-            JSONObject jo = JSONObject.fromObject(jsontxt);
+            JSONParser jp = new JSONParser();
+            JSONObject jo = (JSONObject) jp.parse(jsontxt);
             if (!jo.containsKey(StringConstants.GEOMETRY)) {
                 return;
             }
-            mapLayer.setWKT(jo.getString(StringConstants.GEOMETRY));
+            mapLayer.setWKT(jo.get(StringConstants.GEOMETRY).toString());
             mapLayer.setPolygonLayer(true);
 
             Facet facet = null;
             if (jo.containsKey(StringConstants.PID) && jo.containsKey(StringConstants.AREA_NAME)) {
-                JSONObject object = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/object/"
+                JSONObject object = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/"
                         + jo.containsKey(StringConstants.PID)));
 
                 //only get field data if it is an intersected layer (to exclude layers containing points)
                 if (CommonData.getLayer((String) object.get(StringConstants.FID)) != null) {
-                    facet = Util.getFacetForObject(jo.getString(StringConstants.AREA_NAME)
+                    facet = Util.getFacetForObject(jo.get(StringConstants.AREA_NAME).toString()
                             , (String) object.get(StringConstants.FID));
                 }
             }
@@ -2010,9 +2031,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 double[][] bb;
 
                 if (jo.containsKey("bounding_box")) {
-                    bb = SimpleShapeFile.parseWKT(jo.getString("bounding_box")).getBoundingBox();
+                    bb = SimpleShapeFile.parseWKT(jo.get("bounding_box").toString()).getBoundingBox();
                 } else {
-                    bb = SimpleShapeFile.parseWKT(jo.getString(StringConstants.GEOMETRY)).getBoundingBox();
+                    bb = SimpleShapeFile.parseWKT(jo.get(StringConstants.GEOMETRY).toString()).getBoundingBox();
                 }
                 List<Double> bbox = new ArrayList<Double>();
                 bbox.add(bb[0][0]);

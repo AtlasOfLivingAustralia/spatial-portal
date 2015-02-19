@@ -11,11 +11,13 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import net.sf.json.JSONObject;
 import org.ala.layers.intersect.SimpleRegion;
 import org.ala.layers.intersect.SimpleShapeFile;
 import org.ala.layers.legend.Facet;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.*;
 
@@ -47,14 +49,20 @@ public class AreaRegionSelection extends AreaToolComposer {
         }
 
         JSONObject jo = ci.getValue();
-        JSONObject obj = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/object/" + jo.getString(StringConstants.PID)));
+        JSONParser jp = new JSONParser();
+        JSONObject obj = null;
+        try {
+            obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + jo.get(StringConstants.PID)));
+        } catch (ParseException e) {
+            LOGGER.error("failed to parse for object: " + jo.get(StringConstants.PID));
+        }
 
         String label = ci.getLabel();
 
         //add feature to the map as a new layer
         MapLayer mapLayer;
-        LOGGER.debug(label + " | " + obj.getString(StringConstants.WMSURL));
-        mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, obj.getString(StringConstants.WMSURL), 0.6f, /*metadata url*/ null,
+        LOGGER.debug(label + " | " + obj.get(StringConstants.WMSURL));
+        mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, obj.get(StringConstants.WMSURL).toString(), 0.6f, /*metadata url*/ null,
                 null, LayerUtilitiesImpl.WKT, null, null);
         if (mapLayer == null) {
             return;
@@ -65,7 +73,7 @@ public class AreaRegionSelection extends AreaToolComposer {
 
         this.layerName = mapLayer.getName();
 
-        SimpleRegion sr = SimpleShapeFile.parseWKT(obj.getString(StringConstants.BBOX));
+        SimpleRegion sr = SimpleShapeFile.parseWKT(obj.get(StringConstants.BBOX).toString());
         double[][] bb = sr.getBoundingBox();
         List<Double> dbb = new ArrayList<Double>();
         dbb.add(bb[0][0]);
@@ -95,10 +103,10 @@ public class AreaRegionSelection extends AreaToolComposer {
             dbb.add(bb[1][0]);
             dbb.add(bb[1][1]);
         } else {
-            mapLayer.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + obj.getString(StringConstants.PID)));
+            mapLayer.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + obj.get(StringConstants.PID)));
         }
 
-        String fid = obj.getString(StringConstants.FID);
+        String fid = obj.get(StringConstants.FID).toString();
 
         MapLayerMetadata md = mapLayer.getMapLayerMetadata();
         md.setBbox(dbb);
@@ -108,9 +116,14 @@ public class AreaRegionSelection extends AreaToolComposer {
         if (!point && mapLayer.getFacets() == null) {
             //only get field data if it is an intersected layer (to exclude layers containing points)
             if (CommonData.getLayer(fid) != null) {
-                JSONObject fieldJson = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/field/" + fid + "?pageSize=0"));
+                JSONObject fieldJson = null;
+                try {
+                    fieldJson = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/field/" + fid + "?pageSize=0"));
+                } catch (ParseException e) {
+                    LOGGER.error("failed to parse for field: " + fid);
+                }
 
-                md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + fieldJson.getString("spid"));
+                md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + fieldJson.get("spid"));
 
                 facet = Util.getFacetForObject(label, fid);
             }

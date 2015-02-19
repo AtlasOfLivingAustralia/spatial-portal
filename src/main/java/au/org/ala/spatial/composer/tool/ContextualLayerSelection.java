@@ -8,7 +8,9 @@ import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.layer.ContextualLayersAutoComplete;
 import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import net.sf.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Button;
@@ -80,10 +82,10 @@ public class ContextualLayerSelection extends ToolComposer {
             JSONObject jo = autoCompleteLayers.getSelectedItem().getValue();
             String metadata;
 
-            metadata = CommonData.getLayersServer() + "/layers/view/more/" + jo.getString(StringConstants.ID);
+            metadata = CommonData.getLayersServer() + "/layers/view/more/" + jo.get(StringConstants.ID);
 
-            setLayer(jo.getString(StringConstants.DISPLAYNAME), jo.getString("displaypath"), metadata,
-                    StringConstants.ENVIRONMENTAL.equalsIgnoreCase(jo.getString(StringConstants.TYPE)) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
+            setLayer(jo.get(StringConstants.DISPLAYNAME).toString(), jo.get("displaypath").toString(), metadata,
+                    StringConstants.ENVIRONMENTAL.equalsIgnoreCase(jo.get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
         } else {
 
             // if the autocomplete has been type, but before selecting an option,
@@ -93,26 +95,32 @@ public class ContextualLayerSelection extends ToolComposer {
                 return;
             }
 
-            JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
-            if (!StringConstants.CLASS.equals(joLayer.getString(StringConstants.TYPE))) {
+            JSONParser jp = new JSONParser();
+            JSONObject joLayer = null;
+            try {
+                joLayer = (JSONObject) jp.parse(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr").toString());
+            } catch (ParseException e) {
 
-                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.getString(StringConstants.ID);
+            }
+            if (!StringConstants.CLASS.equals(joLayer.get(StringConstants.TYPE))) {
 
-                setLayer(joLayer.getString(StringConstants.DISPLAYNAME), joLayer.getString("displaypath"), metadata,
-                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.getString(StringConstants.TYPE)) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
+                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.get(StringConstants.ID);
+
+                setLayer(joLayer.get(StringConstants.DISPLAYNAME).toString(), joLayer.get("displaypath").toString(), metadata,
+                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
             } else {
-                String classValue = joLayer.getString(StringConstants.DISPLAYNAME);
-                String layer = joLayer.getString(StringConstants.LAYERNAME);
+                String classValue = joLayer.get(StringConstants.DISPLAYNAME).toString();
+                String layer = joLayer.get(StringConstants.LAYERNAME).toString();
                 String displaypath = CommonData.getGeoServer()
                         + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
-                        + joLayer.getString("displaypath");
+                        + joLayer.get("displaypath");
 
                 displaypath = displaypath.replace("gwc/service/", "");
 
-                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.getString(StringConstants.ID);
+                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.get(StringConstants.ID);
 
                 setLayer(layer + " - " + classValue, displaypath, metadata,
-                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.getString(StringConstants.TYPE)) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
+                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
             }
 
             //close parent if it is 'addlayerwindow'

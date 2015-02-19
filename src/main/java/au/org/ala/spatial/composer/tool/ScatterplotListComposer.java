@@ -8,10 +8,11 @@ import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.*;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Filedownload;
@@ -156,18 +157,19 @@ public class ScatterplotListComposer extends ToolComposer {
             client.executeMethod(post);
             String hasId = post.getResponseBodyAsString();
 
-            JSONObject jo = JSONObject.fromObject(hasId);
+            JSONParser jp = new JSONParser();
+            JSONObject jo = (JSONObject) jp.parse(hasId);
 
             String htmlUrl = null;
             String downloadUrl = null;
             if (jo.containsKey(StringConstants.ID)) {
-                pid = jo.getString(StringConstants.ID);
+                pid = jo.get(StringConstants.ID).toString();
             }
             if (jo.containsKey("htmlUrl")) {
-                htmlUrl = jo.getString("htmlUrl");
+                htmlUrl = jo.get("htmlUrl").toString();
             }
             if (jo.containsKey("downloadUrl")) {
-                downloadUrl = jo.getString("downloadUrl");
+                downloadUrl = jo.get("downloadUrl").toString();
             }
 
             if (htmlUrl != null && downloadUrl != null) {

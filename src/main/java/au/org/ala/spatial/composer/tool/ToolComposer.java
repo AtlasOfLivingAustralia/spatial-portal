@@ -19,13 +19,14 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Components;
 import org.zkoss.zk.ui.Executions;
@@ -348,7 +349,7 @@ public class ToolComposer extends UtilityComposer {
                 for (Object o : cbLayer1.getItems()) {
                     Comboitem ci = (Comboitem) o;
                     JSONObject jo = ci.getValue();
-                    if (jo.getString(StringConstants.NAME).equals(mi.getValue())) {
+                    if (jo.get(StringConstants.NAME).toString().equals(mi.getValue())) {
                         cbLayer1.setSelectedItem(ci);
                         cbLayer1.setText(ci.getLabel());
                         toggles();
@@ -371,7 +372,7 @@ public class ToolComposer extends UtilityComposer {
                 for (Object o : cbLayer2.getItems()) {
                     Comboitem ci = (Comboitem) o;
                     JSONObject jo = ci.getValue();
-                    if (jo.getString(StringConstants.NAME).equals(mi.getValue())) {
+                    if (jo.get(StringConstants.NAME).equals(mi.getValue())) {
                         cbLayer2.setSelectedItem(ci);
                         cbLayer2.setText(ci.getLabel());
                         toggles();
@@ -1879,7 +1880,7 @@ public class ToolComposer extends UtilityComposer {
         // seek to and select the same layer in the list
         if (lbListLayers != null && cbLayer.getSelectedItem() != null) {
             JSONObject jo = cbLayer.getSelectedItem().getValue();
-            String[] layer = jo.getString(StringConstants.NAME).split("/");
+            String[] layer = jo.get(StringConstants.NAME).toString().split("/");
             lbListLayers.selectLayers(layer);
             cbLayer.setSelectedIndex(-1);
         }
@@ -1890,7 +1891,7 @@ public class ToolComposer extends UtilityComposer {
         // seek to and select the same layer in the list
         if (lbListLayers != null && cbLayerEnvironmentalOnly.getSelectedItem() != null) {
             JSONObject jo = cbLayerEnvironmentalOnly.getSelectedItem().getValue();
-            String[] layer = jo.getString(StringConstants.NAME).split("/");
+            String[] layer = jo.get(StringConstants.NAME).toString().split("/");
             lbListLayers.selectLayers(layer);
             cbLayerEnvironmentalOnly.setSelectedIndex(-1);
         }
@@ -1901,7 +1902,7 @@ public class ToolComposer extends UtilityComposer {
         // seek to and select the same layer in the list
         if (lbListLayers != null && cbLayerMix.getSelectedItem() != null) {
             JSONObject jo = cbLayerMix.getSelectedItem().getValue();
-            String[] layer = jo.getString(StringConstants.NAME).split("/");
+            String[] layer = jo.get(StringConstants.NAME).toString().split("/");
             lbListLayers.selectLayers(layer);
             cbLayerMix.setSelectedIndex(-1);
         }
@@ -2179,21 +2180,21 @@ public class ToolComposer extends UtilityComposer {
             if (s.length() > 0) {
                 JSONObject searchResult = processAdhoc(s);
                 try {
-                    JSONArray ja = searchResult.getJSONArray(StringConstants.VALUES);
+                    JSONArray ja = (JSONArray) searchResult.get(StringConstants.VALUES);
 
                     String sciname = "", family = "", kingdom = "", lsid = null;
                     for (int j = 0; j < ja.size(); j++) {
-                        if (StringConstants.SCIENTIFIC_NAME.equals(ja.getJSONObject(j).getString(StringConstants.NAME))) {
-                            sciname = ja.getJSONObject(j).getString(StringConstants.PROCESSED);
+                        if (StringConstants.SCIENTIFIC_NAME.equals(((JSONObject) ja.get(j)).get(StringConstants.NAME))) {
+                            sciname = ((JSONObject) ja.get(j)).get(StringConstants.PROCESSED).toString();
                         }
-                        if (StringConstants.FAMILY.equals(ja.getJSONObject(j).getString(StringConstants.NAME))) {
-                            family = ja.getJSONObject(j).getString(StringConstants.PROCESSED);
+                        if (StringConstants.FAMILY.equals(((JSONObject) ja.get(j)).get(StringConstants.NAME))) {
+                            family = ((JSONObject) ja.get(j)).get(StringConstants.PROCESSED).toString();
                         }
-                        if (StringConstants.KINGDOM.equals(ja.getJSONObject(j).getString(StringConstants.NAME))) {
-                            kingdom = ja.getJSONObject(j).getString(StringConstants.PROCESSED);
+                        if (StringConstants.KINGDOM.equals(((JSONObject) ja.get(j)).get(StringConstants.NAME))) {
+                            kingdom = ((JSONObject) ja.get(j)).get(StringConstants.PROCESSED).toString();
                         }
-                        if (StringConstants.TAXON_CONCEPT_ID.equals(ja.getJSONObject(j).getString(StringConstants.NAME))) {
-                            lsid = ja.getJSONObject(j).getString(StringConstants.PROCESSED);
+                        if (StringConstants.TAXON_CONCEPT_ID.equals(((JSONObject) ja.get(j)).get(StringConstants.NAME))) {
+                            lsid = ((JSONObject) ja.get(j)).get(StringConstants.PROCESSED).toString();
                         }
                     }
 
@@ -2250,21 +2251,21 @@ public class ToolComposer extends UtilityComposer {
             if (s.length() > 0) {
                 JSONObject searchResult = processAdhoc(s);
                 try {
-                    JSONArray ja = searchResult.getJSONArray(StringConstants.VALUES);
+                    JSONArray ja = (JSONArray) searchResult.get(StringConstants.VALUES);
 
                     String sciname = "", family = "", kingdom = "", lsid = null;
                     for (int j = 0; j < ja.size(); j++) {
-                        if (StringConstants.SCIENTIFIC_NAME.equals(ja.getJSONObject(j).getString(StringConstants.NAME))) {
-                            sciname = ja.getJSONObject(j).getString(StringConstants.PROCESSED);
+                        if (StringConstants.SCIENTIFIC_NAME.equals(((JSONObject) ja.get(j)).get(StringConstants.NAME))) {
+                            sciname = ((JSONObject) ja.get(j)).get(StringConstants.PROCESSED).toString();
                         }
-                        if (StringConstants.FAMILY.equals(ja.getJSONObject(j).getString(StringConstants.NAME))) {
-                            family = ja.getJSONObject(j).getString(StringConstants.PROCESSED);
+                        if (StringConstants.FAMILY.equals(((JSONObject) ja.get(j)).get(StringConstants.NAME))) {
+                            family = ((JSONObject) ja.get(j)).get(StringConstants.PROCESSED).toString();
                         }
-                        if (StringConstants.KINGDOM.equals(ja.getJSONObject(j).getString(StringConstants.NAME))) {
-                            kingdom = ja.getJSONObject(j).getString(StringConstants.PROCESSED);
+                        if (StringConstants.KINGDOM.equals(((JSONObject) ja.get(j)).get(StringConstants.NAME))) {
+                            kingdom = ((JSONObject) ja.get(j)).get(StringConstants.PROCESSED).toString();
                         }
-                        if (StringConstants.TAXON_CONCEPT_ID.equals(ja.getJSONObject(j).getString(StringConstants.NAME))) {
-                            lsid = ja.getJSONObject(j).getString(StringConstants.PROCESSED);
+                        if (StringConstants.TAXON_CONCEPT_ID.equals(((JSONObject) ja.get(j)).get(StringConstants.NAME))) {
+                            lsid = ((JSONObject) ja.get(j)).get(StringConstants.PROCESSED).toString();
                         }
                     }
 
@@ -2321,7 +2322,8 @@ public class ToolComposer extends UtilityComposer {
             post.setRequestEntity(sre);
             int result = client.executeMethod(post);
             if (result == 200) {
-                return JSONObject.fromObject(post.getResponseBodyAsString());
+                JSONParser jp = new JSONParser();
+                return (JSONObject) jp.parse(post.getResponseBodyAsString());
             }
         } catch (Exception e) {
             LOGGER.error("error processing species request: " + url + ", scientificName=" + scientificName, e);

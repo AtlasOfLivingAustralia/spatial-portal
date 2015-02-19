@@ -1,8 +1,8 @@
 package au.org.ala.spatial.util;
 
 import au.org.ala.spatial.StringConstants;
-import net.sf.json.JSONObject;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.json.simple.JSONObject;
 
 /**
  * @author ajay
@@ -29,7 +29,7 @@ public class SPLFilter {
                      double minimum, double maximum) {
         this.layer = layer;
         if (layer != null) {
-            layername = layer.getString(StringConstants.NAME);
+            layername = layer.get(StringConstants.NAME).toString();
         }
         this.catagories = catagories == null ? null : catagories.clone();
         this.catagoryNames = catagoryNames == null ? null : catagoryNames.clone();

@@ -9,10 +9,11 @@ import au.org.ala.spatial.util.QueryUtil;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.SelectedArea;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -176,18 +177,19 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                 NameValuePair[] params = new NameValuePair[2];
                 params[0] = new NameValuePair("noTreeText", StringConstants.TRUE);
                 params[1] = new NameValuePair("speciesList", ja.toString());
-                JSONArray pds = JSONArray.fromObject(Util.readUrlPost(url, params));
+                JSONParser jp = new JSONParser();
+                JSONArray pds = (JSONArray) jp.parse(Util.readUrlPost(url, params));
 
                 Map<String, String> pdrow = new HashMap<String, String>();
                 Map<String, JSONArray> speciesRow = new HashMap<String, JSONArray>();
 
                 for (int j = 0; j < pds.size(); j++) {
                     String tree = (String) ((JSONObject) pds.get(j)).get(StringConstants.TREE_ID);
-                    pdrow.put(tree, ((JSONObject) pds.get(j)).getString("pd"));
-                    speciesRow.put(tree, ((JSONObject) pds.get(j)).getJSONArray("taxaRecognised"));
+                    pdrow.put(tree, ((JSONObject) pds.get(j)).get("pd").toString());
+                    speciesRow.put(tree, (JSONArray) ((JSONObject) pds.get(j)).get("taxaRecognised"));
 
                     //maxPD retrieval
-                    String maxPd = ((JSONObject) pds.get(j)).getString("maxPd");
+                    String maxPd = ((JSONObject) pds.get(j)).get("maxPd").toString();
                     for (int k = 0; k < selectedTrees.size(); k++) {
                         if (((Map<String, String>) selectedTrees.get(k)).get(StringConstants.TREE_ID).equals(tree)) {
                             ((Map<String, String>) selectedTrees.get(k)).put("maxPd", maxPd);

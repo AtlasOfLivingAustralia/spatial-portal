@@ -6,9 +6,9 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.*;
@@ -53,14 +53,14 @@ public class EnvironmentalList extends Listbox {
         listEntries = new ArrayList<ListEntryDTO>();
         JSONArray ja = CommonData.getLayerListJSONArray();
         for (int i = 0; i < ja.size(); i++) {
-            JSONObject jo = ja.getJSONObject(i);
+            JSONObject jo = (JSONObject) ja.get(i);
             listEntries.add(
-                    new ListEntryDTO(jo.getString(StringConstants.NAME),
-                            jo.containsKey(StringConstants.DISPLAYNAME) ? jo.getString(StringConstants.DISPLAYNAME) : jo.getString(StringConstants.NAME),
-                            jo.containsKey(StringConstants.CLASSIFICATION1) ? jo.getString(StringConstants.CLASSIFICATION1) : "",
-                            jo.containsKey(StringConstants.CLASSIFICATION2) ? jo.getString(StringConstants.CLASSIFICATION2) : "",
-                            jo.containsKey(StringConstants.TYPE) ? jo.getString(StringConstants.TYPE) : "",
-                            jo.containsKey(StringConstants.DOMAIN) ? jo.getString(StringConstants.DOMAIN) : "",
+                    new ListEntryDTO(jo.get(StringConstants.NAME).toString(),
+                            jo.containsKey(StringConstants.DISPLAYNAME) ? jo.get(StringConstants.DISPLAYNAME).toString() : jo.get(StringConstants.NAME).toString(),
+                            jo.containsKey(StringConstants.CLASSIFICATION1) ? jo.get(StringConstants.CLASSIFICATION1).toString() : "",
+                            jo.containsKey(StringConstants.CLASSIFICATION2) ? jo.get(StringConstants.CLASSIFICATION2).toString() : "",
+                            jo.containsKey(StringConstants.TYPE) ? jo.get(StringConstants.TYPE).toString() : "",
+                            jo.containsKey(StringConstants.DOMAIN) ? jo.get(StringConstants.DOMAIN).toString() : "",
                             jo));
         }
 
@@ -308,7 +308,7 @@ public class EnvironmentalList extends Listbox {
         if (!layerObject.containsKey(StringConstants.DOMAIN)) {
             return new String[0];
         }
-        String ds = layerObject.getString(StringConstants.DOMAIN);
+        String ds = layerObject.get(StringConstants.DOMAIN).toString();
         if (ds != null) {
             String[] d = ds.split(",");
             for (int i = 0; i < d.length; i++) {
@@ -326,8 +326,8 @@ public class EnvironmentalList extends Listbox {
             JSONArray ja = (JSONArray) layerObject.get(StringConstants.FIELDS);
             for (int i = 0; i < ja.size(); i++) {
                 JSONObject jo = (JSONObject) ja.get(i);
-                if (StringConstants.TRUE.equalsIgnoreCase(jo.getString("analysis"))) {
-                    fieldId = jo.getString(StringConstants.ID);
+                if (StringConstants.TRUE.equalsIgnoreCase(jo.get("analysis").toString())) {
+                    fieldId = jo.get(StringConstants.ID).toString();
                     break;
                 }
             }

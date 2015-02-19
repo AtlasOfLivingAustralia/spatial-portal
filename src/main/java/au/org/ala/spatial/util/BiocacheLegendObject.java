@@ -6,16 +6,15 @@ package au.org.ala.spatial.util;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.StringConstants;
-import au.org.ala.spatial.dto.LegendItemDTO;
-import au.org.ala.spatial.util.SpeciesListUtil.IgnoreUnknownPropsStrategyWrapper;
-import net.sf.json.JSONArray;
-import net.sf.json.JsonConfig;
-import net.sf.json.util.PropertySetStrategy;
 import org.ala.layers.legend.Legend;
 import org.ala.layers.legend.LegendBuilder;
 import org.ala.layers.legend.LegendObject;
 import org.ala.layers.legend.QueryField;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.awt.*;
 import java.io.IOException;
@@ -63,68 +62,60 @@ public class BiocacheLegendObject extends LegendObject {
 
 
         long start = System.currentTimeMillis();
-        JSONArray items = JSONArray.fromObject(legend);
-        JsonConfig cfg = new JsonConfig();
-        cfg.setPropertySetStrategy(new IgnoreUnknownPropsStrategyWrapper(PropertySetStrategy.DEFAULT));
-        cfg.setRootClass(LegendItemDTO.class);
-        java.util.Collection<LegendItemDTO> c = JSONArray.toCollection(items, cfg);
-        LegendItemDTO previous = null;
+        JSONParser jp = new JSONParser();
+        JSONArray items = null;
+        try {
+            items = (JSONArray) jp.parse(legend);
+        } catch (ParseException e) {
+            LOGGER.error("failed to parse legend", e);
+        }
+
         LOGGER.debug("*** time to parse legend to JSON was " + (System.currentTimeMillis() - start) + "ms");
 
-        categoryNameOrder = new String[c.size()];
+        categoryNameOrder = new String[items.size()];
 
         int i = 0;
-        for (LegendItemDTO item : c) {
-            if (isYear && item.getName() != null) {
-                item.setName(item.getName().replace(StringConstants.DATE_TIME_BEGINNING_OF_YEAR, ""));
-                item.setName(item.getName().replace(StringConstants.DATE_TIME_END_OF_YEAR, ""));
-            } else if (isDecade && item.getName() != null) {
+        for (Object item : items) {
+            JSONObject jo = (JSONObject) item;
+            String name = jo.containsKey("name") ? jo.get("name").toString() : "";
+            String ccount = jo.containsKey("count") ? jo.get("count").toString() : null;
+            String red = jo.containsKey("red") ? jo.get("red").toString() : "";
+            String green = jo.containsKey("green") ? jo.get("green").toString() : "";
+            String blue = jo.containsKey("blue") ? jo.get("blue").toString() : "";
+
+            if (isYear && name != null) {
+                name = (name.replace(StringConstants.DATE_TIME_BEGINNING_OF_YEAR, ""));
+                name = (name.replace(StringConstants.DATE_TIME_END_OF_YEAR, ""));
+            } else if (isDecade && name != null) {
                 for (int j = 0; j <= 9; j++) {
-                    item.setName(item.getName().replace(j + StringConstants.DATE_TIME_BEGINNING_OF_YEAR, "0"));
-                    item.setName(item.getName().replace(j + StringConstants.DATE_TIME_END_OF_YEAR, "0"));
+                    name = (name.replace(j + StringConstants.DATE_TIME_BEGINNING_OF_YEAR, "0"));
+                    name = (name.replace(j + StringConstants.DATE_TIME_END_OF_YEAR, "0"));
                 }
             }
 
 
-            if (item.getCount() == 0) {
+            if (ccount == null || Integer.parseInt(ccount) == 0) {
                 continue;
             }
 
-            int[] value = {new Color(item.getRed(), item.getGreen(), item.getBlue()).getRGB(), item.getCount()};
-            categories.put(item.getName(), value);
-            categoryNameOrder[i] = item.getName();
+            int[] value = {new Color(Integer.parseInt(red), Integer.parseInt(green), Integer.parseInt(blue)).getRGB(), Integer.parseInt(ccount)};
+            categories.put(name, value);
+            categoryNameOrder[i] = name;
             double d = Double.NaN;
             try {
-                d = Double.parseDouble(item.getName());
+                d = Double.parseDouble(name);
             } catch (Exception e) {
                 //if fails to parse as double we do want the default Double.NaN
             }
             categoriesNumeric.put((float) d, value);
 
-            //check for endpoint (repitition of colour)
-            /*if (previous != null
-                    && previous.getRed().equals(item.getRed())
-                    && previous.getGreen().equals(item.getGreen())
-                    && previous.getBlue().equals(item.getBlue())
-                    && !isDecade && !isYear) {
-                if (count == 0) {
-                    count = 1;
-                    sum = previous.getCount();
-                }
-                count++;
-                sum += item.getCount();
+            sb.append("\n");
 
+            colour = red + "," + green + "," + blue;
+            line = "\"" + name.replace("\"", "\"\"").replace("\\", "\\\\") + "\"," + colour + "," + ccount;
 
-            } else*/
-            {
-                sb.append("\n");
+            sb.append(line);
 
-                colour = item.getRed() + "," + item.getGreen() + "," + item.getBlue();
-                line = "\"" + item.getName().replace("\"", "\"\"").replace("\\", "\\\\") + "\"," + colour + "," + item.getCount();
-
-                sb.append(line);
-            }
-            previous = item;
             i++;
         }
         //replace last line

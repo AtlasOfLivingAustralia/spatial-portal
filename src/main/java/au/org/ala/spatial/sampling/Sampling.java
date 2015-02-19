@@ -3,11 +3,12 @@ package au.org.ala.spatial.sampling;
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -63,9 +64,10 @@ public final class Sampling {
             post.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.APPLICATION_JSON);
 
             client.executeMethod(post);
-            JSONObject jo = JSONObject.fromObject(post.getResponseBodyAsString());
+            JSONParser jp = new JSONParser();
+            JSONObject jo = (JSONObject) jp.parse(post.getResponseBodyAsString());
 
-            String statusUrl = jo.getString("statusUrl");
+            String statusUrl = jo.get("statusUrl").toString();
 
             //wait until done, or until it fails
             String downloadUrl;
@@ -102,10 +104,11 @@ public final class Sampling {
 
             client.executeMethod(get);
 
-            JSONObject jo = JSONObject.fromObject(get.getResponseBodyAsString());
+            JSONParser jp = new JSONParser();
+            JSONObject jo = (JSONObject) jp.parse(get.getResponseBodyAsString());
 
-            if ("finished".equals(jo.getString(StringConstants.STATUS))) {
-                downloadUrl = jo.getString("downloadUrl");
+            if ("finished".equals(jo.get(StringConstants.STATUS))) {
+                downloadUrl = jo.get("downloadUrl").toString();
             } else {
                 downloadUrl = "";
             }

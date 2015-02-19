@@ -11,10 +11,11 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.wms.WMSStyle;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -55,18 +56,18 @@ public class ImportAnalysisController extends UtilityComposer {
             JSONObject jo = remoteLogger.getLogCSV();
 
 
-            if (jo != null && jo.containsKey("abe") && !jo.getJSONArray("abe").isEmpty()) {
+            if (jo != null && jo.containsKey("abe") && !((JSONArray) jo.get("abe")).isEmpty()) {
                 List<String[]> logEntries = new ArrayList<String[]>();
 
-                for (Object o : jo.getJSONArray("abe")) {
+                for (Object o : (JSONArray) jo.get("abe")) {
                     JSONObject j = (JSONObject) o;
 
                     String[] r = new String[5];
-                    r[0] = j.containsKey(StringConstants.ID) ? j.getString(StringConstants.ID) : "";
-                    r[1] = j.containsKey("category2") ? j.getString("category2") : "";
-                    r[2] = j.containsKey("time") ? new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(new Date(j.getLong("time"))) : "";
+                    r[0] = j.containsKey(StringConstants.ID) ? j.get(StringConstants.ID).toString() : "";
+                    r[1] = j.containsKey("category2") ? j.get("category2").toString() : "";
+                    r[2] = j.containsKey("time") ? new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(new Date(Long.parseLong(j.get("time").toString()))) : "";
                     r[3] = "";
-                    r[4] = j.containsKey("service") && j.getJSONObject("service").containsKey("processid") ? j.getJSONObject("service").getString("processid") : "";
+                    r[4] = j.containsKey("service") && ((JSONObject) j.get("service")).containsKey("processid") ? ((JSONObject) j.get("service")).get("processid").toString() : "";
 
                     if (r[4].length() > 0 && !"-1".equals(r[4]) &&
                             (StringConstants.CLASSIFICATION.equalsIgnoreCase(r[1])

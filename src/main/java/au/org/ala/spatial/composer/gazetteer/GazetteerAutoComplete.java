@@ -2,11 +2,12 @@ package au.org.ala.spatial.composer.gazetteer;
 
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
@@ -48,7 +49,8 @@ public class GazetteerAutoComplete extends Combobox {
             client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
-            JSONArray ja = JSONArray.fromObject(slist);
+            JSONParser jp = new JSONParser();
+            JSONArray ja = (JSONArray) jp.parse(slist);
 
             if (ja == null) {
                 return;
@@ -57,10 +59,10 @@ public class GazetteerAutoComplete extends Combobox {
             Iterator it = getItems().iterator();
 
             for (int i = 0; i < ja.size(); i++) {
-                JSONObject jo = ja.getJSONObject(i);
-                String itemString = jo.getString(StringConstants.NAME);
-                String description = (jo.containsKey(StringConstants.DESCRIPTION) ? jo.getString(StringConstants.DESCRIPTION) : "")
-                        + " (" + jo.getString("fieldname") + ")";
+                JSONObject jo = (JSONObject) ja.get(i);
+                String itemString = jo.get(StringConstants.NAME).toString();
+                String description = (jo.containsKey(StringConstants.DESCRIPTION) ? jo.get(StringConstants.DESCRIPTION).toString() : "")
+                        + " (" + jo.get("fieldname") + ")";
 
                 if (it != null && it.hasNext()) {
                     Comboitem ci = (Comboitem) it.next();

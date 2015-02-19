@@ -17,12 +17,12 @@ public class ErrorMessageComposer extends UtilityComposer {
         return message;
     }
 
-    public void setMessage(String message) {
-        this.message.setValue(message);
-    }
-
     public void setMessage(Label message) {
         this.message = message;
+    }
+
+    public void setMessage(String message) {
+        this.message.setValue(message);
     }
 
     public void onClick$ok() {

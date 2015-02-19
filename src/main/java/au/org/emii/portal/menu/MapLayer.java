@@ -7,10 +7,10 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.value.AbstractIdentifierImpl;
 import au.org.emii.portal.wms.WMSStyle;
-import net.sf.json.JSONArray;
 import org.ala.layers.legend.Facet;
 import org.ala.layers.legend.LegendObject;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.json.simple.JSONArray;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -940,12 +940,12 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         this.pid = pid;
     }
 
-    public void setClassificationObjects(JSONArray classificationObjects) {
-        this.classificationObjects = classificationObjects;
-    }
-
     public JSONArray getClassificationObjects() {
         return classificationObjects;
+    }
+
+    public void setClassificationObjects(JSONArray classificationObjects) {
+        this.classificationObjects = classificationObjects;
     }
 
     public String getBaseUri() {

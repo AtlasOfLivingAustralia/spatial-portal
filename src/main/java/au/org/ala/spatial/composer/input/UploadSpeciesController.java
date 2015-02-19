@@ -156,7 +156,7 @@ public class UploadSpeciesController extends UtilityComposer {
     public void onClick$btnCancel(Event event) {
         if (callback != null) {
             try {
-                callback.onEvent(new ForwardEvent("", null, null, new String[]{"", "cancel" }));
+                callback.onEvent(new ForwardEvent("", null, null, new String[]{"", "cancel"}));
             } catch (Exception e) {
                 LOGGER.error("failed to cancel species points upload", e);
             }

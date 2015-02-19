@@ -3,12 +3,13 @@ package au.org.ala.spatial.logger;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
 
@@ -165,7 +166,8 @@ public class RemoteLogger {
 
                 LOGGER.debug("get: " + url + ", response: " + get.getResponseBodyAsString());
 
-                return JSONObject.fromObject(get.getResponseBodyAsString());
+                JSONParser jp = new JSONParser();
+                return (JSONObject) jp.parse(get.getResponseBodyAsString());
             }
         } catch (Exception e) {
             LOGGER.error("Error getting logging information from server:", e);
@@ -195,7 +197,8 @@ public class RemoteLogger {
 
                 LOGGER.debug("get: " + url + ", response: " + get.getResponseBodyAsString());
 
-                return JSONObject.fromObject(get.getResponseBodyAsString());
+                JSONParser jp = new JSONParser();
+                return (JSONObject) jp.parse(get.getResponseBodyAsString());
             }
 
         } catch (Exception e) {

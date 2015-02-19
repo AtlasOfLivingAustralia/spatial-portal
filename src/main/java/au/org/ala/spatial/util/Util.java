@@ -13,9 +13,6 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.operation.valid.IsValidOp;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
 import org.ala.layers.legend.Facet;
 import org.ala.layers.legend.LegendObject;
 import org.apache.commons.httpclient.HttpClient;
@@ -28,6 +25,9 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
 import org.jasig.cas.client.authentication.AttributePrincipal;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.zkoss.zk.ui.Executions;
@@ -175,7 +175,7 @@ public final class Util {
                 sb.append(")");
             }
             return sb.toString();
-        } catch (JSONException e) {
+        } catch (Exception e) {
             return StringConstants.NONE;
         }
     }
@@ -616,26 +616,27 @@ public final class Util {
             int result = client.executeMethod(get);
             if (result == 200) {
                 String txt = get.getResponseBodyAsString();
-                JSONObject jo = JSONObject.fromObject(txt);
+                JSONParser jp = new JSONParser();
+                JSONObject jo = (JSONObject) jp.parse(txt);
                 if (jo == null) {
                     return new String[0];
                 } else {
                     String[] output = new String[14];
 
-                    String scientific = jo.containsKey(StringConstants.SCIENTIFIC) ? jo.getString(StringConstants.SCIENTIFIC) : "";
-                    String auth = jo.containsKey(StringConstants.AUTHORITY) ? jo.getString(StringConstants.AUTHORITY) : "";
-                    String common = jo.containsKey(StringConstants.COMMON_NAM) ? jo.getString(StringConstants.COMMON_NAM) : "";
-                    String family = jo.containsKey(StringConstants.FAMILY) ? jo.getString(StringConstants.FAMILY) : "";
-                    String genus = jo.containsKey(StringConstants.GENUS) ? jo.getString(StringConstants.GENUS) : "";
-                    String name = jo.containsKey(StringConstants.SPECIFIC_N) ? jo.getString(StringConstants.SPECIFIC_N) : "";
-                    String min = jo.containsKey(StringConstants.MIN_DEPTH) ? jo.getString(StringConstants.MIN_DEPTH) : "";
-                    String max = jo.containsKey(StringConstants.MAX_DEPTH) ? jo.getString(StringConstants.MAX_DEPTH) : "";
+                    String scientific = jo.containsKey(StringConstants.SCIENTIFIC) ? jo.get(StringConstants.SCIENTIFIC).toString() : "";
+                    String auth = jo.containsKey(StringConstants.AUTHORITY) ? jo.get(StringConstants.AUTHORITY).toString() : "";
+                    String common = jo.containsKey(StringConstants.COMMON_NAM) ? jo.get(StringConstants.COMMON_NAM).toString() : "";
+                    String family = jo.containsKey(StringConstants.FAMILY) ? jo.get(StringConstants.FAMILY).toString() : "";
+                    String genus = jo.containsKey(StringConstants.GENUS) ? jo.get(StringConstants.GENUS).toString() : "";
+                    String name = jo.containsKey(StringConstants.SPECIFIC_N) ? jo.get(StringConstants.SPECIFIC_N).toString() : "";
+                    String min = jo.containsKey(StringConstants.MIN_DEPTH) ? jo.get(StringConstants.MIN_DEPTH).toString() : "";
+                    String max = jo.containsKey(StringConstants.MAX_DEPTH) ? jo.get(StringConstants.MAX_DEPTH).toString() : "";
 
-                    String md = jo.containsKey(StringConstants.METADATA_U) ? jo.getString(StringConstants.METADATA_U) : "";
-                    String lsid = jo.containsKey(StringConstants.LSID) ? jo.getString(StringConstants.LSID) : "";
-                    String areaName = jo.containsKey(StringConstants.AREA_NAME) ? jo.getString(StringConstants.AREA_NAME) : "";
-                    String areaKm = jo.containsKey(StringConstants.AREA_KM) ? jo.getString(StringConstants.AREA_KM) : "";
-                    String dataResourceId = jo.containsKey(StringConstants.DATA_RESOURCE_UID) ? jo.getString(StringConstants.DATA_RESOURCE_UID) : "";
+                    String md = jo.containsKey(StringConstants.METADATA_U) ? jo.get(StringConstants.METADATA_U).toString() : "";
+                    String lsid = jo.containsKey(StringConstants.LSID) ? jo.get(StringConstants.LSID).toString() : "";
+                    String areaName = jo.containsKey(StringConstants.AREA_NAME) ? jo.get(StringConstants.AREA_NAME).toString() : "";
+                    String areaKm = jo.containsKey(StringConstants.AREA_KM) ? jo.get(StringConstants.AREA_KM).toString() : "";
+                    String dataResourceId = jo.containsKey(StringConstants.DATA_RESOURCE_UID) ? jo.get(StringConstants.DATA_RESOURCE_UID).toString() : "";
 
                     output[0] = spcode;
                     output[1] = scientific;
@@ -691,29 +692,30 @@ public final class Util {
             int result = client.executeMethod(post);
             if (result == 200) {
                 String txt = post.getResponseBodyAsString();
-                JSONArray ja = JSONArray.fromObject(txt);
+                JSONParser jp = new JSONParser();
+                JSONArray ja = (JSONArray) jp.parse(txt);
                 if (ja == null || ja.isEmpty()) {
                     return new String[0];
                 } else {
                     String[] lines = new String[ja.size() + 1];
                     lines[0] = "SPCODE,SCIENTIFIC_NAME,AUTHORITY_FULL,COMMON_NAME,FAMILY,GENUS_NAME,SPECIFIC_NAME,MIN_DEPTH,MAX_DEPTH,METADATA_URL,LSID,AREA_NAME,AREA_SQ_KM";
                     for (int i = 0; i < ja.size(); i++) {
-                        JSONObject jo = ja.getJSONObject(i);
-                        String spcode = jo.containsKey(StringConstants.SPCODE) ? jo.getString(StringConstants.SPCODE) : "";
-                        String scientific = jo.containsKey(StringConstants.SCIENTIFIC) ? jo.getString(StringConstants.SCIENTIFIC) : "";
-                        String auth = jo.containsKey(StringConstants.AUTHORITY) ? jo.getString(StringConstants.AUTHORITY) : "";
-                        String common = jo.containsKey(StringConstants.COMMON_NAM) ? jo.getString(StringConstants.COMMON_NAM) : "";
-                        String family = jo.containsKey(StringConstants.FAMILY) ? jo.getString(StringConstants.FAMILY) : "";
-                        String genus = jo.containsKey(StringConstants.GENUS) ? jo.getString(StringConstants.GENUS) : "";
-                        String name = jo.containsKey(StringConstants.SPECIFIC_N) ? jo.getString(StringConstants.SPECIFIC_N) : "";
-                        String min = jo.containsKey(StringConstants.MIN_DEPTH) ? jo.getString(StringConstants.MIN_DEPTH) : "";
-                        String max = jo.containsKey(StringConstants.MAX_DEPTH) ? jo.getString(StringConstants.MAX_DEPTH) : "";
+                        JSONObject jo = (JSONObject) ja.get(i);
+                        String spcode = jo.containsKey(StringConstants.SPCODE) ? jo.get(StringConstants.SPCODE).toString() : "";
+                        String scientific = jo.containsKey(StringConstants.SCIENTIFIC) ? jo.get(StringConstants.SCIENTIFIC).toString() : "";
+                        String auth = jo.containsKey(StringConstants.AUTHORITY) ? jo.get(StringConstants.AUTHORITY).toString() : "";
+                        String common = jo.containsKey(StringConstants.COMMON_NAM) ? jo.get(StringConstants.COMMON_NAM).toString() : "";
+                        String family = jo.containsKey(StringConstants.FAMILY) ? jo.get(StringConstants.FAMILY).toString() : "";
+                        String genus = jo.containsKey(StringConstants.GENUS) ? jo.get(StringConstants.GENUS).toString() : "";
+                        String name = jo.containsKey(StringConstants.SPECIFIC_N) ? jo.get(StringConstants.SPECIFIC_N).toString() : "";
+                        String min = jo.containsKey(StringConstants.MIN_DEPTH) ? jo.get(StringConstants.MIN_DEPTH).toString() : "";
+                        String max = jo.containsKey(StringConstants.MAX_DEPTH) ? jo.get(StringConstants.MAX_DEPTH).toString() : "";
 
-                        String md = jo.containsKey(StringConstants.METADATA_U) ? jo.getString(StringConstants.METADATA_U) : "";
-                        String lsid = jo.containsKey(StringConstants.LSID) ? jo.getString(StringConstants.LSID) : "";
-                        String areaName = jo.containsKey(StringConstants.AREA_NAME) ? jo.getString(StringConstants.AREA_NAME) : "";
-                        String areaKm = jo.containsKey(StringConstants.AREA_KM) ? jo.getString(StringConstants.AREA_KM) : "";
-                        String dataResourceUid = jo.containsKey(StringConstants.DATA_RESOURCE_UID) ? jo.getString(StringConstants.DATA_RESOURCE_UID) : "";
+                        String md = jo.containsKey(StringConstants.METADATA_U) ? jo.get(StringConstants.METADATA_U).toString() : "";
+                        String lsid = jo.containsKey(StringConstants.LSID) ? jo.get(StringConstants.LSID).toString() : "";
+                        String areaName = jo.containsKey(StringConstants.AREA_NAME) ? jo.get(StringConstants.AREA_NAME).toString() : "";
+                        String areaKm = jo.containsKey(StringConstants.AREA_KM) ? jo.get(StringConstants.AREA_KM).toString() : "";
+                        String dataResourceUid = jo.containsKey(StringConstants.DATA_RESOURCE_UID) ? jo.get(StringConstants.DATA_RESOURCE_UID).toString() : "";
 
                         lines[i + 1] = spcode + "," + wrap(scientific) + "," + wrap(auth) + "," + wrap(common) + ","
                                 + wrap(family) + "," + wrap(genus) + "," + wrap(name) + "," + min + "," + max
@@ -869,19 +871,20 @@ public final class Util {
             int result = client.executeMethod(get);
             if (result == 200) {
                 String txt = get.getResponseBodyAsString();
-                JSONObject jo = JSONObject.fromObject(txt);
+                JSONParser jp = new JSONParser();
+                JSONObject jo = (JSONObject) jp.parse(txt);
                 if (jo == null) {
                     return new String[0];
                 } else {
                     String[] output = new String[13];
-                    String websiteUrl = jo.containsKey("websiteUrl") ? jo.getString("websiteUrl") : "";
-                    String citation = (jo.containsKey("citation") && jo.containsValue("citation")) ? jo.getString("citation") : null;
+                    String websiteUrl = jo.containsKey("websiteUrl") ? jo.get("websiteUrl").toString() : "";
+                    String citation = (jo.containsKey("citation") && jo.containsValue("citation")) ? jo.get("citation").toString() : null;
                     String logoUrl = null;
 
                     if (jo.containsKey("logoRef")) {
-                        JSONObject logoObject = jo.getJSONObject("logoRef");
+                        JSONObject logoObject = (JSONObject) jo.get("logoRef");
                         if (logoObject.containsKey("uri")) {
-                            logoUrl = logoObject.getString("uri");
+                            logoUrl = logoObject.get("uri").toString();
                         }
                     }
 
@@ -912,7 +915,8 @@ public final class Util {
                 return null;
             }
 
-            JSONObject jo = JSONObject.fromObject(jsontxt);
+            JSONParser jp = new JSONParser();
+            JSONObject jo = (JSONObject) jp.parse(jsontxt);
 
             String html = "Checklist area\n";
             html += "<table class='md_table'>";
@@ -921,7 +925,7 @@ public final class Util {
 
             if (layerName != null && jo.containsKey(StringConstants.GEOM_IDX)) {
                 html += "<tr class='" + lastClass + "'><td class='md_th'>Number of scientific names: </td><td class='md_spacer'/><td class='md_value'><a href='#' onClick='openAreaChecklist(\""
-                        + jo.getString(StringConstants.GEOM_IDX) + "\")'>" + count + "</a></td></tr>";
+                        + jo.get(StringConstants.GEOM_IDX) + "\")'>" + count + "</a></td></tr>";
             } else {
                 html += "<tr class='" + lastClass + "'><td class='md_th'>Number of scientific names: </td><td class='md_spacer'/><td class='md_value'>" + count + "</td></tr>";
             }
@@ -929,23 +933,23 @@ public final class Util {
             lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
 
             if (jo != null && jo.containsKey(StringConstants.METADATA_U)) {
-                html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + jo.getString(StringConstants.METADATA_U) + "'>"
-                        + jo.getString(StringConstants.METADATA_U) + "</a></td></tr>";
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Metadata link: </td><td class='md_spacer'/><td class='md_value'><a target='_blank' href='" + jo.get(StringConstants.METADATA_U) + "'>"
+                        + jo.get(StringConstants.METADATA_U) + "</a></td></tr>";
                 lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
             }
             if (jo != null && jo.containsKey(StringConstants.AREA_NAME)) {
-                html += "<tr class='" + lastClass + "'><td class='md_th'>Area name: </td><td class='md_spacer'/><td class='md_value'>" + jo.getString(StringConstants.AREA_NAME) + "</td></tr>";
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Area name: </td><td class='md_spacer'/><td class='md_value'>" + jo.get(StringConstants.AREA_NAME) + "</td></tr>";
                 lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
             }
             if (jo != null && jo.containsKey(StringConstants.AREA_KM)) {
-                html += "<tr class='" + lastClass + "'><td class='md_th'>Area sq km: </td><td class='md_spacer'/><td class='md_value'>" + jo.getString(StringConstants.AREA_KM) + "</td></tr>";
+                html += "<tr class='" + lastClass + "'><td class='md_th'>Area sq km: </td><td class='md_spacer'/><td class='md_value'>" + jo.get(StringConstants.AREA_KM) + "</td></tr>";
                 lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
             }
 
             try {
                 if (jo != null && jo.containsKey(StringConstants.PID) && jo.containsKey(StringConstants.AREA_NAME)) {
                     String fid;
-                    fid = Util.getStringValue(null, StringConstants.FID, Util.readUrl(CommonData.getLayersServer() + "/object/" + jo.getString(StringConstants.PID)));
+                    fid = Util.getStringValue(null, StringConstants.FID, Util.readUrl(CommonData.getLayersServer() + "/object/" + jo.get(StringConstants.PID)));
 
                     String spid = Util.getStringValue("\"id\":\"" + fid + "\"", "spid", Util.readUrl(CommonData.getLayersServer() + "/fields"));
                     if (spid != null) {

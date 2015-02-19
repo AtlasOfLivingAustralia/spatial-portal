@@ -2,11 +2,12 @@ package au.org.ala.spatial.composer.layer;
 
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Combobox;
@@ -66,7 +67,8 @@ public class ContextualLayersAutoComplete extends Combobox {
                 client.executeMethod(get);
                 String slist = get.getResponseBodyAsString();
 
-                results = JSONArray.fromObject(slist);
+                JSONParser jp = new JSONParser();
+                results = (JSONArray) jp.parse(slist);
             }
 
             LOGGER.debug("got " + results.size() + " layers");
@@ -77,14 +79,15 @@ public class ContextualLayersAutoComplete extends Combobox {
 
                 for (int i = 0; i < results.size(); i++) {
 
-                    JSONObject jo = results.getJSONObject(i);
+                    JSONObject jo = (JSONObject) results.get(i);
 
-                    if (!jo.getBoolean(StringConstants.ENABLED) || (StringConstants.ENVIRONMENTAL.equalsIgnoreCase(jo.getString(StringConstants.TYPE)))) {
+                    if (!jo.get(StringConstants.ENABLED).toString().equalsIgnoreCase("true")
+                            || (StringConstants.ENVIRONMENTAL.equalsIgnoreCase(jo.get(StringConstants.TYPE).toString()))) {
                         continue;
                     }
 
-                    String displayName = jo.getString(StringConstants.DISPLAYNAME);
-                    String type = jo.getString(StringConstants.TYPE);
+                    String displayName = jo.get(StringConstants.DISPLAYNAME).toString();
+                    String type = jo.get(StringConstants.TYPE).toString();
 
                     Comboitem myci;
                     if (it != null && it.hasNext()) {
@@ -96,12 +99,12 @@ public class ContextualLayersAutoComplete extends Combobox {
                         myci.setParent(this);
                     }
                     String c2 = "";
-                    if (jo.containsKey(StringConstants.CLASSIFICATION2) && !StringConstants.NULL.equals(jo.getString(StringConstants.CLASSIFICATION2))) {
-                        c2 = jo.getString(StringConstants.CLASSIFICATION2) + ": ";
+                    if (jo.containsKey(StringConstants.CLASSIFICATION2) && !StringConstants.NULL.equals(jo.get(StringConstants.CLASSIFICATION2))) {
+                        c2 = jo.get(StringConstants.CLASSIFICATION2) + ": ";
                     }
                     String c1 = "";
-                    if (jo.containsKey(StringConstants.CLASSIFICATION1) && !StringConstants.NULL.equals(jo.getString(StringConstants.CLASSIFICATION1))) {
-                        c1 = jo.getString(StringConstants.CLASSIFICATION1) + ": ";
+                    if (jo.containsKey(StringConstants.CLASSIFICATION1) && !StringConstants.NULL.equals(jo.get(StringConstants.CLASSIFICATION1))) {
+                        c1 = jo.get(StringConstants.CLASSIFICATION1) + ": ";
                     }
                     myci.setDescription(c1 + c2 + type);
                     myci.setDisabled(false);

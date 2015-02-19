@@ -7,11 +7,12 @@ package au.org.ala.spatial.composer.tool;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.dto.FieldDTO;
 import au.org.ala.spatial.util.CommonData;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Combobox;
@@ -53,12 +54,13 @@ public class TabulationComposer extends ToolComposer {
             client.executeMethod(get);
             String tlayers = get.getResponseBodyAsString();
 
-            JSONObject joTop = JSONObject.fromObject(tlayers);
-            JSONArray joarr = joTop.getJSONArray("tabulations");
+            JSONParser jp = new JSONParser();
+            JSONObject joTop = (JSONObject) jp.parse(tlayers);
+            JSONArray joarr = (JSONArray) joTop.get("tabulations");
             for (i = 0; i < joarr.size(); i++) {
-                JSONObject jo = joarr.getJSONObject(i);
-                FieldDTO f1 = new FieldDTO(jo.getString("fid1"), jo.getString("name1"), "");
-                FieldDTO f2 = new FieldDTO(jo.getString("fid2"), jo.getString("name2"), "");
+                JSONObject jo = (JSONObject) joarr.get(i);
+                FieldDTO f1 = new FieldDTO(jo.get("fid1").toString(), jo.get("name1").toString(), "");
+                FieldDTO f2 = new FieldDTO(jo.get("fid2").toString(), jo.get("name2").toString(), "");
                 load(f1, f2);
                 load(f2, f1);
             }

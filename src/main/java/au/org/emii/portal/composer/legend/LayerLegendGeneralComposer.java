@@ -11,8 +11,6 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.ala.layers.legend.Facet;
 import org.ala.layers.legend.LegendObject;
 import org.ala.layers.legend.QueryField;
@@ -20,6 +18,10 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -776,30 +778,36 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
             getFellow("btnCreateArea").setVisible(false);
 
-        } else if (layer != null && layer.containsKey("type") && layer.getString("type").equalsIgnoreCase("contextual")
+        } else if (layer != null && layer.containsKey("type") && layer.get("type").toString().equalsIgnoreCase("contextual")
                 && layer.containsKey("fields")) {
             divClassificationPicker.setVisible(true);
 
             if (mapLayer.getClassificationGroupCount() == null || mapLayer.getClassificationGroupCount() == 0) {
                 //build
                 String fieldId = null;
-                JSONArray ja = layer.getJSONArray("fields");
+                JSONArray ja = (JSONArray) layer.get("fields");
                 for (int i = 0; i < ja.size(); i++) {
-                    if (ja.getJSONObject(i).getBoolean("defaultlayer")) {
-                        fieldId = ja.getJSONObject(i).getString("id");
+                    if (((JSONObject) ja.get(i)).get("defaultlayer").toString().equalsIgnoreCase("true")) {
+                        fieldId = ((JSONObject) ja.get(i)).get("id").toString();
                     }
                 }
 
-                JSONObject objJson = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/field/" + fieldId));
-                JSONArray objects = objJson.getJSONArray("objects");
+                JSONParser jp = new JSONParser();
+                JSONObject objJson = null;
+                try {
+                    objJson = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/field/" + fieldId));
+                } catch (ParseException e) {
+                    LOGGER.error("failed to parse for: " + fieldId);
+                }
+                JSONArray objects = (JSONArray) objJson.get("objects");
 
                 //sort
                 List<JSONObject> list = objects.subList(0, objects.size());
                 Collections.sort(list, new Comparator<JSONObject>() {
                     @Override
                     public int compare(JSONObject o1, JSONObject o2) {
-                        String s1 = (o1 == null || !o1.containsKey("name")) ? "" : o1.getString("name");
-                        String s2 = (o2 == null || !o2.containsKey("name")) ? "" : o2.getString("name");
+                        String s1 = (o1 == null || !o1.containsKey("name")) ? "" : o1.get("name").toString();
+                        String s2 = (o2 == null || !o2.containsKey("name")) ? "" : o2.get("name").toString();
                         return s1.compareTo(s2);
                     }
                 });
@@ -820,7 +828,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             ci.setParent(cbClassificationGroup);
 
             for (int i = 0; i < groupCount; i++) {
-                new Comboitem(groupObjects.getJSONObject(i).getString("name")).setParent(cbClassificationGroup);
+                new Comboitem(((JSONObject) groupObjects.get(i)).get("name").toString()).setParent(cbClassificationGroup);
             }
 
             //is there a current selection?
@@ -860,9 +868,10 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                         sldBodyParam = "&sld_body=" + formatSld(URLEncoder.encode(POLYGON_SLD, StringConstants.UTF_8), layername, String.valueOf(n - 1), String.valueOf(n), String.valueOf(n + 1));
                         mapLayer.setUri(baseUri + sldBodyParam);
                     } else {
-                        JSONObject obj;
-                        obj = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/object/" + mapLayer.getClassificationObjects().getJSONObject(n - 1).getString("pid")));
-                        String url = obj.getString(StringConstants.WMSURL);
+                        JSONObject obj = null;
+                        JSONParser jp = new JSONParser();
+                        obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + ((JSONObject) mapLayer.getClassificationObjects().get(n - 1)).get("pid")));
+                        String url = obj.get(StringConstants.WMSURL).toString();
 
                         mapLayer.setUri(url);
                     }
@@ -905,12 +914,17 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     public void onClick$btnCreateArea(Event event) {
         int n = cbClassificationGroup.getSelectedIndex();
         if (n > 0) {
-            JSONObject obj;
-            String pid = mapLayer.getClassificationObjects().getJSONObject(n - 1).getString("pid");
-            obj = JSONObject.fromObject(Util.readUrl(CommonData.getLayersServer() + "/object/" + pid));
+            JSONParser jp = new JSONParser();
+            JSONObject obj = null;
+            String pid = ((JSONObject) mapLayer.getClassificationObjects().get(n - 1)).get("pid").toString();
+            try {
+                obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + pid));
+            } catch (ParseException e) {
+                LOGGER.error("failed to parse for object: " + pid);
+            }
 
-            String url = obj.getString(StringConstants.WMSURL);
-            String name = obj.getString(StringConstants.NAME);
+            String url = obj.get(StringConstants.WMSURL).toString();
+            String name = obj.get(StringConstants.NAME).toString();
 
             MapLayer ml = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(name), name, url, 0.6f, /*metadata url*/ null,
                     null, LayerUtilitiesImpl.WKT, null, null);
@@ -930,7 +944,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             //only get field data if it is an intersected layer (to exclude layers containing points)
             JSONObject layerObj = CommonData.getLayer((String) obj.get(StringConstants.FID));
             if (layerObj != null) {
-                facet = Util.getFacetForObject(obj.getString(StringConstants.NAME), (String) obj.get(StringConstants.FID));
+                facet = Util.getFacetForObject(obj.get(StringConstants.NAME).toString(), (String) obj.get(StringConstants.FID));
             }
 
             if (facet != null) {
@@ -946,7 +960,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             MapLayerMetadata md = ml.getMapLayerMetadata();
             String bbString = "";
             try {
-                bbString = obj.getString(StringConstants.BBOX);
+                bbString = obj.get(StringConstants.BBOX).toString();
                 bbString = bbString.replace(StringConstants.POLYGON + "((", "").replace("))", "").replace(",", " ");
                 String[] split = bbString.split(" ");
                 List<Double> bbox = new ArrayList<Double>();
@@ -961,7 +975,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 LOGGER.debug("failed to parse: " + bbString, e);
             }
             try {
-                md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + layerObj.getString("id"));
+                md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + layerObj.get("id").toString());
             } catch (Exception e) {
                 LOGGER.error("error setting map layer moreInfo: " + (layerObj != null ? layerObj.toString() : "layerObj is null"), e);
             }

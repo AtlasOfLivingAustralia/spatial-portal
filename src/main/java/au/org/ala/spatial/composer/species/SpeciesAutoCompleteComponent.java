@@ -155,7 +155,7 @@ public class SpeciesAutoCompleteComponent extends Div {
         if (hasValidAnnotatedItemSelected()) {
             Comboitem si = autoComplete.getSelectedItem();
             if (shouldUseRawName()) {
-                return new String[]{autoComplete.getValue(), "unmatched" };
+                return new String[]{autoComplete.getValue(), "unmatched"};
             } else {
                 String taxon = autoComplete.getValue();
                 String rank;
