@@ -1820,11 +1820,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 if (getMapLayerWMS(wmsNames[i]) == null) {
                     //map this layer with its recorded scientific name
                     try {
-                        String scientific = ((JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer()
-                                + "/distribution/" + spcode[i]))).get(StringConstants.SCIENTIFIC).toString();
+                        JSONObject jo = ((JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer()
+                                + "/distribution/" + spcode[i])));
+                        String scientific = jo.get(StringConstants.SCIENTIFIC).toString();
+                        String distributionAreaName = jo.get("area_name").toString();
                         String layerName = getNextAreaLayerName(scientific);
                         String html = Util.getMetadataHtmlForDistributionOrChecklist(spcode[i], null, layerName);
-                        ml = addWMSLayer(layerName, getNextAreaLayerName("Expert distribution: " + scientific)
+                        ml = addWMSLayer(layerName, getNextAreaLayerName(distributionAreaName)
                                 , wmsNames[i], 0.35f, html, null, LayerUtilitiesImpl.WKT, null, null);
                         ml.setSPCode(spcode[i]);
                         setupMapLayerAsDistributionArea(ml);
