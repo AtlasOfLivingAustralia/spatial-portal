@@ -135,10 +135,16 @@ public class AreaRegionSelection extends AreaToolComposer {
             }
         }
 
-        mapLayer.setRedVal(255);
-        mapLayer.setGreenVal(0);
-        mapLayer.setBlueVal(0);
+        int colour = Util.nextColour();
+        int r = (colour >> 16) & 0x000000ff;
+        int g = (colour >> 8) & 0x000000ff;
+        int b = (colour) & 0x000000ff;
+
+        mapLayer.setRedVal(r);
+        mapLayer.setGreenVal(g);
+        mapLayer.setBlueVal(b);
         mapLayer.setDynamicStyle(true);
+        getMapComposer().applyChange(mapLayer);
         getMapComposer().updateLayerControls();
 
         ok = true;

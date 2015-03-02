@@ -787,7 +787,7 @@ public final class Util {
     }
 
     public static String getMetadataHtmlForDistributionOrChecklist(String spcode, String[] row, String layerName) {
-        if (CommonData.getSpeciesDistributionWMSFromSpcode(spcode)[0] == null) {
+        if (CommonData.getSpeciesDistributionWMSFromSpcode(spcode)[0] != null) {
             return getMetadataHtmlForExpertDistribution(Util.getDistributionOrChecklist(spcode));
         } else {
             return getMetadataHtmlForAreaChecklist(spcode, layerName);

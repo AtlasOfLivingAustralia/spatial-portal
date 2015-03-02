@@ -12,7 +12,7 @@
         <n:div class="fancybox-bg" id="fancybox-bg-s" />
         <n:div class="fancybox-bg" id="fancybox-bg-w" />        
         <a sclass="fancybox-close" onClick="addspecieswindow.onClick$btnCancel(null)" style="display: inline" />
-        <n:a class="fancybox-help" n:onClick="loadHelp('species-add-to-map')" style="display: inline" />
+        <n:a class="fancybox-help" n:href="${addspecieswindow.getMapComposer().getSettingsSupplementary().getProperty('help_url')}/spatial-portal-help/species-add-to-map" n:target="_blank" style="display: inline" />
         <caption label="Add species" sclass="caption" />
         <separator/>
         <div >
@@ -25,7 +25,7 @@
             <separator/>
             <radiogroup id="rgAddSpecies" onOK="addspecieswindow.onClick$btnOk(null)" >
                 <vbox height="143px">
-                    <radio id ="rAllSpecies" label="All species" />
+                    <radio id ="rAllSpecies" label="All species"   visible='${addspecieswindow.getMapComposer().getSettingsSupplementary().getProperty("addtomap.species.all.enable")?"true":"false"}'/>
                     <radio id="rSearch" label="Search for a species by scientific or common name" />
                     <vbox id="vboxSearch">
                         <hbox>
@@ -36,7 +36,7 @@
                         <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
                         <separator height="20px"/>
                     </vbox>
-                    <radio id="rMultiple" label="Create new species list" />
+                    <radio id="rMultiple" label="Create new species list"  visible='${addspecieswindow.getMapComposer().getSettingsSupplementary().getProperty("addtomap.species.createspecieslist.enable")?"true":"false"}'/>
                     <vbox id="vboxMultiple" visible="false">
                         <separator />
                         <label value="Enter scientific names, LSIDs and common names separated by a comma or new line." />
@@ -75,11 +75,11 @@
                         <separator height="5px"/>
                     </vbox>
                     
-                    <radio id ="rUploadLSIDs" label="Use existing species list"/>
+                    <radio id ="rUploadLSIDs" label="Use existing species list" visible='${addspecieswindow.getMapComposer().getSettingsSupplementary().getProperty("addtomap.species.specieslist.enable")?"true":"false"}'/>
                     <include id="splistbox" src="/WEB-INF/zul/species/SpeciesListListBox.zul" />
                    
                     
-                    <radio id ="rUploadCoordinates" label="Import points" />
+                    <radio id ="rUploadCoordinates" label="Import points"  visible='${addspecieswindow.getMapComposer().getSettingsSupplementary().getProperty("addtomap.species.import.enable")?"true":"false"}'/>
                 </vbox>
             </radiogroup>
             <separator height="20px"/>

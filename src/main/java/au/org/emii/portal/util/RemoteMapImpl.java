@@ -2,6 +2,7 @@ package au.org.emii.portal.util;
 
 
 import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
@@ -33,13 +34,14 @@ public class RemoteMapImpl implements RemoteMap {
 
         wktLayer.setEnvColour(StringConstants.RED);
 
-        int r = 255;
-        int g = 0;
-        int b = 0;
+        int colour = Util.nextColour();
+        int r = (colour >> 16) & 0x000000ff;
+        int g = (colour >> 8) & 0x000000ff;
+        int b = (colour) & 0x000000ff;
 
-        wktLayer.setBlueVal(b);
-        wktLayer.setGreenVal(g);
         wktLayer.setRedVal(r);
+        wktLayer.setGreenVal(g);
+        wktLayer.setBlueVal(b);
 
         wktLayer.setType(LayerUtilitiesImpl.WKT);
         wktLayer.setWKT(wkt);
@@ -138,9 +140,10 @@ public class RemoteMapImpl implements RemoteMap {
 
         layer.setEnvColour(StringConstants.RED);
 
-        int r = 255;
-        int g = 0;
-        int b = 0;
+        int colour = Util.nextColour();
+        int r = (colour >> 16) & 0x000000ff;
+        int g = (colour >> 8) & 0x000000ff;
+        int b = (colour) & 0x000000ff;
 
         layer.setBlueVal(b);
         layer.setGreenVal(g);

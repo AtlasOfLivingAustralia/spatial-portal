@@ -50,7 +50,10 @@ public class LsidCountsDynamic {
 
     public static void clear() {
         counts = new ConcurrentHashMap<String, Integer>();
-        allSpecies();
+
+        if (!CommonData.getSettings().getProperty("autocomplete.counts.bulkcache", "true").equalsIgnoreCase("false")) {
+            allSpecies();
+        }
     }
 
     public static Integer getCount(String lsid) {

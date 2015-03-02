@@ -932,10 +932,16 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             String lname = ml.getName();
 
             //add colour!
-            ml.setRedVal(255);
-            ml.setGreenVal(0);
-            ml.setBlueVal(0);
+            int colour = Util.nextColour();
+            int r = (colour >> 16) & 0x000000ff;
+            int g = (colour >> 8) & 0x000000ff;
+            int b = (colour) & 0x000000ff;
+
+            ml.setRedVal(r);
+            ml.setGreenVal(g);
+            ml.setBlueVal(b);
             ml.setDynamicStyle(true);
+            getMapComposer().applyChange(ml);
             getMapComposer().updateLayerControls();
 
             ml.setPolygonLayer(true);

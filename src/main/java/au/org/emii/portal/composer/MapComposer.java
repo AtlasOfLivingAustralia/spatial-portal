@@ -897,10 +897,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             mapLayer.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
         }
 
-        mapLayer.setRedVal(255);
-        mapLayer.setGreenVal(0);
-        mapLayer.setBlueVal(0);
+        int colour = Util.nextColour();
+        int r = (colour >> 16) & 0x000000ff;
+        int g = (colour >> 8) & 0x000000ff;
+        int b = (colour) & 0x000000ff;
+
+        mapLayer.setRedVal(r);
+        mapLayer.setGreenVal(g);
+        mapLayer.setBlueVal(b);
         mapLayer.setDynamicStyle(true);
+        getMapComposer().applyChange(mapLayer);
         getMapComposer().updateLayerControls();
 
         return mapLayer;
@@ -1316,6 +1322,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } catch (Exception e) {
             LOGGER.error("error loading url parameters", e);
         }
+        String tool = null;
+        String toolParameters = null;
 
         try {
             params = Executions.getCurrent().getDesktop().getQueryString();
@@ -1347,6 +1355,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 if ("wmscache".equals(key)) {
                     useSpeciesWMSCache = value;
+                }
+
+                if ("tool".equals(key)) {
+                    tool = value;
+                }
+                if ("toolParameters".equals(key)) {
+                    toolParameters = value;
                 }
 
                 if ("species_lsid".equals(key)) {
@@ -1462,6 +1477,25 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         //load any deep linked objects
         mapObjectFromParams();
+
+        if (tool != null) {
+            //open this tool
+            try {
+                JSONParser jp = new JSONParser();
+                Map map = new HashMap<String, Object>();
+                if (toolParameters != null) {
+                    JSONObject jo = (JSONObject) jp.parse(toolParameters);
+                    for (Object key : jo.keySet()) {
+                        map.put(key.toString(), jo.get(key));
+                    }
+                }
+                if ("phylogeneticdiversity".equals(tool)) {
+                    openModal("WEB-INF/zul/tool/PhylogeneticDiversity.zul", map, StringConstants.ADDTOOLWINDOW);
+                }
+            } catch (Exception e) {
+                LOGGER.error("failed to open tool: " + tool, e);
+            }
+        }
 
         return null;
     }
@@ -2048,10 +2082,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
 
             //add colour!
-            mapLayer.setRedVal(255);
-            mapLayer.setGreenVal(0);
-            mapLayer.setBlueVal(0);
+            int colour = Util.nextColour();
+            int r = (colour >> 16) & 0x000000ff;
+            int g = (colour >> 8) & 0x000000ff;
+            int b = (colour) & 0x000000ff;
+
+            mapLayer.setRedVal(r);
+            mapLayer.setGreenVal(g);
+            mapLayer.setBlueVal(b);
             mapLayer.setDynamicStyle(true);
+            getMapComposer().applyChange(mapLayer);
 
             warnForLargeWKT(mapLayer);
 

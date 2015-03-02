@@ -47,6 +47,40 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         this.updateWindowTitle();
 
         fillPDTreeList();
+
+        Map m = Executions.getCurrent().getArg();
+        if (m != null) {
+            for (Object o : m.entrySet()) {
+                //apply preselected trees
+                if (((Map.Entry) o).getKey() instanceof String
+                        && "selectedTrees".equals(((Map.Entry) o).getKey())) {
+                    String selectedTrees = (String) ((Map.Entry) o).getValue();
+                    for (String tree : selectedTrees.split(",")) {
+                        for (int i = 0; i < trees.length; i++) {
+                            if (((Map<String, String>) trees[i]).containsValue(tree)) {
+                                treesList.getItemAtIndex(i).setSelected(true);
+                            }
+                        }
+                    }
+
+                }
+
+                //apply preselected areas
+                if (((Map.Entry) o).getKey() instanceof String
+                        && "selectedAreas".equals(((Map.Entry) o).getKey())) {
+                    String selectedAreas = (String) ((Map.Entry) o).getValue();
+                    for (String area : selectedAreas.split(",")) {
+                        List checkboxes = getFellow("vboxArea").getChildren();
+                        for (int i = 0; i < checkboxes.size(); i++) {
+                            if (((Checkbox) checkboxes.get(i)).getLabel().equals(area)) {
+                                ((Checkbox) checkboxes.get(i)).setChecked(true);
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
     private void fillPDTreeList() {

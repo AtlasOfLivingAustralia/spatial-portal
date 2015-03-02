@@ -108,16 +108,16 @@
                                                 <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" n:onClick="doNothing();" >Add to Map  <n:b n:class="caret" /></n:a>
                                                 <n:ul n:class="dropdown-menu">
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="addSpeciesAction();">Species</n:a>
+                                                        <n:a href="#" n:onClick="addSpeciesAction();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("addtomap.species.enable")?"":"display:none"}'>Species</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="addAreaAction();">Areas</n:a>
+                                                        <n:a href="#" n:onClick="addAreaAction();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("addtomap.areas.enable")?"":"display:none"}'>Areas</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="addLayerAction();">Layers</n:a>
+                                                        <n:a href="#" n:onClick="addLayerAction();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("addtomap.layers.enable")?"":"display:none"}'>Layers</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="addFacetAction();">Facet</n:a>
+                                                        <n:a href="#" n:onClick="addFacetAction();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("addtomap.facet.enable")?"":"display:none"}'>Facet</n:a>
                                                     </n:li>
                                                     <!-- <n:li>
                                                         <a href="#" onClick="test_internal_error();">Error testing</a>
@@ -128,43 +128,43 @@
                                                 <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown"  n:onClick="doNothing();" >Tools <n:b n:class="caret" /></n:a>
                                                 <n:ul n:class="dropdown-menu">
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runAreaReport();">Area Report</n:a>
+                                                        <n:a href="#" n:onClick="runAreaReport();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.areareport.enable")?"":"display:none"}'>Area Report</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runAreaReportPDF();">Detailed Area Report (PDF)</n:a>
+                                                        <n:a href="#" n:onClick="runAreaReportPDF();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.detailedareareport.enable")?"":"display:none"}'>Detailed Area Report (PDF)</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runNearestLocality();">Nearest locality</n:a>
+                                                        <n:a href="#" n:onClick="runNearestLocality();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.nearestlocality.enable")?"":"display:none"}'>Nearest locality</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a>
+                                                        <n:a href="#" n:onClick="runScatterPlot();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.scatterplot.enable")?"":"display:none"}'>Scatterplot</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runScatterPlotList();">Scatterplot List</n:a>
+                                                        <n:a href="#" n:onClick="runScatterPlotList();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.scatterplotlist.enable")?"":"display:none"}'>Scatterplot List</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runTabulation();">Tabulate</n:a>
+                                                        <n:a href="#" n:onClick="runTabulation();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.tabulation.enable")?"":"display:none"}'>Tabulate</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runSitesBySpecies();">Points to Grid</n:a>
+                                                        <n:a href="#" n:onClick="runSitesBySpecies();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.pointstogrid.enable")?"":"display:none"}'>Points to Grid</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runGeneratePoints();">Generate Points</n:a>
-                                                    </n:li>
-                                                    <n:li id="phylogeneticdiversitytool" style="display:none">
-                                                        <n:a href="#" n:onClick="runPhylogeneticDiversity();">Phylogenetic Diversity</n:a>
+                                                        <n:a href="#" n:onClick="runGeneratePoints();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.generatepoints.enable")?"":"display:none"}'>Generate Points</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runClassification();">Classify</n:a>
+                                                        <n:a href="#" n:onClick="runPhylogeneticDiversity();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.phylogeneticdiversity.enable")?"":"display:none"}'>Phylogenetic Diversity</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runPrediction();">Predict</n:a>
+                                                        <n:a href="#" n:onClick="runClassification();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.predict.enable")?"":"display:none"}'>Classify</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runGDM();">GDM</n:a>
+                                                        <n:a href="#" n:onClick="runPrediction();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.classify.enable")?"":"display:none"}'>Predict</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runImportAnalysis();">Restore prior analysis</n:a>
+                                                        <n:a href="#" n:onClick="runGDM();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.gdm.enable")?"":"display:none"}'>GDM</n:a>
+                                                    </n:li>
+                                                    <n:li>
+                                                        <n:a href="#" n:onClick="runImportAnalysis();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.restoreprioranalysis.enable")?"":"display:none"}'>Restore prior analysis</n:a>
                                                     </n:li>
                                                 </n:ul>
                                             </n:li>
@@ -172,16 +172,16 @@
                                                 <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" n:onClick="doNothing();" >Import <n:b n:class="caret" /></n:a>
                                                 <n:ul n:class="dropdown-menu">
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runImportSpecies('points');">Points</n:a>
+                                                        <n:a href="#" n:onClick="runImportSpecies('points');" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("import.points.enable")?"":"display:none"}'>Points</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runImportSpecies('assemblage');">Species list</n:a>
+                                                        <n:a href="#" n:onClick="runImportSpecies('assemblage');" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("import.specieslist.enable")?"":"display:none"}'>Species list</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runImportAreas();">Areas</n:a>
+                                                        <n:a href="#" n:onClick="runImportAreas();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("import.areas.enable")?"":"display:none"}'>Areas</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runImportAnalysis();">Restore prior analysis</n:a>
+                                                        <n:a href="#" n:onClick="runImportAnalysis();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("import.restoreprioranalysis.enable")?"":"display:none"}'>Restore prior analysis</n:a>
                                                     </n:li>
                                                 </n:ul>
                                             </n:li>
@@ -189,16 +189,16 @@
                                                 <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" n:onClick="doNothing();"  >Export <n:b n:class="caret" /></n:a>
                                                 <n:ul n:class="dropdown-menu">
                                                     <n:li>
-                                                        <n:a href="#" n:onClick='printHack();'>Map</n:a>
+                                                        <n:a href="#" n:onClick='printHack();' n:style='${mapPortalPage.getSettingsSupplementary().getProperty("export.map.enable")?"":"display:none"}'>Map</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runSpeciesList();">Checklist</n:a>
+                                                        <n:a href="#" n:onClick="runSpeciesList();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("export.checklist.enable")?"":"display:none"}'>Checklist</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runSamplingAction();">Point Sample</n:a>
+                                                        <n:a href="#" n:onClick="runSamplingAction();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("export.pointsample.enable")?"":"display:none"}'>Point Sample</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="runExport();">Areas</n:a>
+                                                        <n:a href="#" n:onClick="runExport();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("export.areas.enable")?"":"display:none"}'>Areas</n:a>
                                                     </n:li>
                                                 </n:ul>
                                             </n:li>
@@ -206,19 +206,19 @@
                                                 <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown"  n:onClick="doNothing();" >Help <n:b n:class="caret" /></n:a>
                                                 <n:ul class="dropdown-menu" n:style="margin-left:-100px">
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="loadHelp('getting-started');">Getting Started</n:a>
+                                                        <n:a n:href="${mapPortalPage.getSettingsSupplementary().getProperty('help_url')}/spatial-portal-help/getting-started" n:target="_blank">Getting Started</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="loadHelp('add-to-map');">Add To Map</n:a>
+                                                        <n:a n:href="${mapPortalPage.getSettingsSupplementary().getProperty('help_url')}/spatial-portal-help/add-to-map" n:target="_blank">Add To Map</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="loadHelp('tools');">Tools</n:a>
+                                                        <n:a n:href="${mapPortalPage.getSettingsSupplementary().getProperty('help_url')}/spatial-portal-help/tools" n:target="_blank">Tools</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="loadHelp('import');">Import</n:a>
+                                                        <n:a n:href="${mapPortalPage.getSettingsSupplementary().getProperty('help_url')}/spatial-portal-help/import" n:target="_blank">Import</n:a>
                                                     </n:li>
                                                     <n:li>
-                                                        <n:a href="#" n:onClick="loadHelp('export');">Export</n:a>
+                                                        <n:a n:href="${mapPortalPage.getSettingsSupplementary().getProperty('help_url')}/spatial-portal-help/export" n:target="_blank">Export</n:a>
                                                     </n:li>
                                                 </n:ul>
                                             </n:li>
@@ -425,12 +425,6 @@ sandbox_url.setValue(mapPortalPage.getSettingsSupplementary().getProperty("sandb
 
 
         <script><![CDATA[
-
-setTimeout(function() {
-    if(jq('$phylolist_url')[0].innerHTML != "") {
-        document.getElementById("phylogeneticdiversitytool").style.display="block";
-    }
-}, 2000);
 
     function downloadSubmitButtonClick() {
         if (validateForm()) {

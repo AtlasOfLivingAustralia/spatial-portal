@@ -458,11 +458,17 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             MapLayer ml = mc.addWMSLayer(pid, txtLayerName.getText(), url, 0.75f, null, null, LayerUtilitiesImpl.ENVIRONMENTAL_ENVELOPE, null, null);
 
             //add colour!
-            ml.setRedVal(255);
-            ml.setGreenVal(0);
-            ml.setBlueVal(0);
+            int colour = Util.nextColour();
+            int r = (colour >> 16) & 0x000000ff;
+            int g = (colour >> 8) & 0x000000ff;
+            int b = (colour) & 0x000000ff;
+
+            ml.setRedVal(r);
+            ml.setGreenVal(g);
+            ml.setBlueVal(b);
             ml.setDynamicStyle(true);
             ml.setPolygonLayer(true);
+            getMapComposer().applyChange(ml);
             getMapComposer().updateLayerControls();
 
             //make the metadata?
