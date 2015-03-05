@@ -1,6 +1,8 @@
 package au.org.emii.portal.composer;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.legend.Facet;
+import au.org.ala.legend.LegendObject;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.sandbox.SandboxPasteController;
 import au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent;
@@ -33,9 +35,6 @@ import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.persistence.FilePersistenceStrategy;
 import com.thoughtworks.xstream.persistence.PersistenceStrategy;
 import com.thoughtworks.xstream.persistence.XmlArrayList;
-import org.ala.layers.intersect.SimpleShapeFile;
-import org.ala.layers.legend.Facet;
-import org.ala.layers.legend.LegendObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.FileUtils;
@@ -875,12 +874,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         try {
-            double[][] bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
-            List<Double> dbb = new ArrayList<Double>();
-            dbb.add(bb[0][0]);
-            dbb.add(bb[0][1]);
-            dbb.add(bb[1][0]);
-            dbb.add(bb[1][1]);
+            List<Double> dbb = Util.getBoundingBox(bbox);
             md.setBbox(dbb);
         } catch (Exception e) {
             LOGGER.debug("failed to parse: " + bbox, e);
@@ -2064,18 +2058,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
 
             try {
-                double[][] bb;
-
+                List<Double> bbox;
                 if (jo.containsKey("bounding_box")) {
-                    bb = SimpleShapeFile.parseWKT(jo.get("bounding_box").toString()).getBoundingBox();
+                    bbox = Util.getBoundingBox(jo.get("bounding_box").toString());
                 } else {
-                    bb = SimpleShapeFile.parseWKT(jo.get(StringConstants.GEOMETRY).toString()).getBoundingBox();
+                    bbox = Util.getBoundingBox(jo.get(StringConstants.GEOMETRY).toString());
                 }
-                List<Double> bbox = new ArrayList<Double>();
-                bbox.add(bb[0][0]);
-                bbox.add(bb[0][1]);
-                bbox.add(bb[1][0]);
-                bbox.add(bb[1][1]);
                 md.setBbox(bbox);
             } catch (Exception e) {
                 LOGGER.error("failed to parse wkt in : " + url, e);

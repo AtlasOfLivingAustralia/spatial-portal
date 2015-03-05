@@ -2,17 +2,13 @@ package au.org.emii.portal.util;
 
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.SpatialUtil;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.value.BoundingBox;
-import org.ala.layers.util.SpatialUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
-import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObjectImage;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -324,7 +320,8 @@ public class PrintMapComposer {
                 ImageIO.write(mapFlat, "jpg", bos);
                 bos.flush();
 
-                return makePdfFromJpg(bos.toByteArray());
+                //return makePdfFromJpg(bos.toByteArray());
+                return makePdf(bos.toByteArray());
             }
             bos.flush();
         } catch (IOException e) {
@@ -332,6 +329,57 @@ public class PrintMapComposer {
         }
 
         return bos.toByteArray();
+    }
+
+    private byte[] makePdf(byte[] bytes) throws IOException {
+
+        File tmpJpg = File.createTempFile("makePdfFromJpg", ".jpg");
+        FileUtils.writeByteArrayToFile(tmpJpg, bytes);
+        File tmpHtml = File.createTempFile("makePdfFromJpg", ".html");
+        File tmpPdf = File.createTempFile("makePdfFromJpg", ".pdf");
+
+        int fontSize = 30;
+        String[] lines = comment.split("\n");
+        int commentHeight = comment.length() > 0 ? (int) (fontSize * lines.length * 1.5) : 0;
+
+        //html
+        FileUtils.writeStringToFile(tmpHtml, "<html><body><img " +
+                "style='height:" + (height + commentHeight) + ";width:" + width + ";' " +
+                "src='" + tmpJpg.getPath() + "' />");
+
+        //generate pdf
+        String[] cmd = new String[]{
+                CommonData.getSettings().getProperty("wkhtmltopdf.path"),
+            /* page margins (mm) */
+                "-B", "10", "-L", "10", "-T", "10", "-R", "10",
+            /* page size */
+                "--page-width", "" + (width / 4 + 40), "--page-height", "" + ((height + commentHeight) / 4 + 40),
+            /* input */
+                tmpHtml.getPath(),
+            /* output */
+                tmpPdf.getPath()
+
+        };
+
+        ProcessBuilder builder = new ProcessBuilder(cmd);
+        builder.environment().putAll(System.getenv());
+        builder.redirectErrorStream(true);
+        Process proc = null;
+        try {
+            proc = builder.start();
+
+            proc.waitFor();
+        } catch (Exception e) {
+            LOGGER.error("error running wkhtmltopdf", e);
+        }
+
+        byte[] pdf = FileUtils.readFileToByteArray(tmpPdf);
+
+        FileUtils.deleteQuietly(tmpJpg);
+        FileUtils.deleteQuietly(tmpHtml);
+        FileUtils.deleteQuietly(tmpPdf);
+
+        return pdf;
     }
 
     private List drawOSM(Graphics2D g, boolean drawTiles) {
@@ -491,58 +539,6 @@ public class PrintMapComposer {
         }
 
         return imageUrls;
-    }
-
-    private byte[] makePdfFromJpg(byte[] bytes) {
-
-        PDDocument doc;
-        try {
-          /* Step 1: Prepare the document.
-           */
-            doc = new PDDocument();
-            PDPage page = new PDPage();
-            doc.addPage(page);
-
-         /* Step 2: Prepare the image
-          * PDJpeg is the class you use when dealing with jpg images.
-          * You will need to mention the jpg file and the document to which it is to be added
-          * Note that if you complete these steps after the creating the content stream the PDF
-          * file created will show "Out of memory" error.
-          */
-
-            PDXObjectImage image;
-            image = new PDJpeg(doc, new ByteArrayInputStream(bytes));
-
-         /* Create a content stream mentioning the document, the page in the dcoument where the content stream is to be added.
-          * Note that this step has to be completed after the above two steps are complete.
-          */
-            PDPageContentStream content = new PDPageContentStream(doc, page);
-
-       /* Step 3:
-        * Add (draw) the image to the content stream mentioning the position where it should be drawn
-        * and leaving the size of the image as it is
-        */
-
-            int scaledWidth = (int) page.getMediaBox().getWidth();
-            int scaledHeight = (int) (scaledWidth / aspectRatio);
-            content.drawXObject(image, 0, 0, scaledWidth, scaledHeight);
-            content.close();
-
-         /* Step 4:
-          * Save the document as a pdf file mentioning the name of the file
-          */
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-            doc.save(bos);
-
-            return bos.toByteArray();
-
-        } catch (Exception e) {
-            LOGGER.error("failed to make pdf from jpg", e);
-        }
-
-        return new byte[0];
     }
 
     private List drawLayer(Graphics2D g, MapLayer layer, boolean drawTiles) {

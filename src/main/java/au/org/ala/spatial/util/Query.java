@@ -4,9 +4,9 @@
  */
 package au.org.ala.spatial.util;
 
-import org.ala.layers.legend.Facet;
-import org.ala.layers.legend.LegendObject;
-import org.ala.layers.legend.QueryField;
+import au.org.ala.legend.Facet;
+import au.org.ala.legend.LegendObject;
+import au.org.ala.legend.QueryField;
 
 import java.util.List;
 

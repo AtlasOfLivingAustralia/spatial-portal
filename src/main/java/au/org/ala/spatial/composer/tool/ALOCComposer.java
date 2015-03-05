@@ -7,13 +7,12 @@ package au.org.ala.spatial.composer.tool;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.progress.ProgressController;
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.menu.SelectedArea;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.wms.WMSStyle;
-import org.ala.layers.intersect.SimpleRegion;
-import org.ala.layers.intersect.SimpleShapeFile;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -91,18 +90,13 @@ public class ALOCComposer extends ToolComposer {
 
             //estimate analysis size in bytes
             double[][] bbox = null;
+            List<Double> bb;
             if (sa.getMapLayer() != null) {
-                List<Double> bb = sa.getMapLayer().getMapLayerMetadata().getBbox();
-                bbox = new double[][]{{bb.get(0), bb.get(1)}, {bb.get(2), bb.get(3)}};
+                bb = sa.getMapLayer().getMapLayerMetadata().getBbox();
             } else {
-                SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
-                if (sr != null) {
-                    bbox = sr.getBoundingBox();
-                }
+                bb = Util.getBoundingBox(sa.getWkt());
             }
-            if (bbox == null) {
-                bbox = new double[][]{{-180, -90}, {180, 90}};
-            }
+            bbox = new double[][]{{bb.get(0), bb.get(1)}, {bb.get(2), bb.get(3)}};
 
             long cellsInBBox = (long) ((bbox[1][0] - bbox[0][0]) / 0.01 * (bbox[1][1] - bbox[0][1]) / 0.01);
             long size = (groupCount.getValue() + sbenvsel.split(":").length + 2) * cellsInBBox * 4;
@@ -265,10 +259,8 @@ public class ALOCComposer extends ToolComposer {
                 bbox = new double[][]{{bb.get(0), bb.get(1)}, {bb.get(2), bb.get(3)}};
 
             } else {
-                SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
-                if (sr != null) {
-                    bbox = sr.getBoundingBox();
-                }
+                List<Double> bb = Util.getBoundingBox(sa.getWkt());
+                bbox = new double[][]{{bb.get(0), bb.get(1)}, {bb.get(2), bb.get(3)}};
             }
             if (bbox == null) {
                 bbox = new double[][]{{-180, -90}, {180, 90}};

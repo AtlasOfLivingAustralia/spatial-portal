@@ -4,6 +4,7 @@
  */
 package au.org.emii.portal.composer.legend;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.dto.ScatterplotDataDTO;
 import au.org.ala.spatial.util.CommonData;
@@ -15,7 +16,6 @@ import au.org.emii.portal.menu.HasMapLayer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import org.ala.layers.legend.Facet;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.IOUtils;
@@ -444,8 +444,8 @@ public class LayerLegendScatterplotController extends UtilityComposer implements
             } else {
                 String name = "Previous area";
                 if (data.getHighlightSa().getWkt() != null) {
-                    if (data.getHighlightSa().getWkt().equals(CommonData.AUSTRALIA_WKT)) {
-                        name = "Australia";
+                    if (data.getHighlightSa().getWkt().equals(CommonData.getSettings().getProperty(CommonData.AUSTRALIA_WKT))) {
+                        name = CommonData.getSettings().getProperty(CommonData.AUSTRALIA_NAME);
                     } else if (data.getHighlightSa().getWkt().equals(CommonData.WORLD_WKT)) {
                         name = "World";
                     }

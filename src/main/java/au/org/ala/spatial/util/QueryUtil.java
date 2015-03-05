@@ -4,9 +4,9 @@
  */
 package au.org.ala.spatial.util;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.dto.UserDataDTO;
 import au.org.emii.portal.menu.SelectedArea;
-import org.ala.layers.legend.Facet;
 
 import java.util.List;
 import java.util.Map;

@@ -4,13 +4,13 @@
  */
 package au.org.ala.spatial.util;
 
+import au.org.ala.legend.Facet;
+import au.org.ala.legend.LegendObject;
+import au.org.ala.legend.QueryField;
 import au.org.ala.spatial.StringConstants;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
-import org.ala.layers.legend.Facet;
-import org.ala.layers.legend.LegendObject;
-import org.ala.layers.legend.QueryField;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;

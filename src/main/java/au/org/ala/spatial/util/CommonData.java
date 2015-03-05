@@ -5,19 +5,27 @@
 package au.org.ala.spatial.util;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.legend.QueryField;
 import au.org.ala.spatial.StringConstants;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.lang.LanguagePackImpl;
 import au.org.emii.portal.util.PortalProperties;
-import org.ala.layers.legend.QueryField;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
@@ -36,7 +44,8 @@ public final class CommonData {
     //common data
     public static final String WORLD_WKT = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 84.999,179.999 -89.999,-179.999 -89.999))";
     //NC: 20130319 changed to using the correct direction
-    public static final String AUSTRALIA_WKT = "POLYGON((112.0 -44.0,154.0 -44.0,154.0 -9.0,112.0 -9.0,112.0 -44.0))";
+    public static final String AUSTRALIA_WKT = "default.wkt";
+    public static final String AUSTRALIA_NAME = "default.name";
     public static final String PHYLOLIST_URL = "phylolist_url";
     //common parameters
     private static final String SAT_URL = "sat_url";
@@ -178,6 +187,9 @@ public final class CommonData {
             i18nIgnoredPrefixes = new ArrayList<String>();
         }
 
+        //journalmap
+        initJournalmap();
+
         setupAnalysisLayerSets();
 
         initLayerDistances();
@@ -219,6 +231,7 @@ public final class CommonData {
             getSpeciesListCountsKosher(true);
             getSpeciesListCounts(true);
         }
+
 
         //(2) for EnvironmentalList
         if (copyDistances != null) {
@@ -1143,5 +1156,125 @@ public final class CommonData {
             speciesListCountsKosher = m;
         }
         return speciesListCountsKosher;
+    }
+
+    //see https://www.journalmap.org/search
+    //don't refresh this on cache refresh
+    static List<JSONObject> journalMapArticles = null;
+    static List<JournalMapLocation> journalMapLocations = null;
+
+    private static void initJournalmap() {
+        if (journalMapArticles != null) {
+            return;
+        }
+
+        journalMapArticles = new ArrayList<JSONObject>();
+        journalMapLocations = new ArrayList<JournalMapLocation>();
+        List<HashMap<String, String>> journalMapLocationsForDiskCache = new ArrayList<HashMap<String, String>>();
+
+        try {
+
+            //try disk cache
+            File jaFile = new File("/data/webportal/journalmapArticles.json");
+
+            if (jaFile.exists()) {
+                JSONParser jp = new JSONParser();
+                JSONArray ja = (JSONArray) jp.parse(FileUtils.readFileToString(jaFile));
+
+                for (int i = 0; i < ja.size(); i++) {
+                    journalMapArticles.add((JSONObject) ja.get(i));
+                }
+            } else {
+
+                int page = 1;
+                int maxpage = 0;
+                while ((page == 1 || page < maxpage) && page < 5) {
+                    HttpClient client = new HttpClient();
+
+                    String journalmapUrl = CommonData.getSettings().getProperty("journalmap.url", null);
+                    String journalmapKey = CommonData.getSettings().getProperty("journalmap.api_key", null);
+
+                    String url = journalmapUrl + "api/articles.json?version=1.0&key=" + journalmapKey + "&page=" + page;
+                    page = page + 1;
+
+                    LOGGER.debug("url: " + url);
+
+                    GetMethod get = new GetMethod(url);
+
+                    client.executeMethod(get);
+
+                    //update maxpage
+                    maxpage = Integer.parseInt(get.getResponseHeader("X-Pages").getValue());
+
+                    //cache
+                    JSONParser jp = new JSONParser();
+                    JSONArray ja = (JSONArray) jp.parse(get.getResponseBodyAsString());
+                    for (int i = 0; i < ja.size(); i++) {
+                        JSONObject o = (JSONObject) ja.get(i);
+                        if (o.containsKey("locations")) {
+                            journalMapArticles.add(o);
+                        }
+                    }
+                }
+
+                //save to disk cache
+                FileWriter fw = new FileWriter(jaFile);
+                JSONValue.writeJSONString(journalMapArticles, fw);
+                fw.flush();
+                fw.close();
+            }
+        } catch (Exception e) {
+            LOGGER.error("error initialising journalmap data", e);
+        }
+
+        //construct locations list
+        for (int i = 0; i < journalMapArticles.size(); i++) {
+            JSONArray locations = (JSONArray) journalMapArticles.get(i).get("locations");
+
+            for (int j = 0; j < locations.size(); j++) {
+                JSONObject l = (JSONObject) locations.get(j);
+                double longitude = Double.parseDouble(l.get("longitude").toString());
+                double latitude = Double.parseDouble(l.get("latitude").toString());
+                journalMapLocations.add(new JournalMapLocation(longitude, latitude, i));
+            }
+        }
+    }
+
+    static class JournalMapLocation {
+        Point point;
+        int idx;
+
+        public JournalMapLocation(double longitude, double latitude, int idx) {
+            Coordinate c = new Coordinate(longitude, latitude);
+            GeometryFactory gf = new GeometryFactory();
+            point = gf.createPoint(c);
+
+            this.idx = idx;
+        }
+    }
+
+    public static List<JSONObject> filterJournalMapArticles(String wkt) {
+        List<JSONObject> list = new ArrayList<JSONObject>();
+        Set<Integer> set = new HashSet<Integer>();
+
+        try {
+            WKTReader wktReader = new WKTReader();
+            com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
+
+            for (JournalMapLocation l : journalMapLocations) {
+                //only add it once (articles can have >1 location)
+                if (!set.contains(l.idx)) {
+                    if (g.contains(l.point)) {
+                        list.add(journalMapArticles.get(l.idx));
+                        set.add(l.idx);
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            LOGGER.error("error intersecting wkt with journal map articles", e);
+        }
+
+        return list;
     }
 }

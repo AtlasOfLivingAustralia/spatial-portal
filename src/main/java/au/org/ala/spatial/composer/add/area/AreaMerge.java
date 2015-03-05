@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
@@ -9,7 +10,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.util.GeometryCombiner;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import org.ala.layers.legend.Facet;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -153,8 +153,8 @@ public class AreaMerge extends AreaToolComposer {
                     }
                 } else {
                     String swkt = null;
-                    if ("Australia".equalsIgnoreCase(cb.getLabel())) {
-                        swkt = CommonData.AUSTRALIA_WKT;
+                    if (CommonData.getSettings().getProperty(CommonData.AUSTRALIA_NAME).equalsIgnoreCase(cb.getLabel())) {
+                        swkt = CommonData.getSettings().getProperty(CommonData.AUSTRALIA_WKT);
                     } else if ("Current Extent".equalsIgnoreCase(cb.getLabel())) {
                         swkt = getMapComposer().getViewArea();
                     } else {

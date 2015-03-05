@@ -4,9 +4,9 @@
  */
 package au.org.ala.spatial.dto;
 
+import au.org.ala.legend.LegendObject;
 import au.org.ala.spatial.util.Query;
 import au.org.emii.portal.menu.SelectedArea;
-import org.ala.layers.legend.LegendObject;
 
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;

@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.gazetteer.GazetteerAutoComplete;
 import au.org.ala.spatial.util.CommonData;
@@ -11,9 +12,6 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import org.ala.layers.intersect.SimpleRegion;
-import org.ala.layers.intersect.SimpleShapeFile;
-import org.ala.layers.legend.Facet;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -23,6 +21,8 @@ import org.zkoss.zul.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+;
 
 /**
  * @author angus
@@ -73,35 +73,23 @@ public class AreaRegionSelection extends AreaToolComposer {
 
         this.layerName = mapLayer.getName();
 
-        SimpleRegion sr = SimpleShapeFile.parseWKT(obj.get(StringConstants.BBOX).toString());
-        double[][] bb = sr.getBoundingBox();
-        List<Double> dbb = new ArrayList<Double>();
-        dbb.add(bb[0][0]);
-        dbb.add(bb[0][1]);
-        dbb.add(bb[1][0]);
-        dbb.add(bb[1][1]);
+        List<Double> dbb = Util.getBoundingBox(obj.get(StringConstants.BBOX).toString());
 
         //if the layer is a point create a radius
         boolean point = false;
-        if ((float) bb[0][0] == (float) bb[1][0] && (float) bb[0][1] == (float) bb[1][1]) {
+        if (dbb.get(0).floatValue() == dbb.get(2).floatValue() && (float) dbb.get(1).floatValue() == dbb.get(3).floatValue()) {
             point = true;
 
-            mapLayer.setWKT("POINT(" + bb[0][0] + " " + bb[0][1] + ")");
+            mapLayer.setWKT("POINT(" + dbb.get(0).floatValue() + " " + dbb.get(1).floatValue() + ")");
 
             double radius = dRadius.getValue() * 1000.0;
 
-            String wkt = Util.createCircleJs(bb[0][0], bb[0][1], radius);
+            String wkt = Util.createCircleJs(dbb.get(0).floatValue(), dbb.get(1).floatValue(), radius);
             getMapComposer().removeLayer(label);
             mapLayer = getMapComposer().addWKTLayer(wkt, label, label);
 
             //redo bounding box
-            sr = SimpleShapeFile.parseWKT(wkt);
-            bb = sr.getBoundingBox();
-            dbb = new ArrayList<Double>();
-            dbb.add(bb[0][0]);
-            dbb.add(bb[0][1]);
-            dbb.add(bb[1][0]);
-            dbb.add(bb[1][1]);
+            dbb = Util.getBoundingBox(wkt);
         } else {
             mapLayer.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + obj.get(StringConstants.PID)));
         }

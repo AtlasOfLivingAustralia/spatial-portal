@@ -19,7 +19,7 @@
         <vbox  >
             <radiogroup id="rgArea" orient="vertical" focus="true" onOK="addspeciesinareawindow.onClick$btnOk(null)">
                 <radio id="rAreaCurrent" label="Current extent" value="current" />
-                <radio id="rAreaAustralia" label="Australia" value="australia" />
+                <radio id="rAreaAustralia" label="${addspeciesinareawindow.getMapComposer().getSettingsSupplementary().getProperty('default.name')}" value="australia" />
                 <radio id="rAreaWorld" label="World" value="world" checked="true"/>
             </radiogroup>
         </vbox>

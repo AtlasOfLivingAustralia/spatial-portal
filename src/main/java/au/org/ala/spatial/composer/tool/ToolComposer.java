@@ -1318,7 +1318,7 @@ public class ToolComposer extends UtilityComposer {
             if (StringConstants.CURRENT.equals(area)) {
                 sa = new SelectedArea(null, getMapComposer().getViewArea());
             } else if (StringConstants.AUSTRALIA.equals(area)) {
-                sa = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
+                sa = new SelectedArea(null, CommonData.getSettings().getProperty(CommonData.AUSTRALIA_WKT));
             } else if (StringConstants.WORLD.equals(area)) {
                 sa = new SelectedArea(null, CommonData.WORLD_WKT);
             } else {
@@ -1346,7 +1346,7 @@ public class ToolComposer extends UtilityComposer {
             if (StringConstants.CURRENT.equals(area)) {
                 sa = new SelectedArea(null, getMapComposer().getViewArea());
             } else if (StringConstants.AUSTRALIA.equals(area)) {
-                sa = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
+                sa = new SelectedArea(null, CommonData.getSettings().getProperty(CommonData.AUSTRALIA_WKT));
             } else if (StringConstants.WORLD.equals(area)) {
                 sa = new SelectedArea(null, CommonData.WORLD_WKT);
             } else {

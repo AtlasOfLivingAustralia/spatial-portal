@@ -10,12 +10,12 @@
                     <div style="padding-top:0px" width="65px"  >
                         <label value="Layer name" sclass="h3" />
                     </div>
-                    <div class="input-group"  width="260px">
-                        <textbox class="form-control" id="txtLayerName" onFocus="btnLayerName.setDisabled(false)"/>
-                        <span class="input-group-btn" style="float:none">
-                            <button class="btn-mini" id="btnLayerName" forward="onOK$txtLayerName" disabled="true">Rename</button>
-                        </span>
-                    </div>
+                    <hbox style="float:left;">
+                           <textbox class="form-control" id="txtLayerName" onFocus="btnLayerName.setDisabled(false)"/>
+                           <div class="btn-group" >
+                                <button class="btn-mini" id="btnLayerName" forward="onOK$txtLayerName" disabled="true">Rename</button>
+                           </div>
+                    </hbox>
                 </hbox>
             </div>
             <!-- points or grids -->

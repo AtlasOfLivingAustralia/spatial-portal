@@ -8,8 +8,6 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.menu.SelectedArea;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import org.ala.layers.intersect.SimpleRegion;
-import org.ala.layers.intersect.SimpleShapeFile;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
@@ -21,6 +19,7 @@ import org.zkoss.zul.Combobox;
 
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.List;
 
 /**
  * @author ajay
@@ -122,11 +121,11 @@ public class SitesBySpeciesComposer extends ToolComposer {
             dResolution.setValue(0.05);
             gridResolution = 0.05;
         }
-        SimpleRegion sr = SimpleShapeFile.parseWKT(sa.getWkt());
+        List<Double> bbox = Util.getBoundingBox(sa.getWkt());
 
         int occurrenceCount = query.getOccurrenceCount();
-        int boundingboxcellcount = (int) ((sr.getBoundingBox()[1][0] - sr.getBoundingBox()[0][0])
-                * (sr.getBoundingBox()[1][1] - sr.getBoundingBox()[0][1])
+        int boundingboxcellcount = (int) ((bbox.get(2) - bbox.get(0))
+                * (bbox.get(3) - bbox.get(1))
                 / (gridResolution * gridResolution));
 
         LOGGER.debug("SitesBySpecies for " + occurrenceCount + " occurrences in up to " + boundingboxcellcount + " grid cells.");

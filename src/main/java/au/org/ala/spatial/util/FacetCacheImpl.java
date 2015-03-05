@@ -1,7 +1,7 @@
 package au.org.ala.spatial.util;
 
+import au.org.ala.legend.QueryField;
 import au.org.ala.spatial.StringConstants;
-import org.ala.layers.legend.QueryField;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractMessageSource;
 import org.springframework.scheduling.annotation.Scheduled;

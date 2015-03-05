@@ -34,7 +34,7 @@
 
                     <separator />
                     <label value="Preset areas" sclass="wSubLabel" />
-                    <radio label="Box - Australia" id="ciBoxAustralia"  visible='${addareawindow.getMapComposer().getSettingsSupplementary().getProperty("addtomap.areas.boxaustralia.enable")?"true":"false"}' />
+                    <radio label="Box - ${addareawindow.getMapComposer().getSettingsSupplementary().getProperty('default.name')}" id="ciBoxAustralia"  visible='${addareawindow.getMapComposer().getSettingsSupplementary().getProperty("addtomap.areas.boxaustralia.enable")?"true":"false"}' />
                     <radio label="Box - World" id="ciBoxWorld"   visible='${addareawindow.getMapComposer().getSettingsSupplementary().getProperty("addtomap.areas.boxworld.enable")?"true":"false"}'/>
                     <radio label="Box - Current View" id="ciBoxCurrentView"  visible='${addareawindow.getMapComposer().getSettingsSupplementary().getProperty("addtomap.areas.boxcurrentview.enable")?"true":"false"}' />
 

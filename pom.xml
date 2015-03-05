@@ -86,11 +86,11 @@
             <version>${jerseyVersion}</version>
         </dependency-->
 
-        <dependency>
+        <!--dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>1.8.4</version>
-        </dependency>
+        </dependency-->
 
         <!--dependency>
             <groupId>com.itextpdf.tool</groupId>
@@ -105,6 +105,12 @@
             <version>2.2.3</version>
             <classifier>jdk15</classifier>
         </dependency>-->
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1</version>
+        </dependency>
+
 
         <!-- csv -->
         <dependency>
@@ -119,7 +125,7 @@
             <version>2.0b4</version>
         </dependency-->
 
-        <dependency>
+        <!--dependency>
             <groupId>org.zkoss.addons</groupId>
             <artifactId>zk-bootstrap</artifactId>
             <version>1.0.0</version>
@@ -133,7 +139,7 @@
                     <artifactId>zkex</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>log4j</groupId>
@@ -224,7 +230,7 @@
             <artifactId>wms_getcapabilities_xmlbeans</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate</artifactId>
             <version>3.2.5.ga</version>
@@ -233,7 +239,7 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
             <version>3.3.2.GA</version>
-        </dependency>
+        </dependency-->
         <!--dependency>
             <groupId>javax.sql</groupId>
             <artifactId>jdbc-stdext</artifactId>
@@ -244,11 +250,11 @@
             <artifactId>jta</artifactId>
             <version>1.0.1B</version>
         </dependency-->
-        <dependency>
+        <!--dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>ejb3-persistence</artifactId>
             <version>1.0.1.GA</version>
-        </dependency>
+        </dependency-->
         <!--dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -278,7 +284,7 @@
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.3</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>au.org.ala</groupId>
             <artifactId>layers-store</artifactId>
             <version>1.1</version>
@@ -296,7 +302,7 @@
                     <artifactId>ands-pid-client</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency-->
 
         <!-- zk and spring -->
         <dependency>
@@ -670,6 +676,11 @@
             <groupId>oro</groupId>
             <artifactId>oro</artifactId>
             <version>2.0.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-wms</artifactId>
+            <version>${geotools.version}</version>
         </dependency>
 
     </dependencies>

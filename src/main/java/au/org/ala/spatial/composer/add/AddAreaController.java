@@ -85,7 +85,7 @@ public class AddAreaController extends UtilityComposer {
         } else if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {
             windowName = "WEB-INF/zul/add/area/AreaEnvironmentalEnvelope.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {
-            String wkt = CommonData.AUSTRALIA_WKT;
+            String wkt = CommonData.getSettings().getProperty(CommonData.AUSTRALIA_WKT);
             String layerName = mc.getNextAreaLayerName(CommonData.lang(StringConstants.AUSTRALIA_BOUNDING_BOX));
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
             mapLayer.getMapLayerMetadata().setMoreInfo(LayersUtil.getMetadata(CommonData.lang(StringConstants.AUSTRALIA_BOUNDING_BOX) + " " + wkt));

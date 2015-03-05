@@ -1,5 +1,7 @@
 package au.org.emii.portal.menu;
 
+import au.org.ala.legend.Facet;
+import au.org.ala.legend.LegendObject;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.dto.ScatterplotDataDTO;
 import au.org.ala.spatial.util.Query;
@@ -7,8 +9,6 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.value.AbstractIdentifierImpl;
 import au.org.emii.portal.wms.WMSStyle;
-import org.ala.layers.legend.Facet;
-import org.ala.layers.legend.LegendObject;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.json.simple.JSONArray;
 

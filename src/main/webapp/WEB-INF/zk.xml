@@ -10,23 +10,6 @@
         <listener-class>org.zkoss.zkplus.hibernate.HibernateSessionContextListener</listener-class>
     </listener>
 
-    <library-property>
-        <name>org.zkoss.zul.Button.mold</name>
-        <value>bs</value>
-    </library-property>
-    <library-property>
-        <name>org.zkoss.zul.Menupopup.mold</name>
-        <value>bs</value>
-    </library-property>
-    <library-property>
-        <name>org.zkoss.zul.Paging.mold</name>
-        <value>bs</value>
-    </library-property>
-    <library-property>
-        <name>org.zkoss.zul.Panel.mold</name>
-        <value>bs</value>
-    </library-property>
-
     <session-config>
         <timer-keep-alive>true</timer-keep-alive>
         <automatic-timeout>true</automatic-timeout>

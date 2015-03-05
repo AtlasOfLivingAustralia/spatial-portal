@@ -6,11 +6,9 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
-import org.ala.layers.intersect.SimpleShapeFile;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RemoteMapImpl implements RemoteMap {
@@ -50,12 +48,7 @@ public class RemoteMapImpl implements RemoteMap {
             wktLayer.setMapLayerMetadata(new MapLayerMetadata());
         }
         wkt = wkt.replace(" (", "(").replace(", ", ",");
-        double[][] bbox = SimpleShapeFile.parseWKT(wkt).getBoundingBox();
-        List<Double> bb = new ArrayList<Double>();
-        bb.add(bbox[0][0]);
-        bb.add(bbox[0][1]);
-        bb.add(bbox[1][0]);
-        bb.add(bbox[1][1]);
+        List<Double> bb = Util.getBoundingBox(wkt);
         wktLayer.getMapLayerMetadata().setBbox(bb);
 
         return wktLayer;

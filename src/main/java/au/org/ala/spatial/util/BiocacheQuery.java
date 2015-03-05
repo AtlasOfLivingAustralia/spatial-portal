@@ -5,16 +5,14 @@
 package au.org.ala.spatial.util;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.legend.Facet;
+import au.org.ala.legend.Legend;
+import au.org.ala.legend.LegendObject;
+import au.org.ala.legend.QueryField;
 import au.org.ala.spatial.StringConstants;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
-import org.ala.layers.intersect.SimpleRegion;
-import org.ala.layers.intersect.SimpleShapeFile;
-import org.ala.layers.legend.Facet;
-import org.ala.layers.legend.Legend;
-import org.ala.layers.legend.LegendObject;
-import org.ala.layers.legend.QueryField;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -1426,12 +1424,7 @@ public class BiocacheQuery implements Query, Serializable {
             }
         } catch (Exception e) {
             //default to 'world' bb
-            SimpleRegion sr = SimpleShapeFile.parseWKT(CommonData.WORLD_WKT);
-            bbox.clear();
-            bbox.add(Math.max(-180, sr.getBoundingBox()[0][0]));
-            bbox.add(Math.max(-90, sr.getBoundingBox()[0][1]));
-            bbox.add(Math.min(180, sr.getBoundingBox()[1][0]));
-            bbox.add(Math.min(90, sr.getBoundingBox()[1][1]));
+            bbox = Util.getBoundingBox(CommonData.WORLD_WKT);
 
             LOGGER.error("error getting species layer bounding box from biocache:" + url, e);
         }

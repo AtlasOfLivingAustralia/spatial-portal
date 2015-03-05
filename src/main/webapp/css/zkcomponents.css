@@ -31,7 +31,7 @@ a[rel="external"], a.external {
     margin: 5px 30px;
     text-align: center;
     color: white;
-    font-family: Arial, Helvetica, sans-serif;;
+    font-family: Roboto, Helvetica, "Helvetica Neue", Arial, sans-serif;
 }
 
 #ft * {
@@ -259,7 +259,7 @@ closebox a.helpButtonMain:hover {
 
 /* species info table start */
 .md_heading {
-    font-family: "Arial Narrow", Arial, Helvetica, sans-serif;
+    font-family: Roboto, Helvetica, "Helvetica Neue", Arial, sans-serif;
     font-size: 22.1px;
     /* color:#718804; */
     padding: 5px;
@@ -267,7 +267,7 @@ closebox a.helpButtonMain:hover {
 }
 
 .md_th {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Roboto, Helvetica, "Helvetica Neue", Arial, sans-serif;
     font-size: 11px;
     font-weight: 700;
     font-style: normal;
@@ -299,7 +299,7 @@ closebox a.helpButtonMain:hover {
 
 .md_value {
     text-align: left;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Roboto, Helvetica, "Helvetica Neue", Arial, sans-serif;
     font-size: 11px;
     line-height: 20.8px;
     padding: 5px;
@@ -319,7 +319,7 @@ closebox a.helpButtonMain:hover {
 
 /* Page font */
 .z-a, .z-label, .z-radio-content, .z-checkbox-content, body, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content, .z-textbox, .z-decimalbox, .z-intbox, .z-longbox, .z-doublebox, .z-combobox-input, .z-bandbox-input, .z-datebox-input, .z-timebox-input, .z-spinner-input, .z-doublespinner-input, .z-caption, .z-caption-content, .z-row:hover > .z-row-inner > .z-row-content, .z-row, .z-row-inner, .z-row-content, .z-combobox-popup, .z-bandbox-popup, .z-datebox-popup, .z-timebox-popup {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Roboto, Helvetica, "Helvetica Neue", Arial, sans-serif;
     font-size: 12px;
 }
 
@@ -526,7 +526,7 @@ z-listbox-autopaging .z-listcell-cnt {
     background-color: #3C668D;
     color: #FFF;
     cursor: pointer;
-    font-family: Arial;
+    font-family: Roboto, Helvetica, "Helvetica Neue", Arial, sans-serif;
     font-size: x-small;
 }
 
@@ -570,4 +570,30 @@ z-listbox-autopaging .z-listcell-cnt {
 .z-listheader-content {
     padding-left:5px;
     padding-right:5px;
+}
+
+.z-listheader-content, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content {
+    font-family: Roboto, Helvetica, "Helvetica Neue", Arial, sans-serif;
+    line-height: 20px;
+    padding: 0px;
+}
+
+.z-listitem.z-listitem-selected > .z-listcell > .z-listcell-content {
+    font-family: Roboto, Helvetica, "Helvetica Neue", Arial, sans-serif;
+    line-height: 20px;
+    padding: 0px;
+}
+
+.z-listitem.z-listitem-selected > .z-listcell {
+    background: unset;
+    background-color: #A9A9A9;
+}
+
+.z-listitem.z-listitem:hover > .z-listcell {
+    background: unset;
+    background-color: #DF4A21;
+}
+
+.z-paging-input {
+    width: 60px;
 }

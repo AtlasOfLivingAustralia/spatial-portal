@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.sandbox;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.BiocacheQuery;
 import au.org.ala.spatial.util.CommonData;
@@ -7,15 +8,14 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import org.ala.layers.legend.Facet;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.apache.pdfbox.io.IOUtils;
 import org.apache.xmlbeans.impl.common.ReaderInputStream;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Event;

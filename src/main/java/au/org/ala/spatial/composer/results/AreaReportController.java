@@ -89,6 +89,7 @@ public class AreaReportController extends UtilityComposer {
     private ChangableSimpleListModel areaReportListModel;
     private Map<String, AreaReportItemDTO> reportModelMap;
     private String biostorHtml = null;
+    private String journalmapHtml = null;
 
     public static void open(SelectedArea sa, String name, String displayName, String areaSqKm, double[] boundingBox, boolean includeEndemic) {
         Map<String, Object> params = new HashMap<String, Object>();
@@ -257,6 +258,8 @@ public class AreaReportController extends UtilityComposer {
         values.put(StringConstants.CHECKLIST_SPECIES, new AreaReportItemDTO("Checklist species"));
         //biostor documents
         values.put(StringConstants.BIOSTOR, new AreaReportItemDTO("Biostor documents"));
+        //journalmap documents
+        values.put(StringConstants.JOURNAL_MAP, new AreaReportItemDTO("Journalmap documents"));
         //gazetteer points
         values.put(StringConstants.GAZETTEER, new AreaReportItemDTO("Gazetteer points"));
         //points of interest
@@ -321,6 +324,8 @@ public class AreaReportController extends UtilityComposer {
                                                 listSpeciesChecklists(dto);
                                             } else if (dto.getListType() == ListType.BIOSTOR) {
                                                 listBiostor();
+                                            } else if (dto.getListType() == ListType.JOURNAL_MAP) {
+                                                listJournalmap();
                                             }
 
                                         }
@@ -484,6 +489,13 @@ public class AreaReportController extends UtilityComposer {
             }
         };
 
+        Callable journalmap = new Callable<Map<String, String>>() {
+            @Override
+            public Map<String, String> call() {
+                return journalmap(reportModelMap.get(StringConstants.JOURNAL_MAP));
+            }
+        };
+
         Callable pointsOfInterestC = new Callable<Map<String, String>>() {
             @Override
             public Map<String, String> call() {
@@ -520,6 +532,7 @@ public class AreaReportController extends UtilityComposer {
             futures.put("SpeciesChecklists", pool.submit(speciesChecklists));
             futures.put("SpeciesDistributions", pool.submit(speciesDistributions));
             futures.put("Biostor", pool.submit(biostor));
+            futures.put("Journalmap", pool.submit(journalmap));
 
             if (CommonData.getDisplayPointsOfInterest()) {
                 futures.put("PointsOfInterest", pool.submit(pointsOfInterestC));
@@ -1104,6 +1117,64 @@ public class AreaReportController extends UtilityComposer {
         return countData;
     }
 
+    Map<String, String> journalmap(AreaReportItemDTO model) {
+
+        Map<String, String> countData = new HashMap<String, String>();
+
+        try {
+            String area = selectedArea.getWkt();
+            double lat1 = 0;
+            double lat2 = 0;
+            double long1 = 0;
+            double long2 = 0;
+            if (area.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
+                // use boundingbox
+                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
+                long1 = bbox.get(0);
+                lat1 = bbox.get(1);
+                long2 = bbox.get(2);
+                lat2 = bbox.get(3);
+
+                area = "POLYGON((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," +
+                        long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+            }
+
+            List<JSONObject> list = CommonData.filterJournalMapArticles(area);
+
+            String journalmapUrl = CommonData.getSettings().getProperty("journalmap.url", null);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("<ol>");
+            for (int i = 0; i < list.size(); i++) {
+                JSONObject o = list.get(i);
+                sb.append("<li>");
+                sb.append("<a href=\"").append(journalmapUrl + "articles/" + o.get("id").toString()).append("\" ");
+                sb.append("target=\"_blank\">");
+                sb.append(o.get("title"));
+                sb.append("</li>");
+            }
+            sb.append("</ol>");
+
+            if (!list.isEmpty()) {
+                journalmapHtml = sb.toString();
+            }
+
+            countData.put(StringConstants.JOURNAL_MAP, String.valueOf(list.size()));
+            model.setCount(Integer.toString(list.size()));
+            if (!list.isEmpty()) {
+                model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
+                model.setListType(ListType.JOURNAL_MAP);
+                model.addUrlDetails("JournalMap", "https://www.journalmap.org/");
+            }
+
+        } catch (Exception e) {
+            LOGGER.error("unable to get area info from journalmap", e);
+            countData.put(StringConstants.JOURNAL_MAP, "unavailable");
+            model.setCount("Unavailable");
+        }
+        return countData;
+    }
+
     public void listDistributions(AreaReportItemDTO model) {
         int c = 0;
         try {
@@ -1269,6 +1340,13 @@ public class AreaReportController extends UtilityComposer {
     public void listBiostor() {
         if (biostorHtml != null) {
             Event ev = new Event(StringConstants.ONCLICK, this, "Biostor Documents\n" + biostorHtml);
+            getMapComposer().openHTML(ev);
+        }
+    }
+
+    public void listJournalmap() {
+        if (journalmapHtml != null) {
+            Event ev = new Event(StringConstants.ONCLICK, this, "Journalmap Documents\n" + journalmapHtml);
             getMapComposer().openHTML(ev);
         }
     }

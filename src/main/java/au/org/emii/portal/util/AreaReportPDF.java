@@ -1,13 +1,12 @@
 package au.org.emii.portal.util;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.*;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.wms.WMSStyle;
-import org.ala.layers.intersect.SimpleShapeFile;
-import org.ala.layers.legend.Facet;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -52,6 +51,7 @@ public class AreaReportPDF {
     private BiocacheQuery query;
     private String[] checklists;
     private String[] distributions;
+    List<JSONObject> documents;
     private Map<String, byte[]> imageMap;
     private RemoteMap remoteMap;
     private Map tabulation;
@@ -205,7 +205,7 @@ public class AreaReportPDF {
             fw.write("Iconic species: " + counts.get("Iconic_Species"));
             fw.write("</td>");
             fw.write("<td>");
-            fw.write("Mammals: " + counts.get("Mammals"));
+            fw.write("JournalMap Articles: " + counts.get("Journalmap"));
             fw.write("</td>");
             fw.write("</tr>");
             fw.write("<tr>");
@@ -377,6 +377,19 @@ public class AreaReportPDF {
             fw.write("</body></html>");
             fw.close();
             fileNumber++;
+            fw = startHtmlOut(fileNumber, filename);
+
+            //Journalmap page
+            count = Integer.parseInt(counts.get("Journalmap").toString());
+            countKosher = Integer.parseInt(counts.get("Journalmap").toString());
+            imageUrl = null;
+            notes = "<a href='http://journalmap.org'>JournalMap</a>";
+            speciesPage(false, fw, "My Area", "JournalMap Articles", notes, tableNumber, count, -1, figureNumber, null,
+                    csvs.get("Journalmap").toString());
+            tableNumber++;
+            fw.write("</body></html>");
+            fw.close();
+            fileNumber++;
 
         } catch (Exception e) {
             LOGGER.error("failed to produce report pdf", e);
@@ -487,6 +500,10 @@ public class AreaReportPDF {
             if (isSpecies) {
                 columnOrder = new int[]{8, 1, 10, 11};
                 fw.write("<tr><td>Family</td><td id='scientificName' >Scientific Name</td><td>Common Name</td><td>No. Occurrences</td></tr>");
+            } else if ("JournalMap Articles".equals(title)) {
+                //authors (last_name, first_name), publish_year, title, publication.name, doi, JournalMap URL
+                columnOrder = new int[]{0, 1, 2, 3, 4, 5};
+                fw.write("<tr><td>Author/s</td><td>Year</td><td>Title</td><td>Publication</td><td>DOI</td><td>URL</td></tr>");
             } else {
                 columnOrder = new int[]{4, 1, 3, 7, 8, 11, 12};
                 fw.write("<tr><td>Family</td><td id='scientificName' >Scientific Name</td><td>Common Name</td><td>Min Depth</td><td>Max Depth</td><td>Area Name</td><td>Area sq km</td></tr>");
@@ -691,6 +708,15 @@ public class AreaReportPDF {
             }
         });
 
+        callables.add(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                initJournalmapCsv();
+
+                return null;
+            }
+        });
+
         ExecutorService executorService = Executors.newFixedThreadPool(10);
 
         try {
@@ -793,6 +819,72 @@ public class AreaReportPDF {
         }
 
         csvs.put(type, sb.toString());
+    }
+
+    private void initJournalmapCsv() {
+        setProgress("Getting information: Journalmap", 0);
+        if (isCancelled()) return;
+        StringBuilder sb = new StringBuilder();
+        List<JSONObject> list = CommonData.filterJournalMapArticles(wkt);
+        //empty header
+        sb.append("\n");
+
+        for (JSONObject jo : list) {
+            if (sb.length() > 0) {
+                sb.append("\n");
+            }
+            //authors (last_name, first_name), publish_year, title, publication.name, doi, JournalMap URL
+            if (jo.containsKey("authors")) {
+                String author = "";
+                JSONArray ja = (JSONArray) jo.get("authors");
+                for (int i = 0; i < ja.size(); i++) {
+                    if (i > 0) author += ", ";
+                    JSONObject o = (JSONObject) ja.get(i);
+                    if (o.containsKey("last_name")) {
+                        author += o.get("last_name") + ", ";
+                    }
+                    if (o.containsKey("first_name")) {
+                        author += o.get("first_name");
+                    }
+                }
+                sb.append("\"").append(author.replace("\"", "\"\"")).append("\".");
+            }
+            sb.append(",");
+            if (jo.containsKey("publish_year")) {
+                sb.append("\"").append(jo.get("publish_year").toString().replace("\"", "\"\"")).append(".\"");
+            }
+            sb.append(",");
+            if (jo.containsKey("title")) {
+                sb.append("\"").append(jo.get("title").toString().replace("\"", "\"\"")).append(".\"");
+            }
+            sb.append(",");
+            if (jo.containsKey("publication")) {
+                JSONObject o = (JSONObject) jo.get("publication");
+                if (o.containsKey("name")) {
+                    sb.append("\"").append(o.get("name").toString().replace("\"", "\"\"")).append(".\"");
+                }
+            }
+            sb.append(",");
+            if (jo.containsKey("doi")) {
+                sb.append("\"").append(jo.get("doi").toString().replace("\"", "\"\"")).append(".\"");
+            }
+            sb.append(",");
+            if (jo.containsKey("id")) {
+                String journalmapUrl = CommonData.getSettings().getProperty("journalmap.url", null);
+                String articleUrl = journalmapUrl + "articles/" + jo.get("id").toString();
+                sb.append("<a href='" + articleUrl + "'>" + articleUrl + "</a>");
+            }
+        }
+
+        documents = list;
+
+        if (documents.size() <= 0) {
+            counts.put("Journalmap", "0");
+        } else {
+            counts.put("Journalmap", String.valueOf(documents.size()));
+        }
+
+        csvs.put("Journalmap", sb.toString());
     }
 
 
@@ -1096,12 +1188,7 @@ public class AreaReportPDF {
         MapLayerMetadata md = mapLayer.getMapLayerMetadata();
 
         try {
-            double[][] bb = SimpleShapeFile.parseWKT(bbox).getBoundingBox();
-            List<Double> dbb = new ArrayList<Double>();
-            dbb.add(bb[0][0]);
-            dbb.add(bb[0][1]);
-            dbb.add(bb[1][0]);
-            dbb.add(bb[1][1]);
+            List<Double> dbb = Util.getBoundingBox(bbox);
             md.setBbox(dbb);
         } catch (Exception e) {
             LOGGER.debug("failed to parse: " + bbox, e);

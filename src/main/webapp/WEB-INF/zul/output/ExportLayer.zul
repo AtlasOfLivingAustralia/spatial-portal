@@ -44,7 +44,7 @@
                     <separator />
                     <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
                         <!--radio id="rAreaCurrent" label="Current extent" value="current" />
-                        <radio id="rAreaAustralia" label="Australia" value="australia" />
+                        <radio id="rAreaAustralia" label="${addtoolwindow.getMapComposer().getSettingsSupplementary().getProperty('default.name')}" value="australia" />
                         <radio id="rAreaWorld" label="World" value="world" /-->
                     </radiogroup>
                         <!--

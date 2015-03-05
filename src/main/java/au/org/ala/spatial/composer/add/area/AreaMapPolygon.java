@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.add.area;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.gazetteer.GazetteerPointSearch;
 import au.org.ala.spatial.util.CommonData;
@@ -8,7 +9,6 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import org.ala.layers.legend.Facet;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

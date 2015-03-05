@@ -270,6 +270,7 @@ public final class StringConstants {
     public static final String GEOM_IDX = "geom_idx";
     public static final String LSIDS = "lsids";
     public static final String SUB_SPECIES = "subspecies";
+    public static final String JOURNAL_MAP = "journalmap";
 
 
     private StringConstants() {

@@ -5,6 +5,8 @@
 package au.org.ala.spatial.util;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.legend.Facet;
+import au.org.ala.legend.LegendObject;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.dto.WKTReducedDTO;
 import com.vividsolutions.jts.geom.*;
@@ -13,8 +15,6 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.operation.valid.IsValidOp;
-import org.ala.layers.legend.Facet;
-import org.ala.layers.legend.LegendObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -1048,5 +1048,22 @@ public final class Util {
         }
 
         return newWkt;
+    }
+
+    public static List<Double> getBoundingBox(String wkt) {
+        try {
+            WKTReader wktReader = new WKTReader();
+            com.vividsolutions.jts.geom.Geometry g = wktReader.read(wkt);
+
+            List<Double> bbox = new ArrayList<Double>();
+            bbox.add(g.getEnvelopeInternal().getMinX());
+            bbox.add(g.getEnvelopeInternal().getMinY());
+            bbox.add(g.getEnvelopeInternal().getMaxX());
+            bbox.add(g.getEnvelopeInternal().getMaxY());
+
+            return bbox;
+        } catch (Exception e) {
+            return Util.getBoundingBox(CommonData.WORLD_WKT);
+        }
     }
 }

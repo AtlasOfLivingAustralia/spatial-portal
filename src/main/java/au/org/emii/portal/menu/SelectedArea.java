@@ -4,8 +4,8 @@
  */
 package au.org.emii.portal.menu;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.util.Util;
-import org.ala.layers.legend.Facet;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;

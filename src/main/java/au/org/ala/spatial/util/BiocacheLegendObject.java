@@ -5,11 +5,11 @@
 package au.org.ala.spatial.util;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.legend.Legend;
+import au.org.ala.legend.LegendBuilder;
+import au.org.ala.legend.LegendObject;
+import au.org.ala.legend.QueryField;
 import au.org.ala.spatial.StringConstants;
-import org.ala.layers.legend.Legend;
-import org.ala.layers.legend.LegendBuilder;
-import org.ala.layers.legend.LegendObject;
-import org.ala.layers.legend.QueryField;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

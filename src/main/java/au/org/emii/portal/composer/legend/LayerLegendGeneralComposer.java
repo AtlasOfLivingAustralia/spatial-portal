@@ -4,6 +4,9 @@
  */
 package au.org.emii.portal.composer.legend;
 
+import au.org.ala.legend.Facet;
+import au.org.ala.legend.LegendObject;
+import au.org.ala.legend.QueryField;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.*;
 import au.org.emii.portal.composer.GenericAutowireAutoforwardComposer;
@@ -11,9 +14,6 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import org.ala.layers.legend.Facet;
-import org.ala.layers.legend.LegendObject;
-import org.ala.layers.legend.QueryField;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;

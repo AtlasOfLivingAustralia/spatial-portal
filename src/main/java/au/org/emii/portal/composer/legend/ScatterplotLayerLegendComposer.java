@@ -4,13 +4,13 @@
  */
 package au.org.emii.portal.composer.legend;
 
+import au.org.ala.legend.QueryField;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.LegendMaker;
 import au.org.ala.spatial.util.Query;
 import au.org.ala.spatial.util.UserDataQuery;
 import au.org.emii.portal.composer.GenericAutowireAutoforwardComposer;
 import au.org.emii.portal.menu.MapLayer;
-import org.ala.layers.legend.QueryField;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;

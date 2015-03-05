@@ -1,6 +1,10 @@
 package au.org.ala.spatial.composer.add;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.legend.Facet;
+import au.org.ala.legend.Legend;
+import au.org.ala.legend.LegendObject;
+import au.org.ala.legend.QueryField;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.*;
 import au.org.emii.portal.composer.MapComposer;
@@ -8,10 +12,6 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
-import org.ala.layers.legend.Facet;
-import org.ala.layers.legend.Legend;
-import org.ala.layers.legend.LegendObject;
-import org.ala.layers.legend.QueryField;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Executions;
@@ -281,7 +281,7 @@ public class AddFacetController extends UtilityComposer {
             if (StringConstants.CURRENT.equals(area)) {
                 selectedarea = new SelectedArea(null, getMapComposer().getViewArea());
             } else if (StringConstants.AUSTRALIA.equals(area)) {
-                selectedarea = new SelectedArea(null, CommonData.AUSTRALIA_WKT);
+                selectedarea = new SelectedArea(null, CommonData.getSettings().getProperty(CommonData.AUSTRALIA_WKT));
             } else if (StringConstants.WORLD.equals(area)) {
                 selectedarea = new SelectedArea(null, CommonData.WORLD_WKT);
             } else {

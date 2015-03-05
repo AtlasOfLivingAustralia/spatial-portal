@@ -101,63 +101,71 @@ public class LsidCountsDynamic {
     }
 
     private static void allSpecies() {
-        HttpClient client = new HttpClient();
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                super.run();
 
-        //get counts at genus, species, subspecies
-        String url = null;
-        try {
-            String[] lsidLevels = new String[]{"genus_guid", "species_guid", "subspecies_guid"};
+                HttpClient client = new HttpClient();
 
-            for (String lsidLevel : lsidLevels) {
-                url = CommonData.getBiocacheServer()
-                        + "/occurrences/search?facet=on&facets=" + lsidLevel + "&pageSize=0&flimit=1000000&q="
-                        + URLEncoder.encode("geospatial_kosher:*", StringConstants.UTF_8)
-                        + CommonData.getBiocacheQc();
+                //get counts at genus, species, subspecies
+                String url = null;
+                try {
+                    String[] lsidLevels = new String[]{"genus_guid", "species_guid", "subspecies_guid"};
 
-                LOGGER.debug(url);
-                GetMethod get = new GetMethod(url);
+                    for (String lsidLevel : lsidLevels) {
+                        url = CommonData.getBiocacheServer()
+                                + "/occurrences/search?facet=on&facets=" + lsidLevel + "&pageSize=0&flimit=1000000&q="
+                                + URLEncoder.encode("geospatial_kosher:*", StringConstants.UTF_8)
+                                + CommonData.getBiocacheQc();
 
-                client.executeMethod(get);
-                JSONParser jp = new JSONParser();
-                org.json.simple.JSONObject jo = (org.json.simple.JSONObject) jp.parse(get.getResponseBodyAsString());
-                org.json.simple.JSONArray ja = (org.json.simple.JSONArray) ((org.json.simple.JSONObject) ((org.json.simple.JSONArray) jo.get("facetResults")).get(0)).get("fieldResult");
-                for (int i = 0; i < ja.size(); i++) {
-                    String lsid = ((org.json.simple.JSONObject) ja.get(i)).get("label").toString();
-                    int count = Integer.parseInt(((org.json.simple.JSONObject) ja.get(i)).get("count").toString());
+                        LOGGER.debug(url);
+                        GetMethod get = new GetMethod(url);
 
-                    counts.put(lsid, count);
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("error getting LSID count for : " + url, e);
-        }
+                        client.executeMethod(get);
+                        JSONParser jp = new JSONParser();
+                        org.json.simple.JSONObject jo = (org.json.simple.JSONObject) jp.parse(get.getResponseBodyAsString());
+                        org.json.simple.JSONArray ja = (org.json.simple.JSONArray) ((org.json.simple.JSONObject) ((org.json.simple.JSONArray) jo.get("facetResults")).get(0)).get("fieldResult");
+                        for (int i = 0; i < ja.size(); i++) {
+                            String lsid = ((org.json.simple.JSONObject) ja.get(i)).get("label").toString();
+                            int count = Integer.parseInt(((org.json.simple.JSONObject) ja.get(i)).get("count").toString());
 
-        //fill in zeros
-        try {
-            String[] lsidLevels = new String[]{"genus_guid", "species_guid", "subspecies_guid"};
-
-            for (String lsidLevel : lsidLevels) {
-                url = CommonData.getBiocacheServer()
-                        + "/occurrences/search?facet=on&facets=" + lsidLevel + "&pageSize=0&flimit=1000000&q=*:*"
-                        + CommonData.getBiocacheQc();
-
-                LOGGER.debug(url);
-                GetMethod get = new GetMethod(url);
-
-                client.executeMethod(get);
-                JSONParser jp = new JSONParser();
-                org.json.simple.JSONObject jo = (org.json.simple.JSONObject) jp.parse(get.getResponseBodyAsString());
-                org.json.simple.JSONArray ja = (org.json.simple.JSONArray) ((org.json.simple.JSONObject) ((org.json.simple.JSONArray) jo.get("facetResults")).get(0)).get("fieldResult");
-                for (int i = 0; i < ja.size(); i++) {
-                    String lsid = ((org.json.simple.JSONObject) ja.get(i)).get("label").toString();
-                    if (!counts.containsKey(lsid)) {
-                        counts.put(lsid, 0);
+                            counts.put(lsid, count);
+                        }
                     }
+                } catch (Exception e) {
+                    LOGGER.error("error getting LSID count for : " + url, e);
+                }
+
+                //fill in zeros
+                try {
+                    String[] lsidLevels = new String[]{"genus_guid", "species_guid", "subspecies_guid"};
+
+                    for (String lsidLevel : lsidLevels) {
+                        url = CommonData.getBiocacheServer()
+                                + "/occurrences/search?facet=on&facets=" + lsidLevel + "&pageSize=0&flimit=1000000&q=*:*"
+                                + CommonData.getBiocacheQc();
+
+                        LOGGER.debug(url);
+                        GetMethod get = new GetMethod(url);
+
+                        client.executeMethod(get);
+                        JSONParser jp = new JSONParser();
+                        org.json.simple.JSONObject jo = (org.json.simple.JSONObject) jp.parse(get.getResponseBodyAsString());
+                        org.json.simple.JSONArray ja = (org.json.simple.JSONArray) ((org.json.simple.JSONObject) ((org.json.simple.JSONArray) jo.get("facetResults")).get(0)).get("fieldResult");
+                        for (int i = 0; i < ja.size(); i++) {
+                            String lsid = ((org.json.simple.JSONObject) ja.get(i)).get("label").toString();
+                            if (!counts.containsKey(lsid)) {
+                                counts.put(lsid, 0);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("error getting LSID count for : " + url, e);
                 }
             }
-        } catch (Exception e) {
-            LOGGER.error("error getting LSID count for : " + url, e);
-        }
+        };
 
+        t.start();
     }
 }
