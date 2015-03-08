@@ -665,7 +665,7 @@ public class AddSpeciesController extends UtilityComposer {
         LOGGER.debug("Species list that was created : " + drUid);
         if (drUid != null) {
 
-            ((SpeciesListListbox.SpeciesListListModel) speciesListListbox.getModel()).refreshModel();
+            speciesListListbox.init();
             rUploadLSIDs.setSelected(true);
             onCheck$rgAddSpecies(null);
         }

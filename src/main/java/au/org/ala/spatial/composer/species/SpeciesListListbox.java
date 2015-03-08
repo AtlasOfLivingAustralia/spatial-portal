@@ -33,6 +33,8 @@ public class SpeciesListListbox extends Listbox {
     //stores the selected lists
     private List<String> selectedLists = new ArrayList<String>();
 
+    private List<SpeciesListDTO> currentLists;
+
     public SpeciesListListbox() {
         init();
     }
@@ -58,7 +60,7 @@ public class SpeciesListListbox extends Listbox {
         return "Species List Items";
     }
 
-    private void init() {
+    public void init() {
         setItemRenderer(new ListitemRenderer() {
             @Override
             public void render(Listitem li, Object data, int itemIdx) {
@@ -106,8 +108,15 @@ public class SpeciesListListbox extends Listbox {
             }
         });
 
-        SpeciesListListModel model = new SpeciesListListModel();
-        this.setModel(model);
+        //SpeciesListListModel model = new SpeciesListListModel();
+        //this.setModel(model);
+
+        String searchTerm = getParent() != null ? ((Textbox) getParent().getFellowIfAny("txtSearchTerm")) != null ? ((Textbox) getParent().getFellowIfAny("txtSearchTerm")).getValue() : null : null;
+        MutableInt listCount = new MutableInt();
+        currentLists = new ArrayList<SpeciesListDTO>(SpeciesListUtil.getPublicSpeciesLists(Util.getUserEmail(),
+                0, 1000000, null, null, searchTerm, listCount));
+        setModel(new SimpleListModel<Object>(currentLists));
+
     }
 
     @Override
@@ -164,14 +173,16 @@ public class SpeciesListListbox extends Listbox {
 
     public void onClick$btnSearchSpeciesListListbox(Event event) {
 
-        ((SpeciesListListModel) getModel()).setTxtSearchTerm((Textbox) getParent().getFellowIfAny("txtSearchTerm"));
-        ((SpeciesListListModel) getModel()).refreshModel();
+        //((SpeciesListListModel) getModel()).setTxtSearchTerm((Textbox) getParent().getFellowIfAny("txtSearchTerm"));
+        //((SpeciesListListModel) getModel()).refreshModel();
+        init();
     }
 
     public void onClick$btnClearSearchSpeciesListListbox(Event event) {
 
-        ((SpeciesListListModel) getModel()).setTxtSearchTerm(null);
-        ((SpeciesListListModel) getModel()).refreshModel();
+        //((SpeciesListListModel) getModel()).setTxtSearchTerm(null);
+        //((SpeciesListListModel) getModel()).refreshModel();
+        init();
     }
 
     /**
@@ -191,6 +202,7 @@ public class SpeciesListListbox extends Listbox {
         public void refreshModel() {
             //remove the cached version of the current lists
             currentLists = null;
+            size = null;
             fireEvent(ListDataEvent.CONTENTS_CHANGED, -1, -1);
         }
 
@@ -249,6 +261,7 @@ public class SpeciesListListbox extends Listbox {
                 sort = c.getColumn();
                 //force the reload
                 currentLists = null;
+                size = null;
                 fireEvent(ListDataEvent.CONTENTS_CHANGED, -1, -1);
             }
         }
@@ -286,7 +299,21 @@ public class SpeciesListListbox extends Listbox {
         @Override
         public int compare(Object arg0, Object arg1) {
             // we are not actually performing the compare within this object because th sort will be perfomed by the species list ws
-            return 0;
+            int ret = 0;
+            try {
+                if (StringConstants.LISTNAME.equals(column)) {
+                    ret = ((SpeciesListDTO) arg0).getListName().compareToIgnoreCase(((SpeciesListDTO) arg1).getListName());
+                } else if (StringConstants.DATE_CREATED.equals(column)) {
+                    ret = ((SpeciesListDTO) arg0).getDateCreated().compareToIgnoreCase(((SpeciesListDTO) arg1).getDateCreated());
+                } else if (StringConstants.USERNAME.equals(column)) {
+                    ret = ((SpeciesListDTO) arg0).getFullName().compareToIgnoreCase(((SpeciesListDTO) arg1).getFullName());
+                } else if (StringConstants.COUNT.equals(column)) {
+                    ret = ((SpeciesListDTO) arg0).getItemCount() - ((SpeciesListDTO) arg1).getItemCount();
+                }
+            } catch (Exception e) {
+                LOGGER.error("error sorting species list; column=" + column, e);
+            }
+            return ascending ? ret : -1 * ret;
         }
 
         public String getColumn() {
