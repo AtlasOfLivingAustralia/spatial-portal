@@ -8,7 +8,7 @@
 
 <?page id="MapZul" title="Spatial portal | Atlas of Living Australia" cacheable="false" contentType="text/html;charset=UTF-8"?>
 <?link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"?>
-<!--http://www2.ala.org.au/commonui-bs2/-->
+
 <?style href="css/jquery.autocomplete.css" type="text/css" ?>
 <?style href="css/bootstrap.min.css" type="text/css" ?>
 <?style href="css/bootstrap-responsive.min.css" type="text/css" ?>
@@ -439,7 +439,7 @@
             </center>
 
             <south id="south" visible="false" size="0%">
-                <iframe src="footer.html"></iframe>
+                <!--iframe src="footer.html"></iframe-->
             </south>
         </borderlayout>
 
@@ -616,8 +616,8 @@ function readCookie(name) {
 
 <script defer="true" src="scripts/jquery-migrate-1.2.1.min.js" ></script>
 <script defer="true" src="scripts/jquery.autocomplete.js"   ></script>
-<script defer="true" src="http://www2.ala.org.au/commonui-bs2/js/application.js"  ></script>
-<script defer="true" src="http://www2.ala.org.au/commonui-bs2/js/bootstrap.js"  ></script>
+<script defer="true" src="scripts/application.js"  ></script>
+<script defer="true" src="scripts/bootstrap.js"  ></script>
    
 </zk>
 
