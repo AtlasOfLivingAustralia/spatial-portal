@@ -176,6 +176,7 @@ public class AddSpeciesController extends UtilityComposer {
                 window.loadAreaLayers();
                 try {
                     window.setParent(getMapComposer());
+                    window.doModal();
                 } catch (Exception e) {
                     LOGGER.error("error opening AddSpeciesInArea.zul", e);
                 }
