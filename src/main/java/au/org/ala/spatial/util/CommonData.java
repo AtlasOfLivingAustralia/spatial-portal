@@ -1164,7 +1164,7 @@ public final class CommonData {
     static List<JournalMapLocation> journalMapLocations = null;
 
     private static void initJournalmap() {
-        if (journalMapArticles != null) {
+        if (journalMapArticles != null && journalMapArticles.size() > 0) {
             return;
         }
 
@@ -1173,6 +1173,9 @@ public final class CommonData {
         List<HashMap<String, String>> journalMapLocationsForDiskCache = new ArrayList<HashMap<String, String>>();
 
         try {
+
+            String journalmapUrl = CommonData.getSettings().getProperty("journalmap.url", null);
+            String journalmapKey = CommonData.getSettings().getProperty("journalmap.api_key", null);
 
             //try disk cache
             File jaFile = new File("/data/webportal/journalmapArticles.json");
@@ -1184,20 +1187,17 @@ public final class CommonData {
                 for (int i = 0; i < ja.size(); i++) {
                     journalMapArticles.add((JSONObject) ja.get(i));
                 }
-            } else {
+            } else if (journalmapKey != null && !journalmapKey.isEmpty()) {
 
                 int page = 1;
                 int maxpage = 0;
-                while ((page == 1 || page < maxpage) && page < 5) {
+                while (page == 1 || page < maxpage) {
                     HttpClient client = new HttpClient();
-
-                    String journalmapUrl = CommonData.getSettings().getProperty("journalmap.url", null);
-                    String journalmapKey = CommonData.getSettings().getProperty("journalmap.api_key", null);
 
                     String url = journalmapUrl + "api/articles.json?version=1.0&key=" + journalmapKey + "&page=" + page;
                     page = page + 1;
 
-                    LOGGER.debug("url: " + url);
+                    LOGGER.debug("journalmap url: " + url);
 
                     GetMethod get = new GetMethod(url);
 

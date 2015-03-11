@@ -15,19 +15,17 @@
         <n:a class="fancybox-help" n:href="${addtoolwindow.getMapComposer().getSettingsSupplementary().getProperty('help_url')}/spatial-portal-help/area-report-tools" n:target="_blank"  style="display: inline" />
         <caption id="cTitle" />
         <separator />
-        <vbox height="220px" style="overflow:scroll">
+        <vbox>
             <div id="atstep1" visible="true" zclass="first optional last" sclass="atstep" style="padding:5px;" >
                 <label id="atstep1_desc" value="Select area" />
                 <label id="atstep1_label" value="" />
                 <separator />
-                <div style="overflow:scroll;"  height="170px">
-                    <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true"  >
-                        <radio id="rAreaCurrent" label="Current extent" value="current" />
-                        <radio id="rAreaAustralia" label="${addtoolwindow.getMapComposer().getSettingsSupplementary().getProperty('default.name')}" value="australia" />
-                        <radio id="rAreaWorld" label="World" value="world" />
-                        <radio id="rAreaCustom" label="Define new area" value="custom" />
-                    </radiogroup>
-                </div>
+                <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true" style="height:220px;overflow:scroll;" >
+                    <radio id="rAreaCurrent" label="Current extent" value="current" />
+                    <radio id="rAreaAustralia" label="${addtoolwindow.getMapComposer().getSettingsSupplementary().getProperty('default.name')}" value="australia" />
+                    <radio id="rAreaWorld" label="World" value="world" />
+                    <radio id="rAreaCustom" label="Define new area" value="custom" />
+                </radiogroup>
             </div>
         </vbox>
         <separator spacing="10px"/>
