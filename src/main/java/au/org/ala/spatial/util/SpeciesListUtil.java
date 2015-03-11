@@ -117,15 +117,24 @@ public class SpeciesListUtil {
         for (int i = 0; i < ja.size(); i++) {
             JSONObject jo = (JSONObject) ja.get(i);
             SpeciesListDTO sli = new SpeciesListDTO();
-            if (jo.containsKey("dataResourceUid")) sli.setDataResourceUid(jo.get("dataResourceUid").toString());
-            if (jo.containsKey("dateCreated")) sli.setDateCreated(jo.get("dateCreated").toString());
-            if (jo.containsKey("firstName")) sli.setFirstName(jo.get("firstName").toString());
-            if (jo.containsKey("fullName")) sli.setFullName(jo.get("fullName").toString());
-            if (jo.containsKey("itemCount")) sli.setItemCount(Integer.parseInt(jo.get("itemCount").toString()));
-            if (jo.containsKey("listName")) sli.setListName(jo.get("listName").toString());
-            if (jo.containsKey("listType")) sli.setListType(jo.get("listType").toString());
-            if (jo.containsKey("surname")) sli.setSurname(jo.get("surname").toString());
-            if (jo.containsKey("username")) sli.setUsername(jo.get("username").toString());
+            if (jo.containsKey("dataResourceUid"))
+                sli.setDataResourceUid(jo.get("dataResourceUid") == null ? "" : jo.get("dataResourceUid").toString());
+            if (jo.containsKey("dateCreated"))
+                sli.setDateCreated(jo.get("dateCreated") == null ? "" : jo.get("dateCreated").toString());
+            if (jo.containsKey("firstName"))
+                sli.setFirstName(jo.get("firstName") == null ? "" : jo.get("firstName").toString());
+            if (jo.containsKey("fullName"))
+                sli.setFullName(jo.get("fullName") == null ? "" : jo.get("fullName").toString());
+            if (jo.containsKey("itemCount"))
+                sli.setItemCount(Integer.parseInt(jo.get("itemCount") == null ? "0" : jo.get("itemCount").toString()));
+            if (jo.containsKey("listName"))
+                sli.setListName(jo.get("listName") == null ? "" : jo.get("listName").toString());
+            if (jo.containsKey("listType"))
+                sli.setListType(jo.get("listType") == null ? "" : jo.get("listType").toString());
+            if (jo.containsKey("surname"))
+                sli.setSurname(jo.get("surname") == null ? "" : jo.get("surname").toString());
+            if (jo.containsKey("username"))
+                sli.setUsername(jo.get("username") == null ? "" : jo.get("username").toString());
 
             list.add(sli);
         }

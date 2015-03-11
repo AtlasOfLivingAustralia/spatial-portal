@@ -161,6 +161,7 @@ public class AddSpeciesController extends UtilityComposer {
             window.setAllSpecies(true);
             window.loadAreaLayers();
             try {
+                window.setParent(getMapComposer());
                 window.doModal();
             } catch (Exception e) {
                 LOGGER.error("error opening AddSpeciesInArea.zul", e);
@@ -174,7 +175,7 @@ public class AddSpeciesController extends UtilityComposer {
                 window.setExpertDistributions(chkExpertDistributions.isChecked());
                 window.loadAreaLayers();
                 try {
-                    window.doModal();
+                    window.setParent(getMapComposer());
                 } catch (Exception e) {
                     LOGGER.error("error opening AddSpeciesInArea.zul", e);
                 }
@@ -202,6 +203,7 @@ public class AddSpeciesController extends UtilityComposer {
                     window.setMultipleSpeciesUploadName(CommonData.lang("uploaded_species_list_layer_name"));
                     window.loadAreaLayers();
                     try {
+                        window.setParent(getMapComposer());
                         window.doModal();
                     } catch (Exception e) {
                         LOGGER.error("error opening AddSpeciesInArea.zul", e);
@@ -218,6 +220,7 @@ public class AddSpeciesController extends UtilityComposer {
                 window.setMultipleSpeciesUploadName(CommonData.lang("uploaded_species_list_layer_name"));
                 window.loadAreaLayers();
                 try {
+                    window.setParent(getMapComposer());
                     window.doModal();
                 } catch (Exception e) {
                     LOGGER.error("error opening AddSpeciesInArea.zul", e);
@@ -300,6 +303,7 @@ public class AddSpeciesController extends UtilityComposer {
                     && CommonData.getSettings().getProperty("import.points.layers-service", "false").equals("false")) {
                 SandboxPasteController spc = (SandboxPasteController) Executions.createComponents("WEB-INF/zul/sandbox/SandboxPaste.zul", getMapComposer(), null);
                 spc.setAddToMap(true);
+                spc.setParent(getMapComposer());
                 spc.doModal();
             } else {
                 UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/input/UploadSpecies.zul", getMapComposer(), null);
@@ -313,6 +317,7 @@ public class AddSpeciesController extends UtilityComposer {
                 }
                 usc.setAddToMap(true);
                 usc.setDefineArea(chkArea.isChecked());
+                usc.setParent(getMapComposer());
                 usc.doModal();
             }
         } catch (Exception e) {
@@ -651,6 +656,7 @@ public class AddSpeciesController extends UtilityComposer {
             });
 
             try {
+                dialog.setParent(this);
                 dialog.doModal();
 
             } catch (Exception e) {
@@ -707,6 +713,7 @@ public class AddSpeciesController extends UtilityComposer {
         });
 
         try {
+            window.setParent(this);
             window.doModal();
         } catch (Exception e) {
             LOGGER.error("error opening UploadSpeciesList.zul", e);

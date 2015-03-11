@@ -29,7 +29,7 @@
             <separator />
             <div class="btn-group">
                  <button label="Cancel" id="btnCancel"/>
-                 <fileupload label="Next >" id="fileUpload" class="btn btn-primary"/>
+                 <fileupload label="Next >" id="fileUpload" class="btn-primary"/>
          </div>
         </vbox>
 

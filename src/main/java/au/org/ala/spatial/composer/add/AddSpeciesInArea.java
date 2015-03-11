@@ -126,6 +126,7 @@ public class AddSpeciesInArea extends UtilityComposer {
 
                 Window window = (Window) Executions.createComponents("WEB-INF/zul/add/AddArea.zul", getParent(), winProps);
                 window.setAttribute("winProps", winProps, true);
+                window.setParent(getParent());
                 window.doModal();
             } else {
                 onFinish();

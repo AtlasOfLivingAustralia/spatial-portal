@@ -480,6 +480,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     label);
             externalContentWindow.setPosition("center");
             try {
+                externalContentWindow.setParent(layerControls);
                 externalContentWindow.doModal();
             } catch (Exception e) {
                 LOGGER.error("error opening information popup", e);
@@ -667,6 +668,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         window.setMessage(message);
         if (mp) {
             try {
+                window.setParent(parent);
                 window.doModal();
             } catch (Exception e) {
                 LOGGER.error("error opening message window", e);
@@ -1950,6 +1952,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             "WEB-INF/zul/results/AnalysisDistributionResults.zul", this, params);
 
                     try {
+                        window.setParent(this);
                         window.doModal();
                     } catch (Exception e) {
                         LOGGER.error("error opening checklist species dialog", e);
@@ -1977,6 +1980,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     , this, params);
 
             try {
+                window.setParent(this);
                 window.doModal();
             } catch (Exception e) {
                 LOGGER.error("error opening checklist species dialog", e);
@@ -2006,6 +2010,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         "WEB-INF/zul/results/AnalysisDistributionResults.zul", this, params);
 
                 try {
+                    window.setParent(this);
                     window.doModal();
                 } catch (Exception e) {
                     LOGGER.error("error opening analysisdistributionresults.zul", e);
@@ -2551,6 +2556,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Window window = (Window) Executions.createComponents(page, this, params);
 
         try {
+            window.setParent(this);
             window.doModal();
         } catch (Exception e) {
             LOGGER.error("error opening dialog: " + page, e);
@@ -2972,6 +2978,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         && CommonData.getSettings().getProperty("import.points.layers-service", "false").equals("false")) {
                     SandboxPasteController spc = (SandboxPasteController) Executions.createComponents("WEB-INF/zul/sandbox/SandboxPaste.zul", getMapComposer(), null);
                     spc.setAddToMap(true);
+                    spc.setParent(getMapComposer());
                     spc.doModal();
                 } else {
                     Map params = new HashMap();

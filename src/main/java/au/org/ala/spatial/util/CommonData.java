@@ -1170,7 +1170,6 @@ public final class CommonData {
 
         journalMapArticles = new ArrayList<JSONObject>();
         journalMapLocations = new ArrayList<JournalMapLocation>();
-        List<HashMap<String, String>> journalMapLocationsForDiskCache = new ArrayList<HashMap<String, String>>();
 
         try {
 
@@ -1191,29 +1190,65 @@ public final class CommonData {
 
                 int page = 1;
                 int maxpage = 0;
-                while (page == 1 || page < maxpage) {
+                List<String> publicationsIds = new ArrayList<String>();
+                while (page == 1 || page <= maxpage) {
                     HttpClient client = new HttpClient();
 
-                    String url = journalmapUrl + "api/articles.json?version=1.0&key=" + journalmapKey + "&page=" + page;
+                    String url = journalmapUrl + "api/publications.json?version=1.0&key=" + journalmapKey + "&page=" + page;
                     page = page + 1;
 
                     LOGGER.debug("journalmap url: " + url);
 
                     GetMethod get = new GetMethod(url);
 
-                    client.executeMethod(get);
+                    int result = client.executeMethod(get);
 
                     //update maxpage
                     maxpage = Integer.parseInt(get.getResponseHeader("X-Pages").getValue());
 
                     //cache
                     JSONParser jp = new JSONParser();
-                    JSONArray ja = (JSONArray) jp.parse(get.getResponseBodyAsString());
-                    for (int i = 0; i < ja.size(); i++) {
-                        JSONObject o = (JSONObject) ja.get(i);
-                        if (o.containsKey("locations")) {
-                            journalMapArticles.add(o);
+                    JSONArray jcollection = (JSONArray) jp.parse(get.getResponseBodyAsString());
+                    for (int i = 0; i < jcollection.size(); i++) {
+                        if (((JSONObject) jcollection.get(i)).containsKey("id")) {
+                            publicationsIds.add(((JSONObject) jcollection.get(i)).get("id").toString());
+                            LOGGER.debug("found publication: " + ((JSONObject) jcollection.get(i)).get("id").toString() + ", article_count: " + ((JSONObject) jcollection.get(i)).get("articles_count").toString());
                         }
+                    }
+                }
+
+                for (String publicationsId : publicationsIds) {
+                    //allow for collection failure
+                    try {
+                        page = 1;
+                        maxpage = 0;
+                        while (page == 1 || page <= maxpage) {
+                            HttpClient client = new HttpClient();
+
+                            String url = journalmapUrl + "api/articles.json?version=1.0&key=" + journalmapKey + "&page=" + page + "&publication_id=" + publicationsId;
+                            page = page + 1;
+
+                            LOGGER.debug("journalmap url: " + url);
+
+                            GetMethod get = new GetMethod(url);
+
+                            int result = client.executeMethod(get);
+
+                            //update maxpage
+                            maxpage = Integer.parseInt(get.getResponseHeader("X-Pages").getValue());
+
+                            //cache
+                            JSONParser jp = new JSONParser();
+                            JSONArray jarticles = (JSONArray) jp.parse(get.getResponseBodyAsString());
+                            for (int j = 0; j < jarticles.size(); j++) {
+                                JSONObject o = (JSONObject) jarticles.get(j);
+                                if (o.containsKey("locations")) {
+                                    journalMapArticles.add(o);
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("journalmap - failure to get articles from publicationsId: " + publicationsId);
                     }
                 }
 

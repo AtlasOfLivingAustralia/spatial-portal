@@ -187,6 +187,7 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
         PhylogeneticDiversityListResults window = (PhylogeneticDiversityListResults) Executions.createComponents("WEB-INF/zul/results/PhylogeneticDiversityResults.zul", getMapComposer(), hm);
         try {
+            window.setParent(getMapComposer());
             window.doModal();
         } catch (Exception e) {
             LOGGER.error("error opening PhylogeneticDiversityResults.zul", e);

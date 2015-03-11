@@ -179,13 +179,10 @@
             </vbox>
         </hbox>
         <div class="btn-group" style="position:absolute;right:10px;bottom:10px">
-
-                <button label="Cancel" id="btnCancel" />
-                <button label="&lt; Back" id="btnBack" disabled="true" />
-                <fileupload class="btn-primary" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
-                <button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self" />
-
-
+            <button label="Cancel" id="btnCancel" />
+            <button label="&lt; Back" id="btnBack" disabled="true" />
+            <fileupload class="btn-primary" id="fileUpload" label="Next &gt;" upload="true" visible="false" />
+            <button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self" />
         </div>
     </window>
 </zk>

@@ -92,6 +92,7 @@ public class SpeciesListListbox extends Listbox {
                 c.setParent(lc);
                 lc.setParent(li);
                 Listcell name = new Listcell();
+                name.setSclass("list-a");
                 A a = new A(item.getListName());
                 a.setHref(CommonData.getSpeciesListServer() + "/speciesListItem/list/" + item.getDataResourceUid());
                 a.setTarget(StringConstants.BLANK);

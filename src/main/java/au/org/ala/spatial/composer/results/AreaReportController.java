@@ -1189,6 +1189,7 @@ public class AreaReportController extends UtilityComposer {
             DistributionsController dc = (DistributionsController) Executions.createComponents("WEB-INF/zul/results/AnalysisDistributionResults.zul", this, null);
 
             try {
+                dc.setParent(this);
                 dc.doModal();
                 dc.init(speciesDistributionText, "Expert Distributions", model.getCount());
             } catch (Exception e) {
@@ -1208,6 +1209,7 @@ public class AreaReportController extends UtilityComposer {
             DistributionsController dc = (DistributionsController) Executions.createComponents("WEB-INF/zul/results/AnalysisDistributionResults.zul", this, null);
 
             try {
+                dc.setParent(this);
                 dc.doModal();
                 dc.init(speciesChecklistText, "Species Checklists", model.getCount());
             } catch (Exception e) {
@@ -1229,6 +1231,7 @@ public class AreaReportController extends UtilityComposer {
             DistributionsController dc = (DistributionsController) Executions.createComponents("WEB-INF/zul/results/AnalysisDistributionResults.zul", this, null);
 
             try {
+                dc.setParent(this);
                 dc.doModal();
                 dc.init(areaChecklistText, StringConstants.CHECKLIST_AREAS, model.getCount());
 

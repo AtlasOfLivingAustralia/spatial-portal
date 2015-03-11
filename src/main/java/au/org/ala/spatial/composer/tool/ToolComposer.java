@@ -1095,6 +1095,7 @@ public class ToolComposer extends UtilityComposer {
 
                 Window window = (Window) Executions.createComponents("WEB-INF/zul/add/AddArea.zul", this, winProps);
                 window.setAttribute("winProps", winProps, true);
+                window.setParent(this);
                 window.doModal();
 
                 return;
@@ -1743,6 +1744,7 @@ public class ToolComposer extends UtilityComposer {
                         });
 
                         try {
+                            window.setParent(this);
                             window.doModal();
                         } catch (Exception e) {
                             LOGGER.error("error opening PasteLayerList.zul", e);
@@ -1759,6 +1761,7 @@ public class ToolComposer extends UtilityComposer {
                         });
 
                         try {
+                            window.setParent(this);
                             window.doModal();
                         } catch (Exception e) {
                             LOGGER.error("error opening UploadLayerList.zul", e);
@@ -2576,6 +2579,7 @@ public class ToolComposer extends UtilityComposer {
                     && CommonData.getSettings().getProperty("import.points.layers-service", "false").equals("false")) {
                 SandboxPasteController spc = (SandboxPasteController) Executions.createComponents("WEB-INF/zul/sandbox/SandboxPaste.zul", getMapComposer(), null);
                 spc.setAddToMap(true);
+                spc.setParent(getMapComposer());
                 spc.doModal();
             } else {
                 UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/input/UploadSpecies.zul", this, null);
@@ -2588,6 +2592,7 @@ public class ToolComposer extends UtilityComposer {
                     usc.setTbInstructions("3. Select file");
                 }
                 usc.setAddToMap(true);
+                usc.setParent(this);
 
                 usc.doModal();
             }
@@ -2790,6 +2795,7 @@ public class ToolComposer extends UtilityComposer {
             });
 
             try {
+                dialog.setParent(this);
                 dialog.doModal();
 
             } catch (Exception e) {
@@ -2864,6 +2870,7 @@ public class ToolComposer extends UtilityComposer {
         });
 
         try {
+            window.setParent(this);
             window.doModal();
         } catch (Exception e) {
             LOGGER.error("error opening UploadSpeciesList.zul", e);

@@ -299,6 +299,7 @@ public class SitesBySpeciesComposer extends ToolComposer {
         window.setParentWindow(this);
         window.start(pid, "Points to Grid");
         try {
+            window.setParent(getMapComposer());
             window.doModal();
         } catch (Exception e) {
             LOGGER.error("error opening AnalysisProgress.zul for points to grid: " + pid, e);

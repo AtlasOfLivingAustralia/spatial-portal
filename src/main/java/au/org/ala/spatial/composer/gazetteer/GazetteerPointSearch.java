@@ -54,7 +54,7 @@ public final class GazetteerPointSearch {
 
                 Map<String, String> map = new HashMap<String, String>();
                 for (Object k : jo.keySet()) {
-                    map.put((String) k, jo.get((String) k).toString());
+                    map.put((String) k, jo.get((String) k) == null ? "" : jo.get((String) k).toString());
                 }
 
                 return map;

@@ -950,6 +950,7 @@ public class AddFacetController extends UtilityComposer {
 
                 Window window = (Window) Executions.createComponents("WEB-INF/zul/add/AddArea.zul", this, winProps);
                 window.setAttribute("winProps", winProps, true);
+                window.setParent(this);
                 window.doModal();
 
                 return;

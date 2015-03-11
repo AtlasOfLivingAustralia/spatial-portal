@@ -68,6 +68,11 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 placemarks = (Collection) sf.getAttribute(StringConstants.FEATURE);
                 if (placemarks != null && !placemarks.isEmpty()) {
                     g = (Geometry) ((SimpleFeature) placemarks.iterator().next()).getAttribute(StringConstants.GEOMETRY);
+                } else {
+                    placemarks = (Collection) sf.getAttribute("Folder");
+                    if (placemarks != null && !placemarks.isEmpty()) {
+                        g = (Geometry) ((SimpleFeature) placemarks.iterator().next()).getAttribute(StringConstants.GEOMETRY);
+                    }
                 }
             }
 
@@ -150,6 +155,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
 
                 Window window = (Window) Executions.createComponents("WEB-INF/zul/add/area/AreaUploadShapefileWizard.zul", this.getParent(), args);
                 try {
+                    window.setParent(this.getParent());
                     window.doModal();
                 } catch (SuspendNotAllowedException e) {
                     // we are really closing the window without opening/displaying to the user

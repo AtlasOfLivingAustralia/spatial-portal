@@ -308,6 +308,7 @@ public class ALOCComposer extends ToolComposer {
             ProgressController window = (ProgressController) Executions.createComponents("WEB-INF/zul/progress/AnalysisProgress.zul", getMapComposer(), null);
             window.setParentWindow(this);
             window.start(pid, StringConstants.CLASSIFICATION);
+            window.setParent(getMapComposer());
             window.doModal();
 
             this.setVisible(false);

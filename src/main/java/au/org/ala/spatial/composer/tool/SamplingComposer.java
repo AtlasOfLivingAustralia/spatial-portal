@@ -119,6 +119,7 @@ public class SamplingComposer extends ToolComposer {
                     getMapComposer().setDownloadSecondQuery(query);
                     getMapComposer().setDownloadSecondLayers(outBiocache);
                     SamplingAnalysisDownloadController c = (SamplingAnalysisDownloadController) Executions.createComponents("/WEB-INF/zul/output/SamplingAnalysisDownload.zul", getMapComposer(), null);
+                    c.setParent(getMapComposer());
                     c.doModal();
                 } else {
                     getMapComposer().setDownloadSecondQuery(null);

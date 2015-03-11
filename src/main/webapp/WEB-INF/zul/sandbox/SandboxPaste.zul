@@ -42,7 +42,7 @@
 
     <button label="Cancel" id="btnCancel" class="btn" />
 
-    <fileupload id='fileUpload' upload="true" label="Choose a file..." class="btn btn-primary" />
+    <fileupload id='fileUpload' upload="true" label="Choose a file..." class="btn-primary" />
 </div>
 
 </vbox>

@@ -56,6 +56,7 @@ public class SpeciesListComposer extends ToolComposer {
         }
         SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/results/AnalysisSpeciesListResults.zul", getMapComposer(), hm);
         try {
+            window.setParent(getMapComposer());
             window.doModal();
         } catch (Exception e) {
             LOGGER.error("error opening analysisspecieslistresults.zul", e);

@@ -115,6 +115,7 @@ public class AddAreaController extends UtilityComposer {
                 if (overlapped) {
                     window.doOverlapped();
                 } else {
+                    window.setParent(this.getParent());
                     window.doModal();
                 }
             } catch (Exception e) {

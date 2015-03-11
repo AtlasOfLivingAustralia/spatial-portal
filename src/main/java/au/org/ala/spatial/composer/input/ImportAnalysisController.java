@@ -318,6 +318,7 @@ public class ImportAnalysisController extends UtilityComposer {
         window.setParentWindow(this);
         window.start(pid, StringConstants.CLASSIFICATION);
         try {
+            window.setParent(getMapComposer());
             window.doModal();
 
         } catch (Exception e) {
@@ -444,6 +445,7 @@ public class ImportAnalysisController extends UtilityComposer {
         window.setParentWindow(this);
         window.start(pid, StringConstants.PREDICTION);
         try {
+            window.setParent(getMapComposer());
             window.doModal();
         } catch (Exception e) {
             LOGGER.error("error opening prediction progress bar pid=" + pid, e);
@@ -502,6 +504,7 @@ public class ImportAnalysisController extends UtilityComposer {
         window.setParentWindow(this);
         window.start(pid, "Points to Grid");
         try {
+            window.setParent(getMapComposer());
             window.doModal();
         } catch (Exception e) {
             LOGGER.error("error opening sites by species progress bar pid=" + pid, e);

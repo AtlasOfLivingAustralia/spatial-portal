@@ -54,7 +54,7 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
 
     private void waitForPortalReload(ConfigurationLoaderStage1Impl stage1, Session session) {
         int seconds = MAX_TIME_RELOADING_SECONDS;
-        while (getMasterPortalSession(session) == null) { //stage1.isReloading() && (seconds > 0)) {
+        while (getMasterPortalSession(session) == null && seconds > 0) { //stage1.isReloading() && (seconds > 0)) {
             try {
                 Thread.sleep(1000);
                 LOGGER.debug("waited " + (MAX_TIME_RELOADING_SECONDS - seconds) + " for portal to come up...");
