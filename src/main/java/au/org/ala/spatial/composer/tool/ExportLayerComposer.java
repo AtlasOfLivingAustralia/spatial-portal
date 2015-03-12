@@ -143,7 +143,7 @@ public class ExportLayerComposer extends ToolComposer {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 encoder.encode(geom, KML.Geometry, baos);
                 String kmlGeometry = new String(baos.toByteArray());
-                sbKml.append(kmlGeometry.substring(kmlGeometry.indexOf("?>")));
+                sbKml.append(kmlGeometry.substring(kmlGeometry.indexOf("?>") + 2));
 
                 sbKml.append("  </Placemark>").append("\r");
                 sbKml.append("</Document>").append("\r");
