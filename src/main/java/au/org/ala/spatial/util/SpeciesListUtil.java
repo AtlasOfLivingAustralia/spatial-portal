@@ -167,8 +167,12 @@ public class SpeciesListUtil {
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject jo = (JSONObject) ja.get(i);
                     SpeciesListItemDTO sli = new SpeciesListItemDTO();
-                    if (jo.containsKey("lsid")) sli.setLsid(jo.get("lsid").toString());
-                    if (jo.containsKey("name")) sli.setName(jo.get("name").toString());
+                    if (jo.containsKey("lsid") && jo.get("lsid") != null) {
+                        sli.setLsid(jo.get("lsid").toString());
+                    }
+                    if (jo.containsKey("name") && jo.get("name") != null) {
+                        sli.setName(jo.get("name").toString());
+                    }
 
                     list.add(sli);
                 }
