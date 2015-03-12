@@ -29,6 +29,7 @@
             <separator />
 
             <label value="Select areas to merge" />
+            <label sclass="wordwrap" style="font-style:italic" value="Areas created as environmental envelopes are not available. " />
             <vbox id="vboxAreas">
             </vbox>
 

@@ -1,0 +1,52 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="pointcomparisonswindow" use="au.org.ala.spatial.composer.tool.PointComparison"
+            apply="au.org.ala.spatial.composer.tool.PointComparison" width="400px"  xmlns:n="http://www.zkoss.org/2005/zk/native"
+           style="position:absolute;left:10px;top:10px;overflow:visible" draggable="false">
+        <n:div class="left-cover" />
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="pointcomparisonswindow.onClick$btnCancel(null)" style="display: inline" />
+
+
+        <caption label="Point Comparisons" />
+        <vbox sclass="embedWindowsContent">
+            <label sclass="wordwrap" value="1. Click 'Add point'." />
+            <label sclass="wordwrap" value="2. Set the point by clicking on the map or entering longitude and latitude" />
+            <label sclass="wordwrap" value="4. Click 'Compare'." />
+            <separator />
+            <label value="Points" />
+            <listbox id="lbPoints">
+                <listhead>
+                    <listheader label="   " width="20px" id="lhFirstColumn"  style="font-size:11px"/>
+                    <listheader label="longitude" width="110px" id="lhSecondColumn" style="font-size:11px;padding-left:5px"/>
+                    <listheader label="latitude" width="110px" id="lhThirdColumn" style="font-size:11px;padding-left:5px"/>
+                    <listheader label=""  align="right" style="font-size:9px"/>
+                    <listheader label=""  align="right" style="font-size:9px"/>
+                    <listheader label=""  align="right" style="font-size:9px"/>
+                </listhead>
+            </listbox>
+            <hbox>
+                <button id="btnAdd" label="Add point" />
+                <button id="btnCompare" label="Compare" />
+            </hbox>
+            <separator />
+            <hbox width="100%">
+                <label value="Results" />
+                <button id="btnDownload" label="Download" disabled="true"/>
+                <button id="btnCancel" label="Close" />
+            </hbox>
+
+            <listbox id="lbResults" height="300px" />
+
+        </vbox>
+
+    </window>
+</zk>
+

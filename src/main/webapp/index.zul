@@ -182,6 +182,9 @@
                                     <n:a href="#" n:onClick="runNearestLocality();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.nearestlocality.enable")?"":"display:none"}'>Nearest locality</n:a>
                                 </n:li>
                                 <n:li>
+                                    <n:a href="#" n:onClick="runPointComparisons();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.pointcomparisons.enable")?"":"display:none"}'>Points comparisons</n:a>
+                                </n:li>
+                                <n:li>
                                     <n:a href="#" n:onClick="runScatterPlot();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.scatterplot.enable")?"":"display:none"}'>Scatterplot</n:a>
                                 </n:li>
                                 <n:li>

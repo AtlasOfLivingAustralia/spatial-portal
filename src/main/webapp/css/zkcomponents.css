@@ -601,3 +601,10 @@ z-listbox-autopaging .z-listcell-cnt {
 .z-listitem.z-listitem:hover > .z-listcell > .z-listcell-content > .z-a {
     color: #FFFFFF;
 }
+
+.txtCoordinate .z-listcell-content > input[type="text"] {
+    border: 0px;
+    margin: 0px;
+    height: inherit;
+    padding: 0px;
+}

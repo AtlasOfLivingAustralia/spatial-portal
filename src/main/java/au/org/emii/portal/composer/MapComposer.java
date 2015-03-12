@@ -2535,6 +2535,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         remoteLogger.logMapAnalysis("Nearest locality", "Tool - Nearest locality", "", "", "", "", "", "");
     }
 
+    public void runPointComparisons(Event event) {
+        openOverlapped("WEB-INF/zul/results/PointComparison.zul");
+    }
+
+
     public void onClick$btnSpeciesList(Event event) {
         openModal("WEB-INF/zul/tool/SpeciesList.zul", null, StringConstants.ADDTOOLWINDOW);
     }

@@ -46,11 +46,13 @@ var mapClickControl;
 var polyControl = null;
 var radiusControl = null;  //for deactivate after drawing
 var boxControl = null;	//for deactivate after drawing
+var pointControl = null;	//for deactivate after drawing
 var areaSelectControl = null;
 var filteringPolygon = null;	//temporary for destroy option after display
 var alocPolygon = null;			//temporary for destroy option after display
 var polygonLayer = null;
 var boxLayer = null;
+var pointLayer = null;
 var radiusLayer = null;
 var featureSelectLayer = null;
 var featureSpeciesSelectLayer = null;
@@ -735,6 +737,32 @@ function addPolygonDrawingTool() {
 //////
 }
 
+function addPointDrawingTool() {
+    removeAreaSelection();
+
+    ////adding polygon control and layer
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "red";
+    layer_style.strokeColor = "red";
+
+    pointLayer = new OpenLayers.Layer.Vector("Point Layer", {
+        style: layer_style
+    });
+    pointLayer.setVisibility(true);
+    map.addLayer(pointLayer);
+    if (pointControl != null) {
+        map.removeControl(pointControl);
+        pointControl.destroy();
+        pointControl = null;
+    }
+    pointControl = new OpenLayers.Control.DrawFeature(pointLayer, OpenLayers.Handler.Point, {
+        'featureAdded': pointAdded
+    });
+    map.addControl(pointControl);
+    pointControl.activate();
+//////
+}
+
 function removeAreaSelection() {
     if (polygonLayer != null) {
         polygonLayer.destroy();
@@ -745,6 +773,11 @@ function removeAreaSelection() {
         boxLayer.destroy();
         boxLayer = null;
         boxControl.deactivate();
+    }
+    if (pointLayer != null) {
+        pointLayer.destroy();
+        pointLayer = null;
+        pointControl.deactivate();
     }
     if (radiusLayer != null) {
         radiusLayer.destroy();
@@ -820,6 +853,11 @@ function regionAdded(feature) {
 
 // This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
+    parent.setPolygonGeometry(feature.geometry);
+    removeAreaSelection();
+    setVectorLayersSelectable();
+}
+function pointAdded(feature) {
     parent.setPolygonGeometry(feature.geometry);
     removeAreaSelection();
     setVectorLayersSelectable();

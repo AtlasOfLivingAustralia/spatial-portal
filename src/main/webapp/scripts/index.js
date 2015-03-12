@@ -113,6 +113,7 @@ function setSelectionGeometry(geometry_orig) {
     var value = geometry.toString();
     zAu.send(new zk.Event(zk.Widget.$(jq('$areapolygonwindow')[0]), 'onSelectionGeom', value));
     zAu.send(new zk.Event(zk.Widget.$(jq('$areapointandradiuswindow')[0]), 'onSelectionGeom', value));
+    zAu.send(new zk.Event(zk.Widget.$(jq('$pointcomparisonswindow')[0]), 'onMapClick', value));
 
 
 }
@@ -282,6 +283,11 @@ function runNearestLocality() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'runNearestLocalityAction', null));
     mapFrame.toggleActiveNearest();
 }
+
+function runPointComparisons() {
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'runPointComparisons', null));
+}
+
 
 function runSamplingAction() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddSampling', null));
