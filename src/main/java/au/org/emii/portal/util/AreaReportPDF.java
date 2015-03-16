@@ -20,10 +20,8 @@ import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -499,7 +497,13 @@ public class AreaReportPDF {
             int[] columnOrder;
             if (isSpecies) {
                 columnOrder = new int[]{8, 1, 10, 11};
-                fw.write("<tr><td>Family</td><td id='scientificName' >Scientific Name</td><td>Common Name</td><td>No. Occurrences</td></tr>");
+                fw.write("<tr><td>Family</td><td id='scientificName' >Scientific Name</td><td>Common Name</td><td>No. Occurrences</td>");
+                for (int i = 0; i < CommonData.getSpeciesListAdditionalColumnsHeader().size(); i++) {
+                    columnOrder = Arrays.copyOf(columnOrder, columnOrder.length + 1);
+                    columnOrder[columnOrder.length - 1] = 11 + 1 + i;
+                    fw.write("<td>" + CommonData.getSpeciesListAdditionalColumnsHeader().get(i) + "</td>");
+                }
+                fw.write("</tr>");
             } else if ("JournalMap Articles".equals(title)) {
                 //authors (last_name, first_name), publish_year, title, publication.name, doi, JournalMap URL
                 columnOrder = new int[]{0, 1, 2, 3, 4, 5};

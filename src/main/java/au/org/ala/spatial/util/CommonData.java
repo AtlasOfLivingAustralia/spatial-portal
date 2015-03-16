@@ -7,6 +7,7 @@ package au.org.ala.spatial.util;
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.legend.QueryField;
 import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.dto.SpeciesListItemDTO;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.lang.LanguagePackImpl;
 import au.org.emii.portal.util.PortalProperties;
@@ -139,6 +140,7 @@ public final class CommonData {
     private static Long speciesListCountsUpdated = 0L;
     private static Map speciesListCountsKosher;
     private static Long speciesListCountsUpdatedKosher = 0L;
+    private static Map<String, List<String>> speciesListAdditionalColumns = new HashMap<String, List<String>>();
 
     private CommonData() {
         //to hide public constructor
@@ -212,6 +214,9 @@ public final class CommonData {
         //    lsidCounts = lc;
         //}
         lsidCounts.clear();
+
+        //species list additional columns
+        speciesListAdditionalColumns = initSpeciesListAdditionalColumns();
 
         // load the download reasons
         initDownloadReasons();
@@ -1308,6 +1313,49 @@ public final class CommonData {
 
         } catch (Exception e) {
             LOGGER.error("error intersecting wkt with journal map articles", e);
+        }
+
+        return list;
+    }
+
+    private static Map<String, List<String>> initSpeciesListAdditionalColumns() {
+        Map<String, List<String>> map = new HashMap<String, List<String>>();
+
+        String slac = settings.getProperty("species.list.additional.columns", "");
+        String[] columns = slac.split("\\|");
+        for (String line : columns) {
+            String[] parts = line.split(",");
+            if (parts.length > 1) {
+                String columnTitle = parts[0];
+                ArrayList<String> sp = new ArrayList<String>();
+                for (int i = 1; i < parts.length; i++) {
+                    //fetch species list
+                    Collection<SpeciesListItemDTO> list = SpeciesListUtil.getListItems(parts[i]);
+                    for (SpeciesListItemDTO item : list) {
+                        if (item.getLsid() != null && !item.getLsid().isEmpty()) sp.add(item.getLsid());
+                    }
+                }
+                Collections.sort(sp);
+                map.put(columnTitle, sp);
+            }
+        }
+
+        return map;
+    }
+
+    public static List<String> getSpeciesListAdditionalColumnsHeader() {
+        return new ArrayList<String>(speciesListAdditionalColumns.keySet());
+    }
+
+    public static List<String> getSpeciesListAdditionalColumns(List<String> headers, String lsid) {
+        List<String> list = new ArrayList<String>();
+        for (int i = 0; i < headers.size(); i++) {
+            List<String> sorted = speciesListAdditionalColumns.get(headers.get(i));
+            if (sorted != null && Collections.binarySearch(sorted, lsid) >= 0) {
+                list.add("Y");
+            } else {
+                list.add("");
+            }
         }
 
         return list;

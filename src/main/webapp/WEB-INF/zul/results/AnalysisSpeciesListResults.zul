@@ -22,7 +22,7 @@
             <separator />
             <separator />
             <listbox id="popupListboxResults" height="400px">
-                            <listhead sizable="true" >
+                            <listhead id="listhead" sizable="true" >
                                 <listheader label="LSID" visible="false" />
                                 <listheader label="Scientific Name" />
                                 <listheader label="Taxon Concept" />

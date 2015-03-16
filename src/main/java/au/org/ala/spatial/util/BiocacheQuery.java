@@ -624,12 +624,27 @@ public class BiocacheQuery implements Query, Serializable {
             client.executeMethod(get);
             speciesList = get.getResponseBodyAsString();
 
-            //add 'Other' correction
+            //add 'Other' correction and add additional columns
+            List<String> header = CommonData.getSpeciesListAdditionalColumnsHeader();
+            StringBuilder newlist = new StringBuilder();
             int total = getOccurrenceCount();
             CSVReader csv = new CSVReader(new StringReader(speciesList));
             String[] line;
             int count = 0;
+            int lastpos = 0;
             while ((line = csv.readNext()) != null) {
+
+                int nextpos = speciesList.indexOf('\n', lastpos + 1);
+                if (nextpos < 0) nextpos = speciesList.length();
+                newlist.append(speciesList.substring(lastpos, nextpos));
+
+                if (lastpos == 0) {
+                    newlist.append(",").append(header.toString().replace("[", "").replace("]", ""));
+                } else {
+                    newlist.append(",").append(CommonData.getSpeciesListAdditionalColumns(header, line[0]).toString().replace("[", "").replace("]", ""));
+                }
+                lastpos = nextpos;
+
                 try {
                     count += Integer.parseInt(line[line.length - 1]);
                 } catch (Exception e) {
@@ -637,8 +652,9 @@ public class BiocacheQuery implements Query, Serializable {
             }
             if (total - count > 0) {
                 String correction = "\n,,,,,,,,,,Other (not species rank)," + (total - count);
-                speciesList += correction;
+                newlist.append(correction);
             }
+            speciesList = newlist.toString();
         } catch (Exception e) {
             LOGGER.error("error getting species list from: " + url);
         }

@@ -3,6 +3,7 @@ package au.org.ala.spatial.composer.results;
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.logger.RemoteLogger;
+import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Query;
 import au.org.ala.spatial.util.QueryUtil;
 import au.org.emii.portal.composer.UtilityComposer;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author adam
@@ -42,6 +44,15 @@ public class SpeciesListResults extends UtilityComposer {
         geospatialKosher = (boolean[]) Executions.getCurrent().getArg().get("geospatialKosher");
         chooseEndemic = (Boolean) Executions.getCurrent().getArg().get(StringConstants.CHOOSEENDEMIC);
         extraParams = (String) Executions.getCurrent().getArg().get(StringConstants.EXTRAPARAMS);
+
+        //adjust header
+        List<String> header = CommonData.getSpeciesListAdditionalColumnsHeader();
+        for (int i = 0; i < header.size(); i++) {
+            Listhead lh = (Listhead) getFellow("listhead");
+            Listheader lhr = new Listheader(header.get(i));
+            lhr.setParent(lh);
+        }
+
         populateList();
     }
 
@@ -120,7 +131,11 @@ public class SpeciesListResults extends UtilityComposer {
 
     public void onClick$btnDownload() {
         StringBuilder sb = new StringBuilder();
-        sb.append("LSID,Scientific Name,Taxon Concept,Taxon Rank,Kingdom,Phylum,Class,Order,Family,Genus,Vernacular Name,Number of records\r\n");
+        sb.append("LSID,Scientific Name,Taxon Concept,Taxon Rank,Kingdom,Phylum,Class,Order,Family,Genus,Vernacular Name,Number of records");
+        for (int i = 0; i < CommonData.getSpeciesListAdditionalColumnsHeader().size(); i++) {
+            sb.append(",").append(CommonData.getSpeciesListAdditionalColumnsHeader().get(i));
+        }
+        sb.append("\r\n");
         for (String s : results) {
             sb.append(s);
             sb.append("\r\n");
