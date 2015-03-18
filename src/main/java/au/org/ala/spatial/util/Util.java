@@ -429,7 +429,7 @@ public final class Util {
             BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String line;
             while ((line = rd.readLine()) != null) {
-                content.append(line);
+                content.append(line).append("\n");
             }
 
         } catch (Exception e) {

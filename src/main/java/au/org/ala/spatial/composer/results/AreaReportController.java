@@ -686,9 +686,9 @@ public class AreaReportController extends UtilityComposer {
             }
             dto.addUrlDetails("Full List", CommonData.getSpeciesListServer() + "/speciesListItem/list/" + dataResourceUid);
         } else if (facet.startsWith("state_conservation")) {
-            dto.setTitle("Threatened Species (all lists)");
+            dto.setTitle("Threatened Species (sensitive only lists)");
         } else if (facet.startsWith("pest_flag")) {
-            dto.setTitle("Invasive Species (all lists)");
+            dto.setTitle("Invasive Species (sensitive only lists)");
         } else if (facet.startsWith("species_group")) {
             dto.setTitle(facet.substring(colonIdx + 1));
         }

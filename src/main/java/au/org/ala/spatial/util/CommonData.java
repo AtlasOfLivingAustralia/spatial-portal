@@ -18,16 +18,14 @@ import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 
@@ -140,7 +138,7 @@ public final class CommonData {
     private static Long speciesListCountsUpdated = 0L;
     private static Map speciesListCountsKosher;
     private static Long speciesListCountsUpdatedKosher = 0L;
-    private static Map<String, List<String>> speciesListAdditionalColumns = new HashMap<String, List<String>>();
+    private static Map<String, Map<String, List<String>>> speciesListAdditionalColumns = new HashMap<String, Map<String, List<String>>>();
 
     private CommonData() {
         //to hide public constructor
@@ -1318,8 +1316,8 @@ public final class CommonData {
         return list;
     }
 
-    private static Map<String, List<String>> initSpeciesListAdditionalColumns() {
-        Map<String, List<String>> map = new HashMap<String, List<String>>();
+    private static Map<String, Map<String, List<String>>> initSpeciesListAdditionalColumns() {
+        Map<String, Map<String, List<String>>> map = new HashMap<String, Map<String, List<String>>>();
 
         String slac = settings.getProperty("species.list.additional.columns", "");
         String[] columns = slac.split("\\|");
@@ -1327,16 +1325,29 @@ public final class CommonData {
             String[] parts = line.split(",");
             if (parts.length > 1) {
                 String columnTitle = parts[0];
-                ArrayList<String> sp = new ArrayList<String>();
                 for (int i = 1; i < parts.length; i++) {
-                    //fetch species list
-                    Collection<SpeciesListItemDTO> list = SpeciesListUtil.getListItems(parts[i]);
-                    for (SpeciesListItemDTO item : list) {
-                        if (item.getLsid() != null && !item.getLsid().isEmpty()) sp.add(item.getLsid());
+                    try {
+                        JSONParser jp = new JSONParser();
+                        InputStream is = new URL(CommonData.getSpeciesListServer() + "/ws/speciesList?druid=" + parts[i]).openStream();
+                        String listName = ((JSONObject) jp.parse(IOUtils.toString(is))).get("listName").toString();
+                        is.close();
+
+                        Map<String, List<String>> m = new HashMap<String, List<String>>();
+                        ArrayList<String> sp = new ArrayList<String>();
+                        //fetch species list
+
+                        Collection<SpeciesListItemDTO> list = SpeciesListUtil.getListItems(parts[i]);
+                        for (SpeciesListItemDTO item : list) {
+                            if (item.getLsid() != null && !item.getLsid().isEmpty()) sp.add(item.getLsid());
+                        }
+
+                        Collections.sort(sp);
+                        m.put(listName, sp);
+                        map.put(columnTitle, m);
+                    } catch (Exception e) {
+                        LOGGER.error("error reading list: " + parts[i], e);
                     }
                 }
-                Collections.sort(sp);
-                map.put(columnTitle, sp);
             }
         }
 
@@ -1350,12 +1361,17 @@ public final class CommonData {
     public static List<String> getSpeciesListAdditionalColumns(List<String> headers, String lsid) {
         List<String> list = new ArrayList<String>();
         for (int i = 0; i < headers.size(); i++) {
-            List<String> sorted = speciesListAdditionalColumns.get(headers.get(i));
-            if (sorted != null && Collections.binarySearch(sorted, lsid) >= 0) {
-                list.add("Y");
-            } else {
-                list.add("");
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, List<String>> entry : speciesListAdditionalColumns.get(headers.get(i)).entrySet()) {
+                List<String> sorted = entry.getValue();
+                if (sorted != null && Collections.binarySearch(sorted, lsid) >= 0) {
+                    if (sb.length() > 0) {
+                        sb.append("|");
+                    }
+                    sb.append(entry.getKey());
+                }
             }
+            list.add(sb.toString());
         }
 
         return list;

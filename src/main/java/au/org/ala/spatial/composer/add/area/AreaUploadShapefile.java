@@ -60,18 +60,18 @@ public class AreaUploadShapefile extends AreaToolComposer {
             //for <Placemark>
             if (!placemarks.isEmpty() && !placemarks.isEmpty()) {
                 sf = (SimpleFeature) placemarks.iterator().next();
-                g = (Geometry) sf.getAttribute(StringConstants.GEOMETRY);
+                g = (Geometry) sf.getAttribute("Geometry");
             }
 
             //for <Folder><Placemark>
             if (g == null && sf != null) {
                 placemarks = (Collection) sf.getAttribute(StringConstants.FEATURE);
                 if (placemarks != null && !placemarks.isEmpty()) {
-                    g = (Geometry) ((SimpleFeature) placemarks.iterator().next()).getAttribute(StringConstants.GEOMETRY);
+                    g = (Geometry) ((SimpleFeature) placemarks.iterator().next()).getAttribute("Geometry");
                 } else {
                     placemarks = (Collection) sf.getAttribute("Folder");
                     if (placemarks != null && !placemarks.isEmpty()) {
-                        g = (Geometry) ((SimpleFeature) placemarks.iterator().next()).getAttribute(StringConstants.GEOMETRY);
+                        g = (Geometry) ((SimpleFeature) placemarks.iterator().next()).getAttribute("Geometry");
                     }
                 }
             }

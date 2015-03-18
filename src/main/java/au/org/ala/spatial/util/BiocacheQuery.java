@@ -638,10 +638,12 @@ public class BiocacheQuery implements Query, Serializable {
                 if (nextpos < 0) nextpos = speciesList.length();
                 newlist.append(speciesList.substring(lastpos, nextpos));
 
-                if (lastpos == 0) {
-                    newlist.append(",").append(header.toString().replace("[", "").replace("]", ""));
-                } else {
-                    newlist.append(",").append(CommonData.getSpeciesListAdditionalColumns(header, line[0]).toString().replace("[", "").replace("]", ""));
+                List<String> list = header;
+                if (lastpos != 0) {
+                    list = CommonData.getSpeciesListAdditionalColumns(header, line[0]);
+                }
+                for (int i = 0; i < list.size(); i++) {
+                    newlist.append(",\"").append(list.get(i).replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
                 }
                 lastpos = nextpos;
 

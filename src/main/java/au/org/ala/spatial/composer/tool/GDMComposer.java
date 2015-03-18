@@ -16,6 +16,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ScrollEvent;
 import org.zkoss.zul.*;
 
@@ -42,6 +43,11 @@ public class GDMComposer extends ToolComposer {
     private Label sitesslidermin, sitesslidermax, sitessliderper, sitessliderdef;
     private Hbox sliderbox;
     private double maxScroll = 100;
+
+    private String step1Id = null;
+    private String step2Id = null;
+    private String statusMsg = "";
+    private long startTime;
 
     @Override
     public void afterCompose() {
@@ -120,9 +126,8 @@ public class GDMComposer extends ToolComposer {
         if (currentStep == 3) {
             LOGGER.debug("checking with server for step 1");
             boolean step1 = runGDMStep1();
-            if (!step1) {
-                return;
-            }
+
+            return;
         }
 
         super.onClick$btnOk(event);
@@ -130,6 +135,7 @@ public class GDMComposer extends ToolComposer {
     }
 
     public boolean runGDMStep1() {
+
         try {
             SelectedArea sa = getSelectedArea();
             query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
@@ -161,77 +167,18 @@ public class GDMComposer extends ToolComposer {
             LOGGER.debug("calling gdm ws step 1");
             client.executeMethod(get);
 
-            String step1resp = get.getResponseBodyAsString();
-            LOGGER.debug(step1resp);
+            step1Id = get.getResponseBodyAsString();
 
-            Scanner s = new Scanner(step1resp);
+            //wait for step 1
+            LOGGER.debug(step1Id);
 
-            pid = s.nextLine();
+            getFellow("runningMsg1").setVisible(true);
+            statusMsg = ((Label) getFellow("runningMsg1")).getValue();
+            startTime = System.currentTimeMillis();
 
-            // ignore the header
-            s.nextLine();
+            Events.echoEvent("step1Status", this, null);
 
-            if (!cutpoint.getItems().isEmpty()) {
-                cutpoint.getItems().clear();
-
-                Listitem li = new Listitem();
-                Listcell lc;
-
-                lc = new Listcell("0");
-                lc.setParent(li);
-
-                lc = new Listcell("All records");
-                lc.setParent(li);
-
-                lc = new Listcell("All records");
-                lc.setParent(li);
-
-                li.setValue("0");
-                li.setParent(cutpoint);
-            }
-
-            while (s.hasNext()) {
-                Listitem li = new Listitem();
-                Listcell lc;
-                String[] sxs = s.nextLine().split(",");
-
-                lc = new Listcell(sxs[0]);
-                lc.setParent(li);
-
-                lc = new Listcell(sxs[1]);
-                lc.setParent(li);
-
-                lc = new Listcell(sxs[2]);
-                lc.setParent(li);
-
-                li.setValue(sxs[0]);
-                li.setParent(cutpoint);
-            }
-
-            cutpoint.setSelectedIndex(0);
-
-            if (cutpoint.getItemCount() < 2) {
-                getMapComposer().showMessage("An assembalge of species with multiple occurrences \nfor each species is required by GDM.", this);
-                return false;
-            }
-
-
-            // setup the range slider for the sub samples
-            // 500 * 1024 * 1024 bytes
-            double maxBytes = 524288000;
-
-            double maxS = maxBytes / ((lbListLayers.getSelectedCount() * 3) + 1) / 8;
-            // 10% of maxScroll
-            double minS = (int) (maxS * 0.1);
-
-            this.maxScroll = maxS;
-
-            sitesslider.setCurpos((int) minS);
-            sitesslider.setMaxpos((int) maxS);
-            sitePairsSize.setValue(Long.toString(Math.round(minS)));
-            sitessliderdef.setValue(Long.toString(Math.round(minS)));
-            sitesslidermax.setValue(Long.toString(Math.round(maxS)));
-
+            btnOk.setDisabled(true);
 
             return true;
 
@@ -241,6 +188,168 @@ public class GDMComposer extends ToolComposer {
         }
 
         return false;
+    }
+
+    public void step1Status(Event event) {
+
+        try {
+            String response = Util.readUrl(CommonData.getSatServer() + "/ws/gdm/step1/status?id=" + step1Id);
+            if (response != null) {
+                if ("error".equals(response)) {
+                    this.detach();
+
+                    getMapComposer().showMessage("GDM error");
+
+                    LOGGER.error("GDM error for step 1. id=" + step1Id);
+
+                    return;
+                } else if (!"running".equals(response)) {
+                    Scanner s = new Scanner(response);
+
+                    pid = s.nextLine();
+
+                    // ignore the header
+                    s.nextLine();
+
+                    if (!cutpoint.getItems().isEmpty()) {
+                        cutpoint.getItems().clear();
+
+                        Listitem li = new Listitem();
+                        Listcell lc;
+
+                        lc = new Listcell("0");
+                        lc.setParent(li);
+
+                        lc = new Listcell("All records");
+                        lc.setParent(li);
+
+                        lc = new Listcell("All records");
+                        lc.setParent(li);
+
+                        li.setValue("0");
+                        li.setParent(cutpoint);
+                    }
+
+                    while (s.hasNext()) {
+                        Listitem li = new Listitem();
+                        Listcell lc;
+                        String[] sxs = s.nextLine().split(",");
+
+                        lc = new Listcell(sxs[0]);
+                        lc.setParent(li);
+
+                        lc = new Listcell(sxs[1]);
+                        lc.setParent(li);
+
+                        lc = new Listcell(sxs[2]);
+                        lc.setParent(li);
+
+                        li.setValue(sxs[0]);
+                        li.setParent(cutpoint);
+                    }
+
+                    cutpoint.setSelectedIndex(0);
+
+                    if (cutpoint.getItemCount() < 2) {
+                        this.detach();
+                        getMapComposer().showMessage("An assemblage of species with multiple occurrences \nfor each species is required by GDM.");
+                    }
+
+                    // setup the range slider for the sub samples
+                    // 500 * 1024 * 1024 bytes
+                    double maxBytes = 524288000;
+
+                    double maxS = maxBytes / ((lbListLayers.getSelectedCount() * 3) + 1) / 8;
+                    // 10% of maxScroll
+                    double minS = (int) (maxS * 0.1);
+
+                    this.maxScroll = maxS;
+
+                    sitesslider.setCurpos((int) minS);
+                    sitesslider.setMaxpos((int) maxS);
+                    sitePairsSize.setValue(Long.toString(Math.round(minS)));
+                    sitessliderdef.setValue(Long.toString(Math.round(minS)));
+                    sitesslidermax.setValue(Long.toString(Math.round(maxS)));
+
+                    //continue GDM
+                    btnOk.setDisabled(false);
+                    super.onClick$btnOk(event);
+
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            //might be a timeout on the progress check, continue
+        }
+
+        //repeat after 5s wait
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        ((Label) getFellow("runningMsg1")).setValue(statusMsg + " " + (System.currentTimeMillis() - startTime) / 1000 + "s");
+        Events.echoEvent("step1Status", this, null);
+    }
+
+    public void step2Status(Event event) {
+
+        try {
+            String response = Util.readUrl(CommonData.getSatServer() + "/ws/gdm/step2/status?id=" + step2Id);
+            if (response != null) {
+                if ("error".equals(response)) {
+                    this.detach();
+
+                    getMapComposer().showMessage("GDM error");
+
+                    LOGGER.error("GDM error for step 2. id=" + step2Id);
+
+                    return;
+                } else if (!"running".equals(response)) {
+
+                    pid = response.replace("\n", "");
+
+                    loadMap(null);
+
+                    this.setVisible(false);
+
+                    String fileUrl = CommonData.getSatServer() + "/ws/download/" + pid;
+                    Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip");
+
+                    String options = "";
+                    options += "cutpoint: " + cutpoint.getSelectedItem().getValue();
+                    options += ";useDistance: " + rgdistance.getSelectedItem().getValue();
+                    options += ";weighting: " + weighting;
+                    options += ";useSubSample: " + (useSubSample.isChecked() ? "1" : "0");
+                    options += ";sitePairsSize: " + sitePairsSize.getValue();
+                    if (query instanceof BiocacheQuery) {
+                        BiocacheQuery bq = (BiocacheQuery) query;
+                        options = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + options;
+                        remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, bq.getLsids(), sbenvsel, pid, options, StringConstants.STARTED);
+                    } else {
+                        remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, query.getName() + "__" + query.getQ(), sbenvsel, pid, options, StringConstants.STARTED);
+                    }
+
+                    //finished
+                    this.detach();
+
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            //might be a timeout on the progress check, continue
+            LOGGER.error("error checking GDM status. step2Id:" + pid, e);
+        }
+
+        //repeat after 1s wait
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        ((Label) getFellow("runningMsg2")).setValue(statusMsg + " " + (System.currentTimeMillis() - startTime) / 1000 + "s");
+        btnOk.setDisabled(true);
+        Events.echoEvent("step2Status", this, null);
     }
 
     public void onScroll$sitesslider(Event event) {
@@ -285,36 +394,21 @@ public class GDMComposer extends ToolComposer {
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
 
-
             get.addRequestHeader(StringConstants.ACCEPT, StringConstants.TEXT_PLAIN);
 
             LOGGER.debug("calling gdm ws: " + sbProcessUrl.toString());
             client.executeMethod(get);
 
-            pid = get.getResponseBodyAsString();
+            step2Id = get.getResponseBodyAsString();
 
-            loadMap(null);
+            getFellow("runningMsg2").setVisible(true);
+            statusMsg = ((Label) getFellow("runningMsg2")).getValue();
+            startTime = System.currentTimeMillis();
 
-            this.setVisible(false);
+            Events.echoEvent("step2Status", this, null);
 
-            String fileUrl = CommonData.getSatServer() + "/ws/download/" + pid;
-            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip");
+            return false;
 
-            String options = "";
-            options += "cutpoint: " + cutpoint.getSelectedItem().getValue();
-            options += ";useDistance: " + rgdistance.getSelectedItem().getValue();
-            options += ";weighting: " + weighting;
-            options += ";useSubSample: " + (useSubSample.isChecked() ? "1" : "0");
-            options += ";sitePairsSize: " + sitePairsSize.getValue();
-            if (query instanceof BiocacheQuery) {
-                BiocacheQuery bq = (BiocacheQuery) query;
-                options = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + options;
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, bq.getLsids(), sbenvsel, pid, options, StringConstants.STARTED);
-            } else {
-                remoteLogger.logMapAnalysis(tToolName.getValue(), "Tool - Prediction", area, query.getName() + "__" + query.getQ(), sbenvsel, pid, options, StringConstants.STARTED);
-            }
-
-            return true;
         } catch (Exception e) {
             LOGGER.error("error finalizing GDM", e);
         }

@@ -62,7 +62,7 @@
                     <separator />
                     <radiogroup id="rgArea" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)" focus="true">
                         <radio id="rAreaCurrent" label="Current extent" value="current" />
-                        <radio id="rAreaAustralia" label="${${addtoolwindow.getMapComposer().getSettingsSupplementary().getProperty('default.name')}" value="australia" />
+                        <radio id="rAreaAustralia" label="${addtoolwindow.getMapComposer().getSettingsSupplementary().getProperty('default.name')}" value="australia" />
                         <radio id="rAreaWorld" label="World" value="world" />
                         <radio id="rAreaCustom" label="Define new area" value="custom" />
                     </radiogroup>
@@ -186,7 +186,10 @@
                                                         <separator height="2px" />
                                                         <label id="lLayersSelected" value="0 layers selected" sclass="wSubLabel" />
                                                     </vbox></hbox>
+
+                        <label id="runningMsg1" style="color:red" value="GDM Step 1 in progress..." visible="false" />
                     </vbox>
+
 
                 </div>
 
@@ -296,6 +299,7 @@
                         <textbox id="tLayerList" width="500px" height="80px" readonly="true" multiline="true"/>
                         <button id="bLayerListDownload2" label="Export selection" visible="false" sclass="goButton" />
                     </vbox>
+                    <label id="runningMsg2" style="color:red" value="GDM Step 2 in progress..." visible="false" />
                 </div>
             </vbox>
         </hbox>

@@ -9,6 +9,7 @@ import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.lf5.util.StreamUtils;
 import org.json.simple.JSONArray;
@@ -23,7 +24,9 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -196,25 +199,43 @@ public class PointComparison extends AreaToolComposer {
         Filedownload.save(comparisonCsv, "text/plain", "point_comparison.csv");
     }
 
+    private String layernames = null;
+    private Map<String, String> layerDisplayNames = new HashMap<String, String>();
+
+    private String layerList() {
+        if (layernames == null) {
+
+            String url = CommonData.getSettings().getProperty("layers_batch_intersect_url") + "/fields";
+            try {
+                JSONParser jp = new JSONParser();
+                JSONArray fields = (JSONArray) jp.parse(IOUtils.toString(new URL(url).openStream()));
+                for (int i = 0; i < fields.size(); i++) {
+                    JSONObject field = (JSONObject) fields.get(i);
+                    if (layernames == null) {
+                        layernames = "";
+                    } else {
+                        layernames += ",";
+                    }
+                    layernames += field.get("id").toString();
+                    layerDisplayNames.put(field.get("id").toString(), field.get("name").toString());
+                }
+            } catch (Exception e) {
+                LOGGER.error("error getting layer names", e);
+            }
+
+        }
+        return layernames;
+    }
+
     public void onClick$btnCompare(Event event) {
         try {
             //sampling
-            String url = CommonData.getSettings().getProperty("layers_batch_intersect_url");
+            String url = CommonData.getSettings().getProperty("layers_batch_intersect_url") + "/intersect/batch";
             NameValuePair[] params = new NameValuePair[2];
+
+            params[0] = new NameValuePair("fids", layerList());
+
             StringBuilder sb = new StringBuilder();
-            JSONArray ja = CommonData.getLayerListJSONArray();
-            for (int i = 0; i < ja.size(); i++) {
-                JSONObject jo = (JSONObject) ja.get(i);
-                if (jo.containsKey("name")) {
-                    String name = jo.get("name").toString();
-                    if (sb.length() > 0) {
-                        sb.append(",");
-                    }
-                    sb.append(name);
-                }
-            }
-            params[0] = new NameValuePair("fids", sb.toString());
-            sb = new StringBuilder();
             for (int i = 0; i < points.size(); i++) {
                 try {
                     //validate points as doubles
@@ -293,8 +314,8 @@ public class PointComparison extends AreaToolComposer {
                             tcsv.append(",");
                         }
                         if (i == 0) {
-                            tcsv.append("\"").append(CommonData.getLayerDisplayName(data.get(i)[j])).append("\"");
-                            tdata[row][i] = CommonData.getLayerDisplayName(data.get(i)[j]);
+                            tcsv.append("\"").append(layerDisplayNames.get(data.get(i)[j])).append("\"");
+                            tdata[row][i] = layerDisplayNames.get(data.get(i)[j]);
                         } else {
                             tcsv.append(data.get(i)[j]);
                             tdata[row][i] = data.get(i)[j];
