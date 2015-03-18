@@ -195,7 +195,7 @@ public class GDMComposer extends ToolComposer {
         try {
             String response = Util.readUrl(CommonData.getSatServer() + "/ws/gdm/step1/status?id=" + step1Id);
             if (response != null) {
-                if ("error".equals(response)) {
+                if (response.startsWith("error")) {
                     this.detach();
 
                     getMapComposer().showMessage("GDM error");
@@ -203,7 +203,7 @@ public class GDMComposer extends ToolComposer {
                     LOGGER.error("GDM error for step 1. id=" + step1Id);
 
                     return;
-                } else if (!"running".equals(response)) {
+                } else if (!response.startsWith("running")) {
                     Scanner s = new Scanner(response);
 
                     pid = s.nextLine();
@@ -280,6 +280,7 @@ public class GDMComposer extends ToolComposer {
             }
         } catch (Exception e) {
             //might be a timeout on the progress check, continue
+            LOGGER.error("error in GDM step1. id:" + step1Id, e);
         }
 
         //repeat after 5s wait
@@ -297,7 +298,7 @@ public class GDMComposer extends ToolComposer {
         try {
             String response = Util.readUrl(CommonData.getSatServer() + "/ws/gdm/step2/status?id=" + step2Id);
             if (response != null) {
-                if ("error".equals(response)) {
+                if (response.startsWith("error")) {
                     this.detach();
 
                     getMapComposer().showMessage("GDM error");
@@ -305,7 +306,7 @@ public class GDMComposer extends ToolComposer {
                     LOGGER.error("GDM error for step 2. id=" + step2Id);
 
                     return;
-                } else if (!"running".equals(response)) {
+                } else if (!response.startsWith("running")) {
 
                     pid = response.replace("\n", "");
 
