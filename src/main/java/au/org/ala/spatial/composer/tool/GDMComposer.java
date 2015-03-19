@@ -391,6 +391,7 @@ public class GDMComposer extends ToolComposer {
             sbProcessUrl.append("&weighting=").append(weighting.getSelectedItem().getValue());
             sbProcessUrl.append("&useSubSample=").append(useSubSample.isChecked() ? "1" : "0");
             sbProcessUrl.append("&sitePairsSize=").append(sitePairsSize.getValue());
+            sbProcessUrl.append("&name=").append(query.getName());
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
