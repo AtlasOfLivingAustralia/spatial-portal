@@ -19,6 +19,7 @@ import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.*;
 
 import java.util.ArrayList;
@@ -92,6 +93,13 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
             ja = (JSONArray) jp.parse(Util.readUrl(url));
         } catch (ParseException e) {
             LOGGER.error("failed to parse getExpertTrees");
+        }
+
+        if (ja == null || ja.size() == 0) {
+            Events.echoEvent("onClose", this, null);
+
+            getMapComposer().showMessage("Phylogenetic diversity tool is currently unavailable.");
+            return;
         }
 
         trees = new Object[ja.size()];

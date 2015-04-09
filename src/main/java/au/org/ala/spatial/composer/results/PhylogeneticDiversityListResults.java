@@ -60,9 +60,9 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
         //restrict header to what is in the zul
         for (int i = 0; i < selectedAreas.size(); i++) {
             if (selectedAreas.get(i).getMapLayer() != null) {
-                header.add(selectedAreas.get(i).getMapLayer().getDisplayName());
+                header.add(selectedAreas.get(i).getMapLayer().getDisplayName() + " (PD)");
             } else {
-                header.add("Selected Area");
+                header.add("Current extent (PD)");
             }
         }
         Component firstChild = getFellow(StringConstants.TREES_HEADER).getFirstChild();
@@ -70,12 +70,12 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
             header.add(c.getId().substring(3));
         }
         for (int i = 0; i < selectedAreas.size(); i++) {
-            String s = "Selected Area";
+            String s = "Current extent";
             if (selectedAreas.get(i).getMapLayer() != null) {
                 s = selectedAreas.get(i).getMapLayer().getDisplayName();
             }
 
-            Listheader lh = new Listheader(s);
+            Listheader lh = new Listheader(s + " (PD)");
             lh.setHflex("min");
             getFellow(StringConstants.TREES_HEADER).insertBefore(lh, firstChild);
         }
@@ -124,7 +124,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
 
                             if ("treeViewUrl".equalsIgnoreCase(header.get(i))) {
                                 Html img = new Html("<i class='icon-info-sign'></i>");
-                                img.setAttribute("link", value);
+                                img.setAttribute("link", value.isEmpty() ? CommonData.getSettings().getProperty(CommonData.PHYLOLIST_URL) : value);
 
                                 Listcell lc = new Listcell();
                                 lc.setParent(li);
@@ -231,6 +231,15 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
         //header
         sb.append("Area Name,Area (sq km),PD,Number of species,Focal Clade,Max PD,Tree Name,Study Name,Number of leaves,DOI,Study Id");
 
+        //area info
+        List<Integer> speciesCounts = new ArrayList<Integer>();
+        for (int i = 0; i < selectedAreas.size(); i++) {
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedAreas.get(i), false, null);
+            int resultsCount = sq.getSpeciesCount();
+
+            speciesCounts.add(resultsCount);
+        }
+
         //rows
         for (int j = 0; j < selectedTrees.size(); j++) {
             Map<String, String> map = (Map<String, String>) selectedTrees.get(j);
@@ -253,9 +262,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                 }
                 sb.append(s).append(",");
 
-                Query sq = QueryUtil.queryFromSelectedArea(null, selectedAreas.get(i), false, null);
-                int resultsCount = sq.getSpeciesCount();
-                sb.append("" + resultsCount).append(",");
+                sb.append("" + speciesCounts.get(i)).append(",");
 
                 sb.append(toCSVString(map.get("focalClade"))).append(",");
                 sb.append(toCSVString(map.get("maxPd"))).append(",");
@@ -264,7 +271,6 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                 sb.append(toCSVString(map.get("numberOfLeaves"))).append(",");
                 sb.append(toCSVString(map.get("doi"))).append(",");
                 sb.append(toCSVString(map.get("studyId")));
-
             }
         }
 
