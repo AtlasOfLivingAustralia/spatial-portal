@@ -25,14 +25,9 @@
                             <listhead id="treesHeader">
                                     <listheader id="lh_treeViewUrl" label="" width="35px" />
                                     <listheader id="lh_maxPd" label = "Max PD" hflex="min"/>
-                                    <listheader id="lh_group" label="Group" hflex="min"/>
-                                    <listheader id="lh_focalClade" label = "Focal Clade" hflex="min"/>
-                                    <listheader id="lh_numberOfLeaves" label = "# Leaves" hflex="min"/>
+                                    <listheader id="lh_authors" label = "# Leaves" hflex="min"/>
                                     <listheader id="lh_studyName" label = "Study Name" width="200px"/>
-
                                     <listheader id="lh_studyId" label= "study ID" hflex="min"/>
-                                    <listheader id="lh_treeId" label="Tree ID" hflex="min"/>
-
                                 </listhead>
                         </listbox>
 

@@ -43,8 +43,14 @@
                 <separator />
                 <vbox id="vboxArea" onOK="addtoolwindow.onClick$btnOk(null)" focus="true" height="350px">
                     <checkbox id="cAreaCurrent" label="Current extent" value="current" />
-                    <radio id="rAreaCustom" label="Define new area" value="custom" />
+                    <hbox>
+                        <radio id="rAreaCustom" label="Define new area" value="custom" onClick="rAreaCustomClear.setVisible(true)"/>
+                        <button class="btn-mini" visible="false" onClick="rAreaCustom.setSelected(false);rAreaCustomClear.setVisible(false)" id="rAreaCustomClear" label="Clear 'Define new area'" />
+                    </hbox>
                 </vbox>
+
+                <!-- rgArea makes rAreaCustom function as expected -->
+                <radiogroup id="rgArea" orient="vertical" focus="true" />
             </div>
 
             <div id="atstep2" visible="false" zclass="last optional" sclass="atstep"  width="550px" height="600px"  style="overflow-y:auto">
@@ -54,14 +60,10 @@
                 <listbox id="treesList" height="350px" multiple="false" checkmark="true">
                     <listhead id="treesHeader">
                         <listheader id="lh_treeViewUrl" label="" width="35px" />
-                        <listheader id="lh_group" label="Group" hflex="min"/>
-                        <listheader id="lh_focalClade" label = "Focal Clade" hflex="min"/>
+                        <listheader id="lh_authors" label="Group" hflex="min"/>
                         <listheader id="lh_numberOfLeaves" label = "# Leaves" hflex="min"/>
                         <listheader id="lh_studyName" label = "Study Name" width="200px"/>
-
-                        <listheader id="lh_studyId" label= "study ID" hflex="min"/>
-                        <listheader id="lh_treeId" label="Tree ID" hflex="min"/>
-
+                        <listheader id="lh_studyId" label = "Study Id" width="200px"/>
                     </listhead>
                 </listbox>
 

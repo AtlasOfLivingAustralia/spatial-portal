@@ -72,7 +72,8 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
                     for (String area : selectedAreas.split(",")) {
                         List checkboxes = getFellow("vboxArea").getChildren();
                         for (int i = 0; i < checkboxes.size(); i++) {
-                            if (((Checkbox) checkboxes.get(i)).getLabel().equals(area)) {
+                            if (checkboxes.get(i) instanceof Checkbox &&
+                                    ((Checkbox) checkboxes.get(i)).getLabel().equals(area)) {
                                 ((Checkbox) checkboxes.get(i)).setChecked(true);
                             }
                         }
@@ -84,16 +85,14 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
     }
 
     private void fillPDTreeList() {
-        JSONObject jo = null;
+        JSONArray ja = null;
         String url = CommonData.getSettings().getProperty(CommonData.PHYLOLIST_URL) + "/phylo/getExpertTrees?noTreeText=true";
         JSONParser jp = new JSONParser();
         try {
-            jo = (JSONObject) jp.parse(Util.readUrl(url));
+            ja = (JSONArray) jp.parse(Util.readUrl(url));
         } catch (ParseException e) {
             LOGGER.error("failed to parse getExpertTrees");
         }
-
-        JSONArray ja = (JSONArray) jo.get("expertTrees");
 
         trees = new Object[ja.size()];
         header = new ArrayList<String>();
@@ -111,7 +110,11 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
             for (Object o : j.keySet()) {
                 String key = (String) o;
-                pdrow.put(key, j.get(key).toString());
+                if (j.containsKey(key) && j.get(key) != null) {
+                    pdrow.put(key, j.get(key).toString());
+                } else {
+                    pdrow.put(key, null);
+                }
             }
 
             trees[row] = pdrow;
@@ -138,7 +141,7 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
                             if ("treeViewUrl".equalsIgnoreCase(header.get(i))) {
                                 Html img = new Html("<i class='icon-info-sign'></i>");
-                                img.setAttribute("link", value);
+                                img.setAttribute("link", value.isEmpty() ? CommonData.getSettings().getProperty(CommonData.PHYLOLIST_URL) : value);
 
                                 Listcell lc = new Listcell();
                                 lc.setParent(li);
@@ -203,7 +206,7 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         Vbox vboxArea = (Vbox) getFellowIfAny("vboxArea");
 
         for (Component c : vboxArea.getChildren()) {
-            if (((Checkbox) c).isChecked()) {
+            if ((c instanceof Checkbox) && ((Checkbox) c).isChecked()) {
                 SelectedArea sa = null;
                 String area = ((Checkbox) c).getValue();
                 try {
@@ -237,7 +240,7 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
     @Override
     public void onClick$btnOk(Event event) {
-        if (currentStep == 1 && getSelectedAreas().isEmpty()) {
+        if (currentStep == 1 && getSelectedAreas().isEmpty() && !((Radio) getFellow("rAreaCustom")).isSelected()) {
             //must have 1 or more areas selected
             Messagebox.show("Select one or more areas.");
         } else if (currentStep == 2 && treesList.getSelectedItems().isEmpty()) {

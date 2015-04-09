@@ -109,7 +109,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                         Map<String, String> map = (Map<String, String>) data;
 
                         for (int i = 0; i < selectedAreas.size(); i++) {
-                            String value = areaPds.get(i).get(map.get(StringConstants.TREE_ID));
+                            String value = areaPds.get(i).get(map.get(StringConstants.STUDY_ID));
                             if (value == null) {
                                 value = "";
                             }
@@ -184,14 +184,14 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                 Map<String, JSONArray> speciesRow = new HashMap<String, JSONArray>();
 
                 for (int j = 0; j < pds.size(); j++) {
-                    String tree = (String) ((JSONObject) pds.get(j)).get(StringConstants.TREE_ID);
+                    String tree = "" + ((JSONObject) pds.get(j)).get(StringConstants.STUDY_ID);
                     pdrow.put(tree, ((JSONObject) pds.get(j)).get("pd").toString());
                     speciesRow.put(tree, (JSONArray) ((JSONObject) pds.get(j)).get("taxaRecognised"));
 
                     //maxPD retrieval
                     String maxPd = ((JSONObject) pds.get(j)).get("maxPd").toString();
                     for (int k = 0; k < selectedTrees.size(); k++) {
-                        if (((Map<String, String>) selectedTrees.get(k)).get(StringConstants.TREE_ID).equals(tree)) {
+                        if (((Map<String, String>) selectedTrees.get(k)).get(StringConstants.STUDY_ID).equals(tree)) {
                             ((Map<String, String>) selectedTrees.get(k)).put("maxPd", maxPd);
                         }
                     }
@@ -208,46 +208,63 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
         fillPDTreeList();
     }
 
+    private String toCSVString(String string) {
+        if (string == null) {
+            return "";
+        } else {
+            return "\"" + string.replace("\"", "\"\"").replace("\\", "\\\\") + "\"";
+        }
+    }
+
+    /**
+     * download format: CSV
+     * <p/>
+     * areas: 1 or more
+     * trees: 1 or more
+     * <p/>
+     * columns
+     * Area Name, Area sq km, Area PD, Area number of species, Tree (use 'author' value), Study Name, Study Id
+     */
     public void onClick$btnDownload() {
         StringBuilder sb = new StringBuilder();
 
         //header
-        for (int i = 0; i < selectedAreas.size(); i++) {
-            if (i > 0) {
-                sb.append(",");
-            }
-            String s = selectedAreas.get(i).getMapLayer().getDisplayName();
-            sb.append("\"").append(s.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
-        }
-        for (int i = selectedAreas.size(); i < header.size(); i++) {
-            sb.append(",");
-            String s = header.get(i);
-            sb.append("\"").append(s.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
-        }
+        sb.append("Area Name,Area (sq km),PD,Number of species,Focal Clade,Max PD,Tree Name,Study Name,Number of leaves,DOI,Study Id");
 
         //rows
         for (int j = 0; j < selectedTrees.size(); j++) {
-            sb.append("\n");
-
             Map<String, String> map = (Map<String, String>) selectedTrees.get(j);
 
             for (int i = 0; i < selectedAreas.size(); i++) {
-                if (i > 0) {
-                    sb.append(",");
-                }
-                String s = areaPds.get(i).get(map.get(StringConstants.TREE_ID));
-                if (s == null) {
-                    s = "";
-                }
-                sb.append("\"").append(s.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
-            }
+                sb.append("\n");
 
-            for (int i = selectedAreas.size(); i < header.size(); i++) {
-                String s = map.get(header.get(i));
+                //'current extent' does not have a map layer
+                if (selectedAreas.get(i).getMapLayer() == null) {
+                    sb.append(toCSVString("Current extent")).append(",");
+                    sb.append("" + Util.calculateArea(selectedAreas.get(i).getWkt()) / 1000000.0).append(",");
+                } else {
+                    sb.append(toCSVString(selectedAreas.get(i).getMapLayer().getDisplayName())).append(",");
+                    sb.append(selectedAreas.get(i).getKm2Area()).append(",");
+                }
+
+                String s = areaPds.get(i).get(map.get(StringConstants.STUDY_ID));
                 if (s == null) {
                     s = "";
                 }
-                sb.append(",\"").append(s.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
+                sb.append(s).append(",");
+
+                Query sq = QueryUtil.queryFromSelectedArea(null, selectedAreas.get(i), false, null);
+                int resultsCount = sq.getSpeciesCount();
+                sb.append("" + resultsCount).append(",");
+
+                sb.append(toCSVString(map.get("focalClade"))).append(",");
+                sb.append(toCSVString(map.get("maxPd"))).append(",");
+                sb.append(toCSVString(map.get("authors"))).append(",");
+                sb.append(toCSVString(map.get("studyName"))).append(",");
+                sb.append(toCSVString(map.get("numberOfLeaves"))).append(",");
+                sb.append(toCSVString(map.get("doi"))).append(",");
+                sb.append(toCSVString(map.get("studyId")));
+
             }
         }
 
@@ -259,16 +276,19 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
         //build one file for each tree
         for (int j = 0; j < selectedTrees.size(); j++) {
             Map<String, String> map = (Map<String, String>) selectedTrees.get(j);
-            String treeId = map.get(StringConstants.TREE_ID);
+            String treeId = map.get(StringConstants.STUDY_ID);
 
             sb = new StringBuilder();
 
             //header
-            sb.append("taxaRecognised ").append(treeId);
+            sb.append("taxaRecognised (studyId ").append(treeId).append(")");
             for (int i = 0; i < selectedAreas.size(); i++) {
                 sb.append(",");
-                String s = selectedAreas.get(i).getMapLayer().getDisplayName();
-                sb.append("\"").append(s.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
+                if (selectedAreas.get(i).getMapLayer() != null) {
+                    sb.append(toCSVString(selectedAreas.get(i).getMapLayer().getDisplayName()));
+                } else {
+                    sb.append(toCSVString("Current extent"));
+                }
             }
 
             //build map for the rows
@@ -303,7 +323,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                 }
             }
 
-            files.put(treeId + ".csv", sb.toString());
+            files.put("taxaRecognised_studyId_" + treeId + ".csv", sb.toString());
         }
 
         //make zip

@@ -1921,6 +1921,8 @@ if (window['loadFirebugConsole']) {
 }
 
 function getLayerValue(layer, lat, lon) {
+    while (lon > 180) lon -= 360;
+    while (lon < -180) lon += 360;
     var url = parent.jq('$layers_url')[0].innerHTML + "/intersect/" + layer + "/" + lat + "/" + lon;
     var ret = "";
     $.ajax({

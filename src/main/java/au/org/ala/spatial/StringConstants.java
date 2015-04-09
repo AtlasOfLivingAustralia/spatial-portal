@@ -177,7 +177,7 @@ public final class StringConstants {
     public static final String FLOAT_LEFT = "float:left;";
     public static final String FLOAT_RIGHT = "float:right;";
     public static final String TREES_HEADER = "treesHeader";
-    public static final String TREE_ID = "treeId";
+    public static final String STUDY_ID = "studyId";
     public static final String ANALYSIS = "Analysis";
     public static final String OCCURRENCE_DENSITY = "Occurrence Density";
     public static final String SPECIES_RICHNESS = "Species Richness";

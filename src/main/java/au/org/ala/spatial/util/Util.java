@@ -426,7 +426,7 @@ public final class Util {
             conn.connect();
 
             // Get the response
-            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
             String line;
             while ((line = rd.readLine()) != null) {
                 content.append(line).append("\n");

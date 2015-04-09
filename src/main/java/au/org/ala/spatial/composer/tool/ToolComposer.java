@@ -594,11 +594,31 @@ public class ToolComposer extends UtilityComposer {
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
-                Checkbox rAr = new Checkbox(lyr.getDisplayName());
-                rAr.setValue(lyr.getWKT());
 
-                rAr.setParent(vboxArea);
-                vboxArea.insertBefore(rAr, cAreaCurrent);
+                //add only if missing
+                boolean found = false;
+                if (getFellow("vboxArea") != null) {
+                    List checkboxes = getFellow("vboxArea").getChildren();
+
+                    for (int j = 0; j < checkboxes.size(); j++) {
+                        if (checkboxes.get(j) instanceof Checkbox &&
+                                ((Checkbox) checkboxes.get(j)).getLabel().equals(lyr.getDisplayName())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found) {
+                    Checkbox rAr = new Checkbox(lyr.getDisplayName());
+                    rAr.setValue(lyr.getWKT());
+
+                    if (lyr.getDisplayName().equals(selectedAreaName)) {
+                        rAr.setChecked(true);
+                    }
+
+                    rAr.setParent(vboxArea);
+                    vboxArea.insertBefore(rAr, cAreaCurrent);
+                }
             }
         } catch (Exception e) {
             LOGGER.error(StringConstants.UNABLE_TO_LOAD_ACTIVE_AREA_LAYERS, e);
@@ -1047,7 +1067,12 @@ public class ToolComposer extends UtilityComposer {
                     if (isAreaHighlightTab()) {
                         loadAreaHighlightLayers(curTopArea.getDisplayName());
                     } else if (isAreaTab()) {
-                        loadAreaLayers(curTopArea.getDisplayName());
+                        //multiple areas can be defined
+                        if (getFellow("cAreaCurrent") != null) {
+                            loadAreaLayersCheckboxes(curTopArea.getDisplayName());
+                        } else {
+                            loadAreaLayers(curTopArea.getDisplayName());
+                        }
                     }
 
                     ok = true;
@@ -1059,7 +1084,12 @@ public class ToolComposer extends UtilityComposer {
             this.doModal();
 
             if (ok) {
-                onClick$btnOk(null);
+                //not multiple areas can be defined
+                if (getFellow("cAreaCurrent") == null) {
+                    onClick$btnOk(null);
+                } else if (rAreaCustom != null) {
+                    rAreaCustom.setSelected(false);
+                }
                 hasCustomArea = false;
             }
 
