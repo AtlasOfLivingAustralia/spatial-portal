@@ -244,7 +244,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                     sb.append("" + Util.calculateArea(selectedAreas.get(i).getWkt()) / 1000000.0).append(",");
                 } else {
                     sb.append(toCSVString(selectedAreas.get(i).getMapLayer().getDisplayName())).append(",");
-                    sb.append(selectedAreas.get(i).getKm2Area()).append(",");
+                    sb.append(toCSVString(selectedAreas.get(i).getKm2Area())).append(",");
                 }
 
                 String s = areaPds.get(i).get(map.get(StringConstants.STUDY_ID));
