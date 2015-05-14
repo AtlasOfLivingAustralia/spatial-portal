@@ -213,6 +213,7 @@ public final class ShapefileUtils {
         builder.setCRS(DefaultGeographicCRS.WGS84);
 
         builder.add("the_geom", MultiPolygon.class);
+        builder.add("name", String.class);
 
         // build the type
         return builder.buildFeatureType();
