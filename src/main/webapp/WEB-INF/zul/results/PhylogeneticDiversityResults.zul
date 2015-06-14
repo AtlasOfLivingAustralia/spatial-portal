@@ -4,8 +4,9 @@
     <window id="phylogeneticdiversityresultswindow" border="normal"
     use="au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults"
             apply="au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults"
-            width="750px"
+            width="80%"
             style="overflow:visible"
+            sizable="true"
              xmlns:n="http://www.zkoss.org/2005/zk/native">
             <n:div class="fancybox-bg" id="fancybox-bg-ne" />
             <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -22,18 +23,24 @@
             <separator />
             <separator />
             <listbox id="popupListboxResults" height="700px">
-                            <listhead id="treesHeader">
-                                    <listheader id="lh_treeViewUrl" label="" width="35px" />
-                                    <listheader id="lh_maxPd" label = "Max PD" hflex="min"/>
-                                    <listheader id="lh_authors" label = "Tree" hflex="min"/>
-                                    <listheader id="lh_studyName" label = "Study Name" width="200px"/>
-                                    <listheader id="lh_studyId" label= "study ID" hflex="min"/>
-                                </listhead>
-                        </listbox>
+                <listhead id="treesHeader" sizable="true">
+                    <listheader label="Area Name" width="120px"/>
+                    <listheader label="Area (sq km)" width="90px"/>
+                    <listheader label="PD" width="60px"/>
+                    <listheader label="PD / Tree PD" width="90px"/>
+                    <listheader label="Species" width="60px"/>
+                    <listheader label="Species / Tree Species" width="140px"/>
+                    <listheader label="Tree Name" width="160px"/>
+                    <listheader label="Tree ID" width="80px"/>
+                    <listheader label="DOI" width="160px"/>
+                    <listheader label="Study Name" width="400px" />
+                    <listheader label="Tree PD" width="80px"/>
+                </listhead>
+            </listbox>
 
             <div class="btn-group">
-                    <button id="btnDownload" label="Download"  />
-                    <button label="Close" onClick="phylogeneticdiversityresultswindow.detach()" />
+                <button id="btnDownload" label="Download"  />
+                <button label="Close" onClick="phylogeneticdiversityresultswindow.detach()" />
            </div>
     </window>
 </zk>

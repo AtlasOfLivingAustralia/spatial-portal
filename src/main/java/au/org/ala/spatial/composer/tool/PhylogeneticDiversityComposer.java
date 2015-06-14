@@ -87,7 +87,7 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
     private void fillPDTreeList() {
         JSONArray ja = null;
-        String url = CommonData.getSettings().getProperty(CommonData.PHYLOLIST_URL) + "/phylo/getExpertTrees?noTreeText=true";
+        String url = CommonData.getSettings().getProperty(CommonData.PHYLOLIST_URL) + "/phylo/getExpertTrees";
         JSONParser jp = new JSONParser();
         try {
             ja = (JSONArray) jp.parse(Util.readUrl(url));

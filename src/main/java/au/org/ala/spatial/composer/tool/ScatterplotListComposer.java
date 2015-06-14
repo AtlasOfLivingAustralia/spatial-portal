@@ -97,9 +97,11 @@ public class ScatterplotListComposer extends ToolComposer {
         }
 
         StringBuilder layernames = new StringBuilder();
+        String layerunits = "";
         for (int i = 0; i < layers.length; i++) {
             if (layernames.length() > 0) {
                 layernames.append(",");
+                layerunits += ",";
             }
             String layerDisplayName = CommonData.getLayerDisplayName(layers[i]);
             if (layerDisplayName == null) {
@@ -120,6 +122,13 @@ public class ScatterplotListComposer extends ToolComposer {
                 layerDisplayName = layers[i];
             }
             layernames.append("\"").append(layerDisplayName.replace("\"", "\"\"").replace("\\", "\\\\")).append("\"");
+
+            String units = "";
+            try {
+                units = String.valueOf(CommonData.getLayer(layers[i]).get("environmentalvalueunits"));
+            } catch (Exception e) {
+            }
+            layerunits += units;
         }
 
         try {
@@ -129,6 +138,7 @@ public class ScatterplotListComposer extends ToolComposer {
             //add data parameters
             post.addParameter("layers", getSelectedLayers());
             post.addParameter("layernames", layernames.toString());
+            post.addParameter("layerunits", layerunits);
             post.addParameter("foregroundOccurrencesQs", lsidQuery.getQ());
             post.addParameter("foregroundOccurrencesBs", lsidQuery.getBS());
             post.addParameter("foregroundName", lsidQuery.getName());

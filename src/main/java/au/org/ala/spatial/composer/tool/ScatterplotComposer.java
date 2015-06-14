@@ -104,11 +104,17 @@ public class ScatterplotComposer extends ToolComposer {
             PostMethod post = new PostMethod(CommonData.getSatServer() + "/ws/scatterplot/new");
 
             //add data parameters
+            String layerunits = "";
+            try {
+                layerunits = String.valueOf(CommonData.getLayer(lyr1value).get("environmentalvalueunits")) + "," + String.valueOf(CommonData.getLayer(lyr2value).get("environmentalvalueunits"));
+            } catch (Exception e) {
+            }
 
             //colon delimited
             post.addParameter("layers", lyr1value + ":" + lyr2value);
             //CSV format
             post.addParameter("layernames", "\"" + lyr1name.replace("\"", "\"\"").replace("\\", "\\\\") + "\",\"" + lyr2name.replace("\"", "\"\"").replace("\\", "\\\\") + "\"");
+            post.addParameter("layerunits", layerunits);
             post.addParameter("foregroundOccurrencesQs", lsidQuery.getQ());
             post.addParameter("foregroundOccurrencesBs", lsidQuery.getBS());
             post.addParameter("foregroundName", lsidQuery.getName());
