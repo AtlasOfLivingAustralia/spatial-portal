@@ -963,6 +963,8 @@ public final class CommonData {
             layer = (JSONObject) layerlistJSON.get(i);
             if (layer.get(StringConstants.NAME).toString().equalsIgnoreCase(name)) {
                 break;
+            } else {
+                layer = null;
             }
         }
         return layer;

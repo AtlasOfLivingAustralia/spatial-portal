@@ -467,7 +467,10 @@ z-listbox-autopaging .z-listcell-cnt {
 }*/
 
 .z-listheader-content, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content {
-    padding: 0px;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 0px;
+    padding-bottom: 0px;
 }
 
 .z-listcell-content img {
@@ -575,7 +578,6 @@ z-listbox-autopaging .z-listcell-cnt {
 .z-listheader-content, .z-listcell-content, .z-listgroup-content, .z-listgroupfoot-content, .z-listfooter-content {
     font-family: Roboto, Helvetica, "Helvetica Neue", Arial, sans-serif;
     line-height: 20px;
-    padding: 0px;
 }
 
 .z-listitem.z-listitem-selected > .z-listcell > .z-listcell-content {

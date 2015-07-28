@@ -63,7 +63,7 @@
     display: inherit !important
 }
 
-@media (min-width: 768px) and (max-width: 979px) {
+@media (min-width: 768px) and (max-width: 1079px) {
     .hidden-desktop {
         display: inherit !important
     }
@@ -519,7 +519,7 @@
     }
 }
 
-@media (min-width: 768px) and (max-width: 979px) {
+@media (min-width: 768px) and (max-width: 1079px) {
     .row {
         margin-left: -20px;
         *zoom: 1
@@ -1069,7 +1069,7 @@
     }
 }
 
-@media (max-width: 979px) {
+@media (max-width: 1079px) {
     body {
         padding-top: 0
     }
@@ -1236,9 +1236,71 @@
     }
 }
 
-@media (min-width: 979px+1) {
+@media (min-width: 1079px+1) {
     .nav-collapse.collapse {
         height: auto !important;
         overflow: visible !important
     }
+}
+
+/* Custom, iPhone Retina */
+@media only screen and (min-width : 320px) {
+    body{padding-right: 0;padding-left: 0;}
+    .navbar .container{margin-left: 30px;}
+    div.navbar.navbar-inverse.navbar-fixed-top > div > div{margin: 0 30px}
+    #main{padding-right: 20px;padding-left: 20px;padding-top:5em;}
+    img.aus-govt,img.ncris{max-width:150px;}
+    .navbar-inner  a.brand { padding: 15px 7px; font-size: 14px;}
+    .navbar .btn-navbar {margin: 8px 7px;}
+    .navbar-inner ul.nav > li > a {padding: 5px;}
+    .navbar-inner .container-fluid { padding-left: 0; padding-right: 0; }
+    .help-text {margin-top: 1em;}
+    p.lead {font-size: 16px;}
+    .container-fluid.ftr-container{padding-right: 20px;padding-left: 20px;}
+    img.aus-govt,img.gbif{padding-bottom: 20px;}
+    .navbar-fixed-top .navbar-inner { padding: 0;}
+    .navbar-fixed-top, .navbar-fixed-bottom { position: fixed; right: 0; left: 0;z-index: 1030;}
+    .navbar-inner .nav-collapse.in.collapse .navbar-form .general-search { width: 170px; }
+    #main div.pagination .step {display:none;}
+    #main div.pagination .step:nth-child(-n+3), #main div.pagination .step:nth-last-child(2) {display:inline-block;}
+}
+
+/* Extra Small Devices, Phones */
+@media only screen and (min-width : 480px) {
+    .navbar .container{margin-left: 30px;}
+    #main{padding-right: 20px;padding-left: 20px; padding-top: 5em;}
+    img.aus-govt,img.ncris{max-width:200px;}
+    .navbar-inner ul.nav { margin: 0; }
+    .navbar-inner ul.nav > li > a {padding: 5px;}
+    .navbar-inner  a.brand { padding: 15px 10px; font-size: 16px;}
+    .navbar-fixed-top .navbar-inner {padding: 0;}
+    .container-fluid.ftr-container{padding-right: 20px;padding-left: 20px;}
+}
+
+/* Small Devices, Tablets */
+@media only screen and (min-width : 768px) {
+    #main{ padding-top: 5em; padding-left:0; padding-right:0}
+    .input-group.banner{padding-top:10em;}
+    .navbar-inner ul.nav {margin: 0;}
+    .navbar-inner ul.nav > li > a {padding: 10px;}
+    p.lead {font-size: 24px;}
+    #main div.pagination .step {display:inline-block;}
+}
+
+/* Medium Devices, Desktops */
+@media only screen and (min-width : 1092px) {
+    #main{ padding-top:0;}
+    .help-text {margin-top: 0;}
+    .navbar-inner ul.nav > li > a {padding: 15px 10px;}
+}
+
+/* Large Devices, medium Screens */
+@media only screen and (max-width : 1050px) {
+    .navbar-inner form.navbar-form input.general-search { width: 120px; }
+    .navbar-inner ul.nav > li > a {padding-top: 15px;}
+}
+
+/* Large Devices, Wide Screens */
+@media only screen and (min-width : 1200px) {
+    .navbar-inner ul.nav > li > a {padding: 15px 15px;}
 }

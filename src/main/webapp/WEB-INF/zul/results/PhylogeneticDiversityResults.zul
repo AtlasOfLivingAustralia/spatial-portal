@@ -5,6 +5,7 @@
     use="au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults"
             apply="au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults"
             width="80%"
+            height="600px"
             style="overflow:visible"
             sizable="true"
              xmlns:n="http://www.zkoss.org/2005/zk/native">
@@ -22,7 +23,7 @@
             <label id="resultsLabel" value=""/>
             <separator />
             <separator />
-            <listbox id="popupListboxResults" height="700px">
+            <listbox id="popupListboxResults" height="480px" >
                 <listhead id="treesHeader" sizable="true">
                     <listheader label="Area Name" width="120px"/>
                     <listheader label="Area (sq km)" width="90px"/>
@@ -34,6 +35,7 @@
                     <listheader label="Tree ID" width="80px"/>
                     <listheader label="DOI" width="160px"/>
                     <listheader label="Study Name" width="400px" />
+                    <listheader label="Notes" width="400px" />
                     <listheader label="Tree PD" width="80px"/>
                 </listhead>
             </listbox>

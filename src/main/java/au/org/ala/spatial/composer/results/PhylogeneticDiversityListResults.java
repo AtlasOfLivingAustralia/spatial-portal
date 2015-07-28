@@ -61,7 +61,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
         popupListboxResults.setModel(new SimpleListModel(list));
 
         //header:
-        //Area Name,Area (sq km),PD,Proportional PD (PD / Tree PD),Species,Proportional Species (Species / Tree Species),Tree Name,Tree ID,DOI,Study Name,Tree PD
+        //Area Name,Area (sq km),PD,Proportional PD (PD / Tree PD),Species,Proportional Species (Species / Tree Species),Tree Name,Tree ID,DOI,Study Name,Notes,Tree PD
         popupListboxResults.setItemRenderer(
                 new ListitemRenderer() {
 
@@ -165,7 +165,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
 
         //header
         sb.append("Area Name,Area (sq km),PD,Proportional PD (PD / Tree PD),");
-        sb.append("Species,Proportional Species (Species / Tree Species),Tree Name,Tree ID,DOI,Study Name,Tree PD");
+        sb.append("Species,Proportional Species (Species / Tree Species),Tree Name,Tree ID,DOI,Study Name,Notes,Tree PD");
 
         //rows
         for (int j = 0; j < selectedTrees.size(); j++) {
@@ -219,6 +219,8 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                 sb.append(toCSVString(map.get("doi"))).append(",");
                 //study name
                 sb.append(toCSVString(map.get("studyName"))).append(",");
+                //notes
+                sb.append(toCSVString(map.get("notes"))).append(",");
                 //tree pd
                 sb.append(toCSVString(map.get("maxPd")));
             }
@@ -247,7 +249,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
      * trees: 1 or more
      * <p/>
      * columns
-     * Area Name, Area sq km, Area PD, Area number of species, Tree (use 'author' value), Study Name, Study Id
+     * Area Name, Area sq km, Area PD, Area number of species, Tree (use 'author' value), Study Name, Notes, Study Id
      */
     public void onClick$btnDownload() {
 
