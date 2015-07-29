@@ -1302,6 +1302,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @return
      */
     private MapLayer loadUrlParameters() {
+        MapLayer mapLayer = null;
         String params = null;
 
         try {
@@ -1344,6 +1345,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String s = null;
             boolean[] geospatialKosher = null;
             boolean supportDynamic = false;
+            String qname = null;
 
             for (int i = 0; i < userParams.size(); i++) {
                 String key = userParams.get(i).getKey();
@@ -1371,6 +1373,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     if (value.startsWith("(") && value.endsWith(")") && !value.contains(" ")) {
                         s = value.substring(1, value.length() - 2);
                     }
+                } else if ("qname".equals(key)) {
+                    qname = value;
                 } else if ("fq".equals(key)) {
 
                     //flag geospatialKosher filters separately
@@ -1457,7 +1461,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     } else if ("point".equals(pointtype)) {
                         setGrid = 0;
                     }
-                    return mapSpecies(q, q.getSolrName(), StringConstants.SPECIES, q.getOccurrenceCount()
+                    mapLayer = mapSpecies(q, qname != null ? qname : q.getSolrName(), StringConstants.SPECIES, q.getOccurrenceCount()
                             , LayerUtilitiesImpl.SPECIES, null, setGrid, size, opacity, colour, colourBy, true);
                 }
             }
@@ -1493,7 +1497,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         }
 
-        return null;
+        return mapLayer;
     }
 
     public void onActivateLink(ForwardEvent event) {

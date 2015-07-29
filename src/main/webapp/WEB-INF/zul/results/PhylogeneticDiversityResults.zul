@@ -18,31 +18,53 @@
             <n:div class="fancybox-bg" id="fancybox-bg-s" />
             <n:div class="fancybox-bg" id="fancybox-bg-w" />
             <a sclass="fancybox-close" onClick="phylogeneticdiversityresultswindow.detach()" style="display: inline" />
-<caption label="Phylogenetic Diversity Results Preview" />
+            <caption label="Phylogenetic Diversity Results Preview" />
              <separator />
             <label id="resultsLabel" value=""/>
             <separator />
             <separator />
-            <listbox id="popupListboxResults" height="480px" >
-                <listhead id="treesHeader" sizable="true">
-                    <listheader label="Area Name" width="120px"/>
-                    <listheader label="Area (sq km)" width="90px"/>
-                    <listheader label="PD" width="60px"/>
-                    <listheader label="PD / Tree PD" width="90px"/>
-                    <listheader label="Species" width="60px"/>
-                    <listheader label="Species / Tree Species" width="140px"/>
-                    <listheader label="Tree Name" width="160px"/>
-                    <listheader label="Tree ID" width="80px"/>
-                    <listheader label="DOI" width="160px"/>
-                    <listheader label="Study Name" width="400px" />
-                    <listheader label="Notes" width="400px" />
-                    <listheader label="Tree PD" width="80px"/>
-                </listhead>
-            </listbox>
-
-            <div class="btn-group">
-                <button id="btnDownload" label="Download"  />
-                <button label="Close" onClick="phylogeneticdiversityresultswindow.detach()" />
+            <div id="divResults" visible="false">
+                <listbox id="popupListboxResults" height="480px" >
+                    <listhead id="treesHeader" sizable="true">
+                        <listheader label="Area Name" width="120px"/>
+                        <listheader label="Area (sq km)" width="90px"/>
+                        <listheader label="PD" width="60px"/>
+                        <listheader label="PD / Tree PD" width="90px"/>
+                        <listheader label="Species" width="60px"/>
+                        <listheader label="Species / Tree Species" width="140px"/>
+                        <listheader label="Tree Name" width="160px"/>
+                        <listheader label="Tree ID" width="80px"/>
+                        <listheader label="DOI" width="160px"/>
+                        <listheader label="Study Name" width="400px" />
+                        <listheader label="Notes" width="400px" />
+                        <listheader label="Tree PD" width="80px"/>
+                    </listhead>
+                </listbox>
+    
+                <div class="btn-group">
+                    <button id="btnDownload" label="Download"  />
+                    <button label="Close" onClick="phylogeneticdiversityresultswindow.detach()" />
+               </div>
+           </div>
+           <div id='divProgress' visible="true">
+               <separator />
+               <separator />
+               <separator />
+               <label value="Starting..." id="progressLabel" width="100%"/>
+               <separator />
+               <progressmeter value="0" id="jobprogress" width="100%"/>
+               <separator />
+              <label value="This can take a long time." style="font-style: italic;"/>
+           
+               <div class="btn-group" style="position:absolute;right:10px;bottom:10px">
+                       <button label="Cancel" onClick="phylogeneticdiversityresultswindow.detach()" />
+               </div>
+       
+               <script type="text/javascript">
+                   function checkProgress() {
+                       zAu.send(new zk.Event(zk.Widget.$(jq('$phylogeneticdiversityresultswindow')[0]), 'checkProgress', ''));
+                   }
+               </script>
            </div>
     </window>
 </zk>

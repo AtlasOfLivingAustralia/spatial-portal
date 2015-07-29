@@ -4,9 +4,12 @@
  */
 package au.org.ala.spatial.composer.tool;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.composer.layer.ContextualLayersAutoComplete;
 import au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults;
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.Query;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
@@ -22,6 +25,7 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.*;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +40,12 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
     private Object[] trees;
     private Listbox treesList;
     private List<String> header;
+    private Checkbox cAreasFromLayer;
+    private Div divContextualLayer;
+    private ContextualLayersAutoComplete autoCompleteLayers;
+    private String autoCompleteLayerSelection;
+    private List<SelectedArea> autoCompleteLayerAreas;
+    private Query speciesLayerAsFilter;
 
     @Override
     public void afterCompose() {
@@ -79,7 +89,25 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
                             }
                         }
                     }
+                }
 
+                //apply query filter from mapped species occurrences layer
+                if (((Map.Entry) o).getKey() instanceof String
+                        && "query".equals(((Map.Entry) o).getKey())) {
+                    String layerName = (String) ((Map.Entry) o).getValue();
+                    for (MapLayer ml : getMapComposer().getSpeciesLayers()) {
+                        if (ml.getSpeciesQuery() != null) {
+                            //TODO: review matching criteria
+                            if (ml.getName().equals(layerName)) {
+                                speciesLayerAsFilter = ml.getSpeciesQuery();
+                                
+                                //set label on step 1
+                                getFellow("divQueryFilter").setVisible(true);
+                                ((Label) getFellow("lblQueryFilter")).setValue("Limited to species that appear in the layer: " + ml.getDisplayName());
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -195,6 +223,8 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         }
 
         hm.put("selectedtrees", st);
+        
+        hm.put("query", speciesLayerAsFilter);
 
         PhylogeneticDiversityListResults window = (PhylogeneticDiversityListResults) Executions.createComponents("WEB-INF/zul/results/PhylogeneticDiversityResults.zul", getMapComposer(), hm);
         try {
@@ -232,7 +262,6 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
                                 break;
                             }
                         }
-
                     }
                 } catch (Exception e) {
                     LOGGER.warn("Unable to retrieve selected area", e);
@@ -242,6 +271,31 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
                 }
             }
 
+        }
+        
+        //add all areas from a selection
+        if (autoCompleteLayerSelection != null && cAreasFromLayer.isChecked()) {
+            if (autoCompleteLayerAreas == null) {
+                String fieldId = CommonData.getLayerFacetNameDefault(autoCompleteLayerSelection);
+
+                JSONParser jp = new JSONParser();
+                JSONObject objJson = null;
+                try {
+                    objJson = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/field/" + fieldId));
+                } catch (ParseException e) {
+                    LOGGER.error("failed to parse for: " + fieldId);
+                }
+                JSONArray objects = (JSONArray) objJson.get("objects");
+
+                autoCompleteLayerAreas = new ArrayList();
+                for (int i=0;i<objects.size();i++) {
+                    MapLayer ml = createMapLayerForObject((JSONObject) objects.get(i));
+                    SelectedArea sa = new SelectedArea(ml, null);
+
+                    autoCompleteLayerAreas.add(sa);
+                }
+            }
+            selectedAreas.addAll(autoCompleteLayerAreas);
         }
         return selectedAreas;
     }
@@ -257,5 +311,83 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         } else {
             super.onClick$btnOk(event);
         }
+    }
+    
+    public void onCheck$cAreasFromLayer(Event event) {
+        divContextualLayer.setVisible(cAreasFromLayer.isChecked());
+    }
+
+    public void onChange$autoCompleteLayers(Event event) {
+
+        autoCompleteLayerSelection = null;
+        autoCompleteLayerAreas = null;
+        
+        if (autoCompleteLayers.getItemCount() > 0 && autoCompleteLayers.getSelectedItem() != null) {
+            JSONObject jo = autoCompleteLayers.getSelectedItem().getValue();
+            
+            autoCompleteLayerSelection = (String) jo.get(StringConstants.NAME);
+            
+        } else {
+
+            // if the autocomplete has been type, but before selecting an option,
+            // the focus is lost (eg, clicking on the next button or on tree)
+            // it generates an error. This should fix it. 
+//            if (llc.tree.getSelectedItem() == null) {
+//                return;
+//            }
+//
+//            JSONParser jp = new JSONParser();
+//            JSONObject joLayer = null;
+//            try {
+//                joLayer = (JSONObject) jp.parse(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr").toString());
+//            } catch (ParseException e) {
+//
+//            }
+//            if (!StringConstants.CLASS.equals(joLayer.get(StringConstants.TYPE))) {
+//
+//                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.get(StringConstants.ID);
+//
+//                setLayer(joLayer.get(StringConstants.DISPLAYNAME).toString(), joLayer.get("displaypath").toString(), metadata,
+//                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
+//            } else {
+//                String classValue = joLayer.get(StringConstants.DISPLAYNAME).toString();
+//                String layer = joLayer.get(StringConstants.LAYERNAME).toString();
+//                String displaypath = CommonData.getGeoServer()
+//                        + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
+//                        + joLayer.get("displaypath");
+//
+//                displaypath = displaypath.replace("gwc/service/", "");
+//
+//                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.get(StringConstants.ID);
+//
+//                setLayer(layer + " - " + classValue, displaypath, metadata,
+//                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
+//            }
+//
+//            //close parent if it is 'addlayerwindow'
+//            if (getRoot().hasFellow("addlayerwindow")) {
+//                getRoot().getFellow("addlayerwindow").detach();
+//            }
+        }
+    }
+    
+    private MapLayer createMapLayerForObject(JSONObject objJson) {
+        MapLayer mapLayer = new MapLayer();
+        
+        mapLayer.setPolygonLayer(true);
+
+        Facet facet = null;
+        
+        //TODO: make it work with contextual layers not yet indexed
+        List<Facet> facets = new ArrayList<Facet>();
+        facets.add(new Facet((String) objJson.get(StringConstants.FID), "\"" + objJson.get(StringConstants.NAME) + "\"", true));
+        mapLayer.setFacets(facets);
+
+        DecimalFormat df = new DecimalFormat("###,###.##");
+        mapLayer.setAreaSqKm(String.valueOf(df.format(objJson.get(StringConstants.AREA_KM))));
+
+        mapLayer.setDisplayName((String) objJson.get(StringConstants.NAME));
+        
+        return mapLayer;
     }
 }

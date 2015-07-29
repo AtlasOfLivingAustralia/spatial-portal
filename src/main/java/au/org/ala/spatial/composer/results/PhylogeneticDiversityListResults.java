@@ -9,6 +9,7 @@ import au.org.ala.spatial.util.QueryUtil;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.SelectedArea;
+import au.org.emii.portal.util.AreaReportPDF;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -23,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -45,13 +47,24 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
     private String csv;
     private List<String[]> csvCells;
 
+    private ExecutorService pool;
+    private LinkedBlockingQueue<SelectedArea> queue = new LinkedBlockingQueue<SelectedArea>();
+    private Future<AreaReportPDF> future;
+    private Map progress;
+    private Label progressLabel;
+    private Div divProgress;
+    private Div divResults;
+    private Progressmeter jobprogress;
+    private Query selectedQuery;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
         selectedAreas = (List<SelectedArea>) Executions.getCurrent().getArg().get("selectedareas");
         selectedTrees = (List<Object>) Executions.getCurrent().getArg().get("selectedtrees");
+        selectedQuery = (Query) Executions.getCurrent().getArg().get("query");
 
-        populateList();
+        populateListWithProgressBar();
     }
 
     private void fillPDTreeList() {
@@ -101,6 +114,73 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
 
         );
     }
+    
+    public void populateListWithProgressBar() {
+
+        areaPds = new ArrayList<Map<String, String>>();
+        areaSpeciesMatches = new ArrayList<Map<String, JSONArray>>();
+        
+        for (SelectedArea sa : selectedAreas) {
+            queue.add(sa);
+        }
+        
+        progress = new ConcurrentHashMap();
+        progress.put("label", "Starting");
+        progress.put("percent", 0.0);
+
+        Callable backgroundProcess = new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                //TODO: setup for multiple threads
+                try {
+                    while (!queue.isEmpty()) {
+                        SelectedArea sa = queue.take();
+
+                        progress.put("label", "Processing area: " +
+                                (selectedAreas.size() - queue.size()) + " of " + selectedAreas.size());
+                        
+                        evalArea(sa);
+
+                        progress.put("percent",
+                                String.valueOf((selectedAreas.size() - queue.size())  / (double) selectedAreas.size() ));
+                    }
+                } catch (InterruptedException e) {
+                    
+                }
+                
+                return true;
+            }
+        };
+
+        pool = Executors.newFixedThreadPool(1);
+        future = pool.submit(backgroundProcess);
+
+        getMapComposer().getOpenLayersJavascript().execute("setTimeout('checkProgress()', 2000);");
+
+        divProgress.setVisible(true);
+        divResults.setVisible(false);
+        
+    }
+
+    public void checkProgress(Event event) {
+        if (future.isDone()) {
+            progressLabel.setValue("Finished.");
+            jobprogress.setValue(100);
+
+            makeCSV();
+
+            fillPDTreeList();
+
+            divProgress.setVisible(false);
+            divResults.setVisible(true);
+
+        } else {
+            progressLabel.setValue("Running> " + (String) progress.get("label"));
+            jobprogress.setValue((int) Math.min(100, (int) (Double.parseDouble(String.valueOf(progress.get("percent"))) * 100)));
+
+            getMapComposer().getOpenLayersJavascript().execute("setTimeout('checkProgress()', 2000);");
+        }
+    }
 
     public void populateList() {
 
@@ -111,41 +191,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
             for (int i = 0; i < selectedAreas.size(); i++) {
                 SelectedArea sa = selectedAreas.get(i);
 
-                Query sq = QueryUtil.queryFromSelectedArea(null, sa, null, false, null);
-                CSVReader r = new CSVReader(new StringReader(sq.speciesList()));
-
-                JSONArray ja = new JSONArray();
-                for (String[] s : r.readAll()) {
-                    ja.add(s[1]);
-                }
-
-                //call pd with specieslist=ja.toString()
-                String url = CommonData.getSettings().getProperty(CommonData.PHYLOLIST_URL) + "/phylo/getPD";
-                NameValuePair[] params = new NameValuePair[2];
-                params[0] = new NameValuePair("noTreeText", StringConstants.TRUE);
-                params[1] = new NameValuePair("speciesList", ja.toString());
-                JSONParser jp = new JSONParser();
-                JSONArray pds = (JSONArray) jp.parse(Util.readUrlPost(url, params));
-
-                Map<String, String> pdrow = new HashMap<String, String>();
-                Map<String, JSONArray> speciesRow = new HashMap<String, JSONArray>();
-
-                for (int j = 0; j < pds.size(); j++) {
-                    String tree = "" + ((JSONObject) pds.get(j)).get(StringConstants.STUDY_ID);
-                    pdrow.put(tree, ((JSONObject) pds.get(j)).get("pd").toString());
-                    speciesRow.put(tree, (JSONArray) ((JSONObject) pds.get(j)).get("taxaRecognised"));
-
-                    //maxPD retrieval
-                    String maxPd = ((JSONObject) pds.get(j)).get("maxPd").toString();
-                    for (int k = 0; k < selectedTrees.size(); k++) {
-                        if (((Map<String, String>) selectedTrees.get(k)).get(StringConstants.STUDY_ID).equals(tree)) {
-                            ((Map<String, String>) selectedTrees.get(k)).put("maxPd", maxPd);
-                        }
-                    }
-                }
-
-                areaPds.add(pdrow);
-                areaSpeciesMatches.add(speciesRow);
+                evalArea(sa);
             }
 
             makeCSV();
@@ -157,6 +203,49 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
 
             getMapComposer().showMessage("Unknown error.");
             this.detach();
+        }
+    }
+    
+    private void evalArea(SelectedArea sa) {
+        try {
+            Query sq = QueryUtil.queryFromSelectedArea(selectedQuery, sa, null, false, null);
+            
+            CSVReader r = new CSVReader(new StringReader(sq.speciesList()));
+
+            JSONArray ja = new JSONArray();
+            for (String[] s : r.readAll()) {
+                ja.add(s[1]);
+            }
+
+            //call pd with specieslist=ja.toString()
+            String url = CommonData.getSettings().getProperty(CommonData.PHYLOLIST_URL) + "/phylo/getPD";
+            NameValuePair[] params = new NameValuePair[2];
+            params[0] = new NameValuePair("noTreeText", StringConstants.TRUE);
+            params[1] = new NameValuePair("speciesList", ja.toString());
+            JSONParser jp = new JSONParser();
+            JSONArray pds = (JSONArray) jp.parse(Util.readUrlPost(url, params));
+
+            Map<String, String> pdrow = new HashMap<String, String>();
+            Map<String, JSONArray> speciesRow = new HashMap<String, JSONArray>();
+
+            for (int j = 0; j < pds.size(); j++) {
+                String tree = "" + ((JSONObject) pds.get(j)).get(StringConstants.STUDY_ID);
+                pdrow.put(tree, ((JSONObject) pds.get(j)).get("pd").toString());
+                speciesRow.put(tree, (JSONArray) ((JSONObject) pds.get(j)).get("taxaRecognised"));
+
+                //maxPD retrieval
+                String maxPd = ((JSONObject) pds.get(j)).get("maxPd").toString();
+                for (int k = 0; k < selectedTrees.size(); k++) {
+                    if (((Map<String, String>) selectedTrees.get(k)).get(StringConstants.STUDY_ID).equals(tree)) {
+                        ((Map<String, String>) selectedTrees.get(k)).put("maxPd", maxPd);
+                    }
+                }
+            }
+
+            areaPds.add(pdrow);
+            areaSpeciesMatches.add(speciesRow);
+        } catch (Exception e) {
+            LOGGER.error("failed processing a pd for a selected area.", e);
         }
     }
 
@@ -343,5 +432,13 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
         remoteLogger.logMapAnalysis("Phylogenetic Diversity", "Export - Phylogenetic Diversity", "", "", "", spid, "Phylogenetic_Diversity" + sdate + "_" + spid + ".zip", "");
 
         detach();
+    }
+
+    @Override
+    public void detach() {
+        super.detach();
+
+        //remove all future tasks
+        queue.clear();
     }
 }
