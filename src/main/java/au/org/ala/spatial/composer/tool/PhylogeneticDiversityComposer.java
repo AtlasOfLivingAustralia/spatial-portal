@@ -9,7 +9,6 @@ import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.layer.ContextualLayersAutoComplete;
 import au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults;
 import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.Query;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
@@ -45,17 +44,19 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
     private ContextualLayersAutoComplete autoCompleteLayers;
     private String autoCompleteLayerSelection;
     private List<SelectedArea> autoCompleteLayerAreas;
-    private Query speciesLayerAsFilter;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
         this.selectedMethod = "Phylogenetic Diversity";
-        this.totalSteps = 2;
+        this.totalSteps = 3;
 
         this.loadAreaLayers(true);
+        this.loadSpeciesLayers();
         this.updateWindowTitle();
+
+        rgSpecies.setSelectedItem((Radio) getFellow("rSpeciesAll"));
 
         fillPDTreeList();
 
@@ -99,11 +100,9 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
                         if (ml.getSpeciesQuery() != null) {
                             //TODO: review matching criteria
                             if (ml.getName().equals(layerName)) {
-                                speciesLayerAsFilter = ml.getSpeciesQuery();
-                                
-                                //set label on step 1
-                                getFellow("divQueryFilter").setVisible(true);
-                                ((Label) getFellow("lblQueryFilter")).setValue("Limited to species that appear in the layer: " + ml.getDisplayName());
+                                //TODO: select mapped species
+                                //speciesLayerAsFilter = ml.getSpeciesQuery();
+
                                 break;
                             }
                         }
@@ -224,7 +223,7 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
 
         hm.put("selectedtrees", st);
         
-        hm.put("query", speciesLayerAsFilter);
+        hm.put("query", getSelectedSpecies());
 
         PhylogeneticDiversityListResults window = (PhylogeneticDiversityListResults) Executions.createComponents("WEB-INF/zul/results/PhylogeneticDiversityResults.zul", getMapComposer(), hm);
         try {
@@ -305,7 +304,7 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         if (currentStep == 1 && getSelectedAreas().isEmpty() && !((Radio) getFellow("rAreaCustom")).isSelected()) {
             //must have 1 or more areas selected
             Messagebox.show("Select one or more areas.");
-        } else if (currentStep == 2 && treesList.getSelectedItems().isEmpty()) {
+        } else if (currentStep == 3 && treesList.getSelectedItems().isEmpty()) {
             //must have 1 or more tree selected
             Messagebox.show("Select one or more Phylogenetic Trees.");
         } else {
