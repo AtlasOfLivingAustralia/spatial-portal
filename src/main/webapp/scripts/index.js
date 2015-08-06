@@ -207,17 +207,6 @@ function goToUserLocation() {
     }
 }
 
-function displayBioStorCount(comp, val) {
-    console.log("displayBioStorCount");
-    console.log(comp);
-    console.log(val);
-    if (isNaN(val)) {
-        $("#biostorrow").css('display', 'none');
-    } else {
-        $("#biostorrow").css('display', 'block');
-        $("#" + comp).html(val);
-    }
-}
 function displayHTMLInformation(element, info) {
     $('#' + element).html(info);
 }
@@ -295,6 +284,10 @@ function runSamplingAction() {
 
 function runPrediction() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddMaxent', null));
+}
+
+function runAooEoo() {
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddAooEoo', null));
 }
 
 function runClassification() {

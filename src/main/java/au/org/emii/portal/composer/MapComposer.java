@@ -2507,6 +2507,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/tool/Maxent.zul", null, StringConstants.ADDTOOLWINDOW);
     }
 
+    public void onClick$btnAddAooEoo(Event event) {
+        openModal("WEB-INF/zul/tool/AOOEOO.zul", null, StringConstants.ADDTOOLWINDOW);
+    }
+
     public void onClick$btnAddSampling(Event event) {
         openModal("WEB-INF/zul/tool/Sampling.zul", null, StringConstants.ADDTOOLWINDOW);
     }

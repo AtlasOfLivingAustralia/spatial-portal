@@ -203,6 +203,9 @@
                                     <n:a href="#" n:onClick="runPhylogeneticDiversity();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.phylogeneticdiversity.enable")?"":"display:none"}'>Phylogenetic Diversity</n:a>
                                 </n:li>
                                 <n:li>
+                                    <n:a href="#" n:onClick="runAooEoo();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.aooeoo.enable")?"":"display:none"}'>Area of Occupancy and Extent of Occurrence</n:a>
+                                </n:li>
+                                <n:li>
                                     <n:a href="#" n:onClick="runClassification();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.predict.enable")?"":"display:none"}'>Classify</n:a>
                                 </n:li>
                                 <n:li>

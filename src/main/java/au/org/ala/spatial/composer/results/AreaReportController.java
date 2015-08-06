@@ -12,9 +12,7 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.SelectedArea;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
@@ -28,7 +26,6 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
-import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.*;
 
 import javax.swing.event.ListDataEvent;
@@ -39,8 +36,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static au.org.ala.spatial.dto.AreaReportItemDTO.ExtraInfoEnum;
 
@@ -88,7 +83,6 @@ public class AreaReportController extends UtilityComposer {
     private Grid facetsValues;
     private ChangableSimpleListModel areaReportListModel;
     private Map<String, AreaReportItemDTO> reportModelMap;
-    private String biostorHtml = null;
     private String journalmapHtml = null;
 
     public static void open(SelectedArea sa, String name, String displayName, String areaSqKm, double[] boundingBox, boolean includeEndemic) {
@@ -256,8 +250,6 @@ public class AreaReportController extends UtilityComposer {
         values.put(StringConstants.CHECKLIST_AREA, new AreaReportItemDTO(StringConstants.CHECKLIST_AREAS));
         //checklist species
         values.put(StringConstants.CHECKLIST_SPECIES, new AreaReportItemDTO("Checklist species"));
-        //biostor documents
-        values.put(StringConstants.BIOSTOR, new AreaReportItemDTO("Biostor documents"));
         //journalmap documents
         values.put(StringConstants.JOURNAL_MAP, new AreaReportItemDTO("Journalmap documents"));
         //gazetteer points
@@ -322,8 +314,6 @@ public class AreaReportController extends UtilityComposer {
                                                 listAreaChecklists(dto);
                                             } else if (dto.getListType() == ListType.SPECIES_CHECKLIST) {
                                                 listSpeciesChecklists(dto);
-                                            } else if (dto.getListType() == ListType.BIOSTOR) {
-                                                listBiostor();
                                             } else if (dto.getListType() == ListType.JOURNAL_MAP) {
                                                 listJournalmap();
                                             }
@@ -482,13 +472,6 @@ public class AreaReportController extends UtilityComposer {
             }
         };
 
-        Callable biostor = new Callable<Map<String, String>>() {
-            @Override
-            public Map<String, String> call() {
-                return biostor(reportModelMap.get(StringConstants.BIOSTOR));
-            }
-        };
-
         Callable journalmap = new Callable<Map<String, String>>() {
             @Override
             public Map<String, String> call() {
@@ -531,7 +514,6 @@ public class AreaReportController extends UtilityComposer {
             futures.put("GazPoints", pool.submit(gazPointsC));
             futures.put("SpeciesChecklists", pool.submit(speciesChecklists));
             futures.put("SpeciesDistributions", pool.submit(speciesDistributions));
-            futures.put("Biostor", pool.submit(biostor));
             futures.put("Journalmap", pool.submit(journalmap));
 
             if (CommonData.getDisplayPointsOfInterest()) {
@@ -561,13 +543,6 @@ public class AreaReportController extends UtilityComposer {
                     firedEvents.add(eventToFire);
                     //inform the list model to update
                     areaReportListModel.setModelChanged();
-                }
-
-                // if biostor and greater than timeout....
-                if ("Biostor".equals(futureEntry.getKey()) && !futureEntry.getValue().isDone() && (System.currentTimeMillis() - futuresStart) > 10000) {
-                    futureEntry.getValue().cancel(true);
-
-                    Clients.evalJavaScript("displayBioStorCount('biostorrow','na');");
                 }
 
                 // kill anything taking longer than 5 mins
@@ -1020,103 +995,6 @@ public class AreaReportController extends UtilityComposer {
         return poiCounts;
     }
 
-    Map<String, String> biostor(AreaReportItemDTO model) {
-
-        Map<String, String> countData = new HashMap<String, String>();
-
-        try {
-            String area = selectedArea.getWkt();
-            double lat1 = 0;
-            double lat2 = 0;
-            double long1 = 0;
-            double long2 = 0;
-            if (area.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
-                // use boundingbox
-                List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
-                long1 = bbox.get(0);
-                lat1 = bbox.get(1);
-                long2 = bbox.get(2);
-                lat2 = bbox.get(3);
-            } else {
-                Pattern coord = Pattern.compile("[+-]?[0-9]*\\.?[0-9]* [+-]?[0-9]*\\.?[0-9]*");
-                Matcher matcher = coord.matcher(area);
-
-                boolean first = true;
-                while (matcher.find()) {
-                    String[] p = matcher.group().split(" ");
-                    double[] d = {Double.parseDouble(p[0]), Double.parseDouble(p[1])};
-
-                    if (first || long1 > d[0]) {
-                        long1 = d[0];
-                    }
-                    if (first || long2 < d[0]) {
-                        long2 = d[0];
-                    }
-                    if (first || lat1 > d[1]) {
-                        lat1 = d[1];
-                    }
-                    if (first || lat2 < d[1]) {
-                        lat2 = d[1];
-                    }
-
-                    first = false;
-                }
-            }
-
-            String biostorurl = "http://biostor.org/bounds.php?";
-            biostorurl += "bounds=" + long1 + "," + lat1 + "," + long2 + "," + lat2;
-
-            HttpClient client = new HttpClient();
-            client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
-            GetMethod get = new GetMethod(biostorurl);
-            get.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
-            get.addRequestHeader("User-Agent", "ALA Spatial Portal");
-            int result = client.executeMethod(get);
-
-            biostorHtml = null;
-            if (result == HttpStatus.SC_OK) {
-                String slist = get.getResponseBodyAsString();
-                if (slist != null) {
-
-                    JSONParser jp = new JSONParser();
-                    JSONArray list = (JSONArray) ((JSONObject) jp.parse(slist)).get("list");
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("<ol>");
-                    for (int i = 0; i < list.size(); i++) {
-                        sb.append("<li>");
-                        sb.append("<a href=\"http://biostor.org/reference/");
-                        sb.append(((JSONObject) list.get(i)).get(StringConstants.ID).toString());
-                        sb.append("\" target=\"_blank\">");
-                        sb.append(((JSONObject) list.get(i)).get(StringConstants.TITLE).toString());
-                        sb.append("</li>");
-                    }
-                    sb.append("</ol>");
-
-                    if (!list.isEmpty()) {
-                        biostorHtml = sb.toString();
-                    }
-
-                    countData.put(StringConstants.BIOSTOR, String.valueOf(list.size()));
-                    model.setCount(Integer.toString(list.size()));
-                    if (!list.isEmpty()) {
-                        model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST});
-                        model.setListType(ListType.BIOSTOR);
-                        model.addUrlDetails("Biostor info", "http://biostor.org/");
-                    }
-                }
-            } else {
-                countData.put(StringConstants.BIOSTOR, "Biostor currently down");
-                model.setCount("Biostor currently down");
-            }
-
-        } catch (Exception e) {
-            LOGGER.error("unable to get area info from biostor, is it down?", e);
-            countData.put(StringConstants.BIOSTOR, "Biostor currently down");
-            model.setCount("Biostor currently down");
-        }
-        return countData;
-    }
-
     Map<String, String> journalmap(AreaReportItemDTO model) {
 
         Map<String, String> countData = new HashMap<String, String>();
@@ -1338,13 +1216,6 @@ public class AreaReportController extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         this.detach();
-    }
-
-    public void listBiostor() {
-        if (biostorHtml != null) {
-            Event ev = new Event(StringConstants.ONCLICK, this, "Biostor Documents\n" + biostorHtml);
-            getMapComposer().openHTML(ev);
-        }
     }
 
     public void listJournalmap() {

@@ -1033,7 +1033,7 @@ OpenLayers.Util.onImageLoadError = function () {
             }
             this.src = src.replace(current_url, new_url);
         } else {
-            this.src = this.src;
+            this.src=this.src.replace('?', '?retry=' + this._attemps + '&');
         }
     } else {
         OpenLayers.Element.addClass(this, "olImageLoadError");

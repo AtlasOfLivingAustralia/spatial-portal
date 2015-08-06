@@ -231,7 +231,6 @@ public final class StringConstants {
     public static final String CHECKLIST_AREA = "checklistArea";
     public static final String CHECKLIST_SPECIES = "checklistSpecies";
     public static final String OCCURRENCES = "occurrences";
-    public static final String BIOSTOR = "biostor";
     public static final String SPATIAL_OCCURRENCES = "spatialOccurrences";
     public static final String EXPERT_DISTRIBUTIONS = "expertDistributions";
     public static final String GAZETTEER = "gazetteer";
