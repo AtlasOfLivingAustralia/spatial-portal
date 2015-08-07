@@ -14,6 +14,7 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
+import au.org.emii.portal.value.BoundingBox;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
@@ -25,6 +26,7 @@ import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.*;
@@ -97,6 +99,8 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     private Button btnCreateGroupLayers;
     private Div dGroupBox;
     private Combobox cbClassificationGroup;
+    private Listbox lbClassificationGroup;
+    private Hbox hboxClassificationGroup;
     private Div divClassificationPicker;
     private Div divAnimation;
     private Combobox cbAnimationDenomination;
@@ -106,6 +110,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     private Intbox intAnimationYearStart;
     private Intbox intAnimationYearEnd;
     private Doublebox dblAnimationSeconds;
+    private Div legendImgUriDiv;
 
     @Override
     public void afterCompose() {
@@ -151,6 +156,43 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 llc2MapLayer.getColourMode(),
                 (StringConstants.GRID.equals(llc2MapLayer.getColourMode())) ? 0 : ((llc2MapLayer.isClustered()) ? 1 : 2),
                 llc2MapLayer.getSizeUncertain());
+
+        getFellow("btnSearch").addEventListener(StringConstants.ONCLICK, new EventListener() {
+            @Override
+            public void onEvent(Event event) throws Exception {
+                List<String[]> legendLinesFiltered = new ArrayList<String[]>();
+                String txt = ((Textbox) getFellow("txtSearch")).getValue().toLowerCase();
+                if (txt.length() > 0) {
+                    Integer groupCount = mapLayer.getClassificationGroupCount();
+                    JSONArray groupObjects = mapLayer.getClassificationObjects();
+                    List<JSONObject> model = new ArrayList<JSONObject>();
+                    for (int i = 0; i < groupCount; i++) {
+                        if (((JSONObject) groupObjects.get(i)).get("name").toString().toLowerCase().contains(txt)) {
+                            model.add((JSONObject) groupObjects.get(i));
+                        }
+                    }
+                    lbClassificationGroup.setModel(new SimpleListModel(model));
+                    lbClassificationGroup.setActivePage(0);
+                    ((Button) getFellow("btnClear")).setDisabled(false);
+                }
+            }
+        });
+
+        getFellow("btnClear").addEventListener(StringConstants.ONCLICK, new EventListener() {
+            @Override
+            public void onEvent(Event event) throws Exception {
+                ((Textbox) getFellow("txtSearch")).setValue("");
+                ((Button) getFellow("btnClear")).setDisabled(true);
+                Integer groupCount = mapLayer.getClassificationGroupCount();
+                JSONArray groupObjects = mapLayer.getClassificationObjects();
+                List<JSONObject> model = new ArrayList<JSONObject>();
+                for (int i = 0; i < groupCount; i++) {
+                    model.add((JSONObject) groupObjects.get(i));
+                }
+                lbClassificationGroup.setModel(new SimpleListModel(model));
+                lbClassificationGroup.setActivePage(0);
+            }
+        });
 
     }
 
@@ -593,11 +635,11 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                             legendUri, legendHtml, map);
 
                     legendHtml.setVisible(true);
-                    legendImgUri.setVisible(false);
+                    legendImgUriDiv.setVisible(false);
                     legendLabel.setVisible(true);
                 } else {
                     legendImgUri.setSrc(legendUri);
-                    legendImgUri.setVisible(true);
+                    legendImgUriDiv.setVisible(true);
                     legendHtml.setVisible(false);
                     legendLabel.setVisible(false);
                 }
@@ -609,7 +651,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             } else if (currentSelection.getCurrentLegendUri() != null) {
                 // works for normal wms layers
                 legendImgUri.setSrc(currentSelection.getCurrentLegendUri());
-                legendImgUri.setVisible(true);
+                legendImgUriDiv.setVisible(true);
                 legendHtml.setVisible(false);
                 legendLabel.setVisible(false);
                 legendImg.setVisible(false);
@@ -619,14 +661,14 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 colourChooser.setVisible(mapLayer.isPolygonLayer());
                 if (mapLayer.isPolygonLayer()) {
                     cbColour.setVisible(false);
-                    legendImgUri.setVisible(false);
+                    legendImgUriDiv.setVisible(false);
                 }
 
                 sizeChooser.setVisible(false);
                 uncertainty.setVisible(false);
             } else {
                 //image layer?
-                legendImgUri.setVisible(false);
+                legendImgUriDiv.setVisible(false);
                 legendHtml.setVisible(false);
                 legendLabel.setVisible(false);
                 legendImg.setVisible(false);
@@ -778,6 +820,10 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
             getFellow("btnCreateArea").setVisible(false);
 
+            cbClassificationGroup.setVisible(true);
+            lbClassificationGroup.setVisible(false);
+            hboxClassificationGroup.setVisible(false);
+
         } else if (layer != null && layer.containsKey("type") && layer.get("type").toString().equalsIgnoreCase("contextual")
                 && layer.containsKey("fields")) {
             divClassificationPicker.setVisible(true);
@@ -821,15 +867,63 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             Integer groupCount = mapLayer.getClassificationGroupCount();
             JSONArray groupObjects = mapLayer.getClassificationObjects();
 
-            for (int i = cbClassificationGroup.getItemCount() - 1; i >= 0; i--) {
-                cbClassificationGroup.removeItemAt(i);
-            }
-            Comboitem ci = new Comboitem(StringConstants.NONE);
-            ci.setParent(cbClassificationGroup);
+            lbClassificationGroup.setItemRenderer(new ListitemRenderer<JSONObject>() {
+                @Override
+                public void render(Listitem item, JSONObject data, int index) throws Exception {
+                    Listcell lc = new Listcell(data.get("name").toString());
+                    lc.setParent(item);
 
+                    lc = new Listcell();
+                    Image img = new Image();
+                    img.setTooltip("Create as an area layer");
+                    img.setClass("icon-plus-sign");
+                    img.setParent(lc);
+                    lc.setParent(item);
+                    final JSONObject j = data;
+                    img.addEventListener("onClick", new EventListener<Event>() {
+                        @Override
+                        public void onEvent(Event event) throws Exception {
+                            createAreaEcho(j.get("pid").toString());
+                        }
+                    });
+
+                    lc = new Listcell();
+                    img = new Image();
+                    img.setTooltip("Zoom to area");
+                    img.setClass("icon-zoom-in");
+                    img.setParent(lc);
+                    lc.setParent(item);
+                    img.addEventListener("onClick", new EventListener<Event>() {
+                        @Override
+                        public void onEvent(Event event) throws Exception {
+                            List<Double> b = Util.getBoundingBox(j.get("bbox").toString());
+                            BoundingBox bbox = new BoundingBox();
+                            bbox.setMinLongitude(b.get(0).floatValue());
+                            bbox.setMinLatitude(b.get(1).floatValue());
+                            bbox.setMaxLongitude(b.get(2).floatValue());
+                            bbox.setMaxLatitude(b.get(3).floatValue());
+                            getMapComposer().getOpenLayersJavascript().execute(getMapComposer().getOpenLayersJavascript().zoomToBoundingBox(
+                                    bbox, false
+                            ));
+                        }
+                    });
+                }
+            });
+
+            lbClassificationGroup.addEventListener("onSelect", new EventListener<Event>() {
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    if (mapLayer != null) {
+                        highlightSelect(lbClassificationGroup.getSelectedIndex());
+                    }
+                }
+            });
+
+            List<JSONObject> model = new ArrayList<JSONObject>();
             for (int i = 0; i < groupCount; i++) {
-                new Comboitem(((JSONObject) groupObjects.get(i)).get("name").toString()).setParent(cbClassificationGroup);
+                model.add((JSONObject) groupObjects.get(i));
             }
+            lbClassificationGroup.setModel(new SimpleListModel(model));
 
             //is there a current selection?
             Integer groupSelection = mapLayer.getClassificationSelection();
@@ -837,52 +931,98 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 groupSelection = 0;
                 mapLayer.setClassificationSelection(groupSelection);
             }
-            cbClassificationGroup.setSelectedIndex(groupSelection);
 
             getFellow("btnCreateArea").setVisible(true);
 
+            getFellow("btnCreateArea").setVisible(false);
+            cbClassificationGroup.setVisible(false);
+            lbClassificationGroup.setVisible(true);
+            hboxClassificationGroup.setVisible(true);
         } else {
             getFellow("btnCreateArea").setVisible(false);
             divClassificationPicker.setVisible(false);
         }
     }
 
-    public void onChange$cbClassificationGroup(Event event) {
-        if (mapLayer != null) {
-            mapLayer.setClassificationSelection(cbClassificationGroup.getSelectedIndex());
+    private void createAreaEcho(String pid) {
+        Events.echoEvent("createArea", this, pid);
+    }
 
-            String baseUri = mapLayer.getBaseUri();
-            if (baseUri == null) {
-                mapLayer.setBaseUri(mapLayer.getUri());
-                int pos = mapLayer.getUri().indexOf("&sld_body=");
-                if (pos > 0) {
+    private void highlightSelect(int idx) {
+        //translate list idx to pid
+        if (idx == -1) {
+            //no selection
+            idx = 0;
+        } else {
+            JSONObject jo = (JSONObject) lbClassificationGroup.getModel().getElementAt(idx);
+            for (int i = 0; i < mapLayer.getClassificationObjects().size(); i++) {
+                if (((JSONObject) mapLayer.getClassificationObjects().get(i)).get("id").equals(jo.get("id").toString())) {
+                    idx = i + 1;
+                    break;
+                }
+            }
+        }
+
+        mapLayer.setClassificationSelection(idx);
+
+        String baseUri = mapLayer.getBaseUri();
+        if (baseUri == null) {
+            mapLayer.setBaseUri(mapLayer.getUri());
+            int pos = mapLayer.getUri().indexOf("&sld_body=");
+            if (pos > 0) {
+                int pos2 = mapLayer.getUri().indexOf("&", pos + 1);
+                if (pos2 > 0) {
+                    baseUri = mapLayer.getUri().substring(0, pos) + mapLayer.getUri().substring(pos2);
+                } else {
                     baseUri = mapLayer.getUri().substring(0, pos);
                 }
             }
-            String layername = mapLayer.getName();
-            int n = cbClassificationGroup.getSelectedIndex();
-            if (n > 0) {
-                try {
-                    String sldBodyParam;
-                    if (mapLayer.getClassificationObjects() == null) {
-                        sldBodyParam = "&sld_body=" + formatSld(URLEncoder.encode(POLYGON_SLD, StringConstants.UTF_8), layername, String.valueOf(n - 1), String.valueOf(n), String.valueOf(n + 1));
-                        mapLayer.setUri(baseUri + sldBodyParam);
-                    } else {
-                        JSONObject obj = null;
-                        JSONParser jp = new JSONParser();
-                        obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + ((JSONObject) mapLayer.getClassificationObjects().get(n - 1)).get("pid")));
-                        String url = obj.get(StringConstants.WMSURL).toString();
-
-                        mapLayer.setUri(url);
+        }
+        String layername = mapLayer.getName();
+        int n = idx;
+        if (n > 0) {
+            try {
+                String sldBodyParam;
+                if (mapLayer.getClassificationObjects() == null) {
+                    sldBodyParam = "&sld_body=" + formatSld(URLEncoder.encode(POLYGON_SLD, StringConstants.UTF_8), layername, String.valueOf(n - 1), String.valueOf(n), String.valueOf(n + 1));
+                    mapLayer.setUri(baseUri + sldBodyParam);
+                } else {
+                    //use a child layer
+                    if (mapLayer.getChildCount() > 0) {
+                        MapLayer child = mapLayer.getChild(0);
+                        getMapComposer().deactiveLayer(child, false, true);
+                        mapLayer.getChildren().remove(0);
                     }
 
-                } catch (Exception e) {
-                    LOGGER.error("error encoding this to UTF-8: " + POLYGON_SLD, e);
+                    MapLayer mlHighlight = (MapLayer) mapLayer.clone();
+                    mlHighlight.setName(mapLayer.getName() + "_selection");
+
+                    JSONParser jp = new JSONParser();
+                    JSONObject obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + ((JSONObject) mapLayer.getClassificationObjects().get(n - 1)).get("pid")));
+                    String url = obj.get(StringConstants.WMSURL).toString();
+                    mlHighlight.setUri(url);
+
+                    mapLayer.addChild(mlHighlight);
                 }
-            } else {
-                mapLayer.setUri(baseUri);
+
+            } catch (Exception e) {
+                LOGGER.error("error encoding this to UTF-8: " + POLYGON_SLD, e);
             }
-            getMapComposer().reloadMapLayerNowAndIndexes(mapLayer);
+        } else {
+            if (mapLayer.getChildCount() > 0) {
+                MapLayer child = mapLayer.getChild(0);
+                child.setUri(mapLayer.getUri());
+                getMapComposer().deactiveLayer(child, false, true);
+                getMapComposer().reloadMapLayerNowAndIndexes(mapLayer);
+                mapLayer.getChildren().remove(0);
+            }
+        }
+        getMapComposer().reloadMapLayerNowAndIndexes(mapLayer);
+    }
+
+    public void onSelect$cbClassificationGroup(Event event) {
+        if (mapLayer != null) {
+            highlightSelect(cbClassificationGroup.getSelectedIndex());
         }
     }
 
@@ -911,80 +1051,93 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
         return i;
     }
 
+    public void onClick$btnClearAreaSelection(Event event) {
+        lbClassificationGroup.clearSelection();
+        highlightSelect(-1);
+    }
+
+    public void createArea(Event event) {
+        String pid = event.getData().toString();
+
+        JSONParser jp = new JSONParser();
+        JSONObject obj = null;
+
+        try {
+            obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + pid));
+        } catch (ParseException e) {
+            LOGGER.error("failed to parse for object: " + pid);
+        }
+
+        String url = obj.get(StringConstants.WMSURL).toString();
+        String name = obj.get(StringConstants.NAME).toString();
+
+        MapLayer ml = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(name), name, url, 0.6f, /*metadata url*/ null,
+                null, LayerUtilitiesImpl.WKT, null, null);
+
+        String lname = ml.getName();
+
+        //add colour!
+        int colour = Util.nextColour();
+        int r = (colour >> 16) & 0x000000ff;
+        int g = (colour >> 8) & 0x000000ff;
+        int b = (colour) & 0x000000ff;
+
+        ml.setRedVal(r);
+        ml.setGreenVal(g);
+        ml.setBlueVal(b);
+        ml.setDynamicStyle(true);
+        ml.setPolygonLayer(true);
+
+        Facet facet = null;
+        //only get field data if it is an intersected layer (to exclude layers containing points)
+        JSONObject layerObj = CommonData.getLayer((String) obj.get(StringConstants.FID));
+        if (layerObj != null) {
+            facet = Util.getFacetForObject(obj.get(StringConstants.NAME).toString(), (String) obj.get(StringConstants.FID));
+        }
+
+        if (facet != null) {
+            List<Facet> facets = new ArrayList<Facet>();
+            facets.add(facet);
+            ml.setFacets(facets);
+
+            ml.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
+        } else {
+            //no facet = not in Biocache, must use WKT
+            ml.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
+        }
+        MapLayerMetadata md = ml.getMapLayerMetadata();
+        String bbString = "";
+        try {
+            bbString = obj.get(StringConstants.BBOX).toString();
+            bbString = bbString.replace(StringConstants.POLYGON + "((", "").replace("))", "").replace(",", " ");
+            String[] split = bbString.split(" ");
+            List<Double> bbox = new ArrayList<Double>();
+
+            bbox.add(Double.parseDouble(split[0]));
+            bbox.add(Double.parseDouble(split[1]));
+            bbox.add(Double.parseDouble(split[2]));
+            bbox.add(Double.parseDouble(split[3]));
+
+            md.setBbox(bbox);
+        } catch (NumberFormatException e) {
+            LOGGER.debug("failed to parse: " + bbString, e);
+        }
+        try {
+            md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + layerObj.get("id").toString());
+        } catch (Exception e) {
+            LOGGER.error("error setting map layer moreInfo: " + (layerObj != null ? layerObj.toString() : "layerObj is null"), e);
+        }
+
+        getMapComposer().applyChange(ml);
+        getMapComposer().updateLayerControls();
+        getMapComposer().reloadMapLayerNowAndIndexes(ml);
+    }
+
     public void onClick$btnCreateArea(Event event) {
         int n = cbClassificationGroup.getSelectedIndex();
         if (n > 0) {
-            JSONParser jp = new JSONParser();
-            JSONObject obj = null;
             String pid = ((JSONObject) mapLayer.getClassificationObjects().get(n - 1)).get("pid").toString();
-            try {
-                obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + pid));
-            } catch (ParseException e) {
-                LOGGER.error("failed to parse for object: " + pid);
-            }
-
-            String url = obj.get(StringConstants.WMSURL).toString();
-            String name = obj.get(StringConstants.NAME).toString();
-
-            MapLayer ml = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(name), name, url, 0.6f, /*metadata url*/ null,
-                    null, LayerUtilitiesImpl.WKT, null, null);
-
-            String lname = ml.getName();
-
-            //add colour!
-            int colour = Util.nextColour();
-            int r = (colour >> 16) & 0x000000ff;
-            int g = (colour >> 8) & 0x000000ff;
-            int b = (colour) & 0x000000ff;
-
-            ml.setRedVal(r);
-            ml.setGreenVal(g);
-            ml.setBlueVal(b);
-            ml.setDynamicStyle(true);
-            getMapComposer().applyChange(ml);
-            getMapComposer().updateLayerControls();
-
-            ml.setPolygonLayer(true);
-
-            Facet facet = null;
-            //only get field data if it is an intersected layer (to exclude layers containing points)
-            JSONObject layerObj = CommonData.getLayer((String) obj.get(StringConstants.FID));
-            if (layerObj != null) {
-                facet = Util.getFacetForObject(obj.get(StringConstants.NAME).toString(), (String) obj.get(StringConstants.FID));
-            }
-
-            if (facet != null) {
-                List<Facet> facets = new ArrayList<Facet>();
-                facets.add(facet);
-                ml.setFacets(facets);
-
-                ml.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
-            } else {
-                //no facet = not in Biocache, must use WKT
-                ml.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
-            }
-            MapLayerMetadata md = ml.getMapLayerMetadata();
-            String bbString = "";
-            try {
-                bbString = obj.get(StringConstants.BBOX).toString();
-                bbString = bbString.replace(StringConstants.POLYGON + "((", "").replace("))", "").replace(",", " ");
-                String[] split = bbString.split(" ");
-                List<Double> bbox = new ArrayList<Double>();
-
-                bbox.add(Double.parseDouble(split[0]));
-                bbox.add(Double.parseDouble(split[1]));
-                bbox.add(Double.parseDouble(split[2]));
-                bbox.add(Double.parseDouble(split[3]));
-
-                md.setBbox(bbox);
-            } catch (NumberFormatException e) {
-                LOGGER.debug("failed to parse: " + bbString, e);
-            }
-            try {
-                md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + layerObj.get("id").toString());
-            } catch (Exception e) {
-                LOGGER.error("error setting map layer moreInfo: " + (layerObj != null ? layerObj.toString() : "layerObj is null"), e);
-            }
+            createAreaEcho(pid);
         }
     }
 
@@ -1087,5 +1240,18 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
         String script = "mapFrame.animateStop('" + mapLayer.getNameJS() + "');";
         getMapComposer().getOpenLayersJavascript().execute(script);
         btnAnimationStop.setDisabled(true);
+    }
+
+    public void onClick$btnPopupLegend(Event event) {
+        Popup layerWindow = (Popup) Executions.createComponents("WEB-INF/zul/legend/Popup.zul", getRoot(), null);
+
+        try {
+            layerWindow.doOverlapped();
+            layerWindow.setPosition("right,center");
+
+            layerWindow.init(mapLayer.getDisplayName(), mapLayer.getCurrentLegendUri());
+        } catch (Exception e) {
+            LOGGER.error("failed to open popup layer legend", e);
+        }
     }
 }

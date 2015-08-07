@@ -1,0 +1,23 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window visible="false" width="500px"
+            height="600px" border="normal" sizable="true" contentStyle="overflow:auto;" style="overflow:visible"
+            use="au.org.emii.portal.composer.legend.Popup"
+            xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-se"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-sw"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-nw"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-n"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-e"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-s"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-w"/>
+        <a sclass="fancybox-close" onClick="event.getTarget().getParent().detach()" style="display: inline"/>
+
+        <caption id="caption"/>
+
+        <separator/>
+
+        <image id="img"/>
+    </window>
+</zk>

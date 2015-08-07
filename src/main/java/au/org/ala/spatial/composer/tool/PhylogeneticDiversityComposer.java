@@ -306,7 +306,7 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
             Messagebox.show("Select one or more areas.");
         } else if (currentStep == 3 && treesList.getSelectedItems().isEmpty()) {
             //must have 1 or more tree selected
-            Messagebox.show("Select one or more Phylogenetic Trees.");
+            Messagebox.show("Select one or more Phylogenetic Diversity.");
         } else {
             super.onClick$btnOk(event);
         }

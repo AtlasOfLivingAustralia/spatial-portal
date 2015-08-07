@@ -33,7 +33,7 @@
                         <html id="imgCompletedStep2" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
                    </row>
                    <row>
-                       <label id="lblStep3" value="3. Select phylogenetic trees"/>
+                       <label id="lblStep3" value="3. Select phylogenetic iversity"/>
                        <html id="imgCompletedStep3" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
                   </row>
                 </rows>
@@ -144,7 +144,7 @@
             </div>
 
             <div id="atstep3" visible="false" zclass="last optional" sclass="atstep"  width="550px" height="600px"  style="overflow-y:auto">
-                <label id="atstep3_desc" value="Select Phylogenetic Trees" sclass="wSubLabel"/>
+                <label id="atstep3_desc" value="Select Phylogenetic Diversity" sclass="wSubLabel"/>
                 <label id="atstep3_label" value="" />
                 <separator />
                 <listbox id="treesList" height="350px" multiple="false" checkmark="true">

@@ -1,6 +1,6 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
-<zk xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
+<zk xmlns:n="http://www.zkoss.org/2005/zk/native">
     <window id="layerlegend" use="au.org.emii.portal.composer.legend.LayerLegendGeneralComposer"
     apply="au.org.emii.portal.composer.legend.LayerLegendGeneralComposer" width="400px">
 
@@ -190,8 +190,18 @@
                     </hbox>
                 </div>
                 <separator />
-                <div id="legendImgUriDiv" width="60%">
-                    <image id="legendImgUri" visible="false"/>
+                <div id="legendImgUriDiv" width="60%" visible="false">
+                    <vbox>
+                        <hbox>
+                            <button class="btn-mini" label="show legend" id="btnPopupLegendShow"
+                                    onClick="legendImgUri.setVisible(true)"/>
+                            <button class="btn-mini" label="hide legend" id="btnPopupLegendHide"
+                                    onClick="legendImgUri.setVisible(false)"/>
+                            <button class="btn-mini" label="popup legend" id="btnPopupLegend"/>
+                        </hbox>
+                        <image id="legendImgUri"/>
+                        <separator/>
+                    </vbox>
                 </div>
                 <div id="legendHtml" visible="true"/>
                 <vbox>
@@ -220,13 +230,33 @@
                 <div id="divClassificationPicker" visible="false" >
                     <separator />
 
-                    <hbox>
-                        <label value="Highlight group: " />
-                        <combobox id="cbClassificationGroup" width="200px" />
+                    <label value="Select a row to highlight on the map"/>
+                    <separator/>
+                    <vbox>
+                        <combobox id="cbClassificationGroup"/>
+                        <hbox id="hboxClassificationGroup" style="float:left;">
+                            <label value="search"/>
+                            <textbox id="txtSearch"/>
+                            <div class="btn-group">
+                                <button id="btnSearch" label="Filter" class="btn-mini"/>
+                                <button id="btnClear" label="Clear Filter" class="btn-mini" disabled="true"/>
+                            </div>
+                        </hbox>
+                        <listbox id="lbClassificationGroup" mold="paging" pageSize="5">
+                            <listhead>
+                                <listheader label="name" width="310px"/>
+                                <listheader label=""/>
+                            </listhead>
+                        </listbox>
+
                         <div class="btn-group">
-                            <button class="btn-small" id="btnCreateArea" visible="false" label="Create area" />
+                            <button class="btn-small" id="btnClearAreaSelection" visible="true"
+                                    label="Clear highlight"/>
                         </div>
-                    </hbox>
+                    </vbox>
+                    <div class="btn-group">
+                        <button class="btn-small" id="btnCreateArea" visible="false" label="Create area"/>
+                    </div>
                 </div>
                 <vbox>
                     <div id="dGroupBox" visible="false">
