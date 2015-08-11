@@ -327,46 +327,6 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
             autoCompleteLayerSelection = (String) jo.get(StringConstants.NAME);
             
         } else {
-
-            // if the autocomplete has been type, but before selecting an option,
-            // the focus is lost (eg, clicking on the next button or on tree)
-            // it generates an error. This should fix it. 
-//            if (llc.tree.getSelectedItem() == null) {
-//                return;
-//            }
-//
-//            JSONParser jp = new JSONParser();
-//            JSONObject joLayer = null;
-//            try {
-//                joLayer = (JSONObject) jp.parse(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr").toString());
-//            } catch (ParseException e) {
-//
-//            }
-//            if (!StringConstants.CLASS.equals(joLayer.get(StringConstants.TYPE))) {
-//
-//                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.get(StringConstants.ID);
-//
-//                setLayer(joLayer.get(StringConstants.DISPLAYNAME).toString(), joLayer.get("displaypath").toString(), metadata,
-//                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
-//            } else {
-//                String classValue = joLayer.get(StringConstants.DISPLAYNAME).toString();
-//                String layer = joLayer.get(StringConstants.LAYERNAME).toString();
-//                String displaypath = CommonData.getGeoServer()
-//                        + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"
-//                        + joLayer.get("displaypath");
-//
-//                displaypath = displaypath.replace("gwc/service/", "");
-//
-//                String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.get(StringConstants.ID);
-//
-//                setLayer(layer + " - " + classValue, displaypath, metadata,
-//                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
-//            }
-//
-//            //close parent if it is 'addlayerwindow'
-//            if (getRoot().hasFellow("addlayerwindow")) {
-//                getRoot().getFellow("addlayerwindow").detach();
-//            }
         }
     }
     
@@ -383,7 +343,11 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         mapLayer.setFacets(facets);
 
         DecimalFormat df = new DecimalFormat("###,###.##");
-        mapLayer.setAreaSqKm(String.valueOf(df.format(objJson.get(StringConstants.AREA_KM))));
+        try {
+            mapLayer.setAreaSqKm(String.valueOf(df.format(objJson.get(StringConstants.AREA_KM))));
+        } catch (Exception e) {
+            LOGGER.error("bad area for object: " + facets.get(0).toString());
+        }
 
         mapLayer.setDisplayName((String) objJson.get(StringConstants.NAME));
         

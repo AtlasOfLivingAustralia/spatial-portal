@@ -23,6 +23,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -1243,6 +1244,17 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     }
 
     public void onClick$btnPopupLegend(Event event) {
+        //return if already open
+        List<Component> list = getRoot().getChildren();
+        for (Component c : getRoot().getChildren()) {
+            if (c instanceof Popup) {
+                Image img = (Image) ((Popup) c).getFellowIfAny("img", true);
+                if (img != null && img.getSrc().equalsIgnoreCase(mapLayer.getCurrentLegendUri())) {
+                    return;
+                }
+            }
+        }
+        
         Popup layerWindow = (Popup) Executions.createComponents("WEB-INF/zul/legend/Popup.zul", getRoot(), null);
 
         try {
