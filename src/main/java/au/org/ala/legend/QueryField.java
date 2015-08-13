@@ -481,12 +481,15 @@ public class QueryField implements Serializable {
     }
 
     public enum GroupType {
-        TAXONOMIC("Taxonomic", 1),
-        GEOSPATIAL("Geospatial", 2),
-        TEMPORAL("Temporal", 3),
-        RECORD_DETAILS("Record details", 4),
-        ATTRIBUTION("Attribution", 5),
-        RECORD_ASSERTIONS("Record assertions", 6),
+        TAXONOMIC("Taxon", 1),
+        IDENTIFICATION("Identification", 2),
+        GEOSPATIAL("Location", 3),
+        TEMPORAL("Temporal", 4),
+        RECORD_DETAILS("Identification", 5),
+        OCCURRENCE("Occurrence", 6),
+        RECORD("Record", 7),
+        RECORD_ASSERTIONS("Assertions", 8),
+        ATTRIBUTION("Attribution", 9),
         CUSTOM("Custom", 0);
         private static final Map<String, GroupType> nameLookup = new HashMap<String, GroupType>();
 

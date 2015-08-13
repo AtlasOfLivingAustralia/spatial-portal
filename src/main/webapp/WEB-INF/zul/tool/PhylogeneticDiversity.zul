@@ -29,7 +29,7 @@
                         <html id="imgCompletedStep1" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
                    </row>
                    <row>
-                       <label id="lblStep2" value="2. Select phylogenetic diversity"/>
+                       <label id="lblStep2" value="2. Select phylogenetic tree"/>
                        <html id="imgCompletedStep2" visible="false"><![CDATA[<i class="icon-ok"></i>]]></html>
                   </row>
                 <row>

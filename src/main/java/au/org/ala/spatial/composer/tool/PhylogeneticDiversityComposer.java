@@ -12,6 +12,8 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -213,12 +215,48 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
     public boolean onFinish() {
 
         List<SelectedArea> sa = getSelectedAreas();
+
+        if (autoCompleteLayerSelection != null && cAreasFromLayer.isChecked()) {
+            String fieldId = CommonData.getLayerFacetNameDefault(autoCompleteLayerSelection);
+            String layer = CommonData.getFacetLayerName(fieldId);
+            JSONObject jo = CommonData.getLayer(layer);
+
+            String name = jo.get(StringConstants.NAME).toString();
+
+            String uid = jo.get(StringConstants.ID).toString();
+            String type = jo.get(StringConstants.TYPE).toString();
+            String treeName = StringUtils.capitalize(jo.get(StringConstants.DISPLAYNAME).toString());
+            String treePath = jo.get("displaypath").toString();
+            String legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + name;
+            String metadata = CommonData.getLayersServer() + "/layers/view/more/" + uid;
+
+            //is it already mapped with the same display name?
+            boolean found = false;
+            for (MapLayer ml : getMapComposer().getContextualLayers()) {
+                if (ml.getDisplayName().equalsIgnoreCase(treeName)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                getMapComposer().addWMSLayer(name, treeName, treePath, (float) 0.75, metadata, legendurl,
+                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(type) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL, null, null, null);
+
+                remoteLogger.logMapArea(treeName, "Layer - " + type, treePath, name, metadata);
+            }
+        }
+                
         Map<String, Object> hm = new HashMap<String, Object>();
         hm.put("selectedareas", sa);
 
         List<Object> st = new ArrayList<Object>();
+        StringBuilder sb = new StringBuilder();
         for (Object o : treesList.getSelectedItems()) {
             st.add(trees[((Listitem) o).getIndex()]);
+
+            if (sb.length() > 0) sb.append(",");
+            sb.append(((Map<String, String>) trees[((Listitem) o).getIndex()]).get(StringConstants.STUDY_ID));
         }
 
         hm.put("selectedtrees", st);
@@ -233,6 +271,8 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
             LOGGER.error("error opening PhylogeneticDiversityResults.zul", e);
         }
 
+        remoteLogger.logMapAnalysis("PhylogeneticDiversity", "PhylogeneticDiversity", sa.size() + " areas", getSelectedSpeciesName(), sb.toString(), "", "", "");
+        
         detach();
         return true;
     }
@@ -334,8 +374,6 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         MapLayer mapLayer = new MapLayer();
         
         mapLayer.setPolygonLayer(true);
-
-        Facet facet = null;
         
         //TODO: make it work with contextual layers not yet indexed
         List<Facet> facets = new ArrayList<Facet>();

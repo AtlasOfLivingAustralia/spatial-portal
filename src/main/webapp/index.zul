@@ -16,10 +16,10 @@
 
 <?style href="css/zkcomponents.css"  ?>
 
-<zk xmlns="http://www.zkoss.org/2005/zul" xmlns:h="http://www.w3.org/1999/xhtml"
+<zk xmlns="http://www.zkoss.org/2005/zul"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd"
-    xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
+    xmlns:n="http://www.zkoss.org/2005/zk/native">
   
     <script defer="false" type="text/javascript">
         var mapLayers = null;
@@ -351,7 +351,7 @@
                                                 <ul class="dropdown-menu" role="menu">
                                                     <li><a href="http://auth.ala.org.au/userdetails/myprofile">My profile</a></li>
                                                     <li class="divider"></li>
-                                                    <li><a href='https://auth.ala.org.au/cas/login?service=http://spatial.ala.org.au' class='null'><span>Log in</span></a></li>
+                                                    <li><a href='https://auth.ala.org.au/cas/login?service=http://spatial.ala.org.au/webportal//' class='null'><span>Log in</span></a></li>
                                                     <li><a href="https://auth.ala.org.au/userdetails/registration/createAccount">Register</a></li>
                                                 </ul>
                                             </li>
