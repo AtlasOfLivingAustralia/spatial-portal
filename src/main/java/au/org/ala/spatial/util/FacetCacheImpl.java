@@ -69,6 +69,12 @@ public class FacetCacheImpl implements FacetCache {
                         i18n = "Data Provider";
                     }
 
+                    //use current layer names for facets
+                    String layername = CommonData.getFacetLayerName(field);
+                    if (i18n == null || layername != null) {
+                        i18n = CommonData.getLayerDisplayName(layername);
+                    }
+
                     facetValues[i][0] = field;
                     facetValues[i][1] = i18n;
                     QueryField.FieldType ftype = dataTypes.containsKey(field) ? dataTypes.get(field) : QueryField.FieldType.STRING;
