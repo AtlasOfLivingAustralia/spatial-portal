@@ -4,15 +4,21 @@
  */
 package au.org.ala.spatial.composer.tool;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.legend.LegendObject;
+import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.Query;
 import au.org.ala.spatial.util.QueryUtil;
 import au.org.ala.spatial.util.SpatialUtil;
+import au.org.ala.spatial.util.Util;
+import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
+import au.org.emii.portal.util.LayerUtilitiesImpl;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import org.apache.log4j.Logger;
+import org.zkoss.zk.ui.event.Event;
 
 /**
  * @author ajay
@@ -36,6 +42,8 @@ public class AooEooComposer extends ToolComposer {
     public boolean onFinish() {
         SelectedArea sa = getSelectedArea();
         Query q = getSelectedSpecies();
+        Facet f = new Facet("occurrence_status_s", "absent", false);
+        q = q.newFacet(f, false);
         Query newQ = QueryUtil.queryFromSelectedArea(q, sa, false, null);
         
         // this should not take long, fetch unique points at 0.02 resolution
@@ -47,17 +55,14 @@ public class AooEooComposer extends ToolComposer {
         // aoo = 2km * 2km * number of 2km by 2km grid cells with an occurrence
         double aoo = 2.0 * 2.0 * pointCount;
 
-        // eoo, want > 3 points
-        int pos = 0;
-        String [] facets = new String[] { "point-0.01", "point-0.001", "point-0.0001", "lat_long"};
-        while (pointCount < 3 && pos < facets.length) {
-            legend = newQ.getLegend(facets[pos]);
-            sb = new StringBuilder();
-            pointCount = processLegend(legend, sb);
-            pos ++;
-        }
+        // eoo, use actual points
+        legend = newQ.getLegend("lat_long");
+        sb = new StringBuilder();
+        pointCount = processLegend(legend, sb);
+        
         double eoo = 0;
         WKTReader reader = new WKTReader();
+        String metadata = null;
         try {
             Geometry g = reader.read(sb.toString());
             Geometry convexHull = g.convexHull();
@@ -66,13 +71,27 @@ public class AooEooComposer extends ToolComposer {
             eoo = SpatialUtil.calculateArea(wkt);
             
             if (eoo > 0) {
-                String name = "Area of Occupancy: " + q.getName();
+                String name = "Extent of occurrence (area): " + q.getName();
                 MapLayer ml = getMapComposer().addWKTLayer(wkt, name, name);
 
-                String metadata = "<html><body><table><tr><td>Species</td><td>" + q.getName() + "</td></tr>" +
-                        "<tr><td>Area of Occupancy</td><td>" + String.format("%.0f", aoo ) + " sq km</td></tr>" +
-                        "<tr><td>Extent of Occurrence</td><td>" + (String.format("%.0f", eoo / 1000.0 / 1000.0)) + " sq km</td></tr></table></body></html>";
+                metadata = "<html><body>" +
+                        "<div class='aooeoo'>" +
+                        "<div>The Sensitive Data Service may have changed the location of taxa that have a sensitive status." +
+                        " It is wise to first map the taxa and examine each record, then filter these records to create the " +
+                        "desired subset, then run the tool on the new filtered taxa layer.</div><br />" +
+                        "<table >" +
+                        "<tr><td>Number of records used for the calculations</td><td>" + newQ.getOccurrenceCount() + "</td></tr>" +
+                        "<tr><td>Species</td><td>" + q.getName() + "</td></tr>" +
+                        "<tr><td>Area of Occupancy (AOO: 0.02 degree grid)</td><td>" + String.format("%.0f", aoo) + " sq km</td></tr>" +
+                        "<tr><td>Extent of Occurrence (EOO: Minimum convex hull)</td><td>" + (String.format("%.2f", eoo / 1000.0 / 1000.0)) + " sq km</td></tr></table></body></html>" +
+                        "</div>";
                 ml.getMapLayerMetadata().setMoreInfo("Area of Occupancy and Extent of Occurrence\n" + metadata);
+
+                name = "Extent of occurrence (points): " + q.getName();
+                MapLayer ml2 = getMapComposer().mapSpecies(newQ, name, StringConstants.SPECIES,
+                        newQ.getOccurrenceCount(), LayerUtilitiesImpl.SPECIES, null,
+                        0, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
+                ml2.getMapLayerMetadata().setMoreInfo("Area of Occupancy and Extent of Occurrence\n" + metadata);
             } else {
                 //trigger eoo unavailable message
                 pointCount = 2;
@@ -86,9 +105,15 @@ public class AooEooComposer extends ToolComposer {
         String message = "Area of Occupancy: " + String.format("%.0f", aoo) + " sq km\r\nExtent of Occurrence: " + (String.format("%.0f",eoo / 1000.0 / 1000.0)) + " sq km";
         if (pointCount < 3) {
             message = "Area of Occupancy: " + String.format("%.0f", aoo) + " sq km\r\nExtent of Occurrence: insufficient unique occurrence locations";
+            getMapComposer().showMessage(message);
+        } else if (metadata != null) {
+            Event ev = new Event(StringConstants.ONCLICK, null, "Area of Occupancy and Extent of Occurrence\n" + metadata);
+            getMapComposer().openHTML(ev);
+        } else {
+            getMapComposer().showMessage(message);
         }
-        getMapComposer().showMessage(message);
-        
+
+
         this.detach();
 
         return true;

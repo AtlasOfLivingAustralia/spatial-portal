@@ -284,3 +284,8 @@ img.ncris {
     margin-top: 8px;
 }
 
+.aooeoo table, .aooeoo tr, .aooeoo td {
+    border: 1px;
+    border-style: solid;
+    padding: 5px;
+}

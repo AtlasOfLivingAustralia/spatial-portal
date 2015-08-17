@@ -70,9 +70,13 @@ public class FacetCacheImpl implements FacetCache {
                     }
 
                     //use current layer names for facets
-                    String layername = CommonData.getFacetLayerName(field);
-                    if (i18n == null || layername != null) {
-                        i18n = CommonData.getLayerDisplayName(layername);
+                    try {
+                        String layername = CommonData.getFacetLayerName(field);
+                        if (i18n == null || layername != null) {
+                            i18n = CommonData.getLayerDisplayName(layername);
+                        }
+                    } catch (Exception e) {
+                        
                     }
 
                     facetValues[i][0] = field;

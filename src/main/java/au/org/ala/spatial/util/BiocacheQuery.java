@@ -137,7 +137,7 @@ public class BiocacheQuery implements Query, Serializable {
                 String term;
                 if (i >= 0) term = facets.get(i).toString();
                 else term = extraParams;
-                if (term.startsWith("qid:")) {
+                if (term != null && term.startsWith("qid:")) {
                     if (i == -1) extraParams = null;
 
                     JSONObject jo = getQidDetails(term);
