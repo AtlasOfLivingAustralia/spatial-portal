@@ -191,10 +191,12 @@ public class BiocacheQuery implements Query, Serializable {
                     }
                 }
             }
-            if (extraParams == null) {
-                extraParams = newExtraParams;
-            } else {
-                extraParams += newExtraParams;
+            if (newExtraParams != null) {
+                if (extraParams == null) {
+                    extraParams = newExtraParams;
+                } else {
+                    extraParams += newExtraParams;
+                }
             }
         }
         
@@ -1080,7 +1082,20 @@ public class BiocacheQuery implements Query, Serializable {
 
             if (encode) {
                 try {
-                    sb.append(URLEncoder.encode(extraParams, StringConstants.UTF_8));
+                    //split
+                    String[] split = extraParams.split("&");
+                    for (int i = 0; i < split.length; i++) {
+                        String key = "";
+                        String value = split[i];
+                        if (i > 0) {
+                            int e = split[i].indexOf("=");
+                            if (e > 0) {
+                                key = split[i].substring(0, e);
+                                value = split[i].substring(e + 1);
+                            }
+                        }
+                        sb.append(key).append(URLEncoder.encode(value, StringConstants.UTF_8));
+                    }
                 } catch (Exception e) {
                     LOGGER.error("error encoding: " + extraParams, e);
                 }

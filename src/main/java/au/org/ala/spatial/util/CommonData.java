@@ -837,6 +837,15 @@ public final class CommonData {
             Properties p = new Properties();
             p.load(new URL(i18nURL).openStream());
 
+            //append facet.{fieldId}={layer display name}
+            for (Object o : getLayerListJSONArray()) {
+                JSONObject jo = (JSONObject) o;
+                String facetId = getLayerFacetName(jo.get("name").toString());
+                if (facetId != null) {
+                    p.put("facet." + facetId, ((JSONObject) o).get("displayname").toString());
+                }
+            }
+
             i18nProperites = p;
         } catch (Exception e) {
             LOGGER.error("error loading properties file URL: " + i18nURL, e);
