@@ -203,9 +203,6 @@ public final class CommonData {
         //(5) for layer to facet name mapping
         readLayerInfo();
 
-        //(6) for common facet name and value conversions
-        initI18nProperies();
-
         //(7) lsid counts
         //LsidCounts lc = new LsidCounts();
         //if (lc.getSize() > 0) {
@@ -276,7 +273,8 @@ public final class CommonData {
             checklistspeciesWmsLayersBySpcode = copyChecklistspeciesWmsLayersBySpcode;
         }
 
-
+        //(6) for common facet name and value conversions, layers need to be initialised before here
+        initI18nProperies();
     }
 
     public static JSONArray getDownloadReasons() {
@@ -838,12 +836,17 @@ public final class CommonData {
             p.load(new URL(i18nURL).openStream());
 
             //append facet.{fieldId}={layer display name}
-            for (Object o : getLayerListJSONArray()) {
-                JSONObject jo = (JSONObject) o;
-                String facetId = getLayerFacetName(jo.get("name").toString());
-                if (facetId != null) {
-                    p.put("facet." + facetId, ((JSONObject) o).get("displayname").toString());
+            List layers = getLayerListJSONArray();
+            if (layers != null) {
+                for (Object o : layers) {
+                    JSONObject jo = (JSONObject) o;
+                    String facetId = getLayerFacetName(jo.get("name").toString());
+                    if (facetId != null) {
+                        p.put("facet." + facetId, ((JSONObject) o).get("displayname").toString());
+                    }
                 }
+            } else {
+                LOGGER.error("layers not added to cached i18n");
             }
 
             i18nProperites = p;
