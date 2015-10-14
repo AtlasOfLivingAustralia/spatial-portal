@@ -4,6 +4,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.org.ala.legend.Facet;
 import au.org.ala.legend.LegendObject;
 import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.composer.sandbox.SandboxEmbeddedController;
 import au.org.ala.spatial.composer.sandbox.SandboxPasteController;
 import au.org.ala.spatial.composer.species.SpeciesAutoCompleteComponent;
 import au.org.ala.spatial.dto.ScatterplotDataDTO;
@@ -1346,6 +1347,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             boolean[] geospatialKosher = null;
             boolean supportDynamic = false;
             String qname = null;
+            Boolean includeDistributions = true;
 
             for (int i = 0; i < userParams.size(); i++) {
                 String key = userParams.get(i).getKey();
@@ -1416,6 +1418,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     supportDynamic = Boolean.parseBoolean(value);
                 } else if ("cm".equals(key)) {
                     colourBy = value.trim();
+                } else if ("includeDistributions".equals(key)) {
+                    try {
+                        includeDistributions = Boolean.parseBoolean(value.trim());
+                    } catch (Exception e) {
+                    }
                 }
             }
 
@@ -1462,7 +1469,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         setGrid = 0;
                     }
                     mapLayer = mapSpecies(q, qname != null ? qname : q.getSolrName(), StringConstants.SPECIES, q.getOccurrenceCount()
-                            , LayerUtilitiesImpl.SPECIES, null, setGrid, size, opacity, colour, colourBy, true);
+                            , LayerUtilitiesImpl.SPECIES, null, setGrid, size, opacity, colour, colourBy, includeDistributions);
                 }
             }
 
@@ -1855,7 +1862,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     //map this layer with its recorded scientific name
                     try {
                         JSONObject jo = ((JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer()
-                                + "/distribution/" + spcode[i])));
+                                + "/distribution/" + spcode[i] + "?nowkt=true")));
                         String scientific = jo.get(StringConstants.SCIENTIFIC).toString();
                         String distributionAreaName = jo.get("area_name").toString();
                         String layerName = getNextAreaLayerName(scientific);
@@ -1893,7 +1900,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         if (getMapLayerWMS(wmsNames[i]) == null) {
 
                             String scientific = ((JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer()
-                                    + "/distribution/" + spcode[i]))).get(StringConstants.SCIENTIFIC).toString();
+                                    + "/distribution/" + spcode[i] + "?nowkt=true"))).get(StringConstants.SCIENTIFIC).toString();
                             String layerName = getNextAreaLayerName(scientific + " area " + (i + 1));
                             String html = Util.getMetadataHtmlForDistributionOrChecklist(spcode[i], null, layerName);
                             ml = addWMSLayer(layerName, getNextAreaLayerName("Expert distribution: " + scientific)
@@ -2101,11 +2108,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //display warning for large wkt that does not have a facet
         if (ml.getFacets() == null
                 && ml.getWKT().length() > Integer.parseInt(CommonData.getSettings().getProperty("max_q_wkt_length"))) {
-            WKTReducedDTO reduced = Util.reduceWKT(ml.getWKT());
-            ml.setWKT(reduced.getReducedWKT());
-            getMapComposer().showMessage("WARNING: The polygon displayed has reduced resolution to enable " +
+            final MapLayer m = ml;
+            //should some process need the wkt, it will get whatever is available and reduce later on
+            //this avoids lockups until the actual processes that require a reduced wkt
+            Thread t = new Thread() {
+                @Override
+                public void run() {
+                    WKTReducedDTO reduced = Util.reduceWKT(m.getWKT());
+                    m.setWKT(reduced.getReducedWKT());
+                }
+            };
+
+            t.start();
+            
+            /*getMapComposer().showMessage("WARNING: The polygon displayed has reduced resolution to enable " +
                     "subsequent analyses.\r\n"
-                    + reduced.getReducedBy());
+                    + reduced.getReducedBy());*/
         }
     }
 
@@ -2989,10 +3007,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } else {
                 if (StringUtils.isNotEmpty((String) CommonData.getSettings().getProperty("sandbox.url", null))
                         && CommonData.getSettings().getProperty("import.points.layers-service", "false").equals("false")) {
-                    SandboxPasteController spc = (SandboxPasteController) Executions.createComponents("WEB-INF/zul/sandbox/SandboxPaste.zul", getMapComposer(), null);
-                    spc.setAddToMap(true);
-                    spc.setParent(getMapComposer());
-                    spc.doModal();
+                    String sandboxEmbedded = CommonData.getSettings().getProperty("sandbox.embedded", "false");
+                    if (sandboxEmbedded != null && Boolean.parseBoolean(sandboxEmbedded)) {
+                        SandboxEmbeddedController spc = (SandboxEmbeddedController) Executions.createComponents("WEB-INF/zul/sandbox/SandboxEmbedded.zul", getMapComposer(), null);
+                        spc.setAddToMap(true);
+                        spc.setParent(getMapComposer());
+                        spc.doModal();
+                    } else {
+                        SandboxPasteController spc = (SandboxPasteController) Executions.createComponents("WEB-INF/zul/sandbox/SandboxPaste.zul", getMapComposer(), null);
+                        spc.setAddToMap(true);
+                        spc.setParent(getMapComposer());
+                        spc.doModal();
+                    }
                 } else {
                     Map params = new HashMap();
                     params.put("setTbInstructions", "3. Select file (comma separated ID (text), " +

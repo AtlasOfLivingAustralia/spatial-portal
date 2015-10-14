@@ -550,8 +550,10 @@ public final class Util {
             //reduction attempts, 3 decimal places, 2, 1, .2 increments, .5 increments,
             // and finally, convert to 1/1.001 increments (expected to be larger) then back to .5 increments (expected to be smaller)
             // to make the WKT string shorter.
-            double[] reductionValues = {1000, 100, 10, 5, 2};
+            double[] reductionValues = {100, 10, 5, 2};
             int attempt = 0;
+            //boost attempt for large wkt
+            if (wkt.length() > 2000000) attempt = 1;
             while (wkt.length() > Integer.parseInt(CommonData.getSettings().getProperty("max_q_wkt_length")) && attempt < reductionValues.length) {
                 if (g == null) {
                     wktReader = new WKTReader();
@@ -570,7 +572,7 @@ public final class Util {
                 }
 
                 wkt = newwkt;
-                LOGGER.info("reduced WKT from string length " + startLength + " to " + wkt.length());
+                LOGGER.debug("reduced WKT from string length " + startLength + " to " + wkt.length());
 
                 reducedBy = String.format("Reduced to resolution %f decimal degrees. \r\nWKT character length " + startLength + " to " + wkt.length(), 1 / reductionValues[attempt]);
 
@@ -607,7 +609,7 @@ public final class Util {
     public static String[] getDistributionOrChecklist(String spcode) {
         try {
             StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append("/distribution/").append(spcode);
+            sbProcessUrl.append("/distribution/").append(spcode).append("?nowkt=true");
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(CommonData.getLayersServer() + sbProcessUrl.toString());

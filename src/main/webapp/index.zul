@@ -181,7 +181,7 @@
                                 <n:li>
                                     <n:a href="#" n:onClick="runAooEoo();"
                                          n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.aooeoo.enable")?"":"display:none"}'>
-                                        Area of Occupancy and Extent of Occurrence
+                                        Calculate AOO and EOO
                                     </n:a>
                                 </n:li>
                                 <n:li>

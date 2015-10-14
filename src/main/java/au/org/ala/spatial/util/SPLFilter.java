@@ -175,8 +175,8 @@ public class SPLFilter {
                 filterString = string.toString();
             }
         } else {
-            filterString = "between " + String.format("%.4f", (float) minimumValue)
-                    + " and " + String.format("%.4f", (float) maximumValue);
+            filterString = String.format("%.4f", (float) minimumValue)
+                    + " to " + String.format("%.4f", (float) maximumValue);
         }
 
         return filterString;

@@ -70,10 +70,11 @@ public class MaxentComposer extends ToolComposer {
     @Override
     public boolean onFinish() {
 
-        if (!hasEstimated && !isUserLoggedIn()) {
-            checkEstimate();
-            return false;
-        }
+        //TODO: fix estimate
+//        if (!hasEstimated && !isUserLoggedIn()) {
+//            checkEstimate();
+//            return false;
+//        }
 
         Query q = getSelectedSpecies();
         if (q == null) {

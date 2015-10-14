@@ -19,6 +19,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Filedownload;
 
 /**
  * @author ajay
@@ -102,17 +103,24 @@ public class AooEooComposer extends ToolComposer {
         }
         
         //show results
-        String message = "Area of Occupancy: " + String.format("%.0f", aoo) + " sq km\r\nExtent of Occurrence: " + (String.format("%.0f",eoo / 1000.0 / 1000.0)) + " sq km";
-        if (pointCount < 3) {
-            message = "Area of Occupancy: " + String.format("%.0f", aoo) + " sq km\r\nExtent of Occurrence: insufficient unique occurrence locations";
-            getMapComposer().showMessage(message);
-        } else if (metadata != null) {
+        String message = "The Sensitive Data Service may have changed the location of taxa that have a sensitive status. " +
+                "It is wise to first map the taxa and examine each record, then filter these records to create the " +
+                "desired subset, then run the tool on the new filtered taxa layer.\r\n" +
+                "\r\nNumber of records used for the calculations: " + newQ.getOccurrenceCount() +
+                "\r\nSpecies: " + q.getName() +
+                "\r\nArea of Occupancy: " + String.format("%.0f", aoo) + " sq km" +
+                "\r\nExtent of Occurrence: " +
+                (pointCount < 3 ? "insufficient unique occurrence locations" :
+                        (String.format("%.2f", eoo / 1000.0 / 1000.0) + " sq km"));
+        if (metadata != null) {
             Event ev = new Event(StringConstants.ONCLICK, null, "Area of Occupancy and Extent of Occurrence\n" + metadata);
             getMapComposer().openHTML(ev);
         } else {
             getMapComposer().showMessage(message);
         }
 
+        //download metadata as text
+        Filedownload.save(message, "text/plain", "Calculated AOO and EOO.txt");
 
         this.detach();
 
