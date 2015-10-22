@@ -970,16 +970,22 @@ public final class CommonData {
      * get a layer JSONObject with the short name.
      */
     public static JSONObject getLayer(String name) {
-        JSONObject layer = null;
-        for (int i = 0; i < layerlistJSON.size(); i++) {
-            layer = (JSONObject) layerlistJSON.get(i);
+        JSONObject found = null;
+        for (int i = 0; i < layerlistJSON.size() && found == null; i++) {
+            JSONObject layer = (JSONObject) layerlistJSON.get(i);
             if (layer.get(StringConstants.NAME).toString().equalsIgnoreCase(name)) {
-                break;
+                found = layer;
             } else {
-                layer = null;
+                for (int j = 0; ((List) layer.get(StringConstants.FIELDS)) != null && j < ((List) layer.get(StringConstants.FIELDS)).size(); j++) {
+                    JSONObject field = (JSONObject) ((List) layer.get(StringConstants.FIELDS)).get(j);
+                    if (field.get(StringConstants.ID).toString().equals(name)) {
+                        found = layer;
+                        break;
+                    }
+                }
             }
         }
-        return layer;
+        return found;
     }
 
     static void initBiocacheLayerList() {

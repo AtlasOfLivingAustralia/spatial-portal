@@ -216,7 +216,10 @@ public class AreaMapPolygon extends AreaToolComposer {
                             facets.add(facet);
                             mapLayer.setFacets(facets);
 
-                            mapLayer.setWKT(readUrl(CommonData.getLayersServer() + "/shape/wkt/" + feature.get(StringConstants.PID)));
+                            //do not set WKT for grids as shapefiles
+                            if (!CommonData.getLayer((String) objJson.get(StringConstants.FID)).get("path_orig").toString().contains("diva")) {
+                                mapLayer.setWKT(readUrl(CommonData.getLayersServer() + "/shape/wkt/" + feature.get(StringConstants.PID)));
+                            }
                         } else {
                             //no facet = not in Biocache, must use WKT
                             mapLayer.setWKT(readUrl(CommonData.getLayersServer() + "/shape/wkt/" + feature.get(StringConstants.PID)));
@@ -229,10 +232,19 @@ public class AreaMapPolygon extends AreaToolComposer {
                             String[] split = bbString.split(" ");
                             List<Double> bbox = new ArrayList<Double>();
 
-                            bbox.add(Double.parseDouble(split[0]));
-                            bbox.add(Double.parseDouble(split[1]));
-                            bbox.add(Double.parseDouble(split[2]));
-                            bbox.add(Double.parseDouble(split[3]));
+                            //detect a specific data error
+                            if (facet != null && (split[1].equals(split[3]) || split[0].equals(split[2]))) {
+                                Map m = CommonData.getLayer((String) objJson.get(StringConstants.FID));
+                                bbox.add(Double.parseDouble(m.get("minlongitude").toString()));
+                                bbox.add(Double.parseDouble(m.get("minlatitude").toString()));
+                                bbox.add(Double.parseDouble(m.get("maxlongitude").toString()));
+                                bbox.add(Double.parseDouble(m.get("maxlatitude").toString()));
+                            } else {
+                                bbox.add(Double.parseDouble(split[0]));
+                                bbox.add(Double.parseDouble(split[1]));
+                                bbox.add(Double.parseDouble(split[2]));
+                                bbox.add(Double.parseDouble(split[3]));
+                            }
 
                             md.setBbox(bbox);
                         } catch (NumberFormatException e) {

@@ -60,7 +60,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
 
             for (Object o : htCat1.entrySet()) {
                 JSONParser jp = new JSONParser();
-                JSONObject joCat = (JSONObject) jp.parse("{displayname:'" + ((Map.Entry) o).getKey() + "',type:'node',subtype:" + LayerUtilitiesImpl.CONTEXTUAL + "}");
+                JSONObject joCat = (JSONObject) jp.parse("{\"displayname\":\"" + ((Map.Entry) o).getKey() + "\",\"type\":\"node\",\"subtype\":\"" + LayerUtilitiesImpl.CONTEXTUAL + "\"}");
 
                 //sort 2nd level branches
                 List sorted = (ArrayList) ((Map.Entry) o).getValue();

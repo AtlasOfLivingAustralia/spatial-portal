@@ -5,12 +5,15 @@ import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipInputStream;
@@ -35,37 +38,35 @@ public final class Sampling {
     public static List<String[]> sampling(List<String> facetIds, double[][] points) {
         //form request and get from layers-service
 
-        //TODO: progress indicator
-
         try {
-            HttpClient client = new HttpClient();
+            long start = System.currentTimeMillis();
+            URL url = new URL(CommonData.getLayersServer() + "/intersect/batch");
+            URLConnection c = url.openConnection();
+            c.setDoOutput(true);
 
-            PostMethod post = new PostMethod(CommonData.getLayersServer() + "/intersect/batch");
-
-            StringBuilder facets = new StringBuilder();
-            for (String f : facetIds) {
-                if (facets.length() == 0) {
-                    facets.append(",");
+            OutputStreamWriter out = new OutputStreamWriter(c.getOutputStream());
+            out.write("fids=");
+            for (int i = 0; i < facetIds.size(); i++) {
+                if (i > 0) {
+                    out.write(",");
                 }
-                facets.append(f);
+                out.write(facetIds.get(i));
             }
-
-            StringBuilder coordinates = new StringBuilder();
-            for (double[] p : points) {
-                if (coordinates.length() == 0) {
-                    coordinates.append(",");
+            out.write("&points=");
+            for (int i = 0; i < points.length; i++) {
+                if (i > 0) {
+                    out.write(",");
                 }
-                coordinates.append(p[1]).append(",").append(p[0]);
+                out.write(String.valueOf(points[i][1]));
+                out.write(",");
+                out.write(String.valueOf(points[i][0]));
             }
+            out.write("&pw=");
+            out.write(CommonData.getSettings().getProperty("batch.sampling.pw"));
+            out.close();
 
-            post.addParameter("fids", facets.toString());
-            post.addParameter("points", coordinates.toString());
-
-            post.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.APPLICATION_JSON);
-
-            client.executeMethod(post);
             JSONParser jp = new JSONParser();
-            JSONObject jo = (JSONObject) jp.parse(post.getResponseBodyAsString());
+            JSONObject jo = (JSONObject) jp.parse(IOUtils.toString(c.getInputStream()));
 
             String statusUrl = jo.get("statusUrl").toString();
 
@@ -74,7 +75,7 @@ public final class Sampling {
             int count = 0;
             while ((downloadUrl = getDownloadUrl(statusUrl)) != null) {
 
-                if (!downloadUrl.isEmpty() || count >= 25) {
+                if (!downloadUrl.isEmpty() || downloadUrl == null) {
                     break;
                 }
 
@@ -109,9 +110,11 @@ public final class Sampling {
 
             if ("finished".equals(jo.get(StringConstants.STATUS))) {
                 downloadUrl = jo.get("downloadUrl").toString();
+            } else if ("cancelled".equals(jo.get(StringConstants.STATUS)) || "error".equals(jo.get(StringConstants.STATUS))) {
+                downloadUrl = null;
             } else {
                 downloadUrl = "";
-            }
+            } 
         } catch (Exception e) {
             LOGGER.error("error getting response from : " + statusUrl, e);
         }
@@ -133,6 +136,7 @@ public final class Sampling {
 
             try {
                 ZipInputStream zip = new ZipInputStream(get.getResponseBodyAsStream());
+                zip.getNextEntry();
                 CSVReader csv = new CSVReader(new InputStreamReader(zip));
 
                 //read first line

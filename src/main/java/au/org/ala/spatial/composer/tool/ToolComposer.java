@@ -1355,7 +1355,7 @@ public class ToolComposer extends UtilityComposer {
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {
-                    if (area.equals(ml.getWKT())) {
+                    if ((area == null && ml.getWKT() == null) || area.equals(ml.getWKT())) {
                         sa = new SelectedArea(ml, null);
                         break;
                     }

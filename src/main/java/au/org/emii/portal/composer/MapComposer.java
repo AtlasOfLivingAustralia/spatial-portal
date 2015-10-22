@@ -36,6 +36,8 @@ import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.persistence.FilePersistenceStrategy;
 import com.thoughtworks.xstream.persistence.PersistenceStrategy;
 import com.thoughtworks.xstream.persistence.XmlArrayList;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.FileUtils;
@@ -888,7 +890,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             List<Facet> facets = new ArrayList<Facet>();
             facets.add(facet);
             mapLayer.setFacets(facets);
-            mapLayer.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
+
+            //do not set WKT for grids as shapefiles
+            if (!CommonData.getLayer(fid).get("path_orig").toString().contains("diva")) {
+                mapLayer.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
+            }
         } else {
             //not in biocache, so add as WKT
             mapLayer.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
@@ -2106,24 +2112,27 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void warnForLargeWKT(MapLayer ml) {
         //display warning for large wkt that does not have a facet
-        if (ml.getFacets() == null
-                && ml.getWKT().length() > Integer.parseInt(CommonData.getSettings().getProperty("max_q_wkt_length"))) {
-            final MapLayer m = ml;
-            //should some process need the wkt, it will get whatever is available and reduce later on
-            //this avoids lockups until the actual processes that require a reduced wkt
-            Thread t = new Thread() {
-                @Override
-                public void run() {
-                    WKTReducedDTO reduced = Util.reduceWKT(m.getWKT());
-                    m.setWKT(reduced.getReducedWKT());
-                }
-            };
+        if (ml.getFacets() == null) {
+            WKTReader wktReader = new WKTReader();
 
-            t.start();
-            
-            /*getMapComposer().showMessage("WARNING: The polygon displayed has reduced resolution to enable " +
-                    "subsequent analyses.\r\n"
-                    + reduced.getReducedBy());*/
+            try {
+                Geometry g = wktReader.read(ml.getWKT());
+
+                if (g.getNumPoints() > Integer.parseInt(CommonData.getSettings().getProperty("max_q_wkt_points", "200"))) {
+
+                    WKTReducedDTO reduced = Util.reduceWKT(ml.getWKT());
+                    ml.setWKT(reduced.getReducedWKT());
+
+                    Geometry gsimplified = wktReader.read(ml.getWKT());
+
+                    getMapComposer().showMessage("WARNING: The polygon has more than the maximum number of points and has been simplified, " +
+                            "\r\n\r\noriginal points: " + g.getNumPoints() +
+                            "\r\nmax points: " + CommonData.getSettings().getProperty("max_q_wkt_points", "200") +
+                            "\r\nsimplified points: " + gsimplified.getNumPoints());
+                }
+            } catch (Exception e) {
+                LOGGER.error("error testing and reducing WKT", e);
+            }
         }
     }
 

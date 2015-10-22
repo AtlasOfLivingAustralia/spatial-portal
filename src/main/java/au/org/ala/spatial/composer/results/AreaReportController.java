@@ -510,7 +510,7 @@ public class AreaReportController extends UtilityComposer {
                 futures.put("AreaFacetCounts" + i, pool.submit(areaFacets[i]));
             }
             futures.put("SpeciesCount", pool.submit(speciesCount));
-            futures.put("SpeciesCountK  osher", pool.submit(speciesCountKosher));
+            futures.put("SpeciesCountKosher", pool.submit(speciesCountKosher));
             futures.put("GazPoints", pool.submit(gazPointsC));
             futures.put("SpeciesChecklists", pool.submit(speciesChecklists));
             futures.put("SpeciesDistributions", pool.submit(speciesDistributions));
