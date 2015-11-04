@@ -94,7 +94,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private int mapZoomLevel = 4;
     private Map activeLayerMapProperties;
     private Label lblSelectedLayer;
-    private String useSpeciesWMSCache = "off";
+    private String useSpeciesWMSCache = "on";
     private List<LayerSelection> selectedLayers = new ArrayList<LayerSelection>();
     /*
      * for capturing layer loaded events signaling listeners
