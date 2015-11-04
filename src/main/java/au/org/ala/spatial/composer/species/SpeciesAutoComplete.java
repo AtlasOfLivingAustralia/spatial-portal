@@ -249,63 +249,59 @@ public class SpeciesAutoComplete extends Combobox {
 
             //count for guid
             try {
-                if (o.containsKey("left") && o.containsKey("right")) {
-                    //long count = CommonData.getLsidCounts().getCount(o.getLong("left"), o.getLong("right"));
+                if (o.containsKey(StringConstants.NAME) && o.containsKey("guid") && o.containsKey(StringConstants.RANK)) {
+                    Integer count = CommonData.getLsidCounts().getCount(o.get("guid").toString());
 
-                    if (o.containsKey(StringConstants.NAME) && o.containsKey("guid") && o.containsKey(StringConstants.RANK)) {
-                        Integer count = CommonData.getLsidCounts().getCount(o.get("guid").toString());
+                    if (slist.length() > 0) {
+                        slist.append("\n");
+                    }
 
-                        if (slist.length() > 0) {
-                            slist.append("\n");
-                        }
-
-                        String commonName = null;
-                        boolean commonNameMatch = false;
-                        if (o.containsKey("commonName") && !StringConstants.NONE.equals(o.get("commonName"))
-                                && !StringConstants.NULL.equals(o.get("commonName"))) {
-                            commonName = o.get("commonName").toString();
-                            commonName = commonName.trim().replace("/", ",");
-                            String[] cns = commonName.split(",");
-                            for (int j = 0; j < cns.length; j++) {
-                                if (cns[j].toLowerCase().contains(val)) {
-                                    commonName = cns[j];
-                                    commonNameMatch = true;
-                                    break;
-                                }
-                            }
-                            if (commonName.indexOf(',') > 1) {
-                                commonName = commonName.substring(0, commonName.indexOf(','));
+                    String commonName = null;
+                    boolean commonNameMatch = false;
+                    if (o.containsKey("commonName") && !StringConstants.NONE.equals(o.get("commonName"))
+                            && !StringConstants.NULL.equals(o.get("commonName"))) {
+                        commonName = o.get("commonName").toString();
+                        commonName = commonName.trim().replace("/", ",");
+                        String[] cns = commonName.split(",");
+                        for (int j = 0; j < cns.length; j++) {
+                            if (cns[j].toLowerCase().contains(val)) {
+                                commonName = cns[j];
+                                commonNameMatch = true;
+                                break;
                             }
                         }
+                        if (commonName.indexOf(',') > 1) {
+                            commonName = commonName.substring(0, commonName.indexOf(','));
+                        }
+                    }
 
-                        //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
-                        //swap name and common name if it is a common name match
-                        if (commonNameMatch) {
-                            slist.append(commonName).append(" /");
-                            slist.append(o.get("guid")).append("/");
-                            slist.append(o.get(StringConstants.RANK));
-                            slist.append(", ").append(o.get(StringConstants.NAME).toString().replace("/", ","));
-                            slist.append("/");
-                            if (count != null) {
-                                slist.append("found ");
-                                slist.append(count);
-                            } else {
-                                slist.append("counting");
-                            }
+                    //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
+                    //swap name and common name if it is a common name match
+                    if (commonNameMatch) {
+                        slist.append(commonName).append(" /");
+                        slist.append(o.get("guid")).append("/");
+                        slist.append(o.get(StringConstants.RANK));
+                        slist.append(", ").append(o.get(StringConstants.NAME).toString().replace("/", ","));
+                        slist.append("/");
+                        if (count != null) {
+                            slist.append("found ");
+                            slist.append(count);
                         } else {
-                            slist.append(o.get(StringConstants.NAME).toString().replace("/", ",")).append(" /");
-                            slist.append(o.get("guid")).append("/");
-                            slist.append(o.get(StringConstants.RANK));
-                            if (commonName != null) {
-                                slist.append(", ").append(commonName);
-                            }
-                            slist.append("/");
-                            if (count != null) {
-                                slist.append("found ");
-                                slist.append(count);
-                            } else {
-                                slist.append("counting");
-                            }
+                            slist.append("counting");
+                        }
+                    } else {
+                        slist.append(o.get(StringConstants.NAME).toString().replace("/", ",")).append(" /");
+                        slist.append(o.get("guid")).append("/");
+                        slist.append(o.get(StringConstants.RANK));
+                        if (commonName != null) {
+                            slist.append(", ").append(commonName);
+                        }
+                        slist.append("/");
+                        if (count != null) {
+                            slist.append("found ");
+                            slist.append(count);
+                        } else {
+                            slist.append("counting");
                         }
                     }
                 }
