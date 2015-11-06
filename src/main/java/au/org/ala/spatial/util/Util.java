@@ -550,26 +550,16 @@ public final class Util {
 
             int maxPoints = Integer.parseInt(CommonData.getSettings().getProperty("max_q_wkt_points", "200"));
 
-            double simplifyDistance = 0.001;
-
-            //TODO: faster resolution to the most appropriate simplifyDistance
-            boolean keepReducing = g.getNumPoints() > maxPoints;
             Geometry bestReduction = g;
-            while (keepReducing) {
-                Geometry reduced = TopologyPreservingSimplifier.simplify(g, simplifyDistance);
-                if (reduced == null) {
-                    keepReducing = false;
-                } else {
-                    bestReduction = reduced;
-                    if (reduced.getNumPoints() < maxPoints) {
-                        keepReducing = false;
-                    } else {
-                        simplifyDistance *= 1.5;
-                    }
-                }
+            double distance = 0.0001;
+            while (maxPoints > 0 && g.getNumPoints() > maxPoints && distance < 10) {
+                Geometry gsimplified = TopologyPreservingSimplifier.simplify(g, distance);
+                bestReduction = gsimplified;
+                reducedBy = "Simplified using distance tolerance " + distance;
+
+                distance *= 2;
             }
 
-            reducedBy = "Simplified using distance tolerance " + simplifyDistance;
             wkt = bestReduction.toText();
             
             LOGGER.info("user WKT of length: " + wkt.length());

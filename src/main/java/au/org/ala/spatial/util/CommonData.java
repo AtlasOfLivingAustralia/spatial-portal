@@ -19,6 +19,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -1067,7 +1068,13 @@ public final class CommonData {
     }
 
     public static String[] getAreaReportFacets() {
-        return areaReportFacets;
+        int extra = (speciesListInvasive.length() == 0 ? 0 : 1) + (speciesListThreatened.length() == 0 ? 0 : 1);
+        String[] ret = new String[areaReportFacets.length + extra];
+        System.arraycopy(areaReportFacets, 0, ret, extra, areaReportFacets.length);
+        int pos = 0;
+        if (speciesListInvasive.length() > 0) ret[pos++] = speciesListInvasive;
+        if (speciesListThreatened.length() > 0) ret[pos++] = speciesListThreatened;
+        return ret;
     }
 
     public static boolean getDisplayPointsOfInterest() {
@@ -1336,13 +1343,24 @@ public final class CommonData {
         return list;
     }
 
+    public static String speciesListThreatened = "";
+    public static String speciesListInvasive = "";
+
     private static Map<String, Map<String, List<String>>> initSpeciesListAdditionalColumns() {
         Map<String, Map<String, List<String>>> map = new HashMap<String, Map<String, List<String>>>();
 
         String slac = settings.getProperty("species.list.additional.columns", "");
+        //append dynamic columns
+        slac += dynamicSpeciesListColumns();
         String[] columns = slac.split("\\|");
         for (String line : columns) {
             String[] parts = line.split(",");
+            if (parts[0].equals("Conservation")) {
+                speciesListThreatened = "species_list_uid:" + StringUtils.join(Arrays.copyOfRange(parts, 1, parts.length), " OR species_list_uid:");
+            }
+            if (parts[0].equals("Invasive")) {
+                speciesListInvasive = "species_list_uid:" + StringUtils.join(Arrays.copyOfRange(parts, 1, parts.length), " OR species_list_uid:");
+            }
             if (parts.length > 1) {
                 String columnTitle = parts[0];
                 for (int i = 1; i < parts.length; i++) {
@@ -1352,7 +1370,8 @@ public final class CommonData {
                         String listName = ((JSONObject) jp.parse(IOUtils.toString(is))).get("listName").toString();
                         is.close();
 
-                        Map<String, List<String>> m = new HashMap<String, List<String>>();
+                        Map<String, List<String>> m = map.get(columnTitle);
+                        if (m == null) m = new HashMap<String, List<String>>();
                         ArrayList<String> sp = new ArrayList<String>();
                         //fetch species list
 
@@ -1374,11 +1393,37 @@ public final class CommonData {
         return map;
     }
 
+    private static String dynamicSpeciesListColumns() {
+        StringBuilder sb = new StringBuilder();
+        try {
+            JSONParser jp = new JSONParser();
+            JSONObject threatened = (JSONObject) jp.parse(Util.readUrl(settings.getProperty("species_list_url", "") + "/ws/speciesList/?isThreatened=eq:true"));
+            JSONObject invasive = (JSONObject) jp.parse(Util.readUrl(settings.getProperty("species_list_url", "") + "/ws/speciesList/?isInvasive=eq:true"));
+
+            JSONObject[] lists = {threatened, invasive};
+
+            for (JSONObject o : lists) {
+                if (sb.length() == 0) sb.append("Conservation");
+                else sb.append("|Invasive");
+                JSONArray ja = (JSONArray) o.get("lists");
+                for (int i = 0; i < ja.size(); i++) {
+                    sb.append(",").append(((JSONObject) ja.get(i)).get("dataResourceUid"));
+                }
+            }
+
+        } catch (Exception e) {
+            LOGGER.error("failed to get species lists for threatened or invasive species", e);
+        }
+        return sb.toString();
+    }
+
     public static List<String> getSpeciesListAdditionalColumnsHeader() {
         return new ArrayList<String>(speciesListAdditionalColumns.keySet());
     }
 
     public static List<String> getSpeciesListAdditionalColumns(List<String> headers, String lsid) {
+        //extract lsid from names_and_lsid field
+        if (lsid != null && lsid.contains("|") && lsid.split("\\|").length > 1) lsid = lsid.split("\\|")[1];
         List<String> list = new ArrayList<String>();
         for (int i = 0; i < headers.size(); i++) {
             StringBuilder sb = new StringBuilder();

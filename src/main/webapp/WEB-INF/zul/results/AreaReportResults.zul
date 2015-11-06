@@ -37,6 +37,7 @@
             <separator />
 
             <div class="btn-group" style="padding-right:20px">
+                <button id="btnDownload" label="Download"/>
                 <button label="Close" id="btnCancel"/>
             </div>
         </vbox>

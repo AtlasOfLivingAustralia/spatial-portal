@@ -911,7 +911,7 @@ public class AreaReportPDF {
 
         setProgress("Getting information: threatened species list", 0);
         if (isCancelled()) return;
-        BiocacheQuery q = query.newFacet(new Facet("state_conservation", "*", true), true);
+        BiocacheQuery q = query.newFacet(Facet.parseFacet(CommonData.speciesListThreatened), true);
         csvs.put("Threatened_Species", q.speciesList());
         speciesLinks.put("Threatened_Species", q.getWS() + "/occurrences/search?q=" + q.getQ());
         counts.put("Threatened_Species", String.valueOf(q.getSpeciesCount()));
@@ -932,7 +932,7 @@ public class AreaReportPDF {
 
         setProgress("Getting information: invasive species list", 0);
         if (isCancelled()) return;
-        q = query.newFacet(new Facet("pest_flag_s", "*", true), true);
+        q = query.newFacet(Facet.parseFacet(CommonData.speciesListInvasive), true);
         csvs.put("Invasive_Species", q.speciesList());
         speciesLinks.put("Invasive_Species", q.getWS() + "/occurrences/search?q=" + q.getQ());
         counts.put("Invasive_Species", String.valueOf(q.getSpeciesCount()));
@@ -1044,7 +1044,7 @@ public class AreaReportPDF {
 
         setProgress("Getting information: images for map of threatened species", 0);
         if (isCancelled()) return;
-        MapLayer threatenedSpecies = createSpeciesLayer(query.newFacet(new Facet("state_conservation", "*", true), false), 0, 0, 255, .6f, false, 9, false);
+        MapLayer threatenedSpecies = createSpeciesLayer(query.newFacet(Facet.parseFacet(CommonData.speciesListThreatened), false), 0, 0, 255, .6f, false, 9, false);
 
         setProgress("Getting information: images for map of iconic species", 0);
         if (isCancelled()) return;
@@ -1056,7 +1056,7 @@ public class AreaReportPDF {
 
         setProgress("Getting information: images for map of invasive species", 0);
         if (isCancelled()) return;
-        MapLayer invasiveSpecies = createSpeciesLayer(query.newFacet(new Facet("pest_flag_s", "*", true), false), 0, 0, 255, .6f, false, 9, false);
+        MapLayer invasiveSpecies = createSpeciesLayer(query.newFacet(Facet.parseFacet(CommonData.speciesListInvasive), false), 0, 0, 255, .6f, false, 9, false);
 
 
         String[] layers = CommonData.getSettings().getProperty("detailed_area_report_layers").split("\n");

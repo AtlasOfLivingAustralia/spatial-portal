@@ -38,8 +38,8 @@ import java.util.zip.GZIPInputStream;
 public class BiocacheQuery implements Query, Serializable {
     static final String SAMPLING_SERVICE_CSV_GZIP = "/webportal/occurrences.gz?";
     static final String SAMPLING_SERVICE = "/webportal/occurrences?";
-    static final String SPECIES_LIST_SERVICE_CSV = "/occurrences/facets/download?facets=species_guid&lookup=true&count=true&";
-    static final String SPECIES_COUNT_SERVICE = "/occurrence/facets?facets=species_guid";
+    static final String SPECIES_LIST_SERVICE_CSV = "/occurrences/facets/download?facets=names_and_lsid&lookup=true&count=true&";
+    static final String SPECIES_COUNT_SERVICE = "/occurrence/facets?facets=names_and_lsid";
     static final String DOWNLOAD_URL = "/occurrences/download?";
     static final String DATA_PROVIDERS_SERVICE = "/webportal/dataProviders?";
     static final String QUERY_TITLE_URL = "/occurrences/search?";
@@ -846,7 +846,7 @@ public class BiocacheQuery implements Query, Serializable {
         String url = biocacheServer
                 + SPECIES_COUNT_SERVICE
                 /* TODO: fix biocache to use fqs here */
-                + "&q=" + getQ().replace("&fq=", "%20AND%20")
+                + "&q=" + getQ()
                 + getQc();
         LOGGER.debug(url);
         GetMethod get = new GetMethod(url);
@@ -1153,8 +1153,8 @@ public class BiocacheQuery implements Query, Serializable {
                     post.addParameter(q.substring(0, p), q.substring(p + 1));
                     LOGGER.debug("param: " + q.substring(0, p) + " : " + q.substring(p + 1));
                 }
-                post.addParameter(StringConstants.BBOX, forMapping ? StringConstants.TRUE : StringConstants.FALSE);
             }
+            post.addParameter(StringConstants.BBOX, forMapping ? StringConstants.TRUE : StringConstants.FALSE);
             int result = client.executeMethod(post);
             String response = post.getResponseBodyAsString();
 

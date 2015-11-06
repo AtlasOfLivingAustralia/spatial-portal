@@ -645,6 +645,7 @@ public class AreaReportController extends UtilityComposer {
 
         Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, query, false, null);
         int count = sq.getSpeciesCount();
+        if (count == -1) count = 0;
         String label = Labels.getLabel("facet." + facet, facet);
         //title
         dto.setTitle(label);
@@ -652,7 +653,11 @@ public class AreaReportController extends UtilityComposer {
         dto.setCount(String.format("%,d", count));
         //add the appropriate urls
         //check to see if it is a species list
-        if (facet.startsWith("species_list") && colonIdx > 0) {
+        if (facet.equals(CommonData.speciesListThreatened)) {
+            dto.setTitle("Threatened Species (sensitive only lists)");
+        } else if (facet.equals(CommonData.speciesListInvasive)) {
+            dto.setTitle("Invasive Species (sensitive only lists)");
+        } else if (facet.startsWith("species_list") && colonIdx > 0) {
             //extract everything to the right of the colon and construct the url
             String dataResourceUid = facet.substring(colonIdx + 1);
             String title = SpeciesListUtil.getSpeciesListMap().get(dataResourceUid);
@@ -660,10 +665,6 @@ public class AreaReportController extends UtilityComposer {
                 dto.setTitle(title);
             }
             dto.addUrlDetails("Full List", CommonData.getSpeciesListServer() + "/speciesListItem/list/" + dataResourceUid);
-        } else if (facet.startsWith("state_conservation")) {
-            dto.setTitle("Threatened Species (sensitive only lists)");
-        } else if (facet.startsWith("pest_flag")) {
-            dto.setTitle("Invasive Species (sensitive only lists)");
         } else if (facet.startsWith("species_group")) {
             dto.setTitle(facet.substring(colonIdx + 1));
         }
@@ -1287,5 +1288,25 @@ public class AreaReportController extends UtilityComposer {
 
             fireEvent(ListDataEvent.CONTENTS_CHANGED, -1, -1);
         }
+    }
+
+    public void onClick$btnDownload(Event event) {
+        String spid = pid;
+        if (spid == null || StringConstants.NONE.equals(spid)) {
+            spid = String.valueOf(System.currentTimeMillis());
+        }
+
+        SimpleDateFormat date = new SimpleDateFormat(StringConstants.DATE);
+        String sdate = date.format(new Date());
+
+        StringBuilder sb = new StringBuilder();
+        //area name
+        sb.append("Area: " + areaDisplayName);
+        for (Map.Entry<String, AreaReportItemDTO> i : reportModelMap.entrySet()) {
+            sb.append("\n\"").append(i.getValue().getTitle()).append("\",\"").append(i.getValue().getCount()).append("\"");
+        }
+
+
+        Filedownload.save(sb.toString(), StringConstants.TEXT_PLAIN, "Area_report_" + sdate + "_" + spid + ".csv");
     }
 }
