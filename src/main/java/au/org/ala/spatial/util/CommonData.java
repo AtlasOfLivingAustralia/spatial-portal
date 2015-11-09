@@ -1397,8 +1397,8 @@ public final class CommonData {
         StringBuilder sb = new StringBuilder();
         try {
             JSONParser jp = new JSONParser();
-            JSONObject threatened = (JSONObject) jp.parse(Util.readUrl(settings.getProperty("species_list_url", "") + "/ws/speciesList/?isThreatened=eq:true"));
-            JSONObject invasive = (JSONObject) jp.parse(Util.readUrl(settings.getProperty("species_list_url", "") + "/ws/speciesList/?isInvasive=eq:true"));
+            JSONObject threatened = (JSONObject) jp.parse(Util.readUrl(settings.getProperty("species_list_url", "") + "/ws/speciesList/?isThreatened=eq:true&isAuthoritative=eq:true"));
+            JSONObject invasive = (JSONObject) jp.parse(Util.readUrl(settings.getProperty("species_list_url", "") + "/ws/speciesList/?isInvasive=eq:true&isAuthoritative=eq:true"));
 
             JSONObject[] lists = {threatened, invasive};
 

@@ -654,9 +654,9 @@ public class AreaReportController extends UtilityComposer {
         //add the appropriate urls
         //check to see if it is a species list
         if (facet.equals(CommonData.speciesListThreatened)) {
-            dto.setTitle("Threatened Species (sensitive only lists)");
+            dto.setTitle("Threatened Species");
         } else if (facet.equals(CommonData.speciesListInvasive)) {
-            dto.setTitle("Invasive Species (sensitive only lists)");
+            dto.setTitle("Invasive Species");
         } else if (facet.startsWith("species_list") && colonIdx > 0) {
             //extract everything to the right of the colon and construct the url
             String dataResourceUid = facet.substring(colonIdx + 1);
