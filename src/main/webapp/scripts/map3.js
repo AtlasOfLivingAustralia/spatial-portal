@@ -1627,7 +1627,7 @@ function envLayerNearest(e) {
     last_nearest_pos = this_pos;
 
     try {
-        var url = parent.jq('$layers_url')[0].innerHTML + "/objects/cl915/" + pt.lat + "/" + pt.lon + "?limit=5";
+        var url = parent.jq('$layers_url')[0].innerHTML + "/objects/" + parent.jq('$gaz_layer')[0].innerHTML + "/" + pt.lat + "/" + pt.lon + "?limit=5";
         var ret = "";
         var time = new Date().getTime();
         $.ajax({

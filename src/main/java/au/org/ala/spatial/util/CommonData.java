@@ -149,6 +149,12 @@ public final class CommonData {
      * initialize common data from geoserver and satserver
      */
     public static void init(Properties settings) {
+        //first time, load from disk cache
+        boolean readFromCache = false;
+        if (CommonData.settings == null) {
+            readFromCache = loadFromCache();
+        }
+        
         CommonData.settings = settings;
 
         //Common
@@ -188,9 +194,16 @@ public final class CommonData {
             i18nIgnoredPrefixes = new ArrayList<String>();
         }
 
+        //init language pack (but not everywhere)
+        initLanguagePack();
+
         //journalmap
         initJournalmap();
 
+        if (!readFromCache) refreshCachedData();
+    }
+
+    private static void refreshCachedData() {
         setupAnalysisLayerSets();
 
         initLayerDistances();
@@ -222,9 +235,6 @@ public final class CommonData {
 
         //keep a list of biocache field names to know what is available for queries
         initBiocacheLayerList();
-
-        //init language pack (but not everywhere)
-        initLanguagePack();
 
         //need this data if using SP's endemic method
         if (CommonData.getSettings().containsKey("endemic.sp.method")
@@ -276,6 +286,85 @@ public final class CommonData {
 
         //(6) for common facet name and value conversions, layers need to be initialised before here
         initI18nProperies();
+
+        writeToCache();
+
+    }
+
+    private static void writeToCache() {
+        try {
+            String path = "/data/webportal/cache/";
+
+            new File(path).mkdirs();
+
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path + "commondata"));
+            oos.writeObject(layerToFacet);
+            oos.writeObject(facetToLayer);
+            oos.writeObject(layerToFacetDefault);
+            oos.writeObject(facetToLayerDefault);
+            oos.writeObject(speciesListAdditionalColumns);
+            oos.writeObject(downloadReasons);
+            oos.writeObject(biocacheLayerList);
+            oos.writeObject(speciesListCountsKosher);
+            oos.writeObject(speciesListCounts);
+            oos.writeObject(speciesWmsLayers);
+            oos.writeObject(distancesMap);
+            oos.writeObject(distances);
+            oos.writeObject(layerlistJSON);
+            oos.writeObject(speciesWmsLayers);
+            oos.writeObject(speciesMetadataLayers);
+            oos.writeObject(speciesSpcodeLayers);
+            oos.writeObject(checklistspeciesWmsLayers);
+            oos.writeObject(checklistspeciesMetadataLayers);
+            oos.writeObject(checklistspeciesSpcodeLayers);
+            oos.writeObject(checklistspeciesWmsLayersBySpcode);
+            oos.writeObject(i18nProperites);
+
+            oos.close();
+
+        } catch (Exception e) {
+            LOGGER.error("cannot write common data to cache", e);
+        }
+    }
+
+    private static boolean loadFromCache() {
+        try {
+            String path = "/data/webportal/cache/";
+
+            if (!new File(path + "commondata").exists()) return false;
+
+            ObjectInputStream oos = new ObjectInputStream(new FileInputStream(path + "commondata"));
+
+            layerToFacet = (Map<String, JSONObject>) oos.readObject();
+            facetToLayer = (Map<String, JSONObject>) oos.readObject();
+            layerToFacetDefault = (Map<String, JSONObject>) oos.readObject();
+            facetToLayerDefault = (Map<String, JSONObject>) oos.readObject();
+            speciesListAdditionalColumns = (Map<String, Map<String, List<String>>>) oos.readObject();
+            downloadReasons = (JSONArray) oos.readObject();
+            biocacheLayerList = (Set<String>) oos.readObject();
+            speciesListCountsKosher = (Map<String, JSONObject>) oos.readObject();
+            speciesListCounts = (Map<String, JSONObject>) oos.readObject();
+            speciesWmsLayers = (Map<String, String[]>) oos.readObject();
+            distancesMap = (Map<String, Map<String, Double>>) oos.readObject();
+            distances = (JSONObject) oos.readObject();
+            layerlistJSON = (JSONArray) oos.readObject();
+            speciesWmsLayers = (Map<String, String[]>) oos.readObject();
+            speciesMetadataLayers = (Map<String, String[]>) oos.readObject();
+            speciesSpcodeLayers = (Map<String, String[]>) oos.readObject();
+            checklistspeciesWmsLayers = (Map<String, String[]>) oos.readObject();
+            checklistspeciesMetadataLayers = (Map<String, String[]>) oos.readObject();
+            checklistspeciesSpcodeLayers = (Map<String, String[]>) oos.readObject();
+            checklistspeciesWmsLayersBySpcode = (Map<String, String[]>) oos.readObject();
+            i18nProperites = (Properties) oos.readObject();
+
+            oos.close();
+
+        } catch (Exception e) {
+            LOGGER.error("cannot read common data from cache", e);
+            return false;
+        }
+
+        return true;
     }
 
     public static JSONArray getDownloadReasons() {
