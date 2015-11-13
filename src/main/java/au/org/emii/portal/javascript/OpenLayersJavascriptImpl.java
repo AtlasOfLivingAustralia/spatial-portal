@@ -409,6 +409,19 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                             + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
                 }
 
+            } else if (layer.getUri() != null && layer.getUri().contains("ColorMapEntry")) {
+                //area from grid as contextual layer
+                String uri = layer.getUri();
+
+                //replace with current colour
+                String str = "ColorMapEntry+color%3D%220x";
+                int p = uri.indexOf(str);
+                while (p > 0 && p + str.length() + 6 < uri.length()) {
+                    uri = uri.substring(0, p + str.length()) + colour + uri.substring(p + str.length() + 6);
+                    p = uri.indexOf(str, p + 1);
+                }
+                layer.setUri(uri);
+                filter = "";
             } else {
                 filter = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor version=\"1.0.0\" xmlns=\"http://www.opengis.net/sld\">"
                         + "<NamedLayer><Name>" + layerUtilities.getLayer(layer.getUri()) + "</Name>"

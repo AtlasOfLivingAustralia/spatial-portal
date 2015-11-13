@@ -779,6 +779,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     }
 
     private void setupForClassificationLayers() {
+        if (mapLayer.isPolygonLayer()) return;
 
         String activeLayerName = StringConstants.NONE;
         JSONObject layer = null;
