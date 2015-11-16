@@ -197,6 +197,8 @@ public final class CommonData {
         //init language pack (but not everywhere)
         initLanguagePack();
 
+        setupAnalysisLayerSets();
+
         //journalmap
         initJournalmap();
 
@@ -204,7 +206,6 @@ public final class CommonData {
     }
 
     private static void refreshCachedData() {
-        setupAnalysisLayerSets();
 
         initLayerDistances();
 

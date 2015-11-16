@@ -244,12 +244,16 @@
                         </hbox>
                         <listbox id="lbClassificationGroup" mold="paging" pageSize="5">
                             <listhead>
+                                <listheader label="" width="20px"/>
                                 <listheader label="name" width="310px"/>
                                 <listheader label=""/>
                             </listhead>
                         </listbox>
 
                         <div class="btn-group">
+                            <label id="lblSelectedCount" value="0 checked" sclass="wSubLabel"/>
+                            <button class="btn-mini" id="clearSelection" label="Clear checked" visible="true"/>
+                            <button class="btn-mini" id="createInGroup" label="Create from checked" visible="true"/>
                             <button class="btn-small" id="btnClearAreaSelection" visible="true"
                                     label="Clear highlight"/>
                         </div>

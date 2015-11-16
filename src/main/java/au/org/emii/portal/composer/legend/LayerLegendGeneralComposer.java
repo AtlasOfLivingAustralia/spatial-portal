@@ -25,6 +25,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.event.CheckEvent;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -112,6 +113,10 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     private Intbox intAnimationYearEnd;
     private Doublebox dblAnimationSeconds;
     private Div legendImgUriDiv;
+    private Button clearSelection;
+    private Button createInGroup;
+    private Label lblSelectedCount;
+    private Set selectedList = new HashSet();
 
     @Override
     public void afterCompose() {
@@ -872,7 +877,38 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             lbClassificationGroup.setItemRenderer(new ListitemRenderer<JSONObject>() {
                 @Override
                 public void render(Listitem item, JSONObject data, int index) throws Exception {
-                    Listcell lc = new Listcell(data.get("name").toString());
+                    Checkbox cb = new Checkbox();
+                    final int idx = index;
+                    cb.addEventListener("onCheck", new EventListener<Event>() {
+                        @Override
+                        public void onEvent(Event event) throws Exception {
+                            if (mapLayer != null) {
+                                lbClassificationGroup.setMultiple(true);
+
+                                String v = ((Listcell) event.getTarget().getParent().getParent().getChildren().get(1)).getLabel();
+                                if (((CheckEvent) event).isChecked()) {
+                                    selectedList.add(v);
+                                } else {
+                                    selectedList.remove(v);
+                                }
+
+                                lblSelectedCount.setValue(selectedList.size() + " checked");
+
+                                getFellow("clearSelection").setVisible(selectedList.size() > 0);
+                                getFellow("createInGroup").setVisible(selectedList.size() > 0);
+
+                                highlightSelect(idx);
+                            }
+                        }
+                    });
+                    determineCheckboxState(cb, data.get("name").toString());
+
+                    Listcell lc;
+                    lc = new Listcell();
+                    cb.setParent(lc);
+                    lc.setParent(item);
+
+                    lc = new Listcell(data.get("name").toString());
                     lc.setParent(item);
 
                     lc = new Listcell();
@@ -944,6 +980,18 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             getFellow("btnCreateArea").setVisible(false);
             divClassificationPicker.setVisible(false);
         }
+    }
+
+    private void determineCheckboxState(Checkbox cb, String name) {
+//        Integer groupCount = mapLayer.getClassificationGroupCount();
+//        JSONArray groupObjects = mapLayer.getClassificationObjects();
+//        for (int i = 0; i < groupCount; i++) {
+//            if (name.equals(((JSONObject) groupObjects.get(i)).get("name"))) {
+//                highlightSelect(i);
+//                break;
+//            }
+//        }
+        cb.setChecked(selectedList.contains(name));
     }
 
     private void createAreaEcho(String pid) {
@@ -1051,6 +1099,156 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             LOGGER.error("error getting classification group counts:" + url, e);
         }
         return i;
+    }
+
+    public void onClick$clearSelection(Event event) {
+        for (Listitem li : lbClassificationGroup.getItems()) {
+            if (!li.getFirstChild().getChildren().isEmpty()
+                    && ((Checkbox) li.getFirstChild().getFirstChild()).isChecked()) {
+                ((Checkbox) li.getFirstChild().getFirstChild()).setChecked(false);
+            }
+        }
+
+        selectedList = new HashSet();
+        lblSelectedCount.setValue(selectedList.size() + " checked");
+    }
+
+    public void onClick$createInGroup(Event e) {
+
+        StringBuilder sb = new StringBuilder();
+
+        String layer = ((JSONObject) mapLayer.getClassificationObjects().get(0)).get("fid").toString();
+        //build facet
+        for (Object n : selectedList) {
+            if (sb.length() > 0) {
+                sb.append(" OR ");
+            }
+            sb.append(layer).append(":\"").append(n).append("\"");
+        }
+
+        //get pids
+        String pids = "";
+        String anyPid = "";
+        Integer groupCount = mapLayer.getClassificationGroupCount();
+        JSONArray groupObjects = mapLayer.getClassificationObjects();
+        for (Object name : selectedList) {
+            for (int i = 0; i < groupCount; i++) {
+                if (name.equals(((JSONObject) groupObjects.get(i)).get("name"))) {
+                    if (!pids.isEmpty()) {
+                        pids += "~";
+                    }
+                    anyPid = ((JSONObject) groupObjects.get(i)).get("pid").toString();
+                    pids += anyPid;
+                    break;
+                }
+            }
+        }
+
+        JSONParser jp = new JSONParser();
+        JSONObject obj = null;
+
+        Double[] bbox = new Double[4];
+        boolean firstPid = true;
+        Map<Integer, String> urlParts = new HashMap<Integer, String>();
+        try {
+            obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + anyPid));
+
+            for (String p : pids.split("~")) {
+                JSONObject jo = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + p));
+
+                String bbString = jo.get(StringConstants.BBOX).toString();
+                bbString = bbString.replace(StringConstants.POLYGON + "((", "").replace("))", "").replace(",", " ");
+                String[] split = bbString.split(" ");
+
+                String u = jo.get(StringConstants.WMSURL).toString();
+                if (!u.contains("viewparams")) {
+                    //grid as contextual
+
+                    //extract colour map entries
+                    String s = u.split("ColorMap%3E")[1];
+                    int pos = 0;
+                    for (String c : s.split("%3CColorMapEntry")) {
+                        int start = c.indexOf("quantity") + 14;
+                        if (start > 14) {
+                            Integer qty = Integer.parseInt(c.substring(start, c.indexOf("%", start)));
+                            //do no overwrite existing quantities if this is the first or last entry
+                            if (pos == 1 || pos == 2 || !urlParts.containsKey(qty))
+                                urlParts.put(qty, c.replace("%3C%2F", ""));
+                        }
+                    }
+                }
+
+                if (firstPid || Double.parseDouble(split[0]) < bbox[0]) bbox[0] = Double.parseDouble(split[0]);
+                if (firstPid || Double.parseDouble(split[1]) < bbox[1]) bbox[1] = Double.parseDouble(split[1]);
+                if (firstPid || Double.parseDouble(split[4]) > bbox[2]) bbox[2] = Double.parseDouble(split[4]);
+                if (firstPid || Double.parseDouble(split[5]) > bbox[3]) bbox[3] = Double.parseDouble(split[5]);
+                firstPid = false;
+            }
+        } catch (ParseException er) {
+            LOGGER.error("failed to parse for object: " + anyPid);
+        }
+        String bboxString = "POLYGON((" + bbox[0] + " " + bbox[1] + "," + bbox[0] + " " + bbox[3] + ","
+                + bbox[2] + " " + bbox[3] + "," + bbox[2] + " " + bbox[1] + ","
+                + bbox[0] + " " + bbox[1] + "))";
+
+        String url = obj.get(StringConstants.WMSURL).toString();
+        if (!url.contains("s:" + anyPid)) {
+            //grid as contextual layer
+            String[] split = url.split("ColorMap%3E");
+            String colours = "";
+            List<Integer> sorted = new ArrayList<Integer>(urlParts.keySet());
+            Collections.sort(sorted);
+            for (int i = 0; i < sorted.size(); i++) {
+                colours += "%3CColorMapEntry" + urlParts.get(sorted.get(i));
+            }
+            colours += "%3C%2F";
+
+            url = split[0] + "ColorMap%3E" + colours + "ColorMap%3E" + split[2];
+        } else {
+            url = url.replace("s:" + anyPid, "s:" + pids);
+        }
+
+        String name = selectedList.size() + " areas: " + mapLayer.getDisplayName();
+
+        MapLayer ml = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(name), name, url, 0.6f, /*metadata url*/ null,
+                null, LayerUtilitiesImpl.WKT, null, null);
+
+        String lname = ml.getName();
+
+        //add colour!
+        int colour = Util.nextColour();
+        int r = (colour >> 16) & 0x000000ff;
+        int g = (colour >> 8) & 0x000000ff;
+        int b = (colour) & 0x000000ff;
+
+        ml.setRedVal(r);
+        ml.setGreenVal(g);
+        ml.setBlueVal(b);
+        ml.setDynamicStyle(true);
+        ml.setPolygonLayer(true);
+
+        Facet facet = Facet.parseFacet(sb.toString());
+        //only get field data if it is an intersected layer (to exclude layers containing points)
+        JSONObject layerObj = CommonData.getLayer((String) obj.get(StringConstants.FID));
+
+        List<Facet> facets = new ArrayList<Facet>();
+        facets.add(facet);
+        ml.setFacets(facets);
+
+        ml.setWKT(bboxString);
+
+        MapLayerMetadata md = ml.getMapLayerMetadata();
+        md.setBbox(Arrays.asList(bbox));
+
+        try {
+            md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + layerObj.get("id").toString());
+        } catch (Exception er) {
+            LOGGER.error("error setting map layer moreInfo: " + (layerObj != null ? layerObj.toString() : "layerObj is null"), er);
+        }
+
+        getMapComposer().applyChange(ml);
+        getMapComposer().updateLayerControls();
+        getMapComposer().reloadMapLayerNowAndIndexes(ml);
     }
 
     public void onClick$btnClearAreaSelection(Event event) {
