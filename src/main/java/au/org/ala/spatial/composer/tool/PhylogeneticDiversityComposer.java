@@ -296,7 +296,7 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
                     } else {
                         List<MapLayer> layers = getMapComposer().getPolygonLayers();
                         for (MapLayer ml : layers) {
-                            if (area.equals(ml.getWKT())) {
+                            if (area.equals(ml.getName())) {
                                 sa = new SelectedArea(ml, null);
                                 break;
                             }

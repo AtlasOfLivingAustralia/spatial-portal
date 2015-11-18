@@ -188,6 +188,7 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
     private String envParams = null;
     private JSONArray classificationObjects;
     private String baseUri;
+    private String wktUrl;
 
     /**
      * Constructor
@@ -219,19 +220,21 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
         this.geoJSON = geoJSON;
     }
 
+    public String getWktUrl() {
+        return wktUrl;
+    }
+
+    public void setWktUrl(String wktUrl) {
+        this.wktUrl = wktUrl;
+    }
+
     public String getWKT() {
-        if (isPolygonLayer()
-                && getType() != LayerUtilitiesImpl.WKT
-                && geometryWKT == null
-                && geoJSON == null) {
-            //TODO: query for non-wkt layer geometry
-            return null;
-        } else {
-            if (geometryWKT == null) {
-                geometryWKT = Util.wktFromJSON(geoJSON);
-            }
-            return geometryWKT;
+        String wkt = testWKT();
+        if (wkt == null && getWktUrl() != null) {
+            //attempt to fetch wkt
+            wkt = Util.readUrl(getWktUrl());
         }
+        return wkt;
     }
 
     public void setWKT(String wkt) {
@@ -954,5 +957,19 @@ public class MapLayer extends AbstractIdentifierImpl implements Cloneable, Seria
 
     public void setBaseUri(String baseUri) {
         this.baseUri = baseUri;
+    }
+
+    public String testWKT() {
+        if (isPolygonLayer()
+                && getType() != LayerUtilitiesImpl.WKT
+                && geometryWKT == null
+                && geoJSON == null) {
+            return null;
+        } else {
+            if (geometryWKT == null) {
+                geometryWKT = Util.wktFromJSON(geoJSON);
+            }
+            return geometryWKT;
+        }
     }
 }

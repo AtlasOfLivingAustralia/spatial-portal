@@ -4,23 +4,13 @@
  */
 package au.org.ala.spatial.composer.add.area;
 
-import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.gazetteer.GazetteerAutoComplete;
 import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.Util;
-import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 ;
 
@@ -49,91 +39,8 @@ public class AreaRegionSelection extends AreaToolComposer {
         }
 
         JSONObject jo = ci.getValue();
-        JSONParser jp = new JSONParser();
-        JSONObject obj = null;
-        try {
-            obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + jo.get(StringConstants.PID)));
-        } catch (ParseException e) {
-            LOGGER.error("failed to parse for object: " + jo.get(StringConstants.PID));
-        }
 
-        String label = ci.getLabel();
-
-        //add feature to the map as a new layer
-        MapLayer mapLayer;
-        LOGGER.debug(label + " | " + obj.get(StringConstants.WMSURL));
-        mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(label), label, obj.get(StringConstants.WMSURL).toString(), 0.6f, /*metadata url*/ null,
-                null, LayerUtilitiesImpl.WKT, null, null);
-        if (mapLayer == null) {
-            return;
-        }
-
-
-        mapLayer.setPolygonLayer(true);
-
-        this.layerName = mapLayer.getName();
-
-        List<Double> dbb = Util.getBoundingBox(obj.get(StringConstants.BBOX).toString());
-
-        //if the layer is a point create a radius
-        boolean point = false;
-        if (dbb.get(0).floatValue() == dbb.get(2).floatValue() && (float) dbb.get(1).floatValue() == dbb.get(3).floatValue()) {
-            point = true;
-
-            mapLayer.setWKT("POINT(" + dbb.get(0).floatValue() + " " + dbb.get(1).floatValue() + ")");
-
-            double radius = dRadius.getValue() * 1000.0;
-
-            String wkt = Util.createCircleJs(dbb.get(0).floatValue(), dbb.get(1).floatValue(), radius);
-            getMapComposer().removeLayer(label);
-            mapLayer = getMapComposer().addWKTLayer(wkt, label, label);
-
-            //redo bounding box
-            dbb = Util.getBoundingBox(wkt);
-        } else {
-            mapLayer.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + obj.get(StringConstants.PID)));
-        }
-
-        String fid = obj.get(StringConstants.FID).toString();
-
-        MapLayerMetadata md = mapLayer.getMapLayerMetadata();
-        md.setBbox(dbb);
-
-
-        Facet facet = null;
-        if (!point && mapLayer.getFacets() == null) {
-            //only get field data if it is an intersected layer (to exclude layers containing points)
-            if (CommonData.getLayer(fid) != null) {
-                JSONObject fieldJson = null;
-                try {
-                    fieldJson = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/field/" + fid + "?pageSize=0"));
-                } catch (ParseException e) {
-                    LOGGER.error("failed to parse for field: " + fid);
-                }
-
-                md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + fieldJson.get("spid"));
-
-                facet = Util.getFacetForObject(label, fid);
-            }
-
-            if (facet != null) {
-                List<Facet> facets = new ArrayList<Facet>();
-                facets.add(facet);
-                mapLayer.setFacets(facets);
-            }
-        }
-
-        int colour = Util.nextColour();
-        int r = (colour >> 16) & 0x000000ff;
-        int g = (colour >> 8) & 0x000000ff;
-        int b = (colour) & 0x000000ff;
-
-        mapLayer.setRedVal(r);
-        mapLayer.setGreenVal(g);
-        mapLayer.setBlueVal(b);
-        mapLayer.setDynamicStyle(true);
-        getMapComposer().applyChange(mapLayer);
-        getMapComposer().updateLayerControls();
+        getMapComposer().addObjectByPid(jo.get(StringConstants.PID).toString(), ci.getLabel(), dRadius.getValue());
 
         ok = true;
 

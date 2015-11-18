@@ -177,8 +177,6 @@ public class AreaReportController extends UtilityComposer {
 
     public void setReportArea(SelectedArea sa, String name, String displayname, String areaSqKm, double[] boundingBox, boolean includeEndemic) {
         this.selectedArea = sa;
-        //initialize reduced area
-        sa.getReducedWkt();
 
         this.areaName = name;
         this.areaDisplayName = displayname;
@@ -267,7 +265,7 @@ public class AreaReportController extends UtilityComposer {
 
     void startQueries() {
 
-        final boolean worldAreaSelected = CommonData.WORLD_WKT.equals(selectedArea.getWkt());
+        final boolean worldAreaSelected = CommonData.WORLD_WKT.equals(selectedArea.getFacets() == null ? selectedArea.getWkt() : null);
 
         reportModelMap = setUpModelMap(worldAreaSelected);
         areaReportListModel = new ChangableSimpleListModel(new ArrayList(reportModelMap.values()));

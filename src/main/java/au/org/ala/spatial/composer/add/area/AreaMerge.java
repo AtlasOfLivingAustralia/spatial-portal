@@ -54,7 +54,7 @@ public class AreaMerge extends AreaToolComposer {
 
             boolean isGrid = false;
             if (ml.getFacets() != null
-                    && ml.getWKT() != null && ml.getWKT().startsWith(StringConstants.ENVELOPE)) {
+                    && ml.testWKT() != null && ml.getWKT().startsWith(StringConstants.ENVELOPE)) {
                 String wkt = ml.getWKT();
 
                 //get fid

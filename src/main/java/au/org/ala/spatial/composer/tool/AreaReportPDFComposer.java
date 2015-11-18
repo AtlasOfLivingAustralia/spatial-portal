@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.composer.tool;
 
+import au.org.ala.legend.Facet;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
 import au.org.emii.portal.util.AreaReportPDF;
@@ -11,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -64,7 +66,8 @@ public class AreaReportPDFComposer extends ToolComposer {
         }
 
         final String area = areaDisplayName;
-        final String wkt = (ml == null ? sa.getWkt() : ml.getWKT());
+        final String wkt = (ml == null ? sa.getWkt() : (ml.getFacets() == null ? ml.getWKT() : null));
+        final List<Facet> facets = (ml != null && ml.getFacets() != null ? ml.getFacets() : null);
         progress = new ConcurrentHashMap();
         progress.put("label", "Starting");
         progress.put("percent", 0.0);
@@ -72,7 +75,7 @@ public class AreaReportPDFComposer extends ToolComposer {
         Callable pdfAreaReport = new Callable<AreaReportPDF>() {
             @Override
             public AreaReportPDF call() {
-                return new AreaReportPDF(wkt, area, progress);
+                return new AreaReportPDF(wkt, area, facets, progress);
             }
         };
 

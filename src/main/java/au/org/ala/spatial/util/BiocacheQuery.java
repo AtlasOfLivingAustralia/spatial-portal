@@ -846,7 +846,7 @@ public class BiocacheQuery implements Query, Serializable {
         String url = biocacheServer
                 + SPECIES_COUNT_SERVICE
                 /* TODO: fix biocache to use fqs here */
-                + "&q=" + getQ()
+                + "&q=" + getQ().replace("&fq=", "%20AND%20")
                 + getQc();
         LOGGER.debug(url);
         GetMethod get = new GetMethod(url);

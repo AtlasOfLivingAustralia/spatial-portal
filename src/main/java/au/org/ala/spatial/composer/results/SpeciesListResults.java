@@ -155,7 +155,9 @@ public class SpeciesListResults extends UtilityComposer {
             selectedArea = new SelectedArea(null, getMapComposer().getViewArea());
         }
 
-        remoteLogger.logMapAnalysis("Species List", "Export - Species List", selectedArea.getWkt(), "", "", spid, "Species_list_" + sdate + "_" + spid + ".csv", "");
+        remoteLogger.logMapAnalysis("Species List", "Export - Species List",
+                (selectedArea.getFacets() != null ? selectedArea.getFacets().get(0).toString() : selectedArea.getWkt())
+                , "", "", spid, "Species_list_" + sdate + "_" + spid + ".csv", "");
 
         detach();
     }

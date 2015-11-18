@@ -1259,78 +1259,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
     public void createArea(Event event) {
         String pid = event.getData().toString();
 
-        JSONParser jp = new JSONParser();
-        JSONObject obj = null;
-
-        try {
-            obj = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/object/" + pid));
-        } catch (ParseException e) {
-            LOGGER.error("failed to parse for object: " + pid);
-        }
-
-        String url = obj.get(StringConstants.WMSURL).toString();
-        String name = obj.get(StringConstants.NAME).toString();
-
-        MapLayer ml = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(name), name, url, 0.6f, /*metadata url*/ null,
-                null, LayerUtilitiesImpl.WKT, null, null);
-
-        String lname = ml.getName();
-
-        //add colour!
-        int colour = Util.nextColour();
-        int r = (colour >> 16) & 0x000000ff;
-        int g = (colour >> 8) & 0x000000ff;
-        int b = (colour) & 0x000000ff;
-
-        ml.setRedVal(r);
-        ml.setGreenVal(g);
-        ml.setBlueVal(b);
-        ml.setDynamicStyle(true);
-        ml.setPolygonLayer(true);
-
-        Facet facet = null;
-        //only get field data if it is an intersected layer (to exclude layers containing points)
-        JSONObject layerObj = CommonData.getLayer((String) obj.get(StringConstants.FID));
-        if (layerObj != null) {
-            facet = Util.getFacetForObject(obj.get(StringConstants.NAME).toString(), (String) obj.get(StringConstants.FID));
-        }
-
-        if (facet != null) {
-            List<Facet> facets = new ArrayList<Facet>();
-            facets.add(facet);
-            ml.setFacets(facets);
-
-            ml.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
-        } else {
-            //no facet = not in Biocache, must use WKT
-            ml.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
-        }
-        MapLayerMetadata md = ml.getMapLayerMetadata();
-        String bbString = "";
-        try {
-            bbString = obj.get(StringConstants.BBOX).toString();
-            bbString = bbString.replace(StringConstants.POLYGON + "((", "").replace("))", "").replace(",", " ");
-            String[] split = bbString.split(" ");
-            List<Double> bbox = new ArrayList<Double>();
-
-            bbox.add(Double.parseDouble(split[0]));
-            bbox.add(Double.parseDouble(split[1]));
-            bbox.add(Double.parseDouble(split[2]));
-            bbox.add(Double.parseDouble(split[3]));
-
-            md.setBbox(bbox);
-        } catch (NumberFormatException e) {
-            LOGGER.debug("failed to parse: " + bbString, e);
-        }
-        try {
-            md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + layerObj.get("id").toString());
-        } catch (Exception e) {
-            LOGGER.error("error setting map layer moreInfo: " + (layerObj != null ? layerObj.toString() : "layerObj is null"), e);
-        }
-
-        getMapComposer().applyChange(ml);
-        getMapComposer().updateLayerControls();
-        getMapComposer().reloadMapLayerNowAndIndexes(ml);
+        getMapComposer().addObjectByPid(pid, null, 1);
     }
 
     public void onClick$btnCreateArea(Event event) {

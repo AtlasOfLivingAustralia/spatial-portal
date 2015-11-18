@@ -462,7 +462,7 @@ public class LayerLegendScatterplotController extends UtilityComposer implements
         if (cbHighlightArea.getSelectedItem() != null) {
             if (cbHighlightArea.getSelectedItem().getValue() instanceof MapLayer) {
                 MapLayer ml = cbHighlightArea.getSelectedItem().getValue();
-                SelectedArea sa = new SelectedArea(ml, ml.getWKT());
+                SelectedArea sa = new SelectedArea(ml, ml.getFacets() == null ? ml.getWKT() : null);
                 data.setHighlightSa(sa);
             } else {
                 String wkt = cbHighlightArea.getSelectedItem().getValue();

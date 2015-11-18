@@ -284,7 +284,7 @@ public class PhylogeneticDiversityListResults extends UtilityComposer {
                 //'current extent' does not have a map layer
                 if (selectedAreas.get(i).getMapLayer() == null) {
                     sb.append(toCSVString("Current extent")).append(",");
-                    sb.append("" + Util.calculateArea(selectedAreas.get(i).getWkt()) / 1000000.0).append(",");
+                    sb.append(selectedAreas.get(i).getKm2Area()).append(",");
                 } else {
                     sb.append(toCSVString(selectedAreas.get(i).getMapLayer().getDisplayName())).append(",");
                     sb.append(toCSVString(selectedAreas.get(i).getKm2Area())).append(",");

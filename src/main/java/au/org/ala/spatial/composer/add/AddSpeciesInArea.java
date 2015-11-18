@@ -63,7 +63,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
                 rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
-                rAr.setValue(lyr.getWKT());
+                rAr.setValue(lyr.getName());
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
             }
@@ -149,16 +149,16 @@ public class AddSpeciesInArea extends UtilityComposer {
             Query q = QueryUtil.queryFromSelectedArea(query, sa, true, geospatialKosher);
 
             if (byLsid) {
-                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                         Util.nextColour(), expertDistributions);
             } else if (filter) {
-                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                         Util.nextColour(), expertDistributions);
             } else if (filterGrid) {
-                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
                         Util.nextColour(), expertDistributions);
             } else if (rank != null && taxon != null && q != null) {
-                ml = getMapComposer().mapSpecies(q, taxon, rank, -1, LayerUtilitiesImpl.SPECIES, sa.getWkt(), -1, MapComposer.DEFAULT_POINT_SIZE,
+                ml = getMapComposer().mapSpecies(q, taxon, rank, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE,
                         MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), expertDistributions);
                 setupMetadata = false;
             } else {
@@ -182,7 +182,8 @@ public class AddSpeciesInArea extends UtilityComposer {
                             }
                         }
                     }
-                    ml = getMapComposer().mapSpecies(q, layerName, StringConstants.SPECIES, resultsCountOccurrences, LayerUtilitiesImpl.SPECIES, sa.getWkt(), -1,
+
+                    ml = getMapComposer().mapSpecies(q, layerName, StringConstants.SPECIES, resultsCountOccurrences, LayerUtilitiesImpl.SPECIES, null, -1,
                             MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), expertDistributions);
                 } else {
                     getMapComposer().showMessage(
@@ -219,7 +220,7 @@ public class AddSpeciesInArea extends UtilityComposer {
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {
-                    if (area.equals(ml.getWKT())) {
+                    if (area.equals(ml.getName())) {
                         sa = new SelectedArea(ml, null);
                         break;
                     }

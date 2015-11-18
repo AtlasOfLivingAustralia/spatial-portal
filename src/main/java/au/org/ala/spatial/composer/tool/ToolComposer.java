@@ -1,6 +1,7 @@
 package au.org.ala.spatial.composer.tool;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.input.PasteLayerListController;
 import au.org.ala.spatial.composer.input.UploadLayerListController;
@@ -90,6 +91,7 @@ public class ToolComposer extends UtilityComposer {
     private Radio rAreaWorld;
     private Radio rAreaCustom;
     private Radio rAreaWorldHighlight;
+    private Radio rSpeciesLifeform;
     private Button btnCancel;
     private Button btnBack;
     private Button btnHelp;
@@ -137,6 +139,8 @@ public class ToolComposer extends UtilityComposer {
     //stuff for the dynamic species list inclusion
     private Vbox vboxImportSL, vboxImportSLBk;
     private SpeciesListListbox speciesListListbox, speciesListListboxBk;
+    private Div divLifeform;
+    private Combobox cbLifeform;
 
     @Override
     public void afterCompose() {
@@ -293,6 +297,17 @@ public class ToolComposer extends UtilityComposer {
             });
         }
 
+        initLifeforms();
+    }
+
+    private void initLifeforms() {
+        if (cbLifeform != null) {
+            for (String lf : StringConstants.SPECIES_GROUPS) {
+                Comboitem ci = new Comboitem(lf);
+                ci.setParent(cbLifeform);
+            }
+            cbLifeform.setSelectedIndex(0);
+        }
     }
 
     public void onClick$btnSearchSpeciesListListbox(Event event) {
@@ -542,7 +557,7 @@ public class ToolComposer extends UtilityComposer {
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
-                rAr.setValue(lyr.getWKT());
+                rAr.setValue(lyr.getName());
 
                 rAr.setParent(rgArea);
                 if (rAreaCurrent != null) {
@@ -610,7 +625,7 @@ public class ToolComposer extends UtilityComposer {
                 }
                 if (!found) {
                     Checkbox rAr = new Checkbox(lyr.getDisplayName());
-                    rAr.setValue(lyr.getWKT());
+                    rAr.setValue(lyr.getName());
 
                     if (lyr.getDisplayName().equals(selectedAreaName)) {
                         rAr.setChecked(true);
@@ -644,7 +659,7 @@ public class ToolComposer extends UtilityComposer {
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
-                rAr.setValue(lyr.getWKT());
+                rAr.setValue(lyr.getName());
 
                 rAr.setParent(rgAreaHighlight);
                 rgAreaHighlight.insertBefore(rAr, rAreaCurrentHighlight);
@@ -689,7 +704,7 @@ public class ToolComposer extends UtilityComposer {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
                 rAr.setId(lyr.getName().replaceAll(" ", "") + "_" + i);
-                rAr.setValue(lyr.getWKT());
+                rAr.setValue(lyr.getName());
                 rAr.setParent(rgAreaHighlight);
                 rgAreaHighlight.insertBefore(rAr, rAreaCurrentHighlight);
             }
@@ -826,6 +841,7 @@ public class ToolComposer extends UtilityComposer {
                     && divSpeciesSearch != null) {
                 divSpeciesSearch.setVisible(true);
                 vboxMultiple.setVisible(false);
+                divLifeform.setVisible(false);
                 if (event != null) {
                     toggles();
                 }
@@ -837,17 +853,23 @@ public class ToolComposer extends UtilityComposer {
 
             if (selectedItem == rSpeciesUploadSpecies) {
                 btnOk.setVisible(true);
-                vboxMultiple.setVisible(false);
+                if (vboxMultiple != null) vboxMultiple.setVisible(false);
+                if (divLifeform != null) divLifeform.setVisible(false);
             } else if (selectedItem == rSpeciesUploadLSID) {
                 btnOk.setDisabled(true);
                 vboxImportSL.setVisible(true);
-                vboxMultiple.setVisible(false);
+                if (vboxMultiple != null) vboxMultiple.setVisible(false);
+                if (divLifeform != null) divLifeform.setVisible(false);
             } else if (rMultiple != null && rMultiple.isSelected()) {
-
                 vboxMultiple.setVisible(true);
+                if (divLifeform != null) divLifeform.setVisible(false);
+            } else if (rSpeciesLifeform != null && rSpeciesLifeform.isSelected()) {
+                if (vboxMultiple != null) vboxMultiple.setVisible(false);
+                divLifeform.setVisible(true);
             } else {
                 btnOk.setDisabled(false);
-                vboxMultiple.setVisible(false);
+                if (vboxMultiple != null) vboxMultiple.setVisible(false);
+                if (divLifeform != null) divLifeform.setVisible(false);
             }
 
             if (event != null) {
@@ -1355,7 +1377,7 @@ public class ToolComposer extends UtilityComposer {
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {
-                    if ((area == null && ml.getWKT() == null) || area.equals(ml.getWKT())) {
+                    if (area == null || area.equals(ml.getName())) {
                         sa = new SelectedArea(ml, null);
                         break;
                     }
@@ -1383,7 +1405,7 @@ public class ToolComposer extends UtilityComposer {
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {
-                    if (area.equals(ml.getWKT())) {
+                    if (area.equals(ml.getName())) {
                         sa = new SelectedArea(ml, null);
                         break;
                     }
@@ -1453,6 +1475,10 @@ public class ToolComposer extends UtilityComposer {
                     } else {
                         q = searchSpeciesACComp.getQuery((Map) getMapComposer().getSession().getAttribute(StringConstants.USERPOINTS), false, applycheckboxes ? getGeospatialKosher() : null);
                     }
+                } else if ("lifeform".equalsIgnoreCase(species)) {
+                    q = new BiocacheQuery(null, null, null,
+                            Arrays.asList(new Facet[]{new Facet("species_group", cbLifeform.getValue(), true)})
+                            , mapspecies, applycheckboxes ? getGeospatialKosher() : null);
                 }
             } catch (Exception e) {
                 LOGGER.warn("Unable to retrieve selected species", e);
@@ -1531,6 +1557,13 @@ public class ToolComposer extends UtilityComposer {
                 if (searchSpeciesACComp.hasValidItemSelected()) {
                     species = searchSpeciesACComp.getAutoComplete().getText();
                 }
+            } else if ("uploadLsid".equals(species)) {
+                //get the query from species list list
+                String id = rgSpecies.getSelectedItem().getId();
+                SpeciesListListbox lb = id.endsWith("Bk") ? speciesListListboxBk : speciesListListbox;
+                species = lb.getSelectedNames();
+            } else if ("lifeform".equalsIgnoreCase(species)) {
+                species = cbLifeform.getText();
             } else {
                 species = rgSpecies.getSelectedItem().getLabel();
             }

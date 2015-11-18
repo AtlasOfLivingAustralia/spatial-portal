@@ -9,7 +9,6 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.LayersUtil;
 import au.org.ala.spatial.util.ShapefileUtils;
 import au.org.ala.spatial.util.Zipper;
-import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
@@ -20,8 +19,6 @@ import org.geotools.kml.KML;
 import org.geotools.kml.KMLConfiguration;
 import org.geotools.xml.Encoder;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zul.Checkbox;
-import org.zkoss.zul.Div;
 import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Radiogroup;
 
@@ -29,7 +26,6 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.List;
 
 /**
  * @author ajay
@@ -56,22 +52,6 @@ public class ExportLayerComposer extends ToolComposer {
             getMapComposer().showMessage("No areas mapped. Create an area using Add to Map | Area");
             this.detach();
         }
-    }
-
-    //@Override
-    public void loadAreaLayersChecks() {
-        Div areachks = (Div) getFellowIfAny("areachks");
-
-        List<MapLayer> layers = getMapComposer().getPolygonLayers();
-        for (int i = 0; i < layers.size(); i++) {
-            MapLayer lyr = layers.get(i);
-
-            Checkbox cAr = new Checkbox(lyr.getDisplayName());
-            cAr.setValue(lyr.getWKT());
-
-            areachks.insertBefore(cAr, null);
-        }
-
     }
 
     public void onCheck$exportFormat(Event event) {

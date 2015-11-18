@@ -309,8 +309,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String rank = details[1];
             Query query = sacc.getQuery((Map) getSession().getAttribute(StringConstants.USERPOINTS), false, geospatialKosher);
             Query q = QueryUtil.queryFromSelectedArea(query, sa, false, geospatialKosher);
-            String wkt = sa == null ? null : sa.getWkt();
-            mapSpecies(q, taxon, rank, 0, LayerUtilitiesImpl.SPECIES, wkt, -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, Util.nextColour(), mapExpertDistributions);
+            mapSpecies(q, taxon, rank, 0, LayerUtilitiesImpl.SPECIES, null, -1, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, Util.nextColour(), mapExpertDistributions);
             LOGGER.debug(">>>>> " + taxon + ", " + rank + " <<<<<");
         }
     }
@@ -835,8 +834,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * Adds a object as a layer to the map.
      *
      * @param pid
+     * @param displayName
+     * @param radiusKm for use when the pid refers to a point not a polygon
+     * @return
      */
-    public MapLayer addObjectByPid(String pid, String displayName) {
+    public MapLayer addObjectByPid(String pid, String displayName, double radiusKm) {
         JSONParser jp = new JSONParser();
 
         JSONObject obj = null;
@@ -879,12 +881,31 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         try {
-            List<Double> dbb = Util.getBoundingBox(bbox);
+            List<Double> dbb = Util.getBoundingBox(obj.get(StringConstants.BBOX).toString());
+
+            //if the layer is a point create a radius
+            boolean point = false;
+            if (dbb.get(0).floatValue() == dbb.get(2).floatValue() && (float) dbb.get(1).floatValue() == dbb.get(3).floatValue()) {
+                point = true;
+
+                mapLayer.setWKT("POINT(" + dbb.get(0).floatValue() + " " + dbb.get(1).floatValue() + ")");
+
+                double radius = radiusKm * 1000.0;
+
+                String wkt = Util.createCircleJs(dbb.get(0).floatValue(), dbb.get(1).floatValue(), radius);
+                getMapComposer().removeLayer(displayName);
+                mapLayer = getMapComposer().addWKTLayer(wkt, displayName, displayName);
+
+                //redo bounding box
+                dbb = Util.getBoundingBox(wkt);
+            }
+            
             md.setBbox(dbb);
+
+            mapLayer.setAreaSqKm(obj.get(StringConstants.AREA_KM).toString());
         } catch (Exception e) {
             LOGGER.debug("failed to parse: " + bbox, e);
         }
-
 
         if (facet != null) {
             List<Facet> facets = new ArrayList<Facet>();
@@ -893,7 +914,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             //do not set WKT for grids as shapefiles
             if (!CommonData.getLayer(fid).get("path_orig").toString().contains("diva")) {
-                mapLayer.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
+                mapLayer.setWktUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid);
             }
         } else {
             //not in biocache, so add as WKT
@@ -1290,7 +1311,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             for (String pid : pids) {
                 if (names.get("PID:" + pid) == null) {
-                    MapLayer mapLayer = getMapComposer().addObjectByPid(pid, null);
+                    MapLayer mapLayer = getMapComposer().addObjectByPid(pid, null, 1);
                     if (pids.length == 1) {
                         //zoom to this region
                         getMapComposer().zoomToExtent(mapLayer);
@@ -2562,6 +2583,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/tool/AreaReport.zul", null, StringConstants.ADDTOOLWINDOW);
     }
 
+    public void onClick$btnInOut(Event event) {
+        openModal("WEB-INF/zul/tool/InOut.zul", null, StringConstants.ADDTOOLWINDOW);
+    }
+
     public void onClick$btnAreaReportPDF(Event event) {
         openModal("WEB-INF/zul/tool/AreaReportPDF.zul", null, StringConstants.ADDTOOLWINDOW);
     }
@@ -3295,7 +3320,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             deactiveLayer(ml, true, false);
 
             //1. create new layer
-            MapLayer newml = addObjectByPid(pid, ml.getDisplayName());
+            MapLayer newml = addObjectByPid(pid, ml.getDisplayName(), 1);
             newml.setMapLayerMetadata(ml.getMapLayerMetadata());
             newml.setAreaSqKm(ml.getAreaSqKm());
             newml.setUserDefinedLayer(ml.isUserDefinedLayer());

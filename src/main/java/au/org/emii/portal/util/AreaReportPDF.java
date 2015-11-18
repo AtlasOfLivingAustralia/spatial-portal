@@ -33,10 +33,6 @@ import java.util.concurrent.Executors;
 public class AreaReportPDF {
     private static final Logger LOGGER = Logger.getLogger(AreaReportPDF.class);
 
-    private static final String[] SPECIES_GROUPS = new String[]{"Algae", "Amphibians", "Angiosperms", "Animals", "Arthropods", "Bacteria"
-            , "Birds", "Bryophytes", "Chromista", "Crustaceans", "Dicots", "FernsAndAllies", "Fish", "Fungi"
-            , "Gymnosperms", "Insects", "Mammals", "Molluscs", "Monocots", "Plants", "Protozoa", "Reptiles"};
-
     private static final int PROGRESS_COUNT = 92;
 
     private String wkt;
@@ -59,12 +55,12 @@ public class AreaReportPDF {
 
     private Map progress;
 
-    public AreaReportPDF(String wkt, String areaName, Map progress) {
+    public AreaReportPDF(String wkt, String areaName, List<Facet> facets, Map progress) {
         this.wkt = wkt;
         this.areaName = areaName;
         this.progress = progress;
 
-        query = new BiocacheQuery(null, wkt, null, null, false, new boolean[]{true, true, true});
+        query = new BiocacheQuery(null, wkt, null, facets, false, new boolean[]{true, true, true});
 
         remoteMap = new RemoteMapImpl();
         ((RemoteMapImpl) remoteMap).setLayerUtilities(new LayerUtilitiesImpl());
@@ -104,7 +100,7 @@ public class AreaReportPDF {
         //String wkt = "POLYGON((112.0 -44.0,112.0 -11.0,154.0 -11.0,154.0 -44.0,112.0 -44.0))";
         String wkt = "POLYGON((149.26687622068 -35.258741390775,149.35579681395 -35.298540090399,149.33657073973 -35.320673151768,149.28404235838 -35.336638814392,149.24559020995 -35.322914136746,149.26687622068 -35.258741390775))";
 
-        new AreaReportPDF(wkt, "My area", null);
+        new AreaReportPDF(wkt, "My area", null, null);
     }
 
     private boolean isCancelled() {
@@ -347,8 +343,8 @@ public class AreaReportPDF {
             fileNumber++;
             fw = startHtmlOut(fileNumber, filename);
 
-            for (int i = 0; i < SPECIES_GROUPS.length; i++) {
-                String s = SPECIES_GROUPS[i];
+            for (int i = 0; i < StringConstants.SPECIES_GROUPS.length; i++) {
+                String s = StringConstants.SPECIES_GROUPS[i];
                 count = Integer.parseInt(counts.get(s).toString());
                 countKosher = Integer.parseInt(counts.get(s + " (spatially valid only)").toString());
                 speciesPage(true, fw, "My Area", "lifeform - " + s, notes, tableNumber, count, countKosher, figureNumber,
@@ -898,8 +894,8 @@ public class AreaReportPDF {
         csvs.put("Species", query.speciesList());
         speciesLinks.put("Species", query.getWS() + "/occurrences/search?q=" + query.getQ());
 
-        for (int i = 0; i < SPECIES_GROUPS.length; i++) {
-            String s = SPECIES_GROUPS[i];
+        for (int i = 0; i < StringConstants.SPECIES_GROUPS.length; i++) {
+            String s = StringConstants.SPECIES_GROUPS[i];
             setProgress("Getting information: species list for lifeform " + s, 0);
             if (isCancelled()) return;
             BiocacheQuery q = query.newFacet(new Facet("species_group", s, true), false);
@@ -1035,8 +1031,8 @@ public class AreaReportPDF {
         MapLayer mlSpecies = createSpeciesLayer(query, 0, 0, 255, .6f, false, 9, false);
 
         List<MapLayer> lifeforms = new ArrayList<MapLayer>();
-        for (int i = 0; i < SPECIES_GROUPS.length; i++) {
-            String s = SPECIES_GROUPS[i];
+        for (int i = 0; i < StringConstants.SPECIES_GROUPS.length; i++) {
+            String s = StringConstants.SPECIES_GROUPS[i];
             setProgress("Getting information: images for map of lifeform " + s, 0);
             if (isCancelled()) return;
             lifeforms.add(createSpeciesLayer(query.newFacet(new Facet("species_group", s, true), false), 0, 0, 255, .6f, false, 9, false));
@@ -1111,10 +1107,10 @@ public class AreaReportPDF {
         if (isCancelled()) return;
         imageMap.put("Invasive_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, invasiveSpecies}, aspectRatio, "", type, resolution).get());
 
-        for (int i = 0; i < SPECIES_GROUPS.length; i++) {
-            setProgress("Getting information: making map of lifeform " + SPECIES_GROUPS[i], 0);
+        for (int i = 0; i < StringConstants.SPECIES_GROUPS.length; i++) {
+            setProgress("Getting information: making map of lifeform " + StringConstants.SPECIES_GROUPS[i], 0);
             if (isCancelled()) return;
-            imageMap.put("lifeform - " + SPECIES_GROUPS[i], new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, lifeforms.get(i)}, aspectRatio, "", type, resolution).get());
+            imageMap.put("lifeform - " + StringConstants.SPECIES_GROUPS[i], new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, lifeforms.get(i)}, aspectRatio, "", type, resolution).get());
         }
 
         //save images

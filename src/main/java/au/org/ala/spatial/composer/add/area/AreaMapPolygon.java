@@ -1,19 +1,13 @@
 package au.org.ala.spatial.composer.add.area;
 
-import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.gazetteer.GazetteerPointSearch;
 import au.org.ala.spatial.util.CommonData;
-import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
@@ -25,7 +19,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -154,107 +147,8 @@ public class AreaMapPolygon extends AreaToolComposer {
                             continue;
                         }
 
-                        //***
-                        // avoid using WKT because it can be extremely large for some layers
-                        // instead use the contextual envelope identifier
-                        //***
-
-                        //add feature to the map as a new layer
-                        JSONObject obj = null;
-                        JSONParser jp = new JSONParser();
-                        try {
-                            obj = (JSONObject) jp.parse(readUrl(CommonData.getLayersServer() + "/object/" + feature.get(StringConstants.PID)));
-                        } catch (ParseException e) {
-                            LOGGER.error("failed to parse object: " + feature.get(StringConstants.PID));
-                        }
-
-                        searchComplete = true;
-                        displayGeom.setValue("layer: " + jo.get(StringConstants.DISPLAYNAME) + "\r\n"
-                                + "area: " + obj.get(StringConstants.NAME));
-
-                        LOGGER.debug("setting layerName from " + layerName);
                         layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
-                        LOGGER.debug("to " + layerName);
-                        MapLayer mapLayer;
-
-                        String url = obj.get(StringConstants.WMSURL).toString();
-                        mapLayer = getMapComposer().addWMSLayer(getMapComposer().getNextAreaLayerName(txtLayerName.getValue()), txtLayerName.getValue(), url, 0.6f, /*metadata url*/ null,
-                                null, LayerUtilitiesImpl.WKT, null, null);
-
-                        layerName = mapLayer.getName();
-
-                        //add colour!
-                        int colour = Util.nextColour();
-                        int r = (colour >> 16) & 0x000000ff;
-                        int g = (colour >> 8) & 0x000000ff;
-                        int b = (colour) & 0x000000ff;
-
-                        ml.setRedVal(r);
-                        ml.setGreenVal(g);
-                        ml.setBlueVal(b);
-                        ml.setDynamicStyle(true);
-                        getMapComposer().applyChange(ml);
-                        getMapComposer().updateLayerControls();
-
-                        mapLayer.setPolygonLayer(true);
-
-                        JSONObject objJson = null;
-                        try {
-                            objJson = (JSONObject) jp.parse(readUrl(CommonData.getLayersServer() + "/object/" + feature.get(StringConstants.PID)));
-                        } catch (ParseException e) {
-                            LOGGER.error("failed to parse for object: " + feature.get(StringConstants.PID));
-                        }
-
-                        Facet facet = null;
-                        //only get field data if it is an intersected layer (to exclude layers containing points)
-                        if (CommonData.getLayer((String) objJson.get(StringConstants.FID)) != null) {
-                            facet = Util.getFacetForObject(feature.get(StringConstants.VALUE), (String) objJson.get(StringConstants.FID));
-                        }
-
-                        if (facet != null) {
-                            List<Facet> facets = new ArrayList<Facet>();
-                            facets.add(facet);
-                            mapLayer.setFacets(facets);
-
-                            //do not set WKT for grids as shapefiles
-                            if (!CommonData.getLayer((String) objJson.get(StringConstants.FID)).get("path_orig").toString().contains("diva")) {
-                                mapLayer.setWKT(readUrl(CommonData.getLayersServer() + "/shape/wkt/" + feature.get(StringConstants.PID)));
-                            }
-                        } else {
-                            //no facet = not in Biocache, must use WKT
-                            mapLayer.setWKT(readUrl(CommonData.getLayersServer() + "/shape/wkt/" + feature.get(StringConstants.PID)));
-                        }
-                        MapLayerMetadata md = mapLayer.getMapLayerMetadata();
-                        String bbString = "";
-                        try {
-                            bbString = objJson.get(StringConstants.BBOX).toString();
-                            bbString = bbString.replace(StringConstants.POLYGON + "((", "").replace("))", "").replace(",", " ");
-                            String[] split = bbString.split(" ");
-                            List<Double> bbox = new ArrayList<Double>();
-
-                            //detect a specific data error
-                            if (facet != null && (split[1].equals(split[3]) || split[0].equals(split[2]))) {
-                                Map m = CommonData.getLayer((String) objJson.get(StringConstants.FID));
-                                bbox.add(Double.parseDouble(m.get("minlongitude").toString()));
-                                bbox.add(Double.parseDouble(m.get("minlatitude").toString()));
-                                bbox.add(Double.parseDouble(m.get("maxlongitude").toString()));
-                                bbox.add(Double.parseDouble(m.get("maxlatitude").toString()));
-                            } else {
-                                bbox.add(Double.parseDouble(split[0]));
-                                bbox.add(Double.parseDouble(split[1]));
-                                bbox.add(Double.parseDouble(split[2]));
-                                bbox.add(Double.parseDouble(split[3]));
-                            }
-
-                            md.setBbox(bbox);
-                        } catch (NumberFormatException e) {
-                            LOGGER.debug("failed to parse: " + bbString, e);
-                        }
-                        try {
-                            md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + jo.get("spid"));
-                        } catch (Exception e) {
-                            LOGGER.error("error setting map layer moreInfo: " + (jo != null ? jo.toString() : "jo is null"), e);
-                        }
+                        getMapComposer().addObjectByPid(feature.get(StringConstants.PID), layerName, 1);
 
                         //found the object on the layer
                         btnOk.setDisabled(false);

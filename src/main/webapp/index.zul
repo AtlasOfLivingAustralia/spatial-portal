@@ -176,6 +176,12 @@
                                     <n:a href="#" n:onClick="runAreaReport();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.areareport.enable")?"":"display:none"}'>Area Report</n:a>
                                 </n:li>
                                 <n:li>
+                                    <n:a href="#" n:onClick="runInOut();"
+                                         n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.inout.enable")?"":"display:none"}'>
+                                        In Out Report
+                                    </n:a>
+                                </n:li>
+                                <n:li>
                                     <n:a href="#" n:onClick="runAreaReportPDF();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.detailedareareport.enable")?"":"display:none"}'>Detailed Area Report (PDF)</n:a>
                                 </n:li>
                                 <n:li>
