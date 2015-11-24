@@ -242,7 +242,7 @@
                                 <button id="btnClear" label="Clear Filter" class="btn-mini" disabled="true"/>
                             </div>
                         </hbox>
-                        <listbox id="lbClassificationGroup" mold="paging" pageSize="5">
+                        <listbox id="lbClassificationGroup" mold="paging" pageSize="10">
                             <listhead>
                                 <listheader label="" width="20px"/>
                                 <listheader label="name" width="310px"/>
