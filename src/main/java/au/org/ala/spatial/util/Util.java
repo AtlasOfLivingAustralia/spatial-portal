@@ -1052,4 +1052,45 @@ public final class Util {
             return Util.getBoundingBox(CommonData.WORLD_WKT);
         }
     }
+
+    /**
+     * get the domain from a layer
+     *
+     * @param layerObject
+     * @return
+     */
+    public static String[] getDomain(JSONObject layerObject) {
+        if (!layerObject.containsKey(StringConstants.DOMAIN)) {
+            return new String[0];
+        }
+        String ds = layerObject.get(StringConstants.DOMAIN).toString();
+        if (ds != null) {
+            String[] d = ds.split(",");
+            for (int i = 0; i < d.length; i++) {
+                d[i] = d[i].trim();
+            }
+            return d;
+        } else {
+            return new String[0];
+        }
+    }
+
+    /**
+     * compare layer domains
+     */
+    public static boolean isSameDomain(String[] domain1, String[] domain2) {
+        if (domain1.length == 0 || domain2.length == 0) {
+            return true;
+        }
+
+        for (String s1 : domain1) {
+            for (String s2 : domain2) {
+                if (s1.equalsIgnoreCase(s2)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

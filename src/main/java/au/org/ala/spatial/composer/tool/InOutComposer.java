@@ -17,6 +17,8 @@ import org.json.simple.parser.JSONParser;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Filedownload;
 
+import java.util.Arrays;
+
 /**
  * @author ajay
  */
@@ -67,7 +69,44 @@ public class InOutComposer extends ToolComposer {
             }
 
             Query in = query.newFacet(new Facet(field, "*", true), false);
-            Query out = query.newFacet(new Facet(field, "*", false), false);
+            Query out;
+
+            //determine complement area
+            jo = CommonData.getLayer(layerName);
+            boolean isMarine = Util.isSameDomain(new String[]{"marine"}, Util.getDomain(jo));
+            boolean isTerrestrial = Util.isSameDomain(new String[]{"terrestrial"}, Util.getDomain(jo));
+
+            String terrestrialQuery = CommonData.getSettings().getProperty("in_out_report.terrestrial.query", "cl2013:*");
+            String terrestrialName = CommonData.getSettings().getProperty("in_out_report.terrestrial.name", "Other - ASGS Australian States and Territories");
+            Double terrestrialArea = Double.parseDouble(CommonData.getSettings().getProperty("in_out_report.terrestrial.area", "7719806.774"));
+
+            String marineQuery = CommonData.getSettings().getProperty("in_out_report.marine.query", "cl21:*");
+            String marineName = CommonData.getSettings().getProperty("in_out_report.marine.name", "Other - IMCRA 4");
+            Double marineArea = Double.parseDouble(CommonData.getSettings().getProperty("in_out_report.marine.area", "8669607.781"));
+
+            double outArea = 0;
+            String outName;
+            if (isMarine && isTerrestrial) {
+                outName = marineName + " AND " + terrestrialName;
+                outArea = terrestrialArea + marineArea;
+                out = query.newFacets(Arrays.asList(new Facet[]{new Facet(field, "*", false),
+                        Facet.parseFacet("(" + terrestrialQuery + " OR " + marineQuery + ")")}), false);
+            } else if (isMarine) {
+                outName = marineName;
+                outArea = marineArea;
+                out = query.newFacets(Arrays.asList(new Facet[]{new Facet(field, "*", false),
+                        Facet.parseFacet(marineQuery)}), false);
+            } else if (isTerrestrial) {
+                outName = terrestrialName;
+                outArea = terrestrialArea;
+                out = query.newFacets(Arrays.asList(new Facet[]{new Facet(field, "*", false),
+                        Facet.parseFacet(terrestrialQuery)}), false);
+            } else {
+                //world
+                outName = "rest of the world";
+                outArea = 510000000.0;
+                out = query.newFacet(new Facet(field, "*", false), false);
+            }
 
             results.append("Species,Area name,Sq km,Occurrences,Species\n");
             results.append(getSelectedSpeciesName()).append(",");
@@ -76,19 +115,19 @@ public class InOutComposer extends ToolComposer {
                     append(in.getOccurrenceCount()).append(",").
                     append(in.getSpeciesCount()).append("\n");
             results.append(getSelectedSpeciesName()).append(",");
-            results.append("Not in: ").append(layerDisplayName).append(",").
-                    append(510000000.0 - totalArea).append(",").
+            results.append("Not in: ").append(layerDisplayName).append(" (").append(outName).append("),").
+                    append(outArea - totalArea).append(",").
                     append(out.getOccurrenceCount()).append(",").
                     append(out.getSpeciesCount()).append("\n");
 
             //show results
             String metadata = "<html><body>" +
                     "<div class='aooeoo'>" +
-                    "<div>In (" + layerDisplayName + ") Out (rest of world) Report for: " + getSelectedSpeciesName() + "</div><br />" +
+                    "<div>Report for: " + getSelectedSpeciesName() + "<br />In area (" + layerDisplayName + ")<br />Out area (" + outName + ") </div><br />" +
                     "<table >" +
                     "<tr><td>Area name</td><td>Sq km</td><td>Occurrences</td><td>Species</td></tr>" +
-                    "<tr><td>" + layerDisplayName + "</td><td>" + totalArea + "</td><td>" + in.getOccurrenceCount() + "</td><td>" + in.getSpeciesCount() + "</td></tr>" +
-                    "<tr><td>Not in: " + layerDisplayName + "</td><td>" + (510000000.0 - totalArea) + "</td><td>" + out.getOccurrenceCount() + "</td><td>" + out.getSpeciesCount() + "</td></tr>" +
+                    "<tr><td>" + layerDisplayName + "</td><td>" + String.format("%.2g", totalArea) + "</td><td>" + in.getOccurrenceCount() + "</td><td>" + in.getSpeciesCount() + "</td></tr>" +
+                    "<tr><td>Not in: " + layerDisplayName + "</td><td>" + String.format("%.2g", (outArea - totalArea)) + "</td><td>" + out.getOccurrenceCount() + "</td><td>" + out.getSpeciesCount() + "</td></tr>" +
                     "</table></div>";
 
             Event ev = new Event(StringConstants.ONCLICK, null, "In Out Report\n" + metadata);

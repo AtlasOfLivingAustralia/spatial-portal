@@ -50,6 +50,11 @@
                     <separator/>
                     <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
                         <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false"/>
+                        <radio id="rSpeciesLifeform" value="lifeform" label="Lifeform"/>
+                        <div id="divLifeform" visible="false">
+                            <combobox id="cbLifeform">
+                            </combobox>
+                        </div>
                         <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped"
                                visible="false"/>
                         <radio id="rSpeciesSearch" value="search"
@@ -110,12 +115,6 @@
                         </vbox>
                         <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Use existing species list"/>
                         <include id="splistbox" src="/WEB-INF/zul/species/SpeciesListListBox.zul"/>
-
-                        <radio id="rSpeciesLifeform" value="lifeform" label="Lifeform"/>
-                        <div id="divLifeform" visible="false">
-                            <combobox id="cbLifeform">
-                            </combobox>
-                        </div>
                     </radiogroup>
                 </div>
 
