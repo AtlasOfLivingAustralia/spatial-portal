@@ -11,7 +11,7 @@
     <groupId>au.org.ala</groupId>
     <artifactId>spatial-portal</artifactId>
     <packaging>war</packaging>
-    <version>3.0.0</version>
+    <version>3.1-SNAPSHOT</version>
 
 
     <name>ALA Spatial Portal</name>
