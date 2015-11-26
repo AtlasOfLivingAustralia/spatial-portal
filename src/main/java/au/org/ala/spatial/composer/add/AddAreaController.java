@@ -74,7 +74,14 @@ public class AddAreaController extends UtilityComposer {
             overlapped = false;
         } else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
             List<MapLayer> layers = getMapComposer().getContextualLayers();
-            if (layers.isEmpty()) {
+            boolean visibleLayers = false;
+            for (MapLayer ml : layers) {
+                if (ml.isDisplayed()) {
+                    visibleLayers = true;
+                    break;
+                }
+            }
+            if (visibleLayers) {
                 //present layer selection window
                 windowName = "WEB-INF/zul/layer/ContextualLayerSelection.zul";
                 overlapped = false;

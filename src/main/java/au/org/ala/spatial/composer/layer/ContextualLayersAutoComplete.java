@@ -45,7 +45,7 @@ public class ContextualLayersAutoComplete extends Combobox {
             return;
         }
 
-        String baseUrl = CommonData.getLayersServer() + "/layers/";
+        String baseUrl = CommonData.getLayersServer() + "/fields/";
         try {
 
             Iterator it = getItems().iterator();
@@ -79,15 +79,17 @@ public class ContextualLayersAutoComplete extends Combobox {
 
                 for (int i = 0; i < results.size(); i++) {
 
-                    JSONObject jo = (JSONObject) results.get(i);
+                    JSONObject field = (JSONObject) results.get(i);
+                    JSONObject layer = (JSONObject) field.get("layer");
 
-                    if (!jo.get(StringConstants.ENABLED).toString().equalsIgnoreCase("true")
-                            || (StringConstants.ENVIRONMENTAL.equalsIgnoreCase(jo.get(StringConstants.TYPE).toString()))) {
+                    if (!field.get(StringConstants.ENABLED).toString().equalsIgnoreCase("true")
+                            || !field.get(StringConstants.INDB).toString().equalsIgnoreCase("true")
+                            || (StringConstants.ENVIRONMENTAL.equalsIgnoreCase(layer.get(StringConstants.TYPE).toString()))) {
                         continue;
                     }
 
-                    String displayName = jo.get(StringConstants.DISPLAYNAME).toString();
-                    String type = jo.get(StringConstants.TYPE).toString();
+                    String displayName = field.get(StringConstants.NAME).toString();
+                    String type = layer.get(StringConstants.TYPE).toString();
 
                     Comboitem myci;
                     if (it != null && it.hasNext()) {
@@ -99,16 +101,16 @@ public class ContextualLayersAutoComplete extends Combobox {
                         myci.setParent(this);
                     }
                     String c2 = "";
-                    if (jo.containsKey(StringConstants.CLASSIFICATION2) && !StringConstants.NULL.equals(jo.get(StringConstants.CLASSIFICATION2))) {
-                        c2 = jo.get(StringConstants.CLASSIFICATION2) + ": ";
+                    if (layer.containsKey(StringConstants.CLASSIFICATION2) && !StringConstants.NULL.equals(layer.get(StringConstants.CLASSIFICATION2))) {
+                        c2 = layer.get(StringConstants.CLASSIFICATION2) + ": ";
                     }
                     String c1 = "";
-                    if (jo.containsKey(StringConstants.CLASSIFICATION1) && !StringConstants.NULL.equals(jo.get(StringConstants.CLASSIFICATION1))) {
-                        c1 = jo.get(StringConstants.CLASSIFICATION1) + ": ";
+                    if (layer.containsKey(StringConstants.CLASSIFICATION1) && !StringConstants.NULL.equals(layer.get(StringConstants.CLASSIFICATION1))) {
+                        c1 = layer.get(StringConstants.CLASSIFICATION1) + ": ";
                     }
                     myci.setDescription(c1 + c2 + type);
                     myci.setDisabled(false);
-                    myci.setValue(jo);
+                    myci.setValue(field);
                 }
             }
 

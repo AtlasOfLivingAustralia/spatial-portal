@@ -865,12 +865,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         Facet facet = null;
         if (CommonData.getLayer(fid) != null && CommonData.getFacetLayerNameDefault(fid) != null) {
-            JSONObject field = null;
-            try {
-                field = (JSONObject) jp.parse(Util.readUrl(CommonData.getLayersServer() + "/field/" + fid + "?pageSize=0"));
-            } catch (ParseException e) {
-                LOGGER.error("failed to parse for field: " + fid);
-            }
+            JSONObject field = CommonData.getLayer(fid);
 
             if (field.containsKey("indb") && StringConstants.TRUE.equalsIgnoreCase(field.get("indb").toString())) {
                 String spid = field.get("spid").toString();
@@ -913,7 +908,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             mapLayer.setFacets(facets);
 
             //do not set WKT for grids as shapefiles
-            if (!CommonData.getLayer(fid).get("path_orig").toString().contains("diva")) {
+            if (!((JSONObject) CommonData.getLayer(fid).get("layer")).get("path_orig").toString().contains("diva")) {
                 mapLayer.setWktUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid);
             }
         } else {
@@ -969,9 +964,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 mapLayer.setCql(cqlfilter);
                 mapLayer.setEnvParams(envParams);
 
+                String fieldId = mapLayer.getUri().replaceAll("^.*&style=", "").replaceAll("&.*", "").replaceAll("_style", "");
+
                 String newUri = CommonData.getGeoServer()
                         + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER="
-                        + mapLayer.getLayer();
+                        + mapLayer.getLayer() + (fieldId.length() < 10 ? "&style=" + fieldId + "_style" : "");
                 mapLayer.setDefaultStyleLegendUri(newUri);
 
                 if (metadata != null && metadata.startsWith("http")) {
@@ -1273,13 +1270,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             for (String s : layers) {
                 JSONArray layerlist = CommonData.getLayerListJSONArray();
                 for (int j = 0; j < layerlist.size(); j++) {
-                    JSONObject jo = (JSONObject) layerlist.get(j);
-                    String name = jo.get(StringConstants.NAME).toString();
+                    JSONObject field = (JSONObject) layerlist.get(j);
+                    JSONObject layer = (JSONObject) field.get("layer");
+                    String name = field.get(StringConstants.ID).toString();
                     if (name.equalsIgnoreCase(s)) {
-                        String uid = jo.get(StringConstants.ID).toString();
-                        String type = jo.get(StringConstants.TYPE).toString();
-                        String treeName = StringUtils.capitalize(jo.get(StringConstants.DISPLAYNAME).toString());
-                        String treePath = jo.get("displaypath").toString();
+                        String uid = layer.get(StringConstants.ID).toString();
+                        String type = layer.get(StringConstants.TYPE).toString();
+                        String treeName = StringUtils.capitalize(field.get(StringConstants.NAME).toString());
+                        String treePath = layer.get("displaypath").toString();
                         String legendurl = CommonData.getGeoServer()
                                 + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
                         String metadata = CommonData.getLayersServer() + "/layers/view/more/" + uid;

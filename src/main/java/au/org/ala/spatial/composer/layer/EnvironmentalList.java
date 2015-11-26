@@ -54,15 +54,16 @@ public class EnvironmentalList extends Listbox {
         listEntries = new ArrayList<ListEntryDTO>();
         JSONArray ja = CommonData.getLayerListJSONArray();
         for (int i = 0; i < ja.size(); i++) {
-            JSONObject jo = (JSONObject) ja.get(i);
+            JSONObject field = (JSONObject) ja.get(i);
+            JSONObject layer = (JSONObject) field.get("layer");
             listEntries.add(
-                    new ListEntryDTO(jo.get(StringConstants.NAME).toString(),
-                            jo.containsKey(StringConstants.DISPLAYNAME) ? jo.get(StringConstants.DISPLAYNAME).toString() : jo.get(StringConstants.NAME).toString(),
-                            jo.containsKey(StringConstants.CLASSIFICATION1) ? jo.get(StringConstants.CLASSIFICATION1).toString() : "",
-                            jo.containsKey(StringConstants.CLASSIFICATION2) ? jo.get(StringConstants.CLASSIFICATION2).toString() : "",
-                            jo.containsKey(StringConstants.TYPE) ? jo.get(StringConstants.TYPE).toString() : "",
-                            jo.containsKey(StringConstants.DOMAIN) ? jo.get(StringConstants.DOMAIN).toString() : "",
-                            jo));
+                    new ListEntryDTO(field.get(StringConstants.ID).toString(),
+                            field.containsKey(StringConstants.NAME) ? field.get(StringConstants.NAME).toString() : field.get(StringConstants.ID).toString(),
+                            layer.containsKey(StringConstants.CLASSIFICATION1) ? layer.get(StringConstants.CLASSIFICATION1).toString() : "",
+                            layer.containsKey(StringConstants.CLASSIFICATION2) ? layer.get(StringConstants.CLASSIFICATION2).toString() : "",
+                            layer.containsKey(StringConstants.TYPE) ? layer.get(StringConstants.TYPE).toString() : "",
+                            layer.containsKey(StringConstants.DOMAIN) ? layer.get(StringConstants.DOMAIN).toString() : "",
+                            layer));
         }
 
         if (includeAnalysisLayers) {

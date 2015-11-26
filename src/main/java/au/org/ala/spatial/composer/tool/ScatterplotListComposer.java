@@ -125,7 +125,7 @@ public class ScatterplotListComposer extends ToolComposer {
 
             String units = "";
             try {
-                units = String.valueOf(CommonData.getLayer(layers[i]).get("environmentalvalueunits"));
+                units = String.valueOf(((JSONObject) CommonData.getLayer(layers[i]).get("layer")).get("environmentalvalueunits"));
             } catch (Exception e) {
             }
             layerunits += units;

@@ -129,10 +129,6 @@ public final class CommonData {
     // download reasons
     private static JSONArray downloadReasons;
     private static JSONArray copyDownloadReasons;
-    private static Map<String, JSONObject> layerToFacet;
-    private static Map<String, JSONObject> facetToLayer;
-    private static Map<String, JSONObject> layerToFacetDefault;
-    private static Map<String, JSONObject> facetToLayerDefault;
     private static Properties i18nProperites = null;
     private static LanguagePack languagePack = null;
     private static Map speciesListCounts;
@@ -141,6 +137,9 @@ public final class CommonData {
     private static Long speciesListCountsUpdatedKosher = 0L;
     private static Map<String, Map<String, List<String>>> speciesListAdditionalColumns = new HashMap<String, Map<String, List<String>>>();
 
+    private static final String FACET_SUFFIX = "/search/grouped/facets";
+    private static List<QueryField> facetQueryFieldList;
+    
     private CommonData() {
         //to hide public constructor
     }
@@ -216,7 +215,7 @@ public final class CommonData {
         initSpeciesWMSLayers();
 
         //(5) for layer to facet name mapping
-        readLayerInfo();
+        //readLayerInfo();
 
         //(7) lsid counts
         //LsidCounts lc = new LsidCounts();
@@ -299,10 +298,7 @@ public final class CommonData {
             new File(path).mkdirs();
 
             ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path + "commondata"));
-            oos.writeObject(layerToFacet);
-            oos.writeObject(facetToLayer);
-            oos.writeObject(layerToFacetDefault);
-            oos.writeObject(facetToLayerDefault);
+
             oos.writeObject(speciesListAdditionalColumns);
             oos.writeObject(downloadReasons);
             oos.writeObject(biocacheLayerList);
@@ -320,6 +316,7 @@ public final class CommonData {
             oos.writeObject(checklistspeciesSpcodeLayers);
             oos.writeObject(checklistspeciesWmsLayersBySpcode);
             oos.writeObject(i18nProperites);
+            oos.writeObject(facetQueryFieldList);
 
             oos.close();
 
@@ -336,10 +333,6 @@ public final class CommonData {
 
             ObjectInputStream oos = new ObjectInputStream(new FileInputStream(path + "commondata"));
 
-            layerToFacet = (Map<String, JSONObject>) oos.readObject();
-            facetToLayer = (Map<String, JSONObject>) oos.readObject();
-            layerToFacetDefault = (Map<String, JSONObject>) oos.readObject();
-            facetToLayerDefault = (Map<String, JSONObject>) oos.readObject();
             speciesListAdditionalColumns = (Map<String, Map<String, List<String>>>) oos.readObject();
             downloadReasons = (JSONArray) oos.readObject();
             biocacheLayerList = (Set<String>) oos.readObject();
@@ -357,6 +350,7 @@ public final class CommonData {
             checklistspeciesSpcodeLayers = (Map<String, String[]>) oos.readObject();
             checklistspeciesWmsLayersBySpcode = (Map<String, String[]>) oos.readObject();
             i18nProperites = (Properties) oos.readObject();
+            facetQueryFieldList = (List<QueryField>) oos.readObject();
 
             oos.close();
 
@@ -428,7 +422,7 @@ public final class CommonData {
 
     static void initLayerList() {
         copyLayerlistJSON = null;
-        String layersListURL = layersServer + "/layers";
+        String layersListURL = layersServer + "/fields/search?q=";
         try {
 
             HttpClient client = new HttpClient();
@@ -442,47 +436,10 @@ public final class CommonData {
                 copyLayerlistJSON = (JSONArray) jp.parse(get.getResponseBodyAsString());
             }
 
-            addFieldsToLayers(copyLayerlistJSON);
+            //addFieldsToLayers(copyLayerlistJSON);
         } catch (Exception e) {
             LOGGER.error("error getting layers list: " + layersListURL, e);
             copyLayerlistJSON = null;
-        }
-    }
-
-    static void addFieldsToLayers(JSONArray joLayers) throws Exception {
-        //get field id with classes
-        String fieldsURL = layersServer + "/fields";
-        HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(fieldsURL);
-        int result = client.executeMethod(get);
-        if (result != 200) {
-            LOGGER.error("cannot retrive field list: " + fieldsURL);
-            return;
-        }
-        String fields = get.getResponseBodyAsString();
-        JSONParser jp = new JSONParser();
-        JSONArray ja = (JSONArray) jp.parse(fields);
-
-        //attach to a new JSONArray in joLayers named Constants.FIELDS
-        for (int j = 0; j < joLayers.size(); j++) {
-            JSONObject layer = (JSONObject) joLayers.get(j);
-            if (layer.containsKey(StringConstants.ID)) {
-                for (int i = 0; i < ja.size(); i++) {
-                    JSONObject jo = (JSONObject) ja.get(i);
-                    if (
-                            /*jo.containsKey("defaultlayer") && StringConstants.TRUE.equals(jo.getString("defaultlayer"))
-
-                                    &&
-                                     */
-                            jo.containsKey("spid") && jo.get("spid").toString().equals(layer.get(StringConstants.ID).toString())) {
-                        //add to layer
-                        if (!layer.containsKey(StringConstants.FIELDS)) {
-                            layer.put(StringConstants.FIELDS, new JSONArray());
-                        }
-                        ((JSONArray) layer.get(StringConstants.FIELDS)).add(jo);
-                    }
-                }
-            }
         }
     }
 
@@ -799,19 +756,12 @@ public final class CommonData {
     }
 
     public static String getLayerFacetName(String layer) {
-        String facetName = layer;
-        JSONObject f = layerToFacet.get(layer.toLowerCase());
-        if (f != null) {
-            facetName = f.get(StringConstants.ID).toString();
-        } else {
-            facetName = getLayerFacetNameDefault(layer);
-        }
-        return facetName;
+        return getLayer(layer) == null ? getLayerFacetNameDefault(layer) : getLayer(layer).get(StringConstants.ID).toString();
     }
 
     public static String getLayerFacetNameDefault(String layer) {
         String facetName = layer;
-        JSONObject f = layerToFacetDefault.get(layer.toLowerCase());
+        JSONObject f = getLayer(layer);
         if (f != null) {
             facetName = f.get(StringConstants.ID).toString();
         }
@@ -819,95 +769,35 @@ public final class CommonData {
     }
 
     public static String getFacetLayerName(String facet) {
-        JSONObject jo = facetToLayer.get(facet);
-        if (jo != null) {
-            return jo.get(StringConstants.NAME).toString();
-        } else {
-            return getFacetLayerNameDefault(facet);
-        }
+        return getFacetLayerNameDefault(facet);
     }
 
     public static String getFacetLayerNameDefault(String facet) {
-        JSONObject jo = facetToLayerDefault.get(facet);
-        if (jo != null) {
-            return jo.get(StringConstants.NAME).toString();
-        } else {
-            return null;
-        }
+        return getLayer(facet) == null ? null : facet;
     }
 
     public static String getFacetLayerDisplayName(String facet) {
-        JSONObject layer = facetToLayer.get(facet);
-        if (layer != null && layer.containsKey(StringConstants.DISPLAYNAME)) {
-            return layer.get(StringConstants.DISPLAYNAME).toString();
+        JSONObject field = getLayer(facet);
+        if (field != null) {
+            return field.get(StringConstants.NAME).toString();
         }
         return getFacetLayerDisplayNameDefault(facet);
     }
 
     public static String getFacetLayerDisplayNameDefault(String facet) {
-        JSONObject layer = facetToLayerDefault.get(facet);
-        if (layer != null && layer.containsKey(StringConstants.DISPLAYNAME)) {
-            return layer.get(StringConstants.DISPLAYNAME).toString();
+        JSONObject field = getLayer(facet);
+        if (field != null) {
+            return field.get(StringConstants.NAME).toString();
         }
         return null;
     }
 
     public static String getLayerDisplayName(String name) {
-        JSONObject layer;
-        for (int i = 0; i < layerlistJSON.size(); i++) {
-            layer = (JSONObject) layerlistJSON.get(i);
-            if (layer.get(StringConstants.NAME).toString().equalsIgnoreCase(name) && layer.containsKey(StringConstants.DISPLAYNAME)) {
-                return layer.get(StringConstants.DISPLAYNAME).toString();
-            }
+        JSONObject field = getLayer(name);
+        if (field != null) {
+            return field.get(StringConstants.NAME).toString();
         }
         return null;
-    }
-
-    private static void readLayerInfo() {
-        try {
-            Map<String, JSONObject> ftl = new HashMap<String, JSONObject>();
-            Map<String, JSONObject> ltf = new HashMap<String, JSONObject>();
-            Map<String, JSONObject> ftldefault = new HashMap<String, JSONObject>();
-            Map<String, JSONObject> ltfdefault = new HashMap<String, JSONObject>();
-
-            if (copyLayerlistJSON != null) {
-                for (int i = 0; i < copyLayerlistJSON.size(); i++) {
-                    JSONObject jo = (JSONObject) copyLayerlistJSON.get(i);
-
-                    if (jo.containsKey(StringConstants.FIELDS)) {
-                        JSONArray ja = (JSONArray) jo.get(StringConstants.FIELDS);
-                        for (int j = 0; j < ja.size(); j++) {
-                            JSONObject f = (JSONObject) ja.get(j);
-                            if (f.containsKey("indb") && f.get("indb").toString().equalsIgnoreCase("true")) {
-                                LOGGER.debug("adding indb: " + jo.get(StringConstants.NAME) + ", " + f.get(StringConstants.ID));
-                                String layer = jo.get(StringConstants.NAME).toString();
-                                String facet = f.get(StringConstants.ID).toString();
-
-                                ltf.put(layer.toLowerCase(), f);
-                                ftl.put(facet, jo);
-                            }
-                            if (f.containsKey("defaultlayer") && f.get("defaultlayer").toString().equalsIgnoreCase("true")) {
-                                LOGGER.debug("adding defaultlayer: " + jo.get(StringConstants.NAME) + ", " + f.get(StringConstants.ID));
-                                String layer = jo.get(StringConstants.NAME).toString();
-                                String facet = f.get(StringConstants.ID).toString();
-
-                                ltfdefault.put(layer.toLowerCase(), f);
-                                ftldefault.put(facet, jo);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (layerToFacet == null || !ltf.isEmpty()) {
-                layerToFacet = ltf;
-                facetToLayer = ftl;
-                layerToFacetDefault = ltfdefault;
-                facetToLayerDefault = ftldefault;
-            }
-        } catch (Exception e) {
-            LOGGER.error("error reading layer info", e);
-        }
     }
 
     public static List<QueryField> getDefaultUploadSamplingFields() {
@@ -930,10 +820,10 @@ public final class CommonData {
             List layers = getLayerListJSONArray();
             if (layers != null) {
                 for (Object o : layers) {
-                    JSONObject jo = (JSONObject) o;
-                    String facetId = getLayerFacetName(jo.get("name").toString());
+                    JSONObject facet = (JSONObject) o;
+                    String facetId = facet.get(StringConstants.ID).toString();
                     if (facetId != null) {
-                        p.put("facet." + facetId, ((JSONObject) o).get("displayname").toString());
+                        p.put("facet." + facetId, facet.get(StringConstants.NAME).toString());
                     }
                 }
             } else {
@@ -944,6 +834,8 @@ public final class CommonData {
         } catch (Exception e) {
             LOGGER.error("error loading properties file URL: " + i18nURL, e);
         }
+
+        init18n();
     }
 
     public static String getI18nProperty(String key) {
@@ -1063,17 +955,11 @@ public final class CommonData {
     public static JSONObject getLayer(String name) {
         JSONObject found = null;
         for (int i = 0; i < layerlistJSON.size() && found == null; i++) {
-            JSONObject layer = (JSONObject) layerlistJSON.get(i);
-            if (layer.get(StringConstants.NAME).toString().equalsIgnoreCase(name)) {
-                found = layer;
-            } else {
-                for (int j = 0; ((List) layer.get(StringConstants.FIELDS)) != null && j < ((List) layer.get(StringConstants.FIELDS)).size(); j++) {
-                    JSONObject field = (JSONObject) ((List) layer.get(StringConstants.FIELDS)).get(j);
-                    if (field.get(StringConstants.ID).toString().equals(name)) {
-                        found = layer;
-                        break;
-                    }
-                }
+            JSONObject field = (JSONObject) layerlistJSON.get(i);
+            if (field.get(StringConstants.ID).toString().equalsIgnoreCase(name) ||
+                    (((JSONObject) field.get("layer")).get(StringConstants.NAME).toString().equalsIgnoreCase(name) &&
+                            field.get("defaultlayer").toString().equals("true"))) {
+                found = field;
             }
         }
         return found;
@@ -1530,5 +1416,101 @@ public final class CommonData {
         }
 
         return list;
+    }
+
+    private static void init18n() {
+        try {
+            Map<String, String[][]> tmpMap = new LinkedHashMap<String, String[][]>();
+            List<QueryField> tmpList = new ArrayList<QueryField>();
+            //get the JSON from the WS\
+            JSONParser jp = new JSONParser();
+            JSONArray values = (JSONArray) jp.parse(Util.readUrl(CommonData.getBiocacheServer() + FACET_SUFFIX));
+
+            LOGGER.debug(values);
+            Map<String, QueryField.FieldType> dataTypes = getDataTypes();
+            for (Object v : values) {
+                JSONObject value = (JSONObject) v;
+                //extract the group
+                String title = value.get(StringConstants.TITLE).toString();
+                //now get the facets themselves
+                List<Map<String, String>> facets = (List<Map<String, String>>) value.get("facets");
+                String[][] facetValues = new String[facets.size()][2];
+                int i = 0;
+                for (Map<String, String> facet : facets) {
+                    String field = facet.get("field");
+                    //Only add if it is not included in the ignore list
+                    if (!CommonData.ignoredFacets.contains(field)) {
+                        String i18n = i18nProperites.getProperty("facet." + field, field);
+
+                        //TODO: update biocache i18n instead of doing this
+                        if ("data_provider".equals(field)) {
+                            i18n = "Data Provider";
+                        }
+
+                        //use current layer names for facets
+                        try {
+                            String layername = CommonData.getFacetLayerName(field);
+                            if (i18n == null || layername != null) {
+                                i18n = CommonData.getLayerDisplayName(layername);
+                            }
+                        } catch (Exception e) {
+
+                        }
+
+                        facetValues[i][0] = field;
+                        facetValues[i][1] = i18n;
+                        QueryField.FieldType ftype = dataTypes.containsKey(field) ? dataTypes.get(field) : QueryField.FieldType.STRING;
+
+
+                        QueryField qf = new QueryField(field, i18n, QueryField.GroupType.getGroupType(title), ftype);
+                        tmpList.add(qf);
+                        i++;
+                    }
+                }
+                tmpMap.put(title, facetValues);
+            }
+
+            //add a bunch of configured extra fields from the default values
+            for (String f : CommonData.customFacets) {
+                String i18n = i18nProperites.getProperty("facet." + f, f);
+                tmpList.add(new QueryField(f, i18n, QueryField.GroupType.CUSTOM, QueryField.FieldType.STRING));
+            }
+
+            facetQueryFieldList = tmpList;
+            LOGGER.debug("Grouped Facets: " + tmpMap);
+            LOGGER.debug("facet query list : " + facetQueryFieldList);
+        } catch (Exception e) {
+            LOGGER.error("failed to init i18n", e);
+        }
+    }
+
+    public static List<QueryField> getFacetQueryFieldList() {
+        return facetQueryFieldList;
+    }
+
+    /**
+     * Extracts the biocache data types from the webservice so that they can be used to dynamically load the facets
+     *
+     * @return
+     */
+    private static Map<String, QueryField.FieldType> getDataTypes() throws Exception {
+        Map<String, QueryField.FieldType> map = new HashMap<String, QueryField.FieldType>();
+        //get the JSON from the WS
+        JSONParser jp = new JSONParser();
+        JSONArray values = (JSONArray) jp.parse(Util.readUrl(CommonData.getBiocacheServer() + "/index/fields"));
+        for (Object mvalues : values) {
+            String name = ((JSONObject) mvalues).get(StringConstants.NAME).toString();
+            String dtype = ((JSONObject) mvalues).get("dataType").toString();
+            if ("string".equals(dtype) || "textgen".equals(dtype)) {
+                map.put(name, QueryField.FieldType.STRING);
+            } else if ("int".equals(dtype) || "tint".equals(dtype) || "tdate".equals(dtype)) {
+                map.put(name, QueryField.FieldType.INT);
+            } else if ("double".equals(dtype) || "tdouble".equals(dtype)) {
+                map.put(name, QueryField.FieldType.DOUBLE);
+            } else {
+                map.put(name, QueryField.FieldType.STRING);
+            }
+        }
+        return map;
     }
 }

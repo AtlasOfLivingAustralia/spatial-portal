@@ -342,8 +342,8 @@ public class ToolComposer extends UtilityComposer {
         if (analysis) {
             name = ml.getName();
         } else {
-            int p1 = url.indexOf("ALA:") + 4;
-            int p2 = url.indexOf('&', p1);
+            int p1 = url.indexOf("&style=") + 7;
+            int p2 = url.indexOf("_style", p1);
             if (p1 > 4) {
                 if (p2 < 0) {
                     p2 = url.length();
@@ -1853,9 +1853,9 @@ public class ToolComposer extends UtilityComposer {
             int p1 = layers[i].lastIndexOf('(');
             int p2 = layers[i].lastIndexOf(')');
             if (p1 >= 0 && p2 >= 0 && p1 < p2) {
-                list[i * 2] = layers[i].substring(p1 + 1, p2).trim();
+                list[i * 2] = CommonData.getLayerFacetName(layers[i].substring(p1 + 1, p2).trim());
             }
-            list[i * 2 + 1] = layers[i];
+            list[i * 2 + 1] = CommonData.getLayerFacetName(layers[i]);
         }
         lbListLayers.selectLayers(list);
         toggles();

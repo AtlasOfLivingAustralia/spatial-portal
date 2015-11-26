@@ -219,15 +219,16 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         if (autoCompleteLayerSelection != null && cAreasFromLayer.isChecked()) {
             String fieldId = CommonData.getLayerFacetNameDefault(autoCompleteLayerSelection);
             String layer = CommonData.getFacetLayerName(fieldId);
-            JSONObject jo = CommonData.getLayer(layer);
+            JSONObject field = CommonData.getLayer(layer);
+            JSONObject lyr = (JSONObject) field.get("layer");
 
-            String name = jo.get(StringConstants.NAME).toString();
+            String name = field.get(StringConstants.ID).toString();
 
-            String uid = jo.get(StringConstants.ID).toString();
-            String type = jo.get(StringConstants.TYPE).toString();
-            String treeName = StringUtils.capitalize(jo.get(StringConstants.DISPLAYNAME).toString());
-            String treePath = jo.get("displaypath").toString();
-            String legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + name;
+            String uid = lyr.get(StringConstants.ID).toString();
+            String type = lyr.get(StringConstants.TYPE).toString();
+            String treeName = StringUtils.capitalize(field.get(StringConstants.NAME).toString());
+            String treePath = lyr.get("displaypath").toString();
+            String legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + name + "&style=" + name + "_style";
             String metadata = CommonData.getLayersServer() + "/layers/view/more/" + uid;
 
             //is it already mapped with the same display name?
@@ -363,8 +364,8 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         
         if (autoCompleteLayers.getItemCount() > 0 && autoCompleteLayers.getSelectedItem() != null) {
             JSONObject jo = autoCompleteLayers.getSelectedItem().getValue();
-            
-            autoCompleteLayerSelection = (String) jo.get(StringConstants.NAME);
+
+            autoCompleteLayerSelection = (String) jo.get(StringConstants.ID);
             
         } else {
         }

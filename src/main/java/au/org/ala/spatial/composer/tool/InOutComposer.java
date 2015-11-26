@@ -72,9 +72,10 @@ public class InOutComposer extends ToolComposer {
             Query out;
 
             //determine complement area
-            jo = CommonData.getLayer(layerName);
-            boolean isMarine = Util.isSameDomain(new String[]{"marine"}, Util.getDomain(jo));
-            boolean isTerrestrial = Util.isSameDomain(new String[]{"terrestrial"}, Util.getDomain(jo));
+            JSONObject fld = CommonData.getLayer(layerName);
+            JSONObject layer = (JSONObject) fld.get("layer");
+            boolean isMarine = Util.isSameDomain(new String[]{"marine"}, Util.getDomain(layer));
+            boolean isTerrestrial = Util.isSameDomain(new String[]{"terrestrial"}, Util.getDomain(layer));
 
             String terrestrialQuery = CommonData.getSettings().getProperty("in_out_report.terrestrial.query", "cl2013:*");
             String terrestrialName = CommonData.getSettings().getProperty("in_out_report.terrestrial.name", "Other - ASGS Australian States and Territories");
@@ -157,8 +158,8 @@ public class InOutComposer extends ToolComposer {
         if (autoCompleteLayers.getItemCount() > 0 && autoCompleteLayers.getSelectedItem() != null) {
             JSONObject jo = autoCompleteLayers.getSelectedItem().getValue();
 
-            layerName = (String) jo.get(StringConstants.NAME);
-            layerDisplayName = (String) jo.get(StringConstants.DISPLAYNAME);
+            layerName = (String) jo.get(StringConstants.ID);
+            layerDisplayName = (String) jo.get(StringConstants.NAME);
 
             btnOk.setDisabled(false);
         } else {

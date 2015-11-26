@@ -1297,7 +1297,7 @@ public class BiocacheQuery implements Query, Serializable {
                 fields.addAll(retrieveCustomFacets());
             }
             //NC: Load all the facets fields from the cache which is populated from the biocache=service
-            fields.addAll(FacetCacheImpl.getFacetQueryFieldList());
+            fields.addAll(CommonData.getFacetQueryFieldList());
 
             for (int i = 0; i < fields.size(); i++) {
                 fields.get(i).setStored(true);

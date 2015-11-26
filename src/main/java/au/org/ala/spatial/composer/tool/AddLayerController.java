@@ -62,14 +62,16 @@ public class AddLayerController extends ToolComposer {
                 String metadata = "";
                 JSONArray layerlist = CommonData.getLayerListJSONArray();
                 for (int j = 0; j < layerlist.size(); j++) {
-                    JSONObject jo = (JSONObject) layerlist.get(j);
-                    String name = jo.get(StringConstants.NAME).toString();
+                    JSONObject field = (JSONObject) layerlist.get(j);
+                    JSONObject layer = (JSONObject) field.get("layer");
+                    String name = field.get(StringConstants.ID).toString();
                     if (name.equals(s)) {
-                        uid = jo.get(StringConstants.ID).toString();
-                        type = jo.get(StringConstants.TYPE).toString();
-                        treeName = StringUtils.capitalize(jo.get(StringConstants.DISPLAYNAME).toString());
-                        treePath = jo.get("displaypath").toString();
-                        legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
+                        uid = layer.get(StringConstants.ID).toString();
+                        type = layer.get(StringConstants.TYPE).toString();
+                        treeName = StringUtils.capitalize(field.get(StringConstants.NAME).toString());
+                        treePath = layer.get("displaypath").toString();
+                        legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" +
+                                layer.get(StringConstants.NAME).toString() + "&style=" + name + "_style";
                         metadata = CommonData.getLayersServer() + "/layers/view/more/" + uid;
                         break;
                     }
@@ -82,26 +84,5 @@ public class AddLayerController extends ToolComposer {
             }
         }
         this.detach();
-    }
-
-    public String getUid(String name) {
-        String uid = "";
-        try {
-            JSONArray layerlist = CommonData.getLayerListJSONArray();
-            for (int j = 0; j < layerlist.size(); j++) {
-                JSONObject jo = (JSONObject) layerlist.get(j);
-                String n = jo.get(StringConstants.NAME).toString();
-                if (name.equals(n)) {
-                    uid = jo.get(StringConstants.ID).toString();
-                    LOGGER.debug("id=" + uid);
-                    break;
-                }
-            }
-            return uid;
-
-        } catch (Exception e) {
-            LOGGER.error("error setting up env list", e);
-            return null;
-        }
     }
 }

@@ -274,6 +274,7 @@ public final class StringConstants {
     public static final String[] SPECIES_GROUPS = new String[]{"Algae", "Amphibians", "Angiosperms", "Animals", "Arthropods", "Bacteria"
             , "Birds", "Bryophytes", "Chromista", "Crustaceans", "Dicots", "FernsAndAllies", "Fish", "Fungi"
             , "Gymnosperms", "Insects", "Mammals", "Molluscs", "Monocots", "Plants", "Protozoa", "Reptiles"};
+    public static final String INDB = "indb";
 
 
     private StringConstants() {

@@ -786,14 +786,17 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
         if (mapLayer.isPolygonLayer()) return;
 
         String activeLayerName = StringConstants.NONE;
+        JSONObject field = null;
         JSONObject layer = null;
         if (mapLayer != null && mapLayer.getUri() != null) {
             if (mapLayer.getBaseUri() != null) {
-                activeLayerName = mapLayer.getBaseUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
+                activeLayerName = mapLayer.getBaseUri().replaceAll("^.*&style=", "").replaceAll("&.*", "").replaceAll("_style", "");
             } else {
-                activeLayerName = mapLayer.getUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
+                activeLayerName = mapLayer.getUri().replaceAll("^.*&style=", "").replaceAll("&.*", "").replaceAll("_style", "");
             }
-            layer = CommonData.getLayer(activeLayerName);
+            field = CommonData.getLayer(activeLayerName);
+            if (field == null) return;
+            layer = (JSONObject) field.get("layer");
         }
         LOGGER.debug("ACTIVE LAYER: " + activeLayerName);
 
@@ -830,19 +833,12 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             lbClassificationGroup.setVisible(false);
             hboxClassificationGroup.setVisible(false);
 
-        } else if (layer != null && layer.containsKey("type") && layer.get("type").toString().equalsIgnoreCase("contextual")
-                && layer.containsKey("fields")) {
+        } else if (layer != null && layer.containsKey("type") && layer.get("type").toString().equalsIgnoreCase("contextual")) {
             divClassificationPicker.setVisible(true);
 
             if (mapLayer.getClassificationGroupCount() == null || mapLayer.getClassificationGroupCount() == 0) {
                 //build
-                String fieldId = null;
-                JSONArray ja = (JSONArray) layer.get("fields");
-                for (int i = 0; i < ja.size(); i++) {
-                    if (((JSONObject) ja.get(i)).get("defaultlayer").toString().equalsIgnoreCase("true")) {
-                        fieldId = ((JSONObject) ja.get(i)).get("id").toString();
-                    }
-                }
+                String fieldId = field.get(StringConstants.ID).toString();
 
                 JSONParser jp = new JSONParser();
                 JSONObject objJson = null;
@@ -1228,7 +1224,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
         Facet facet = Facet.parseFacet(sb.toString());
         //only get field data if it is an intersected layer (to exclude layers containing points)
-        JSONObject layerObj = CommonData.getLayer((String) obj.get(StringConstants.FID));
+        JSONObject field = CommonData.getLayer((String) obj.get(StringConstants.FID));
 
         List<Facet> facets = new ArrayList<Facet>();
         facets.add(facet);
@@ -1240,9 +1236,9 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
         md.setBbox(Arrays.asList(bbox));
 
         try {
-            md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + layerObj.get("id").toString());
+            md.setMoreInfo(CommonData.getLayersServer() + "/layers/view/more/" + field.get("spid").toString());
         } catch (Exception er) {
-            LOGGER.error("error setting map layer moreInfo: " + (layerObj != null ? layerObj.toString() : "layerObj is null"), er);
+            LOGGER.error("error setting map layer moreInfo: " + (field != null ? field.toString() : "layerObj is null"), er);
         }
 
         getMapComposer().applyChange(ml);

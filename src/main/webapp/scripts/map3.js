@@ -1570,18 +1570,18 @@ function envLayerHover(e, displayFull) {
             var layer = layers[i];
 
             var p0 = layer.url.indexOf("geoserver");
-            var p1 = layer.url.indexOf("ALA:");
-            var p2 = layer.url.indexOf("&", p1 + 1);
-            if (p0 < 0 || p1 < 0 || p1 < 0) {
+            var p1 = layer.url.indexOf("&style=") + 7;
+            var p2 = layer.url.indexOf("_style", p1 + 1);
+            if (p0 < 0 || p1 < 7 || p1 < 1) {
                 continue;
             }
 
-            if (p2 < 0) p2 = layer.url.length;
+            if (p2 < 1) p2 = layer.url.length;
 
             if (names.length > 0) {
                 names = names + ",";
             }
-            names = names + layer.url.substring(p1 + 4, p2);
+            names = names + layer.url.substring(p1, p2);
         }
 
         if (names.length == 0) {

@@ -53,7 +53,7 @@ public class ContextualLayerSelection extends ToolComposer {
                     treePath.replace("&layers=", "&layer="),
                     (float) 0.75, treeMetadata, null, treeSubType, null, null);
 
-            String activeLayerName = treePath.replaceAll("^.*ALA:", "").replaceAll("&.*", "");
+            String activeLayerName = treePath.replaceAll("^.*&style=", "").replaceAll("&.*", "").replaceAll("_style", "");
 
             String lyrSubType = "";
             if (treeSubType == LayerUtilitiesImpl.CONTEXTUAL) {
@@ -84,8 +84,8 @@ public class ContextualLayerSelection extends ToolComposer {
 
             metadata = CommonData.getLayersServer() + "/layers/view/more/" + jo.get(StringConstants.ID);
 
-            setLayer(jo.get(StringConstants.DISPLAYNAME).toString(), jo.get("displaypath").toString(), metadata,
-                    StringConstants.ENVIRONMENTAL.equalsIgnoreCase(jo.get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
+            setLayer(jo.get(StringConstants.NAME).toString(), ((JSONObject) jo.get("layer")).get("displaypath").toString(), metadata,
+                    StringConstants.ENVIRONMENTAL.equalsIgnoreCase(((JSONObject) jo.get("layer")).get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
         } else {
 
             // if the autocomplete has been type, but before selecting an option,
@@ -106,10 +106,10 @@ public class ContextualLayerSelection extends ToolComposer {
 
                 String metadata = CommonData.getLayersServer() + "/layers/view/more/" + joLayer.get(StringConstants.ID);
 
-                setLayer(joLayer.get(StringConstants.DISPLAYNAME).toString(), joLayer.get("displaypath").toString(), metadata,
-                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(joLayer.get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
+                setLayer(joLayer.get(StringConstants.NAME).toString(), ((JSONObject) joLayer.get("layer")).get("displaypath").toString(), metadata,
+                        StringConstants.ENVIRONMENTAL.equalsIgnoreCase(((JSONObject) joLayer.get("layer")).get(StringConstants.TYPE).toString()) ? LayerUtilitiesImpl.GRID : LayerUtilitiesImpl.CONTEXTUAL);
             } else {
-                String classValue = joLayer.get(StringConstants.DISPLAYNAME).toString();
+                String classValue = joLayer.get(StringConstants.NAME).toString();
                 String layer = joLayer.get(StringConstants.LAYERNAME).toString();
                 String displaypath = CommonData.getGeoServer()
                         + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:Objects&format=image/png&viewparams=s:"

@@ -29,7 +29,7 @@ public class SPLFilter {
                      double minimum, double maximum) {
         this.layer = layer;
         if (layer != null) {
-            layername = layer.get(StringConstants.NAME).toString();
+            layername = layer.get(StringConstants.ID).toString();
         }
         this.catagories = catagories == null ? null : catagories.clone();
         this.catagoryNames = catagoryNames == null ? null : catagoryNames.clone();

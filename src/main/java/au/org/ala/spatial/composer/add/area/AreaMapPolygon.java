@@ -15,10 +15,6 @@ import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Textbox;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +48,7 @@ public class AreaMapPolygon extends AreaToolComposer {
 
         String activeLayerName = StringConstants.NONE;
         if (ml.getUri() != null) {
-            activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
+            activeLayerName = ml.getUri().replaceAll("^.*&style=", "").replaceAll("&.*", "").replaceAll("_style", "");
         }
         getMapComposer().setAttribute("activeLayerName", activeLayerName);
 
@@ -130,16 +126,17 @@ public class AreaMapPolygon extends AreaToolComposer {
 
             String activeLayerName = StringConstants.NONE;
             if (ml.getUri() != null) {
-                activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
+                activeLayerName = ml.getUri().replaceAll("^.*&style=", "").replaceAll("&.*", "").replaceAll("_style", "");
             }
             LOGGER.debug("ACTIVE LAYER: " + activeLayerName);
-            if (ml.isDisplayed()) {
+            if (ml.isDisplayed() && ml.isContextualLayer()) {
                 for (int j = 0; j < layerlist.size() && !searchComplete; j++) {
-                    JSONObject jo = (JSONObject) layerlist.get(j);
-                    if (jo.get(StringConstants.TYPE) != null
-                            && jo.get(StringConstants.TYPE).toString().length() > 0
-                            && StringConstants.CONTEXTUAL.equalsIgnoreCase(jo.get(StringConstants.TYPE).toString())
-                            && jo.get(StringConstants.NAME).toString().equalsIgnoreCase(activeLayerName)) {
+                    JSONObject field = (JSONObject) layerlist.get(j);
+                    JSONObject layer = (JSONObject) field.get("layer");
+                    if (layer.get(StringConstants.TYPE) != null
+                            && layer.get(StringConstants.TYPE).toString().length() > 0
+                            && StringConstants.CONTEXTUAL.equalsIgnoreCase(layer.get(StringConstants.TYPE).toString())
+                            && field.get(StringConstants.ID).toString().equalsIgnoreCase(activeLayerName)) {
 
                         LOGGER.debug(ml.getName());
                         Map<String, String> feature = GazetteerPointSearch.pointSearch(lon, lat, activeLayerName, CommonData.getGeoServer());
@@ -155,42 +152,14 @@ public class AreaMapPolygon extends AreaToolComposer {
                         btnClear.setDisabled(false);
 
                         mc.updateLayerControls();
+
+                        searchComplete = true;
+                        displayGeom.setValue("layer: " + feature.get(StringConstants.LAYERNAME) + "\r\n" + "area: " + feature.get(StringConstants.VALUE));
+
+                        return;
                     }
                 }
             }
         }
-    }
-
-    private String readUrl(String feature) {
-        StringBuilder content = new StringBuilder();
-
-        HttpURLConnection conn = null;
-        try {
-            // Construct data
-
-            // Send data
-            URL url = new URL(feature);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.connect();
-
-            // Get the response
-            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                content.append(line);
-            }
-
-        } catch (Exception e) {
-            LOGGER.error("failed to read URL: " + feature, e);
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.disconnect();
-                } catch (Exception e) {
-                    LOGGER.error("failed to close url: " + feature, e);
-                }
-            }
-        }
-        return content.toString();
     }
 }

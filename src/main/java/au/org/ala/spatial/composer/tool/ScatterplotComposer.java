@@ -66,11 +66,11 @@ public class ScatterplotComposer extends ToolComposer {
 
         JSONObject jo = cbLayer1.getSelectedItem().getValue();
         String lyr1name = cbLayer1.getText();
-        String lyr1value = jo.get(StringConstants.NAME).toString();
+        String lyr1value = jo.get(StringConstants.ID).toString();
 
         jo = cbLayer2.getSelectedItem().getValue();
         String lyr2name = cbLayer2.getText();
-        String lyr2value = jo.get(StringConstants.NAME).toString();
+        String lyr2value = jo.get(StringConstants.ID).toString();
 
         String pid = "";
 
@@ -106,7 +106,9 @@ public class ScatterplotComposer extends ToolComposer {
             //add data parameters
             String layerunits = "";
             try {
-                layerunits = String.valueOf(CommonData.getLayer(lyr1value).get("environmentalvalueunits")) + "," + String.valueOf(CommonData.getLayer(lyr2value).get("environmentalvalueunits"));
+                String envUnits1 = ((JSONObject) CommonData.getLayer(lyr1value).get("layer")).get("environmentalvalueunits").toString();
+                String envUnits2 = ((JSONObject) CommonData.getLayer(lyr2value).get("layer")).get("environmentalvalueunits").toString();
+                layerunits = envUnits1 + "," + envUnits2;
             } catch (Exception e) {
             }
 

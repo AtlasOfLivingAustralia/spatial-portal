@@ -255,7 +255,7 @@ public class SitesBySpeciesComposer extends ToolComposer {
 
     void loadLayer(String type, String name, int typeId) {
         String mapurl = CommonData.getGeoServer() + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:" + type + "_" + pid
-                + "&styles=" + type + "_" + pid + "&FORMAT=image%2Fpng";
+                + "&style=" + type + "_" + pid + "&FORMAT=image%2Fpng";
         String legendurl = CommonData.getGeoServer()
                 + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:" + type + "_" + pid

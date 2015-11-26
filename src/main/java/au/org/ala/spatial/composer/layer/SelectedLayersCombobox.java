@@ -50,8 +50,8 @@ public class SelectedLayersCombobox extends Combobox {
             //get layer name
             String name = null;
             String url = ml.getUri();
-            int p1 = url.indexOf("ALA:") + 4;
-            int p2 = url.indexOf('&', p1);
+            int p1 = url.indexOf("&style=") + 7;
+            int p2 = url.indexOf("_style", p1);
             if (p1 > 4) {
                 if (p2 < 0) {
                     p2 = url.length();

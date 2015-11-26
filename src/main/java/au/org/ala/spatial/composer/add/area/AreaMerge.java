@@ -63,16 +63,11 @@ public class AreaMerge extends AreaToolComposer {
                 if (fid.startsWith("cl")) {
                     JSONArray ja = CommonData.getLayerListJSONArray();
                     for (int j = 0; j < ja.size() && !isGrid; j++) {
-                        JSONObject jo = (JSONObject) ja.get(j);
-                        if (jo.get(StringConstants.ID).toString().equalsIgnoreCase(fid) && jo.containsKey(StringConstants.FIELDS)) {
-                            JSONArray fields = (JSONArray) jo.get(StringConstants.FIELDS);
-                            for (int k = 0; k < fields.size() && !isGrid; k++) {
-                                JSONObject field = (JSONObject) fields.get(k);
-                                if ("a".equalsIgnoreCase(field.get(StringConstants.TYPE).toString()) ||
-                                        "b".equalsIgnoreCase(field.get(StringConstants.TYPE).toString())) {
-                                    isGrid = true;
-                                }
-                            }
+                        JSONObject field = (JSONObject) ja.get(j);
+                        JSONObject layer = (JSONObject) field.get("layer");
+                        if (field.get(StringConstants.ID).toString().equalsIgnoreCase(fid)) {
+                            isGrid = "a".equalsIgnoreCase(field.get(StringConstants.TYPE).toString()) ||
+                                    "b".equalsIgnoreCase(field.get(StringConstants.TYPE).toString());
                         }
                     }
                 } else {

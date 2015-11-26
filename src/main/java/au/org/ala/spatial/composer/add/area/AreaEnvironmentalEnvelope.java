@@ -129,7 +129,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
                     SPLFilter f = getSPLFilter(layer);
 
                     // Col 1: Add the layer name
-                    Listcell lname = new Listcell(f.getLayer().get(StringConstants.DISPLAYNAME).toString());
+                    Listcell lname = new Listcell(f.getLayer().get(StringConstants.NAME).toString());
                     lname.setStyle("white-space: normal;");
                     lname.setParent(li);
 
@@ -166,23 +166,24 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         activeAreaSize = null;
     }
 
-    private SPLFilter getSPLFilter(JSONObject layer) {
-        SPLFilter splf = selectedSPLFilterLayers.get(layer.get(StringConstants.NAME).toString());
+    private SPLFilter getSPLFilter(JSONObject field) {
+        SPLFilter splf = selectedSPLFilterLayers.get(field.get(StringConstants.ID).toString());
+        JSONObject layer = (JSONObject) field.get("layer");
 
         // if splf is still null, then it must be new
         // so grab the details from the server
         if (splf == null) {
             splf = new SPLFilter();
             splf.setCount(0);
-            splf.setLayername(layer.get(StringConstants.NAME).toString());
-            splf.setLayer(layer);
+            splf.setLayername(field.get(StringConstants.ID).toString());
+            splf.setLayer(field);
             splf.setMinimumValue(Double.parseDouble(layer.get("environmentalvaluemin").toString()));
             splf.setMaximumValue(Double.parseDouble(layer.get("environmentalvaluemax").toString()));
             splf.setMinimumInitial(Double.parseDouble(layer.get("environmentalvaluemin").toString()));
             splf.setMaximumInitial(Double.parseDouble(layer.get("environmentalvaluemax").toString()));
             splf.setChanged(false);
 
-            selectedSPLFilterLayers.put(layer.get(StringConstants.NAME).toString(), splf);
+            selectedSPLFilterLayers.put(field.get(StringConstants.ID).toString(), splf);
         }
 
         return splf;
@@ -206,7 +207,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         layer = selectedLayers.get(idx);
 
         //not executing, echo
-        Events.echoEvent("removeLayer", this, layer.get(StringConstants.NAME).toString());
+        Events.echoEvent("removeLayer", this, layer.get(StringConstants.ID).toString());
 
         selectedLayers.remove(layer);
 
@@ -242,7 +243,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         layer = selectedLayers.get(idx);
 
         //not executing, echo
-        Events.echoEvent("removeLayerClearSelected", this, layer.get(StringConstants.DISPLAYNAME).toString());
+        Events.echoEvent("removeLayerClearSelected", this, layer.get(StringConstants.NAME).toString());
 
         selectedLayers.remove(layer);
 
@@ -363,12 +364,12 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         JSONObject layer = li.getValue();
 
         popupFilter = getSPLFilter(layer);
-        popupIdx.setValue(layer.get(StringConstants.DISPLAYNAME).toString());
+        popupIdx.setValue(layer.get(StringConstants.NAME).toString());
 
         popupCell = lc;
         popupItem = li;
 
-        labelContinous.setValue("edit envelope for: " + layer.get(StringConstants.DISPLAYNAME).toString());
+        labelContinous.setValue("edit envelope for: " + layer.get(StringConstants.NAME).toString());
         String csv = String.format("%.4f", (float) popupFilter.getMinimumInitial()) + " - " + String.format("%.4f", (float) popupFilter.getMaximumInitial());
         popupRange.setValue(csv);
 
@@ -394,12 +395,12 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
     private void showAdjustPopup(JSONObject layer, Listcell lc, Listitem li) {
         popupFilter = getSPLFilter(layer);
-        popupIdx.setValue(layer.get(StringConstants.DISPLAYNAME).toString());
+        popupIdx.setValue(layer.get(StringConstants.NAME).toString());
 
         popupCell = lc;
         popupItem = li;
 
-        labelContinous.setValue("edit envelope for: " + layer.get(StringConstants.DISPLAYNAME));
+        labelContinous.setValue("edit envelope for: " + layer.get(StringConstants.NAME));
 
         String csv = String.format("%.4f", (float) popupFilter.getMinimumValue()) + " - " + String.format("%.4f", (float) popupFilter.getMaximumValue());
         popupRange.setValue(csv);
@@ -615,7 +616,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         String colour = finalLayer ? "0xFF0000" : FILTER_COLOURS[depth % FILTER_COLOURS.length];
         String filter
                 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\">"
-                + "<NamedLayer><Name>ALA:" + layer.get(StringConstants.NAME) + "</Name>"
+                + "<NamedLayer><Name>ALA:" + ((JSONObject) layer.get("layer")).get(StringConstants.NAME) + "</Name>"
                 + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
                 + "<ColorMap>"
                 + "<ColorMapEntry color=\"" + colour + "\" opacity=\"1\" quantity=\"" + (min - Math.abs(min * 0.01)) + "\"/>"
@@ -630,18 +631,18 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             LOGGER.error("cannot encode filter sld: " + filter, e);
         }
 
-        MapLayer ml = mc.getMapLayer(LAYER_PREFIX + layer.get(StringConstants.NAME));
+        MapLayer ml = mc.getMapLayer(LAYER_PREFIX + layer.get(StringConstants.ID));
         if (ml == null) {
-            ml = getMapComposer().addWMSLayer(LAYER_PREFIX + layer.get(StringConstants.NAME),
-                    LAYER_PREFIX + layer.get(StringConstants.DISPLAYNAME),
-                    layer.get("displaypath").toString().replace("/gwc/service", "") + "&sld_body=" + filter,
+            ml = getMapComposer().addWMSLayer(LAYER_PREFIX + layer.get(StringConstants.ID),
+                    LAYER_PREFIX + layer.get(StringConstants.NAME),
+                    ((JSONObject) layer.get("layer")).get("displaypath").toString().replace("/gwc/service", "") + "&sld_body=" + filter,
                     (float) 0.75,
-                    CommonData.getLayersServer() + "/layers/view/more/" + layer.get(StringConstants.ID),
-                    CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + layer.get(StringConstants.NAME),
+                    CommonData.getLayersServer() + "/layers/view/more/" + layer.get("spid"),
+                    CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + ((JSONObject) layer.get("layer")).get(StringConstants.NAME),
                     LayerUtilitiesImpl.ENVIRONMENTAL_ENVELOPE,
                     null, null, null);
         } else {
-            ml.setUri(layer.get("displaypath").toString().replace("/gwc/service", "") + "&sld_body=" + filter);
+            ml.setUri(((JSONObject) layer.get("layer")).get("displaypath").toString().replace("/gwc/service", "") + "&sld_body=" + filter);
             mc.reloadMapLayerNowAndIndexes(ml);
         }
 
@@ -651,7 +652,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     List<Facet> getFacets() {
         List<Facet> facets = new ArrayList<Facet>();
         for (int i = 0; i < selectedLayers.size(); i++) {
-            SPLFilter splf = selectedSPLFilterLayers.get(selectedLayers.get(i).get(StringConstants.NAME));
+            SPLFilter splf = selectedSPLFilterLayers.get(selectedLayers.get(i).get(StringConstants.ID));
             Facet f = new Facet(CommonData.getLayerFacetName(splf.getLayername()), splf.getMinimumValue(), splf.getMaximumValue(), true);
             facets.add(f);
         }
@@ -661,7 +662,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     String getWkt() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < selectedLayers.size(); i++) {
-            SPLFilter splf = selectedSPLFilterLayers.get(selectedLayers.get(i).get(StringConstants.NAME));
+            SPLFilter splf = selectedSPLFilterLayers.get(selectedLayers.get(i).get(StringConstants.ID));
             if (sb.length() > 0) {
                 sb.append(":");
             }
@@ -685,7 +686,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         }
         for (int i = 0; i < selectedLayers.size(); i++) {
             JSONObject layer = selectedLayers.get(i);
-            sb.append(layer.get(StringConstants.NAME));
+            sb.append(layer.get(StringConstants.ID));
             if (i < selectedLayers.size() - 1) {
                 sb.append("|");
             }
