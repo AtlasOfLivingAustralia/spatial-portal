@@ -71,7 +71,7 @@ public class AddLayerController extends ToolComposer {
                         treeName = StringUtils.capitalize(field.get(StringConstants.NAME).toString());
                         treePath = layer.get("displaypath").toString();
                         legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" +
-                                layer.get(StringConstants.NAME).toString() + "&style=" + name + "_style";
+                                layer.get(StringConstants.NAME).toString() + "&styles=" + name + "_style";
                         metadata = CommonData.getLayersServer() + "/layers/view/more/" + uid;
                         break;
                     }

@@ -228,7 +228,8 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
             String type = lyr.get(StringConstants.TYPE).toString();
             String treeName = StringUtils.capitalize(field.get(StringConstants.NAME).toString());
             String treePath = lyr.get("displaypath").toString();
-            String legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + name + "&style=" + name + "_style";
+            String legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER="
+                    + name + "&styles=" + name + "_style";
             String metadata = CommonData.getLayersServer() + "/layers/view/more/" + uid;
 
             //is it already mapped with the same display name?

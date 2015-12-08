@@ -1140,11 +1140,13 @@ public class AreaReportPDF {
             JSONObject layer = (JSONObject) field.get("layer");
             String name = field.get(StringConstants.ID).toString();
             if (name.equals(layerName)) {
+                String fieldId = field.get(StringConstants.ID).toString();
                 uid = layer.get(StringConstants.ID).toString();
                 type = layer.get(StringConstants.TYPE).toString();
                 treeName = StringUtils.capitalize(field.get(StringConstants.NAME).toString());
                 treePath = layer.get("displaypath").toString();
-                legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + layerName;
+                legendurl = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" +
+                        layerName + (fieldId.length() < 10 ? "&styles=" + fieldId + "_style" : "");
                 metadata = CommonData.getLayersServer() + "/layers/view/more/" + uid;
                 break;
             }
@@ -1259,7 +1261,9 @@ public class AreaReportPDF {
         mapLayer.setSubType(subType);
         mapLayer.setCql(cqlfilter);
         mapLayer.setEnvParams(envParams);
-        String uriActual = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + mapLayer.getLayer();
+        String fieldId = mapLayer.getUri().replaceAll("^.*&style=", "").replaceAll("&.*", "").replaceAll("_style", "");
+        String uriActual = CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER="
+                + mapLayer.getLayer() + (fieldId.length() < 10 ? "&styles=" + fieldId + "_style" : "");
         mapLayer.setDefaultStyleLegendUri(uriActual);
         if (metadata != null) {
             if (metadata.startsWith("http")) {

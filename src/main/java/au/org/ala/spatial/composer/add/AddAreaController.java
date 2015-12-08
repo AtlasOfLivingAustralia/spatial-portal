@@ -81,7 +81,7 @@ public class AddAreaController extends UtilityComposer {
                     break;
                 }
             }
-            if (visibleLayers) {
+            if (!visibleLayers) {
                 //present layer selection window
                 windowName = "WEB-INF/zul/layer/ContextualLayerSelection.zul";
                 overlapped = false;

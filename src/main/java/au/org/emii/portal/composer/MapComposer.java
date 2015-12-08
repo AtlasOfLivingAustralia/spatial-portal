@@ -968,7 +968,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 String newUri = CommonData.getGeoServer()
                         + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER="
-                        + mapLayer.getLayer() + (fieldId.length() < 10 ? "&style=" + fieldId + "_style" : "");
+                        + mapLayer.getLayer() + (fieldId.length() < 10 ? "&styles=" + fieldId + "_style" : "");
                 mapLayer.setDefaultStyleLegendUri(newUri);
 
                 if (metadata != null && metadata.startsWith("http")) {
@@ -1274,12 +1274,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     JSONObject layer = (JSONObject) field.get("layer");
                     String name = field.get(StringConstants.ID).toString();
                     if (name.equalsIgnoreCase(s)) {
+                        String fieldId = field.get(StringConstants.ID).toString();
                         String uid = layer.get(StringConstants.ID).toString();
                         String type = layer.get(StringConstants.TYPE).toString();
                         String treeName = StringUtils.capitalize(field.get(StringConstants.NAME).toString());
                         String treePath = layer.get("displaypath").toString();
                         String legendurl = CommonData.getGeoServer()
-                                + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s;
+                                + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + s
+                                + (fieldId.length() < 10 ? "&styles=" + fieldId + "_style" : "");
                         String metadata = CommonData.getLayersServer() + "/layers/view/more/" + uid;
                         getMapComposer().addWMSLayer(s, treeName, treePath, (float) 0.75, metadata, legendurl,
                                 StringConstants.ENVIRONMENTAL.equalsIgnoreCase(type) ?
