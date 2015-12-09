@@ -66,11 +66,11 @@ public class ScatterplotComposer extends ToolComposer {
 
         JSONObject jo = cbLayer1.getSelectedItem().getValue();
         String lyr1name = cbLayer1.getText();
-        String lyr1value = jo.get(StringConstants.ID).toString();
+        String lyr1value = jo.containsKey(StringConstants.ID) ? jo.get(StringConstants.ID).toString() : jo.get(StringConstants.NAME).toString();
 
         jo = cbLayer2.getSelectedItem().getValue();
         String lyr2name = cbLayer2.getText();
-        String lyr2value = jo.get(StringConstants.ID).toString();
+        String lyr2value = jo.containsKey(StringConstants.ID) ? jo.get(StringConstants.ID).toString() : jo.get(StringConstants.NAME).toString();
 
         String pid = "";
 

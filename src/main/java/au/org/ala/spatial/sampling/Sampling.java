@@ -71,15 +71,24 @@ public final class Sampling {
             String statusUrl = jo.get("statusUrl").toString();
 
             //wait until done, or until it fails
-            String downloadUrl;
+            String downloadUrl = null;
             int count = 0;
-            while ((downloadUrl = getDownloadUrl(statusUrl)) != null) {
+            int retryMax = 10;
+            int retry = 0;
+            while (retry < retryMax) {
+                Thread.sleep(2000);
+                while ((downloadUrl = getDownloadUrl(statusUrl)) != null) {
 
-                if (!downloadUrl.isEmpty() || downloadUrl == null) {
-                    break;
+                    retry = 0;
+
+                    if (!downloadUrl.isEmpty() || downloadUrl == null) {
+                        retry = retryMax;
+                        break;
+                    }
+
+                    count++;
                 }
-
-                count++;
+                retry++;
             }
 
             if (downloadUrl != null) {

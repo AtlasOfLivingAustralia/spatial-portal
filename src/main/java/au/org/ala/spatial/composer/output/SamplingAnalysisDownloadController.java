@@ -16,4 +16,8 @@ public class SamplingAnalysisDownloadController extends UtilityComposer {
         getMapComposer().downloadSecond(event);
         this.detach();
     }
+
+    public void onClick$btnCancel(Event event) {
+        this.detach();
+    }
 }

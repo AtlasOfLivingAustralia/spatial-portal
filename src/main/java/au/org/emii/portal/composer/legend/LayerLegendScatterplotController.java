@@ -196,6 +196,19 @@ public class LayerLegendScatterplotController extends UtilityComposer implements
     void updateCount(String txt) {
         if (txt != null && !txt.isEmpty()) {
             data.setSelectionCount(Integer.parseInt(txt));
+
+            //cannot facet when layers are not indexed
+            String e1 = CommonData.getLayerFacetName(data.getLayer1());
+            String e2 = CommonData.getLayerFacetName(data.getLayer2());
+            if (!CommonData.getBiocacheLayerList().contains(e1)) {
+                tbxSelectionCount.setValue("Cannot select records. " + data.getLayer1Name() + " is not indexed");
+                return;
+            }
+            if (!CommonData.getBiocacheLayerList().contains(e2)) {
+                tbxSelectionCount.setValue("Cannot select records. " + data.getLayer2Name() + " is not indexed");
+                return;
+            }
+
             tbxSelectionCount.setValue("Records selected: " + txt);
             if (data.getSelectionCount() > 0) {
                 addNewLayers.setVisible(true);
@@ -370,6 +383,11 @@ public class LayerLegendScatterplotController extends UtilityComposer implements
         String e1 = CommonData.getLayerFacetName(data.getLayer1());
         String e2 = CommonData.getLayerFacetName(data.getLayer2());
 
+        //cannot facet when layers are not indexed
+        if (!CommonData.getBiocacheLayerList().contains(e1) || !CommonData.getBiocacheLayerList().contains(e2)) {
+            return null;
+        }
+
         if (chkSelectMissingRecords.isChecked() && data.getPrevSelection() == null) {
             fq = "-(" + e1 + ":[* TO *] AND " + e2 + ":[* TO *])";
         } else if (data.getPrevSelection() != null) {
@@ -395,6 +413,12 @@ public class LayerLegendScatterplotController extends UtilityComposer implements
         String fq = "*:*";
         String e1 = CommonData.getLayerFacetName(data.getLayer1());
         String e2 = CommonData.getLayerFacetName(data.getLayer2());
+
+        //cannot facet when layers are not indexed
+        if (!CommonData.getBiocacheLayerList().contains(e1) || !CommonData.getBiocacheLayerList().contains(e2)) {
+            return null;
+        }
+
         if (chkSelectMissingRecords.isChecked() && data.getPrevSelection() == null) {
             fq = e1 + ":[* TO *] AND " + e2 + ":[* TO *]";
         } else if (data.getPrevSelection() != null) {

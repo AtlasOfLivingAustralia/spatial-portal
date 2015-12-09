@@ -841,7 +841,7 @@ public class ToolComposer extends UtilityComposer {
                     && divSpeciesSearch != null) {
                 divSpeciesSearch.setVisible(true);
                 vboxMultiple.setVisible(false);
-                divLifeform.setVisible(false);
+                if (divLifeform != null) divLifeform.setVisible(false);
                 if (event != null) {
                     toggles();
                 }

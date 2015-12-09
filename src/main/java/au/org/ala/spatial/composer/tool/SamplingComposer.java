@@ -36,8 +36,8 @@ public class SamplingComposer extends ToolComposer {
         this.selectedMethod = StringConstants.SAMPLING;
         this.totalSteps = 3;
 
-        this.setIncludeAnalysisLayersForUploadQuery(false);
-        this.setIncludeAnalysisLayersForAnyQuery(false);
+        this.setIncludeAnalysisLayersForUploadQuery(true);
+        this.setIncludeAnalysisLayersForAnyQuery(true);
 
         this.loadAreaLayers();
         this.loadSpeciesLayers();

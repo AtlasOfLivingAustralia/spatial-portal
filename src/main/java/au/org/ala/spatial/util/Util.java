@@ -535,7 +535,7 @@ public final class Util {
     }
 
     public static boolean isLoggedIn() {
-        return getUserEmail() != null;
+        return getUserEmail() != null && !"guest@ala.org.au".equals(getUserEmail());
     }
 
     public static WKTReducedDTO reduceWKT(String originalWKT) {

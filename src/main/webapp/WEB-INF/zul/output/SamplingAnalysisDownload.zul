@@ -1,13 +1,26 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
-<zk>
-    <window id="alocprogress" title="Points sample analysis intersection download" border="normal"
+<zk xmlns="http://www.zkoss.org/2005/zul">
+    <window id="samplinganalysisdownload" title="Points sample analysis intersection download" border="normal"
     use="au.org.ala.spatial.composer.output.SamplingAnalysisDownloadController"
             apply="au.org.ala.spatial.composer.output.SamplingAnalysisDownloadController"
-            closable="false" mode="embedded" width="320px"
+            closable="false" mode="embedded" width="600px"
             style="overflow:visible"
-            >
+            xmlns:n="http://www.zkoss.org/2005/zk/native">
+            <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+                    <n:div class="fancybox-bg" id="fancybox-bg-se" />
+                    <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+                    <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+                    <n:div class="fancybox-bg" id="fancybox-bg-n" />
+                    <n:div class="fancybox-bg" id="fancybox-bg-e" />
+                    <n:div class="fancybox-bg" id="fancybox-bg-s" />
+                    <n:div class="fancybox-bg" id="fancybox-bg-w" />
+                    <a sclass="fancybox-close" onClick="samplinganalysisdownload.onClick$btnCancel(null)" style="display: inline" />
+
             <caption id="cTitle" />
+                    <separator />
+            <label value="Intersections with selected analysis output layers and selected layers that are not indexed
+              can be downloaded here." />
             <div class="btn-group">
                 <button class="btn-primary" id="btnDownload" label="Download" />
             </div>

@@ -1568,20 +1568,40 @@ function envLayerHover(e, displayFull) {
         var names = "";
         for (var i = layers.length - 1; i >= 0; i--) {
             var layer = layers[i];
-
+            var found = true
             var p0 = layer.url.indexOf("geoserver");
             var p1 = layer.url.indexOf("&style=") + 7;
             var p2 = layer.url.indexOf("_style", p1 + 1);
             if (p0 < 0 || p1 < 7 || p1 < 1) {
-                continue;
+                found = false;
             }
 
-            if (p2 < 1) p2 = layer.url.length;
+            if (found) {
+                if (p2 < 1) p2 = layer.url.length;
 
-            if (names.length > 0) {
-                names = names + ",";
+                if (layer.url.substring(p1, p2).indexOf("&") >= 0) found = false
+                else {
+                    if (names.length > 0) {
+                        names = names + ",";
+                    }
+                    names = names + layer.url.substring(p1, p2);
+                }
             }
-            names = names + layer.url.substring(p1, p2);
+
+            if (!found) {
+                var p1 = layer.url.indexOf("=ALA:") + 5;
+                var p2 = layer.url.indexOf("&", p1 + 1);
+                if (p0 < 0 || p1 < 5 || p1 < 1) {
+                    continue
+                }
+
+                if (p2 < 1) p2 = layer.url.length;
+
+                if (names.length > 0) {
+                    names = names + ",";
+                }
+                names = names + layer.url.substring(p1, p2);
+            }
         }
 
         if (names.length == 0) {
