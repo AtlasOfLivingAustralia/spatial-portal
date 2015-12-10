@@ -12,9 +12,7 @@ import au.org.ala.spatial.sampling.Sampling;
 import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Query;
 import au.org.ala.spatial.util.Util;
-import au.org.emii.portal.menu.MapLayer;
 import org.apache.log4j.Logger;
-import org.zkoss.zul.Filedownload;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
@@ -33,7 +31,8 @@ public final class SamplingDownloadUtil {
         //to hide public constructor
     }
 
-    public static void downloadSecond(MapComposer mc, Query downloadSecondQuery, String[] downloadSecondLayers) {
+    public static byte[] downloadSecond(MapComposer mc, Query downloadSecondQuery, String[] downloadSecondLayers,
+                                        String[] downloadSecondLayersDN) {
         LOGGER.debug("attempting to sample biocache records with analysis layers: " + downloadSecondQuery);
         if (downloadSecondQuery != null) {
             try {
@@ -77,20 +76,10 @@ public final class SamplingDownloadUtil {
                     List<String> layers = new ArrayList<String>();
                     StringBuilder sb = new StringBuilder();
                     sb.append("id,longitude,latitude");
-                    for (String layer : downloadSecondLayers) {
+                    for (int i = 0; i < downloadSecondLayers.length; i++) {
+                        String layer = downloadSecondLayers[i];
                         sb.append(",");
-                        String name = CommonData.getLayerDisplayName(layer);
-                        if (name == null) {
-                            name = CommonData.getFacetLayerDisplayNameDefault(layer);
-                            if (name == null) {
-                                MapLayer ml = mc.getMapLayer(layer);
-                                if (ml == null) {
-                                    name = layer;
-                                } else {
-                                    name = ml.getDisplayName();
-                                }
-                            }
-                        }
+                        String name = downloadSecondLayersDN[i];
                         sb.append(name);
 
                         layers.add(CommonData.getLayerFacetName(layer));
@@ -115,13 +104,14 @@ public final class SamplingDownloadUtil {
                     zos.write(sb.toString().getBytes());
                     zos.close();
 
-                    Filedownload.save(baos.toByteArray(), "application/zip", "analysis_output_intersect.zip");
-
+                    return baos.toByteArray();
 
                 }
             } catch (Exception e) {
                 LOGGER.error("error downloading samping records", e);
             }
         }
+
+        return null;
     }
 }

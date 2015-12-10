@@ -238,7 +238,7 @@ public class ALOCComposer extends ToolComposer {
         try {
             layerLabel = tToolName.getValue();
 
-            String sbenvsel = getSelectedLayers();
+            String sbenvsel = getSelectedLayersWithDisplayNames();
             if (sbenvsel.split(":").length > 50) {
                 getMapComposer().showMessage(sbenvsel.split(":").length + " layers selected.  Please select fewer than 50 environmental layers in step 1.");
                 return false;

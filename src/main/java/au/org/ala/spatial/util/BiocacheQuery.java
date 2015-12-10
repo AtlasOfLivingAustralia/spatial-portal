@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipInputStream;
 
 /**
  * TODO NC 2013-08-15 - Remove all the references to the "include null" gesopatially kosher. I have removed from the UI but I didn't want to
@@ -36,7 +37,7 @@ import java.util.zip.GZIPInputStream;
  * @author Adam
  */
 public class BiocacheQuery implements Query, Serializable {
-    static final String SAMPLING_SERVICE_CSV_GZIP = "/webportal/occurrences.gz?";
+    static final String SAMPLING_SERVICE_CSV_GZIP = "/occurrences/index/download?facet=false&reasonTypeId=10&qa=none";
     static final String SAMPLING_SERVICE = "/webportal/occurrences?";
     static final String SPECIES_LIST_SERVICE_CSV = "/occurrences/facets/download?facets=names_and_lsid&lookup=true&count=true&";
     static final String SPECIES_COUNT_SERVICE = "/occurrence/facets?facets=names_and_lsid";
@@ -50,7 +51,7 @@ public class BiocacheQuery implements Query, Serializable {
     static final String QID_DETAILS = "/webportal/params/details/";
     static final String ENDEMIC_COUNT_SERVICE = "/explore/counts/endemic?";
     static final String ENDEMIC_SPECIES_SERVICE_CSV = "/explore/endemic/species.csv?";
-    static final String DEFAULT_ROWS = "pageSize=1000000";
+    static final String DEFAULT_ROWS = "&pageSize=1000000";
     static final String DEFAULT_ROWS_LARGEST = "pageSize=1000000";
     static final Pattern QUERY_PARAMS_PATTERN = Pattern.compile("&([a-zA-Z0-9_\\-]+)=");
     /**
@@ -574,7 +575,7 @@ public class BiocacheQuery implements Query, Serializable {
                 + SAMPLING_SERVICE_CSV_GZIP
                 + DEFAULT_ROWS
                 + "&q=" + getQ()
-                + paramQueryFields(fields)
+                + paramQueryFields(fields).replace("&fl=", "&fields=")
                 + getQc();
         LOGGER.debug(url);
         GetMethod get = new GetMethod(url);
@@ -584,7 +585,7 @@ public class BiocacheQuery implements Query, Serializable {
         long start = System.currentTimeMillis();
         try {
             client.executeMethod(get);
-            sample = decompressGz(get.getResponseBodyAsStream());
+            sample = decompressZip(get.getResponseBodyAsStream());
 
             //in the first line do field name replacement
             for (QueryField f : fields) {
@@ -1221,6 +1222,29 @@ public class BiocacheQuery implements Query, Serializable {
             LOGGER.error("error decompressing gz stream", e);
         }
         gzipped.close();
+
+        return s;
+    }
+
+    private String decompressZip(InputStream zipped) throws IOException {
+        String s = null;
+        try {
+            ZipInputStream gzip = new ZipInputStream(zipped);
+
+            //data.csv
+            gzip.getNextEntry();
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(1048576);
+            byte[] buffer = new byte[1048576];
+            int size;
+            while ((size = gzip.read(buffer)) >= 0) {
+                baos.write(buffer, 0, size);
+            }
+            s = new String(baos.toByteArray());
+        } catch (Exception e) {
+            LOGGER.error("error decompressing gz stream", e);
+        }
+        zipped.close();
 
         return s;
     }

@@ -90,7 +90,9 @@ public class ActiveLayerRenderer implements ListitemRenderer {
         if (layer.isGridLayer() ||
                 layer.getSubType() == LayerUtilitiesImpl.GDM ||
                 layer.getSubType() == LayerUtilitiesImpl.MAXENT ||
-                layer.getSubType() == LayerUtilitiesImpl.ALOC) {
+                layer.getSubType() == LayerUtilitiesImpl.ALOC ||
+                layer.getSubType() == LayerUtilitiesImpl.SRICHNESS ||
+                layer.getSubType() == LayerUtilitiesImpl.ODENSITY) {
             legend = new Image(languagePack.getLang("icon_grid"));
         } else if (layer.isSpeciesLayer()) {
             legend = new Image(languagePack.getLang("icon_species"));

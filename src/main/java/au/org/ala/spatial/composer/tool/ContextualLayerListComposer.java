@@ -150,6 +150,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
             for (int i = 0; i < alCat1.size(); i++) {
                 if (stnCat2.toString().equals(alCat1.get(i).toString())) {
                     found = true;
+                    ((DefaultTreeNode) alCat1.get(i)).add(treeNode);
                     break;
                 }
             }
@@ -201,7 +202,8 @@ public class ContextualLayerListComposer extends UtilityComposer {
                 String displayname = joLayer.get(StringConstants.NAME).toString();
                 displayname = (displayname.contains(">")) ? displayname.split(">")[1] : displayname;
                 Treecell tcName = new Treecell();
-                if (!"node".equals(((JSONObject) joLayer.get("layer")).get(StringConstants.TYPE))) {
+                String type = ((JSONObject) joLayer.get("layer")).get(StringConstants.TYPE).toString();
+                if (!"node".equals(type)) {
                     Html img = new Html("<i class='icon-info-sign'></i>");
 
                     img.addEventListener(StringConstants.ONCLICK, new EventListener() {
@@ -223,12 +225,12 @@ public class ContextualLayerListComposer extends UtilityComposer {
                 Label lbl = new Label(displayname);
                 lbl.setParent(tcName);
 
-                if (!"node".equals(joLayer.get(StringConstants.TYPE))) {
+                if (!"node".equals(type)) {
                     tr.setAttribute("lyr", joLayer);
                 }
 
                 // Attach onclick events:
-                if (!"node".equals(joLayer.get(StringConstants.TYPE))) {
+                if (!"node".equals(type)) {
 
                     // tcAdd
                     tr.addEventListener(StringConstants.ONCLICK, new EventListener() {

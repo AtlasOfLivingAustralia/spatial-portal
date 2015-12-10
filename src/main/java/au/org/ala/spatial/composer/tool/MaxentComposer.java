@@ -98,7 +98,7 @@ public class MaxentComposer extends ToolComposer {
             sa = getSelectedArea();
             query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
 
-            sbenvsel = getSelectedLayers();
+            sbenvsel = getSelectedLayersWithDisplayNames();
         }
     }
 

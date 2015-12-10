@@ -139,7 +139,7 @@ public class GDMComposer extends ToolComposer {
         try {
             SelectedArea sa = getSelectedArea();
             query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
-            sbenvsel = getSelectedLayers();
+            sbenvsel = getSelectedLayersWithDisplayNames();
 
             if (query.getSpeciesCount() < 2) {
                 getMapComposer().showMessage("An list of species with multiple occurrences for each species is required by GDM.", this);
@@ -294,7 +294,6 @@ public class GDMComposer extends ToolComposer {
     }
 
     public void step2Status(Event event) {
-
         try {
             String response = Util.readUrl(CommonData.getSatServer() + "/ws/gdm/step2/status?id=" + step2Id);
             if (response != null) {
@@ -420,9 +419,12 @@ public class GDMComposer extends ToolComposer {
 
     public void loadMap(Event event) {
 
-        String[] envlist = getSelectedLayers().split(":");
+        String[] envlist = getSelectedLayersWithDisplayNames().split(":");
 
-        for (String env : envlist) {
+        for (String env2 : envlist) {
+            String env = env2.split("\\|")[0];
+            String displayName = env2.split("\\|")[1];
+
             String mapurl = CommonData.getGeoServer() + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:gdm_" + env + "Tran_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
 
             String legendurl = CommonData.getGeoServer()
@@ -432,7 +434,7 @@ public class GDMComposer extends ToolComposer {
 
             LOGGER.debug(legendurl);
 
-            String layername = "Tranformed " + CommonData.getLayerDisplayName(env);
+            String layername = "Tranformed " + displayName;
             getMapComposer().addWMSLayer(pid + "_" + env, layername, mapurl, (float) 0.5, null, legendurl, LayerUtilitiesImpl.GDM, null, null);
             MapLayer ml = getMapComposer().getMapLayer(pid + "_" + env);
             ml.setPid(pid + "_" + env);

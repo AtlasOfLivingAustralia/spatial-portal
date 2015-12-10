@@ -32,7 +32,6 @@ public class SamplingComposer extends ToolComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-
         this.selectedMethod = StringConstants.SAMPLING;
         this.totalSteps = 3;
 
@@ -77,35 +76,41 @@ public class SamplingComposer extends ToolComposer {
 
             //translate layer names
             String[] layers = null;
-            String envlayers = getSelectedLayers();
+            String[] layersDisplaynames = null;
+            String envlayers = getSelectedLayersWithDisplayNames();
             if (envlayers.length() > 0) {
                 layers = envlayers.split(":");
+                layersDisplaynames = new String[layers.length];
                 for (int i = 0; i < layers.length; i++) {
-                    String l = layers[i];
-                    String newName = CommonData.getLayerFacetName(layers[i]);
-                    if (layers[i] == null || newName == null || layers[i].equals(newName)) {
-                        LOGGER.debug("failed to getLayerFacetName for " + l);
-                    } else {
-                        layers[i] = newName;
-                    }
+                    String[] l = layers[i].split("\\|");
+                    String newName = CommonData.getLayerFacetName(l[0]);
+
+                    layers[i] = newName;
+                    layersDisplaynames[i] = l[1];
                 }
             }
 
             if (query instanceof BiocacheQuery) {
                 String[] inBiocache = null;
                 String[] outBiocache;
+                String[] outBiocacheDN;
 
                 //split layers into 'in biocache' and 'out of biocache'
                 Set<String> biocacheLayers = CommonData.getBiocacheLayerList();
                 List<String> aInBiocache = new ArrayList<String>();
                 List<String> aOutBiocache = new ArrayList<String>();
+                List<String> aInBiocacheDN = new ArrayList<String>();
+                List<String> aOutBiocacheDN = new ArrayList<String>();
 
                 if (layers != null) {
-                    for (String s : layers) {
+                    for (int i = 0; i < layers.length; i++) {
+                        String s = layers[i];
                         if (biocacheLayers.contains(s)) {
                             aInBiocache.add(s);
+                            aInBiocacheDN.add(layersDisplaynames[i]);
                         } else {
                             aOutBiocache.add(s);
+                            aOutBiocacheDN.add(layersDisplaynames[i]);
                         }
                     }
                 }
@@ -116,14 +121,16 @@ public class SamplingComposer extends ToolComposer {
                 if (!aOutBiocache.isEmpty()) {
                     outBiocache = new String[aOutBiocache.size()];
                     aOutBiocache.toArray(outBiocache);
+                    outBiocacheDN = new String[aOutBiocacheDN.size()];
+                    aOutBiocacheDN.toArray(outBiocacheDN);
                     getMapComposer().setDownloadSecondQuery(query);
-                    getMapComposer().setDownloadSecondLayers(outBiocache);
+                    getMapComposer().setDownloadSecondLayers(outBiocache, outBiocacheDN);
                     SamplingAnalysisDownloadController c = (SamplingAnalysisDownloadController) Executions.createComponents("/WEB-INF/zul/output/SamplingAnalysisDownload.zul", getMapComposer(), null);
                     c.setParent(getMapComposer());
                     c.doModal();
                 } else {
                     getMapComposer().setDownloadSecondQuery(null);
-                    getMapComposer().setDownloadSecondLayers(null);
+                    getMapComposer().setDownloadSecondLayers(null, null);
                 }
 
                 //test for URL download

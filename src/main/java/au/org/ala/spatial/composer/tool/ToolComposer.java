@@ -1592,6 +1592,24 @@ public class ToolComposer extends UtilityComposer {
         return layers;
     }
 
+    public String getSelectedLayersWithDisplayNames() {
+        String layers = "";
+
+        try {
+            if (lbListLayers.getSelectedLayers().length > 0) {
+                String[] sellayers = lbListLayers.getSelectedLayersWithDisplayNames();
+                for (String l : sellayers) {
+                    layers += l + ":";
+                }
+                layers = layers.substring(0, layers.length() - 1);
+            }
+        } catch (Exception e) {
+            LOGGER.warn("Unable to retrieve selected layers", e);
+        }
+
+        return layers;
+    }
+
     void setLsid(String lsidName) {
         try {
 

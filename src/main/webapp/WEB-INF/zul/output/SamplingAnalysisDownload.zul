@@ -21,8 +21,12 @@
                     <separator />
             <label value="Intersections with selected analysis output layers and selected layers that are not indexed
               can be downloaded here." />
+              <separator />
+              <label id="layersForIndexing" value="" />
+              <separator />
+             <label style="color:red" id="statusLabel" value="" />
             <div class="btn-group">
-                <button class="btn-primary" id="btnDownload" label="Download" />
+                <button class="btn-primary" id="btnDownload" label="Download" disabled="true"/>
             </div>
     </window>
 </zk>

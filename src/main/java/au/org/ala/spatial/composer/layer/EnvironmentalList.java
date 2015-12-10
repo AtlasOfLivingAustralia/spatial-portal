@@ -344,6 +344,22 @@ public class EnvironmentalList extends Listbox {
         return selected;
     }
 
+    public String[] getSelectedLayersWithDisplayNames() {
+        this.setMultiple(true);
+
+        Set selectedItems = getSelectedItems();
+        String[] selected = new String[selectedItems.size()];
+        int i = 0;
+        LOGGER.debug("getSelectedLayers: ");
+        for (Object o : selectedItems) {
+            selected[i] = listEntries.get(((Listitem) o).getIndex()).getName() + "|" + listEntries.get(((Listitem) o).getIndex()).getDisplayName().replace(":", ";").replace('|', ';');
+            i++;
+            LOGGER.debug(listEntries.get(((Listitem) o).getIndex()).getDisplayName() + ", " + listEntries.get(((Listitem) o).getIndex()).getName());
+        }
+        LOGGER.debug("");
+        return selected;
+    }
+
     public void selectLayers(String[] layers) {
         this.setMultiple(true);
 

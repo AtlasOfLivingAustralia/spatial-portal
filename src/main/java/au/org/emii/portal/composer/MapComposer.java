@@ -88,6 +88,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private MapLayer llc2MapLayer;
     private Query downloadSecondQuery = null;
     private String[] downloadSecondLayers = null;
+    private String[] downloadSecondLayersDN = null;
     private Listbox activeLayersList;
     private ActiveLayerRenderer activeLayerRenderer = null;
     private HtmlMacroComponent contextualMenu;
@@ -964,7 +965,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 mapLayer.setCql(cqlfilter);
                 mapLayer.setEnvParams(envParams);
 
-                String fieldId = mapLayer.getUri().replaceAll("^.*&style=", "").replaceAll("&.*", "").replaceAll("_style", "");
+                String fieldId = mapLayer.getUri().replaceAll("^.*&styles=", "").replaceAll("&.*", "").replaceAll("_style", "");
 
                 String newUri = CommonData.getGeoServer()
                         + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER="
@@ -3285,7 +3286,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void downloadSecond(Event event) {
-        SamplingDownloadUtil.downloadSecond(this, downloadSecondQuery, downloadSecondLayers);
+    }
+
+    public Query getDownloadSecondQuery() {
+        return downloadSecondQuery;
+    }
+
+    public String[] getDownloadSecondLayers() {
+        return downloadSecondLayers;
+    }
+
+    public String[] getDownloadSecondLayersDN() {
+        return downloadSecondLayersDN;
     }
 
     public void openFacets(Event event) {
@@ -3349,7 +3361,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         this.downloadSecondQuery = downloadSecondQuery;
     }
 
-    public void setDownloadSecondLayers(String[] downloadSecondLayers) {
+    public void setDownloadSecondLayers(String[] downloadSecondLayers, String[] downloadSecondLayersDN) {
         this.downloadSecondLayers = downloadSecondLayers == null ? null : downloadSecondLayers.clone();
+        this.downloadSecondLayersDN = downloadSecondLayersDN == null ? null : downloadSecondLayersDN.clone();
     }
 }
