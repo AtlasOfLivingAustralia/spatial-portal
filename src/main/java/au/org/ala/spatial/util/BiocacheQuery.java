@@ -1111,7 +1111,13 @@ public class BiocacheQuery implements Query, Serializable {
         }
 
         try {
-            return sb.toString();
+            String q = sb.toString();
+            if (q.startsWith("&fq=")) {
+                q = q.substring(4);
+            } else if (q.startsWith("fq%28")) {
+                q = q.substring(5);
+            }
+            return q;
         } catch (Exception e) {
             LOGGER.error("error returning a string", e);
         }
