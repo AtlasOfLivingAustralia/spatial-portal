@@ -62,7 +62,7 @@ public class AddSpeciesInArea extends UtilityComposer {
             for (int i = 0; layers != null && i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
-                rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
+                rAr.setId(lyr.getDisplayName().replaceAll(" ", "") + i);
                 rAr.setValue(lyr.getName());
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);

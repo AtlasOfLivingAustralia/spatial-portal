@@ -643,7 +643,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
                     (float) 0.75,
                     CommonData.getLayersServer() + "/layers/view/more/" + layer.get("spid"),
                     CommonData.getGeoServer() + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=9&LAYER=" + ((JSONObject) layer.get("layer")).get(StringConstants.NAME),
-                    LayerUtilitiesImpl.ENVIRONMENTAL_ENVELOPE,
+                    LayerUtilitiesImpl.WMS_1_3_0,
                     null, null, null);
         } else {
             ml.setUri(((JSONObject) layer.get("layer")).get("displaypath").toString().replace("/gwc/service", "") + "&sld_body=" + filter);
