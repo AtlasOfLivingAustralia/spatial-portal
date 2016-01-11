@@ -614,15 +614,19 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     private MapLayer loadMap(JSONObject layer, int depth, double min, double max, boolean finalLayer) {
 
         String colour = finalLayer ? "0xFF0000" : FILTER_COLOURS[depth % FILTER_COLOURS.length];
+
+        //correct for data type conversions
+        double correction = 0.0000001;
+
         String filter
                 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><StyledLayerDescriptor xmlns=\"http://www.opengis.net/sld\">"
                 + "<NamedLayer><Name>ALA:" + ((JSONObject) layer.get("layer")).get(StringConstants.NAME) + "</Name>"
                 + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
                 + "<ColorMap>"
-                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"1\" quantity=\"" + (min - Math.abs(min * 0.01)) + "\"/>"
-                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"0\" quantity=\"" + min + "\"/>"
-                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"0\" quantity=\"" + max + "\"/>"
-                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"1\" quantity=\"" + (max + Math.abs(max * 0.01)) + "\"/>"
+                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"1\" quantity=\"" + (min - correction) + "\"/>"
+                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"0\" quantity=\"" + (min - correction) + "\"/>"
+                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"0\" quantity=\"" + (max + correction) + "\"/>"
+                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"1\" quantity=\"" + (max + correction) + "\"/>"
                 + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
 
         try {
