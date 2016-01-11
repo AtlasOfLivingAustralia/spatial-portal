@@ -15,6 +15,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.operation.valid.IsValidOp;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
@@ -45,6 +46,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.*;
 
@@ -222,9 +224,10 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
 
                 Set<FeatureId> ids = new HashSet<FeatureId>();
                 ids.add(fi.next().getIdentifier());
-                loadOnMap(ids);
+                loadOnMap(ids, filename);
 
-                this.detach();
+                //echo detach
+                Events.echoEvent("onClick$btnCancel", this, null);
             }
 
             try {
@@ -274,14 +277,14 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
                 ids.add((FeatureId) li.getValue());
             }
 
-            loadOnMap(ids);
+            loadOnMap(ids, file);
             this.detach();
         } catch (Exception ex) {
             LOGGER.error("Error iterating thru' features", ex);
         }
     }
 
-    private void loadOnMap(Set<FeatureId> ids) {
+    private void loadOnMap(Set<FeatureId> ids, String filename) {
         try {
             final FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
             Filter filter = ff.id(ids);
@@ -293,7 +296,26 @@ public class AreaUploadShapefileWizardController extends UtilityComposer {
             // allow for some error due to different datums
             boolean lenient = true;
             if (dataCRS == null) {
-                dataCRS = DefaultGeographicCRS.WGS84;
+                //attempt to parse prj
+                try {
+                    File prjFile = new File(filename.substring(0, filename.length() - 3) + "prj");
+                    if (prjFile.exists()) {
+                        String prj = FileUtils.readFileToString(prjFile);
+
+                        if (prj.equals("PROJCS[\"WGS_1984_Web_Mercator_Auxiliary_Sphere\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Mercator_Auxiliary_Sphere\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",0.0],PARAMETER[\"Standard_Parallel_1\",0.0],PARAMETER[\"Auxiliary_Sphere_Type\",0.0],UNIT[\"Meter\",1.0]]")) {
+                            //support for arcgis online default shp exports
+                            dataCRS = CRS.decode("EPSG:3857");
+                        } else {
+                            dataCRS = CRS.parseWKT(FileUtils.readFileToString(prjFile));
+                        }
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("failed to read prj for " + filename);
+                }
+
+                if (dataCRS == null) {
+                    dataCRS = DefaultGeographicCRS.WGS84;
+                }
             }
             MathTransform transform = CRS.findMathTransform(dataCRS, wgsCRS, lenient);
 
