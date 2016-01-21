@@ -1417,7 +1417,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         sb.append("&").append(key).append("=").append(value);
                     }
                 } else if ("qc".equals(key)) {
-                    qc = "&qc=" + URLEncoder.encode(value, StringConstants.UTF_8);
+                    if (StringUtils.isNotEmpty(qc)) {
+                        qc = "&qc=" + URLEncoder.encode(value, StringConstants.UTF_8);
+                    }
                 } else if ("bs".equals(key)) {
                     bs = value;
                 } else if ("ws".equals(key)) {

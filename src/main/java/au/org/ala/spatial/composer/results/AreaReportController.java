@@ -15,6 +15,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -669,7 +670,8 @@ public class AreaReportController extends UtilityComposer {
 
         //url
         if (count > 0) {
-            dto.addUrlDetails(VIEW_RECORDS, CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+            dto.addUrlDetails(VIEW_RECORDS, CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() +
+                    (StringUtils.isNotEmpty(sq.getQc()) ? sq.getQc() : ""));
 
             dto.setExtraParams(query);
             dto.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.LIST, ExtraInfoEnum.MAP_ALL});
@@ -720,7 +722,8 @@ public class AreaReportController extends UtilityComposer {
 
                 return countsData;
             } else {
-                model.addUrlDetails(VIEW_RECORDS, CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+                model.addUrlDetails(VIEW_RECORDS, CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() +
+                        (StringUtils.isNotEmpty(sq.getQc()) ? sq.getQc() : ""));
             }
 
             countsData.put(StringConstants.OCCURRENCES_COUNT, resultsCountOccurrences);
@@ -750,8 +753,10 @@ public class AreaReportController extends UtilityComposer {
 
                 return countsData;
             } else {
-                countsData.put("viewRecordsKosherUrl", CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
-                model.addUrlDetails(VIEW_RECORDS, CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() + "&qc=" + sq.getQc());
+                countsData.put("viewRecordsKosherUrl", CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() +
+                        (StringUtils.isNotEmpty(sq.getQc()) ? sq.getQc() : ""));
+                model.addUrlDetails(VIEW_RECORDS, CommonData.getBiocacheWebServer() + "/occurrences/search?q=" + sq.getQ() +
+                        (StringUtils.isNotEmpty(sq.getQc()) ? sq.getQc() : ""));
             }
             model.setExtraInfo(new ExtraInfoEnum[]{ExtraInfoEnum.MAP_ALL, ExtraInfoEnum.SAMPLE});
             model.setGeospatialKosher(true);
