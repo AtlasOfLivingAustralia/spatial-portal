@@ -195,7 +195,11 @@ public class AreaReportController extends UtilityComposer {
         if (boundingBox != null) {
             extras += ";boundingBox: " + boundingBox[0] + "," + boundingBox[1] + "," + boundingBox[2] + "," + boundingBox[3];
         }
-        remoteLogger.logMapAnalysis(displayname, "Tool - Area Report", areaName + "__" + sa.getReducedWkt(), "", "", pid, extras, "0");
+        String wkt = sa.getWkt();
+        if (!wkt.contains("ENVELOPE")) {
+            wkt = sa.getReducedWkt();
+        }
+        remoteLogger.logMapAnalysis(displayname, "Tool - Area Report", areaName + "__" + wkt, "", "", pid, extras, "0");
 
         // start checking of completed threads
         Events.echoEvent(StringConstants.CHECK_FUTURES, this, null);
@@ -826,7 +830,7 @@ public class AreaReportController extends UtilityComposer {
             sb.append("MULTIPOINT(");
 
             if (pointsOfInterest == null) {
-                String wkt = selectedArea.getReducedWkt();
+                String wkt = selectedArea.getWkt();
                 if (wkt.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
                     // use boundingbox
                     List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
@@ -835,6 +839,8 @@ public class AreaReportController extends UtilityComposer {
                     double long2 = bbox.get(2);
                     double lat2 = bbox.get(3);
                     wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+                } else {
+                    wkt = selectedArea.getReducedWkt();
                 }
                 pointsOfInterest = getPointsOfInterest(wkt);
             }
@@ -864,7 +870,7 @@ public class AreaReportController extends UtilityComposer {
     public Map<String, Integer> intersectWithSpeciesDistributions(AreaReportItemDTO model) {
         Map<String, Integer> speciesDistributions = new HashMap<String, Integer>();
         try {
-            String wkt = selectedArea.getReducedWkt();
+            String wkt = selectedArea.getWkt();
             if (wkt.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
@@ -873,6 +879,8 @@ public class AreaReportController extends UtilityComposer {
                 double long2 = bbox.get(2);
                 double lat2 = bbox.get(3);
                 wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+            } else {
+                wkt = selectedArea.getReducedWkt();
             }
             String[] lines = Util.getDistributionsOrChecklists(StringConstants.DISTRIBUTIONS, wkt, null, null);
 
@@ -896,7 +904,7 @@ public class AreaReportController extends UtilityComposer {
     public Map<String, String> intersectWithSpeciesChecklists(AreaReportItemDTO areaModel, AreaReportItemDTO spModel) {
         Map<String, String> checklistsCounts = new HashMap<String, String>();
         try {
-            String wkt = selectedArea.getReducedWkt();
+            String wkt = selectedArea.getWkt();
             if (wkt.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
@@ -905,6 +913,8 @@ public class AreaReportController extends UtilityComposer {
                 double long2 = bbox.get(2);
                 double lat2 = bbox.get(3);
                 wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+            } else {
+                wkt = selectedArea.getReducedWkt();
             }
 
             String[] lines = Util.getDistributionsOrChecklists(StringConstants.CHECKLISTS, wkt, null, null);
@@ -937,7 +947,7 @@ public class AreaReportController extends UtilityComposer {
     public Map<String, String> countGazPoints(AreaReportItemDTO model) {
         Map<String, String> gazPointsCounts = new HashMap<String, String>();
         try {
-            String wkt = selectedArea.getReducedWkt();
+            String wkt = selectedArea.getWkt();
             if (wkt.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
@@ -946,6 +956,8 @@ public class AreaReportController extends UtilityComposer {
                 double long2 = bbox.get(2);
                 double lat2 = bbox.get(3);
                 wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+            } else {
+                wkt = selectedArea.getReducedWkt();
             }
 
             JSONArray ja = getGazPoints(wkt);
@@ -970,7 +982,7 @@ public class AreaReportController extends UtilityComposer {
     public Map<String, String> countPointsOfInterest(AreaReportItemDTO model) {
         Map<String, String> poiCounts = new HashMap<String, String>();
         try {
-            String wkt = selectedArea.getReducedWkt();
+            String wkt = selectedArea.getWkt();
             if (wkt.contains(StringConstants.ENVELOPE) && selectedArea.getMapLayer() != null) {
                 // use boundingbox
                 List<Double> bbox = selectedArea.getMapLayer().getMapLayerMetadata().getBbox();
@@ -979,6 +991,8 @@ public class AreaReportController extends UtilityComposer {
                 double long2 = bbox.get(2);
                 double lat2 = bbox.get(3);
                 wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
+            } else {
+                wkt = selectedArea.getReducedWkt();
             }
 
             int count = getPointsOfInterestCount(wkt);

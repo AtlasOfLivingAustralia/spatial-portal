@@ -1500,7 +1500,10 @@ public final class CommonData {
         JSONArray values = (JSONArray) jp.parse(Util.readUrl(CommonData.getBiocacheServer() + "/index/fields"));
         for (Object mvalues : values) {
             String name = ((JSONObject) mvalues).get(StringConstants.NAME).toString();
-            String dtype = ((JSONObject) mvalues).get("dataType").toString();
+            String dtype = "string";
+            if (((JSONObject) mvalues).containsKey("dataType"))
+                dtype = ((JSONObject) mvalues).get("dataType").toString();
+
             if ("string".equals(dtype) || "textgen".equals(dtype)) {
                 map.put(name, QueryField.FieldType.STRING);
             } else if ("int".equals(dtype) || "tint".equals(dtype) || "tdate".equals(dtype)) {

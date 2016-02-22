@@ -51,6 +51,7 @@ public class BiocacheQuery implements Query, Serializable {
     static final String QID_DETAILS = "/webportal/params/details/";
     static final String ENDEMIC_COUNT_SERVICE = "/explore/counts/endemic?";
     static final String ENDEMIC_SPECIES_SERVICE_CSV = "/explore/endemic/species.csv?";
+    static final String ENDEMIC_LIST = "/explore/endemic/species/";
     static final String DEFAULT_ROWS = "&pageSize=1000000";
     static final String DEFAULT_ROWS_LARGEST = "pageSize=1000000";
     static final Pattern QUERY_PARAMS_PATTERN = Pattern.compile("&([a-zA-Z0-9_\\-]+)=");
@@ -771,23 +772,46 @@ public class BiocacheQuery implements Query, Serializable {
             endemicSpeciesList = sb.toString();
         } else {
 
+            forMapping = true;
+            if (paramId == null) makeParamId();
+
             HttpClient client = new HttpClient();
             String url = biocacheServer
-                    + ENDEMIC_SPECIES_SERVICE_CSV
-                    + "q=" + getQ()
-                    + getQc();
-
-            /* TODO: permit query without WKT */
-            if (wkt == null || wkt.isEmpty()) {
-                url += "&wkt=" + "POLYGON((-180%20-90%2C-180%2090%2C180%2090%2C180%20-90%2C-180%20-90))";
-            }
+                    + ENDEMIC_LIST
+                    + paramId
+                    + "?facets=names_and_lsid";
 
             LOGGER.debug(url);
             GetMethod get = new GetMethod(url);
 
             try {
                 client.executeMethod(get);
-                endemicSpeciesList = get.getResponseBodyAsString();
+
+                JSONParser jp = new JSONParser();
+
+                JSONArray ja = (JSONArray) jp.parse(get.getResponseBodyAsString());
+
+                //extract endemic matches from the species list
+                String speciesList = speciesList();
+                StringBuilder sb = new StringBuilder();
+
+                int idx = speciesList.indexOf('\n');
+                if (idx > 0) {
+                    sb.append(speciesList.substring(0, idx));
+                }
+                for (int j = 0; j < ja.size(); j++) {
+                    JSONObject jo = (JSONObject) ja.get(j);
+                    if (jo.containsKey("label")) {
+                        idx = speciesList.indexOf("\n" + jo.get("label") + ",");
+                        if (idx > 0) {
+                            int lineEnd = speciesList.indexOf('\n', idx + 1);
+                            if (lineEnd < 0) lineEnd = speciesList.length();
+                            sb.append(speciesList.substring(idx, lineEnd));
+                        }
+                    }
+                }
+
+                endemicSpeciesList = sb.toString();
             } catch (Exception e) {
                 LOGGER.error("error getting endemic species result", e);
             }
