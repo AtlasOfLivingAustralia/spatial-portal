@@ -42,6 +42,9 @@ public class ScatterplotComposer extends ToolComposer {
         this.updateWindowTitle();
 
         this.updateName(getMapComposer().getNextAreaLayerName(StringConstants.MY_SCATTERPLOT));
+
+        this.cbLayer1.refresh("");
+        this.cbLayer2.refresh("");
     }
 
     @Override

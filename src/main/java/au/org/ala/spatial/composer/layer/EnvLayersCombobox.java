@@ -49,8 +49,8 @@ public class EnvLayersCombobox extends Combobox {
     }
 
     public void refresh(String val) {
-        //don't do autocomplete when < 3 characters
-        if (val.length() < 3) {
+        //don't do autocomplete when < 1 characters
+        if (val.length() < 0) {
             return;
         }
 

@@ -1274,7 +1274,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     JSONObject field = (JSONObject) layerlist.get(j);
                     JSONObject layer = (JSONObject) field.get("layer");
                     String name = field.get(StringConstants.ID).toString();
-                    if (name.equalsIgnoreCase(s)) {
+                    if (name.equalsIgnoreCase(s) || s.equalsIgnoreCase(layer.get("name").toString())) {
                         String fieldId = field.get(StringConstants.ID).toString();
                         String uid = layer.get(StringConstants.ID).toString();
                         String type = layer.get(StringConstants.TYPE).toString();

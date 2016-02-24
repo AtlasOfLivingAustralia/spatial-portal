@@ -359,12 +359,13 @@ public class ToolComposer extends UtilityComposer {
 
             public void onEvent(Event event) {
                 Menuitem mi = (Menuitem) event.getTarget();
-                cbLayer1.setValue(mi.getValue() + " ");
-                cbLayer1.refresh(mi.getValue());
+                String displayname = ((JSONObject) CommonData.getLayer(mi.getValue()).get("layer")).get("displayname").toString();
+                cbLayer1.setValue(displayname + " ");
+                cbLayer1.refresh(displayname);
                 for (Object o : cbLayer1.getItems()) {
                     Comboitem ci = (Comboitem) o;
                     JSONObject jo = ci.getValue();
-                    if (jo.get(StringConstants.NAME).toString().equals(mi.getValue())) {
+                    if (jo.get(StringConstants.NAME).toString().equals(displayname)) {
                         cbLayer1.setSelectedItem(ci);
                         cbLayer1.setText(ci.getLabel());
                         toggles();
@@ -382,12 +383,13 @@ public class ToolComposer extends UtilityComposer {
 
             public void onEvent(Event event) throws Exception {
                 Menuitem mi = (Menuitem) event.getTarget();
-                cbLayer2.setValue(mi.getValue() + " ");
-                cbLayer2.refresh(mi.getValue());
+                String displayname = ((JSONObject) CommonData.getLayer(mi.getValue()).get("layer")).get("displayname").toString();
+                cbLayer2.setValue(displayname + " ");
+                cbLayer2.refresh(displayname);
                 for (Object o : cbLayer2.getItems()) {
                     Comboitem ci = (Comboitem) o;
                     JSONObject jo = ci.getValue();
-                    if (jo.get(StringConstants.NAME).equals(mi.getValue())) {
+                    if (jo.get(StringConstants.NAME).equals(displayname)) {
                         cbLayer2.setSelectedItem(ci);
                         cbLayer2.setText(ci.getLabel());
                         toggles();
