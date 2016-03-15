@@ -610,3 +610,15 @@ z-listbox-autopaging .z-listcell-cnt {
     height: inherit;
     padding: 0px;
 }
+
+.z-listitem.z-listitem-selected > .lcRed > .z-listcell-content {
+    background: #bb2222;
+}
+
+.z-listitem.z-listitem-selected > .lcGreen > .z-listcell-content {
+    background: #22aa22;
+}
+
+.z-listitem.z-listitem-selected > .lcYellow > .z-listcell-content {
+    background: #ffff22;
+}

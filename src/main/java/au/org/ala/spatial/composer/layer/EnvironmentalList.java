@@ -215,16 +215,14 @@ public class EnvironmentalList extends Listbox {
             l.setValue(0);
             String[] domain;
             if (StringConstants.ENVIRONMENTAL.equalsIgnoreCase(l.getType())
-                    && l.getLayerObject() != null && l.getLayerObject().containsKey(StringConstants.FIELDS)
-                    && (fieldId = getFieldId(l.getLayerObject())) != null
-                    && CommonData.getDistancesMap().get(fieldId) != null
+                    && l.getLayerObject() != null
+                    && CommonData.getDistancesMap().get(l.getName()) != null
                     && (domain = Util.getDomain(l.getLayerObject())).length > 0) {
                 for (ListEntryDTO le : listEntries) {
-                    if (le.getLayerObject() != null && le.getLayerObject().containsKey(StringConstants.FIELDS)
+                    if (le.getLayerObject() != null
                             && (!singleDomain || Util.isSameDomain(Util.getDomain(le.getLayerObject()), domain))) {
-                        String fieldId2 = getFieldId(le.getLayerObject());
 
-                        Double d = CommonData.getDistancesMap().get(fieldId).get(fieldId2);
+                        Double d = CommonData.getDistancesMap().get(l.getName()).get(le.getName());
                         if (d != null) {
                             le.setValue((float) Math.min(le.getValue(), d));
                         }
