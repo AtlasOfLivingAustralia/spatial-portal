@@ -23,10 +23,7 @@ import org.zkoss.zul.*;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -209,8 +206,21 @@ public class PointComparison extends AreaToolComposer {
             try {
                 JSONParser jp = new JSONParser();
                 JSONArray fields = (JSONArray) jp.parse(IOUtils.toString(new URL(url).openStream()));
+
+                //sort
+                SortedMap<String, Integer> sortOrder = new TreeMap<String, Integer>(new Comparator<String>() {
+                    @Override
+                    public int compare(String s1, String s2) {
+                        return s1.toLowerCase().compareTo(s2.toLowerCase());
+                    }
+                });
                 for (int i = 0; i < fields.size(); i++) {
                     JSONObject field = (JSONObject) fields.get(i);
+                    sortOrder.put(field.get("name").toString(), i);
+                }
+
+                for (String key : sortOrder.keySet()) {
+                    JSONObject field = (JSONObject) fields.get(sortOrder.get(key));
                     if (layernames == null) {
                         layernames = "";
                     } else {

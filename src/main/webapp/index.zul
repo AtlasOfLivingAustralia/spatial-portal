@@ -360,6 +360,10 @@
                                                 <ul class="dropdown-menu" role="menu">
                                                     <li><a href="http://auth.ala.org.au/userdetails/myprofile">My profile</a></li>
                                                     <li class="divider"></li>
+                                                    <li style='${((mapPortalPage.getSettingsSupplementary().getProperty("logging_url").length() + "") == "0") ? "display:none" : "display:show"}'
+                                                        ><a href="${mapPortalPage.getSettingsSupplementary().getProperty('logging_url')}/dashboard">My Spatial Portal History</a></li>
+                                                    <li style='${((mapPortalPage.getSettingsSupplementary().getProperty("logging_url").length() + "") == "0") ? "display:none" : "display:show"}'
+                                                        class="divider"></li>
                                                     <li><a href='https://auth.ala.org.au/cas/login?service=http://spatial.ala.org.au/webportal//' class='null'><span>Log in</span></a></li>
                                                     <li><a href="https://auth.ala.org.au/userdetails/registration/createAccount">Register</a></li>
                                                 </ul>
