@@ -39,6 +39,7 @@ public class InOutComposer extends ToolComposer {
 
         this.updateWindowTitle();
 
+        this.autoCompleteLayers.refresh("");
     }
 
     @Override
@@ -127,8 +128,8 @@ public class InOutComposer extends ToolComposer {
                     "<div>Report for: " + getSelectedSpeciesName() + "<br />In area (" + layerDisplayName + ")<br />Out area (" + outName + ") </div><br />" +
                     "<table >" +
                     "<tr><td>Area name</td><td>Sq km</td><td>Occurrences</td><td>Species</td></tr>" +
-                    "<tr><td>" + layerDisplayName + "</td><td>" + String.format("%.2g", totalArea) + "</td><td>" + in.getOccurrenceCount() + "</td><td>" + in.getSpeciesCount() + "</td></tr>" +
-                    "<tr><td>Not in: " + layerDisplayName + "</td><td>" + String.format("%.2g", (outArea - totalArea)) + "</td><td>" + out.getOccurrenceCount() + "</td><td>" + out.getSpeciesCount() + "</td></tr>" +
+                    "<tr><td>" + layerDisplayName + "</td><td>" + String.format("%.2f", totalArea) + "</td><td>" + in.getOccurrenceCount() + "</td><td>" + in.getSpeciesCount() + "</td></tr>" +
+                    "<tr><td>Not in: " + layerDisplayName + "</td><td>" + String.format("%.2f", (outArea - totalArea)) + "</td><td>" + out.getOccurrenceCount() + "</td><td>" + out.getSpeciesCount() + "</td></tr>" +
                     "</table></div>";
 
             Event ev = new Event(StringConstants.ONCLICK, null, "In Out Report\n" + metadata);

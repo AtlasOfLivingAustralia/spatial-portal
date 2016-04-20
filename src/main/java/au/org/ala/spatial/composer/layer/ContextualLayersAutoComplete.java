@@ -38,10 +38,10 @@ public class ContextualLayersAutoComplete extends Combobox {
         }
     }
 
-    private void refresh(String val) {
+    public void refresh(String val) {
 
         //don't do autocomplete when < 3 characters
-        if (val.length() < 3) {
+        if (val.length() < 0) {
             return;
         }
 
