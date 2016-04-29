@@ -34,7 +34,7 @@ public class InOutComposer extends ToolComposer {
     public void afterCompose() {
         super.afterCompose();
 
-        this.selectedMethod = "In/Out Comparison";
+        this.selectedMethod = "Comparison Area";
         this.totalSteps = 2;
 
         this.updateWindowTitle();

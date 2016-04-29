@@ -622,3 +622,8 @@ z-listbox-autopaging .z-listcell-cnt {
 .z-listitem.z-listitem-selected > .lcYellow > .z-listcell-content {
     background: #ffff22;
 }
+
+/* fix colour selection table */
+.z-row:hover>.z-row-inner, .z-row:hover>.z-cell {
+    position: inherit;
+}

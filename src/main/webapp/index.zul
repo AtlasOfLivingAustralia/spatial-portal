@@ -178,7 +178,7 @@
                                 <n:li>
                                     <n:a href="#" n:onClick="runInOut();"
                                          n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.inout.enable")?"":"display:none"}'>
-                                        In Out Report
+                                        Compare Areas
                                     </n:a>
                                 </n:li>
                                 <n:li>

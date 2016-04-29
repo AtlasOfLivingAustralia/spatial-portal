@@ -106,8 +106,6 @@ function loadEnd() {
     if (layersLoading == 0) {
         toggleLoadingImage("none");
     }
-//signal webportal
-
 }
 
 function toggleLoadingImage(display) {

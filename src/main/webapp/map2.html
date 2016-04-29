@@ -79,13 +79,9 @@
 
 
 <div id="radiusDisplay">approximate radius: <span id="currradius">0</span> km</div>
-<!--
-<div id="loader" style="position:absolute;top:50%;left:50%;display:none;z-index: 99;">
-    <img src="img/loading.gif" alt="loading..."/>
-</div>
--->
+
 <div style="left: 0px; top: 0px;" class="z-loading" id="loader">
-    <div class="z-loading-indicator"><span class="z-loading-icon"></span> Loading...</div>
+    <div class="z-loading-indicator"><span class="z-loading-icon"></span> Loading... <a style="float:right;padding-left:30px" onclick="toggleLoadingImage('none');">hide</a></div>
 </div>
 </body>
 </html>
