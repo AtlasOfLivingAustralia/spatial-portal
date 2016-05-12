@@ -176,12 +176,6 @@
                                     <n:a href="#" n:onClick="runAreaReport();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.areareport.enable")?"":"display:none"}'>Area Report</n:a>
                                 </n:li>
                                 <n:li>
-                                    <n:a href="#" n:onClick="runInOut();"
-                                         n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.inout.enable")?"":"display:none"}'>
-                                        Compare Areas
-                                    </n:a>
-                                </n:li>
-                                <n:li>
                                     <n:a href="#" n:onClick="runAreaReportPDF();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.detailedareareport.enable")?"":"display:none"}'>Detailed Area Report (PDF)</n:a>
                                 </n:li>
                                 <n:li>
@@ -204,6 +198,12 @@
                                 </n:li>
                                 <n:li>
                                     <n:a href="#" n:onClick="runTabulation();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.tabulation.enable")?"":"display:none"}'>Tabulate</n:a>
+                                </n:li>
+                                <n:li>
+                                    <n:a href="#" n:onClick="runInOut();"
+                                         n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.inout.enable")?"":"display:none"}'>
+                                        Compare Areas
+                                    </n:a>
                                 </n:li>
                                 <n:li>
                                     <n:a href="#" n:onClick="runSitesBySpecies();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("tools.pointstogrid.enable")?"":"display:none"}'>Points to Grid</n:a>
