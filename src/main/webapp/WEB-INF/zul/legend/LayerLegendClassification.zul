@@ -45,14 +45,17 @@
 
             <vbox width="380px">
                     <hbox  width="380px">
-                        <vbox >
+                        <vbox style="width:80px">
                            <separator height="1px" />
                            <label id="lblSelectedCount" value="0 selected" sclass="wSubLabel" />
                         </vbox>
                         <div class="btn-group" id="dCreateButtons" >
                             <button class="btn-mini" id="selectAll" label="Select all"  />
                             <button class="btn-mini"  id="clearSelection" label="Clear selection"  visible="true" />
-                            <button class="btn-mini btn-primary"  id="createInGroup" label="Create layer" visible="true" />
+                            <button style="float:right" class="btn-mini btn-primary"  id="createInGroup" label="Create layer with selection" visible="true" />
+                            <div style="float:right" >
+                                <button class="btn-mini btn-primary"  id="createOutGroup" label="Create layer without selection" visible="true" />
+                            </div>
                         </div>
                     </hbox>
             </vbox>

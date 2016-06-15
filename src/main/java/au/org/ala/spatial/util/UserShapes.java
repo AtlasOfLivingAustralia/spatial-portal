@@ -27,7 +27,6 @@ public final class UserShapes {
         String url = CommonData.getLayersServer() + "/shape/upload/wkt";
 
         try {
-            ShapeObjectDTO obj = new ShapeObjectDTO(wkt, name, description, userId, apiKey);
             Map m = new HashMap();
             m.put("wkt", wkt);
             m.put("name", name);

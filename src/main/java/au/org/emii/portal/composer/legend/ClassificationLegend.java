@@ -36,6 +36,7 @@ public class ClassificationLegend extends UtilityComposer {
     private MapLayer mapLayer;
     private String imagePath = "";
     private Button createInGroup;
+    private Button createOutGroup;
     private Button clearSelection;
     private List<String[]> legendLines;
     private boolean readonly = false;
@@ -213,15 +214,23 @@ public class ClassificationLegend extends UtilityComposer {
 
         if (selectedList.size() > 0) {
             createInGroup.setVisible(true);
+            if (createOutGroup != null) createOutGroup.setVisible(true);
             clearSelection.setVisible(true);
         } else {
             createInGroup.setVisible(false);
+            if (createOutGroup != null) createOutGroup.setVisible(false);
             clearSelection.setVisible(false);
         }
     }
 
     public void onClick$createInGroup(Event e) {
         getMapComposer().mapSpecies(query.newFacet(facet, true),
+                "Facet of " + mapLayer.getDisplayName(), StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE,
+                MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
+    }
+
+    public void onClick$createOutGroup(Event e) {
+        getMapComposer().mapSpecies(query.newFacet(facet, false),
                 "Facet of " + mapLayer.getDisplayName(), StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE,
                 MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
     }
@@ -351,9 +360,11 @@ public class ClassificationLegend extends UtilityComposer {
 
                                 if (selectedList.size() > 0) {
                                     createInGroup.setVisible(true);
+                                    if (createOutGroup != null) createOutGroup.setVisible(true);
                                     clearSelection.setVisible(true);
                                 } else {
                                     createInGroup.setVisible(false);
+                                    if (createOutGroup != null) createOutGroup.setVisible(false);
                                     clearSelection.setVisible(false);
                                 }
 
@@ -413,6 +424,7 @@ public class ClassificationLegend extends UtilityComposer {
             legend.setModel(new SimpleListModel(legendLines));
 
             createInGroup.setVisible(!disableselection && mapLayer.getHighlight() != null && mapLayer.getHighlight().length() > 0);
+            if (createOutGroup != null) createOutGroup.setVisible(!disableselection && mapLayer.getHighlight() != null && mapLayer.getHighlight().length() > 0);
             clearSelection.setVisible(!disableselection && mapLayer.getHighlight() != null && mapLayer.getHighlight().length() > 0);
 
             if (divContinous.isVisible()) {
@@ -576,6 +588,7 @@ public class ClassificationLegend extends UtilityComposer {
                 }
 
                 createInGroup.setVisible(!disableselection && occurrencesCount != 0 && occurrencesCount != query.getOccurrenceCount());
+                if (createOutGroup != null) createOutGroup.setVisible(!disableselection && occurrencesCount != 0 && occurrencesCount != query.getOccurrenceCount());
                 clearSelection.setVisible(!disableselection && occurrencesCount != 0 && occurrencesCount != query.getOccurrenceCount());
 
                 dlabel.setValue(minText + " to " + maxText + unknownText + selectedText);
@@ -927,6 +940,7 @@ public class ClassificationLegend extends UtilityComposer {
         if (mapLayer != null) {
             mapLayer.setHighlight(getSelectionFacet());
             createInGroup.setVisible(!disableselection && mapLayer.getHighlight() != null && mapLayer.getHighlight().length() > 0);
+            if (createOutGroup != null) createOutGroup.setVisible(!disableselection && mapLayer.getHighlight() != null && mapLayer.getHighlight().length() > 0);
             clearSelection.setVisible(!disableselection && mapLayer.getHighlight() != null && mapLayer.getHighlight().length() > 0);
 
             if (divContinous.isVisible()) {
@@ -1052,6 +1066,7 @@ public class ClassificationLegend extends UtilityComposer {
             dCreateButtons.setVisible(true);
             clearSelection.setVisible(true);
             createInGroup.setVisible(true);
+            if (createOutGroup != null) createOutGroup.setVisible(true);
 
             lblSelectedCount.setValue(selectedList.size() + " selected");
         }

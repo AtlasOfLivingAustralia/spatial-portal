@@ -891,6 +891,7 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
 
                                 getFellow("clearSelection").setVisible(selectedList.size() > 0);
                                 getFellow("createInGroup").setVisible(selectedList.size() > 0);
+                                if (getFellowIfAny("createOutGroup") != null) getFellow("createOutGroup").setVisible(selectedList.size() > 0);
 
                                 highlightSelect(idx);
                             }
