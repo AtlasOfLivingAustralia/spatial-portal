@@ -441,6 +441,8 @@ public class AreaReportPDF {
     }
 
     private void speciesPage(boolean isSpecies, FileWriter fw, String areaName, String title, String notes, int tableNumber, int count, int countKosher, int figureNumber, String imageUrl, String csv) throws Exception {
+        if (count < 0) count = 0;
+
         String imageUrlActual = imageUrl;
         if (imageUrlActual != null) {
             imageUrlActual = filePath + "/" + imageUrlActual;
