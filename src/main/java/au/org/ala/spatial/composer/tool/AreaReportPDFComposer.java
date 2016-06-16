@@ -5,10 +5,15 @@
 package au.org.ala.spatial.composer.tool;
 
 import au.org.ala.legend.Facet;
+import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
 import au.org.emii.portal.util.AreaReportPDF;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.*;
 
@@ -65,8 +70,12 @@ public class AreaReportPDFComposer extends ToolComposer {
             bbox[3] = ml.getMapLayerMetadata().getBbox().get(3);
         }
 
+        String wktTmp = (ml == null ? sa.getWkt() : (ml.getFacets() == null ? ml.getWKT() : null));
+        if (wktTmp == null && ml != null && ml.getPid() != null) {
+            wktTmp = Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + ml.getPid());
+        }
         final String area = areaDisplayName;
-        final String wkt = (ml == null ? sa.getWkt() : (ml.getFacets() == null ? ml.getWKT() : null));
+        final String wkt = wktTmp;
         final List<Facet> facets = (ml != null && ml.getFacets() != null ? ml.getFacets() : null);
         progress = new ConcurrentHashMap();
         progress.put("label", "Starting");
@@ -116,8 +125,8 @@ public class AreaReportPDFComposer extends ToolComposer {
     @Override
     public void onClick$btnCancel(Event event) {
         try {
-            progress.put("cancel", true);
-            pool.shutdownNow();
+            if (progress != null) progress.put("cancel", true);
+            if (pool != null) pool.shutdownNow();
         } catch (Exception e) {
             LOGGER.error("failed to shutdown pdf area report when cancelled.", e);
         }

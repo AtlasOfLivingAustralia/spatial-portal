@@ -456,7 +456,8 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             activeAreaSize = list[2];
 
             //load the layer
-            MapLayer ml = mc.addWMSLayer(pid, txtLayerName.getText(), url, 0.75f, null, null, LayerUtilitiesImpl.ENVIRONMENTAL_ENVELOPE, null, null);
+            layerName = txtLayerName.getText();
+            MapLayer ml = mc.addWMSLayer(pid, layerName, url, 0.75f, null, null, LayerUtilitiesImpl.ENVIRONMENTAL_ENVELOPE, null, null);
 
             //add colour!
             int colour = Util.nextColour();

@@ -1092,7 +1092,7 @@ public class ToolComposer extends UtilityComposer {
                         loadAreaHighlightLayers(curTopArea.getDisplayName());
                     } else if (isAreaTab()) {
                         //multiple areas can be defined
-                        if (getFellow("cAreaCurrent") != null) {
+                        if (getFellowIfAny("cAreaCurrent") != null) {
                             loadAreaLayersCheckboxes(curTopArea.getDisplayName());
                         } else {
                             loadAreaLayers(curTopArea.getDisplayName());
@@ -1109,7 +1109,7 @@ public class ToolComposer extends UtilityComposer {
 
             if (ok) {
                 //not multiple areas can be defined
-                if (getFellow("cAreaCurrent") == null) {
+                if (getFellowIfAny("cAreaCurrent") == null) {
                     onClick$btnOk(null);
                 } else if (rAreaCustom != null) {
                     rAreaCustom.setSelected(false);

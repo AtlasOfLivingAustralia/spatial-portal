@@ -855,6 +855,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (mapLayer == null) {
             return null;
         }
+        mapLayer.setPid(pid);
         mapLayer.setPolygonLayer(true);
 
         //if the layer is a point create a radius

@@ -7,6 +7,7 @@ package au.org.ala.spatial.composer.add.area;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.gazetteer.GazetteerAutoComplete;
 import au.org.ala.spatial.util.CommonData;
+import au.org.emii.portal.menu.MapLayer;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.zkoss.zk.ui.event.Event;
@@ -40,7 +41,8 @@ public class AreaRegionSelection extends AreaToolComposer {
 
         JSONObject jo = ci.getValue();
 
-        getMapComposer().addObjectByPid(jo.get(StringConstants.PID).toString(), ci.getLabel(), dRadius.getValue());
+        MapLayer ml = getMapComposer().addObjectByPid(jo.get(StringConstants.PID).toString(), ci.getLabel(), dRadius.getValue());
+        layerName = ml.getName();
 
         ok = true;
 
