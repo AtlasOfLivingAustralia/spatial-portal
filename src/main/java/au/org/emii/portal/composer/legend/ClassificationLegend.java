@@ -230,7 +230,7 @@ public class ClassificationLegend extends UtilityComposer {
     }
 
     public void onClick$createOutGroup(Event e) {
-        getMapComposer().mapSpecies(query.newFacet(facet, false),
+        getMapComposer().mapSpecies(query.newFacet(Facet.parseFacet("-(" + mapLayer.getHighlight() + ")"), false),
                 "Facet of " + mapLayer.getDisplayName(), StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE,
                 MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);
     }

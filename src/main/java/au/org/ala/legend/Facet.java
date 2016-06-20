@@ -143,13 +143,18 @@ public class Facet implements Serializable {
         boolean hasAnd = fq.contains(" AND ");
         boolean hasOr = fq.contains(" OR ");
 
+        //remove wrapper of -(-(..))
+        if (fq.startsWith("-(-(") && fq.endsWith("))")) {
+            fq = fq.substring(4, fq.length() -2);
+        }
+
         if (fq.startsWith("-(-(")) {
             // (10) -(-(<field>:[<min> TO <max>] AND <field>:[<min> TO <max>]) AND <field>:[* TO *] AND <field>:[* TO *])
             int p = fq.indexOf(')');
 
             //reverse sign to convert first inner AND into OR
             Facet[] orPart = parseTerms(" AND ", fq.substring(4, p), true);
-            Facet[] andPart = parseTerms(" AND ", fq.substring(p + 6, fq.length() - 1), false);
+            Facet[] andPart = fq.length() > p + 6 ? parseTerms(" AND ", fq.substring(p + 6, fq.length() - 1), false) : new Facet[0];
 
             return new Facet(fq, orPart, andPart, null);
         } else if (fq.startsWith("-(") && !fq.endsWith(")") && !hasOr) {
