@@ -417,13 +417,29 @@ public class AddSpeciesController extends UtilityComposer {
             String classLsid = lsid != null ? lsid : s;
             Map<String, String> sr = BiocacheQuery.getClassification(classLsid);
             if (!sr.isEmpty()
-                    && sr.get(StringConstants.SCIENTIFIC_NAME) != null
-                    && sr.get(StringConstants.SCIENTIFIC_NAME).length() > 0) {
+                    && ("true".equalsIgnoreCase(CommonData.getSettings().getProperty("new.bie")) ||
+                            (sr.get(StringConstants.SCIENTIFIC_NAME) != null
+                                && sr.get(StringConstants.SCIENTIFIC_NAME).length() > 0))) {
 
                 if (lsid == null) {
                     lsid = s;
                 }
-                sciname = sr.get(StringConstants.SCIENTIFIC_NAME);
+
+                if ("true".equalsIgnoreCase(CommonData.getSettings().getProperty("new.bie"))) {
+                    sciname = sr.containsKey(StringConstants.SUB_SPECIES) ? sr.get(StringConstants.SUB_SPECIES) : null;
+                    if (sciname == null && sr.containsKey(StringConstants.SPECIES)) {
+                        sciname = sr.get(StringConstants.SPECIES);
+                    }
+                    if (sciname == null && sr.containsKey(StringConstants.GENUS)) {
+                        sciname = sr.get(StringConstants.GENUS);
+                    }
+                    if (sciname == null && sr.containsKey(StringConstants.FAMILY)) {
+                        sciname = sr.get(StringConstants.FAMILY);
+                    }
+                } else {
+                    sciname = sr.get(StringConstants.SCIENTIFIC_NAME);
+                }
+
                 family = sr.get(StringConstants.FAMILY);
                 kingdom = sr.get(StringConstants.KINGDOM);
                 if (sciname == null) {

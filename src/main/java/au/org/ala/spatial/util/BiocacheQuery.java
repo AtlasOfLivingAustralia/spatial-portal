@@ -60,6 +60,7 @@ public class BiocacheQuery implements Query, Serializable {
      */
     static final String DEFAULT_VALIDATION = "";
     static final String BIE_SPECIES = "/species/";
+    static final String BIE_SPECIES_WS = "/ws/species/";
     static final String WMS_URL = "/webportal/wms/reflect?";
     private static final Logger LOGGER = Logger.getLogger(BiocacheQuery.class);
     private static final String[] COMMON_TAXON_RANKS = new String[]{
@@ -308,7 +309,10 @@ public class BiocacheQuery implements Query, Serializable {
 
     public static String getScientificNameRank(String lsid) {
 
-        String snUrl = CommonData.getBieServer() + BIE_SPECIES + lsid + ".json";
+        String snUrl = "true".equalsIgnoreCase(CommonData.getSettings().getProperty("new.bie")) ?
+                CommonData.getBieServer() + BIE_SPECIES_WS + lsid + ".json" :
+                CommonData.getBieServer() + BIE_SPECIES + lsid + ".json";
+
         LOGGER.debug(snUrl);
 
         try {
@@ -359,7 +363,7 @@ public class BiocacheQuery implements Query, Serializable {
             JSONArray ja = (JSONArray) jp.parse(body);
             if (ja != null && !ja.isEmpty()) {
                 JSONObject jo = (JSONObject) ja.get(0);
-                if (jo != null && jo.containsKey("acceptedIdentifier")) {
+                if (jo != null && jo.containsKey("acceptedIdentifier") && jo.get("acceptedIdentifier") != null) {
                     return jo.get("acceptedIdentifier").toString();
                 } else {
                     return null;
@@ -384,7 +388,9 @@ public class BiocacheQuery implements Query, Serializable {
         String[] classificationList = {StringConstants.KINGDOM, StringConstants.PHYLUM, StringConstants.CLASS, StringConstants.ORDER, StringConstants.FAMILY, StringConstants.GENUS, StringConstants.SPECIES, StringConstants.SUB_SPECIES, StringConstants.SCIENTIFIC_NAME};
         Map<String, String> classification = new LinkedHashMap<String, String>();
 
-        String snUrl = CommonData.getBieServer() + BIE_SPECIES + lsid + ".json";
+        String snUrl = "true".equalsIgnoreCase(CommonData.getSettings().getProperty("new.bie")) ?
+                CommonData.getBieServer() + BIE_SPECIES_WS + lsid + ".json" :
+                CommonData.getBieServer() + BIE_SPECIES + lsid + ".json";
         LOGGER.debug(snUrl);
 
         try {
@@ -1703,7 +1709,10 @@ public class BiocacheQuery implements Query, Serializable {
         String[] classificationList = {StringConstants.KINGDOM, StringConstants.PHYLUM, StringConstants.CLASS, StringConstants.ORDER, StringConstants.FAMILY, StringConstants.GENUS, StringConstants.SPECIES, StringConstants.SUB_SPECIES};
         Map<String, String> classification = new LinkedHashMap<String, String>();
 
-        String snUrl = CommonData.getBieServer() + BIE_SPECIES + lsid + ".json";
+        String snUrl = "true".equalsIgnoreCase(CommonData.getSettings().getProperty("new.bie")) ?
+                CommonData.getBieServer() + BIE_SPECIES_WS + lsid + ".json" :
+                CommonData.getBieServer() + BIE_SPECIES + lsid + ".json";
+
         LOGGER.debug(snUrl);
 
         try {
