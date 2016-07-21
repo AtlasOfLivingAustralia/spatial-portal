@@ -16,6 +16,8 @@ import com.vividsolutions.jts.io.WKTWriter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -350,30 +352,63 @@ public class BiocacheQuery implements Query, Serializable {
      * @return
      */
     public static String getGuid(String name) {
-        String url = CommonData.getBieServer() + "/ws/guid/" + name.replaceAll(" ", "%20");
-        try {
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(url);
-            get.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.APPLICATION_JSON);
+        if ("true".equalsIgnoreCase(CommonData.getSettings().getProperty("new.bie"))) {
+            String url = CommonData.getBieServer() + "/ws/species/lookup/bulk";
+            try {
+                HttpClient client = new HttpClient();
+                PostMethod get = new PostMethod(url);
+                get.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.APPLICATION_JSON);
+                get.setRequestEntity(new StringRequestEntity("{\"names\":[\"" + name.replace("\"","\\\"") + "\"]}"));
 
-            client.executeMethod(get);
-            String body = get.getResponseBodyAsString();
+                client.executeMethod(get);
+                String body = get.getResponseBodyAsString();
 
-            JSONParser jp = new JSONParser();
-            JSONArray ja = (JSONArray) jp.parse(body);
-            if (ja != null && !ja.isEmpty()) {
-                JSONObject jo = (JSONObject) ja.get(0);
-                if (jo != null && jo.containsKey("acceptedIdentifier") && jo.get("acceptedIdentifier") != null) {
-                    return jo.get("acceptedIdentifier").toString();
+                JSONParser jp = new JSONParser();
+                JSONArray ja = (JSONArray) jp.parse(body);
+                if (ja != null && !ja.isEmpty()) {
+                    JSONObject jo = (JSONObject) ja.get(0);
+                    if (jo != null && jo.containsKey("acceptedIdentifier") && jo.get("acceptedIdentifier") != null) {
+                        return jo.get("acceptedIdentifier").toString();
+                    } else if (jo != null && jo.containsKey("acceptedConceptID") && jo.get("acceptedConceptID") != null) {
+                        return jo.get("acceptedConceptID").toString();
+                    } else if (jo != null && jo.containsKey("guid") && jo.get("guid") != null) {
+                        return jo.get("guid").toString();
+                    } else {
+                        return null;
+                    }
                 } else {
                     return null;
                 }
-            } else {
+            } catch (Exception e) {
+                LOGGER.error("error getting guid at: " + url, e);
                 return null;
             }
-        } catch (Exception e) {
-            LOGGER.error("error getting guid at: " + url, e);
-            return null;
+        } else {
+            String url = CommonData.getBieServer() + "/ws/guid/" + name.replaceAll(" ", "%20");
+            try {
+                HttpClient client = new HttpClient();
+                GetMethod get = new GetMethod(url);
+                get.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.APPLICATION_JSON);
+
+                client.executeMethod(get);
+                String body = get.getResponseBodyAsString();
+
+                JSONParser jp = new JSONParser();
+                JSONArray ja = (JSONArray) jp.parse(body);
+                if (ja != null && !ja.isEmpty()) {
+                    JSONObject jo = (JSONObject) ja.get(0);
+                    if (jo != null && jo.containsKey("acceptedIdentifier") && jo.get("acceptedIdentifier") != null) {
+                        return jo.get("acceptedIdentifier").toString();
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+            } catch (Exception e) {
+                LOGGER.error("error getting guid at: " + url, e);
+                return null;
+            }
         }
     }
 
@@ -407,7 +442,7 @@ public class BiocacheQuery implements Query, Serializable {
             JSONObject joOcc = (JSONObject) jo.get("classification");
             for (String c : classificationList) {
                 //NC stop exception where a rank can't be found
-                String s = c.replace("ss", "zz");
+                String s = "true".equalsIgnoreCase(CommonData.getSettings().getProperty("new.bie")) ? c : c.replace("ss", "zz");
                 if (joOcc.containsKey(s)) {
                     String value = joOcc.get(s).toString();
                     if (value != null) {
@@ -415,7 +450,14 @@ public class BiocacheQuery implements Query, Serializable {
                     }
                 }
             }
-
+            if ("true".equalsIgnoreCase(CommonData.getSettings().getProperty("new.bie"))) {
+                joOcc = (JSONObject) jo.get("taxonConcept");
+                if (joOcc != null) {
+                    if (ArrayUtils.contains(classificationList, joOcc.get("rankString"))) {
+                        classification.put(joOcc.get("rankString").toString(), joOcc.get("nameString").toString());
+                    }
+                }
+            }
         } catch (Exception e) {
             LOGGER.debug("Error getting scientific name for: " + lsid);
 
