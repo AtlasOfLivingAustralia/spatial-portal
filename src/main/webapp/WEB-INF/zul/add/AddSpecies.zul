@@ -75,7 +75,7 @@
                         <separator height="5px"/>
                     </vbox>
                     
-                    <radio id ="rUploadLSIDs" label="Use existing species list" visible='${addspecieswindow.getMapComposer().getSettingsSupplementary().getProperty("addtomap.species.specieslist.enable")?"true":"false"}'/>
+                    <radio id ="rUploadLSIDs" label='Use existing species list (limited to 200 species)' visible='${addspecieswindow.getMapComposer().getSettingsSupplementary().getProperty("addtomap.species.specieslist.enable")?"true":"false"}'/>
                     <include id="splistbox" src="/WEB-INF/zul/species/SpeciesListListBox.zul" />
                    
                     

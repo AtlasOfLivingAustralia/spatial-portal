@@ -21,6 +21,7 @@
                 <radio id="rAreaCurrent" label="Current extent" value="current" />
                 <radio id="rAreaAustralia" label="${addspeciesinareawindow.getMapComposer().getSettingsSupplementary().getProperty('default.name')}" value="australia" />
                 <radio id="rAreaWorld" label="World" value="world" checked="true"/>
+                <radio id="rAreaCustom" label="Define new area" value="custom" />
             </radiogroup>
         </vbox>
 

@@ -151,12 +151,15 @@ public class SpeciesListListbox extends Listbox {
     public BiocacheQuery extractQueryFromSelectedLists(boolean[] geospatialKosher) {
         StringBuilder sb = new StringBuilder();
         List<String> names = new ArrayList<String>();
+        int maxOrTerms = Integer.parseInt(CommonData.getSettings().getProperty("solr.maxOrTerms", "200"));
+        int count = 0;
         for (String list : selectedLists) {
             //get the speciesListItems
             Collection<SpeciesListItemDTO> items = SpeciesListUtil.getListItems(list);
 
             for (SpeciesListItemDTO item : items) {
-                if (item.getLsid() != null) {
+                count = count + 1;
+                if (item.getLsid() != null && count <= maxOrTerms) {
                     if (sb.length() > 0) {
                         sb.append(",");
                     }
@@ -169,7 +172,9 @@ public class SpeciesListListbox extends Listbox {
         }
         String[] unmatchedNames = !names.isEmpty() ? names.toArray(new String[names.size()]) : null;
         String lsids = sb.length() > 0 ? sb.toString() : null;
-        return new BiocacheQuery(lsids, unmatchedNames, null, null, null, false, geospatialKosher);
+
+        //ignore unmatchedNames
+        return new BiocacheQuery(lsids, null, null, null, null, false, geospatialKosher);
     }
 
     public String getSelectedNames() {

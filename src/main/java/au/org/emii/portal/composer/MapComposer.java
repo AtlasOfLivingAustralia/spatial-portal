@@ -850,8 +850,33 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
         //add feature to the map as a new layer
         String areaName = obj.get(StringConstants.NAME).toString();
-        MapLayer mapLayer = getMapComposer().addWMSLayer("PID:" + pid, displayName == null ? areaName : displayName
-                , obj.get(StringConstants.WMSURL).toString(), 0.6f, null, null, LayerUtilitiesImpl.WKT, null, null);
+
+        MapLayer mapLayer = null;
+        boolean pointLayer = false;
+        try {
+            List<Double> dbb = Util.getBoundingBox(obj.get(StringConstants.BBOX).toString());
+
+            //if the layer is a point create a radius
+            if (dbb.get(0).floatValue() == dbb.get(2).floatValue() && dbb.get(1).floatValue() == dbb.get(3).floatValue()) {
+
+                double radius = radiusKm * 1000.0;
+
+                String wkt = Util.createCircleJs(dbb.get(0).floatValue(), dbb.get(1).floatValue(), radius);
+
+                mapLayer = getMapComposer().addWKTLayer(wkt, displayName, displayName);
+
+                pointLayer = true;
+            }
+        } catch (Exception e) {
+        }
+
+        if (mapLayer == null) {
+            //not a point layer
+            mapLayer = getMapComposer().addWMSLayer("PID:" + pid, displayName == null ? areaName : displayName
+                    , obj.get(StringConstants.WMSURL).toString(), 0.6f, null, null, LayerUtilitiesImpl.WKT, null, null);
+            mapLayer.setAreaSqKm(obj.get(StringConstants.AREA_KM).toString());
+        }
+
         if (mapLayer == null) {
             return null;
         }
@@ -859,14 +884,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         mapLayer.setPolygonLayer(true);
 
         //if the layer is a point create a radius
-
-        String bbox = obj.get(StringConstants.BBOX).toString();
         String fid = obj.get(StringConstants.FID).toString();
 
         MapLayerMetadata md = mapLayer.getMapLayerMetadata();
 
         Facet facet = null;
-        if (CommonData.getLayer(fid) != null && CommonData.getFacetLayerNameDefault(fid) != null) {
+        if (!pointLayer && CommonData.getLayer(fid) != null && CommonData.getFacetLayerNameDefault(fid) != null) {
             JSONObject field = CommonData.getLayer(fid);
 
             if (field.containsKey("indb") && StringConstants.TRUE.equalsIgnoreCase(field.get("indb").toString())) {
@@ -875,33 +898,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 facet = Util.getFacetForObject(areaName, fid);
             }
-        }
-
-        try {
-            List<Double> dbb = Util.getBoundingBox(obj.get(StringConstants.BBOX).toString());
-
-            //if the layer is a point create a radius
-            boolean point = false;
-            if (dbb.get(0).floatValue() == dbb.get(2).floatValue() && (float) dbb.get(1).floatValue() == dbb.get(3).floatValue()) {
-                point = true;
-
-                mapLayer.setWKT("POINT(" + dbb.get(0).floatValue() + " " + dbb.get(1).floatValue() + ")");
-
-                double radius = radiusKm * 1000.0;
-
-                String wkt = Util.createCircleJs(dbb.get(0).floatValue(), dbb.get(1).floatValue(), radius);
-                getMapComposer().removeLayer(displayName);
-                mapLayer = getMapComposer().addWKTLayer(wkt, displayName, displayName);
-
-                //redo bounding box
-                dbb = Util.getBoundingBox(wkt);
-            }
-            
-            md.setBbox(dbb);
-
-            mapLayer.setAreaSqKm(obj.get(StringConstants.AREA_KM).toString());
-        } catch (Exception e) {
-            LOGGER.debug("failed to parse: " + bbox, e);
         }
 
         if (facet != null) {
@@ -913,7 +909,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             if (!((JSONObject) CommonData.getLayer(fid).get("layer")).get("path_orig").toString().contains("diva")) {
                 mapLayer.setWktUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid);
             }
-        } else {
+        } else if (!pointLayer) {
             //not in biocache, so add as WKT
             mapLayer.setWKT(Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + pid));
         }

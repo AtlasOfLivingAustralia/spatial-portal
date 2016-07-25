@@ -369,6 +369,8 @@ public class BiocacheQuery implements Query, Serializable {
                     JSONObject jo = (JSONObject) ja.get(0);
                     if (jo != null && jo.containsKey("acceptedIdentifier") && jo.get("acceptedIdentifier") != null) {
                         return jo.get("acceptedIdentifier").toString();
+                    } else if (jo != null && jo.containsKey("acceptedIdentifierGuid") && jo.get("acceptedIdentifierGuid") != null) {
+                        return jo.get("acceptedIdentifierGuid").toString();
                     } else if (jo != null && jo.containsKey("acceptedConceptID") && jo.get("acceptedConceptID") != null) {
                         return jo.get("acceptedConceptID").toString();
                     } else if (jo != null && jo.containsKey("guid") && jo.get("guid") != null) {
@@ -1335,7 +1337,7 @@ public class BiocacheQuery implements Query, Serializable {
     private List<QueryField> retrieveCustomFacets() {
         List<QueryField> customFacets = new ArrayList<QueryField>();
         //look up facets
-        final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" + getFullQ(true) + "&qc=" + getQc();
+        final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" + getQ() + "&qc=" + getQc();
         try {
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(jsonUri);
