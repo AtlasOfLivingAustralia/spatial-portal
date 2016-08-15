@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.composer.tool;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.dto.ScatterplotDataDTO;
 import au.org.ala.spatial.util.*;
@@ -43,8 +44,7 @@ public class ScatterplotComposer extends ToolComposer {
 
         this.updateName(getMapComposer().getNextAreaLayerName(StringConstants.MY_SCATTERPLOT));
 
-        this.cbLayer1.refresh("");
-        this.cbLayer2.refresh("");
+        this.loadGridLayers(true, false, true);
     }
 
     @Override
@@ -58,26 +58,34 @@ public class ScatterplotComposer extends ToolComposer {
         LOGGER.debug("Area: " + getSelectedArea());
         LOGGER.debug("Species: " + getSelectedSpecies());
 
-        Query query = getSelectedSpecies();
-        if (query == null) {
+        Query lsid = getSelectedSpecies();
+        if (lsid == null) {
             getMapComposer().showMessage("There was a problem selecting the species.  Try to select the species again", this);
             return false;
         }
-
-        Query lsid = getSelectedSpecies();
+        lsid = lsid.newFacet(new Facet("occurrence_status_s", "absent", false), false);
         String name = getSelectedSpeciesName();
 
-        JSONObject jo = cbLayer1.getSelectedItem().getValue();
-        String lyr1name = cbLayer1.getText();
-        String lyr1value = jo.containsKey(StringConstants.ID) ? jo.get(StringConstants.ID).toString() : jo.get(StringConstants.NAME).toString();
+        String sbenvsel = getSelectedLayersWithDisplayNames();
+        String[] layers = sbenvsel.split(":");
+        if (layers.length > 2 || layers.length < 2) {
+            getMapComposer().showMessage(sbenvsel.split(":").length + " layers selected.  Please select 2 environmental layers in step 4.");
+            return false;
+        }
 
-        jo = cbLayer2.getSelectedItem().getValue();
-        String lyr2name = cbLayer2.getText();
-        String lyr2value = jo.containsKey(StringConstants.ID) ? jo.get(StringConstants.ID).toString() : jo.get(StringConstants.NAME).toString();
+        String [] layerNames = new String[2];
+        String [] layerValues = new String[2];
+        for (int i = 0; i < layers.length; i++) {
+            String[] split = layers[i].split("\\|");
+
+            layerValues[i] = split[0];
+            layerNames[i] = split[1];
+        }
 
         String pid = "";
 
         Query backgroundLsid = getSelectedSpeciesBk();
+        backgroundLsid = backgroundLsid.newFacet(new Facet("occurrence_status_s", "absent", false), false);
         if (bgSearchSpeciesACComp.hasValidAnnotatedItemSelected()) {
             backgroundLsid = bgSearchSpeciesACComp.getQuery((Map) getMapComposer().getSession().getAttribute(StringConstants.USERPOINTS), false, getGeospatialKosher());
         }
@@ -98,8 +106,8 @@ public class ScatterplotComposer extends ToolComposer {
             backgroundLsidQuery = QueryUtil.queryFromSelectedArea(backgroundLsid, filterSa, false, getGeospatialKosherBk());
         }
 
-        ScatterplotDataDTO d = new ScatterplotDataDTO(lsidQuery, name, lyr1value,
-                lyr1name, lyr2value, lyr2name, pid, null, true,
+        ScatterplotDataDTO d = new ScatterplotDataDTO(lsidQuery, name, layerValues[0],
+                layerNames[0], layerValues[1], layerNames[1], pid, null, true,
                 highlightSa);
 
         try {
@@ -109,16 +117,16 @@ public class ScatterplotComposer extends ToolComposer {
             //add data parameters
             String layerunits = "";
             try {
-                String envUnits1 = ((JSONObject) CommonData.getLayer(lyr1value).get("layer")).get("environmentalvalueunits").toString();
-                String envUnits2 = ((JSONObject) CommonData.getLayer(lyr2value).get("layer")).get("environmentalvalueunits").toString();
+                String envUnits1 = ((JSONObject) CommonData.getLayer(layerValues[0]).get("layer")).get("environmentalvalueunits").toString();
+                String envUnits2 = ((JSONObject) CommonData.getLayer(layerValues[1]).get("layer")).get("environmentalvalueunits").toString();
                 layerunits = envUnits1 + "," + envUnits2;
             } catch (Exception e) {
             }
 
             //colon delimited
-            post.addParameter("layers", lyr1value + ":" + lyr2value);
+            post.addParameter("layers", layerValues[0] + ":" + layerValues[1]);
             //CSV format
-            post.addParameter("layernames", "\"" + lyr1name.replace("\"", "\"\"").replace("\\", "\\\\") + "\",\"" + lyr2name.replace("\"", "\"\"").replace("\\", "\\\\") + "\"");
+            post.addParameter("layernames", "\"" + layerNames[0].replace("\"", "\"\"").replace("\\", "\\\\") + "\",\"" + layerNames[1].replace("\"", "\"\"").replace("\\", "\\\\") + "\"");
             post.addParameter("layerunits", layerunits);
             post.addParameter("foregroundOccurrencesQs", lsidQuery.getQ());
             post.addParameter("foregroundOccurrencesBs", lsidQuery.getBS());
@@ -170,7 +178,7 @@ public class ScatterplotComposer extends ToolComposer {
             if (lsidQuery instanceof BiocacheQuery) {
                 BiocacheQuery bq = (BiocacheQuery) lsidQuery;
                 extras = bq.getWS() + "|" + bq.getBS() + "|" + bq.getFullQ(false) + "|" + extras;
-                remoteLogger.logMapAnalysis(tToolName.getValue(), StringConstants.TOOL_SCATTERPLOT, filterSa.getWkt(), bq.getLsids(), lyr1value + ":" + lyr2value, pid, extras, StringConstants.SUCCESSFUL);
+                remoteLogger.logMapAnalysis(tToolName.getValue(), StringConstants.TOOL_SCATTERPLOT, filterSa.getWkt(), bq.getLsids(), layerValues[0] + ":" + layerValues[1], pid, extras, StringConstants.SUCCESSFUL);
             } else if (lsidQuery instanceof UserDataQuery) {
                 remoteLogger.logMapAnalysis(tToolName.getValue(), StringConstants.TOOL_SCATTERPLOT, filterSa.getWkt(), lsidQuery.getQ(), "", pid, extras, StringConstants.SUCCESSFUL);
             } else {
@@ -200,7 +208,6 @@ public class ScatterplotComposer extends ToolComposer {
                 rgAreaHighlight.setFocus(true);
                 break;
             case 4:
-                cbLayer2.setFocus(true);
                 break;
             case 5:
                 if (rSpeciesSearchBk.isChecked()) {

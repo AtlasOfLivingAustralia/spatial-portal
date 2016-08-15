@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.composer.tool;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.progress.ProgressController;
 import au.org.ala.spatial.util.*;
@@ -81,6 +82,7 @@ public class MaxentComposer extends ToolComposer {
             getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
             return false;
         }
+        q = q.newFacet(new Facet("occurrence_status_s", "absent", false), false);
         if (searchSpeciesACComp.getAutoComplete().getSelectedItem() != null) {
             getMapComposer().mapSpeciesFromAutocompleteComponent(searchSpeciesACComp, getSelectedArea(), getGeospatialKosher(), false);
         } else if (rgSpecies.getSelectedItem() != null && StringConstants.MULTIPLE.equals(rgSpecies.getSelectedItem().getValue())) {

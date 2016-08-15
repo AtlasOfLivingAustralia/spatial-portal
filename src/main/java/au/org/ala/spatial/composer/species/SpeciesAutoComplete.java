@@ -229,7 +229,12 @@ public class SpeciesAutoComplete extends Combobox {
 
     String searchService(String val) throws Exception {
         //search URL for new BIE
-        String nsurl = CommonData.getBieServer() + "/ws/search.json?pageSize=100&q=" + URLEncoder.encode(val, StringConstants.UTF_8) + "&fq=idxtype:TAXON";
+        String v = val;
+
+        //wildcard required for partial one word matches
+        if (!val.contains(" ")) v = val + "*";
+
+        String nsurl = CommonData.getBieServer() + "/ws/search.json?pageSize=100&q=" + URLEncoder.encode(v, StringConstants.UTF_8) + "&fq=idxtype:TAXON";
 
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(nsurl);

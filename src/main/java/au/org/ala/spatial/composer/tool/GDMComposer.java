@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.composer.tool;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.*;
 import au.org.emii.portal.composer.MapComposer;
@@ -139,6 +140,7 @@ public class GDMComposer extends ToolComposer {
         try {
             SelectedArea sa = getSelectedArea();
             query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
+            query = query.newFacet(new Facet("occurrence_status_s", "absent", false), false);
             sbenvsel = getSelectedLayersWithDisplayNames();
 
             if (query.getSpeciesCount() < 2) {

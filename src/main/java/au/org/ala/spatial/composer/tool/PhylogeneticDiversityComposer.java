@@ -9,6 +9,7 @@ import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.layer.ContextualLayersAutoComplete;
 import au.org.ala.spatial.composer.results.PhylogeneticDiversityListResults;
 import au.org.ala.spatial.util.CommonData;
+import au.org.ala.spatial.util.Query;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
@@ -262,8 +263,10 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         }
 
         hm.put("selectedtrees", st);
-        
-        hm.put("query", getSelectedSpecies());
+
+        Query q = getSelectedSpecies();
+        if (q != null) q = q.newFacet(new Facet("occurrence_status_s", "absent", false), false);
+        hm.put("query", q);
 
         PhylogeneticDiversityListResults window = (PhylogeneticDiversityListResults) Executions.createComponents("WEB-INF/zul/results/PhylogeneticDiversityResults.zul", getMapComposer(), hm);
         try {

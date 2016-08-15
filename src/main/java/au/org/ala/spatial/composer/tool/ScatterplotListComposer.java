@@ -4,6 +4,7 @@
  */
 package au.org.ala.spatial.composer.tool;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.util.*;
 import au.org.emii.portal.menu.SelectedArea;
@@ -58,13 +59,13 @@ public class ScatterplotListComposer extends ToolComposer {
         LOGGER.debug("Area: " + getSelectedArea());
         LOGGER.debug("Species: " + getSelectedSpecies());
 
-        Query query = getSelectedSpecies();
-        if (query == null) {
+        Query lsid = getSelectedSpecies();
+        if (lsid == null) {
             getMapComposer().showMessage("There was a problem selecting the species.  Try to select the species again", this);
             return false;
         }
+        lsid = lsid.newFacet(new Facet("occurrence_status_s", "absent", false), false);
 
-        Query lsid = getSelectedSpecies();
         SelectedArea filterSa = getSelectedArea();
         SelectedArea highlightSa = getSelectedAreaHighlight();
         Query lsidQuery = QueryUtil.queryFromSelectedArea(lsid, filterSa, false, getGeospatialKosher());
@@ -77,6 +78,7 @@ public class ScatterplotListComposer extends ToolComposer {
         String pid = "";
 
         Query backgroundLsid = getSelectedSpeciesBk();
+        backgroundLsid = backgroundLsid.newFacet(new Facet("occurrence_status_s", "absent", false), false);
         if (bgSearchSpeciesACComp.hasValidAnnotatedItemSelected()) {
             backgroundLsid = bgSearchSpeciesACComp.getQuery((Map) getMapComposer().getSession().getAttribute(StringConstants.USERPOINTS), false, getGeospatialKosher());
         }

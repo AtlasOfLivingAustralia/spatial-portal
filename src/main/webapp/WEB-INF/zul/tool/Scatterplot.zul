@@ -148,31 +148,50 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep4" visible="false" zclass="step4 layers2auto" sclass="atstep" width="500px">
-                <label id="atstep4_desc" value="Select two environmental layers" sclass="wSubLabel"/>
-                <label id="atstep4_label" value="" />
-                <separator height="20px"/>
-                <hbox width="500px">
-                    <label value="X" width="15px" />
-                    <combobox id="cbLayer2" use="au.org.ala.spatial.composer.layer.EnvLayersCombobox" autodrop="true" width="280px" />
-                    <menubar orient="vertical" autodrop="true">
-                        <menu label="mapped layers" >
-                            <menupopup id="mpLayer2" />
-                        </menu>
-                    </menubar>
-                </hbox>
-                <separator height="15px"/>
-                <hbox>
-                    <label value="Y" width="15px" />
-                    <combobox id="cbLayer1" use="au.org.ala.spatial.composer.layer.EnvLayersCombobox" autodrop="true" width="280px" />
-                    <menubar orient="vertical" autodrop="true" >
-                        <menu label="mapped layers" >
-                            <menupopup id="mpLayer1" />
-                        </menu>
-                    </menubar>
-                </hbox>
+            <div id="atstep4" visible="false" zclass="step4 minlayers2 maxlayers2" sclass="atstep" width="500px">
                 <separator height="15px"/>
                 <checkbox id="chkShowEnvIntersection" label="Display possible environments in area" />
+                <separator height="15px"/>
+
+                <separator height="15px"/>
+                <label id="atstep4_desc" value="Select 2 environmental layers" sclass="wSubLabel"/>
+                <label id="atstep4_label" value="" />
+                <separator height="15px" />
+                <hbox>
+                    <label value="Add set a of layers:"/>
+                    <combobox id="selectedLayersCombobox" use="au.org.ala.spatial.composer.layer.SelectedLayersCombobox" width="320px" readonly="true"/>
+
+                </hbox>
+                <hbox>
+                    <label value="Add from search:"/>
+                    <combobox id="cbLayer" use="au.org.ala.spatial.composer.layer.EnvLayersCombobox" autodrop="true" width="350px" />
+                </hbox>
+                <vbox  width="620px" >
+                    <label value="" />
+
+                    <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="au.org.ala.spatial.composer.layer.EnvironmentalList" width="610px" height="430px" multiple="true" checkmark="true"
+                             onOK="addtoolwindow.onClick$btnOk(null)">
+                        <listhead>
+                            <listheader label=" " width="48px"  />
+                            <listheader label="category" hflex="1"/>
+                            <listheader label="name"  hflex="1"/>
+                            <listheader label=" "  width="25px"/>
+                            <listheader label=" " width="25px" />
+                        </listhead>
+                    </listbox>
+
+                    <hbox>
+                        <div class="btn-group" style="float:left">
+                            <button id="btnClearSelection"  class="btn-small" label="Clear selection"  />
+                            <button id="bLayerListDownload1" class="btn-small" label="Export set"  />
+
+                        </div>
+                        <vbox>
+                            <separator height="2px" />
+                            <label id="lLayersSelected" value="0 layers selected" class="h3" style="padding-left: 10px;"/>
+                        </vbox>
+                    </hbox>
+                </vbox>
             </div>
             
             <div id="atstep5" visible="false" zclass="step5 optional" sclass="atstep" width="550px" height="600px">

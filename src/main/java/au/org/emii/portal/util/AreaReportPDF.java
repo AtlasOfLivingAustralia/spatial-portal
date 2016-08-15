@@ -61,6 +61,7 @@ public class AreaReportPDF {
         this.progress = progress;
 
         query = new BiocacheQuery(null, wkt, null, facets, false, new boolean[]{true, true, true});
+        query = query.newFacet(new Facet("occurrence_status_s", "absent", false), false);
 
         remoteMap = new RemoteMapImpl();
         ((RemoteMapImpl) remoteMap).setLayerUtilities(new LayerUtilitiesImpl());

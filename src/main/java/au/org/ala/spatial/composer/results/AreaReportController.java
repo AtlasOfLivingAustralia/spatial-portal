@@ -1,5 +1,6 @@
 package au.org.ala.spatial.composer.results;
 
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.composer.quicklinks.SamplingEvent;
 import au.org.ala.spatial.composer.quicklinks.SpeciesListEvent;
@@ -582,6 +583,7 @@ public class AreaReportController extends UtilityComposer {
     Map<String, Integer> endemismCount(boolean worldSelected, AreaReportItemDTO model) {
         Map<String, Integer> countsData = new HashMap<String, Integer>();
         Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, true, false});
+        sq = sq.newFacet(new Facet("occurrence_status_s", "absent", false), false);
         int endemicCount = sq.getEndemicSpeciesCount();
         countsData.put("endemicSpeciesCount", endemicCount);
         model.setCount(String.format("%,d", endemicCount));
@@ -598,6 +600,7 @@ public class AreaReportController extends UtilityComposer {
     Map<String, Integer> endemismCountKosher(boolean worldSelected, AreaReportItemDTO model) {
         Map<String, Integer> countsData = new HashMap<String, Integer>();
         Query sq2 = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, false, false});
+        sq2 = sq2.newFacet(new Facet("occurrence_status_s", "absent", false), false);
         // based the endemic count on the geospatially kosher - endemic is
         // everything if the world is selected
         int count = sq2.getEndemicSpeciesCount();
@@ -617,6 +620,7 @@ public class AreaReportController extends UtilityComposer {
         Map<String, Integer> countsData = new HashMap<String, Integer>();
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
+            sq = sq.newFacet(new Facet("occurrence_status_s", "absent", false), false);
             int resultsCount = sq.getSpeciesCount();
 
             if (resultsCount == 0) {
@@ -647,6 +651,7 @@ public class AreaReportController extends UtilityComposer {
         String query = colonIdx > 0 ? facet : facet + ":*";
 
         Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, query, false, null);
+        sq = sq.newFacet(new Facet("occurrence_status_s", "absent", false), false);
         int count = sq.getSpeciesCount();
         if (count == -1) count = 0;
         String label = Labels.getLabel("facet." + facet, facet);
@@ -695,6 +700,7 @@ public class AreaReportController extends UtilityComposer {
 
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, false, false});
+            sq = sq.newFacet(new Facet("occurrence_status_s", "absent", false), false);
             int resultsCountKosher = sq.getSpeciesCount();
 
             if (resultsCountKosher == 0) {
@@ -719,6 +725,7 @@ public class AreaReportController extends UtilityComposer {
         Map<String, Object> countsData = new HashMap<String, Object>();
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
+            sq = sq.newFacet(new Facet("occurrence_status_s", "absent", false), false);
             int resultsCountOccurrences = sq.getOccurrenceCount();
             if (resultsCountOccurrences == 0) {
                 countsData.put(StringConstants.OCCURRENCES_COUNT, "0");
@@ -749,6 +756,7 @@ public class AreaReportController extends UtilityComposer {
         Map<String, Object> countsData = new HashMap<String, Object>();
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, false, false});
+            sq = sq.newFacet(new Facet("occurrence_status_s", "absent", false), false);
             int resultsCountOccurrencesKosher = sq.getOccurrenceCount();
 
             if (resultsCountOccurrencesKosher == 0) {
@@ -788,6 +796,7 @@ public class AreaReportController extends UtilityComposer {
                 baseQuery = new BiocacheQuery(null, null, (String) event.getData(), null, false, null);
             }
             Query query = QueryUtil.queryFromSelectedArea(baseQuery, sa, true, null);
+            query = query.newFacet(new Facet("occurrence_status_s", "absent", false), false);
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);
             getMapComposer().mapSpecies(query, activeAreaLayerName, StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,
@@ -812,6 +821,7 @@ public class AreaReportController extends UtilityComposer {
                 baseQuery = new BiocacheQuery(null, null, (String) event.getData(), null, false, null);
             }
             Query query = QueryUtil.queryFromSelectedArea(baseQuery, sa, true, new boolean[]{true, false, false});
+            query = query.newFacet(new Facet("occurrence_status_s", "absent", false), false);
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName + " geospatial kosher");
             getMapComposer().mapSpecies(query, activeAreaLayerName, StringConstants.SPECIES, -1, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY,

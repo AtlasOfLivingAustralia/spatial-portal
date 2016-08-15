@@ -2,6 +2,7 @@ package au.org.emii.portal.util;
 
 
 import au.org.ala.spatial.StringConstants;
+import au.org.ala.spatial.util.SpatialUtil;
 import au.org.ala.spatial.util.Util;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayer;
@@ -50,6 +51,8 @@ public class RemoteMapImpl implements RemoteMap {
         wkt = wkt.replace(" (", "(").replace(", ", ",");
         List<Double> bb = Util.getBoundingBox(wkt);
         wktLayer.getMapLayerMetadata().setBbox(bb);
+
+        wktLayer.setAreaSqKm(String.format("%,.2f", SpatialUtil.calculateArea(wkt) / 1000000.0));
 
         return wktLayer;
 

@@ -1336,8 +1336,17 @@ public class BiocacheQuery implements Query, Serializable {
      */
     private List<QueryField> retrieveCustomFacets() {
         List<QueryField> customFacets = new ArrayList<QueryField>();
+
+        //custom fields can only be retrieved with specific query types
+        String full = getFullQ(false);
+
+        Matcher match = Pattern.compile("data_resource_uid:dr[t][0-9]+").matcher(full);
+        if (!match.find()) {
+            return customFacets;
+        }
+
         //look up facets
-        final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" + getQ() + "&qc=" + getQc();
+        final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" + match.group();
         try {
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(jsonUri);

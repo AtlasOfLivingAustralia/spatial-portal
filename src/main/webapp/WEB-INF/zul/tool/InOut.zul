@@ -119,17 +119,35 @@
                 </div>
 
                 <div id="atstep2" visible="false" zclass="last optional download">
-                    <label id="atstep2_desc" value="Select In layer" sclass="wSubLabel"/>
-                    <label id="atstep2_label" value=""/>
                     <separator height="15px"/>
-                    <hbox>
-                        <label value="Search for a contextual layer:"/>
-                        <combobox id="autoCompleteLayers"
-                                  use="au.org.ala.spatial.composer.layer.ContextualLayersAutoComplete" autodrop="true"
-                                  width="320px">
-                            <comboitem label=""/>
-                        </combobox>
-                    </hbox>
+
+                    <label id="atstep2_desc" value="Select 2 areas" sclass="wSubLabel"/>
+                    <label id="atstep2_label" value="" />
+                    <separator />
+                    <vbox id="vboxArea" onOK="addtoolwindow.onClick$btnOk(null)" focus="true" height="350px">
+                        <checkbox id="cAreaCurrent" label="Current extent" value="current" />
+                        <checkbox id="cAreasFromLayer" label="(2 areas) In/Out of a contextual layer" value="layer" />
+                        <div id="divContextualLayer" visible="false" style="padding-left:50px">
+                            <separator />
+                            <label sclass="wordwrap" value="Select a polygonal layer by typing into the autocomplete box." />
+                            <separator />
+
+                            <hbox width="100%">
+                                <combobox id="autoCompleteLayers" use="au.org.ala.spatial.composer.layer.ContextualLayersAutoComplete" autodrop="true" width="250px">
+                                    <comboitem label=""/>
+                                </combobox>
+                            </hbox>
+                            <separator />
+                            <separator />
+                        </div>
+                        <hbox>
+                            <radio id="rAreaCustom" label="Define new area" value="custom" onClick="rAreaCustomClear.setVisible(true)"/>
+                            <button class="btn-mini" visible="false" onClick="rAreaCustom.setSelected(false);rAreaCustomClear.setVisible(false)" id="rAreaCustomClear" label="Clear 'Define new area'" />
+                        </hbox>
+                    </vbox>
+
+                    <!-- rgArea makes rAreaCustom function as expected -->
+                    <radiogroup id="rgArea" orient="vertical" focus="true" />
                 </div>
 
                 <textbox id="tToolName" visible="false"/>
