@@ -449,7 +449,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 "   " + params + wmsVersionDeclaration(layer) +
                 "  }, " + "  { "
                 + "   isBaseLayer: " + layer.isBaseLayer() + ", " + "   opacity: " + layer.getOpacity() + ", " + "   queryable: true, "
-                + "   gutter: " + gutter + ", " + "   wrapDateLine: true"
+                + "   gutter: " + gutter + ", " + "   wrapDateLine: true, displayname: '" + StringEscapeUtils.escapeJavaScript(layer.getDisplayName()) + "'"
                 + "  }  " + " ); " +
                 // decorate with getFeatureInfoBuffer field
                 // - do not set buffer

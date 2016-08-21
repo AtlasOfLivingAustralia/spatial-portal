@@ -737,7 +737,17 @@ public final class Util {
                     @Override
                     public int compare(String[] o1, String[] o2) {
                         // compare WMS urls
-                        return CommonData.getSpeciesChecklistWMSFromSpcode(o1[0])[1].compareTo(CommonData.getSpeciesChecklistWMSFromSpcode(o2[0])[1]);
+                        String s1 = CommonData.getSpeciesChecklistWMSFromSpcode(o1[0])[1];
+                        String s2 = CommonData.getSpeciesChecklistWMSFromSpcode(o2[0])[1];
+                        if (s1 == null && s2 == null) {
+                            return 0;
+                        } else if (s1 != null && s2 != null) {
+                            return s1.compareTo(s2);
+                        } else if (s1 == null) {
+                            return -1;
+                        } else {
+                            return 1;
+                        }
                     }
                 });
 
@@ -747,7 +757,10 @@ public final class Util {
                 int thisCount = 0;
                 for (int i = 0; i < data.length; i++) {
                     thisCount++;
-                    if (i == data.length - 1 || !CommonData.getSpeciesChecklistWMSFromSpcode(data[i][0])[1].equals(CommonData.getSpeciesChecklistWMSFromSpcode(data[i + 1][0])[1])) {
+                    String s1 = CommonData.getSpeciesChecklistWMSFromSpcode(data[i][0])[1];
+                    String s2 = i + 1 < data.length ? CommonData.getSpeciesChecklistWMSFromSpcode(data[i + 1][0])[1] : null;
+                    if (i == data.length - 1 || (s1 == null && s2 != null) || (s1 != null && s2 == null) ||
+                            (s1 != null && s2 != null && !s1.equals(s2))) {
                         StringBuilder sb = new StringBuilder();
                         for (int j = 0; j < data[i].length; j++) {
                             if (j > 0) {

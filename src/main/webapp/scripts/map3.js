@@ -586,8 +586,16 @@ function pointSpeciesSearch(e) {
                             }
                         }
                         var data = null;
-                        if (query != null) data = getOccurrence(layer, query, lonlat.lat, lonlat.lon, 0, pos, size);
-                        if (userquery != null) data = getOccurrenceUploaded(layer, userquery, lonlat.lat, lonlat.lon, 0, pos, size);
+                        if (layer.displayname !== undefined && layer.displayname != null && layer.displayname.endsWith('_highlight')) {
+                            query_layer[pos] = layer;
+                            query_size[pos] = 0;
+                            query_[pos] = query;
+                            query_url[pos] = null;
+                            data = []
+                        } else {
+                            if (query != null) data = getOccurrence(layer, query, lonlat.lat, lonlat.lon, 0, pos, size);
+                            if (userquery != null) data = getOccurrenceUploaded(layer, userquery, lonlat.lat, lonlat.lon, 0, pos, size);
+                        }
                         if (data != null) {
                             query_count_total += query_size[pos];
                             pos += 1;
@@ -998,10 +1006,14 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
     var checkstate = "";
     if (checked) checkstate = "checked='" + checked + "'";
 
+    var displayname = "";
+    if (query_layer[pos].displayname !== undefined) displayname = " Layer: <i>" + query_layer[pos].displayname + " </i><br />"
+
     var infohtml = "<div id='sppopup2'> " +
         heading +
         "<div id=''>" + prevBtn + " &nbsp; &nbsp; &nbsp; &nbsp; " + nextBtn + "</div>" +
         "<table><tr><td valign='top'>" +
+        displayname +
         " Scientific name: " + species + " <br />" +
         " Kingdom: " + kingdom + " <br />" +
         " Family: " + family + " <br />" +

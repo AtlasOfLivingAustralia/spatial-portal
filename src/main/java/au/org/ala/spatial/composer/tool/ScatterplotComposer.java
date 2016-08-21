@@ -85,7 +85,8 @@ public class ScatterplotComposer extends ToolComposer {
         String pid = "";
 
         Query backgroundLsid = getSelectedSpeciesBk();
-        backgroundLsid = backgroundLsid.newFacet(new Facet("occurrence_status_s", "absent", false), false);
+        if (backgroundLsid != null)
+            backgroundLsid = backgroundLsid.newFacet(new Facet("occurrence_status_s", "absent", false), false);
         if (bgSearchSpeciesACComp.hasValidAnnotatedItemSelected()) {
             backgroundLsid = bgSearchSpeciesACComp.getQuery((Map) getMapComposer().getSession().getAttribute(StringConstants.USERPOINTS), false, getGeospatialKosher());
         }

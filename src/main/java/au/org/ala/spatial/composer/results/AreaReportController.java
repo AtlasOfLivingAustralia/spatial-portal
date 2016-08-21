@@ -619,7 +619,7 @@ public class AreaReportController extends UtilityComposer {
 
         Map<String, Integer> countsData = new HashMap<String, Integer>();
         try {
-            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, true, false});
             sq = sq.newFacet(new Facet("occurrence_status_s", "absent", false), false);
             int resultsCount = sq.getSpeciesCount();
 
@@ -650,7 +650,7 @@ public class AreaReportController extends UtilityComposer {
         int colonIdx = facet.indexOf(':');
         String query = colonIdx > 0 ? facet : facet + ":*";
 
-        Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, query, false, null);
+        Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, query, false, new boolean[]{true, true, false});
         sq = sq.newFacet(new Facet("occurrence_status_s", "absent", false), false);
         int count = sq.getSpeciesCount();
         if (count == -1) count = 0;
@@ -724,7 +724,7 @@ public class AreaReportController extends UtilityComposer {
 
         Map<String, Object> countsData = new HashMap<String, Object>();
         try {
-            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, null);
+            Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, false, new boolean[]{true, true, false});
             sq = sq.newFacet(new Facet("occurrence_status_s", "absent", false), false);
             int resultsCountOccurrences = sq.getOccurrenceCount();
             if (resultsCountOccurrences == 0) {
@@ -795,7 +795,7 @@ public class AreaReportController extends UtilityComposer {
             if (event != null && event.getData() != null) {
                 baseQuery = new BiocacheQuery(null, null, (String) event.getData(), null, false, null);
             }
-            Query query = QueryUtil.queryFromSelectedArea(baseQuery, sa, true, null);
+            Query query = QueryUtil.queryFromSelectedArea(baseQuery, sa, true, new boolean[]{true, true, false});
             query = query.newFacet(new Facet("occurrence_status_s", "absent", false), false);
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);

@@ -1,6 +1,7 @@
 package au.org.ala.spatial.composer.results;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.org.ala.legend.Facet;
 import au.org.ala.spatial.StringConstants;
 import au.org.ala.spatial.logger.RemoteLogger;
 import au.org.ala.spatial.util.CommonData;
@@ -63,6 +64,7 @@ public class SpeciesListResults extends UtilityComposer {
 
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, extraParams, false, geospatialKosher);
+            sq = sq.newFacet(new Facet("occurrence_status_s", "absent", false), false);
 
             if (sq.getSpeciesCount() <= 0) {
                 getMapComposer().showMessage("No species records in the active area.");

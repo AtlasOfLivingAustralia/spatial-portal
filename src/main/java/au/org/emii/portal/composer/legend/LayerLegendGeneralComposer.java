@@ -445,7 +445,18 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
                 || getOpacity() != (int) (ml.getOpacity() * 100)
                 || (ml.getColourMode() != null && !ml.getColourMode().equals(getColourMode()))
                 || (ml.isClustered() && getPointType() != 1)
-                || ml.getSizeUncertain() != getUncertainty()) {
+                || ml.getSizeUncertain() != getUncertainty()
+                || !ml.getDisplayName().equals(getDisplayName())) {
+
+            //layer in menu settings
+            if (!ml.getDisplayName().equals(getDisplayName())) {
+                ml.setDisplayName(getDisplayName());
+
+                //selection label
+                mc.setLabelSelectedLayer(getDisplayName());
+
+                mc.redrawLayersList();
+            }
 
             ml.setRedVal(getRed());
             ml.setGreenVal(getGreen());
@@ -457,16 +468,6 @@ public class LayerLegendGeneralComposer extends GenericAutowireAutoforwardCompos
             ml.setSizeUncertain(getUncertainty());
 
             mc.applyChange(ml);
-        }
-
-        //layer in menu settings
-        if (!ml.getDisplayName().equals(getDisplayName())) {
-            ml.setDisplayName(getDisplayName());
-
-            //selection label
-            mc.setLabelSelectedLayer(getDisplayName());
-
-            mc.redrawLayersList();
         }
     }
 

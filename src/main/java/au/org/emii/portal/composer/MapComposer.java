@@ -2490,7 +2490,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void loadScatterplot(ScatterplotDataDTO data, String lyrName) {
-        MapLayer ml = mapSpecies(data.getQuery(), data.getSpeciesName(), StringConstants.SPECIES, 0
+        MapLayer ml = mapSpecies(data.getQuery(), lyrName, StringConstants.SPECIES, 0
                 , LayerUtilitiesImpl.SCATTERPLOT, null,
                 0, DEFAULT_POINT_SIZE, DEFAULT_POINT_OPACITY, Util.nextColour(), false);
         ml.setDisplayName(lyrName);
