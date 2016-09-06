@@ -49,7 +49,7 @@
                     </vbox>
                     <separator/>
                     <radiogroup id="rgSpecies" orient="vertical" onOK="addtoolwindow.onClick$btnOk(null)">
-                        <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false"/>
+                        <radio id="rSpeciesAll" label="All species" value="allspecies"/>
                         <radio id="rSpeciesLifeform" value="lifeform" label="Lifeform"/>
                         <div id="divLifeform" visible="false">
                             <combobox id="cbLifeform">

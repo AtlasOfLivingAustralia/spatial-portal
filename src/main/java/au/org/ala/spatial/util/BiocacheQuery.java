@@ -1340,14 +1340,14 @@ public class BiocacheQuery implements Query, Serializable {
         //custom fields can only be retrieved with specific query types
         String full = getFullQ(false);
 
-        Matcher match = Pattern.compile("data_resource_uid:dr[t][0-9]+").matcher(full);
+        Matcher match = Pattern.compile("data_resource_uid:\"??dr[t][0-9]+\"??").matcher(full);
         if (!match.find()) {
             return customFacets;
         }
 
         //look up facets
-        final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" + match.group();
         try {
+            final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" + URLEncoder.encode(match.group(), "UTF-8");
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(jsonUri);
             get.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.APPLICATION_JSON);
@@ -1369,7 +1369,7 @@ public class BiocacheQuery implements Query, Serializable {
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("error loading custom facets for: " + jsonUri, e);
+            LOGGER.error("error loading custom facets for: " + getFullQ(false), e);
         }
         return customFacets;
     }
