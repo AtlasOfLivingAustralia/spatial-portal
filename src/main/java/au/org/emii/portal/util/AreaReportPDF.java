@@ -60,8 +60,8 @@ public class AreaReportPDF {
         this.areaName = areaName;
         this.progress = progress;
 
-        query = new BiocacheQuery(null, wkt, null, facets, false, new boolean[]{true, true, true});
-        query = query.newFacet(new Facet("occurrence_status_s", "absent", false), false);
+        query = new BiocacheQuery(null, wkt, null, facets, true, new boolean[]{true, true, true});
+        query = query.newFacet(new Facet("occurrence_status_s", "absent", false), true);
 
         remoteMap = new RemoteMapImpl();
         ((RemoteMapImpl) remoteMap).setLayerUtilities(new LayerUtilitiesImpl());
@@ -901,7 +901,7 @@ public class AreaReportPDF {
             String s = StringConstants.SPECIES_GROUPS[i];
             setProgress("Getting information: species list for lifeform " + s, 0);
             if (isCancelled()) return;
-            BiocacheQuery q = query.newFacet(new Facet("species_group", s, true), false);
+            BiocacheQuery q = query.newFacet(new Facet("species_group", s, true), true);
             csvs.put(s, q.speciesList());
             speciesLinks.put(s, q.getWS() + "/occurrences/search?q=" + q.getQ());
             counts.put(s, String.valueOf(q.getSpeciesCount()));
@@ -966,7 +966,7 @@ public class AreaReportPDF {
         setProgress("Getting information: threatened species", 0);
         if (isCancelled()) return;
         Facet f = new Facet("state_conservation", "Endangered", true);
-        counts.put("Endangered Species", String.valueOf(query.newFacet(f, false).getSpeciesCount()));
+        counts.put("Endangered Species", String.valueOf(query.newFacet(f, true).getSpeciesCount()));
     }
 
 //    private void initCountChecklistAreasAndSpecies() {
@@ -1038,24 +1038,24 @@ public class AreaReportPDF {
             String s = StringConstants.SPECIES_GROUPS[i];
             setProgress("Getting information: images for map of lifeform " + s, 0);
             if (isCancelled()) return;
-            lifeforms.add(createSpeciesLayer(query.newFacet(new Facet("species_group", s, true), false), 0, 0, 255, .6f, false, 9, false));
+            lifeforms.add(createSpeciesLayer(query.newFacet(new Facet("species_group", s, true), true), 0, 0, 255, .6f, false, 9, false));
         }
 
         setProgress("Getting information: images for map of threatened species", 0);
         if (isCancelled()) return;
-        MapLayer threatenedSpecies = createSpeciesLayer(query.newFacet(Facet.parseFacet(CommonData.speciesListThreatened), false), 0, 0, 255, .6f, false, 9, false);
+        MapLayer threatenedSpecies = createSpeciesLayer(query.newFacet(Facet.parseFacet(CommonData.speciesListThreatened), true), 0, 0, 255, .6f, false, 9, false);
 
         setProgress("Getting information: images for map of iconic species", 0);
         if (isCancelled()) return;
-        MapLayer iconicSpecies = createSpeciesLayer(query.newFacet(new Facet("species_list_uid", "dr781", true), false), 0, 0, 255, .6f, false, 9, false);
+        MapLayer iconicSpecies = createSpeciesLayer(query.newFacet(new Facet("species_list_uid", "dr781", true), true), 0, 0, 255, .6f, false, 9, false);
 
         setProgress("Getting information: images for map of migratory species", 0);
         if (isCancelled()) return;
-        MapLayer migratorySpecies = createSpeciesLayer(query.newFacet(new Facet("species_list_uid", "dr1005", true), false), 0, 0, 255, .6f, false, 9, false);
+        MapLayer migratorySpecies = createSpeciesLayer(query.newFacet(new Facet("species_list_uid", "dr1005", true), true), 0, 0, 255, .6f, false, 9, false);
 
         setProgress("Getting information: images for map of invasive species", 0);
         if (isCancelled()) return;
-        MapLayer invasiveSpecies = createSpeciesLayer(query.newFacet(Facet.parseFacet(CommonData.speciesListInvasive), false), 0, 0, 255, .6f, false, 9, false);
+        MapLayer invasiveSpecies = createSpeciesLayer(query.newFacet(Facet.parseFacet(CommonData.speciesListInvasive), true), 0, 0, 255, .6f, false, 9, false);
 
 
         String[] layers = CommonData.getSettings().getProperty("detailed_area_report_layers").split("\n");

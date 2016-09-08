@@ -54,7 +54,7 @@ public class Facet implements Serializable {
 
         this.valueArray = null;
 
-        this.parameter = (includeRange ? "" : "-") + this.field + ":" + this.value;
+        this.parameter = (includeRange ? "" : "*:* AND -(") + this.field + ":" + this.value + (includeRange ? "" : ")");
     }
 
     public Facet(String field, String strMin, String strMax, boolean includeRange) {
@@ -87,7 +87,7 @@ public class Facet implements Serializable {
 
         this.valueArray = null;
 
-        this.parameter = (includeRange ? "" : "-") + this.field + ":" + this.value;
+        this.parameter = (includeRange ? "" : "*:* AND -(") + this.field + ":" + this.value + (includeRange ? "" : ")");
     }
 
     public Facet(String fq, Facet[] orInAndTerms, Facet[] andTerms, Facet[] orTerms) {
@@ -220,10 +220,10 @@ public class Facet implements Serializable {
         String facet = "";
         if (parameter == null) {
             if ((value.startsWith("\"") && value.endsWith("\"")) || value.equals("*")) {
-                facet = (includeRange ? "" : "-") + field + ":" + value;
+                facet = (includeRange ? "" : "*:* AND -(") + field + ":" + value + (includeRange ? "" : ")");
             } else {
                 try {
-                    facet = (includeRange ? "" : "-") + field + ":\"" + (value) + "\"";
+                    facet = (includeRange ? "" : "*:* AND -(") + field + ":\"" + (value) + "\"" + (includeRange ? "" : ")");
                 } catch (Exception e) {
                     (Logger.getLogger(Facet.class)).error("failed to encode to UTF-8: " + value, e);
                 }
@@ -242,11 +242,11 @@ public class Facet implements Serializable {
 
             } else if (field.equals("occurrence_year_decade") || field.equals("decade")) {
                 if (value.contains("before")) {
-                    facet = (includeRange ? "" : "-") + field + ":[* TO 1849-12-31T00:00:00Z]";
+                    facet = (includeRange ? "" : "*:* AND -(") + field + ":[* TO 1849-12-31T00:00:00Z]" + (includeRange ? "" : ")");
                 } else {
                     String yr = value.replace("\"", "");
                     yr = yr.substring(0, yr.length() - 1);
-                    facet = (includeRange ? "" : "-") + field + ":[" + yr + "0-01-01T00:00:00Z TO " + yr + "9-12-31T00:00:00Z]";
+                    facet = (includeRange ? "" : "*:* AND -(") + field + ":[" + yr + "0-01-01T00:00:00Z TO " + yr + "9-12-31T00:00:00Z]" + (includeRange ? "" : ")");
                 }
                 facet = facet.replace("_decade", "");
             }
