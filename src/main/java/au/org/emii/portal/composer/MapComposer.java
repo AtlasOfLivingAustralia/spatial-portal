@@ -853,8 +853,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         MapLayer mapLayer = null;
         boolean pointLayer = false;
+        List<Double> dbb = null;
         try {
-            List<Double> dbb = Util.getBoundingBox(obj.get(StringConstants.BBOX).toString());
+            dbb = Util.getBoundingBox(obj.get(StringConstants.BBOX).toString());
 
             //if the layer is a point create a radius
             if (dbb.get(0).floatValue() == dbb.get(2).floatValue() && dbb.get(1).floatValue() == dbb.get(3).floatValue()) {
@@ -880,6 +881,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (mapLayer == null) {
             return null;
         }
+        
+        if(dbb != null){
+            mapLayer.getMapLayerMetadata().setBbox(dbb);
+        }        
+        
         mapLayer.setPid(pid);
         mapLayer.setPolygonLayer(true);
 
