@@ -441,7 +441,7 @@
             <center id="center" >
                 <div id="mapcontainer" width="100%" height="100%" >
                     <div style="float:left" width="100%" height="100%" >
-                        <iframe id="mapIframe" width="100%" height="100%" name="mapFrame" src="./map2.html?" />
+                        <iframe id="mapIframe" width="100%" height="100%" name="mapFrame" src="./map2.jsp?"/>
                         <div sclass="contextualDivMenu" zclass="contextualDiv" id="contextualDivMenu" >
                                     <contextualMenu id="contextualMenu" style='display: block; padding: 3px;
                                                                                            opacity: 0.9;

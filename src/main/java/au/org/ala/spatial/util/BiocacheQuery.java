@@ -1751,7 +1751,24 @@ public class BiocacheQuery implements Query, Serializable {
             }
         }
 
-        html.append("<tr class='").append(lastClass).append("'><td class='md_th' colspan=3><a href='").append(biocacheWebServer).append("/occurrences/search?q=").append(getQ()).append("' target='_blank'>Table view of these records</a></td><td class='md_spacer'/><td class='md_value'></td></tr>");
+        //ensure qid exists
+        if (paramId == null) {
+            forMapping = true;
+            makeParamId();
+        }
+
+        html.append("<tr class='").append(lastClass).append("'><td class='md_th'>QID</td><td class='md_spacer'/><td class='md_value'>").append(paramId).append("</td></tr>");
+        lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
+
+
+        html.append("<tr class='").append(lastClass).append("'><td class='md_th' colspan=3><a href='").append(biocacheWebServer).append("/occurrences/search?q=").append(getQ()).append("' target='_blank'>Table view of these records</a></td></tr>");
+
+        //link to new download page in ala-hub
+        try {
+            html.append("<tr class='").append(lastClass).append("'><td class='md_th' colspan=3><a href='").append(biocacheWebServer).append("/download?searchParams=%3Fq%3D").append(URLEncoder.encode(getQ(), "UTF-8")).append("&targetUri=/occurrences/search' target='_blank'>Standard download of these records</a></td></tr>");
+        } catch (Exception e) {
+        }
+
         html.append("</table>");
 
         return html.toString();

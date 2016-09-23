@@ -1,3 +1,5 @@
+<%@page contentType="text/html" pageEncoding="UTF-8" %>
+<%@ page import="au.org.ala.spatial.util.CommonData" %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -10,7 +12,12 @@
     <link rel="stylesheet" type="text/css" href="css/map.css?" media="screen">
     <link rel="stylesheet" type="text/css" href="css/mapprint.css?" media="print">
 
+    <% if (CommonData.getSettings().getProperty("google.maps.apikey", "").length() > 0) { %>
+    <script type="text/javascript"
+            src="http://maps.google.com/maps/api/js?libraries=geometry&sensor=false&key=<%= CommonData.getSettings().getProperty("google.maps.apikey") %>"></script>
+    <% } else { %>
     <script type="text/javascript" src="http://maps.google.com/maps/api/js?libraries=geometry&sensor=false"></script>
+    <% } %>
     <script type="text/javascript" src="map.js.dsp"></script>
 
 

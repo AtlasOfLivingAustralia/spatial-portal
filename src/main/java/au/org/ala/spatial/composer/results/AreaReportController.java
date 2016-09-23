@@ -1217,11 +1217,16 @@ public class AreaReportController extends UtilityComposer {
         Map<String, String> areaCalc = new HashMap<String, String>();
 
         if (areaSqKm != null) {
-            areaCalc.put(StringConstants.AREA, areaSqKm);
-            model.setCount(areaSqKm);
-            speciesDistributionText = null;
+            try {
+                double totalarea = Double.parseDouble(areaSqKm);
+                DecimalFormat df = new DecimalFormat("###,###.##");
+                areaCalc.put(StringConstants.AREA, df.format(totalarea / 1000 / 1000));
+                speciesDistributionText = null;
 
-            model.addUrlDetails("Info", "note-area-sq-km");
+                model.addUrlDetails("Info", "note-area-sq-km");
+            } catch (Exception e) {
+                LOGGER.error("Error parsing area sq km: " + areaSqKm, e);
+            }
             return areaCalc;
         }
 
