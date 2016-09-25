@@ -43,7 +43,7 @@ public class GazetteerAutoComplete extends Combobox {
 
         try {
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.getLayersServer() + "/search?limit=40&q=" + searchString);
+            GetMethod get = new GetMethod(CommonData.getLayersServer() + "/search?limit=40&q=" + searchString + "&userObjects=false");
             get.addRequestHeader(StringConstants.ACCEPT, StringConstants.JSON_JAVASCRIPT_ALL);
 
             client.executeMethod(get);

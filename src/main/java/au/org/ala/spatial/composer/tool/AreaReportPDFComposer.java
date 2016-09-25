@@ -11,9 +11,6 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.SelectedArea;
 import au.org.emii.portal.util.AreaReportPDF;
 import org.apache.log4j.Logger;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.*;
 
@@ -74,6 +71,7 @@ public class AreaReportPDFComposer extends ToolComposer {
         if (wktTmp == null && ml != null && ml.getPid() != null) {
             wktTmp = Util.readUrl(CommonData.getLayersServer() + "/shape/wkt/" + ml.getPid());
         }
+        final String queryWkt = (ml == null ? sa.getWkt() : (ml.getFacets() == null ? ml.getWKT() : null));
         final String area = areaDisplayName;
         final String wkt = wktTmp;
         final List<Facet> facets = (ml != null && ml.getFacets() != null ? ml.getFacets() : null);
@@ -84,7 +82,7 @@ public class AreaReportPDFComposer extends ToolComposer {
         Callable pdfAreaReport = new Callable<AreaReportPDF>() {
             @Override
             public AreaReportPDF call() {
-                return new AreaReportPDF(wkt, area, facets, progress);
+                return new AreaReportPDF(wkt, area, facets, queryWkt, progress);
             }
         };
 

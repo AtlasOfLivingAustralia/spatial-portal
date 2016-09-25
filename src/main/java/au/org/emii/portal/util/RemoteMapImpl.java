@@ -87,10 +87,13 @@ public class RemoteMapImpl implements RemoteMap {
         mapLayer.setOpacity(opacity);
         mapLayer.setImageFormat(layerUtilities.getImageFormat(uri));
 
-        /* attempt to retrieve bounding box */
-        List<Double> bbox = layerUtilities.getBBox(uri);
-        if (bbox != null) {
-            mapLayer.getMapLayerMetadata().setBbox(bbox);
+        /* attempt to retrieve bounding box if not database tables*/
+        if (!uri.contains("ALA:Objects") && !uri.contains("ALA:Distributions")) {
+            List<Double> bbox = layerUtilities.getBBox(uri);
+            if (bbox != null) {
+                mapLayer.getMapLayerMetadata().setBbox(bbox);
+
+            }
         }
 
         /* we don't want our user to have to type loads

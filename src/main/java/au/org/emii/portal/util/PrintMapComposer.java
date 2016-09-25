@@ -520,6 +520,8 @@ public class PrintMapComposer {
 
         String uri = "http://maps.googleapis.com/maps/api/staticmap?";
         String parameters = "center=" + latitude + "," + longitude + "&zoom=" + res + "&scale=" + gScale + "&size=" + imgWidth + "x" + imgHeight + "&maptype=" + maptype;
+        String key = CommonData.getSettings().getProperty("google.maps.apikey", null);
+        if (key != null) parameters += "&key=" + key;
 
         RescaleOp op = new RescaleOp(new float[]{1f, 1f, 1f, 1f}, new float[]{0f, 0f, 0f, 0f}, null);
 

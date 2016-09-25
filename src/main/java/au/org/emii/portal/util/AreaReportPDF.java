@@ -46,7 +46,6 @@ public class AreaReportPDF {
     private String[] checklists;
     private String[] distributions;
     List<JSONObject> documents;
-    private Map<String, byte[]> imageMap;
     private RemoteMap remoteMap;
     private Map tabulation;
     private int fileNumber;
@@ -55,12 +54,12 @@ public class AreaReportPDF {
 
     private Map progress;
 
-    public AreaReportPDF(String wkt, String areaName, List<Facet> facets, Map progress) {
+    public AreaReportPDF(String wkt, String areaName, List<Facet> facets, String areaWkt, Map progress) {
         this.wkt = wkt;
         this.areaName = areaName;
         this.progress = progress;
 
-        query = new BiocacheQuery(null, wkt, null, facets, true, new boolean[]{true, true, true});
+        query = new BiocacheQuery(null, areaWkt, null, facets, true, new boolean[]{true, true, true});
         query = query.newFacet(new Facet("occurrence_status_s", "absent", false), true);
 
         remoteMap = new RemoteMapImpl();
@@ -101,7 +100,7 @@ public class AreaReportPDF {
         //String wkt = "POLYGON((112.0 -44.0,112.0 -11.0,154.0 -11.0,154.0 -44.0,112.0 -44.0))";
         String wkt = "POLYGON((149.26687622068 -35.258741390775,149.35579681395 -35.298540090399,149.33657073973 -35.320673151768,149.28404235838 -35.336638814392,149.24559020995 -35.322914136746,149.26687622068 -35.258741390775))";
 
-        new AreaReportPDF(wkt, "My area", null, null);
+        new AreaReportPDF(wkt, "My area", null, wkt, null);
     }
 
     private boolean isCancelled() {
@@ -601,7 +600,6 @@ public class AreaReportPDF {
     final void init() {
         counts = new ConcurrentHashMap<String, String>();
         csvs = new ConcurrentHashMap<String, String>();
-        imageMap = new ConcurrentHashMap<String, byte[]>();
         tabulation = new ConcurrentHashMap();
         speciesLinks = new ConcurrentHashMap<String, String>();
 
@@ -1078,55 +1076,55 @@ public class AreaReportPDF {
 
                 setProgress("Getting information: making map of " + shortname, 0);
                 if (isCancelled()) return;
-                imageMap.put(shortname, new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, ml}, aspectRatio, "", type, resolution).get());
+                saveImage(shortname, new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea, ml}, aspectRatio, "", type, resolution).get());
             }
         }
 
         setProgress("Getting information: making map of area", 0);
         if (isCancelled()) return;
-        imageMap.put("base_area", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea}, aspectRatio, "", type, resolution).get());
+        saveImage("base_area", new PrintMapComposer(extents, basemap, new MapLayer[]{mlArea}, aspectRatio, "", type, resolution).get());
 
         setProgress("Getting information: making map of area overview", 0);
         if (isCancelled()) return;
-        imageMap.put("base_area_zoomed_out", new PrintMapComposer(extentsLarge, basemap, new MapLayer[]{mlArea}, aspectRatio, "", type, resolution).get());
+        saveImage("base_area_zoomed_out", new PrintMapComposer(extentsLarge, basemap, new MapLayer[]{mlArea}, aspectRatio, "", type, resolution).get());
 
         setProgress("Getting information: making occurrences", 0);
         if (isCancelled()) return;
-        imageMap.put(StringConstants.OCCURRENCES, new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, mlSpecies}, aspectRatio, "", type, resolution).get());
+        saveImage(StringConstants.OCCURRENCES, new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, mlSpecies}, aspectRatio, "", type, resolution).get());
 
         setProgress("Getting information: making threatened species", 0);
         if (isCancelled()) return;
-        imageMap.put("Threatened_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, threatenedSpecies}, aspectRatio, "", type, resolution).get());
+        saveImage("Threatened_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, threatenedSpecies}, aspectRatio, "", type, resolution).get());
 
         setProgress("Getting information: making iconic species", 0);
         if (isCancelled()) return;
-        imageMap.put("Iconic_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, iconicSpecies}, aspectRatio, "", type, resolution).get());
+        saveImage("Iconic_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, iconicSpecies}, aspectRatio, "", type, resolution).get());
 
         setProgress("Getting information: making migratory species", 0);
         if (isCancelled()) return;
-        imageMap.put("Migratory_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, migratorySpecies}, aspectRatio, "", type, resolution).get());
+        saveImage("Migratory_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, migratorySpecies}, aspectRatio, "", type, resolution).get());
 
         setProgress("Getting information: making invasive species", 0);
         if (isCancelled()) return;
-        imageMap.put("Invasive_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, invasiveSpecies}, aspectRatio, "", type, resolution).get());
+        saveImage("Invasive_Species", new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, invasiveSpecies}, aspectRatio, "", type, resolution).get());
 
         for (int i = 0; i < StringConstants.SPECIES_GROUPS.length; i++) {
             setProgress("Getting information: making map of lifeform " + StringConstants.SPECIES_GROUPS[i], 0);
             if (isCancelled()) return;
-            imageMap.put("lifeform - " + StringConstants.SPECIES_GROUPS[i], new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, lifeforms.get(i)}, aspectRatio, "", type, resolution).get());
+            saveImage("lifeform - " + StringConstants.SPECIES_GROUPS[i], new PrintMapComposer(extentsSmall, basemap, new MapLayer[]{mlArea, lifeforms.get(i)}, aspectRatio, "", type, resolution).get());
         }
 
         //save images
         setProgress("Getting information: saving maps", 0);
-        if (isCancelled()) return;
-        for (String key : imageMap.keySet()) {
-            try {
-                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath + File.separator + key + ".png"));
-                bos.write(imageMap.get(key));
-                bos.close();
-            } catch (Exception e) {
-                LOGGER.error("failed to write image to: " + filePath, e);
-            }
+    }
+
+    private void saveImage(String name, byte[] image) {
+        try {
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath + File.separator + name + ".png"));
+            bos.write(image);
+            bos.close();
+        } catch (Exception e) {
+            LOGGER.error("failed to write image to: " + filePath, e);
         }
     }
 

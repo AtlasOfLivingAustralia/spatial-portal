@@ -888,6 +888,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         MapLayerMetadata md = mapLayer.getMapLayerMetadata();
 
+        try {
+            md.setBbox(Util.getBoundingBox(obj.get(StringConstants.BBOX).toString()));
+        } catch (Exception e) {
+        }
+
         Facet facet = null;
         if (!pointLayer && CommonData.getLayer(fid) != null && CommonData.getFacetLayerNameDefault(fid) != null) {
             JSONObject field = CommonData.getLayer(fid);

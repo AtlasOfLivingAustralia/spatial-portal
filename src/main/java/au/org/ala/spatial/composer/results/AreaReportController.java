@@ -1220,12 +1220,14 @@ public class AreaReportController extends UtilityComposer {
             try {
                 double totalarea = Double.parseDouble(areaSqKm);
                 DecimalFormat df = new DecimalFormat("###,###.##");
-                areaCalc.put(StringConstants.AREA, df.format(totalarea / 1000 / 1000));
+                areaCalc.put(StringConstants.AREA, df.format(totalarea));
+                model.setCount(df.format(totalarea));
                 speciesDistributionText = null;
 
                 model.addUrlDetails("Info", "note-area-sq-km");
             } catch (Exception e) {
                 LOGGER.error("Error parsing area sq km: " + areaSqKm, e);
+                model.setCount("ERROR...");
             }
             return areaCalc;
         }
