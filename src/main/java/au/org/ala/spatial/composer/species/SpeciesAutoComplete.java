@@ -16,8 +16,9 @@ import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author ajay
@@ -231,11 +232,35 @@ public class SpeciesAutoComplete extends Combobox {
         //search URL for new BIE
         String v = val;
 
-        //wildcard required for partial one word matches
-        if (!val.contains(" ")) v = val + "*";
+        StringBuilder slist = new StringBuilder();
 
-        String nsurl = CommonData.getBieServer() + "/ws/search.json?pageSize=100&q=" + URLEncoder.encode(v, StringConstants.UTF_8) + "&fq=idxtype:TAXON";
+        String size = CommonData.getSettings().getProperty("autocomplete.limit", "20");
 
+        String type = CommonData.getSettings().getProperty("autocomplete.type", "search");
+        if (type.equals("search")) {
+            String nsurl = CommonData.getBieServer() + "/ws/search.json?pageSize=" + size + "&q=" + URLEncoder.encode(v, StringConstants.UTF_8) + "&fq=idxtype:TAXON";
+
+            //for repeating with wildcard for patial matches
+            String nsurl2 = CommonData.getBieServer() + "/ws/search.json?pageSize=" + size + "&q=" + URLEncoder.encode(v + "*", StringConstants.UTF_8) + "&fq=idxtype:TAXON";
+
+            slist.append(buildList(getResults(nsurl), val));
+
+            //no need to search with wildcard when there is > 1 term in the search
+            if (!val.contains(" ")) slist.append(buildList(getResults(nsurl2), val));
+        } else if (type.equals("auto")) {
+            String nsurl = CommonData.getBieServer() + "/ws/search/auto.json?pageSize=" + size + "&q=" + URLEncoder.encode(v, StringConstants.UTF_8);
+
+            slist.append(buildList(getResults(nsurl), val));
+        } else if (type.equals("biocache")) {
+            String nsurl = CommonData.getBiocacheServer() + "/autocomplete/search?pageSize=" + size + "&q=" + URLEncoder.encode(v, StringConstants.UTF_8);
+
+            slist.append(buildList(getResults(nsurl), val));
+        }
+
+        return slist.toString();
+    }
+
+    private JSONArray getResults(String nsurl) throws Exception {
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(nsurl);
         get.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.TEXT_PLAIN);
@@ -246,17 +271,37 @@ public class SpeciesAutoComplete extends Combobox {
         //parse
         JSONParser jp = new JSONParser();
         JSONObject jo = (JSONObject) jp.parse(rawJSON);
-        jo = (JSONObject) jo.get("searchResults");
 
+        //support search and auto bie webservices
+        if (jo.containsKey("searchResults")) {
+            return (JSONArray) ((JSONObject) jo.get("searchResults")).get("results");
+        } else {
+            return (JSONArray) jo.get("autoCompleteList");
+        }
+    }
+
+    private String buildList(JSONArray ja, String val) {
         StringBuilder slist = new StringBuilder();
-        JSONArray ja = (JSONArray) jo.get("results");
+
         for (int i = 0; i < ja.size(); i++) {
             JSONObject o = (JSONObject) ja.get(i);
 
             //count for guid
             try {
-                if (o.containsKey(StringConstants.NAME) && o.containsKey("guid") && o.containsKey(StringConstants.RANK)) {
-                    Integer count = CommonData.getLsidCounts().getCount(o.get("guid").toString());
+                String rank = StringConstants.RANK;
+                if (o.containsKey("rankString")) rank = "rankString";
+
+                if (o.containsKey(StringConstants.NAME) && o.containsKey("guid") && o.containsKey(rank)) {
+                    Integer count = 0;
+                    if (o.containsKey("occCount") && !o.get("occCount").equals("0")) {
+                        try {
+                            count = Integer.parseInt(o.get("occCount").toString());
+                        } catch (Exception e) {
+                            count = CommonData.getLsidCounts().getCount(o.get("guid").toString());
+                        }
+                    } else {
+                        count = CommonData.getLsidCounts().getCount(o.get("guid").toString());
+                    }
 
                     if (slist.length() > 0) {
                         slist.append("\n");
@@ -264,13 +309,23 @@ public class SpeciesAutoComplete extends Combobox {
 
                     String commonName = null;
                     boolean commonNameMatch = false;
-                    if (o.containsKey("commonName") && !StringConstants.NONE.equals(o.get("commonName"))
-                            && !StringConstants.NULL.equals(o.get("commonName"))) {
+
+                    if (o.containsKey("commonName") && !StringConstants.NONE.equals(o.get("commonName")) &&
+                            o.get("commonName") != null && !StringConstants.NULL.equals(o.get("commonName"))) {
                         commonName = o.get("commonName").toString();
                         String[] cns = commonName.split(",");
+                        if (o.get("commonName") instanceof JSONArray) {
+                            cns = (String[]) ((JSONArray) o.get("commonName")).toArray(cns);
+                            if (cns.length > 0 && cns[0] != null) commonName = cns[0];
+                        }
+
+                        if (o.containsKey("commonNameMatches")) {
+                            cns = (String[]) ((JSONArray) o.get("commonNameMatches")).toArray(cns);
+                        }
+
                         for (int j = 0; j < cns.length; j++) {
-                            if (cns[j].toLowerCase().contains(val)) {
-                                commonName = cns[j];
+                            if (cns[j] != null && cns[j].toLowerCase().contains(val)) {
+                                commonName = cns[j].replace("<b>", "").replace("</b>", "");
                                 commonNameMatch = true;
                                 break;
                             }
@@ -285,7 +340,7 @@ public class SpeciesAutoComplete extends Combobox {
                     if (commonNameMatch) {
                         slist.append(commonName).append(" |");
                         slist.append(o.get("guid")).append("|");
-                        slist.append(o.get(StringConstants.RANK));
+                        slist.append(o.get(rank));
                         slist.append(", ").append(o.get(StringConstants.NAME).toString().replace("|", ","));
                         slist.append("|");
                         if (count != null) {
@@ -297,7 +352,7 @@ public class SpeciesAutoComplete extends Combobox {
                     } else {
                         slist.append(o.get(StringConstants.NAME).toString().replace("|", ",")).append(" |");
                         slist.append(o.get("guid")).append("|");
-                        slist.append(o.get(StringConstants.RANK));
+                        slist.append(o.get(rank));
                         if (commonName != null) {
                             slist.append(", ").append(commonName);
                         }
