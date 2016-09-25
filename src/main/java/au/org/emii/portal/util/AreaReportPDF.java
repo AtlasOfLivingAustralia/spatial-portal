@@ -145,6 +145,9 @@ public class AreaReportPDF {
 
             makePDF(filePath + "/report.1.html", inputHtmls, filePath + "/output.pdf");
 
+            //zip
+            Zipper.zipDirectory(filePath + "/output.pdf", filePath + "/output.zip");
+
         } catch (Exception e) {
             LOGGER.error("failed to produce PDF", e);
         }
@@ -419,16 +422,78 @@ public class AreaReportPDF {
 
         cmd[cmd.length - 1] = outputPdf;
 
-        ProcessBuilder builder = new ProcessBuilder(cmd);
-        builder.environment().putAll(System.getenv());
-        builder.redirectErrorStream(true);
-        Process proc = null;
-        try {
-            proc = builder.start();
+        File outputFile = new File(outputPdf);
 
-            proc.waitFor();
-        } catch (Exception e) {
-            LOGGER.error("error running wkhtmltopdf", e);
+        RunCmd run = new RunCmd(cmd, filePath);
+
+        run.start();
+
+        long time = System.currentTimeMillis();
+        long lastSize = 0;
+        long maxPause = 1000 * 60 * 2; //2 minutes
+        long sleepTime = 1000 * 5; //5 seconds
+        while (!run.finished &&
+                (!outputFile.exists() || lastSize < outputFile.length() || maxPause + time > System.currentTimeMillis())) {
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+                break;
+            }
+
+            if (outputFile.exists() && lastSize < outputFile.length()) time = System.currentTimeMillis();
+
+            lastSize = outputFile.length();
+
+            setProgress("Producing PDF: " + lastSize + " bytes", 0);
+        }
+
+        LOGGER.error("PDF stopping");
+        run.stopProcess();
+        LOGGER.error("PDF stopped");
+    }
+
+    private class RunCmd extends Thread {
+
+        private String[] cmd;
+        private Process proc;
+        private String dir;
+        public boolean finished = false;
+
+        public RunCmd(String[] cmd, String dir) {
+            this.cmd = cmd;
+            this.dir = dir;
+        }
+
+        @Override
+        public void run() {
+            File err = new File(dir + "/errors.log");
+            File out = new File(dir + "/output.log");
+            ProcessBuilder builder = new ProcessBuilder(cmd);
+            builder.environment().putAll(System.getenv());
+            //builder.redirectErrorStream(true);
+            builder.redirectError(err);
+            builder.redirectOutput(out);
+            try {
+                proc = builder.start();
+
+                proc.waitFor();
+
+                proc.destroy();
+            } catch (Exception e) {
+                LOGGER.error("error running wkhtmltopdf", e);
+            }
+
+            finished = true;
+        }
+
+        public void stopProcess() {
+            if (proc != null) {
+                try {
+                    proc.destroy();
+                } catch (Exception e) {
+                    LOGGER.error("failed to stop wkhtmltopdf", e);
+                }
+            }
         }
     }
 

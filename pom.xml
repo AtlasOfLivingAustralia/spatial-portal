@@ -731,8 +731,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.0.2</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                     <compilerArgument>-g:lines,vars,source</compilerArgument>
                 </configuration>
             </plugin>
@@ -769,7 +769,7 @@
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
+                    <source>1.7</source>
                     <doclet>
                         gr.spinellis.umlgraph.doclet.UmlGraphDoc
                     </doclet>
@@ -784,7 +784,7 @@
                         -postfixpackage -nodefontsize 9
                         -nodefontpackagesize 7 -attributes -operations
                         -enumerations -enumconstants -visibility
-                        -link "http://java.sun.com/j2se/1.6/docs/api/"
+                        -link "http://java.sun.com/j2se/1.7/docs/api/"
                     </additionalparam>
                 </configuration>
                 <!-- <version></version> -->
