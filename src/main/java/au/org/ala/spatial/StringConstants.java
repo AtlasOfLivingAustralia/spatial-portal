@@ -25,7 +25,7 @@ public final class StringConstants {
     public static final String BOUNDING_BOX = "bounding_box";
     public static final String LAYERS = "layers";
     public static final String POLYGON_LAYERS = "polygon_layers";
-    public static final String GOOGLE_ADDRESS_LINE = "http://maps.google.com/maps/api/geocode/json?components=locality&sensor=false&address=";
+    public static final String GOOGLE_ADDRESS_LINE = "https://maps.google.com/maps/api/geocode/json?components=locality&sensor=false&address=";
     public static final String RESULTS = "results";
     public static final String GEOMETRY = "geometry";
     public static final String LOCATION = "location";
