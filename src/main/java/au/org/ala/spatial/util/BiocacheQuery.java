@@ -1534,6 +1534,8 @@ public class BiocacheQuery implements Query, Serializable {
                             if (StringConstants.OCCURRENCE_YEAR.equals(colourmode) || StringConstants.DECADE.equals(colourmode)) {
                                 sb.append(StringConstants.DATE_TIME_END_OF_YEAR);
                             }
+                        } else if (i < cutpoints.length - 1 && cutpoints[i] == cutpoints[i + 1]) {
+                            cutpointmins[i + 1] = cutpointmins[i];
                         }
                         i++;
                     }
