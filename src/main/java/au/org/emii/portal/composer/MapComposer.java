@@ -1530,6 +1530,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
                 if ("phylogeneticdiversity".equals(tool)) {
                     openModal("WEB-INF/zul/tool/PhylogeneticDiversity.zul", map, StringConstants.ADDTOOLWINDOW);
+                } else if ("exportspeciesexternal".equals(tool)) {
+                    //assume bccvl is logged in at this stage
+                    openModal("WEB-INF/zul/output/ExportSpeciesExternal.zul", null, StringConstants.ADDTOOLWINDOW);
                 }
             } catch (Exception e) {
                 LOGGER.error("failed to open tool: " + tool, e);
@@ -2827,6 +2830,25 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/output/ExportLayer.zul", null, StringConstants.ADDTOOLWINDOW);
     }
 
+    public void exportExternal(Event event) {
+        if (getSpeciesLayers().size() == 0) {
+            showMessage("No species mapped. Create a species using Add to Map | Species");
+        } else {
+            //confirm bccvl login
+            try {
+                //save session
+                String returnUrl = saveSession() + "&tool=exportspeciesexternal";
+
+                //redirect to bccvl
+                String url = CommonData.getSettings().getProperty("bccvl.post.url") + URLEncoder.encode(returnUrl, "UTF-8");
+
+                openLayersJavascript.execute("window.location.href = '" + url + "';");
+            } catch (Exception e) {
+                LOGGER.error("failed to save sessiona and redirect to bccvl for login", e);
+            }
+        }
+    }
+
     public void onBaseMap(Event event) {
         String newBaseMap = (String) event.getData();
         getPortalSession().setBaseLayer(newBaseMap);
@@ -3082,12 +3104,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void saveUserSession(Event event) {
         LOGGER.debug("saving session");
 
+        String sessionurl = saveSession();
+
+        activateLink("*" + "<p>Your session has been saved and now available to share at <br />"
+                        + "<a href='" + sessionurl + "'>" + sessionurl + "</a>"
+                        + "<br />(Right-click on the link and to copy the link to clipboard)" + "</p>"
+                , "Saved session", false, "");
+
+    }
+
+    private String saveSession() {
+        String jsessionid = getCookieValue("JSESSIONID");
+        if (jsessionid == null) {
+            jsessionid = "test";
+        }
+
         PrintWriter out = null;
         try {
-            String jsessionid = getCookieValue("JSESSIONID");
-            if (jsessionid == null) {
-                jsessionid = "test";
-            }
 
             String sfld = getSettingsSupplementary().getProperty(StringConstants.ANALYSIS_OUTPUT_DIR)
                     + "session/" + jsessionid;
@@ -3130,23 +3163,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             out = new PrintWriter(new BufferedWriter(new FileWriter(sfld + "/details.txt")));
             out.write(sbSession.toString());
             out.close();
-
-            String sessionurl = CommonData.getWebportalServer() + "/?ss=" + jsessionid;
-
-            activateLink("*" + "<p>Your session has been saved and now available to share at <br />"
-                    + "<a href='" + sessionurl + "'>" + sessionurl + "</a>"
-                    + "<br />(Right-click on the link and to copy the link to clipboard)" + "</p>"
-                    , "Saved session", false, "");
-        } catch (IOException ex) {
-            LOGGER.error("Unable to save session data: ", ex);
+        } catch (Exception e) {
+            LOGGER.error("failed to save session", e);
         } finally {
             if (out != null) {
                 out.close();
             }
         }
+
+        return CommonData.getWebportalServer() + "/?ss=" + jsessionid;
     }
 
     public void loadUserSession(String sessionid) {
+        onClick$removeAllLayers();
+
         Scanner scanner = null;
         try {
 

@@ -1759,7 +1759,7 @@ public class BiocacheQuery implements Query, Serializable {
             makeParamId();
         }
 
-        html.append("<tr class='").append(lastClass).append("'><td class='md_th'>QID</td><td class='md_spacer'/><td class='md_value'>").append(paramId).append("</td></tr>");
+        html.append("<tr class='").append(lastClass).append("'><td class='md_th'>QID</td><td class='md_spacer'/><td class='md_value'>").append(paramId).append(" (" + biocacheServer + ")").append("</td></tr>");
         lastClass = lastClass.length() == 0 ? "md_grey-bg" : "";
 
 
@@ -1774,6 +1774,15 @@ public class BiocacheQuery implements Query, Serializable {
         html.append("</table>");
 
         return html.toString();
+    }
+
+    public String getQid() {
+        //ensure qid exists
+        if (paramId == null) {
+            forMapping = true;
+            makeParamId();
+        }
+        return paramId;
     }
 
     private Map<String, String> getSpeciesClassification(String lsid) {

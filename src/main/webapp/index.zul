@@ -247,7 +247,7 @@
                         </n:li>
                         <n:li n:class="dropdown dropdown_old">
                             <n:a n:class="dropdown-dropdown-toggle" n:data-toggle="dropdown" n:onClick="doNothing();"  >Export <n:b n:class="caret" /></n:a>
-                            <n:ul n:class="dropdown-menu">
+                            <n:ul n:class="dropdown-menu" n:style="min-width:200px">
                                 <n:li>
                                     <n:a href="#" n:onClick='printHack();' n:style='${mapPortalPage.getSettingsSupplementary().getProperty("export.map.enable")?"":"display:none"}'>Map</n:a>
                                 </n:li>
@@ -259,6 +259,13 @@
                                 </n:li>
                                 <n:li>
                                     <n:a href="#" n:onClick="runExport();" n:style='${mapPortalPage.getSettingsSupplementary().getProperty("export.areas.enable")?"":"display:none"}'>Areas</n:a>
+                                </n:li>
+                                <n:li>
+                                    <n:a href="#" n:onClick="exportExternal();"
+                                         n:style='${mapPortalPage.getSettingsSupplementary().getProperty("export.external.enable")?"":"display:none"}'>
+                                        Export to
+                                        <n:img src="images/BCCVL_Logo_Horizontal_RGB.png"></n:img>
+                                    </n:a>
                                 </n:li>
                             </n:ul>
                         </n:li>

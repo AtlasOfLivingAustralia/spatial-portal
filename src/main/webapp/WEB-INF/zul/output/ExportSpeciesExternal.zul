@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zk xmlns="http://www.zkoss.org/2005/zul">
+    <window id="addtoolwindow" use="au.org.ala.spatial.composer.tool.ExportSpeciesExternalComposer"
+            apply="au.org.ala.spatial.composer.tool.ExportSpeciesExternalComposer" width="600px" height="300px"
+            style="overflow:visible"
+            xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-se"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-sw"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-nw"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-n"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-e"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-s"/>
+        <n:div class="fancybox-bg" id="fancybox-bg-w"/>
+        <a sclass="fancybox-close" onClick="addtoolwindow.onClick$btnCancel(null)" style="display: inline"/>
+        <n:a class="fancybox-help"
+             n:href="${addtoolwindow.getMapComposer().getSettingsSupplementary().getProperty('help_url')}/spatial-portal-help/export-tools"
+             n:target="_blank" style="display: inline"/>
+        <caption id="cTitle" label="Export Area"/>
+        <separator/>
+        <hbox>
+            <vbox style="padding-left: 10px">
+                <grid width="150px">
+                    <columns>
+                        <column width="120px"/>
+                        <column/>
+                    </columns>
+                    <rows>
+                        <row>
+                            <label id="lblStep1" style="font-weight:bold" value="1. Select species layers"/>
+                            <html id="imgCompletedStep1" visible="false"><![CDATA[<i class="icon-ok"></i>]]></html>
+                        </row>
+                    </rows>
+                </grid>
+            </vbox>
+
+            <vbox style="padding-left: 10px">
+                <div id="atstep1" visible="true" zclass="first last" sclass="atstep">
+                    Select 1 or more species layers for export to BCCVL
+                    .
+                    <vbox id="vboxSpecies">
+
+                    </vbox>
+                </div>
+            </vbox>
+        </hbox>
+        <div class="btn-group" style="position:absolute;right:10px;bottom:10px">
+            <button label="Cancel" id="btnCancel"/>
+            <button label="&lt; Back" id="btnBack" disabled="true"/>
+            <button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self"/>
+        </div>
+    </window>
+</zk>

@@ -59,6 +59,7 @@ public class ToolComposer extends UtilityComposer {
     protected Radiogroup rgArea;
     protected Radiogroup rgAreaHighlight;
     protected Radiogroup rgSpecies;
+    protected Vbox vboxSpecies;
     protected Radiogroup rgSpeciesBk;
     protected Radio rSpeciesSearch;
     protected Radio rSpeciesSearchBk;
@@ -443,6 +444,10 @@ public class ToolComposer extends UtilityComposer {
     }
 
     public void loadSpeciesLayers(boolean biocacheOnly) {
+        loadSpeciesLayers(biocacheOnly, false);
+    }
+
+    public void loadSpeciesLayers(boolean biocacheOnly, boolean checkboxes) {
         try {
             List<MapLayer> layers = getMapComposer().getSpeciesLayers();
 
@@ -459,38 +464,51 @@ public class ToolComposer extends UtilityComposer {
                     speciesLayersCount++;
                 }
 
-                Radio rSp = new Radio(lyr.getDisplayName());
-                rSp.setValue(lyr.getName());
-                rSp.setId(lyr.getName().replaceAll(" ", "") + "_" + i);
-                rgSpecies.insertBefore(rSp, rSpeciesMapped);
+                if (!checkboxes) {
+                    Radio rSp = new Radio(lyr.getDisplayName());
+                    rSp.setValue(lyr.getName());
+                    rSp.setId(lyr.getName().replaceAll(" ", "") + "_" + i);
+                    rgSpecies.insertBefore(rSp, rSpeciesMapped);
 
-                if (rSp.getValue().equals(selectedSpeciesLayer)) {
-                    selectedSpecies = rSp;
-                }
-            }
+                    if (rSp.getValue().equals(selectedSpeciesLayer)) {
+                        selectedSpecies = rSp;
+                    }
+                } else {
+                    Checkbox rSp = new Checkbox(lyr.getDisplayName());
+                    rSp.setValue(lyr.getName());
+                    rSp.setId(lyr.getName().replaceAll(" ", "") + "_" + i);
+                    vboxSpecies.appendChild(rSp);
 
-            if (speciesLayersCount > 1) {
-                rSpeciesMapped.setLabel("All " + speciesLayersCount + StringConstants.SPECIES_CURRENTLY_MAPPED);
-            } else {
-                rSpeciesMapped.setVisible(false);
-            }
-
-            if (selectedSpecies != null) {
-                rgSpecies.setSelectedItem(selectedSpecies);
-            } else if (StringConstants.NONE.equals(selectedSpeciesLayer)) {
-                rgSpecies.setSelectedItem(rSpeciesAll);
-            } else if (!layers.isEmpty()) {
-                rgSpecies.setSelectedItem(rgSpecies.getItemAtIndex(1));
-            } else {
-                for (int i = 0; i < rgSpecies.getItemCount(); i++) {
-                    if (rgSpecies.getItemAtIndex(i).isVisible() && rgSpecies.getItemAtIndex(i) != rSpeciesAll) {
-                        rgSpecies.setSelectedItem(rgSpecies.getItemAtIndex(i));
-                        break;
+                    if (vboxSpecies.getChildren().size() == 1) {
+                        rSp.setChecked(true);
                     }
                 }
             }
 
-            updateGeospatialKosherCheckboxes();
+            if (!checkboxes) {
+                if (speciesLayersCount > 1) {
+                    rSpeciesMapped.setLabel("All " + speciesLayersCount + StringConstants.SPECIES_CURRENTLY_MAPPED);
+                } else {
+                    rSpeciesMapped.setVisible(false);
+                }
+
+                if (selectedSpecies != null) {
+                    rgSpecies.setSelectedItem(selectedSpecies);
+                } else if (StringConstants.NONE.equals(selectedSpeciesLayer)) {
+                    rgSpecies.setSelectedItem(rSpeciesAll);
+                } else if (!layers.isEmpty()) {
+                    rgSpecies.setSelectedItem(rgSpecies.getItemAtIndex(1));
+                } else {
+                    for (int i = 0; i < rgSpecies.getItemCount(); i++) {
+                        if (rgSpecies.getItemAtIndex(i).isVisible() && rgSpecies.getItemAtIndex(i) != rSpeciesAll) {
+                            rgSpecies.setSelectedItem(rgSpecies.getItemAtIndex(i));
+                            break;
+                        }
+                    }
+                }
+
+                updateGeospatialKosherCheckboxes();
+            }
         } catch (Exception e) {
             LOGGER.error(StringConstants.UNABLE_TO_LOAD_LAYERS, e);
         }
@@ -1419,6 +1437,22 @@ public class ToolComposer extends UtilityComposer {
         }
 
         return sa;
+    }
+
+    public List<Query> getAllSelectedSpecies() {
+        List<Query> selected = new ArrayList<Query>();
+
+        for (Object species : vboxSpecies.getChildren()) {
+            Checkbox chk = (Checkbox) species;
+            if (chk.isChecked()) {
+                MapLayer ml = getMapComposer().getMapLayer(chk.getValue().toString());
+                if (ml != null) {
+                    selected.add(ml.getSpeciesQuery());
+                }
+            }
+        }
+
+        return selected;
     }
 
     public Query getSelectedSpecies() {

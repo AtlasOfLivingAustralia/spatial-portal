@@ -337,6 +337,10 @@ function runExport() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'exportArea', null));
 }
 
+function exportExternal() {
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'exportExternal', null));
+}
+
 function resetMap() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$reloadPortal', null));
 }
@@ -408,4 +412,21 @@ function saveSession() {
 
 function downloadFeaturesCSV() {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$downloadFeaturesCSV', null));
+}
+
+function postToExternal(url, json) {
+    $.ajax({
+        url: url,
+        dataType: "json",
+        data: json,
+        method: "POST",
+        success: function (data) {
+            //redirect to response url
+            window.location.href = data.getResponseHeader('location')
+        },
+        error: function (data) {
+            alert('Failed to export to BCCVL.')
+        },
+        async: false
+    });
 }

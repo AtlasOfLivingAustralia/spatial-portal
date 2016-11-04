@@ -335,13 +335,19 @@ public class SpeciesAutoComplete extends Combobox {
                         }
                     }
 
+                    String name = o.get(StringConstants.NAME).toString();
+                    //misapplied identification
+                    if (o.containsKey("taxonomicStatus") && o.containsKey("acceptedConceptName") && "misapplied".equalsIgnoreCase(o.get("taxonomicStatus").toString())) {
+                        name += " (misapplied to " + o.get("acceptedConceptName").toString() + ")";
+                    }
+
                     //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
                     //swap name and common name if it is a common name match
                     if (commonNameMatch) {
                         slist.append(commonName).append(" |");
                         slist.append(o.get("guid")).append("|");
                         slist.append(o.get(rank));
-                        slist.append(", ").append(o.get(StringConstants.NAME).toString().replace("|", ","));
+                        slist.append(", ").append(name.replace("|", ","));
                         slist.append("|");
                         if (count != null) {
                             slist.append("found ");
@@ -350,7 +356,7 @@ public class SpeciesAutoComplete extends Combobox {
                             slist.append("counting");
                         }
                     } else {
-                        slist.append(o.get(StringConstants.NAME).toString().replace("|", ",")).append(" |");
+                        slist.append(name.replace("|", ",")).append(" |");
                         slist.append(o.get("guid")).append("|");
                         slist.append(o.get(rank));
                         if (commonName != null) {
