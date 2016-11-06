@@ -232,11 +232,11 @@ public class AreaReportController extends UtilityComposer {
      */
     private Map<String, AreaReportItemDTO> setUpModelMap(boolean isWorldSelected) {
         Map<String, AreaReportItemDTO> values = new LinkedHashMap<String, AreaReportItemDTO>();
-        String worldSuffix = isWorldSelected ? "*" : "";
+        //String worldSuffix = isWorldSelected ? "*" : "";
         //area
         values.put(StringConstants.AREA, new AreaReportItemDTO("Area (sq km)"));
         //species
-        values.put(StringConstants.SPECIES + worldSuffix, new AreaReportItemDTO("Number of species"));
+        values.put(StringConstants.SPECIES, new AreaReportItemDTO("Number of species"));
         //spatially valid species
         values.put(StringConstants.SPATIAL_SPECIES, new AreaReportItemDTO("Number of species - spatially valid only"));
         if (includeEndemic) {
@@ -245,7 +245,7 @@ public class AreaReportController extends UtilityComposer {
             values.put(StringConstants.SPATIAL_ENDEMIC_SPECIES, new AreaReportItemDTO("Number of endemic species - spatially valid only"));
         }
         //occurrences
-        values.put(StringConstants.OCCURRENCES + worldSuffix, new AreaReportItemDTO("Occurrences"));
+        values.put(StringConstants.OCCURRENCES, new AreaReportItemDTO("Occurrences"));
         //spatially valid occurrences
         values.put(StringConstants.SPATIAL_OCCURRENCES, new AreaReportItemDTO("Occurrences - spatially valid only"));
         //expert distribution
