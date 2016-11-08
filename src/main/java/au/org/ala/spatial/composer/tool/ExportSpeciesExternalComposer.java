@@ -47,7 +47,7 @@ public class ExportSpeciesExternalComposer extends ToolComposer {
         for (Query q : list) {
             Map m = new HashMap();
             m.put("name", q.getName());
-            m.put("qid", ((BiocacheQuery) q).getQid());
+            m.put("query", "qid:" + ((BiocacheQuery) q).getQid());
             m.put("url", q.getBS());
 
             maps.add(m);

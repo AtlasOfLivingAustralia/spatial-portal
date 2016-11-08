@@ -417,16 +417,18 @@ function downloadFeaturesCSV() {
 function postToExternal(url, json) {
     $.ajax({
         url: url,
-        dataType: "json",
-        data: json,
-        method: "POST",
-        success: function (data) {
+        data: JSON.stringify(json),
+        contentType: "application/json",
+        type: "POST",
+        xhrFields: {
+            withCredentials: true
+        },
+        success: function (data, status, xhr) {
             //redirect to response url
-            window.location.href = data.getResponseHeader('location')
+            window.location.href = xhr.getResponseHeader('location')
         },
         error: function (data) {
             alert('Failed to export to BCCVL.')
-        },
-        async: false
+        }
     });
 }
