@@ -3076,7 +3076,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         && CommonData.getSettings().getProperty("import.points.layers-service", "false").equals("false")) {
                     String sandboxEmbedded = CommonData.getSettings().getProperty("sandbox.embedded", "false");
                     if (sandboxEmbedded != null && Boolean.parseBoolean(sandboxEmbedded)) {
-                        SandboxEmbeddedController spc = (SandboxEmbeddedController) Executions.createComponents("WEB-INF/zul/sandbox/SandboxEmbedded.zul", getMapComposer(), null);
+                        SandboxEmbeddedController spc = (SandboxEmbeddedController) Executions.createComponents("WEB-INF/zul/sandbox/SandboxExternal.zul", getMapComposer(), null);
                         spc.setAddToMap(true);
                         spc.setParent(getMapComposer());
                         spc.doModal();

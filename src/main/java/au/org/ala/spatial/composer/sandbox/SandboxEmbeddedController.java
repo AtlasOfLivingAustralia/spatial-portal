@@ -38,7 +38,7 @@ public class SandboxEmbeddedController extends UtilityComposer {
         tag = "SP" + System.currentTimeMillis();
         ((Label) getFellow("uploadTag")).setValue(tag);
 
-        sandboxFrame.setSrc(CommonData.getSettings().getProperty("sandbox.url") + "upload?tag=" + tag);
+        sandboxFrame.setSrc(CommonData.getSettings().getProperty("sandbox.url") + "?tag=" + tag);
     }
 
     public void setAddToMap(boolean addtoMap) {
