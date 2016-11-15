@@ -425,10 +425,27 @@ function postToExternal(url, json) {
         },
         success: function (data, status, xhr) {
             //redirect to response url
-            window.location.href = xhr.getResponseHeader('location')
+            var location = xhr.getResponseHeader('location');
+
+            $('#login_start').hide()
+            $('#login_required').hide()
+            $('#end_of_login').append('<h2>Export to BCCVL Successful</h2><br/><a href="' + location + '">Click to open BCCVL and view the exported data</a>');
         },
-        error: function (data) {
-            alert('Failed to export to BCCVL.')
+        error: function (xhr) {
+            if (xhr.statusCode().status == 401 || xhr.statusCode().status == 0) {
+                //open login and retry 
+                $('#login_start').hide()
+                $('#login_required').show();
+
+                var loginWindow = jq('$externalContentWindow')[0]
+                if(loginWindow) {
+                    console.log('retrying')
+                    //retry
+                    setTimeout(function() {postToExternal(url,json)}, 2000);
+                }
+            } else {
+                alert('Failed to export to BCCVL.')
+            }
         }
     });
 }

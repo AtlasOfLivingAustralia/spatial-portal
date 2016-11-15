@@ -9,7 +9,7 @@ import au.org.ala.spatial.util.CommonData;
 import au.org.ala.spatial.util.Query;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
-import org.zkoss.zul.Radiogroup;
+import org.zkoss.zk.ui.event.Event;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,10 +22,6 @@ import java.util.Map;
 public class ExportSpeciesExternalComposer extends ToolComposer {
     private static final Logger LOGGER = Logger.getLogger(ExportSpeciesExternalComposer.class);
 
-
-    private Radiogroup exportFormat;
-
-    private String redirectUrl;
 
     @Override
     public void afterCompose() {
@@ -58,7 +54,22 @@ public class ExportSpeciesExternalComposer extends ToolComposer {
 
         getMapComposer().getOpenLayersJavascript().execute("postToExternal('" + CommonData.getSettings().getProperty("bccvl.post.url") + "', " + json + ");");
 
-        detach();
+        login(null);
+
+        loggingIn = false;
+
         return true;
+    }
+
+    private boolean loggingIn = false;
+
+    public void login(Event event) {
+        if (!loggingIn) {
+            loggingIn = true;
+
+            getMapComposer().activateLink("*<div id='login_start'>Sending to BCCVL...</div><div id='login_required' style='display:none'><a target='_blank' href='" + CommonData.getSettings().getProperty("bccvl.login.url") + "'>Click here to login to BCCVL (opens a new tab)</a>. <br/><br/>Return to this page after logging in. </div><div id='end_of_login'/>", "Export to BCCVL", false, null);
+
+            detach();
+        }
     }
 }

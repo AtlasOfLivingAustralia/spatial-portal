@@ -50,5 +50,38 @@
             <button label="&lt; Back" id="btnBack" disabled="true"/>
             <button class="btn-primary" label="Next &gt;" id="btnOk" autodisable="self"/>
         </div>
+
+        <script type="text/JavaScript">
+
+            <![CDATA[
+
+        function testIfReady() {
+            try {
+                $.ajax({
+                    url: parent.jq('$webportal_url')[0].innerHTML + "/RemoteRequest?url=" + encodeURI(jq('$sandbox_url')[0].innerHTML + "dataCheck/uploadStatus?tag=" + jq('$uploadTag')[0].innerHTML),
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data != null && data.status == "COMPLETE") {
+                            zAu.send(new zk.Event(zk.Widget.$(jq('$sandboxembedded')[0]), 'gotDrUid', data.uid))
+                        } else {
+                            //retry
+                            setTimeout("testIfReady()", 2000)
+                        }
+                    },
+                    error: function () {
+                        //retry
+                        setTimeout("testIfReady()", 2000)
+                    }
+                });
+            } catch (err) {
+            }
+        }
+
+        setTimeout("testIfReady()", 2000)
+
+        ]]>
+
+        </script>
     </window>
 </zk>
