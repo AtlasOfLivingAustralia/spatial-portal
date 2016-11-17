@@ -55,30 +55,23 @@
 
             <![CDATA[
 
-        function testIfReady() {
-            try {
-                $.ajax({
-                    url: parent.jq('$webportal_url')[0].innerHTML + "/RemoteRequest?url=" + encodeURI(jq('$sandbox_url')[0].innerHTML + "dataCheck/uploadStatus?tag=" + jq('$uploadTag')[0].innerHTML),
-                    dataType: "json",
-                    contentType: "application/json",
-                    success: function (data) {
-                        if (data != null && data.status == "COMPLETE") {
-                            zAu.send(new zk.Event(zk.Widget.$(jq('$sandboxembedded')[0]), 'gotDrUid', data.uid))
-                        } else {
-                            //retry
-                            setTimeout("testIfReady()", 2000)
-                        }
-                    },
-                    error: function () {
-                        //retry
-                        setTimeout("testIfReady()", 2000)
-                    }
-                });
-            } catch (err) {
+            function closeSpeciesExport() {
+                if (jq('$addtoolwindow')[0]) {
+                    zAu.send(new zk.Event(zk.Widget.$(jq('$addtoolwindow')[0]), 'onClick$btnCancel', null));
+                } else {
+                    setTimeout(function() {
+                        closeSpeciesExport()
+                    }, 100);
+                }
             }
-        }
 
-        setTimeout("testIfReady()", 2000)
+            if (window.location.hash && window.location.hash.indexOf('error-description') >= 0) {
+                var error = window.location.hash.split('&')[0].split('=')[1];
+                alert("Unable to export to BCCVL: " + error);
+
+                closeSpeciesExport()
+            }
+
 
         ]]>
 

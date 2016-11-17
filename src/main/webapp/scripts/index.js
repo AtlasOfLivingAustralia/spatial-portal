@@ -442,7 +442,6 @@ function postToExternal(url, json) {
 
                 var loginWindow = jq('$externalContentWindow')[0]
                 if(loginWindow) {
-                    console.log('retrying')
                     //retry
                     setTimeout(function() {postToExternal(url,json)}, 2000);
                 }
