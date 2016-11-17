@@ -220,4 +220,6 @@ public interface Query {
     String getBS();
 
     String[] getDefaultDownloadFields();
+
+    void setName(String displayName);
 }

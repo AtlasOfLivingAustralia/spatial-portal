@@ -1447,7 +1447,10 @@ public class ToolComposer extends UtilityComposer {
             if (chk.isChecked()) {
                 MapLayer ml = getMapComposer().getMapLayer(chk.getValue().toString());
                 if (ml != null) {
-                    selected.add(ml.getSpeciesQuery());
+                    Query q = ml.getSpeciesQuery();
+                    q.setName(ml.getDisplayName());
+
+                    selected.add(q);
                 }
             }
         }
@@ -1480,6 +1483,8 @@ public class ToolComposer extends UtilityComposer {
         MapLayer ml = getMapComposer().getMapLayer(species);
         if (ml != null) {
             q = ml.getSpeciesQuery();
+            q.setName(ml.getDisplayName());
+
             if (q instanceof BiocacheQuery) {
                 BiocacheQuery bq = (BiocacheQuery) q;
                 q = bq.newFacetGeospatialKosher(applycheckboxes ? getGeospatialKosher() : null, false);

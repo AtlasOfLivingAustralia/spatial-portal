@@ -415,14 +415,17 @@ function downloadFeaturesCSV() {
 }
 
 function postToExternal(url, json) {
+    var authorizationToken = "Bearer " + window.location.hash.split('&')[0].split('=')[1]
     $.ajax({
         url: url,
-        data: JSON.stringify(json),
-        contentType: "application/json",
-        type: "POST",
-        xhrFields: {
-            withCredentials: true
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        headers: {
+            Accept: 'application/json',
+            Authorization: authorizationToken
         },
+        data: JSON.stringify(json),
         success: function (data, status, xhr) {
             //redirect to response url
             var location = xhr.getResponseHeader('location');
@@ -433,7 +436,7 @@ function postToExternal(url, json) {
         },
         error: function (xhr) {
             if (xhr.statusCode().status == 401 || xhr.statusCode().status == 0) {
-                //open login and retry 
+                //open login and retry
                 $('#login_start').hide()
                 $('#login_required').show();
 

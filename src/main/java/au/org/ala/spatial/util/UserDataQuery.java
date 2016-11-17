@@ -334,6 +334,11 @@ public class UserDataQuery implements Query {
     }
 
     @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
     public String getName() {
         if (name == null) {
             name = "User uploaded points";

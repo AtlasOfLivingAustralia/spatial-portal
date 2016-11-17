@@ -1252,6 +1252,11 @@ public class BiocacheQuery implements Query, Serializable {
     }
 
     @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
     public String getName() {
         if (name != null) {
             return name;

@@ -2840,19 +2840,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (getSpeciesLayers().size() == 0) {
             showMessage("No species mapped. Create a species using Add to Map | Species");
         } else {
-            openModal("WEB-INF/zul/output/ExportSpeciesExternal.zul", null, StringConstants.ADDTOOLWINDOW);
-//            //confirm bccvl login
-//            try {
-//                //save session
-//                String returnUrl = saveSession() + "&tool=exportspeciesexternal";
-//
-//                //redirect to bccvl
-//                String url = CommonData.getSettings().getProperty("bccvl.post.url") + URLEncoder.encode(returnUrl, "UTF-8");
-//
-//                openLayersJavascript.execute("window.location.href = '" + url + "';");
-//            } catch (Exception e) {
-//                LOGGER.error("failed to save sessiona and redirect to bccvl for login", e);
-//            }
+            //openModal("WEB-INF/zul/output/ExportSpeciesExternal.zul", null, StringConstants.ADDTOOLWINDOW);
+            //confirm bccvl login
+            try {
+                //save session
+                String returnUrl = saveSession() + "&tool=exportspeciesexternal";
+
+                //redirect to bccvl
+                String url = CommonData.getSettings().getProperty("bccvl.login.url") + URLEncoder.encode(returnUrl, "UTF-8");
+
+                openLayersJavascript.execute("window.location.href = '" + url + "';");
+            } catch (Exception e) {
+                LOGGER.error("failed to save sessiona and redirect to bccvl for login", e);
+            }
         }
     }
 
@@ -3178,7 +3178,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         }
 
-        return CommonData.getWebportalServer() + "/?ss=" + jsessionid;
+        return CommonData.getWebportalServer() + "?ss=" + jsessionid;
     }
 
     public void loadUserSession(String sessionid) {
