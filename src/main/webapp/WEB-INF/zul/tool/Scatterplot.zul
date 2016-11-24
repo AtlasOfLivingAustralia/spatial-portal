@@ -154,8 +154,7 @@
                 <checkbox id="chkShowEnvIntersection" label="Display possible environments in area" />
                 <separator height="15px"/>
 
-                <separator height="15px"/>
-                <label id="atstep4_desc" value="Select 2 environmental layers" sclass="wSubLabel"/>
+                <label id="atstep4_desc" value="Select 2 environmental layers using the lower dropdown box (search and tick), or if you have a file containing the names of the two layers to be used as X and Y in the scatterplot - use the top dropdown box." sclass="wSubLabel"/>
                 <label id="atstep4_label" value="" />
                 <separator height="15px" />
                 <hbox>

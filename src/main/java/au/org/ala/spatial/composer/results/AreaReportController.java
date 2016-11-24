@@ -1218,7 +1218,7 @@ public class AreaReportController extends UtilityComposer {
 
         if (areaSqKm != null) {
             try {
-                double totalarea = Double.parseDouble(areaSqKm);
+                double totalarea = Double.parseDouble(areaSqKm.replace(",",""));
                 DecimalFormat df = new DecimalFormat("###,###.##");
                 areaCalc.put(StringConstants.AREA, df.format(totalarea));
                 model.setCount(df.format(totalarea));

@@ -423,8 +423,8 @@ public class LayerLegendScatterplotController extends UtilityComposer implements
             fq = e1 + ":[* TO *] AND " + e2 + ":[* TO *]";
         } else if (data.getPrevSelection() != null) {
             double x1 = data.getPrevSelection()[0];
-            double x2 = data.getPrevSelection()[1];
-            double y1 = data.getPrevSelection()[2];
+            double x2 = data.getPrevSelection()[2];
+            double y1 = data.getPrevSelection()[1];
             double y2 = data.getPrevSelection()[3];
 
             Facet f1 = new Facet(e1, y1, y2, true);
