@@ -198,7 +198,7 @@ public class AreaReportController extends UtilityComposer {
         }
         String wkt = sa.getWkt();
         if (!wkt.contains("ENVELOPE")) {
-            wkt = sa.getReducedWkt();
+            //wkt = sa.getReducedWkt();
         }
         remoteLogger.logMapAnalysis(displayname, "Tool - Area Report", areaName + "__" + wkt, "", "", pid, extras, "0");
 
@@ -850,7 +850,7 @@ public class AreaReportController extends UtilityComposer {
                     double lat2 = bbox.get(3);
                     wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
                 } else {
-                    wkt = selectedArea.getReducedWkt();
+                    //wkt = selectedArea.getReducedWkt();
                 }
                 pointsOfInterest = getPointsOfInterest(wkt);
             }
@@ -890,7 +890,7 @@ public class AreaReportController extends UtilityComposer {
                 double lat2 = bbox.get(3);
                 wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
             } else {
-                wkt = selectedArea.getReducedWkt();
+                //wkt = selectedArea.getReducedWkt();
             }
             String[] lines = Util.getDistributionsOrChecklists(StringConstants.DISTRIBUTIONS, wkt, null, null);
 
@@ -924,7 +924,7 @@ public class AreaReportController extends UtilityComposer {
                 double lat2 = bbox.get(3);
                 wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
             } else {
-                wkt = selectedArea.getReducedWkt();
+                //wkt = selectedArea.getReducedWkt();
             }
 
             String[] lines = Util.getDistributionsOrChecklists(StringConstants.CHECKLISTS, wkt, null, null);
@@ -967,7 +967,7 @@ public class AreaReportController extends UtilityComposer {
                 double lat2 = bbox.get(3);
                 wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
             } else {
-                wkt = selectedArea.getReducedWkt();
+                //wkt = selectedArea.getReducedWkt();
             }
 
             JSONArray ja = getGazPoints(wkt);
@@ -1002,7 +1002,7 @@ public class AreaReportController extends UtilityComposer {
                 double lat2 = bbox.get(3);
                 wkt = StringConstants.POLYGON + "((" + long1 + " " + lat1 + "," + long1 + " " + lat2 + "," + long2 + " " + lat2 + "," + long2 + " " + lat1 + "," + long1 + " " + lat1 + "))";
             } else {
-                wkt = selectedArea.getReducedWkt();
+                //wkt = selectedArea.getReducedWkt();
             }
 
             int count = getPointsOfInterestCount(wkt);

@@ -378,8 +378,6 @@ public class AreaReportPDF {
 
             //Journalmap page
             count = Integer.parseInt(counts.get("Journalmap").toString());
-            countKosher = Integer.parseInt(counts.get("Journalmap").toString());
-            imageUrl = null;
             notes = "<a href='http://journalmap.org'>JournalMap</a>";
             speciesPage(false, fw, "My Area", "JournalMap Articles", notes, tableNumber, count, -1, figureNumber, null,
                     csvs.get("Journalmap").toString());
@@ -678,7 +676,11 @@ public class AreaReportPDF {
         callables.add(new Callable() {
             @Override
             public Object call() throws Exception {
-                initImages();
+                try {
+                    initImages();
+                } catch (Exception e) {
+                    LOGGER.error("", e);
+                }
 
                 return null;
             }
@@ -687,7 +689,11 @@ public class AreaReportPDF {
         callables.add(new Callable() {
             @Override
             public Object call() throws Exception {
-                initCountArea();
+                try {
+                    initCountArea();
+                } catch (Exception e) {
+                    LOGGER.error("", e);
+                }
 
                 return null;
             }
@@ -696,7 +702,11 @@ public class AreaReportPDF {
         callables.add(new Callable() {
             @Override
             public Object call() throws Exception {
-                initCountSpecies();
+                try {
+                    initCountSpecies();
+                } catch (Exception e) {
+                    LOGGER.error("", e);
+                }
 
                 return null;
             }
@@ -705,7 +715,11 @@ public class AreaReportPDF {
         callables.add(new Callable() {
             @Override
             public Object call() throws Exception {
-                initCountOccurrences();
+                try {
+                    initCountOccurrences();
+                } catch (Exception e) {
+                    LOGGER.error("", e);
+                }
 
                 return null;
             }
@@ -714,7 +728,11 @@ public class AreaReportPDF {
         callables.add(new Callable() {
             @Override
             public Object call() throws Exception {
-                initCsvSpecies();
+                try {
+                    initCsvSpecies();
+                } catch (Exception e) {
+                    LOGGER.error("", e);
+                }
 
                 return null;
             }
@@ -723,7 +741,11 @@ public class AreaReportPDF {
         callables.add(new Callable() {
             @Override
             public Object call() throws Exception {
-                initCountThreatenedSpecies();
+                try {
+                    initCountThreatenedSpecies();
+                } catch (Exception e) {
+                    LOGGER.error("", e);
+                }
 
                 return null;
             }
@@ -732,7 +754,11 @@ public class AreaReportPDF {
         callables.add(new Callable() {
             @Override
             public Object call() throws Exception {
-                initCountEndemicSpecies();
+                try {
+                    initCountEndemicSpecies();
+                } catch (Exception e) {
+                    LOGGER.error("", e);
+                }
 
                 return null;
             }
@@ -759,7 +785,11 @@ public class AreaReportPDF {
         callables.add(new Callable() {
             @Override
             public Object call() throws Exception {
-                initDistributionsCsv(StringConstants.CHECKLISTS);
+                try {
+                    initDistributionsCsv(StringConstants.CHECKLISTS);
+                } catch (Exception e) {
+                    LOGGER.error("", e);
+                }
 
                 return null;
             }
@@ -768,7 +798,11 @@ public class AreaReportPDF {
         callables.add(new Callable() {
             @Override
             public Object call() throws Exception {
-                initDistributionsCsv(StringConstants.DISTRIBUTIONS);
+                try {
+                    initDistributionsCsv(StringConstants.DISTRIBUTIONS);
+                } catch (Exception e) {
+                    LOGGER.error("", e);
+                }
 
                 return null;
             }
@@ -777,7 +811,11 @@ public class AreaReportPDF {
         callables.add(new Callable() {
             @Override
             public Object call() throws Exception {
-                initJournalmapCsv();
+                try {
+                    initJournalmapCsv();
+                } catch (Exception e) {
+                    LOGGER.error("", e);
+                }
 
                 return null;
             }
@@ -916,22 +954,22 @@ public class AreaReportPDF {
                 sb.append("\"").append(author.replace("\"", "\"\"")).append("\".");
             }
             sb.append(",");
-            if (jo.containsKey("publish_year")) {
+            if (jo.containsKey("publish_year") && jo.get("publish_year") != null) {
                 sb.append("\"").append(jo.get("publish_year").toString().replace("\"", "\"\"")).append(".\"");
             }
             sb.append(",");
-            if (jo.containsKey("title")) {
+            if (jo.containsKey("title") && StringUtils.isNotEmpty((String) jo.get("title"))) {
                 sb.append("\"").append(jo.get("title").toString().replace("\"", "\"\"")).append(".\"");
             }
             sb.append(",");
-            if (jo.containsKey("publication")) {
+            if (jo.containsKey("publication") && jo.get("publication") != null) {
                 JSONObject o = (JSONObject) jo.get("publication");
-                if (o.containsKey("name")) {
+                if (o.containsKey("name") && StringUtils.isNotEmpty((String) jo.get("name"))) {
                     sb.append("\"").append(o.get("name").toString().replace("\"", "\"\"")).append(".\"");
                 }
             }
             sb.append(",");
-            if (jo.containsKey("doi")) {
+            if (jo.containsKey("doi") && StringUtils.isNotEmpty((String) jo.get("doi"))) {
                 sb.append("\"").append(jo.get("doi").toString().replace("\"", "\"\"")).append(".\"");
             }
             sb.append(",");
