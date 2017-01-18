@@ -18,15 +18,23 @@ import au.org.emii.portal.util.LayerUtilitiesImpl;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import org.apache.log4j.Logger;
+import org.zkoss.util.Pair;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Doublebox;
 import org.zkoss.zul.Filedownload;
+
+import java.awt.geom.Point2D;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author ajay
  */
 public class AooEooComposer extends ToolComposer {
     private static final Logger LOGGER = Logger.getLogger(AooEooComposer.class);
-    
+
+    private Doublebox resolution;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -48,20 +56,17 @@ public class AooEooComposer extends ToolComposer {
         q = q.newFacet(f, false);
         Query newQ = QueryUtil.queryFromSelectedArea(q, sa, false, null);
         
-        // this should not take long, fetch unique points at 0.02 resolution
-        LegendObject legend = newQ.getLegend("point-0.02");
-        
-        StringBuilder sb = new StringBuilder();
-        int pointCount = processLegend(legend, sb);
-        
-        // aoo = 2km * 2km * number of 2km by 2km grid cells with an occurrence
-        double aoo = 2.0 * 2.0 * pointCount;
+        double gridSize = dResolution.doubleValue();
 
         // eoo, use actual points
-        legend = newQ.getLegend("lat_long");
-        sb = new StringBuilder();
-        pointCount = processLegend(legend, sb);
-        
+        LegendObject legend = newQ.getLegend("lat_long");
+        StringBuilder sb = new StringBuilder();
+        int pointCount = processLegend(legend, sb);
+        String aooWkt = aooWkt(legend, gridSize);
+
+        // aoo = gridSize * gridSize * number of gridSize by gridSize cells with an occurrence
+        double aoo = gridSize * gridSize * aooProcess(legend, gridSize);
+
         double eoo = 0;
         WKTReader reader = new WKTReader();
         String metadata = null;
@@ -71,10 +76,18 @@ public class AooEooComposer extends ToolComposer {
             String wkt = convexHull.toText().replace(" (", "(").replace(", ", ",");
 
             eoo = SpatialUtil.calculateArea(wkt);
+
+            //aoo area
+            Geometry a = reader.read(aooWkt(legend, gridSize));
+            Geometry aUnion = a.union();
+            String aWkt = aUnion.toText().replace(" (", "(").replace(", ", ",");
             
             if (eoo > 0) {
                 String name = "Extent of occurrence (area): " + q.getName();
                 MapLayer ml = getMapComposer().addWKTLayer(wkt, name, name);
+
+                name = "Area of occupancy (area): " + q.getName();
+                MapLayer mla = getMapComposer().addWKTLayer(aWkt, name, name);
 
                 metadata = "<html><body>" +
                         "<div class='aooeoo'>" +
@@ -84,7 +97,7 @@ public class AooEooComposer extends ToolComposer {
                         "<table >" +
                         "<tr><td>Number of records used for the calculations</td><td>" + newQ.getOccurrenceCount() + "</td></tr>" +
                         "<tr><td>Species</td><td>" + q.getName() + "</td></tr>" +
-                        "<tr><td>Area of Occupancy (AOO: 0.02 degree grid)</td><td>" + String.format("%.0f", aoo) + " sq km</td></tr>" +
+                        "<tr><td>Area of Occupancy (AOO: " + gridSize + " degree grid)</td><td>" + String.format("%.0f", aoo) + " sq km</td></tr>" +
                         "<tr><td>Extent of Occurrence (EOO: Minimum convex hull)</td><td>" + (String.format("%.2f", eoo / 1000.0 / 1000.0)) + " sq km</td></tr></table></body></html>" +
                         "</div>";
                 ml.getMapLayerMetadata().setMoreInfo("Area of Occupancy and Extent of Occurrence\n" + metadata);
@@ -147,6 +160,56 @@ public class AooEooComposer extends ToolComposer {
         sb.append(")");
         
         return pointCount;
+    }
+
+    private int aooProcess(LegendObject legend, double gridSize) {
+        Set set = new HashSet<Point2D>();
+        for(String key : legend.getCategories().keySet()) {
+            try {
+                //key=latitude,longitude
+                String [] ll = key.split(",");
+                Point2D point = new Point2D.Float(round(Double.parseDouble(ll[1]), gridSize),
+                        round(Double.parseDouble(ll[0]), gridSize));
+                set.add(point);
+            } catch (Exception e) {
+            }
+        }
+
+        return set.size();
+    }
+
+    private float round(double d, double by) {
+        long l = (long) (d / by);
+        return (float) (l * by + (l < 0 ? -by : 0));
+    }
+
+    private String aooWkt(LegendObject legend, double gridSize) {
+        int pointCount = 0;
+        StringBuilder sb = new StringBuilder();
+        sb.append("MULTIPOLYGON(");
+        for(String key : legend.getCategories().keySet()) {
+            try {
+                //key=latitude,longitude
+                String [] ll = key.split(",");
+                float x = round(Double.parseDouble(ll[1]), gridSize);
+                float y = round(Double.parseDouble(ll[0]), gridSize);
+
+                String s = "((" + x + " " + y + "," +
+                        x + " " + (y + gridSize) + "," +
+                        (x + gridSize) + " " + (y + gridSize) + "," +
+                        (x + gridSize) + " " + y + "," +
+                        x + " " + y + "))";
+                if (pointCount > 0) {
+                    sb.append(",");
+                }
+                sb.append(s);
+                pointCount++;
+            } catch (Exception e) {
+            }
+        }
+        sb.append(")");
+
+        return sb.toString();
     }
 
     @Override

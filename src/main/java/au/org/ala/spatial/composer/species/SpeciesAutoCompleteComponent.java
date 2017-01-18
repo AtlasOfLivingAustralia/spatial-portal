@@ -85,7 +85,7 @@ public class SpeciesAutoCompleteComponent extends Div {
      * @return
      */
     public boolean hasValidItemSelected() {
-        return !(autoComplete.getSelectedItem() == null || autoComplete.getSelectedItem().getValue() == null);
+        return !(autoComplete.getSelection() == null || ((Comboitem)autoComplete.getSelection()).getValue() == null);
     }
 
     /**
@@ -96,9 +96,9 @@ public class SpeciesAutoCompleteComponent extends Div {
      * @return
      */
     public boolean hasValidAnnotatedItemSelected() {
-        return !(autoComplete.getSelectedItem() == null
-                || autoComplete.getSelectedItem().getAnnotatedProperties() == null
-                || autoComplete.getSelectedItem().getAnnotatedProperties().isEmpty());
+        return !(autoComplete.getSelection() == null
+                || ((Comboitem)autoComplete.getSelection()).getAnnotatedProperties() == null
+                || ((Comboitem)autoComplete.getSelection()).getAnnotatedProperties().isEmpty());
     }
 
     /**
@@ -117,9 +117,9 @@ public class SpeciesAutoCompleteComponent extends Div {
     public Query getQuery(Map points, boolean forMapping, boolean[] geokosher) {
         Query query;
         if (chkUseRawName.isChecked()) {
-            query = QueryUtil.get(autoComplete.getFacetField(), autoComplete.getSelectedItem().getAnnotatedProperties().get(0), forMapping, geokosher);
+            query = QueryUtil.get(autoComplete.getFacetField(), ((Comboitem)autoComplete.getSelection()).getAnnotatedProperties().get(0), forMapping, geokosher);
         } else {
-            query = QueryUtil.get(autoComplete.getSelectedItem().getAnnotatedProperties().get(0), points, forMapping, geokosher);
+            query = QueryUtil.get(((Comboitem)autoComplete.getSelection()).getAnnotatedProperties().get(0), points, forMapping, geokosher);
         }
         return query;
     }
@@ -153,7 +153,7 @@ public class SpeciesAutoCompleteComponent extends Div {
      */
     public String[] getSelectedTaxonDetails() {
         if (hasValidAnnotatedItemSelected()) {
-            Comboitem si = autoComplete.getSelectedItem();
+            Comboitem si = ((Comboitem)autoComplete.getSelection());
             if (shouldUseRawName()) {
                 return new String[]{autoComplete.getValue(), "unmatched"};
             } else {

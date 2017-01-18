@@ -32,6 +32,10 @@
                             <label id="lblStep2" value="2. Select species"/>
                             <html id="imgCompletedStep2" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
                         </row>
+                        <row>
+                            <label id="lblStep3" value="3. Set resolution"/>
+                            <html id="imgCompletedStep3" visible="false" ><![CDATA[<i class="icon-ok"></i>]]></html>
+                        </row>
                     </rows>
                 </grid>
             </vbox>
@@ -48,7 +52,7 @@
                     </radiogroup>
                 </div>
 
-                <div id="atstep2" visible="false" zclass="step2 species last" sclass="atstep" width="550px" height="600px" style="overflow-y:auto">
+                <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep" width="550px" height="600px" style="overflow-y:auto">
                     <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
                     <label id="atstep2_label" value="" />
                     <separator />
@@ -118,6 +122,14 @@
                         <include id="splistbox" src="/WEB-INF/zul/species/SpeciesListListBox.zul" />
                         <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Import points" />
                     </radiogroup>                    
+                </div>
+                <div id="atstep3" visible="false" zclass="optional last" sclass="atstep" style="padding:5px;" >
+                    <label id="atstep3_desc" value="Enter resolution" />
+                    <label id="atstep3_label" value="" />
+                    <separator />
+                    <hbox>
+                        <label value="Enter resolution (e.g. 0.02)"/><doublebox id="dResolution" value="0.02" />
+                    </hbox>
                 </div>
             </vbox>
         </hbox>

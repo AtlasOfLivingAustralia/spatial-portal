@@ -83,7 +83,7 @@ public class MaxentComposer extends ToolComposer {
             return false;
         }
         q = q.newFacet(new Facet("occurrence_status_s", "absent", false), false);
-        if (searchSpeciesACComp.getAutoComplete().getSelectedItem() != null) {
+        if (searchSpeciesACComp.getAutoComplete().getSelection() != null) {
             getMapComposer().mapSpeciesFromAutocompleteComponent(searchSpeciesACComp, getSelectedArea(), getGeospatialKosher(), false);
         } else if (rgSpecies.getSelectedItem() != null && StringConstants.MULTIPLE.equals(rgSpecies.getSelectedItem().getValue())) {
             getMapComposer().mapSpecies(q, StringConstants.SPECIES_ASSEMBLAGE, StringConstants.SPECIES, 0, LayerUtilitiesImpl.SPECIES, null, -1, MapComposer.DEFAULT_POINT_SIZE, MapComposer.DEFAULT_POINT_OPACITY, Util.nextColour(), false);

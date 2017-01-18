@@ -11,6 +11,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.zkoss.zk.ui.Sessions;
+import org.zkoss.zk.ui.WrongValueException;
+import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
@@ -36,6 +39,13 @@ public class SpeciesAutoComplete extends Combobox {
     public SpeciesAutoComplete() {
         super();
         refresh("");
+
+        this.addEventListener("onSelect", new EventListener<Event>() {
+            @Override
+            public void onEvent(Event event) throws Exception {
+                selection = ((SpeciesAutoComplete) event.getTarget()).getSelectedItem();
+            }
+        });
     }
 
     public SpeciesAutoComplete(String value) {
@@ -56,12 +66,27 @@ public class SpeciesAutoComplete extends Combobox {
         super.setValue(value);
     }
 
+    @Override
+    public void setText(String value) throws WrongValueException {
+        super.setText(value);
+    }
+
     public boolean isSearchCommon() {
         return bSearchCommon;
     }
 
     public void setSearchCommon(boolean searchCommon) {
         this.bSearchCommon = searchCommon;
+    }
+
+    @Override
+    public void setSelectedItem(Comboitem item) {
+        super.setSelectedItem(item);
+    }
+
+    @Override
+    public void setSelectedIndex(int jsel) {
+        super.setSelectedIndex(jsel);
     }
 
     /**
@@ -71,6 +96,19 @@ public class SpeciesAutoComplete extends Combobox {
         if (!evt.isChangingBySelectBack()) {
             refresh(evt.getValue());
         }
+    }
+
+    private Comboitem selection;
+
+    public Comboitem getSelection() {
+        if (selection == null && getSelectedItem() != null) {
+            setSelection(getSelectedItem());
+        }
+        return selection;
+    }
+
+    public void setSelection(Comboitem selection) {
+        this.selection = selection;
     }
 
     /**

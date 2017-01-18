@@ -2216,7 +2216,7 @@ public class ToolComposer extends UtilityComposer {
     }
 
     public void mChooseSelected(Event event) {
-        Comboitem ci = mSearchSpeciesACComp.getAutoComplete().getSelectedItem();
+        Comboitem ci = mSearchSpeciesACComp.getAutoComplete().getSelection();
         if (ci != null && ci.getAnnotatedProperties() != null && ci.getAnnotatedProperties().get(0) != null) {
             String annotatedValue = ci.getAnnotatedProperties().get(0);
             if (mSearchSpeciesACComp.shouldUseRawName()) {
@@ -2254,7 +2254,7 @@ public class ToolComposer extends UtilityComposer {
     }
 
     public void mChooseSelectedBk(Event event) {
-        Comboitem ci = mSearchSpeciesACCompBk.getAutoComplete().getSelectedItem();
+        Comboitem ci = mSearchSpeciesACCompBk.getAutoComplete().getSelection();
         if (ci != null && ci.getAnnotatedProperties() != null && ci.getAnnotatedProperties().get(0) != null) {
 
             String annotatedValue = ci.getAnnotatedProperties().get(0);

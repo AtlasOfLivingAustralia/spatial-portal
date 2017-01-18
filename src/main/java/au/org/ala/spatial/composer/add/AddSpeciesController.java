@@ -261,7 +261,7 @@ public class AddSpeciesController extends UtilityComposer {
 
     public void onValueSelected$mSearchSpeciesACComponent(Event event) {
         //add to lMultiple
-        Comboitem ci = mSearchSpeciesACComponent.getAutoComplete().getSelectedItem();
+        Comboitem ci = mSearchSpeciesACComponent.getAutoComplete().getSelection();
         if (ci != null && ci.getAnnotatedProperties() != null
                 && ci.getAnnotatedProperties().get(0) != null) {
             String annotatedValue = ci.getAnnotatedProperties().get(0);
@@ -376,7 +376,7 @@ public class AddSpeciesController extends UtilityComposer {
         taxon = searchSpeciesACComponent.getAutoComplete().getValue();
         rank = "";
 
-        String spVal = searchSpeciesACComponent.getAutoComplete().getSelectedItem().getDescription();
+        String spVal = searchSpeciesACComponent.getAutoComplete().getSelection().getDescription();
         if (spVal.trim().contains(": ")) {
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
             rank = spVal.trim().substring(0, spVal.trim().indexOf(":"));

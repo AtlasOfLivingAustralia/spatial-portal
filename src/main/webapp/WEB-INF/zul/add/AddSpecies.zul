@@ -87,7 +87,7 @@
         </div>
        <div class="btn-group" >
                <button label="Cancel" id="btnCancel" />
-               <button class="btn-primary" label="Next >" id="btnOk" disabled="false" />
+               <button class="btn-primary" label="Next >" id="btnOk" disabled="true" />
        </div>
     </window>
 </zk>
