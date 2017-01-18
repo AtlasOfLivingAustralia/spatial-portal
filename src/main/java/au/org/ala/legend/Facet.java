@@ -190,9 +190,9 @@ public class Facet implements Serializable {
         Facet[] facets = new Facet[terms.length];
         for (int i = 0; i < terms.length; i++) {
             String ff = terms[i];
-            int offset = ff.startsWith("-") ? 1 : 0;
+            int offset = ff.startsWith("-(") ? 2 : ff.startsWith("-(") ? 1 : 0;
             String f = ff.substring(offset, ff.indexOf(':'));
-            String v = ff.substring(ff.indexOf(':') + 1);
+            String v = ff.substring(ff.indexOf(':') + 1, ff.length() - (offset == 2 ? 1 : 0));
             if (v.charAt(0) == '\"' || v.charAt(0) == '*' || !v.toUpperCase().contains(" TO ")) {
                 //value
                 if (v.charAt(0) == '\"') {
@@ -302,7 +302,9 @@ public class Facet implements Serializable {
     }
 
     public boolean isValid(String v) {
-        if (getType() == 1) {
+        if ("*".equals(field) && "*".equals(value)) {
+            return includeRange;
+        } else if (getType() == 1) {
             for (int i = 0; i < valueArray.length; i++) {
                 if (valueArray[i].equals(v) || (v.length() != 0 && valueArray[i].equals("*"))) {
                     return includeRange;
