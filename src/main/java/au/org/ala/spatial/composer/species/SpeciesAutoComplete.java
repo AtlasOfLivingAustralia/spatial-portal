@@ -213,11 +213,12 @@ public class SpeciesAutoComplete extends Combobox {
                         }
                         if (org.apache.commons.lang.StringUtils.isNotBlank(spVal[1])) {
                             myci.addAnnotation(spVal[1], "LSID", null);
-                        } else {
+                        } else if (org.apache.commons.lang.StringUtils.isNotBlank(spVal[0])) {
                             //add the scientific name as the annotation
                             myci.addAnnotation(spVal[0], StringConstants.VALUE, null);
+                        } else {
+                            myci.setParent(null);
                         }
-
                     }
                 }
             }

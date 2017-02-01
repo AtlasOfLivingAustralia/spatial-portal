@@ -1512,11 +1512,21 @@ public class ToolComposer extends UtilityComposer {
 
                 } else if ((StringConstants.SEARCH.equals(species) || StringConstants.UPLOAD_SPECIES.equals(species))
                         && searchSpeciesACComp.hasValidItemSelected()) {
+
+                    try {
+                        q = searchSpeciesACComp.getQuery((Map) getMapComposer().getSession().getAttribute(StringConstants.USERPOINTS), false, applycheckboxes ? getGeospatialKosher() : null);
+                    } catch (Exception e) {
+                        LOGGER.error("autocomplete selection failed value=" + searchSpeciesACComp.getAutoComplete().getSelectedItem().getValue() + " text=" + searchSpeciesACComp.getAutoComplete().getText());
+                    }
+
+                    if (q != null && "All species".equals(q.getName())) {
+                        q = null;
+                    }
+
                     if (!searchSpeciesACComp.hasValidAnnotatedItemSelected()) {
                         LOGGER.debug("error in getSelectedSpecies value=" + searchSpeciesACComp.getAutoComplete().getSelectedItem().getValue() + " text=" + searchSpeciesACComp.getAutoComplete().getText());
-                    } else {
-                        q = searchSpeciesACComp.getQuery((Map) getMapComposer().getSession().getAttribute(StringConstants.USERPOINTS), false, applycheckboxes ? getGeospatialKosher() : null);
                     }
+
                 } else if ("lifeform".equalsIgnoreCase(species)) {
                     q = new BiocacheQuery(null, null, null,
                             Arrays.asList(new Facet[]{new Facet("species_group", cbLifeform.getValue(), true)})
