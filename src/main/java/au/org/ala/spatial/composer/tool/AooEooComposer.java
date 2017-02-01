@@ -64,8 +64,8 @@ public class AooEooComposer extends ToolComposer {
         int pointCount = processLegend(legend, sb);
         String aooWkt = aooWkt(legend, gridSize);
 
-        // aoo = gridSize * gridSize * number of gridSize by gridSize cells with an occurrence
-        double aoo = gridSize * gridSize * aooProcess(legend, gridSize);
+        // aoo = gridSize * gridSize * number of gridSize by gridSize cells with an occurrence * (approx sq degrees to sq km)
+        double aoo = gridSize * gridSize * aooProcess(legend, gridSize) * 10000;
 
         double eoo = 0;
         WKTReader reader = new WKTReader();
