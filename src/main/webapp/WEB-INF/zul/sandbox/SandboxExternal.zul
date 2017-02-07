@@ -42,7 +42,7 @@
         function testIfReady() {
             try {
                 $.ajax({
-                    url: parent.jq('$webportal_url')[0].innerHTML + "/RemoteRequest?url=" + encodeURI(jq('$sandbox_url')[0].innerHTML + "dataCheck/uploadStatus?tag=" + jq('$uploadTag')[0].innerHTML),
+                    url: jq('$sandbox_url')[0].innerHTML + "dataCheck/uploadStatus?tag=" + jq('$uploadTag')[0].innerHTML,
                     dataType: "json",
                     contentType: "application/json",
                     success: function (data) {
