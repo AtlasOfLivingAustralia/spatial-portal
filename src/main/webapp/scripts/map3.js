@@ -368,7 +368,8 @@ function iterateSpeciesInfoQuery(curr) {
     } catch (err) {
     }
     var url = query_url[pos] + "&start=" + curpos;
-    $.getJSON(proxy_script + URLEncode(url), function (data) {
+//    $.getJSON(proxy_script + URLEncode(url), function (data) {
+    $.getJSON(url, function (data) {
         if (!query_layer[pos].bs) {
             var ulyr = query_[pos];
             var ulyr_occ_id = data.occurrences[0].id;
@@ -1661,7 +1662,8 @@ function envLayerNearest(e) {
         var ret = "";
         var time = new Date().getTime();
         $.ajax({
-            url: proxy_script + URLEncode(url),
+//            url: proxy_script + URLEncode(url),
+            url: url,
             dataType: "json",
             success: function (data) {
                 ret = data;
@@ -1956,7 +1958,8 @@ function getLayerValue(layer, lat, lon) {
     var url = parent.jq('$layers_url')[0].innerHTML + "/intersect/" + layer + "/" + lat + "/" + lon;
     var ret = "";
     $.ajax({
-        url: proxy_script + URLEncode(url),
+//        url: proxy_script + URLEncode(url),
+        url: url,
         dataType: "json",
         success: function (data) {
             ret = data;
@@ -1988,7 +1991,8 @@ function getPointsOfInterest(layer, lat, lon, dotradius) {
 
     $.ajax({
         type: "GET",
-        url: proxy_script + URLEncode(url),
+//        url: proxy_script + URLEncode(url),
+        url: url,
         dataType: "json",
         success: function (data) {
             ret = data;
@@ -2020,7 +2024,8 @@ function getOccurrence(layer, query, lat, lon, start, pos, dotradius) {
         + "&fq=latitude:[" + (lat - latSize) + "%20TO%20" + (lat + latSize) + "]";
     var ret = null;
     $.ajax({
-        url: proxy_script + URLEncode(url + "&start=" + start),
+//        url: proxy_script + URLEncode(url + "&start=" + start),
+        url: url + "&start=" + start,
         dataType: "json",
         success: function (data) {
             ret = data;
@@ -2052,7 +2057,8 @@ function getOccurrenceUploaded(layer, query, lat, lon, start, pos, dotradius) {
         + "&box=" + (lon - lonSize) + "," + (lat - latSize) + "," + (lon + lonSize) + "," + (lat + latSize);
     var ret = null;
     $.ajax({
-        url: proxy_script + URLEncode(url + "&start=" + start),
+//        url: proxy_script + URLEncode(url + "&start=" + start),
+        url: url + "&start=" + start,
         dataType: "json",
         success: function (data) {
             console.log(data);

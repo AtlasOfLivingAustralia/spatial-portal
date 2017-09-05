@@ -1,342 +1,349 @@
 <html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<meta name="app.version" content="0.1"/>
-<meta name="app.build" content=""/>
-<meta name="description" content="Atlas of Living Australia"/>
-<meta name="author" content="Atlas of Living Australia">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="app.version" content="0.1"/>
+    <meta name="app.build" content=""/>
+    <meta name="description" content="Atlas of Living Australia"/>
+    <meta name="author" content="Atlas of Living Australia">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Sandbox | Atlas of Living Australia</title>
+    <title>Sandbox | Atlas of Living Australia</title>
 
 
-<script src="scripts/jquery-1.7.2.min.js"
-        type="text/javascript"></script>
-<link href="http://www.ala.org.au/wp-content/themes/ala2011/images/favicon.ico" rel="shortcut icon"/>
-<link href="http://www.ala.org.au/wp-content/themes/ala2011/css/jquery.autocomplete.css" type="text/css"
-      rel="stylesheet" media="screen, projection"/>
-<script src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/jquery.autocomplete.js"
-        type="text/javascript"></script>
-<!--[if lt IE 9]>
-<script src="scripts/html5.js"
-        type="text/javascript"></script><![endif]-->
-<link href="css/bootstrap.css" type="text/css"
-      rel="stylesheet" media="screen, projection, print"/>
-<link href="css/bootstrap-responsive.css"
-      type="text/css" rel="stylesheet" media="screen" id="responsiveCss"/>
-<link href="css/bundle-bundle_progressbar_head.css" type="text/css"
-      rel="stylesheet" media="screen, projection"/>
-<script type="text/javascript">
+    <script src="scripts/jquery-1.7.2.min.js"
+            type="text/javascript"></script>
+    <link href="http://www.ala.org.au/wp-content/themes/ala2011/images/favicon.ico" rel="shortcut icon"/>
+    <link href="http://www.ala.org.au/wp-content/themes/ala2011/css/jquery.autocomplete.css" type="text/css"
+          rel="stylesheet" media="screen, projection"/>
+    <script src="http://www.ala.org.au/wp-content/themes/ala2011/scripts/jquery.autocomplete.js"
+            type="text/javascript"></script>
+    <!--[if lt IE 9]>
+    <script src="scripts/html5.js"
+            type="text/javascript"></script><![endif]-->
+    <link href="css/bootstrap.css" type="text/css"
+          rel="stylesheet" media="screen, projection, print"/>
+    <link href="css/bootstrap-responsive.css"
+          type="text/css" rel="stylesheet" media="screen" id="responsiveCss"/>
+    <link href="css/bundle-bundle_progressbar_head.css" type="text/css"
+          rel="stylesheet" media="screen, projection"/>
+    <script type="text/javascript">
 
-if (!window.console) console = {log: function () {
-}};
+        if (!window.console) console = {
+            log: function () {
+            }
+        };
 
-var SANDBOX = {
-    currentPaste: "",
-    dataResourceUid: ""
-}
-
-function init() {
-    console.log("Initialising sandbox...");
-    $('#recognisedDataDiv').hide();
-    $('#processSample').hide();
-    $('#processingInfo').hide();
-    $('#uploadFeedback').html('');
-    $('#progressBar').hide();
-    $('#uploadFeedback').hide();
-    if (typeof String.prototype.trim !== 'function') {
-        String.prototype.trim = function () {
-            return this.replace(/^\s+|\s+$/g, '');
+        var SANDBOX = {
+            currentPaste: "",
+            dataResourceUid: ""
         }
-    }
-}
 
-function reset() {
-    $('#processedContent').remove();
-    $('#uploadFeedback').html('');
-    $('#recognisedDataDiv').hide();
-    $('#processSample').slideUp("slow");
-    $('#progressBar').hide();
-    $('#uploadFeedback').hide();
-}
+        function init() {
+            console.log("Initialising sandbox...");
+            $('#recognisedDataDiv').hide();
+            $('#processSample').hide();
+            $('#processingInfo').hide();
+            $('#uploadFeedback').html('');
+            $('#progressBar').hide();
+            $('#uploadFeedback').hide();
+            if (typeof String.prototype.trim !== 'function') {
+                String.prototype.trim = function () {
+                    return this.replace(/^\s+|\s+$/g, '');
+                }
+            }
+        }
 
-function pasteAreaHasChanged() {
-    if ($('#copyPasteData').val().trim() == "" && SANDBOX.currentPaste == "") {
-        return false;
-    }
-    if ($('#copyPasteData').val().trim() != SANDBOX.currentPaste) {
-        SANDBOX.currentPaste = $('#copyPasteData').val().trim();
-        return true;
-    } else {
-        return false;
-    }
-}
+        function reset() {
+            $('#processedContent').remove();
+            $('#uploadFeedback').html('');
+            $('#recognisedDataDiv').hide();
+            $('#processSample').slideUp("slow");
+            $('#progressBar').hide();
+            $('#uploadFeedback').hide();
+        }
 
-function parseColumns() {
-    if ($('#copyPasteData').val().trim() == "") {
-        reset();
-    } else if (pasteAreaHasChanged()) {
+        function pasteAreaHasChanged() {
+            if ($('#copyPasteData').val().trim() == "" && SANDBOX.currentPaste == "") {
+                return false;
+            }
+            if ($('#copyPasteData').val().trim() != SANDBOX.currentPaste) {
+                SANDBOX.currentPaste = $('#copyPasteData').val().trim();
+                return true;
+            } else {
+                return false;
+            }
+        }
 
-        $('#checkDataButton').addClass("disabled");
-        $('#checkDataButton').html("Checking....");
+        function parseColumns() {
+            if ($('#copyPasteData').val().trim() == "") {
+                reset();
+            } else if (pasteAreaHasChanged()) {
 
-        $('#processingInfo').html('<strong>Parsing the pasted input.....</strong>');
-        $('#processedContent').html('');
-        $('#uploadFeedback').html('');
-        $('#uploadProgressBar').html('');
-        //$('#uploadProgressBar').progressbar( "destroy" );
-        $.ajaxSetup({
-            scriptCharset: "utf-8",
-            contentType: "text/html; charset=utf-8"
-        });
-        $.ajax({
-            type: "POST",
-            url: "RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url) + "dataCheck%2FparseColumns",
-            data: $('#copyPasteData').val(),
-            success: function (data) {
-                $('#checkDataButton').removeClass("disabled");
-                data = replacements(data)
-                $('#recognisedData').html(data)
-                $('#recognisedDataDiv').slideDown("slow");
-                processedData();
-                $('#processSample').slideDown("slow");
-                $('#processingInfo').html('<strong>&nbsp;</strong>');
-                $('#firstLineIsData').change(function () {
-                    parseColumnsWithFirstLineInfo();
+                $('#checkDataButton').addClass("disabled");
+                $('#checkDataButton').html("Checking....");
+
+                $('#processingInfo').html('<strong>Parsing the pasted input.....</strong>');
+                $('#processedContent').html('');
+                $('#uploadFeedback').html('');
+                $('#uploadProgressBar').html('');
+                //$('#uploadProgressBar').progressbar( "destroy" );
+                $.ajaxSetup({
+                    scriptCharset: "utf-8",
+                    contentType: "text/html; charset=utf-8"
                 });
-                $('#checkDataButton').html("Check data");
-            },
-            error: function () {
-                $('#checkDataButton').removeClass("disabled");
-                $('#checkDataButton').html("Check data");
-            }
-        });
-    }
-}
-
-function replacements(data) {
-    data = data.replace("/datacheck/dataCheck/autocomplete.json",
-                    "RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url + "dataCheck/autocomplete.json"))
-
-    return data
-}
-
-function parseColumnsWithFirstLineInfo() {
-    console.log("Parsing first line to do interpretation...");
-    $.post("RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url) + "dataCheck%2FparseColumnsWithFirstLineInfo", { "rawData": $('#copyPasteData').val(), "firstLineIsData": $('#firstLineIsData').val() },
-            function (data) {
-                data = replacements(data)
-                $('#recognisedData').html(data)
-                $('#recognisedDataDiv').slideDown("slow");
-                processedData();
-                $('#processSample').slideDown("slow");
-                $('#processingInfo').html('<strong>&nbsp;</strong>');
-                $('#firstLineIsData').change(function () {
-                    parseColumnsWithFirstLineInfo();
+                $.ajax({
+                    type: "POST",
+                    url: SANDBOX.webportal_url + "/RemoteRequest?url=" +
+                    encodeURIComponent(SANDBOX.sandbox_url) + "dataCheck%2FparseColumns",
+                    data: $('#copyPasteData').val(),
+                    success: function (data) {
+                        $('#checkDataButton').removeClass("disabled");
+                        data = replacements(data)
+                        $('#recognisedData').html(data)
+                        $('#recognisedDataDiv').slideDown("slow");
+                        processedData();
+                        $('#processSample').slideDown("slow");
+                        $('#processingInfo').html('<strong>&nbsp;</strong>');
+                        $('#firstLineIsData').change(function () {
+                            parseColumnsWithFirstLineInfo();
+                        });
+                        $('#checkDataButton').html("Check data");
+                    },
+                    error: function () {
+                        $('#checkDataButton').removeClass("disabled");
+                        $('#checkDataButton').html("Check data");
+                    }
                 });
-            }, "html"
-    );
-}
-
-function processedData() {
-    $('#processedData').slideUp("slow");
-    $('.processDataBtn').addClass("disabled");
-    $('.processDataBtn').text('Reprocessing.......');
-    $.ajaxSetup({
-        scriptCharset: "utf-8",
-        contentType: "application/x-www-form-urlencoded"
-    });
-    $.ajax({
-        type: "POST",
-        url: "RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url) + "dataCheck%2FprocessData",
-        contentType: "application/x-www-form-urlencoded",
-        data: {
-            headers: getColumnHeaders(),
-            firstLineIsData: $('#firstLineIsData').val(),
-            rawData: $('#copyPasteData').val()
-        },
-        success: function (data) {
-            data = replacements(data)
-            $('#processedData').html(data);
-            $('#processedData').slideDown("slow");
-            $('.processDataBtn').text('Reprocess data');
-            $('.processDataBtn').removeClass("disabled");
-        },
-        error: function () {
-            $('.processDataBtn').text('Reprocess data');
-            $('.processDataBtn').removeClass("disabled");
-        }
-    });
-}
-
-function updateStatus(uid) {
-    SANDBOX.dataResourceUid = uid;
-    $('#progressBar').show();
-
-    $('.progress .bar').progressbar({
-        use_percentage: true,
-        display_text: 2,
-        refresh_speed: 50,
-        text: 'Starting the upload...'
-    });
-
-    $('#uploadFeedback').show();
-    updateStatusPolling();
-}
-
-function randomString(length) {
-    var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'.split('');
-
-    if (!length) {
-        length = Math.floor(Math.random() * chars.length);
-    }
-
-    var str = '';
-    for (var i = 0; i < length; i++) {
-        str += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return str;
-}
-
-function updateStatusPolling() {
-
-    $.get("RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url) + "dataCheck%2FuploadStatus?uid=" + SANDBOX.dataResourceUid + "&random=" + randomString(10), function (data) {
-        console.log("Retrieving status...." + data.status + ", percentage: " + data.percentage);
-        if (data.status == "COMPLETE") {
-            SANDBOX.uploadStatus = data.status
-            $('.progress .bar').attr('data-percentage', '100');
-            $('#uploadFeedback').html('Upload complete.');
-            $('.progress .bar').progressbar();
-            $('#optionsAfterDownload').css({'display': 'block'});
-            $("#uploadFeedback").html('');
-        } else if (data.status == "FAILED") {
-            SANDBOX.uploadStatus = data.status
-            $("#uploadFeedback").html('<span>Dataset upload <strong>failed</strong>. Please email support@ala.org.au with e details of your dataset.</span>');
-        } else {
-            $('.progress .bar').attr('data-percentage', data.percentage);
-            $('.progress .bar').progressbar();
-            $("#uploadFeedback").html('<span>Percentage completed: ' + data.percentage + '%. </span><span>STATUS: ' + data.status + ', ' + data.description + "</span>");
-            setTimeout("updateStatusPolling()", 1000);
-        }
-    });
-}
-
-function uploadToSandbox() {
-    console.log('Uploading to sandbox...');
-    $('#uploadButton').removeClass("disabled");
-    $('#uploadFeedback').html('<p class="uploaded">Starting upload of dataset....</p>');
-    $.post("RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url) + "dataCheck%2Fupload",
-            { "rawData": $('#copyPasteData').val(),
-                "headers": getColumnHeaders(),
-                "datasetName": $('#datasetName').val(),
-                "firstLineIsData": $('#firstLineIsData').val(),
-                "customIndexedFields": $('#customIndexedFields').val()
-            },
-            function (data) {
-                alert('Value returned from service: ' + data.uid);
-                updateStatus(data.uid);
             }
-    );
-}
-
-function getColumnHeaders() {
-    console.log("Retrieve column headers...");
-    var columnHeaderInputs = $('.columnHeaderInput');
-    var columnHeadersCSV = "";
-    var i = 0;
-    $.each(columnHeaderInputs, function (index, input) {
-        if (index > 0) {
-            columnHeadersCSV = columnHeadersCSV + ",";
         }
-        columnHeadersCSV = columnHeadersCSV + input.value;
-        i++;
-    });
-    console.log('Returning headers : ' + columnHeadersCSV);
-    return columnHeadersCSV;
-}
 
-//setup the page
-$(document).ready(function () {
+        function replacements(data) {
+            data = data.replace("/datacheck/dataCheck/autocomplete.json",
+                SANDBOX.webportal_url + "/RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url + "dataCheck/autocomplete.json"))
 
-    $('#copyPasteData').keyup(function () {
-        window.setTimeout('parseColumns()', 1500, true);
-    });
-
-    $('#copyPasteData').keydown(function () {
-        //  reset();
-    });
-
-    init();
-
-    //enable tabs in textareas
-    $("textarea").keydown(function (e) {
-        if (e.keyCode === 9) { // tab was pressed
-            // get caret position/selection
-            var start = this.selectionStart;
-            end = this.selectionEnd;
-            var $this = $(this);
-            // set textarea value to: text before caret + tab + text after caret
-            $this.val($this.val().substring(0, start)
-                    + "\t"
-                    + $this.val().substring(end));
-            // put caret at right position again
-            this.selectionStart = this.selectionEnd = start + 1;
-            // prevent the focus lose
-            return false;
+            return data
         }
-    });
-});
 
-// initialise plugins
-jQuery(function () {
-    // autocomplete on navbar search input
-    jQuery("form#search-form-2011 input#search-2011, form#search-inpage input#search, input#search-2013").autocomplete('http://bie.ala.org.au/search/auto.jsonp', {
-        extraParams: {limit: 100},
-        dataType: 'jsonp',
-        parse: function (data) {
-            var rows = new Array();
-            data = data.autoCompleteList;
-            for (var i = 0; i < data.length; i++) {
-                rows[i] = {
-                    data: data[i],
-                    value: data[i].matchedNames[0],
-                    result: data[i].matchedNames[0]
-                };
+        function parseColumnsWithFirstLineInfo() {
+            console.log("Parsing first line to do interpretation...");
+            $.post(SANDBOX.webportal_url + "/RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url) + "dataCheck%2FparseColumnsWithFirstLineInfo", {
+                    "rawData": $('#copyPasteData').val(),
+                    "firstLineIsData": $('#firstLineIsData').val()
+                },
+                function (data) {
+                    data = replacements(data)
+                    $('#recognisedData').html(data)
+                    $('#recognisedDataDiv').slideDown("slow");
+                    processedData();
+                    $('#processSample').slideDown("slow");
+                    $('#processingInfo').html('<strong>&nbsp;</strong>');
+                    $('#firstLineIsData').change(function () {
+                        parseColumnsWithFirstLineInfo();
+                    });
+                }, "html"
+            );
+        }
+
+        function processedData() {
+            $('#processedData').slideUp("slow");
+            $('.processDataBtn').addClass("disabled");
+            $('.processDataBtn').text('Reprocessing.......');
+            $.ajaxSetup({
+                scriptCharset: "utf-8",
+                contentType: "application/x-www-form-urlencoded"
+            });
+            $.ajax({
+                type: "POST",
+                url: SANDBOX.webportal_url + "/RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url) + "dataCheck%2FprocessData",
+                contentType: "application/x-www-form-urlencoded",
+                data: {
+                    headers: getColumnHeaders(),
+                    firstLineIsData: $('#firstLineIsData').val(),
+                    rawData: $('#copyPasteData').val()
+                },
+                success: function (data) {
+                    data = replacements(data)
+                    $('#processedData').html(data);
+                    $('#processedData').slideDown("slow");
+                    $('.processDataBtn').text('Reprocess data');
+                    $('.processDataBtn').removeClass("disabled");
+                },
+                error: function () {
+                    $('.processDataBtn').text('Reprocess data');
+                    $('.processDataBtn').removeClass("disabled");
+                }
+            });
+        }
+
+        function updateStatus(uid) {
+            SANDBOX.dataResourceUid = uid;
+            $('#progressBar').show();
+
+            $('.progress .bar').progressbar({
+                use_percentage: true,
+                display_text: 2,
+                refresh_speed: 50,
+                text: 'Starting the upload...'
+            });
+
+            $('#uploadFeedback').show();
+            updateStatusPolling();
+        }
+
+        function randomString(length) {
+            var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'.split('');
+
+            if (!length) {
+                length = Math.floor(Math.random() * chars.length);
             }
-            return rows;
-        },
-        matchSubset: false,
-        formatItem: function (row, i, n) {
-            return row.matchedNames[0];
-        },
-        cacheLength: 10,
-        minChars: 3,
-        scroll: false,
-        max: 10,
-        selectFirst: false
-    });
 
-    // Mobile/desktop toggle
-    // TODO: set a cookie so user's choice is remembered across pages
-    var responsiveCssFile = $("#responsiveCss").attr("href"); // remember set href
-    $(".toggleResponsive").click(function (e) {
-        e.preventDefault();
-        $(this).find("i").toggleClass("icon-resize-small icon-resize-full");
-        var currentHref = $("#responsiveCss").attr("href");
-        if (currentHref) {
-            $("#responsiveCss").attr("href", ""); // set to desktop (fixed)
-            $(this).find("span").html("Mobile");
-        } else {
-            $("#responsiveCss").attr("href", responsiveCssFile); // set to mobile (responsive)
-            $(this).find("span").html("Desktop");
+            var str = '';
+            for (var i = 0; i < length; i++) {
+                str += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return str;
         }
-    });
-});
-</script>
+
+        function updateStatusPolling() {
+
+            $.get(SANDBOX.webportal_url + "/RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url) + "dataCheck%2FuploadStatus?uid=" + SANDBOX.dataResourceUid + "&random=" + randomString(10), function (data) {
+                console.log("Retrieving status...." + data.status + ", percentage: " + data.percentage);
+                if (data.status == "COMPLETE") {
+                    SANDBOX.uploadStatus = data.status
+                    $('.progress .bar').attr('data-percentage', '100');
+                    $('#uploadFeedback').html('Upload complete.');
+                    $('.progress .bar').progressbar();
+                    $('#optionsAfterDownload').css({'display': 'block'});
+                    $("#uploadFeedback").html('');
+                } else if (data.status == "FAILED") {
+                    SANDBOX.uploadStatus = data.status
+                    $("#uploadFeedback").html('<span>Dataset upload <strong>failed</strong>. Please email support@ala.org.au with e details of your dataset.</span>');
+                } else {
+                    $('.progress .bar').attr('data-percentage', data.percentage);
+                    $('.progress .bar').progressbar();
+                    $("#uploadFeedback").html('<span>Percentage completed: ' + data.percentage + '%. </span><span>STATUS: ' + data.status + ', ' + data.description + "</span>");
+                    setTimeout("updateStatusPolling()", 1000);
+                }
+            });
+        }
+
+        function uploadToSandbox() {
+            console.log('Uploading to sandbox...');
+            $('#uploadButton').removeClass("disabled");
+            $('#uploadFeedback').html('<p class="uploaded">Starting upload of dataset....</p>');
+            $.post(SANDBOX.webportal_url + "/RemoteRequest?url=" + encodeURIComponent(SANDBOX.sandbox_url) + "dataCheck%2Fupload",
+                {
+                    "rawData": $('#copyPasteData').val(),
+                    "headers": getColumnHeaders(),
+                    "datasetName": $('#datasetName').val(),
+                    "firstLineIsData": $('#firstLineIsData').val(),
+                    "customIndexedFields": $('#customIndexedFields').val()
+                },
+                function (data) {
+                    alert('Value returned from service: ' + data.uid);
+                    updateStatus(data.uid);
+                }
+            );
+        }
+
+        function getColumnHeaders() {
+            console.log("Retrieve column headers...");
+            var columnHeaderInputs = $('.columnHeaderInput');
+            var columnHeadersCSV = "";
+            var i = 0;
+            $.each(columnHeaderInputs, function (index, input) {
+                if (index > 0) {
+                    columnHeadersCSV = columnHeadersCSV + ",";
+                }
+                columnHeadersCSV = columnHeadersCSV + input.value;
+                i++;
+            });
+            console.log('Returning headers : ' + columnHeadersCSV);
+            return columnHeadersCSV;
+        }
+
+        //setup the page
+        $(document).ready(function () {
+
+            $('#copyPasteData').keyup(function () {
+                window.setTimeout('parseColumns()', 1500, true);
+            });
+
+            $('#copyPasteData').keydown(function () {
+                //  reset();
+            });
+
+            init();
+
+            //enable tabs in textareas
+            $("textarea").keydown(function (e) {
+                if (e.keyCode === 9) { // tab was pressed
+                    // get caret position/selection
+                    var start = this.selectionStart;
+                    end = this.selectionEnd;
+                    var $this = $(this);
+                    // set textarea value to: text before caret + tab + text after caret
+                    $this.val($this.val().substring(0, start)
+                        + "\t"
+                        + $this.val().substring(end));
+                    // put caret at right position again
+                    this.selectionStart = this.selectionEnd = start + 1;
+                    // prevent the focus lose
+                    return false;
+                }
+            });
+        });
+
+        // initialise plugins
+        jQuery(function () {
+            // autocomplete on navbar search input
+            jQuery("form#search-form-2011 input#search-2011, form#search-inpage input#search, input#search-2013").autocomplete('http://bie.ala.org.au/search/auto.jsonp', {
+                extraParams: {limit: 100},
+                dataType: 'jsonp',
+                parse: function (data) {
+                    var rows = new Array();
+                    data = data.autoCompleteList;
+                    for (var i = 0; i < data.length; i++) {
+                        rows[i] = {
+                            data: data[i],
+                            value: data[i].matchedNames[0],
+                            result: data[i].matchedNames[0]
+                        };
+                    }
+                    return rows;
+                },
+                matchSubset: false,
+                formatItem: function (row, i, n) {
+                    return row.matchedNames[0];
+                },
+                cacheLength: 10,
+                minChars: 3,
+                scroll: false,
+                max: 10,
+                selectFirst: false
+            });
+
+            // Mobile/desktop toggle
+            // TODO: set a cookie so user's choice is remembered across pages
+            var responsiveCssFile = $("#responsiveCss").attr("href"); // remember set href
+            $(".toggleResponsive").click(function (e) {
+                e.preventDefault();
+                $(this).find("i").toggleClass("icon-resize-small icon-resize-full");
+                var currentHref = $("#responsiveCss").attr("href");
+                if (currentHref) {
+                    $("#responsiveCss").attr("href", ""); // set to desktop (fixed)
+                    $(this).find("span").html("Mobile");
+                } else {
+                    $("#responsiveCss").attr("href", responsiveCssFile); // set to mobile (responsive)
+                    $(this).find("span").html("Desktop");
+                }
+            });
+        });
+    </script>
 
 
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<meta name="layout" content="main"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="layout" content="main"/>
 
 
 </head>

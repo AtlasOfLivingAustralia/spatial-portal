@@ -70,6 +70,7 @@
         function setUrls() {
             try {
                 sandboxFrame.SANDBOX.sandbox_url = jq('$sandbox_url')[0].innerHTML
+                sandboxFrame.SANDBOX.webportal_url = jq('$webportal_url')[0].innerHTML
             } catch (err) {
                 setTimeout("setUrls()",500)
             }

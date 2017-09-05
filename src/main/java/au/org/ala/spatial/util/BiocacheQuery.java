@@ -138,61 +138,77 @@ public class BiocacheQuery implements Query, Serializable {
         if (facets != null || extraParams != null) {
             String newExtraParams = null;
             for (int i = facets == null ? -1 : facets.size() - 1; i >= -1; i--) {
-                //check extraParams for a single qid term
+                //check extraParams for qid terms
                 String term;
                 if (i >= 0) term = facets.get(i).toString();
                 else term = extraParams;
-                if (term != null && term.startsWith("qid:")) {
-                    if (i == -1) extraParams = null;
+                if (term != null) {
+                    for (String termPart : term.split("&")) {
+                        int qidPos = termPart.indexOf("qid:");
+                        //match "qid:...", "q=qid:...", "fq=qid:..."
+                        if (qidPos == 0 || qidPos == 2 || qidPos == 3) {
+                            if (i == -1) extraParams = null;
 
-                    JSONObject jo = getQidDetails(term);
+                            JSONObject jo = getQidDetails(termPart.replace("fq=", "").replace("q=", ""));
 
-                    try {
-                        StringBuilder sb = new StringBuilder();
-                        if (jo.containsKey("q")) {
-                            if (jo.get("q").toString().length() > 0 && !jo.get("q").toString().equals("*:*")) {
-                                sb.append("&fq=").append(jo.get("q"));
-                            }
-                        }
-                        if (jo.containsKey("fqs")) {
-                            JSONArray ja = (JSONArray) jo.get("fqs");
-                            for (int j = 0; j < ja.size(); j++) {
-                                if (ja.get(j).toString().length() > 0 && !ja.get(j).toString().equals("*:*")) {
-                                    sb.append("&fq=").append(ja.get(j));
+                            try {
+                                StringBuilder sb = new StringBuilder();
+                                if (jo.containsKey("q")) {
+                                    if (jo.get("q").toString().length() > 0 && !jo.get("q").toString().equals("*:*")) {
+                                        //unescape q
+                                        sb.append("&fq=").append(jo.get("q").toString());
+                                    }
                                 }
+                                if (jo.containsKey("fqs")) {
+                                    JSONArray ja = (JSONArray) jo.get("fqs");
+                                    for (int j = 0; j < ja.size(); j++) {
+                                        if (ja.get(j).toString().length() > 0 && !ja.get(j).toString().equals("*:*")) {
+                                            //no need to unescape fq
+                                            sb.append("&fq=").append(ja.get(j));
+                                        }
+                                    }
+                                }
+                                if (newExtraParams == null) {
+                                    newExtraParams = sb.toString().replace("\\", "");
+                                } else {
+                                    newExtraParams += sb.toString().replace("\\", "");
+                                }
+                                if (jo.containsKey("wkt") && jo.get("wkt").toString().length() > 0) {
+                                    String qidWkt = jo.get("wkt").toString();
+
+                                    if (wkt == null) {
+                                        wkt = qidWkt;
+                                    } else {
+                                        try {
+                                            WKTReader wktReader = new WKTReader();
+                                            Geometry g1 = wktReader.read(wkt);
+                                            Geometry g2 = wktReader.read(qidWkt);
+                                            wkt = g1.union(g2).toText().replace(", ", ",").replace(" (", "(");
+                                        } catch (Exception e) {
+                                            LOGGER.error("failed to union wkt: " + wkt + " and " + qidWkt);
+                                        }
+                                    }
+                                }
+
+                                //set name
+                                if (jo.containsKey("displayString")) {
+                                    name = jo.get("displayString").toString();
+                                    solrName = jo.get("displayString").toString();
+                                }
+
+                                if (i >= 0) facets.remove(i);
+
+                            } catch (Exception e) {
+                                LOGGER.error("failed to merge " + facets.get(i).toString(), e);
                             }
-                        }
-                        if (newExtraParams == null) {
-                            newExtraParams = sb.toString().replace("\\", "");
                         } else {
-                            newExtraParams += sb.toString().replace("\\", "");
-                        }
-                        if (jo.containsKey("wkt") && jo.get("wkt").toString().length() > 0) {
-                            String qidWkt = jo.get("wkt").toString();
-
-                            if (wkt == null) {
-                                wkt = qidWkt;
+                            //append non-qid part
+                            if (newExtraParams == null) {
+                                newExtraParams = termPart;
                             } else {
-                                try {
-                                    WKTReader wktReader = new WKTReader();
-                                    Geometry g1 = wktReader.read(wkt);
-                                    Geometry g2 = wktReader.read(qidWkt);
-                                    wkt = g1.union(g2).toText().replace(", ", ",").replace(" (", "(");
-                                } catch (Exception e) {
-                                    LOGGER.error("failed to union wkt: " + wkt + " and " + qidWkt);
-                                }
+                                newExtraParams += "&" + termPart;
                             }
                         }
-
-                        //set name
-                        if (jo.containsKey("displayString")) {
-                            name = jo.get("displayString").toString();
-                            solrName = jo.get("displayString").toString();
-                        }
-
-                        if (i >= 0) facets.remove(i);
-                    } catch (Exception e) {
-                        LOGGER.error("failed to merge " + facets.get(i).toString(), e);
                     }
                 }
             }
@@ -222,6 +238,33 @@ public class BiocacheQuery implements Query, Serializable {
         }
 
         makeParamId();
+    }
+
+    /**
+     * qid q values are escaped for SOLR. Unescape them to prevent double escaping.
+     *
+     * @param s
+     * @return
+     */
+    private String unescape(String s) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < s.length(); ++i) {
+            char c1 = s.charAt(i);
+            if (c1 == '\\') {
+                char c = s.charAt(i + 1);
+                if (c == 92 || c == 43 || c == 45 || c == 33 || c == 40 || c == 41 || c == 58 || c == 94 || c == 91 || c == 93 || c == 34 || c == 123 || c == 125 || c == 126 || c == 42 || c == 63 || c == 124 || c == 38 || c == 59 || c == 47 || Character.isWhitespace(c)) {
+                    sb.append(c);
+                    i++;
+                } else {
+                    sb.append(c1);
+                }
+            } else {
+                sb.append(c1);
+            }
+        }
+
+        return sb.toString();
     }
 
     static final String translateFieldForSolr(String facetName) {
