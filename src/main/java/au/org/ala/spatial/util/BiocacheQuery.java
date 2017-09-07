@@ -213,11 +213,7 @@ public class BiocacheQuery implements Query, Serializable {
                 }
             }
             if (newExtraParams != null) {
-                if (extraParams == null) {
-                    extraParams = newExtraParams;
-                } else {
-                    extraParams += newExtraParams;
-                }
+                extraParams = newExtraParams;
             }
         }
         
