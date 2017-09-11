@@ -202,11 +202,13 @@ public class BiocacheQuery implements Query, Serializable {
                                 LOGGER.error("failed to merge " + facets.get(i).toString(), e);
                             }
                         } else {
-                            //append non-qid part
-                            if (newExtraParams == null) {
-                                newExtraParams = termPart;
-                            } else {
-                                newExtraParams += "&" + termPart;
+                            //append non-qid part if updating 'extraParams'
+                            if (i < 0) {
+                                if (newExtraParams == null) {
+                                    newExtraParams = termPart;
+                                } else {
+                                    newExtraParams += "&" + termPart;
+                                }
                             }
                         }
                     }
