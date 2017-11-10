@@ -14,9 +14,9 @@
 
     <% if (CommonData.getSettings().getProperty("google.maps.apikey", "").length() > 0) { %>
     <script type="text/javascript"
-            src="http://maps.google.com/maps/api/js?libraries=geometry&sensor=false&key=<%= CommonData.getSettings().getProperty("google.maps.apikey") %>"></script>
+            src="https://maps.google.com/maps/api/js?libraries=geometry&sensor=false&key=<%= CommonData.getSettings().getProperty("google.maps.apikey") %>"></script>
     <% } else { %>
-    <script type="text/javascript" src="http://maps.google.com/maps/api/js?libraries=geometry&sensor=false"></script>
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js?libraries=geometry&sensor=false"></script>
     <% } %>
     <script type="text/javascript" src="map.js.dsp"></script>
 

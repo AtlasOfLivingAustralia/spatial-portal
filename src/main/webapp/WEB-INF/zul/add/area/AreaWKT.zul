@@ -30,7 +30,7 @@
             <p>
               Coordinates of complex or simple area boundaries can be pasted
               into the box below using a language call 
-              <a target="_blank" href="http://en.wikipedia.org/wiki/Well-known_text">Well Known Text</a>.
+              <a target="_blank" href="https://en.wikipedia.org/wiki/Well-known_text">Well Known Text</a>.
               For an area, a closed POLYGON is required. For example, the
               following longitude(x) latitude(y) pairs form an arrow-shaped polygon
             </p>

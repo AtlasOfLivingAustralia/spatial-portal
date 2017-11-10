@@ -449,7 +449,7 @@ public class PrintMapComposer {
 
         RescaleOp op = new RescaleOp(new float[]{1f, 1f, 1f, 1f}, new float[]{0f, 0f, 0f, 0f}, null);
 
-        String uri = "http://tile.openstreetmap.org/";
+        String uri = "https://tile.openstreetmap.org/";
         for (int iy = my; iy >= sy; iy--) {
             for (int ix = sx; ix <= mx; ix++) {
                 String bbox = res + "/" + (ix % tiles) + "/" + iy + ".png";
@@ -518,7 +518,7 @@ public class PrintMapComposer {
         int imgWidth = (int) ((extents[2] - extents[0]) / resolutions[res]);
         int imgHeight = (int) ((extents[3] - extents[1]) / resolutions[res]);
 
-        String uri = "http://maps.googleapis.com/maps/api/staticmap?";
+        String uri = "https://maps.googleapis.com/maps/api/staticmap?";
         String parameters = "center=" + latitude + "," + longitude + "&zoom=" + res + "&scale=" + gScale + "&size=" + imgWidth + "x" + imgHeight + "&maptype=" + maptype;
         String key = CommonData.getSettings().getProperty("google.maps.apikey", null);
         if (key != null) parameters += "&key=" + key;

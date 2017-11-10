@@ -13478,14 +13478,14 @@ OpenLayers.Layer.XYZ = OpenLayers.Class(OpenLayers.Layer.Grid, {isBaseLayer: tru
         this.tileOrigin = new OpenLayers.LonLat(this.maxExtent.left, this.maxExtent.bottom);
     }
 }, CLASS_NAME: "OpenLayers.Layer.XYZ"});
-OpenLayers.Layer.OSM = OpenLayers.Class(OpenLayers.Layer.XYZ, {name: "OpenStreetMap", attribution: "Data CC-By-SA by <a href='http://openstreetmap.org/'>OpenStreetMap</a>", sphericalMercator: true, url: 'http://tile.openstreetmap.org/${z}/${x}/${y}.png', clone: function (obj) {
+OpenLayers.Layer.OSM = OpenLayers.Class(OpenLayers.Layer.XYZ, {name: "OpenStreetMap", attribution: "Data CC-By-SA by <a href='https://openstreetmap.org/'>OpenStreetMap</a>", sphericalMercator: true, url: 'https://tile.openstreetmap.org/${z}/${x}/${y}.png', clone: function (obj) {
     if (obj == null) {
         obj = new OpenLayers.Layer.OSM(this.name, this.url, this.getOptions());
     }
     obj = OpenLayers.Layer.XYZ.prototype.clone.apply(this, [obj]);
     return obj;
 }, wrapDateLine: true, CLASS_NAME: "OpenLayers.Layer.OSM"});
-OpenLayers.Layer.Bing = OpenLayers.Class(OpenLayers.Layer.XYZ, {serverResolutions: [156543.03390625, 78271.516953125, 39135.7584765625, 19567.87923828125, 9783.939619140625, 4891.9698095703125, 2445.9849047851562, 1222.9924523925781, 611.4962261962891, 305.74811309814453, 152.87405654907226, 76.43702827453613, 38.218514137268066, 19.109257068634033, 9.554628534317017, 4.777314267158508, 2.388657133579254, 1.194328566789627, 0.5971642833948135, 0.29858214169740677, 0.14929107084870338, 0.07464553542435169], attributionTemplate: '<span class="olBingAttribution ${type}">' + '<div><a target="_blank" href="http://www.bing.com/maps/">' + '<img src="${logo}" /></a></div>${copyrights}' + '<a style="white-space: nowrap" target="_blank" ' + 'href="http://www.microsoft.com/maps/product/terms.html">' + 'Terms of Use</a></span>', metadata: null, type: "Road", metadataParams: null, initialize: function (options) {
+OpenLayers.Layer.Bing = OpenLayers.Class(OpenLayers.Layer.XYZ, {serverResolutions: [156543.03390625, 78271.516953125, 39135.7584765625, 19567.87923828125, 9783.939619140625, 4891.9698095703125, 2445.9849047851562, 1222.9924523925781, 611.4962261962891, 305.74811309814453, 152.87405654907226, 76.43702827453613, 38.218514137268066, 19.109257068634033, 9.554628534317017, 4.777314267158508, 2.388657133579254, 1.194328566789627, 0.5971642833948135, 0.29858214169740677, 0.14929107084870338, 0.07464553542435169], attributionTemplate: '<span class="olBingAttribution ${type}">' + '<div><a target="_blank" href="https://www.bing.com/maps/">' + '<img src="${logo}" /></a></div>${copyrights}' + '<a style="white-space: nowrap" target="_blank" ' + 'href="https://www.microsoft.com/maps/product/terms.html">' + 'Terms of Use</a></span>', metadata: null, type: "Road", metadataParams: null, initialize: function (options) {
     options = OpenLayers.Util.applyDefaults({sphericalMercator: true}, options);
     var name = options.name || "Bing " + (options.type || this.type);
     var newArgs = [name, null, options];
@@ -20835,7 +20835,7 @@ OpenLayers.Layer.XYZ = OpenLayers.Class(OpenLayers.Layer.Grid, {isBaseLayer: tru
         this.tileOrigin = new OpenLayers.LonLat(this.maxExtent.left, this.maxExtent.bottom);
     }
 }, CLASS_NAME: "OpenLayers.Layer.XYZ"});
-OpenLayers.Layer.OSM = OpenLayers.Class(OpenLayers.Layer.XYZ, {name: "OpenStreetMap", attribution: "Data CC-By-SA by <a href='http://openstreetmap.org/'>OpenStreetMap</a>", sphericalMercator: true, url: 'http://tile.openstreetmap.org/${z}/${x}/${y}.png', clone: function (obj) {
+OpenLayers.Layer.OSM = OpenLayers.Class(OpenLayers.Layer.XYZ, {name: "OpenStreetMap", attribution: "Data CC-By-SA by <a href='https://openstreetmap.org/'>OpenStreetMap</a>", sphericalMercator: true, url: 'https://tile.openstreetmap.org/${z}/${x}/${y}.png', clone: function (obj) {
     if (obj == null) {
         obj = new OpenLayers.Layer.OSM(this.name, this.url, this.getOptions());
     }

@@ -135,7 +135,7 @@
                 <separator height="15px" />
                 <hbox>
                     <label value="The layer sets use layer 'short name': see " />
-                    <a href="http://spatial.ala.org.au/layers" target="_blank" label="layers"/>
+                    <a href="https://spatial.ala.org.au/layers" target="_blank" label="layers"/>
                 </hbox>
                 <separator />
                 <hbox>

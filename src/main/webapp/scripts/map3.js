@@ -1018,7 +1018,7 @@ function displaySpeciesInfo(pos, data, prevBtn, nextBtn, curr, total) {
         " Scientific name: " + species + " <br />" +
         " Kingdom: " + kingdom + " <br />" +
         " Family: " + family + " <br />" +
-        " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProviderName + "</a> <br />" +
+        " Data provider: <a href='https://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProviderName + "</a> <br />" +
         " Longitude: " + occinfo.decimalLongitude + " , Latitude: " + occinfo.decimalLatitude + " (<a href='javascript:goToLocation(" + occinfo.decimalLongitude + ", " + occinfo.decimalLatitude + ", 15);relocatePopup(" + occinfo.decimalLongitude + ", " + occinfo.decimalLatitude + ");'>zoom to</a>) <br/>" +
         " Spatial uncertainty in metres: " + uncertaintyText + "<br />" +
         " Occurrence date: " + occurrencedate + " <br />" +

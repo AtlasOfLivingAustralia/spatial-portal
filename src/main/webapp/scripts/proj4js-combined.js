@@ -3116,7 +3116,7 @@ Proj4js.Proj.stere = {
  - summation
 
  A summary of complex arithmetic operations:
- (from http://en.wikipedia.org/wiki/Complex_arithmetic)
+ (from https://en.wikipedia.org/wiki/Complex_arithmetic)
  addition:       (a + bi) + (c + di) = (a + c) + (b + d)i
  subtraction:    (a + bi) - (c + di) = (a - c) + (b - d)i
  multiplication: (a + bi) x (c + di) = (ac - bd) + (bc + ad)i

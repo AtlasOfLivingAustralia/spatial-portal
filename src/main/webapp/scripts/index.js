@@ -353,13 +353,13 @@ function loadHelp(page) {
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', help_base_url + "/" + page));
 }
 function loadMetadataUrl(type) {
-    var metaurl = "http://www.google.com/intl/en_au/help/terms_maps.html";
+    var metaurl = "https://www.google.com/intl/en_au/help/terms_maps.html";
     if (type == "minimal") {
         metaurl = "openstreetmap_metadata.html";
     } else if (type == "outline") {
         metaurl = "http://www.naturalearthdata.com/about/terms-of-use";
     } else {
-        metaurl = "http://www.google.com/intl/en_au/help/terms_maps.html";
+        metaurl = "https://www.google.com/intl/en_au/help/terms_maps.html";
     }
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', metaurl));
 }

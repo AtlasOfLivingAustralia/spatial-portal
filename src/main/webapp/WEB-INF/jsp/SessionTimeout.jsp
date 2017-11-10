@@ -112,9 +112,9 @@ page manually by SessionInit.init()
                      z.mins="0" z.autoscl="false">
                     <div id="z_5a_g!cave" class="z-south-body"><span id="z_5a_h"><span id="ft">
 
-        <p><a href="http://www.ala.org.au" title="Atlas of Living Australia">ALA</a> is supported by the Australian
+        <p><a href="https://www.ala.org.au" title="Atlas of Living Australia">ALA</a> is supported by the Australian
             Government through the
-            <a href="http://www.innovation.gov.au/Section/AboutDIISR/FactSheets/Pages/NationalCollaborativeResearchInfrastructureStrategy(NCRIS)FactSheet.aspx">
+            <a href="https://wayback.archive.org/web/20101031093104/http://innovation.gov.au/Section/AboutDIISR/FactSheets/Pages/NationalCollaborativeResearchInfrastructureStrategy(NCRIS)FactSheet.aspx">
                 National Collaborative Research Infrastructure Strategy</a>
             and the Super Science Initiative.<BR/>
         </p>

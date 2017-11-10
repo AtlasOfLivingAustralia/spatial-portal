@@ -32,8 +32,8 @@
             This is currently an <n:strong>experimental</n:strong> feature of the Atlas.<n:br/>
             Uploaded data will be <n:strong>periodically cleared</n:strong> from the system.
             <n:br/>
-            This tool accepts Excel spreadsheets and <a target="_blank" href="http://en.wikipedia.org/wiki/Comma-separated_values">CSV</a> files.
-            For large files, its recommended that the files are <a target="_blank" href="http://en.wikipedia.org/wiki/Zip_(file_format)">zipped</a> before uploading.
+            This tool accepts Excel spreadsheets and <a target="_blank" href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a> files.
+            For large files, its recommended that the files are <a target="_blank" href="https://en.wikipedia.org/wiki/Zip_(file_format)">zipped</a> before uploading.
         </n:p>
 </div>
 

@@ -29,7 +29,7 @@
                 <p>
                 NOTE: If you wish to built an assemblage from taxa that include genus or higher groups, 
                 the use of LSIDs is less ambiguous than names. We have created an Excel macro 
-                (<a href="http://spatial.ala.org.au/files/getLsid.zip">getLsid.xlsm</a>) 
+                (<a href="https://spatial.ala.org.au/files/getLsid.zip">getLsid.xlsm</a>) 
                 that will take scientific names and lookup corresponding LSIDs (at all taxonomic levels). 
                 The LSIDs can be copy/pasted or imported as a CSV file to create an assemblage layer.
                 </p>

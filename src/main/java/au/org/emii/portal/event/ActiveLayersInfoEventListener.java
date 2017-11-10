@@ -51,7 +51,7 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
 
                     Events.echoEvent(StringConstants.OPEN_HTML, mapComposer, metadata);
                 } else if (activeLayer.getType() == LayerUtilitiesImpl.MAP) {
-                    String metaurl = "http://www.google.com/intl/en_au/help/terms_maps.html";
+                    String metaurl = "https://www.google.com/intl/en_au/help/terms_maps.html";
                     if ("outline".equalsIgnoreCase(mapComposer.getPortalSession().getBaseLayer())) {
                         metaurl = "openstreetmap_metadata.html";
                     } else if ("minimal".equalsIgnoreCase(mapComposer.getPortalSession().getBaseLayer())) {

@@ -260,9 +260,9 @@ public class AreaReportPDF {
 //            figureNumber++;
 //            mapPage(fw, "Integrated Marine and Coastal Regionalisation of Australia (IMCRA)", figureNumber, "imcra4_pb.png",
 //                    "<br /><br />The Integrated Marine and Coastal Regionalisation of Australia (IMCRA v4.0) is a spatial framework for classifying Australia's marine environment into bioregions that make sense ecologically and are at a scale useful for regional planning. These bioregions are the basis for the development of a National Representative System of Marine Protected Areas (NRSMPA). [Ref3]\n" +
-//                            "<br /><br />IMCRA: <a href='http://www.environment.gov.au/node/18075'>http://www.environment.gov.au/node/18075</a>" +
-//                            "<br /><br />IMCRA Regions layer: Classification: Biodiversity - Region; Type: Contextual (polygonal); Metadata contact organisation: Environmental Resources Information Network (ERIN).  <a href='http://spatial.ala.org.au/ws/layers/view/more/imcra4_pb'>http://spatial.ala.org.au/ws/layers/view/more/imcra4_pb</a>" +
-//                            "<br /><br />Goals and Principles for the Establishment of the NRSMPA: <a href='http://www.environment.gov.au/resource/goals-and-principles-establishment-national-representative-system-marine-protected-areas'>http://www.environment.gov.au/resource/goals-and-principles-establishment-national-representative-system-marine-protected-areas</a>",
+//                            "<br /><br />IMCRA: <a href='https://www.environment.gov.au/node/18075'>https://www.environment.gov.au/node/18075</a>" +
+//                            "<br /><br />IMCRA Regions layer: Classification: Biodiversity - Region; Type: Contextual (polygonal); Metadata contact organisation: Environmental Resources Information Network (ERIN).  <a href='https://spatial.ala.org.au/ws/layers/view/more/imcra4_pb'>https://spatial.ala.org.au/ws/layers/view/more/imcra4_pb</a>" +
+//                            "<br /><br />Goals and Principles for the Establishment of the NRSMPA: <a href='https://www.environment.gov.au/resource/goals-and-principles-establishment-national-representative-system-marine-protected-areas'>https://www.environment.gov.au/resource/goals-and-principles-establishment-national-representative-system-marine-protected-areas</a>",
 //                    tabulations.getJSONObject(CommonData.getLayerFacetName("imcra4_pb")));
 //            fw.write("</body></html>");fw.close();
 //            fileNumber++;

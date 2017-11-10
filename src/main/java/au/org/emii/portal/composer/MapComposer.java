@@ -399,7 +399,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     StringBuilder sbContent = new StringBuilder();
                     sbContent.append("<p id='termsOfUseDownload' style='padding:10px; margin-bottom: 0;'>");
                     sbContent.append("By downloading this content you are agreeing to use it in accordance ");
-                    sbContent.append("with the Atlas of Living Australia <a href='http://www.ala.org.au/about/terms-of-use/#TOUusingcontent'>Terms of Use</a>");
+                    sbContent.append("with the Atlas of Living Australia <a href='https://www.ala.org.au/about/terms-of-use/#TOUusingcontent'>Terms of Use</a>");
                     sbContent.append(" and any Data Provider Terms associated with the data download. ");
                     sbContent.append("<br/><br/>");
                     sbContent.append("Please provide the following details before downloading (* required)");

@@ -99,7 +99,7 @@ public class ExportLayerComposer extends ToolComposer {
                 sbKml.append("<kml xmlns=\"http://earth.google.com/kml/2.2\">").append("\r");
                 sbKml.append("<Document>").append("\r");
                 sbKml.append("  <name>Spatial Portal Active Area</name>").append("\r");
-                sbKml.append("  <description><![CDATA[Active area saved from the ALA Spatial Portal: http://spatial.ala.org.au/]]></description>").append("\r");
+                sbKml.append("  <description><![CDATA[Active area saved from the ALA Spatial Portal: https://spatial.ala.org.au/]]></description>").append("\r");
                 sbKml.append("  <Style id=\"style1\">").append("\r");
                 sbKml.append("    <LineStyle>").append("\r");
                 sbKml.append("      <color>40000000</color>").append("\r");

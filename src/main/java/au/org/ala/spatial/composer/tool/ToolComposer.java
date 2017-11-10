@@ -992,13 +992,13 @@ public class ToolComposer extends UtilityComposer {
         String helpurl = "";
 
         if (StringConstants.PREDICTION.equals(selectedMethod)) {
-            helpurl = "http://www.ala.org.au/spatial-portal-help/analysis-prediction-tab/";
+            helpurl = "https://www.ala.org.au/spatial-portal-help/analysis-prediction-tab/";
         } else if (StringConstants.SAMPLING.equals(selectedMethod)) {
-            helpurl = "http://www.ala.org.au/spatial-portal-help/analysis-sampling-tab/";
+            helpurl = "https://www.ala.org.au/spatial-portal-help/analysis-sampling-tab/";
         } else if (StringConstants.CLASSIFICATION.equals(selectedMethod)) {
-            helpurl = "http://www.ala.org.au/spatial-portal-help/analysis-classification-tab/";
+            helpurl = "https://www.ala.org.au/spatial-portal-help/analysis-classification-tab/";
         } else if ("Scatterplot".equals(selectedMethod)) {
-            helpurl = "http://www.ala.org.au/spatial-portal-help/scatterplot-tab/";
+            helpurl = "https://www.ala.org.au/spatial-portal-help/scatterplot-tab/";
         }
 
         if (StringUtils.isNotBlank(helpurl)) {

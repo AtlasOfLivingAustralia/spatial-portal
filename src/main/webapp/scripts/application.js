@@ -2,7 +2,7 @@
 $(function () {
     // autocomplete on navbar search input
     // autocomplete on navbar search input
-    $("input.general-search").autocomplete('http://bie.ala.org.au/ws/search/auto.jsonp', {
+    $("input.general-search").autocomplete('https://bie.ala.org.au/ws/search/auto.jsonp', {
         extraParams: {limit: 100},
         dataType: 'jsonp',
         parse: function (data) {

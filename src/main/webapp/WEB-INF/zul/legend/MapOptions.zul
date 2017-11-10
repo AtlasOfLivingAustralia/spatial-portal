@@ -32,7 +32,7 @@
                             <listcell>
                                 <radio value="normal" onCheck='Clients.evalJavaScript("window.mapFrame.baseLayerSwitchStatus=0;changeBaseLayer(\"normal\");window.mapFrame.autoSwitchBaseMap();")' label="Normal" />
                             </listcell>
-                            <listcell onClick='mapPortalPage.activateLink("http://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'>
+                            <listcell onClick='mapPortalPage.activateLink("https://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'>
                                 <html><![CDATA[<i class="icon-info-sign"></i>]]></html>
                             </listcell>
                         </listitem>
@@ -40,7 +40,7 @@
                             <listcell>
                                 <radio value="hybrid" onCheck='Clients.evalJavaScript("window.mapFrame.baseLayerSwitchStatus=1;changeBaseLayer(\"hybrid\");")' label="Satellite" />
                             </listcell>
-                            <listcell onClick='mapPortalPage.activateLink("http://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'>
+                            <listcell onClick='mapPortalPage.activateLink("https://www.google.com/intl/en_au/help/terms_maps.html", "Metadata", false);'>
                                 <html><![CDATA[<i class="icon-info-sign"></i>]]></html>
                             </listcell>
                         </listitem>

@@ -315,19 +315,19 @@
                                         <span class="icon-bar"></span>
                                         <span class="icon-bar"></span>
                                     </button>
-                                    <a class="navbar-brand" href="http://www.ala.org.au">
-                                        <img alt="brand" class="brand img-responsive" src="http://www2.ala.org.au/commonui-bs2/images/supporting-graphic-element-flat.png">
+                                    <a class="navbar-brand" href="https://www.ala.org.au">
+                                        <img alt="brand" class="brand img-responsive" src="https://www2.ala.org.au/commonui-bs2/images/supporting-graphic-element-flat.png">
                                     </a>
-                                    <a class="brand" href="http://www.ala.org.au">
+                                    <a class="brand" href="https://www.ala.org.au">
                                         The Atlas Of Living Australia
                                     </a>
                                     <div class="nav-collapse collapse">
                                         <ul class="nav">
                                             <li>
-                                                <a href="http://www.ala.org.au/about-the-atlas/contact-us/">Contact us</a>
+                                                <a href="https://www.ala.org.au/about-the-atlas/contact-us/">Contact us</a>
                                             </li>
                                             <li>
-                                                <a href="http://www.ala.org.au/get-involved/">Get involved</a>
+                                                <a href="https://www.ala.org.au/get-involved/">Get involved</a>
                                             </li>
                                             <li class="dropdown font-xsmall">
                                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -335,24 +335,24 @@
                                                     <span class="caret"></span>
                                                 </a>
                                                     <ul class="dropdown-menu" role="menu">
-                                                        <li><a href="http://spatial.ala.org.au">Spatial portal</a></li>
-                                                        <li ><a href="http://biocache.ala.org.au">Occurrence search</a></li>
+                                                        <li><a href="https://spatial.ala.org.au">Spatial portal</a></li>
+                                                        <li ><a href="https://biocache.ala.org.au">Occurrence search</a></li>
                                                         <li ><a href="http://fish.ala.org.au">Fish map</a></li>
-                                                        <li ><a href="http://regions.ala.org.au">Regions</a></li>
-                                                        <li ><a href="http://biocache.ala.org.au/explore/your-area">Explore your area</a></li>
+                                                        <li ><a href="https://regions.ala.org.au">Regions</a></li>
+                                                        <li ><a href="https://biocache.ala.org.au/explore/your-area">Explore your area</a></li>
 
                                                         <li class="divider"></li>
-                                                        <li><a href="http://sightings.ala.org.au">Record a sighting</a></li>
-                                                        <li><a href="http://collections.ala.org.au">Collections</a></li>
-                                                        <li><a href="http://volunteer.ala.org.au">DigiVol</a></li>
-                                                        <li><a href="http://fieldcapture.ala.org.au">Fieldcapture</a></li>
+                                                        <li><a href="https://sightings.ala.org.au">Record a sighting</a></li>
+                                                        <li><a href="https://collections.ala.org.au">Collections</a></li>
+                                                        <li><a href="https://volunteer.ala.org.au">DigiVol</a></li>
+                                                        <li><a href="https://fieldcapture.ala.org.au">Fieldcapture</a></li>
                                                         <li><a href="http://www.soils2satellites.org.au/">Soils to satellite</a></li>
-                                                        <li><a href="http://lists.ala.org.au">Traits, species lists</a></li>
+                                                        <li><a href="https://lists.ala.org.au">Traits, species lists</a></li>
 
                                                         <li class="divider"></li>
                                                         <li><a href="http://root.ala.org.au">Community portals</a></li>
-                                                        <li><a href="http://dashboard.ala.org.au">Dashboard</a></li>
-                                                        <li><a href="http://collections.ala.org.au/datasets">Datasets browser</a></li>
+                                                        <li><a href="https://dashboard.ala.org.au">Dashboard</a></li>
+                                                        <li><a href="https://collections.ala.org.au/datasets">Datasets browser</a></li>
                                                     </ul>
                                             </li>
                                         </ul>
@@ -371,12 +371,12 @@
                                                         ><a href="${mapPortalPage.getSettingsSupplementary().getProperty('logging_url')}/dashboard">My Spatial Portal History</a></li>
                                                     <li style='${((mapPortalPage.getSettingsSupplementary().getProperty("logging_url").length() + "") == "0") ? "display:none" : "display:show"}'
                                                         class="divider"></li>
-                                                    <li><a href='https://auth.ala.org.au/cas/login?service=http://spatial.ala.org.au/webportal//' class='null'><span>Log in</span></a></li>
+                                                    <li><a href='https://auth.ala.org.au/cas/login?service=https://spatial.ala.org.au/webportal//' class='null'><span>Log in</span></a></li>
                                                     <li><a href="https://auth.ala.org.au/userdetails/registration/createAccount">Register</a></li>
                                                 </ul>
                                             </li>
                                         </ul>
-                                        <form class="navbar-form" role="search" action="http://bie.ala.org.au/search" method="get">
+                                        <form class="navbar-form" role="search" action="https://bie.ala.org.au/search" method="get">
                                             <input type="text" class="general-search ac_input form-control " name="q" placeholder="Search the Atlas" >
                                             <button type="submit" class="btn btn-primary">Search</button>
                                         </form>

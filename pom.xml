@@ -18,7 +18,7 @@
     <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA
         data. The project is built upon Open Source technologies, the ZK Ajax frameowrk and OpenLayers toolkit.
     </description>
-    <url>http://www.ala.org.au</url>
+    <url>https://www.ala.org.au</url>
     <dependencies>
         <!-- Sun's DI API -->
         <dependency>
@@ -699,7 +699,7 @@
             <name>Ajay Ranipeta</name>
             <email>ajay.ranipeta@gmail.com</email>
             <organization>ALA</organization>
-            <organizationUrl>http://www.ala.org.au</organizationUrl>
+            <organizationUrl>https://www.ala.org.au</organizationUrl>
             <roles>
                 <role>Software Engineer</role>
             </roles>
@@ -709,7 +709,7 @@
             <name>Adam Collins</name>
             <email>adam_collins@tpg.com.au</email>
             <organization>ALA</organization>
-            <organizationUrl>http://www.ala.org.au</organizationUrl>
+            <organizationUrl>https://www.ala.org.au</organizationUrl>
             <roles>
                 <role>Software Engineer</role>
             </roles>
@@ -720,7 +720,7 @@
     </scm>
     <organization>
         <name>ALA</name>
-        <url>http://www.ala.org.au</url>
+        <url>https://www.ala.org.au</url>
     </organization>
 
     <build>
