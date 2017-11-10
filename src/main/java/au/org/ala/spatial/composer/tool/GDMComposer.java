@@ -387,9 +387,9 @@ public class GDMComposer extends ToolComposer {
             StringBuilder sbProcessUrl = new StringBuilder();
             sbProcessUrl.append(CommonData.getSatServer()).append("/ws/gdm/step2?");
             sbProcessUrl.append("&pid=").append(pid);
-            sbProcessUrl.append("&cutpoint=").append(cutpoint.getSelectedItem().getValue());
-            sbProcessUrl.append("&useDistance=").append(rgdistance.getSelectedItem().getValue());
-            sbProcessUrl.append("&weighting=").append(weighting.getSelectedItem().getValue());
+            sbProcessUrl.append("&cutpoint=").append((char[])cutpoint.getSelectedItem().getValue());
+            sbProcessUrl.append("&useDistance=").append((char[])rgdistance.getSelectedItem().getValue());
+            sbProcessUrl.append("&weighting=").append((char[])weighting.getSelectedItem().getValue());
             sbProcessUrl.append("&useSubSample=").append(useSubSample.isChecked() ? "1" : "0");
             sbProcessUrl.append("&sitePairsSize=").append(sitePairsSize.getValue());
             sbProcessUrl.append("&name=").append(query.getName());
