@@ -625,8 +625,8 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
                 + "<UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><Geometry></Geometry>"
                 + "<ColorMap>"
                 + "<ColorMapEntry color=\"" + colour + "\" opacity=\"1\" quantity=\"" + (min - correction) + "\"/>"
-                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"0\" quantity=\"" + (min - correction) + "\"/>"
-                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"0\" quantity=\"" + (max + correction) + "\"/>"
+                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"0\" quantity=\"" + (min) + "\"/>"
+                + "<ColorMapEntry color=\"" + colour + "\" opacity=\"0\" quantity=\"" + (max) + "\"/>"
                 + "<ColorMapEntry color=\"" + colour + "\" opacity=\"1\" quantity=\"" + (max + correction) + "\"/>"
                 + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
 
