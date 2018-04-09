@@ -67,7 +67,7 @@ public class InOutComposer extends ToolComposer {
     @Override
     public boolean onFinish() {
         Query query = getSelectedSpecies();
-        query = query.newFacet(new Facet("occurrence_status_s", "absent", false), false);
+        query = query.newFacet(new Facet("occurrence_status", "absent", false), false);
         if (query == null) {
             return false;
         }

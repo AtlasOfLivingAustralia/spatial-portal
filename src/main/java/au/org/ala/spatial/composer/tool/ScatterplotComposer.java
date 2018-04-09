@@ -63,7 +63,7 @@ public class ScatterplotComposer extends ToolComposer {
             getMapComposer().showMessage("There was a problem selecting the species.  Try to select the species again", this);
             return false;
         }
-        lsid = lsid.newFacet(new Facet("occurrence_status_s", "absent", false), false);
+        lsid = lsid.newFacet(new Facet("occurrence_status", "absent", false), false);
         String name = getSelectedSpeciesName();
 
         String sbenvsel = getSelectedLayersWithDisplayNames();
@@ -86,7 +86,7 @@ public class ScatterplotComposer extends ToolComposer {
 
         Query backgroundLsid = getSelectedSpeciesBk();
         if (backgroundLsid != null)
-            backgroundLsid = backgroundLsid.newFacet(new Facet("occurrence_status_s", "absent", false), false);
+            backgroundLsid = backgroundLsid.newFacet(new Facet("occurrence_status", "absent", false), false);
         if (bgSearchSpeciesACComp.hasValidAnnotatedItemSelected()) {
             backgroundLsid = bgSearchSpeciesACComp.getQuery((Map) getMapComposer().getSession().getAttribute(StringConstants.USERPOINTS), false, getGeospatialKosher());
         }

@@ -140,7 +140,7 @@ public class GDMComposer extends ToolComposer {
         try {
             SelectedArea sa = getSelectedArea();
             query = QueryUtil.queryFromSelectedArea(getSelectedSpecies(), sa, false, getGeospatialKosher());
-            query = query.newFacet(new Facet("occurrence_status_s", "absent", false), false);
+            query = query.newFacet(new Facet("occurrence_status", "absent", false), false);
             sbenvsel = getSelectedLayersWithDisplayNames();
 
             if (query.getSpeciesCount() < 2) {

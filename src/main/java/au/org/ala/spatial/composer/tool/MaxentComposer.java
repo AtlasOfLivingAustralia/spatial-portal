@@ -82,7 +82,7 @@ public class MaxentComposer extends ToolComposer {
             getMapComposer().showMessage("There is a problem selecting the species.  Try to select the species again", this);
             return false;
         }
-        q = q.newFacet(new Facet("occurrence_status_s", "absent", false), false);
+        q = q.newFacet(new Facet("occurrence_status", "absent", false), false);
         if (searchSpeciesACComp.getAutoComplete().getSelection() != null) {
             getMapComposer().mapSpeciesFromAutocompleteComponent(searchSpeciesACComp, getSelectedArea(), getGeospatialKosher(), false);
         } else if (rgSpecies.getSelectedItem() != null && StringConstants.MULTIPLE.equals(rgSpecies.getSelectedItem().getValue())) {

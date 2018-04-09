@@ -51,8 +51,8 @@ public class AooEooComposer extends ToolComposer {
     public boolean onFinish() {
         SelectedArea sa = getSelectedArea();
         Query q = getSelectedSpecies();
-        q = q.newFacet(new Facet("occurrence_status_s", "absent", false), false);
-        Facet f = new Facet("occurrence_status_s", "absent", false);
+        q = q.newFacet(new Facet("occurrence_status", "absent", false), false);
+        Facet f = new Facet("occurrence_status", "absent", false);
         q = q.newFacet(f, false);
         Query newQ = QueryUtil.queryFromSelectedArea(q, sa, false, null);
         

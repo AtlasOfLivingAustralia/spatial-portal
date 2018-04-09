@@ -265,7 +265,7 @@ public class PhylogeneticDiversityComposer extends ToolComposer {
         hm.put("selectedtrees", st);
 
         Query q = getSelectedSpecies();
-        if (q != null) q = q.newFacet(new Facet("occurrence_status_s", "absent", false), false);
+        if (q != null) q = q.newFacet(new Facet("occurrence_status", "absent", false), false);
         hm.put("query", q);
 
         PhylogeneticDiversityListResults window = (PhylogeneticDiversityListResults) Executions.createComponents("WEB-INF/zul/results/PhylogeneticDiversityResults.zul", getMapComposer(), hm);

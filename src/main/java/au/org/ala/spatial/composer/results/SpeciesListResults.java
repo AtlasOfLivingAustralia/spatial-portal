@@ -64,7 +64,7 @@ public class SpeciesListResults extends UtilityComposer {
 
         try {
             Query sq = QueryUtil.queryFromSelectedArea(null, selectedArea, extraParams, false, geospatialKosher);
-            sq = sq.newFacet(new Facet("occurrence_status_s", "absent", false), false);
+            sq = sq.newFacet(new Facet("occurrence_status", "absent", false), false);
 
             if (sq.getSpeciesCount() <= 0) {
                 getMapComposer().showMessage("No species records in the active area.");
