@@ -357,6 +357,10 @@
                                             </li>
                                         </ul>
                                         <ul class="nav pull-right">
+                                            <li style='${((mapPortalPage.getSettingsSupplementary().getProperty("beta.url").length() + "") == "0") ? "display:none" : "display:show"}'>
+                                                <a href='${mapPortalPage.getSettingsSupplementary().getProperty("beta.url")}' title='${mapPortalPage.getSettingsSupplementary().getProperty("beta.label")}'>
+                                                    ${mapPortalPage.getSettingsSupplementary().getProperty("beta.label")}</a>
+                                            </li>
                                             <li><a href="javascript:saveSession();" title="Save current session">Save session</a>
                                             </li>
                                             <li class="dropdown font-xsmall">
