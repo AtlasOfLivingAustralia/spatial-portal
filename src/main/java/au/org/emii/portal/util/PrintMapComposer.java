@@ -634,11 +634,10 @@ public class PrintMapComposer {
             }
         }
 
-        String uri = layer.getUri().replace("gwc/service/", "") + params +
-                "&FORMAT=" + layer.getImageFormat() +
-                "&LAYERS=" + layer.getLayer() +
-                "&SRS=EPSG:3857" +
-                "&DPI=" + dpi;
+        String uri = layer.getUri().replace("gwc/service/", "") + params;
+        if (!uri.contains("FORMAT=")) uri += "&FORMAT=" + layer.getImageFormat();
+        if (!uri.contains("SRS=")) uri += "&SRS=EPSG:3857";
+        if (!uri.contains("DPI=")) uri += "&DPI=" + dpi;
 
         imageUrls.addAll(drawUri(g, uri, layer.getOpacity(), layer.getColourMode() != null && layer.getColourMode().equalsIgnoreCase(StringConstants.GRID), drawTiles));
 

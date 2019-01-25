@@ -1393,7 +1393,7 @@ public class BiocacheQuery implements Query, Serializable {
 
         //look up facets
         try {
-            final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" + URLEncoder.encode(match.group(), "UTF-8");
+            final String jsonUri = biocacheServer + "/upload/dynamicFacets?q=" + getFullQ(true);
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(jsonUri);
             get.addRequestHeader(StringConstants.CONTENT_TYPE, StringConstants.APPLICATION_JSON);
