@@ -811,7 +811,7 @@
         <spring.version>3.0.7.RELEASE</spring.version>
         <springsecurity.version>3.1.2.RELEASE</springsecurity.version>
         <commons-fileupload.version>1.2.1</commons-fileupload.version>
-        <commons-io.version>1.4</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
         <servlet-api.version>2.4</servlet-api.version>
         <jstl-api.version>1.1.2</jstl-api.version>
         <junit.version>4.13.1</junit.version>
