@@ -1933,7 +1933,7 @@ public class BiocacheQuery implements Query, Serializable {
                 JSONArray ja = (JSONArray) jp.parse(response);
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject jo = (JSONObject) ja.get(i);
-                    html.append("<a href='http://collections.ala.org.au/public/showDataProvider/")
+                    html.append("<a href='" + CommonData.collectoryServer + "/public/showDataProvider/")
                             .append(jo.get(StringConstants.ID).toString())
                             .append("' target='_blank'>").append(jo.get(StringConstants.NAME))
                             .append("</a>: ").append(jo.get(StringConstants.COUNT)).append(" records <br />");
